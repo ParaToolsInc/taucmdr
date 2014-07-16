@@ -1,0 +1,195 @@
+To use tau_wrap to generate a wrapper for any arbitrary package, let us consider a simple application 'app.c' that calls two routines foo1 and foo2 from secret.c. Assume that the source code of libsecret.so is not available for instrumentation. Just the prototype of secret.h is available and it lists two functions:
+
+int foo1(int a);
+void foo2(int b, int c);
+
+Given these two prototypes, we shall generate a shared object that will intercept calls to foo1 and foo2 and call TAU timers internally.
+
+Our goal is to measure the time spent in these two routines without instrumenting the source code of secret.c. 
+
+This directory shows how we can wrap libraries using just the .h and .so file. We present two schemes: runtime preloading and linker-based substitution for instrumenting a library whose source code is not accessed while instrumenting the application. 
+[tau_wrap]$ ls
+app.c     Makefile.tau1  Makefile.tau3  secret.c
+Makefile  Makefile.tau2  README         secret.h
+[tau_wrap]$ make
+gcc -fPIC -I. -c app.c
+gcc -fPIC -I. -c secret.c
+gcc -shared -o libsecret.so secret.o
+gcc -o app app.o -L. -lsecret
+[tau_wrap]$ ./app
+Inside foo1: x = 2
+Inside foo2: b = 4, c = 1
+[tau_wrap]$ ls
+app    app.o         Makefile       Makefile.tau2  README    secret.h
+app.c  libsecret.so  Makefile.tau1  Makefile.tau3  secret.c  secret.o
+[tau_wrap]$ echo "Instrumenting just main with TAU"
+Instrumenting just main with TAU
+[tau_wrap]$ make -f Makefile.tau1 clean
+/bin/rm -f app.o app libsecret.so secret.o
+[tau_wrap]$ make
+gcc -fPIC -I. -c app.c
+gcc -fPIC -I. -c secret.c
+gcc -shared -o libsecret.so secret.o
+gcc -o app app.o -L. -lsecret
+[tau_wrap]$ make -f Makefile.tau1
+tau_cc.sh -fPIC -I. -c app.c
+
+
+Debug: Parsing with PDT Parser
+Executing> /usr/local/packages/pdtoolkit-3.16/x86_64/bin/cparse app.c -I/home/users/sameer/t2/include -DPROFILING_ON -DTAU_GNU -DTAU_DOT_H_LESS_HEADERS -DTAU_LINUX_TIMERS -DTAU_LARGEFILE -D_LARGEFILE64_SOURCE -DTAU_BFD -DHAVE_TR1_HASH_MAP -DEBS_CLOCK_RES=999 -DTAU_STRSIGNAL_OK -I.
+
+
+Debug: Instrumenting with TAU
+Executing> /home/users/sameer/t2/x86_64/bin/tau_instrumentor app.pdb app.c -o app.inst.c -c
+
+
+Debug: Compiling with Instrumented Code
+Executing> /usr/local/packages/gcc/4.6.1/bin/gcc -fPIC -c app.inst.c -I. -DPROFILING_ON -DTAU_GNU -DTAU_DOT_H_LESS_HEADERS -DTAU_LINUX_TIMERS -DTAU_LARGEFILE -D_LARGEFILE64_SOURCE -DTAU_BFD -DHAVE_TR1_HASH_MAP -DEBS_CLOCK_RES=999 -DTAU_STRSIGNAL_OK -I/home/users/sameer/t2/include -o app.o
+Looking for file: app.o
+
+
+Debug: cleaning inst file
+Executing> /bin/rm -f app.inst.c
+
+
+Debug: cleaning PDB file
+Executing> /bin/rm -f app.pdb
+
+gcc -fPIC -I. -c secret.c
+gcc -shared -o libsecret.so secret.o
+tau_cc.sh -o app app.o -L. -lsecret
+
+
+Debug: Linking with TAU Options
+Executing> /usr/local/packages/gcc/4.6.1/bin/gcc -o app app.o -L. -lsecret -L/home/users/sameer/t2/x86_64/lib -ltau-pdt -lbfd -liberty -Wl,--export-dynamic -lrt -L/mnt/netapp/packages/gcc/4.6.1/bin/../lib/gcc/x86_64-unknown-linux-gnu/4.6.1/ -lstdc++ -lgcc_s
+
+[tau_wrap]$ ./app
+Inside foo1: x = 2
+Inside foo2: b = 4, c = 1
+[tau_wrap]$ pprof
+Reading Profile files in profile.*
+
+NODE 0;CONTEXT 0;THREAD 0:
+---------------------------------------------------------------------------------------
+%Time    Exclusive    Inclusive       #Call      #Subrs  Inclusive Name
+              msec   total msec                          usec/call
+---------------------------------------------------------------------------------------
+100.0        5,002        5,002           1           0    5002081 int main(int, char **) C
+[tau_wrap]$ echo "No routines from secret.h/libsecret.so are profiled"
+No routines from secret.h/libsecret.so are profiled
+[tau_wrap]$ make -f Makefile.tau1 clean
+/bin/rm -f app.o app libsecret.so secret.o
+[tau_wrap]$ make -f Makefile.tau2
+tau_cc.sh -fPIC -I. -c app.c
+
+
+Debug: Parsing with PDT Parser
+Executing> /usr/local/packages/pdtoolkit-3.16/x86_64/bin/cparse app.c -I/home/users/sameer/t2/include -DPROFILING_ON -DTAU_GNU -DTAU_DOT_H_LESS_HEADERS -DTAU_LINUX_TIMERS -DTAU_LARGEFILE -D_LARGEFILE64_SOURCE -DTAU_BFD -DHAVE_TR1_HASH_MAP -DEBS_CLOCK_RES=999 -DTAU_STRSIGNAL_OK -I.
+
+
+Debug: Instrumenting with TAU
+Executing> /home/users/sameer/t2/x86_64/bin/tau_instrumentor app.pdb app.c -o app.inst.c -c
+
+
+Debug: Compiling with Instrumented Code
+Executing> /usr/local/packages/gcc/4.6.1/bin/gcc -fPIC -c app.inst.c -I. -DPROFILING_ON -DTAU_GNU -DTAU_DOT_H_LESS_HEADERS -DTAU_LINUX_TIMERS -DTAU_LARGEFILE -D_LARGEFILE64_SOURCE -DTAU_BFD -DHAVE_TR1_HASH_MAP -DEBS_CLOCK_RES=999 -DTAU_STRSIGNAL_OK -I/home/users/sameer/t2/include -o app.o
+Looking for file: app.o
+
+
+Debug: cleaning inst file
+Executing> /bin/rm -f app.inst.c
+
+
+Debug: cleaning PDB file
+Executing> /bin/rm -f app.pdb
+
+gcc -fPIC -I. -c secret.c
+gcc -shared -o libsecret.so secret.o
+/bin/rm -rf secret_wrapper
+tau_gen_wrapper secret.h libsecret.so -r
+make[1]: Entering directory `/mnt/netapp/home1/sameer/fresh/DEV/tau2/examples/tau_wrap/secret_wrapper'
+make[1]: Warning: File `Makefile' has modification time 12 s in the future
+gcc    -DPROFILING_ON                        -DTAU_GNU -DTAU_DOT_H_LESS_HEADERS                      -DTAU_LINUX_TIMERS                                 -DTAU_LARGEFILE -D_LARGEFILE64_SOURCE                    -DTAU_BFD     -DHAVE_TR1_HASH_MAP     -DEBS_CLOCK_RES=999  -DTAU_STRSIGNAL_OK    -fPIC  -I/home/users/sameer/t2/include   -I..  -c wr.c -o secret_wrap.o
+gcc    -shared                   -o libsecret_wrap.so secret_wrap.o  -L/home/users/sameer/t2/x86_64/lib -lTAUsh-pdt              -lbfd -liberty       -Wl,--export-dynamic  -lrt    -ldl -ldl
+make[1]: warning:  Clock skew detected.  Your build may be incomplete.
+make[1]: Leaving directory `/mnt/netapp/home1/sameer/fresh/DEV/tau2/examples/tau_wrap/secret_wrapper'
+tau_cc.sh -o app app.o -L. -lsecret
+
+
+Debug: Linking with TAU Options
+Executing> /usr/local/packages/gcc/4.6.1/bin/gcc -o app app.o -L. -lsecret -L/home/users/sameer/t2/x86_64/lib -ltau-pdt -lbfd -liberty -Wl,--export-dynamic -lrt -L/mnt/netapp/packages/gcc/4.6.1/bin/../lib/gcc/x86_64-unknown-linux-gnu/4.6.1/ -lstdc++ -lgcc_s
+
+tau_exec -T serial,pdt -loadlib=`pwd`/secret_wrapper/libsecret_wrap.so ./app
+Inside foo1: x = 2
+Inside foo2: b = 4, c = 1
+pprof
+Reading Profile files in profile.*
+
+NODE 0;CONTEXT 0;THREAD 0:
+---------------------------------------------------------------------------------------
+%Time    Exclusive    Inclusive       #Call      #Subrs  Inclusive Name
+              msec   total msec                          usec/call
+---------------------------------------------------------------------------------------
+100.0        0.077        5,002           1           1    5002592 .TAU application
+100.0        0.063        5,002           1           2    5002515 int main(int, char **) C
+ 60.0        3,001        3,001           1           0    3001030 void foo2(int, int) C
+ 40.0        2,001        2,001           1           0    2001422 int foo1(int) C
+[tau_wrap]$ echo "This used runtime preloading (-r option for tau_gen_wrapper) and shows the time spent in foo1 and foo2 without touching the source code of secret.c"
+This used runtime preloading (-r option for tau_gen_wrapper) and shows the time spent in foo1 and foo2 without touching the source code of secret.c
+[tau_wrap]$ make -f Makefile.tau2 clean
+/bin/rm -rf app.o app libsecret.so secret.o wrapper secret_wrapper
+[tau_wrap]$ make -f Makefile.tau3
+tau_cc.sh -fPIC -I. -c app.c
+
+
+Debug: Parsing with PDT Parser
+Executing> /usr/local/packages/pdtoolkit-3.16/x86_64/bin/cparse app.c -I/home/users/sameer/t2/include -DPROFILING_ON -DTAU_GNU -DTAU_DOT_H_LESS_HEADERS -DTAU_LINUX_TIMERS -DTAU_LARGEFILE -D_LARGEFILE64_SOURCE -DTAU_BFD -DHAVE_TR1_HASH_MAP -DEBS_CLOCK_RES=999 -DTAU_STRSIGNAL_OK -I.
+
+
+Debug: Instrumenting with TAU
+Executing> /home/users/sameer/t2/x86_64/bin/tau_instrumentor app.pdb app.c -o app.inst.c -c
+
+
+Debug: Compiling with Instrumented Code
+Executing> /usr/local/packages/gcc/4.6.1/bin/gcc -fPIC -c app.inst.c -I. -DPROFILING_ON -DTAU_GNU -DTAU_DOT_H_LESS_HEADERS -DTAU_LINUX_TIMERS -DTAU_LARGEFILE -D_LARGEFILE64_SOURCE -DTAU_BFD -DHAVE_TR1_HASH_MAP -DEBS_CLOCK_RES=999 -DTAU_STRSIGNAL_OK -I/home/users/sameer/t2/include -o app.o
+Looking for file: app.o
+
+
+Debug: cleaning inst file
+Executing> /bin/rm -f app.inst.c
+
+
+Debug: cleaning PDB file
+Executing> /bin/rm -f app.pdb
+
+gcc -fPIC -I. -c secret.c
+gcc -shared -o libsecret.so secret.o
+/bin/rm -rf secret_wrapper
+tau_gen_wrapper secret.h libsecret.so
+make[1]: Entering directory `/mnt/netapp/home1/sameer/fresh/DEV/tau2/examples/tau_wrap/secret_wrapper'
+make[1]: Warning: File `Makefile' has modification time 12 s in the future
+gcc    -DPROFILING_ON                        -DTAU_GNU -DTAU_DOT_H_LESS_HEADERS                      -DTAU_LINUX_TIMERS                                 -DTAU_LARGEFILE -D_LARGEFILE64_SOURCE                    -DTAU_BFD     -DHAVE_TR1_HASH_MAP     -DEBS_CLOCK_RES=999  -DTAU_STRSIGNAL_OK    -fPIC  -I/home/users/sameer/t2/include   -I..  -c wr.c -o secret_wrap.o
+ar rcv  libsecret_wrap.a secret_wrap.o
+a - secret_wrap.o
+make[1]: warning:  Clock skew detected.  Your build may be incomplete.
+make[1]: Leaving directory `/mnt/netapp/home1/sameer/fresh/DEV/tau2/examples/tau_wrap/secret_wrapper'
+tau_cc.sh -o app app.o -L. -lsecret -tau_options='-optTauWrapFile=secret_wrapper/link_options.tau'
+
+./app
+Inside foo1: x = 2
+Inside foo2: b = 4, c = 1
+pprof
+Reading Profile files in profile.*
+
+NODE 0;CONTEXT 0;THREAD 0:
+---------------------------------------------------------------------------------------
+%Time    Exclusive    Inclusive       #Call      #Subrs  Inclusive Name
+              msec   total msec                          usec/call
+---------------------------------------------------------------------------------------
+100.0         0.05        5,002           1           2    5002124 int main(int, char **) C
+ 60.0        3,001        3,001           1           0    3001044 void foo2(int, int) C
+ 40.0        2,001        2,001           1           0    2001030 int foo1(int) C
+[tau_wrap]$ echo "This used linker-based instrumentation (default, or -w in tau_gen_wrapper) and this works with both static and dynamic executables."
+This used linker-based instrumentation (default, or -w in tau_gen_wrapper) and this works with both static and dynamic executables.
+[tau_wrap]$
+

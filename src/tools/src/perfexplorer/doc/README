@@ -1,0 +1,71 @@
+Introduction
+
+     ----------------------------------------------------------------------
+
+   Table of Contents
+
+   1. Introduction
+
+   2. Installation
+
+   3. Using PerfExplorer
+
+1. Introduction
+
+   PerfExplorer is a framework for parallel performance data mining and
+   knowledge discovery. The framework architecture enables the development
+   and integration of data mining operations that will be applied to
+   large-scale parallel performance profiles.
+
+   The overall goal of the PerfExplorer project is to create a software to
+   integrate sophisticated data mining techniques in the analysis of
+   large-scale parallel performance data.
+
+   PerfExplorer supports clustering, summarization, association, regression,
+   and correlation. Cluster analysis is the process of organizing data points
+   into logically similar groupings, called clusters. Summarization is the
+   process of describing the similarities within, and dissimilarities
+   between, the discovered clusters. Association is the process of finding
+   relationships in the data. One such method of association is regression
+   analysis, the process of finding independent and dependent correlated
+   variables in the data. In addition, comparative analysis extends these
+   operations to compare results from different experiments, for instance, as
+   part of a parametric study.
+
+2. Installation
+
+   PerfExplorer uses PerfDMF databases so if you have not already you will
+   need to install PerfDMF. To configure PerfExplorer move to the
+   tools/src/perfexplorer/ directory in you TAU distribution. Type:
+
+ %>./configure
+
+   Next add [path to tau]/tau2/apple/bin to your path. Now type:
+
+ %>make
+
+3. Using PerfExplorer
+
+   To run PerfExplorer type:
+
+ %>perfexplorer
+
+   When PerfExplorer loads you will see on the left window all the
+   experiments that where loaded into PerfDMF. You can select which
+   performance data you are interested by navigating the tree structure.
+   PerfExplorer will allow you to run analysis operations on these
+   experiments. Also the cluster analysis results are visible on the right
+   side of the window. Various types of comparative analysis are available
+   from the drop down menu selected.
+
+   To run an analysis operation, first select the metric of interest form the
+   experiments on the left. Then perform the operation by selecting it from
+   the Analysis menu. If you would like you can set the clustering method,
+   dimension reduction, normalization method and the number of clusters from
+   the same menu.
+
+   The options under the Charts menu provide analysis over an entire trial.
+   To view these charts first choose a metric of interest by selecting a
+   trial form the tree on the left. Then choose the Set Metric of Interest or
+   Set Event of Interest form the Charts menu. Now you can view a chart by
+   selecting it from the Charts menu.

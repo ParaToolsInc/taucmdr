@@ -1,0 +1,19 @@
+== Building TAU with the MinGW cross-compilers for 32- or 64-bit Windows ==
+
+Requirements:
+
+MinGW compilers must be in your path.  For example (64-bit):
+* x86_64-w64-mingw32-gcc
+* x86_64-w64-mingw32-g++
+* x86_64-w64-mingw32-ar
+* x86_64-w64-mingw32-ld
+* x86_64-w64-mingw32-ranlib
+
+Limitations:
+
+* No signal processing
+* No event-based sampling (EBS)
+
+Instructions:
+
+See ./configure -help.

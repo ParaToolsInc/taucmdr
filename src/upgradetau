@@ -1,0 +1,116 @@
+#!/usr/bin/env perl
+
+
+$numArgs = $#ARGV + 1;
+
+if ($numArgs < 1) {
+    print "\nupgradetau: This script is provided to rebuild all TAU configurations\n";
+    print "            previously built in a different TAU source directory.\n";
+    die "\nusage: $0 <path/to/old/tau> [extra args]\n";
+}
+
+$oldTAU = $ARGV[0];
+
+$remainingArgs = "";
+for $i (1 .. $#ARGV) {
+    $remainingArgs = $remainingArgs . $ARGV[$i];
+}
+
+$oldConfigs = "$oldTAU/.all_configs";
+
+if (! -r $oldConfigs ) {
+    die "Unable to find $oldConfigs\n";
+}
+
+print "\n-= Upgrading TAU =-\n";
+print "Reading configurations from $oldConfigs\n";
+
+
+# determine the available options
+@availableOpts = `./configure -fullhelp | grep "^-" | awk '{print \$1}' | sed s/=.*//g`;
+
+foreach $opt (@availableOpts) {
+    chomp($opt);
+    $opts{$opt} = 1;
+} 
+
+$opts{"-setnode0"} = 1;
+$opts{"-PROFILECALLS"} = 1;
+$opts{"-pdtcompdir"} = 1;
+
+# read .all_configs at once in case the user is running it using the
+# current directory as the old tau
+@allConfigs = `cat $oldConfigs`;
+
+foreach $config (@allConfigs) {
+    chomp($config);
+    @oldopts = split(' ', $config);
+
+    $newline = "";
+    $newopt = "";
+
+    foreach $opt (@oldopts) {
+
+	# remove leading and trailing whitespace
+	$opt =~ s/^\s+//;
+	$opt =~ s/\s+$//;
+
+	# get the base option (e.g. -mpiinc for -mpiinc=/usr/local/...)
+	$base = $opt;
+	$base =~ s/=.*//g;
+
+	if ($opts{$base} == 1) { 
+            # if it matches an option from `configure -help`
+	    # then append previous fragments ($newopt) as the previous option
+	    # and restart $newopt
+	    if (!($newopt eq "")) {
+		if ($newopt =~ / /) {
+		    $newline = $newline . '"' . $newopt . '" ';
+		} else {
+		    $newline = $newline . ' ' . $newopt . ' ';
+		}
+	    }
+	    $newopt = $opt;
+	} else { 
+            # no match, add to $newopt
+	    $newopt = $newopt . " " . $opt;
+
+	    # remove leading and trailing whitespace
+	    $newopt =~ s/^\s+//;
+	    $newopt =~ s/\s+$//;
+	}
+    }
+
+    # flush the last option
+    if (!($newopt eq "")) {
+	if ($newopt =~ / /) {
+	    $newline = $newline . '"' . $newopt . '" ';
+	} else {
+	    $newline = $newline . ' ' . $newopt . ' ';
+	}
+    }
+    
+    if ($newline =~ /-help/) {
+	# skip -help
+    } else {
+	print "Configuring TAU with: $newline\n";
+
+	$rc = 0xffff & system("./configure $newline $remainingArgs");
+	if ($rc == 2) { # SIGINT
+	    # kill all children
+	    local $SIG{HUP} = 'IGNORE'; 
+	    kill HUP => -$$;
+	    print "\nkilled\n";
+	    exit;
+	}
+	$rc = 0xffff & system("make clean install");
+	if ($rc == 2) { # SIGINT
+	    # kill all children
+	    local $SIG{HUP} = 'IGNORE'; 
+	    kill HUP => -$$;
+	    print "\nkilled\n";
+	    exit;
+	}
+    }
+}
+close(FD);

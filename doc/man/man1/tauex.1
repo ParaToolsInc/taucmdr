@@ -1,0 +1,72 @@
+.\" ** You probably do not want to edit this file directly **
+.\" It was generated using the DocBook XSL Stylesheets (version 1.69.1).
+.\" Instead of manually editing it, you probably should edit the DocBook XML
+.\" source for it and then use the DocBook XSL Stylesheets to regenerate it.
+.TH "TAUEX" "1" "04/25/2011" "" "Tools"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+tauex \- Allows you to choose a tau configuration at runtime
+.SH "SYNOPSIS"
+.HP 6
+\fBtauex\fR [\fIOPTION\fR] [\-\-] {\fIexecutable\fR} [\fIexecutable\ options\fR]
+.SH "DESCRIPTION"
+.PP
+Use this script to dynamically load a TAU profiling/tracing library or to select which papi events/domain to use during execuation of the application. At runtime tauex will set the LD_LIBRARY_PATH and pass any other parameters (or papi events) to the program and execute it with the specified TAU measurement options.
+.SH "OPTIONS"
+.TP
+\-d
+Enable debugging output, use repeatedly for more output.
+.TP
+\-h
+Print help message.
+.TP
+\-i
+Print information about the host machine.
+.TP
+\-s
+Dump the shell environment variables and exit.
+.TP
+\-U
+User mode counts
+.TP
+\-K
+Kernel mode counts
+.TP
+\-S
+Supervisor mode counts
+.TP
+\-I
+Interrupt mode counts
+.TP
+\-l
+List events
+.TP
+\-L <event>
+Describe event
+.TP
+\-a
+Count all native events (implies \-m)
+.TP
+\-n
+Multiple runs (enough runs of exe to gather all events)
+.TP
+\-e <event>
+Specify PAPI preset or native event
+.TP
+\-T <option>
+Specify TAU option
+.TP
+\-v
+Debug/Verbose mode
+.TP
+\-XrunTAU\-<options>
+specify TAU library directly
+.SH "NOTES"
+.PP
+Defaults if unspecified: \-U \-T MPI,PROFILE \-e P_WALL_CLOCK_TIME MPI is assumed unless SERIAL is specified PROFILE is assumed unless one of TRACE, VAMPIRTRACE or EPILOG is specified P_WALL_CLOCK_TIME means count real time using fastest available timer
+.SH "EXAMPLE"
+.PP
+mpirun \-np 2 tauex \-e PAPI_TOT_CYC \-e PAPI_FP_OPS \-T MPI,PROFILE \-\- ./ring
