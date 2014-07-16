@@ -326,7 +326,7 @@ extern "C" Profiler *TauInternal_ParentProfiler(int tid) {
 extern "C" char *TauInternal_CurrentCallsiteTimerName(int tid) {
   if(TauInternal_CurrentProfiler(tid) != NULL)
     if(TauInternal_CurrentProfiler(tid)->ThisFunction != NULL)
-      return TauInternal_CurrentProfiler(tid)->ThisFunction->Name;
+      return const_cast<char*>(TauInternal_CurrentProfiler(tid)->ThisFunction->GetName());
   return NULL;
 }
 
@@ -814,7 +814,7 @@ extern "C" int Tau_profile_exit_all_tasks()
       Profiler *p = &(Tau_thread_flags[tid].Tau_global_stack[Tau_thread_flags[tid].Tau_global_stackpos]);
       //Make sure even throttled routines are stopped.
       if (Tau_stop_timer(p->ThisFunction, tid)) {
-        TAU_VERBOSE("Stopping timer on thread %d: %s\n", tid, p->ThisFunction->Name);
+        TAU_VERBOSE("Stopping timer on thread %d: %s\n", tid, p->ThisFunction->GetName());
         p->Stop(tid);
         Tau_thread_flags[tid].Tau_global_stackpos--; /* pop */
       }
@@ -832,7 +832,7 @@ extern "C" int Tau_show_profiles()
       int pos = Tau_thread_flags[tid].Tau_global_stackpos;
       while (pos >= 0) {
 	  Profiler * p = &(Tau_thread_flags[tid].Tau_global_stack[pos]);
-	  TAU_VERBOSE(" *** Alfred Profile (%d:%d) :  %s\n", tid, pos, p->ThisFunction->Name);
+	  TAU_VERBOSE(" *** Alfred Profile (%d:%d) :  %s\n", tid, pos, p->ThisFunction->GetName());
 	  pos--;
       }
   }
@@ -858,7 +858,7 @@ extern "C" int Tau_profile_exit_all_threads()
     while (Tau_thread_flags[tid].Tau_global_stackpos >= 0) {
       Profiler * p = &(Tau_thread_flags[tid].Tau_global_stack[Tau_thread_flags[tid].Tau_global_stackpos]);
 
-      TAU_VERBOSE(" *** Alfred (%d) : stop %s\n", tid, p->ThisFunction->Name);
+      TAU_VERBOSE(" *** Alfred (%d) : stop %s\n", tid, p->ThisFunction->GetName());
 
       //Make sure even throttled routines are stopped.
       if (Tau_stop_timer(p->ThisFunction, tid)) {
@@ -1010,7 +1010,7 @@ extern "C" int Tau_dump_callpaths() {
     while (pos >= 0) {
 	  Profiler profiler = Tau_thread_flags[tid].Tau_global_stack[pos];
 	  FunctionInfo *fi = profiler.ThisFunction;
-      fprintf(fp, "%d\t%ld\t%ld\t%.f\t%.f\t\"%s\"\n", tid, pos, fi->GetCalls(tid), fi->getDumpInclusiveValues(tid)[0], fi->getDumpExclusiveValues(tid)[0], fi->Name);
+      fprintf(fp, "%d\t%ld\t%ld\t%.f\t%.f\t\"%s\"\n", tid, pos, fi->GetNumCalls(tid), fi->getDumpInclusiveValues(tid)[0], fi->getDumpExclusiveValues(tid)[0], fi->GetName());
       pos--;
     }
   }
@@ -1140,19 +1140,19 @@ extern "C" TauGroup_t Tau_disable_group_name(char const * group) {
 ///////////////////////////////////////////////////////////////////////////
 extern "C" void Tau_profile_set_group_name(void *ptr, const char *groupname) {
   FunctionInfo *f = (FunctionInfo*)ptr;
-  f->SetPrimaryGroupName(groupname);
+  f->SetPrimaryGroup(groupname);
 }
 
 extern "C" void Tau_profile_set_name(void *ptr, const char *name) {
   TauInternalFunctionGuard protects_this_function;
   FunctionInfo *f = (FunctionInfo*)ptr;
-  f->Name = strdup(name);
+  f->SetName(name);
 }
 
 extern "C" void Tau_profile_set_type(void *ptr, const char *type) {
   TauInternalFunctionGuard protects_this_function;
   FunctionInfo *f = (FunctionInfo*)ptr;
-  f->Type = strdup(type);
+  f->SetType(type);
 }
 
 extern "C" void Tau_profile_set_group(void *ptr, TauGroup_t group) {
@@ -1162,17 +1162,17 @@ extern "C" void Tau_profile_set_group(void *ptr, TauGroup_t group) {
 
 extern "C" const char *Tau_profile_get_group_name(void *ptr) {
   FunctionInfo *f = (FunctionInfo*)ptr;
-  return f->GroupName;
+  return f->GetPrimaryGroup();
 }
 
 extern "C" const char *Tau_profile_get_name(void *ptr) {
   FunctionInfo *f = (FunctionInfo*)ptr;
-  return f->Name;
+  return f->GetName();
 }
 
 extern "C" const char *Tau_profile_get_type(void *ptr) {
   FunctionInfo *f = (FunctionInfo*)ptr;
-  return f->Type;
+  return f->GetType();
 }
 
 extern "C" TauGroup_t Tau_profile_get_group(void *ptr) {
@@ -1867,7 +1867,7 @@ extern "C" void Tau_mark_group_as_phase(void *ptr)
   TauInternalFunctionGuard protects_this_function;
   FunctionInfo *fptr = (FunctionInfo *)ptr;
   char *newgroup = Tau_phase_enable(fptr->GetAllGroups());
-  fptr->SetPrimaryGroupName(newgroup);
+  fptr->SetPrimaryGroup(newgroup);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -2271,25 +2271,25 @@ extern "C" int Tau_get_usesMPI() {
 //////////////////////////////////////////////////////////////////////
 extern "C" void Tau_get_calls(void *handle, long *values, int tid) {
   FunctionInfo *ptr = (FunctionInfo *)handle;
-  values[0] = (long) ptr->GetCalls(tid);
+  values[0] = (long) ptr->GetNumCalls(tid);
 }
 
 //////////////////////////////////////////////////////////////////////
 extern "C" void Tau_set_calls(void *handle, long values, int tid) {
   FunctionInfo *ptr = (FunctionInfo *)handle;
-  ptr->SetCalls(tid, values);
+  ptr->SetNumCalls(tid, values);
 }
 
 //////////////////////////////////////////////////////////////////////
 void Tau_get_child_calls(void *handle, long* values, int tid) {
   FunctionInfo *ptr = (FunctionInfo *)handle;
-  values[0] = (long) ptr->GetSubrs(tid);
+  values[0] = (long) ptr->GetNumSubrs(tid);
 }
 
 //////////////////////////////////////////////////////////////////////
 extern "C" void Tau_set_child_calls(void *handle, long values, int tid) {
   FunctionInfo *ptr = (FunctionInfo *)handle;
-  ptr->SetSubrs(tid, values);
+  ptr->SetNumSubrs(tid, values);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -2370,7 +2370,7 @@ void Tau_clear_pure_map(void) {
 	FunctionInfo * fi = eraseme->second;
     it++; // do this BEFORE the delete!
 	// The top level timer is not allocated? Weird. IF you free it you'll get a segv.
-	if (strcmp(fi->Name, ".TAU application") != 0)
+	if (strcmp(fi->GetName(), ".TAU application") != 0)
 		delete fi;
     //mymap.erase(eraseme);
   }
@@ -2419,7 +2419,7 @@ const char *Tau_query_event_name(void *event) {
     return NULL;
   }
   Profiler *profiler = (Profiler*) event;
-  return profiler->ThisFunction->Name;
+  return profiler->ThisFunction->GetName();
 }
 
 void *Tau_query_parent_event(void *event) {

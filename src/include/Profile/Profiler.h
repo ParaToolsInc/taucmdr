@@ -160,6 +160,12 @@ class KtauProfiler;
 #endif /* defined(TAUKTAU) */
 
 
+namespace tau {
+//=============================================================================
+
+// Forward Declaration
+class FunctionInfo;
+
 /*
 //////////////////////////////////////////////////////////////////////
 //
@@ -174,7 +180,6 @@ class KtauProfiler;
 //
 //////////////////////////////////////////////////////////////////////
 */
-namespace tau {
 class Profiler
 {
 public:

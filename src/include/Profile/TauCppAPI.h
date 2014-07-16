@@ -85,7 +85,7 @@ private:
 
 #define TAU_PROFILE(name, type, group) \
   static void *tauFI = 0; \
-  if (tauFI == 0) tauCreateFI(&tauFI, name, type, (TauGroup_t)group, #group); \
+  if (!tauFI) tauCreateFI(&tauFI, name, type, (TauGroup_t)group, #group); \
   Tau_Profile_Wrapper tauFProf(tauFI);
 
 #define TAU_PHASE(name, type, group) \
