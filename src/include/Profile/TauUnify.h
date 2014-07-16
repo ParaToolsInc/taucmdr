@@ -98,10 +98,10 @@ public:
 /** Adapter class for the interval event database */
 class FunctionEventLister : public EventLister {
   int getNumEvents() {
-    return tau::TheFunctionDB().size();
+    return TheFunctionDB().size();
   }
-  const char * getEvent(int id) {
-    return tau::TheFunctionDB()[id]->GetFullName().c_str();
+  const char *getEvent(int id) {
+    return TheFunctionDB()[id]->GetFullName();
   }
 };
 

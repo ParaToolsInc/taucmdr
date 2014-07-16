@@ -215,8 +215,10 @@ public:
   void AddNumChildren(long value);
   
   
+#ifdef TAU_PROFILEPHASE
   bool GetPhase(void);
   void SetPhase(bool flag);
+#endif /* TAU_PROFILEPHASE */
 
 #if defined(TAUKTAU)
   KtauProfiler* ThisKtauProfiler;

@@ -153,7 +153,6 @@ const int OMP_COLLECTORAPI_HEADERSIZE=4*sizeof(int);
 static int (*Tau_collector_api)(void*) = NULL;
 
 using namespace std;
-using namespace tau;
 
 extern FunctionInfo * Tau_create_thread_state_if_necessary(const char* thread_state);
 extern FunctionInfo * Tau_create_thread_state_if_necessary_string(std::string thread_state);

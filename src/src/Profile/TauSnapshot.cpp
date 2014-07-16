@@ -308,9 +308,18 @@ int Tau_snapshot_writeUnifiedBuffer(int tid) {
       if (fi->GetCalls(tid) > 0) {
       
       // get currently stored values
-			double const * incltime = fi->GetInclTime(tid);
-			double const * excltime = fi->GetExclTime(tid);
-      Tau_util_output (out, "%d %ld %ld ", e, fi->GetNumCalls(tid), fi->GetNumSubrs(tid));
+			double *incltime, *excltime;
+			if (tid == 0)
+			{
+				incltime = fi->getDumpInclusiveValues(tid);
+				excltime = fi->getDumpExclusiveValues(tid);
+     	}
+			else
+			{
+				incltime = fi->GetInclTime(tid);
+				excltime = fi->GetExclTime(tid);
+			}
+      Tau_util_output (out, "%d %ld %ld ", e, fi->GetCalls(tid), fi->GetSubrs(tid));
       for (c=0; c<Tau_Global_numCounters; c++) {
 	Tau_util_output (out, "%.16G %.16G ", excltime[c], incltime[c]);
       }

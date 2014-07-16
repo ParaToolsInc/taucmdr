@@ -68,8 +68,6 @@
 #include <string>
 #include <map>
 
-using namespace tau;
-
 #define MAX_STRING_LEN 1024
 #define get16bits(d) ((((uint32_t)(((const uint8_t *)(d))[1])) << 8)\
                        +(uint32_t)(((const uint8_t *)(d))[0]) )

@@ -61,9 +61,9 @@ struct TauCsPath
 
     for (i = 0; i < l1; i++) {
       // For each element
-      if ((*v1)[i]->IsCallSite() ^ (*v2)[i]->IsCallSite()) {
+      if ((*v1)[i]->isCallSite ^ (*v2)[i]->isCallSite) {
         // We interpret callsites as "less than" paths
-        return (*v1)[i]->IsCallSite();
+        return (*v1)[i]->isCallSite;
       } else {
         // We can compare the values.
         if ((*v1)[i]->keyValue != (*v2)[i]->keyValue) {
@@ -542,7 +542,7 @@ void Profiler::CallSiteStart(int tid)
     if (path == NULL) {
       // Flat profile. Record the current base FI.
       tau_cs_path_element_t *element = new tau_cs_path_element_t;
-      element->IsCallSite() = false;
+      element->isCallSite = false;
       element->keyValue = (unsigned long)ThisFunction;
       key->push_back(element);
     } else {
@@ -555,7 +555,7 @@ void Profiler::CallSiteStart(int tid)
         //
         //       Also keep an eye out for that conversion from (long) to (FunctionInfo *)
         tau_cs_path_element_t *element = new tau_cs_path_element_t;
-        element->IsCallSite() = false;
+        element->isCallSite = false;
         element->keyValue = (unsigned long)path[i + 1];    // path[0] is the length
         // Note: The path is in reverse order
         // First element
@@ -576,7 +576,7 @@ void Profiler::CallSiteStart(int tid)
 
     // Now distinguish this event with the callsite key.
     tau_cs_path_element_t *element = new tau_cs_path_element_t;
-    element->IsCallSite() = true;
+    element->isCallSite = true;
     element->keyValue = callsiteKeyId;
     key->push_back(element);
 
@@ -612,8 +612,8 @@ void Profiler::CallSiteStart(int tid)
         CallSiteFunction = new FunctionInfo(tempName.c_str(), "", ThisFunction->GetProfileGroup(), grname.c_str(),
             true);
       }
-      CallSiteFunction->IsCallSite() = true;
-      CallSiteFunction->GetCallsiteKeyId() = callsiteKeyId;
+      CallSiteFunction->isCallSite = true;
+      CallSiteFunction->callSiteKeyId = callsiteKeyId;
       CallSiteFunction->callSiteResolved = false;
 
       CallSiteFunction->firstSpecializedFunction = NULL;    // non-base functions are always NULL
@@ -625,8 +625,8 @@ void Profiler::CallSiteStart(int tid)
       CallSiteFunction = (*itPath).second;
       // sanity check
       if (CallSiteFunction != NULL) {
-        if (CallSiteFunction->GetCallsiteKeyId() != callsiteKeyId) {
-          fprintf(stderr, "WARNING: Something is wrong. FI has Id %lu from Unwind %lu\n", CallSiteFunction->GetCallsiteKeyId(),
+        if (CallSiteFunction->callSiteKeyId != callsiteKeyId) {
+          fprintf(stderr, "WARNING: Something is wrong. FI has Id %lu from Unwind %lu\n", CallSiteFunction->callSiteKeyId,
               callsiteKeyId);
         }
       }
@@ -641,29 +641,29 @@ void Profiler::CallSiteStart(int tid)
       TheCallSiteFirstKeyMap().insert(map<TAU_CALLSITE_FIRSTKEY_MAP_TYPE>::value_type(ThisFunction, CallSiteFunction));
     } else {
       FunctionInfo *firstCallSiteFunction = (*itKey).second;
-      if (CallSiteFunction->GetCallsiteKeyId() != firstCallSiteFunction->GetCallsiteKeyId()) {
+      if (CallSiteFunction->callSiteKeyId != firstCallSiteFunction->callSiteKeyId) {
         // Different callsite. Try to resolve it if it has not already been resolved.
         //   If it has already been resolved, the first FI must also necessarily
         //   be resolved.
         if (!CallSiteFunction->callSiteResolved) {
           // resolve the local callsite first.
           unsigned long resolvedCallSite = 0;
-          resolvedCallSite = determineCallSiteViaId(CallSiteFunction->GetCallsiteKeyId(),
-              firstCallSiteFunction->GetCallsiteKeyId());
-          TAU_VERBOSE("%d Got the final callsite %p\n", CallSiteFunction->GetCallsiteKeyId(), resolvedCallSite);
+          resolvedCallSite = determineCallSiteViaId(CallSiteFunction->callSiteKeyId,
+              firstCallSiteFunction->callSiteKeyId);
+          TAU_VERBOSE("%d Got the final callsite %p\n", CallSiteFunction->callSiteKeyId, resolvedCallSite);
           // Register the resolution of this callsite key
           CallSiteFunction->callSiteResolved = true;
-          TheCallSiteIdVector()[CallSiteFunction->GetCallsiteKeyId()]->resolved = true;
-          TheCallSiteIdVector()[CallSiteFunction->GetCallsiteKeyId()]->resolvedCallSite = resolvedCallSite;
+          TheCallSiteIdVector()[CallSiteFunction->callSiteKeyId]->resolved = true;
+          TheCallSiteIdVector()[CallSiteFunction->callSiteKeyId]->resolvedCallSite = resolvedCallSite;
 
           if (!firstCallSiteFunction->callSiteResolved) {
-            resolvedCallSite = determineCallSiteViaId(firstCallSiteFunction->GetCallsiteKeyId(),
-                CallSiteFunction->GetCallsiteKeyId());
-            TAU_VERBOSE("%d Got the final master callsite %p\n", firstCallSiteFunction->GetCallsiteKeyId(),
+            resolvedCallSite = determineCallSiteViaId(firstCallSiteFunction->callSiteKeyId,
+                CallSiteFunction->callSiteKeyId);
+            TAU_VERBOSE("%d Got the final master callsite %p\n", firstCallSiteFunction->callSiteKeyId,
                 resolvedCallSite);
             firstCallSiteFunction->callSiteResolved = true;
-            TheCallSiteIdVector()[firstCallSiteFunction->GetCallsiteKeyId()]->resolved = true;
-            TheCallSiteIdVector()[firstCallSiteFunction->GetCallsiteKeyId()]->resolvedCallSite = resolvedCallSite;
+            TheCallSiteIdVector()[firstCallSiteFunction->callSiteKeyId]->resolved = true;
+            TheCallSiteIdVector()[firstCallSiteFunction->callSiteKeyId]->resolvedCallSite = resolvedCallSite;
           }
         }
       }
@@ -796,7 +796,7 @@ extern "C" void finalizeCallSites_if_necessary()
   for (vector<FunctionInfo *>::iterator fI_iter = TheFunctionDB().begin(); fI_iter != TheFunctionDB().end();
       fI_iter++) {
     FunctionInfo *theFunction = *fI_iter;
-    if (theFunction->IsCallSite()) {
+    if (theFunction->isCallSite) {
       candidates->push_back(theFunction);
     }
   }
@@ -807,7 +807,7 @@ extern "C" void finalizeCallSites_if_necessary()
     FunctionInfo *candidate = *cs_it;
 
     string *callSiteName = new string("");
-    tau_cs_info_t *callsiteInfo = TheCallSiteIdVector()[candidate->GetCallsiteKeyId()];
+    tau_cs_info_t *callsiteInfo = TheCallSiteIdVector()[candidate->callSiteKeyId];
     *callSiteName = *callSiteName + *(callsiteInfo->resolvedName);
 
     if (TauEnv_get_callpath()) {

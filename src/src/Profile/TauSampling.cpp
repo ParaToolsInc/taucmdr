@@ -492,9 +492,9 @@ void Tau_sampling_outputTraceCallpath(int tid)
   Profiler *profiler = TauInternal_CurrentProfiler(tid);
   // *CWL* 2012/3/18 - EBS traces cannot handle callsites for now. Do not track.
   if ((profiler->CallPathFunction != NULL) && (TauEnv_get_callpath())) {
-    fprintf(tau_sampling_flags()->ebsTrace, "%lld", profiler->CallPathFunction->GetId());
+    fprintf(tau_sampling_flags()->ebsTrace, "%lld", profiler->CallPathFunction->GetFunctionId());
   } else if (profiler->ThisFunction != NULL) {
-    fprintf(tau_sampling_flags()->ebsTrace, "%lld", profiler->ThisFunction->GetId());
+    fprintf(tau_sampling_flags()->ebsTrace, "%lld", profiler->ThisFunction->GetFunctionId());
   }
 }
 
@@ -604,9 +604,9 @@ void Tau_sampling_outputTraceDefinitions(int tid)
   for (vector<FunctionInfo *>::iterator it = TheFunctionDB().begin(); it != TheFunctionDB().end(); it++) {
     FunctionInfo *fi = *it;
     if (strlen(fi->GetType()) > 0) {
-      fprintf(def, "%lld | %s %s\n", fi->GetId(), fi->GetName(), fi->GetType());
+      fprintf(def, "%lld | %s %s\n", fi->GetFunctionId(), fi->GetName(), fi->GetType());
     } else {
-      fprintf(def, "%lld | %s\n", fi->GetId(), fi->GetName());
+      fprintf(def, "%lld | %s\n", fi->GetFunctionId(), fi->GetName());
     }
   }
   fclose(def);

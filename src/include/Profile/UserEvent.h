@@ -1,56 +1,17 @@
-/******************************************************************************
- *
- *                        The TAU Performance System
- *                          http://tau.uoregon.edu/
- *
- * Copyright 1997-2014
- * Department of Computer and Information Science, University of Oregon
- * Advanced Computing Laboratory, Los Alamos National Laboratory
- *
- *****************************************************************************/
-/**
- * @file
- * @brief   Declares class TauUserEvent
- * @date    Created 1998-04-24 00:18:04 +0000
- *
- * @authors
- * Adam Morris <amorris@cs.uoregon.edu>
- * Kevin Huck <khuck@cs.uoregon.edu>
- * Sameer Shende <sameer@cs.uoregon.edu>
- * Scott Biersdorff <scottb@cs.uoregon.edu>
- * Wyatt Joel Spear <wspear@cs.uoregon.edu>
- * John C. Linford <jlinford@paratools.com>
- *
- * @copyright
- * Copyright (c) 1997-2014
- * Department of Computer and Information Science, University of Oregon
- * Advanced Computing Laboratory, Los Alamos National Laboratory
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- * (1) Redistributions of source code must retain the above copyright notice,
- *     this list of conditions and the following disclaimer.
- * (2) Redistributions in binary form must reproduce the above copyright notice,
- *     this list of conditions and the following disclaimer in the documentation
- *     and/or other materials provided with the distribution.
- * (3) Neither the name of ParaTools, Inc. nor the names of its contributors may
- *     be used to endorse or promote products derived from this software without
- *     specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
- */
-
+/****************************************************************************
+ **			TAU Portable Profiling Package			   **
+ **			http://www.cs.uoregon.edu/research/tau	           **
+ *****************************************************************************
+ **    Copyright 1997-2009					   	   **
+ **    Department of Computer and Information Science, University of Oregon **
+ **    Advanced Computing Laboratory, Los Alamos National Laboratory        **
+ ****************************************************************************/
+/***************************************************************************
+ **	File 		: UserEvent.h					  **
+ **	Description 	: TAU Profiling Package				  **
+ *	Contact		: tau-team@cs.uoregon.edu 		 	  **
+ **	Documentation	: See http://www.cs.uoregon.edu/research/tau      **
+ ***************************************************************************/
 
 #ifndef _USEREVENT_H_
 #define _USEREVENT_H_
@@ -72,7 +33,7 @@ class Profiler;
 //////////////////////////////////////////////////////////////////////
 //
 //////////////////////////////////////////////////////////////////////
-typedef double tau_measurement_t;
+typedef double TAU_EVENT_DATATYPE;
 
 
 //////////////////////////////////////////////////////////////////////
@@ -85,17 +46,17 @@ public:
   struct Data
   {
     Data() :
-      minVal(std::numeric_limits<tau_measurement_t>::max()),
-      maxVal(-std::numeric_limits<tau_measurement_t>::max()),
+      minVal(std::numeric_limits<TAU_EVENT_DATATYPE>::max()),
+      maxVal(-std::numeric_limits<TAU_EVENT_DATATYPE>::max()),
       sumVal(0), sumSqrVal(0), lastVal(0), userVal(0), nEvents(0)
     { }
 
-    tau_measurement_t minVal;
-    tau_measurement_t maxVal;
-    tau_measurement_t sumVal;
-    tau_measurement_t sumSqrVal;
-    tau_measurement_t lastVal;
-    tau_measurement_t userVal;
+    TAU_EVENT_DATATYPE minVal;
+    TAU_EVENT_DATATYPE maxVal;
+    TAU_EVENT_DATATYPE sumVal;
+    TAU_EVENT_DATATYPE sumSqrVal;
+    TAU_EVENT_DATATYPE lastVal;
+    TAU_EVENT_DATATYPE userVal;
     size_t nEvents;
   };
 
@@ -195,43 +156,43 @@ public:
     return writeAsMetric;
   }
   
-  tau_measurement_t GetMin(void) {
+  TAU_EVENT_DATATYPE GetMin(void) {
     Data const & d = ThreadData();
     return d.nEvents ? d.minVal : 0;
   }
-  tau_measurement_t GetMin(int tid) {
+  TAU_EVENT_DATATYPE GetMin(int tid) {
     Data const & d = ThreadData(tid);
     return d.nEvents ? d.minVal : 0;
   }
 
-  tau_measurement_t GetMax(void) {
+  TAU_EVENT_DATATYPE GetMax(void) {
     Data const & d = ThreadData();
     return d.nEvents ? d.maxVal : 0;
   }
-  tau_measurement_t GetMax(int tid) {
+  TAU_EVENT_DATATYPE GetMax(int tid) {
     Data const & d = ThreadData(tid);
     return d.nEvents ? d.maxVal : 0;
   }
 
-  tau_measurement_t GetSum(void) {
+  TAU_EVENT_DATATYPE GetSum(void) {
     return ThreadData().sumVal;
   }
-  tau_measurement_t GetSum(int tid) {
+  TAU_EVENT_DATATYPE GetSum(int tid) {
     return ThreadData(tid).sumVal;
   }
 
-  tau_measurement_t GetSumSqr(void) {
+  TAU_EVENT_DATATYPE GetSumSqr(void) {
     return ThreadData().sumSqrVal;
   }
-  tau_measurement_t GetSumSqr(int tid) {
+  TAU_EVENT_DATATYPE GetSumSqr(int tid) {
     return ThreadData(tid).sumSqrVal;
   }
 
-  tau_measurement_t GetMean(void) {
+  TAU_EVENT_DATATYPE GetMean(void) {
     Data const & d = ThreadData();
     return d.nEvents ? (d.sumVal / d.nEvents) : 0;
   }
-  tau_measurement_t GetMean(int tid) {
+  TAU_EVENT_DATATYPE GetMean(int tid) {
     Data const & d = ThreadData(tid);
     return d.nEvents ? (d.sumVal / d.nEvents) : 0;
   }
@@ -250,13 +211,13 @@ public:
     ThreadData(tid) = Data();
   }
 
-  void TriggerEvent(tau_measurement_t data) {
+  void TriggerEvent(TAU_EVENT_DATATYPE data) {
     TriggerEvent(data, RtsLayer::myThread(), 0, 0);
   }
-  void TriggerEvent(tau_measurement_t data, int tid) {
+  void TriggerEvent(TAU_EVENT_DATATYPE data, int tid) {
     TriggerEvent(data, tid, 0, 0);
   }
-  void TriggerEvent(tau_measurement_t data, int tid, double timestamp, int use_ts);
+  void TriggerEvent(TAU_EVENT_DATATYPE data, int tid, double timestamp, int use_ts);
 
 private:
 
@@ -301,7 +262,7 @@ public:
   { }
   
   TauContextUserEvent(const TauContextUserEvent &c) :
-    contextEnabled(c.contextEnabled),
+	  contextEnabled(c.contextEnabled),
       userEvent(c.userEvent),
       contextEvent(c.contextEvent)
   { }
@@ -363,13 +324,13 @@ public:
     return userEvent;
   }
 
-  void TriggerEvent(tau_measurement_t data) {
+  void TriggerEvent(TAU_EVENT_DATATYPE data) {
     TriggerEvent(data, RtsLayer::myThread(), 0, 0);
   }
-  void TriggerEvent(tau_measurement_t data, int tid) {
+  void TriggerEvent(TAU_EVENT_DATATYPE data, int tid) {
     TriggerEvent(data, tid, 0, 0);
   }
-  void TriggerEvent(tau_measurement_t data, int tid, double timestamp, int use_ts);
+  void TriggerEvent(TAU_EVENT_DATATYPE data, int tid, double timestamp, int use_ts);
 
 private:
 
@@ -404,3 +365,8 @@ AtomicEventDB & TheEventDB(void);
 
 #endif /* _USEREVENT_H_ */
 
+/***************************************************************************
+ * $RCSfile: UserEvent.h,v $   $Author: amorris $
+ * $Revision: 1.17 $   $Date: 2009/09/28 18:28:48 $
+ * POOMA_VERSION_ID: $Id: UserEvent.h,v 1.17 2009/09/28 18:28:48 amorris Exp $ 
+ ***************************************************************************/

@@ -1023,6 +1023,7 @@ TAU_FORTRAN_COMPINST_OPTION=$(TAU_COMPINST_OPTION)
 ##############################################
 # Various Sampling Support Options
 ##############################################
+#TAU_SS_ALLOC_SUPPORT#PROFILEOPT82 = -DTAU_SS_ALLOC_SUPPORT #ENDIF#
 # *CWL* - Watch out for potential snafus for this. Right now, if EBS_HAS_RT
 #         is set, EBS_CLOCK_RES must have a valid value.
 EBS_CLOCK_RES=
