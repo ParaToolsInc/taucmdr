@@ -1,0 +1,99 @@
+tau_reduce 
+Nick Trebon
+
+tau_reduce is an application that will apply a set of user-defined rules 
+to a pprof dump file in order to create a select file that will include 
+an exclude list for selective implementation for TAU. The user must 
+specify the name of the pprof dump file that this application will use.  
+This is done with the -f filename flag.  If no rule file is specified, then 
+a single default rule will be applied to the file.  This rule is: 
+numcalls > 1000000 & usecs/call < 2, which will exclude all routines that are 
+called at least 1,000,000 times and average less then two microseconds per call.  
+If a rule file is specified, then this rule is not applied. If no output file is 
+specified, then the results will be printed out to the screen.
+
+OPTIONS:
+tau_reduce has the following options available at the command line:
+    -f <filename> : specify *F*ilename of pprof dump file (default: temp.out)
+    -p : *P*rint out all routines with their attributes (for debugging)
+    -o <filename> : specify filename for select file *O*utput (default: print 
+                    to screen)
+    -r <filename> : specify filename for *R*ule file
+    -v : *V*erbose mode (for each rule, print out rule and all routines 
+	 that it excludes)
+
+RULES:
+Users can specify a set of rules for tau_reduce to apply.  The rules should
+be specified in a separate file, one rule per line, and the file name should
+be specifed with the appropriate option on the command line.  The grammar 
+for a rule is: [GROUPNAME:]FIELD OPERATOR NUMBER.  The GROUPNAME followed by
+the colon (:) is optional.  If included, the rule will only be applied to
+routines that are a member of the group specified.  Only one group name can 
+be applied to each rule, and a rule must follow a groupname.  If only a 
+groupname is given, then an unrecognized field error will be returned.  If 
+the desired effect is to exclude all routines that belong to a certain group,
+then a trivial rule, such as GROUP:numcalls > -1 may be applied.  If a groupname
+is given, but the data does not contain any groupname data, then then an error
+message will be given, but the rule will still be applied to the date ignoring
+the groupname specification.
+A FIELD is any of the routine attributes listed in the following table:
+
+--------------------------------------------------------------------
+|ATTRIBUTE NAME| 	MEANING                                    |
+--------------------------------------------------------------------
+| numcalls     | Number of times this routine is called            |
+--------------------------------------------------------------------
+| numsubrs     | Number of subroutines that this routine contains  |
+--------------------------------------------------------------------
+| percent      | Percent of total implementation time              |
+--------------------------------------------------------------------
+| usec         | Exclusive routine running time, in microseconds   |
+--------------------------------------------------------------------
+| cumusec      | Inclusive routine running time, in microseconds   |
+--------------------------------------------------------------------
+| count	       | Exclusive hardware count                          |
+--------------------------------------------------------------------
+| totalcount   | Inclusive hardware count                          |
+--------------------------------------------------------------------
+| stddev       | Standard deviation                                |
+--------------------------------------------------------------------
+| usecs/call   | Microseconds per call                             |
+--------------------------------------------------------------------
+| counts/call  | Hardware counts per call                          |
+--------------------------------------------------------------------
+
+Some FIELDS are only available for certain files.  If hardware counters are
+used, then usec, cumusec, usecs/per call are not applicable and a error is 
+reported.  The opposite is true if timing data is used rather than hardware
+counters.  Also, stddev is only available for certain files that contain that
+data. 
+
+An OPERATOR is any of the following: < (less than), > (greater than), or =
+(equals).
+
+A NUMBER is any number.
+
+A compound rule may be formed by using the & (and) symbol in between two 
+simple rules.  There is no "OR" because there is an implied or between 
+two separate simple rules, each on a separate line.  (ie the compound 
+rule usec < 1000 OR numcalls = 1 is the same as the two simple rules 
+"usec < 1000"  and  "numcalls = 1").
+
+EXAMPLES:
+#exclude all routines that are members of TAU_USER and have less than 
+#1000 microseconds
+TAU_USER:usec < 1000     
+
+#exclude all routines that have less than 1000 microseconds and are 
+#called only once.
+usec < 1000 & numcalls = 1   
+			     
+#exclude all routines that have less than 1000 usecs per call OR have a percent
+#less than 5
+usecs/call < 1000
+percent < 5
+
+NOTE: Any line in the rule file that begins with a # is a comment line. For
+clarity, blank lines may be inserted in between rules and will also be ignored.
+
+

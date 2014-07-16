@@ -1,0 +1,11 @@
+include ../../include/Makefile
+
+CXX=$(TAU_COMPILER) $(TAU_CXX)
+INCLUDE=
+LIB=
+
+computePi: computePi.cpp
+	$(CXX) $(INCLUDE)  computePi.cpp -o computePi $(LIB)
+
+clean:
+	rm computePi

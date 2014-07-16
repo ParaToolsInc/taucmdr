@@ -1,0 +1,78 @@
+#!/bin/ksh
+
+# script to regenerate libmpi_r.a incorporating name-shifted profiling code
+#
+# David Skinner   May 2005 (dskinner@nersc.gov)
+#
+
+if [ $1 != "32" -a $1 != "64" ] ; then
+    echo "rebuild_mpi 32|64"
+    exit
+fi
+
+# Very important, if $WRKDIR is set, then the outputs won't go in the local
+# directory, and our build with fail.
+unset WRKDIR
+
+export BITS=$1
+export BITSUFFIX=$BITS
+shift
+
+# We get TAU_LINKER_OPTS from the makefile (on the command line)
+TAU_LINKER_OPTS=$*
+
+#rm -rf $BITS
+#mkdir $BITS
+cd $BITS
+
+export USE_PMAPI=-lpmapi
+export OBJECT_MODE=$BITS
+export ORIGMPIPATH=/usr/lpp/ppe.poe
+
+# exceptions : pm_initfini.o mpifmod_r.o
+
+export OBJ=`ar -X $BITS t $ORIGMPIPATH/lib/libmpi_r.a | grep -v pm_initfini | grep -v mpifmod`
+export NEWOBJ=`ar -X $BITS t $ORIGMPIPATH/lib/libmpi_r.a | sed -e 's/_r/_X/' | grep -v pm_initfini | grep -v mpifmod `
+
+
+if [ $BITS = "32" ] ; then
+    export XOBJ="pm_initfini.o mpifmod_r.o"
+fi
+
+if [ $BITS = "64" ] ; then
+    export XOBJ="pm_initfini64.o mpifmod64_r.o"
+fi
+
+rm -rf  *.exp 32 64 *.o *.a lib tmp*
+mkdir lib
+
+ar -X $BITS xv $ORIGMPIPATH/lib/libmpi_r.a
+cp $ORIGMPIPATH/lib/libmpi_r.a .
+
+
+for o in $OBJ ; do
+    news=`echo $o | sed -e 's/\.o/.sh/'`
+    if [ $o = "mpicore_r.o" ] ; then
+	# $TAU_LINKER_OPTS here for epilog (among others)
+	rtl_enable -X $BITS -l -R -s $o -L. -lc_r -lpthreads -lpmapi $TAU_LINKER_OPTS
+	sed -e 's#mpicore_r.o -b#tau/* mpicore_r.o -b#' $news > tmp.$nnews
+	mv tmp.$nnews $news
+    elif [ $o = "mpicore64_r.o" ] ; then
+	rtl_enable -X $BITS -l -R -s $o -L. -lc_r -lpthreads -lpmapi $TAU_LINKER_OPTS
+	sed -e 's#mpicore64_r.o -b#tau/* mpicore64_r.o -b#' $news > tmp.$nnews 
+	mv tmp.$nnews $news
+    else
+	# can't use $TAU_LINKER_OPTS here or it will fail with epilog
+	rtl_enable -X $BITS -l -R -s $o -L. -lc_r -lpthreads -lpmapi
+    fi
+
+    sed -e 's/-bnortllib -bnosymbolic -bnoautoexp/-bM:SRE -H512 -T512 -bnoentry -bnoobjreorder/' $news | sed -e 's/$LD/xlC/' > tmp.$nnews
+    mv tmp.$nnews $news
+
+    #cat $news 
+    chmod a+rx $news
+    ./$news
+done
+
+rm -f libmpi_r.a
+ar -X $BITS rv libmpi_r.a $OBJ $XOBJ

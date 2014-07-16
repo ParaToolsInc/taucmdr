@@ -1,0 +1,51 @@
+.\" ** You probably do not want to edit this file directly **
+.\" It was generated using the DocBook XSL Stylesheets (version 1.69.1).
+.\" Instead of manually editing it, you probably should edit the DocBook XML
+.\" source for it and then use the DocBook XSL Stylesheets to regenerate it.
+.TH "TAU_VALIDATE" "1" "12/12/2008" "" "Tools"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+tau_validate \- Validates a TAU installation by performing various tests on each TAU stub Makefile
+.SH "SYNOPSIS"
+.HP 13
+\fBtau_validate\fR [\fB\-v\fR] [\fB\-\-html\fR] [\fB\-\-build\fR] [\fB\-\-run\fR] [\fB\-\-tag\fR] {\fIarch\ directory\fR}
+.SH "DESCRIPTION"
+.PP
+tau_validate will attempt to validate a TAU installation by performing various tests on each TAU stub Makefile. Some degree of logic exists to know where a given test applies to a given makefile, but it's not perfect.
+.SH "OPTIONS"
+.PP
+\fBv\fR
+Verbose output
+.PP
+\fBhtml\fR
+Output results in HTML
+.PP
+\fBbuild\fR
+Only build
+.PP
+\fBrun\fR
+Only run
+.PP
+\fBtag\fR
+Only check configurations containing the tag. ie.
+\-\-tag papi
+checks only libraries with the
+\-papi
+in their name.
+.PP
+\fBarch directory\fR
+Specify an arch directory (e.g. rs6000), or the lib directory (rs6000/lib), or a specific makefile. Relative or absolute paths are ok.
+.SH "EXAMPLE"
+.PP
+There is a few examples:
+.sp
+.nf
+    
+bash : ./tau_validate \-\-html x86_64 &> results.html
+tcsh : ./tau_validate \-\-html x86_64 >& results.html
+.fi
+.sp
+

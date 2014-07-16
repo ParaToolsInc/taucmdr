@@ -1,0 +1,45 @@
+This example illustrates the use of PDT, hand-instrumentation (for threads), 
+MPI library instrumentation and TAU pthread barrier wait wrapper library instrumentation.
+To use this, you must configure TAU using:
+% configure -mpiinc=<dir> -mpilib=<dir> -pdt=<dir> -pthread -useropt=-DTAU_PTHREAD_BARRIER_AVAILABLE
+
+The application spawns a thread. The thread calls work(). We want to track the time spent in pthread_barrier_wait. 
+
+Run the example using:
+        % mpirun -np 2 app
+        and you'll see that performance data on thread 1 in each context
+has getpid, sleep and write routines. You'll also see that MPI calls are
+present on thread 1 (rank 0 sends an int to rank 1). 
+ 
+[sameer@neutron mixedmode]$ mpirun -np 2 app
+After Initialization - my rank is 0 out of 2 procs
+Inside work (called from threaded_func): rank 0, pid = 14057
+Inside work (called from threaded_func): rank 1, pid = 14056
+After Initialization - my rank is 1 out of 2 procs
+rank = 1:Received data = 5767, tag = 34, source = 0
+After Initialization - my rank is 1 out of 2 procs
+After Initialization - my rank is 0 out of 2 procs
+Inside work (called from threaded_func): rank 0, pid = 13755
+Inside work (called from threaded_func): rank 1, pid = 13756
+rank = 1:Received data = 5767, tag = 34, source = 0
+Application 65733 resources: utime ~0s, stime ~0s
+mixedmode> pprof | more
+Reading Profile files in profile.*
+
+NODE 0;CONTEXT 0;THREAD 0:
+---------------------------------------------------------------------------------------
+%Time    Exclusive    Inclusive       #Call      #Subrs  Inclusive Name
+              msec   total msec                          usec/call
+---------------------------------------------------------------------------------------
+100.0            3        2,199           1           6    2199469 int main(int, char **)
+ 90.9        2,000        2,000           1           0    2000071 pthread_barrier_wait
+  7.9          173          173           1           0     173378 MPI_Finalize()
+  1.0           22           22           1           0      22539 MPI_Init()
+  0.0        0.009        0.009           1           0          9 MPI_Send()
+  0.0        0.001        0.001           1           0          1 MPI_Comm_rank()
+  0.0        0.001        0.001           1           0          1 MPI_Comm_size()
+
+NODE 0;CONTEXT 0;THREAD 1:
+...
+
+

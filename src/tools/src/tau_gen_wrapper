@@ -1,0 +1,158 @@
+#!/bin/sh
+usage()
+{
+    cmd=`basename $0`
+    echo ""
+    echo " $cmd - Generates a wrapper library that can intercept "
+    echo " at link time or at runtime routines specified in a header file"
+    echo " Usage: $cmd <headerfile> <library>  [-w (default) | -d | -r] [-upc={berkeley,gnu,cray}]"
+    echo " -w (default): generates wrappers for re-linking the application"
+    echo " -d : generates wrappers by redefining routines during compilation in header files"
+    echo " -r : generates wrappers that may be pre-loaded using tau_exec at runtime"
+    echo " -upc: generates UPC runtime wrapper for use with -optTrackUPCR"
+    echo "NOTE: $cmd reads the TAU_MAKEFILE  environment variable to get PDT settings"
+    echo " Example: "
+    echo " % $cmd hdf5.h /usr/lib/libhdf5.a "
+    echo " generates a wrapper library that may be linked in using TAU_OPTIONS -optTauWrapFile=<wrapperdir>/link_options.tau"
+    echo "" 
+    exit 1
+}
+
+runtime_specified=0;
+header_redirection_specified=0;
+headerfile=""
+library=""
+modarg=""
+upc=""
+if [ $# = 0 ] ; then
+    usage
+fi
+
+if [ $# -gt 1 ]; then
+  headerfile=$1
+  library=$2
+  shift;
+  shift;
+fi
+
+for arg in "$@"; do
+  case $arg in 
+    -r)
+      runtime_specified=1
+      shift
+      ;;
+    -d)
+      header_redirection_specified=1
+      shift
+      ;;
+    -upc=*)
+      upc="`echo $1 | sed 's/-upc=//'`"
+      shift
+      ;;
+    -h|-help|--help)
+      usage
+      ;;
+  esac
+done
+
+if [ "x$TAU_MAKEFILE" = "x" ] ;then
+  echo "ERROR: Please set the TAU_MAKEFILE environment variable."
+  exit 1
+fi
+
+if [ ! -r $TAU_MAKEFILE ] ;then
+  echo "ERROR: environment variable TAU_MAKEFILE is set but the file is not readable"
+  exit 1
+fi
+
+if ! which tau-config > /dev/null 2>&1 ; then
+  echo "ERROR: tau-config is not in your path."
+  exit 1
+fi
+
+pdtdir="`grep PDTDIR= $TAU_MAKEFILE | sed -e 's/PDTDIR=//g' `"
+tauarch="`tau-config | grep TAUARCH | sed -e 's@TAUARCH=@@g' `"
+tauroot="`tau-config | grep TAUROOT | sed -e 's@TAUROOT=@@g' `"
+basedir="`tau-config | grep BASEDIR | sed -e 's@BASEDIR=@@g' `"
+
+if [ "x$upc" != "x" ] ; then
+  gasnetdir="`grep TAU_GASNET_DIR= $TAU_MAKEFILE | sed -e 's/TAU_GASNET_DIR=//g' `"
+  upcnetwork="`grep UPCNETWORK= $TAU_MAKEFILE | sed -e 's/UPCNETWORK=//g' `"
+  case $upc in
+    berkeley)
+      if ! which upcc > /dev/null 2>&1 ; then
+        echo "ERROR: upcc is not in your path."
+        exit 1
+      fi
+      upcdir="`which upcc | sed -e 's@bin/upcc@@g'`"
+      if [ -d $upcdir/opt_inst ] ; then
+        upcdir="$upcdir/opt_inst"
+      elif [ -d "$upcdir/inst/opt" ] ; then
+        upcdir="$upcdir/inst/opt"
+      else
+        echo "ERROR: Cannot locate instrumented Berkeley configuration at $upcdir"
+        exit 1
+      fi
+      echo PATH="$basedir/bin:$PATH" $tauroot/src/wrappers/upc/bupc/upcr/tau_upc_runtime_wrapper "$headerfile" -lm -gasnet="$gasnetdir" -gasnetconduit=$upcnetwork -upc="$upcdir"
+      PATH="$basedir/bin:$PATH" $tauroot/src/wrappers/upc/bupc/upcr/tau_upc_runtime_wrapper "$headerfile" "$library" -gasnet="$gasnetdir" -gasnetconduit=$upcnetwork -upc="$upcdir"
+      retval=$?
+      mv select.tau `basename "$headerfile" .h`_wrapper
+      exit $retval
+      ;;
+    gnu)
+      if ! which upc > /dev/null 2>&1 ; then
+        echo "ERROR: upc is not in your path."
+        exit 1
+      else
+        upcdir="`which upc | sed -e 's@bin/upc@@g'`"
+      fi
+      echo PATH="$basedir/bin:$PATH" $tauroot/src/wrappers/upc/gupc/tau_upc_wrapper "$headerfile" "$library" -gasnet="$gasnetdir" -gasnetconduit=$upcnetwork -upc="$upcdir"
+      PATH="$basedir/bin:$PATH" $tauroot/src/wrappers/upc/gupc/tau_upc_wrapper "$headerfile" "$library" -gasnet="$gasnetdir" -gasnetconduit=$upcnetwork -upc="$upcdir"
+      retval=$?
+      mv select.tau `basename "$headerfile" .h`_wrapper
+      exit $retval
+      ;;
+    cray)
+      if ! which cc > /dev/null 2>&1 ; then
+        echo "ERROR: cc is not in your path."
+        exit 1
+      fi
+      PATH="$basedir/bin:$PATH" $tauroot/src/wrappers/upc/crayupc/tau_upc_wrapper "$headerfile" "$library"
+      retval=$?
+      mv select.tau `basename "$headerfile" .h`_wrapper
+      exit $retval
+      ;;
+    *)
+      echo "ERROR: Unknown UPC family: $upc"
+      exit 1
+      exit $?
+      ;;
+  esac
+fi
+
+
+parser=$pdtdir/$tauarch/bin/cxxparse
+if [ ! -x $parser ]; then
+  echo "ERROR: Can't execute $parser: Using PDT = $pdtdir, ARCH = $tauarch"
+  exit 1
+fi
+
+$parser $headerfile `tau_cc.sh -tau:showincludes`
+if [ $runtime_specified = 1 ] ; then
+  runtimeopt='-r'
+else
+  if [ $header_redirection_specified = 1 ]; then
+    runtimeopt=''
+  else 
+    runtimeopt='-w'
+  fi
+fi
+
+#echo "tau_wrap $headerfile.pdb $headerfile -o wr.c $runtimeopt $library $*"
+tau_wrap $headerfile.pdb $headerfile -o wr.c $runtimeopt $library $*
+dirname=`basename ${headerfile} .h`_wrapper
+mkdir -p ${dirname}
+cd ${dirname}
+make
+cd ..
+rm -f ${headerfile}.pdb 

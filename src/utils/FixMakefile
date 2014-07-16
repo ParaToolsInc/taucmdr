@@ -1,0 +1,2044 @@
+#!/bin/sh
+
+#############################################################################
+# FixMakefile script for TAU
+#   based on the Sage/pC++ FixMakefiles
+
+# An IMPROVED, FASTER script.  It now builds sed.cmd, and applies it ONCE!
+#
+# This script recursively finds Makefiles, and modifies them according
+# to the keyword provided
+#
+# Kurt Windisch 12/10/96
+# Pete Beckman 9/6/93
+#############################################################################
+
+# Record all the arguments
+arguments=$*
+
+# debug:
+#echo $arguments
+
+sedout=./utils/FixMakefile.sed
+
+# Clear any old data
+grep "^#" $sedout > $sedout.~~0
+/bin/mv $sedout.~~0 $sedout
+
+# Silly GOOFY Stupid /bin/sh on decstations gobble up the "\2" and make
+# it an ASCII 002.  That breaks the echo commands below, since I REALLY
+# want \2 to be output, not 002.  How in the world can DEC mess up /bin/sh?
+# BSD-derived ash does the same.
+bs=""
+
+if test `echo "\2" | wc -c` = 2
+  then
+    bs="\\"
+fi
+
+# Default makefile sed commands.  Returns things to normal
+echo "s/\(.*\)#ENDIF#\(.*\)/$bs\2$bs\1#ENDIF#/g" >> $sedout
+
+###############################################################
+# PARSE AN ARGUMENT
+###############################################################
+while [ x$1 != x ] ; do
+
+#echo Parsing $1
+case $1 in
+
+###############################################################
+# Restore Makefiles to their original beauty
+###############################################################
+     arch=default)
+        echo Restoring all files to original distribution
+        config_arch=`echo $1 | sed 's/^arch=//'`
+	echo "s/^CONFIG_ARCH=\(.*\)/CONFIG_ARCH=$config_arch/g" >> $sedout
+	echo "s/^TAU_ARCH=\(.*\)/TAU_ARCH=$config_arch/g" >> $sedout
+	;;
+    arch_width=32bit)
+        echo "s/#ARCH_WIDTH_32#\(.*\)/$bs\1#ARCH_WIDTH_32#/g" >> $sedout
+		
+  ;;
+
+    arch_width=64bit)
+        echo "s/#ARCH_WIDTH_64#\(.*\)/$bs\1#ARCH_WIDTH_64#/g" >> $sedout
+		
+  ;;
+
+     ptdir=*)
+        ptdir=`echo $1 | sed -e 's/^ptdir=//'`
+	echo "s,^PTDIR=.*$,PTDIR=$ptdir,g" >> $sedout
+	;;
+
+     charmdir=*)
+        charmdir=`echo $1 | sed -e 's/^charmdir=//'`
+	echo "s,^CHARMDIR=.*$,CHARMDIR=$charmdir,g" >> $sedout
+	;;
+
+     papidir=*)
+        papidir=`echo $1 | sed -e 's/^papidir=//'`
+	echo "s,^PAPIDIR=.*$,PAPIDIR=$papidir,g" >> $sedout
+	;;
+
+     gpidir=*)
+        gpidir=`echo $1 | sed -e 's/^gpidir=//'`
+	echo "s,^GPIDIR=.*$,GPIDIR=$gpidir,g" >> $sedout
+	;;
+
+     bfddir=*)
+        bfddir=`echo $1 | sed -e 's/^bfddir=//' -e 's/#/ /g'`
+	echo "s,^TAU_BFD_DIR=.*$,TAU_BFD_DIR=$bfddir,g" >> $sedout
+	;;
+     bfdlink=*)
+        bfdlink=`echo $1 | sed -e 's/^bfdlink=//' -e 's/#/ /g'`
+	echo "s,^BFDLINK=.*$,BFDLINK=$bfdlink,g" >> $sedout
+	;;
+
+     bfdlibs=*)
+        bfdlibs=`echo $1 | sed -e 's/^bfdlibs=//' -e 's/#/ /g'`
+	echo "s,^BFDLIBS=.*$,BFDLIBS=$bfdlibs,g" >> $sedout
+	;;
+
+     bfdinclude=*)
+        bfdinclude=`echo $1 | sed -e 's/^bfdinclude=//'`
+	echo "s,^BFDINCLUDE=.*$,BFDINCLUDE=$bfdinclude,g" >> $sedout
+	;;
+
+     unwind_flag=*)
+       unwind_flag=`echo $1 | sed -e 's/^unwind_flag=//'`
+        echo "s,^UNWIND_FLAG=.*$,UNWIND_FLAG=$unwind_flag,g" >> $sedout
+        ;;
+
+     unwind_inc=*)
+       unwind_inc=`echo $1 | sed -e 's/^unwind_inc=//'`
+        echo "s,^UNWIND_INC=.*$,UNWIND_INC=$unwind_inc,g" >> $sedout
+        ;;
+
+     unwind_lib=*)
+        unwind_lib=`echo $1 | sed -e 's/^unwind_lib=//'`
+        echo "s,^UNWIND_LIB=.*$,UNWIND_LIB=$unwind_lib,g" >> $sedout
+        ;;
+
+     unwind_lib_flag=*)
+        unwind_lib_flag=`echo $1 | sed -e 's/^unwind_lib_flag=//' -e 's/#/ /g'`
+       echo "s,^UNWIND_LIB_FLAG=.*$,UNWIND_LIB_FLAG=$unwind_lib_flag,g" >> $sedout
+        ;;
+
+     unwind_extras=*)
+        unwind_extras=`echo $1 | sed -e 's/^unwind_extras=//' -e 's/#/ /g'`
+	echo "s,^UNWIND_EXTRAS=.*$,UNWIND_EXTRAS=$unwind_extras,g" >> $sedout
+	;;
+
+     perfsuitelink=*)
+        perfsuitelink=`echo $1 | sed -e 's/^perfsuitelink=//' -e 's/#/ /g'`
+	echo "s,^PERFSUITELINK=.*$,PERFSUITELINK=$perfsuitelink,g" >> $sedout
+	;;
+
+     perfsuiteinclude=*)
+        perfsuiteinclude=`echo $1 | sed -e 's/^perfsuiteinclude=//'`
+	echo "s,^PERFSUITEINCLUDE=.*$,PERFSUITEINCLUDE=$perfsuiteinclude,g" >> $sedout
+	;;
+
+     taugcclibdir=*)
+        taugcclibdir=`echo $1 | sed -e 's/^taugcclibdir=//'`
+        echo "s,^TAUGCCLIBDIR=.*$,TAUGCCLIBDIR=$taugcclibdir,g" >> $sedout
+        ;;
+     taugccstdcxxlibdir=*)
+        taugccstdcxxlibdir=`echo $1 | sed -e 's/^taugccstdcxxlibdir=//'`
+        echo "s,^TAUGCCSTDCXXLIBDIR=.*$,TAUGCCSTDCXXLIBDIR=$taugccstdcxxlibdir,g" >> $sedout
+        ;;
+
+     ifortlibdir=*)
+        ifortlibdir=`echo $1 | sed -e 's/^ifortlibdir=//'`
+        echo "s,^IFORTLIBDIR=.*$,IFORTLIBDIR=$ifortlibdir,g" >> $sedout
+        ;;
+
+     taugfortranlibdir=*)
+        taugfortranlibdir=`echo $1 | sed -e 's/^taugfortranlibdir=//'`
+        echo "s,^TAUGFORTRANLIBDIR=.*$,TAUGFORTRANLIBDIR=$taugfortranlibdir,g" >> $sedout
+        ;;
+
+     taugcclibopts=*)
+        taugcclibopts=`echo $1 | sed -e 's/^taugcclibopts=//'`
+        echo "s,^TAUGCCLIBOPTS=.*$,TAUGCCLIBOPTS=$taugcclibopts,g" >> $sedout
+        ;;
+
+     papisubdir=*)
+        papisubdir=`echo $1 | sed -e 's/^papisubdir=//'`
+	echo "s,^PAPISUBDIR=.*$,PAPISUBDIR=$papisubdir,g" >> $sedout
+	;;
+
+     oparidir=*)
+        oparidir=`echo $1 | sed -e 's/^oparidir=//'`
+	echo "s,^OPARIDIR=.*$,OPARIDIR=$oparidir,g" >> $sedout
+	;;
+
+     oparicomp=*)
+        oparicomp=`echo $1 | sed -e 's/^oparicomp=//'`
+	echo "s&^OPARICOMP=.*$&OPARICOMP=$oparicomp&g" >> $sedout
+	;;
+
+     scorepdir=*)
+        scorepdir=`echo $1 | sed -e 's/^scorepdir=//'`
+	echo "s&^SCOREPDIR=.*$&SCOREPDIR=$scorepdir&g" >> $sedout
+	;;
+     scorep_opari_bin_dir=*)
+        scorep_opari_bin_dir=`echo $1 | sed -e 's/^scorep_opari_bin_dir=//'`
+	    echo "s&^SCOREP_OPARI_BIN_DIR=.*$&SCOREP_OPARI_BIN_DIR=$scorep_opari_bin_dir&g" >> $sedout
+	;;
+
+     scorepincs=*)
+	scorepincs=`echo $1 | sed -e 's/^scorepincs=//' -e 's/#/ /g'`
+	echo "s&^SCOREPINCS=.*$&SCOREPINCS=$scorepincs&g" >> $sedout
+	;;
+
+     scoreplibs=*)
+       scoreplibs=`echo $1 | sed -e 's@^scoreplibs=@@' -e 's@#@ @g'`
+       echo "s&^SCOREPLIBS=.*$&SCOREPLIBS=$scoreplibs&g" >> $sedout
+	;;
+
+     scorepmpilibs=*)
+       scorepmpilibs=`echo $1 | sed -e 's@^scorepmpilibs=@@' -e 's@#@ @g'`
+       echo "s&^SCOREPMPILIBS=.*$&SCOREPMPILIBS=$scorepmpilibs&g" >> $sedout
+	;;
+
+     scorepdir=*)
+        scorepdir=`echo $1 | sed -e 's/^scorepdir=//'`
+	echo "s&^SCOREPDIR=.*$&SCOREPDIR=$scorepdir&g" >> $sedout
+	;;
+
+     mrnet_root=*)
+	mrnet_root=`echo $1 | sed -e 's/^mrnet_root=//'`
+	echo "s,^MRNET_ROOT=.*$,MRNET_ROOT=$mrnet_root,g" >> $sedout
+	;;
+
+     mrnet_lw=*)
+	echo "NOTE:  TauOverMRNet -- will use MRNet Lightweight Interface."
+	mrnet_lw=`echo $1 | sed -e 's/^mrnet_lw=//'`
+	echo "s,^MRNET_LW_OPTS=.*$,MRNET_LW_OPTS=$mrnet_lw,g" >> $sedout
+	;;
+
+     mrnet_inc=*)
+        mrnet_inc=`echo $1 | sed -e 's/^mrnet_inc=//' -e 's/#/ /g'`
+        echo "s@^MRNET_INCLUDE=.*\$@MRNET_INCLUDE=$mrnet_inc@g" >> $sedout
+        ;;
+
+     mrnet_lib=*)
+	mrnet_lib=`echo $1 | sed -e 's/^mrnet_lib=//' -e 's/#/ /g'`
+	echo "s@^MRNET_LIBS=.*\$@MRNET_LIBS=$mrnet_lib@g" >> $sedout
+	;;
+
+     armcidir=*)
+	armcidir=`echo $1 | sed -e 's/^armcidir=//' -e 's/#/ /g'`
+	echo "s,^ARMCIDIR=.*$,ARMCIDIR=$armcidir,g" >> $sedout
+	;;
+
+     vampirtracedir=*)
+	vampirtracedir=`echo $1 | sed -e 's/^vampirtracedir=//' -e 's/#/ /g'`
+	echo "s,^VAMPIRTRACEDIR=.*$,VAMPIRTRACEDIR=$vampirtracedir,g" >> $sedout
+	;;
+     vampirtraceincs=*)
+	vampirtraceincs=`echo $1 | sed -e 's/^vampirtraceincs=//' -e 's/#/ /g'`
+	echo "s,^VAMPIRTRACEINCS=.*$,VAMPIRTRACEINCS=$vampirtraceincs,g" >> $sedout
+	;;
+
+     vampirtracelibs=*)
+	vampirtracelibs=`echo $1 | sed -e 's/^vampirtracelibs=//' -e 's/#/ /g'`
+	echo "s,^VAMPIRTRACELIBS=.*$,VAMPIRTRACELIBS=$vampirtracelibs,g" >> $sedout
+	;;
+
+     vampirtracempilibs=*)
+	vampirtracempilibs=`echo $1 | sed -e 's/^vampirtracempilibs=//' -e 's/#/ /g'`
+	echo "s,^VAMPIRTRACEMPILIBS=.*$,VAMPIRTRACEMPILIBS=$vampirtracempilibs,g" >> $sedout
+	;;
+
+     upcnetwork=*)
+	upcnetwork=`echo $1 | sed -e 's/^upcnetwork=//' -e 's/#/ /g'`
+	echo "s,^UPCNETWORK=.*$,UPCNETWORK=$upcnetwork,g" >> $sedout
+	;;
+
+     gasnet=*)
+	gasnetdir=`echo $1 | sed -e 's/^gasnet=//' -e 's/#/ /g'`
+	echo "s,^TAU_GASNET_DIR=.*$,TAU_GASNET_DIR=$gasnetdir,g" >> $sedout
+	;;
+
+     sicortexlink=*)
+        sicortexlink=`echo $1 | sed -e 's/^sicortexlink=//' -e 's/#/ /g'`
+	echo "s@^SICORTEXLINK=.*\$@SICORTEXLINK=$sicortexlink@g" >> $sedout
+	;;
+
+     hpctoolkit_include=*)
+        hpctoolkit_include=`echo $1 | sed -e 's/^hpctoolkit_include=//' -e 's/#/ /g'`
+	echo "s,^HPCTOOLKIT_INCLUDE=.*$,HPCTOOLKIT_INCLUDE=$hpctoolkit_include,g" >> $sedout
+	;;
+
+     hpctoolkit_link=*)
+        hpctoolkit_link=`echo $1 | sed -e 's/^hpctoolkit_link=//' -e 's/#/ /g'`
+	echo "s,^HPCTOOLKIT_LINK=.*$,HPCTOOLKIT_LINK=$hpctoolkit_link,g" >> $sedout
+	;;
+
+     extra_linker_args=*)
+        extra_linker_args=`echo $1 | sed -e 's/^extra_linker_args=//' -e 's/#/ /g'`
+	echo "s@^EXTRA_LINKER_ARGS=.*\$@EXTRA_LINKER_ARGS=$extra_linker_args@g" >> $sedout
+	;;
+
+     epilogdir=*)
+        epilogdir=`echo $1 | sed -e 's/^epilogdir=//'`
+	echo "s,^EPILOGDIR=.*$,EPILOGDIR=$epilogdir,g" >> $sedout
+	;;
+
+     epilogbindir=*)
+        epilogbindir=`echo $1 | sed -e 's/^epilogbindir=//'`
+	echo "s,^EPILOGBINDIR=.*$,EPILOGBINDIR=$epilogbindir,g" >> $sedout
+	;;
+
+     epiloglibdir=*)
+        epiloglibdir=`echo $1 | sed -e 's/^epiloglibdir=//'`
+	echo "s,^EPILOGLIBDIR=.*$,EPILOGLIBDIR=$epiloglibdir,g" >> $sedout
+	;;
+
+     epilogextralinkcmd=*)
+        epilogextralinkcmd=`echo $1 | sed -e 's/^epilogextralinkcmd=//' -e 's/#/ /g'`
+	echo "s@^EPILOGEXTRALINKCMD=.*\$@EPILOGEXTRALINKCMD=$epilogextralinkcmd@g" >> $sedout
+	;;
+
+     epilogincdir=*)
+        epilogincdir=`echo $1 | sed -e 's/^epilogincdir=//'`
+	echo "s,^EPILOGINCDIR=.*$,EPILOGINCDIR=$epilogincdir,g" >> $sedout
+	;;
+
+     perfincdir=*)
+        perfincdir=`echo $1 | sed -e 's/^perfincdir=//'`
+	echo "s,^PERFINCDIR=.*$,PERFINCDIR=$perfincdir,g" >> $sedout
+	;;
+
+     perflibdir=*)
+        perflibdir=`echo $1 | sed -e 's/^perflibdir=//'`
+	echo "s,^PERFLIBDIR=.*$,PERFLIBDIR=$perflibdir,g" >> $sedout
+	;;
+
+     perflibrary=*)
+        perflibrary=`echo $1 | sed -e 's/^perflibrary=//' -e 's/#/ /g'`
+	echo "s,^PERFLIBRARY=.*$,PERFLIBRARY=$perflibrary,g" >> $sedout
+	;;
+
+     pdtdir=*)
+        pdtdir=`echo $1 | sed -e 's/^pdtdir=//'`
+	echo "s,^PDTDIR=.*$,PDTDIR=$pdtdir,g" >> $sedout
+	;;
+
+     vtfdir=*)
+        vtfdir=`echo $1 | sed -e 's/^vtfdir=//'`
+	echo "s,^VTFDIR=.*$,VTFDIR=$vtfdir,g" >> $sedout
+	;;
+
+     otfdir=*)
+        otfdir=`echo $1 | sed -e 's/^otfdir=//'`
+	echo "s,^OTFDIR=.*$,OTFDIR=$otfdir,g" >> $sedout
+	;;
+
+     otflib=*)
+	otflib=`echo $1 | sed -e 's/^otflib=//'`
+	echo "s,^OTFLIB=.*$,OTFLIB=$otflib,g" >> $sedout
+	;;
+
+     otfinc=*)
+	otfinc=`echo $1 | sed -e 's/^otfinc=//'`
+	echo "s,^OTFINC=.*$,OTFINC=$otfinc,g" >> $sedout
+	;;
+
+     ebs_clock_res=*)
+	ebs_clock_res=`echo $1 | sed -e 's/^ebs_clock_res=//'`
+	echo "s,^EBS_CLOCK_RES=.*$,EBS_CLOCK_RES=$ebs_clock_res,g" >> $sedout
+        ;;
+
+     pdtcompdir=*)
+        pdtcompdir=`echo $1 | sed -e 's/^pdtcompdir=//'`
+	echo "s,^PDTCOMPDIR=.*$,PDTCOMPDIR=$pdtcompdir,g" >> $sedout
+	;;
+
+     pdtarchdir=*)
+        pdtarchdir=`echo $1 | sed -e 's/^pdtarchdir=//'`
+	echo "s,^PDTARCHITECTURE=.*$,PDTARCHITECTURE=$pdtarchdir,g" >> $sedout
+	;;
+
+     pdtcxx=*)
+        pdtcxx=`echo $1 | sed -e 's/^pdtcxx=//'`
+	echo "s,^PDT_CXX=.*$,PDT_CXX=$pdtcxx,g" >> $sedout
+	;;
+
+     omptlib=*)
+        omptlib=`echo $1 | sed -e 's@^omptlib=@@' -e 's@#@ @g'`
+	echo "s@^OMPTLIB=.*@OMPTLIB=$omptlib@g" >> $sedout
+	;;
+
+     lompinc=*)
+        lompinc=`echo $1 | sed -e 's@^lompinc=@@' -e 's@#@ @g'`
+	echo "s@^LOMPINC=.*@LOMPINC=$lompinc@g" >> $sedout
+	;;
+     lomplib=*)
+        lomplib=`echo $1 | sed -e 's@^lomplib=@@' -e 's@#@ @g'`
+	echo "s@^LOMPLIB=.*@LOMPLIB=$lomplib@g" >> $sedout
+	;;
+     fullcxx=*)
+        fullcxx=`echo $1 | sed -e 's@^fullcxx=@@' -e 's@#@ @g'`
+	echo "s@^FULL_CXX=.*@FULL_CXX=$fullcxx@g" >> $sedout
+	;;
+
+     fullcc=*)
+        fullcc=`echo $1 | sed -e 's@^fullcc=@@' -e 's@#@ @g'`
+	echo "s@^FULL_CC=.*@FULL_CC=$fullcc@g" >> $sedout
+	;;
+     tau_build_cc=*)
+        tau_build_cc=`echo $1 | sed -e 's@^tau_build_cc=@@' -e 's@#@ @g'`
+	echo "s@^TAU_BUILD_CC=.*@TAU_BUILD_CC=$tau_build_cc@g" >> $sedout
+	;;
+     tau_build_cxx=*)
+        tau_build_cxx=`echo $1 | sed -e 's@^tau_build_cxx=@@' -e 's@#@ @g'`
+	echo "s@^TAU_BUILD_CXX=.*@TAU_BUILD_CXX=$tau_build_cxx@g" >> $sedout
+	;;
+
+     dyninstdir=*)
+        dyninstdir=`echo $1 | sed -e 's/^dyninstdir=//'`
+	echo "s,^DYNINSTDIR=.*$,DYNINSTDIR=$dyninstdir,g" >> $sedout
+	;;
+
+     dyninstinc=*)
+        dyninstinc=`echo $1 | sed -e 's/^dyninstinc=//'`
+	echo "s,^DYNINST_INC_DIR=.*$,DYNINST_INC_DIR=$dyninstinc,g" >> $sedout
+	;;
+
+     dyninstlib=*)
+        dyninstlib=`echo $1 | sed -e 's/^dyninstlib=//'`
+	echo "s,^DYNINST_LIB_DIR=.*$,DYNINST_LIB_DIR=$dyninstlib,g" >> $sedout
+	;;
+
+     dwarfopts=*)
+        dwarfopts=`echo $1 | sed -e 's/^dwarfopts=//'`
+	echo "s,^DWARFOPTS=.*$,DWARFOPTS=$dwarfopts,g" >> $sedout
+	;;
+
+     jdkdir=*)
+        jdkdir=`echo $1 | sed -e 's/^jdkdir=//'`
+	echo "s,^JDKDIR=.*$,JDKDIR=$jdkdir,g" >> $sedout
+	;;
+
+     android_sdk=*)
+        android_sdk=`echo $1 | sed -e 's/^android_sdk=//'`
+	echo "s,^ANDROID_SDK=.*$,ANDROID_SDK=$android_sdk,g" >> $sedout
+	;;
+
+     pythoninc=*)
+        pythoninc=`echo $1 | sed -e 's/^pythoninc=//'`
+	echo "s,^PYTHON_INCDIR=.*$,PYTHON_INCDIR=$pythoninc,g" >> $sedout
+	#echo "Using PYTHON INCLUDE DIR =" $pythoninc
+	;;
+
+     pythonlib=*)
+        pythonlib=`echo $1 | sed -e 's/^pythonlib=//'`
+	# Discover python library version
+	pythonso=`ls $pythonlib/libpython*.so | head -1 | xargs basename | sed -e 's/lib//' -e 's/\.so//'`
+	echo "s,^PYTHON_LIBDIR=.*$,PYTHON_LIBDIR=$pythonlib,g" >> $sedout
+	echo "s,^PYTHON_LIB_SO=.*$,PYTHON_LIB_SO=$pythonso,g" >> $sedout
+	#echo "Using PYTHON LIB DIR =" $pythonlib
+	;;
+
+     stffdir=*)
+	stffdir=`echo $1 | sed -e 's/^stffdir=//'`
+	echo "s,^STFF_DIR=.*$,STFF_DIR=$stffdir,g" >> $sedout
+	;;
+
+     sddfdir=*)
+	sddfdir=`echo $1 | sed -e 's/^sddfdir=//'`
+	echo "s,^SDDF_DIR=.*$,SDDF_DIR=$sddfdir,g" >> $sedout
+	;;
+
+     ktauinc=*)
+        ktauinc=`echo $1 | sed -e 's/^ktauinc=//'`
+	echo "s,^KTAU_INCDIR=.*$,KTAU_INCDIR=$ktauinc,g" >> $sedout
+	;;
+
+     ktauincuser=*)
+        ktauincuser=`echo $1 | sed -e 's/^ktauincuser=//'`
+	echo "s,^KTAU_INCUSERDIR=.*$,KTAU_INCUSERDIR=$ktauincuser,g" >> $sedout
+	;;
+
+     ktaulib=*)
+        ktaulib=`echo $1 | sed -e 's/^ktaulib=//'`
+	echo "s,^KTAU_LIB=.*$,KTAU_LIB=$ktaulib,g" >> $sedout
+	;;
+
+     ktausym=*)
+        ktausym=`echo $1 | sed -e 's/^ktausym=//'`
+      echo "s,^KTAU_KALLSYMS_PATH=.*$,KTAU_KALLSYMS_PATH=$ktausym,g" >> $sedout
+      ;;
+
+###############################################################
+# Set the default optimization flags for compiling pcxx und user programs
+###############################################################
+     useropt=*)
+        useropt=`echo $1 | sed -e 's/^useropt=//' -e 's/#/ /g'`
+	echo "s@^USER_OPT=\(.*\)@USER_OPT=$useropt@g" >> $sedout
+        ;;
+     extrashlibopts=*)
+        extrashlibopts=`echo $1 | sed -e 's/^extrashlibopts=//' -e 's/#/ /g'`
+	echo "s@^TAUEXTRASHLIBOPTS=\(.*\)@TAUEXTRASHLIBOPTS=$extrashlibopts@g" >> $sedout
+        ;;
+
+     extradir=*)
+        extradir=`echo $1 | sed -e 's/^extradir=//' `
+	echo "s@^EXTRADIR=\(.*\)@EXTRADIR=$extradir@g" >> $sedout
+        ;;
+     extradircxx=*)
+        extradircxx=`echo $1 | sed -e 's/^extradircxx=//' `
+	echo "s@^EXTRADIRCXX=\(.*\)@EXTRADIRCXX=$extradircxx@g" >> $sedout
+        ;;
+###############################################################
+# Set the TAUROOT variable
+###############################################################
+     tauroot=*)
+        tauroot=`echo $1 | sed -e 's/^tauroot=//' `
+	echo "s@^TAUROOT=\(.*\)@TAUROOT=$tauroot@g" >> $sedout
+        ;;
+
+###############################################################
+# Set the TAU_PREFIX_INSTALL_DIR variable
+###############################################################
+     tauprefix=*)
+        tauprefix=`echo $1 | sed -e 's/^tauprefix=//' `
+        echo "s;^TAU_PREFIX_INSTALL_DIR=\(.*\);TAU_PREFIX_INSTALL_DIR=$tauprefix;g" >> $sedout
+        ;;
+###############################################################
+# Set the CONFIG_ARCH variable using execprefix
+###############################################################
+     execprefix=*)
+        execprefix=`echo $1 | sed -e 's/^execprefix=//' `
+        echo "s@^CONFIG_ARCH=\(.*\)@CONFIG_ARCH=$execprefix@g" >> $sedout
+        ;;
+
+###############################################################
+# Set the TAU_CONFIG variable
+###############################################################
+     tauoptions=*)
+        tauoptions=`echo $1 | sed -e 's/^tauoptions=//' `
+        echo "s@^TAU_CONFIG=\(.*\)@TAU_CONFIG=$tauoptions@g" >> $sedout
+        ;;
+
+###############################################################
+# Set the default compilers
+###############################################################
+     c_compiler=*)
+        c_compiler=`echo $1 | sed -e 's/^c_compiler=//' `
+	echo "s@^CONFIG_CC=\(.*\)@CONFIG_CC=$c_compiler@g" >> $sedout
+        ;;
+     cxx_compiler=*)
+        cxx_compiler=`echo $1 | sed -e 's/^cxx_compiler=//'`
+	echo "s@^CONFIG_CXX=\(.*\)@CONFIG_CXX=$cxx_compiler@g" >> $sedout
+        ;;
+
+     TAU_WEAK_SUPPORTED)
+        echo NOTE: Using Weak Symbol support
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     TAU_LARGEFILE)
+        echo NOTE: Using the O_LARGEFILE flag to open 
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     TAU_BFD)
+        echo NOTE: Using BFD support
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     TAU_UNWIND)
+        echo NOTE: Enabling Stack Unwinding support
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     TAU_UNWIND_LIBUNWIND)
+        echo NOTE: Using libunwind Unwinder.
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     TAU_UNWIND_STACKWALKER)
+        echo NOTE: Using stackwalker API Unwinder
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     TAU_DEMANGLE)
+        echo NOTE: Using DEMANGLE support
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     TAU_TR1_HASH_MAP)
+        echo NOTE: Using tr1 hash map
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     TAU_BFDSHAREDLINK)
+        echo NOTE: Using BFD Shared Linking support
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     TAU_PERFSUITE)
+        echo NOTE: Using PerfSuite support
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+
+     TAU_LINKS_RT)
+	echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+
+
+###############################################################
+# Set up MPI stuff if possible
+###############################################################
+     MPI)
+        echo "NOTE: Using the TAU MPI Profiling Interface" 
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+
+     MPI2)
+        echo "NOTE: Using TAU's MPI-2 extensions"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+
+     LAMPI)
+        echo "NOTE: Using LA-MPI MPI_Request_c2f workaround"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+
+     IBMMPI)
+        echo "NOTE: Using TAU's IBM MPI extensions"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+
+     WEAKMPIINIT)
+        echo "NOTE: Not defining TAU's mpi_init wrapper for Fortran"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+
+     MPICH_IGNORE_CXX_SEEK)
+	echo "NOTE: Using the -DMPICH_IGNORE_CXX_SEEK to compile C++ programs"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+
+     MPICH3_CONST)
+	echo "NOTE: Using the -DTAU_MPICH3_CONST=const to compile programs"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+
+     OPENMPI3_CONST)
+	echo "NOTE: Using the -DTAU_OPENMPI3_CONST=const to compile programs"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+
+     MPICH2_MPI_INPLACE)
+	echo "NOTE: Using the -DMPICH2_MPI_INPLACE flag"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+
+     MPI_F_STATUSES_IGNORE_ABSENT)
+        echo "NOTE: Disabling MPI_F_STATUSES_IGNORE extensions"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+
+     MPIGREQUEST)
+        echo "NOTE: Using TAU's MPI-2 Grequest extensions"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+
+     MPIDATAREP)
+        echo "NOTE: Using TAU's MPI-2 Datarep_conversion extensions"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+
+     MPIOREQUEST)
+        echo "NOTE: Using TAU's MPI-2 MPIO_Request extensions"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+
+     MPIERRHANDLER)
+        echo "NOTE: Using TAU's MPI-2 Error handler extensions"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+
+     MPICONSTCHAR)
+        echo "NOTE: Using TAU's MPI-2 MPI_Info_set const char * interface"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+
+    MPIATTR)
+        echo "NOTE: Using TAU's MPI-2 Attr extensions"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+
+    MPIFILE)
+        echo "NOTE: Using TAU's MPI-2 File extensions"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+
+    MPITYPEEX)
+        echo "NOTE: Using TAU's MPI-2 Type and Exscan extensions"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+
+    MPIADDERROR)
+        echo "NOTE: Using TAU's MPI-2 Add_error extensions"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+
+    MPINEEDSTATUSCONV)
+        echo "NOTE: Using TAU's MPI_Status_c2f/f2c routines"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+
+     MPI_THREADED)
+        echo NOTE: Using the TAU MPI_Init_thread Profiling Interface Wrapper
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+
+     MPI_R_SUFFIX)
+        echo NOTE: Using thread-safe MPI library with _r suffix
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+
+     mpiincargs=*)
+        mpiinc=`echo $1 | sed -e 's/^mpiincargs=//' -e 's/#/ /g'`
+	echo "s@^TAU_MPI_INC=\(.*\)@TAU_MPI_INC=$mpiinc@g" >> $sedout
+        #echo "MPIINC=$mpiinc"
+        ;;
+
+     mpilibargs=*)
+        mpilib=`echo $1 | sed -e 's/^mpilibargs=//' -e 's/#/ /g'`
+	echo "s@^TAU_MPI_LIB=\(.*\)@TAU_MPI_LIB=$mpilib@g" >> $sedout
+        #echo "MPILIB=$mpilib" 
+        ;;
+
+     mpiflibargs=*)
+        mpiflib=`echo $1 | sed -e 's/^mpiflibargs=//' -e 's/#/ /g'`
+	echo "s@^TAU_MPI_FLIB=\(.*\)@TAU_MPI_FLIB=$mpiflib@g" >> $sedout
+        #echo "MPIFLIB=$mpiflib" 
+        ;;
+
+     mpinowraplibargs=*)
+        mpilib=`echo $1 | sed -e 's/^mpinowraplibargs=//' -e 's/#/ /g'`
+	echo "s@^TAU_MPI_NOWRAP_LIB=\(.*\)@TAU_MPI_NOWRAP_LIB=$mpilib@g" >> $sedout
+        ;;
+
+     mpinowrapflibargs=*)
+        mpiflib=`echo $1 | sed -e 's/^mpinowrapflibargs=//' -e 's/#/ /g'`
+	echo "s@^TAU_MPI_NOWRAP_FLIB=\(.*\)@TAU_MPI_NOWRAP_FLIB=$mpiflib@g" >> $sedout
+        ;;
+
+     mpilib=*)
+        mpilibdir=`echo $1 | sed -e 's/^mpilib=//'`
+	echo "s@^TAU_MPILIB_DIR=\(.*\)@TAU_MPILIB_DIR=$mpilibdir@g" >> $sedout
+	if [ "x$mpilibdir" != "x" ] ; then
+	  echo "s@^TAU_MPILIB_DIRLIB=\(.*\)@TAU_MPILIB_DIRLIB=-L$mpilibdir@g" >> $sedout
+	fi
+        #echo "TAU_MPILIB_DIR=$mpilibdir" 
+        ;;
+
+###############################################################
+# Set up SHMEM stuff if possible
+###############################################################
+     SHMEM)
+        echo NOTE: Using the TAU SHMEM Profiling Interface 
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+
+     PAPINOINC)
+        echo NOTE: Not adding -I/usr/include for PAPI
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+
+     GPI)
+        echo "NOTE: Using the TAU's GPI Wrapper Interface "
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+
+     OPENSHMEM)
+        echo NOTE: Using the TAU OpenSHMEM Profiling Interface 
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+
+     OPENMPI_SHMEM)
+        echo NOTE: Using the TAU OpenMPI OpenSHMEM Profiling Interface 
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+
+     SGI_MPT_SHMEM)
+        echo NOTE: Using the TAU SGI MPT SHMEM Profiling Interface 
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+
+     GPSHMEM)
+        echo NOTE: Using the TAU GPSHMEM/PGPSHMEM Profiling Interface 
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+
+     shmemincargs=*)
+        shmeminc=`echo $1 | sed -e 's/^shmemincargs=//' -e 's/#/ /g'`
+	echo "s@^TAU_SHMEM_INC=\(.*\)@TAU_SHMEM_INC=$shmeminc@g" >> $sedout
+        #echo "SHMEMINC=$shmeminc"
+        ;;
+
+     shmemlibargs=*)
+        shmemlib=`echo $1 | sed -e 's/^shmemlibargs=//' -e 's/#/ /g'`
+	echo "s@^TAU_SHMEM_LIB=\(.*\)@TAU_SHMEM_LIB=$shmemlib@g" >> $sedout
+        #echo "SHMEMLIB=$shmemlib" 
+        ;;
+
+###############################################################
+# Set the TAU_GPU variables.
+###############################################################
+     TAU_USE_GPU)
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     CUDA)
+        echo "NOTE: Using the TAU's CUDA Profiling Interface "
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     OPENCL)
+        echo "NOTE: Using the TAU's OPENCL Profiling Interface "
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     CUPTI)
+        echo "NOTE: Using the TAU's CUPTI Profiling Interface "
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     CUPTI_ACTIVITY)
+        echo "NOTE: Using the TAU's CUPTI Activity API "
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+
+
+     cudainclude=*)
+        cudainclude=`echo $1 | sed -e 's/^cudainclude=//' -e 's/#/ /g'`
+      echo "NOTE: Using CUDA for GPU analysis, source in $cudainclude"
+			echo "s@^TAU_CUDA_INC=\(.*\)@TAU_CUDA_INC=$cudainclude@g" >> $sedout
+		;;	
+		openclinclude=*)
+        openclinclude=`echo $1 | sed -e 's/^openclinclude=//' -e 's/#/ /g'`
+      echo "NOTE: Using OPENCL for GPU analysis, source in $openclinclude"
+			echo "s@^TAU_OPENCL_INC=\(.*\)@TAU_OPENCL_INC=$openclinclude@g" >> $sedout
+		;;	
+		cuptiinclude=*)
+        cuptiinclude=`echo $1 | sed -e 's/^cuptiinclude=//' -e 's/#/ /g'`
+      echo "NOTE: Using CUPTI for GPU analysis, source in $cuptiinclude"
+			echo "s@^TAU_CUPTI_INC=\(.*\)@TAU_CUPTI_INC=$cuptiinclude@g" >> $sedout
+		;;
+		cudalibrary=*)
+			cudalibrary=`echo $1 | sed -e 's/^cudalibrary=//' -e 's/#/ /g'`
+			echo "NOTE: Adding $cudalibrary when linking to the cuda driver library."
+			echo "s@^TAU_CUDA_LIBRARY=\(.*\)@TAU_CUDA_LIBRARY=$cudalibrary@g" >> $sedout
+		;;
+
+###############################################################
+# Set the CONFIG_ARCH=<machine-name> in the Makefiles.
+###############################################################
+     arch=*)
+        config_arch=`echo $1 | sed 's/^arch=//'`
+	echo "s/^CONFIG_ARCH=\(.*\)/CONFIG_ARCH=$config_arch/g" >> $sedout
+	echo "s/^TAU_ARCH=\(.*\)/TAU_ARCH=$config_arch/g" >> $sedout
+	;;
+
+     host=*)
+        config_host=`echo $1 | sed 's/^host=//'`
+	echo "NOTE: Building TAU library for HOST (i.e. cross compile)"
+	echo "s/^CROSS_PREFIX=\(.*\)/CROSS_PREFIX=${config_host}-/g" >> $sedout
+	;;
+
+     HOSTUTILS)
+	echo "NOTE: Building TAU utils for HOST (i.e. cross compile)"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+
+     ANDROID)
+	echo NOTE: Building TAU for Android
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+
+     NO_RANLIB)
+	echo NOTE: ranlib not required for this architecture.
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     USE_DECCXX)
+	echo NOTE: Using the Compaq cxx C++ compiler
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     COMPAQ_ALPHA)
+	echo NOTE: Using configuration for Compaq Alpha      
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     USE_IBMXLC)
+	echo NOTE: Using the IBM xlC C++ compiler
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     USE_NECCXX)
+	echo NOTE: Using the NEC C++ compiler
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     USE_INTELCXX)
+	echo NOTE: Using the Intel C++ compiler
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     USE_PATHCC)
+	echo NOTE: Using the Pathscale C++ compiler
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     OPEN64ORC)
+	echo NOTE: Using the Open64 C++ compiler
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     MERCURIUM)
+	echo NOTE: Using the Mercurium C++ compiler
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     HITACHI)
+	echo NOTE: Using the HITACHI SR8000 MPP options
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     HITACHI_FORTRAN)
+	echo NOTE: Using the HITACHI Fortran 90 compiler options
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     OPEN64ORC_FORTRAN)
+	echo NOTE: Using the Open64 ORC Fortran compiler options
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     PATHSCALE_FORTRAN)
+	echo NOTE: Using the Pathscale Fortran 90 compiler options
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     SC_PATHSCALE)
+	echo NOTE: Using the SiCortex Pathscale Cross compiler options
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     HITACHI_OPENMP)
+	echo NOTE: Using HITACHI OpenMP options
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     TAU_OMPT)
+	echo NOTE: Using OMPT OpenMP options
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     IBMOMPT)
+	echo NOTE: Using IBM OMPT OpenMP options
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     OPEN64_OPENMP)
+	echo NOTE: Using Open64 ORC OpenMP options
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     IBMXLC_OPENMP)
+	echo NOTE: Using the IBM xlC OpenMP options
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     COMPAQCXX_OPENMP)
+	echo NOTE: Using the Compaq cxx OpenMP options
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     COMPAQCXX_PTHREAD)
+	echo NOTE: Using the Compaq cxx -pthread option
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     MPC)
+	echo NOTE: Using the TAU MPC options
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     MPCINTEL)
+	echo NOTE: Using the TAU MPC options for the Intel compiler
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     COMPENSATE)
+	echo NOTE: Using the TAU instrumentation perturbation compensation scheme
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     IOWRAPPER)
+	echo NOTE: Building POSIX I/O wrapper
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     DMAPP)
+	echo NOTE: Building Cray DMAPP wrapper
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     ARMCI)
+	echo NOTE: Building ARMCI wrapper
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     KTAU)
+	echo NOTE: Using Kernel Profiling
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     KTAU_NG)
+	echo NOTE: Using New Generation Kernel Profiling - KTAU_NG
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     KTAU_MERGE)
+	echo NOTE: Using Kernel Profiling with merging user-space profile
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     KTAU_SHCTR)
+	echo NOTE: Using Kernel Profiling with shared OS counter support
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     MUSE)
+	echo NOTE: Using MAGNET/MUSE with TAU
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     MUSE_EVENT)
+	echo NOTE: Using MAGNET/MUSE EVENT with TAU
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     MUSE_MULTIPLE)
+	echo NOTE: Using MAGNET/MUSE MULTIPLE with TAU
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     USE_SGINCC)
+	echo NOTE: Using the SGI NCC C++ compiler
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     SGICC)
+	echo NOTE: Using SGI CC C++ compiler
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     PDTSGICC)
+	echo NOTE: Using -LANG:std option for tau_instrumentor
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     PDTCXX)
+	echo NOTE: Using a different compiler for tau_instrumentor
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     PDTARCH)
+	echo NOTE: Using a different compiler dir for PDT 
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     PDTARCHITECTURE)
+	echo NOTE: Using a different architecture dir for PDT 
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     PDTNOFSTMTS)
+	echo NOTE: Disabling loop level instrumentation for Fortran
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     PDTNOUPC)
+	echo NOTE: Disabling UPC statement level instrumentation 
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     PDTALPHACXX)
+	echo NOTE: Using -D__USE_STD_IOSTREAM option for tau_instrumentor
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     PDTHPACC)
+	echo NOTE: Using -AA option for tau_instrumentor
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     ENABLE32BIT)
+	echo NOTE: Using -32 flag for the C++ compiler
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     ENABLEN32BIT)
+	echo NOTE: Using -n32 flag for the C++ compiler
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     ENABLE64BIT)
+	echo NOTE: Using -64 flag for the C++ compiler
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     SGIGNU)
+	echo NOTE: Using GNU C++ compiler on SGI
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     GNU46PLUS)
+	echo NOTE: Using fixes for GNU 4.6+ compiler
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     CLANG)
+	echo NOTE: Using CLANG C++ compiler 
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     BGCLANG)
+	echo NOTE: Using IBM BlueGene CLANG LLVM C++ compiler 
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     CRAYCC)
+	echo NOTE: Using The Cray T3E CC C++ compiler 
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     GASNET)
+	echo NOTE: Using The GASNET directory 
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     CRAYX1CC)
+	echo NOTE: Using The Cray CC C++ compiler 
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     CRAYKAI)
+	echo NOTE: Using The Cray T3E KAI C++ compiler 
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     PGI) 
+	echo NOTE: Using Portland Group Inc. pgCC C++ compiler
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     PGI1.7) 
+	echo NOTE: Using special switches for PGI 1.7 compiler
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     PGICC) 
+	echo NOTE: May use --prelink_objects for PGI 3.0-5.4 compiler
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     PGINOPRELINK) 
+	echo NOTE: Disabling the use of --prelink_objects for PGI 6.0+ compiler
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     FUJITSU) 
+	echo NOTE: Using Fujitsu FCC C++ compiler
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     FREEBSD)
+	echo NOTE: FreeBSD options will be used
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     FUJITSU_SOLARIS) 
+	echo NOTE: Using Fujitsu f90 Fortran compiler
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     USE_CFRONT)
+	echo "NOTE: Using the 'CC' C++ Compiler"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     HP-ALLOCA)
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     HPUX10)
+	echo NOTE: HPUX Version 10 fixes will be used
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     HP)
+	echo NOTE: HPUX fixes will be used
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     HPGNU)
+	echo NOTE: HP GNU fixes will be used
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     ACC)
+	echo NOTE: HP aCC compiler will be used
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     APPLECXX)
+	echo NOTE: Apple c++ compiler will be used
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     APPLEPGI)
+	echo NOTE: PGI c++ compiler on Mac OS X will be used
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     USE_CC)
+	echo "NOTE: Using default cc compiler."
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     HP_CFLAGS)
+	echo NOTE: Using -AA flag and shared libraries for HP native compiler.
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     MIPS_CC)
+	echo NOTE: Using -Wf,-XNg800 flags for MIPS native compiler.
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     MIPSR4K)
+	echo NOTE: Using -mips2 optimization flag MIPS native compiler.
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     MIPSR8K)
+	echo NOTE: Using -mips4 optimization flag MIPS native compiler.
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     USE_GCC)
+	echo NOTE: Using the Gnu C Compiler, GCC
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     HPCTOOLKIT)
+        echo NOTE: Using HPCTOOLKIT stackwalking
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     SICORTEX)
+        echo NOTE: Using SiCortex build options
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     FORCEIA32)
+        echo NOTE: Using 32 bit mode for x86_64 
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     SP1)
+	echo "NOTE: *** SP development environment found. ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     IBM64)
+	echo "NOTE: *** Using IBM 64 bit options.  ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     PPC64)
+	echo "NOTE: *** IBM pSeries Linux environment found. ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     MIPS32)
+	echo "NOTE: *** SiCortex MIPS32 environment found. ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     MIPS32LINUX)
+	echo "NOTE: *** SiCortex MIPS32 Linux environment found. ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     MIPS32PAPI)
+	echo "NOTE: *** SiCortex 32 bit PAPI options used. ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     MIPS64)
+	echo "NOTE: *** SiCortex MIPS64 environment found. ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     MIPS64LINUX)
+	echo "NOTE: *** SiCortex MIPS64 Linux environment found. ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     MIPS64PAPI)
+	echo "NOTE: *** SiCortex 64 bit PAPI options used. ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     BGL)
+	echo "NOTE: *** IBM BlueGene/L development environment found. ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     BGP)
+	echo "NOTE: *** IBM BlueGene/P development environment found. ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     BGP_GFORTRAN)
+	echo "NOTE: *** Using gfortran. ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     BGQ)
+	echo "NOTE: *** IBM BlueGene/Q development environment found. ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     BGQ_GFORTRAN)
+	echo "NOTE: *** Using gfortran. ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     ZEPTO_GFORTRAN)
+	echo "NOTE: *** Using ZeptoOS BGP gfortran. ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     BGPPAPI)
+	echo "NOTE: *** IBM BlueGene/P PAPI found. ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     BGQPAPI)
+	echo "NOTE: *** IBM BlueGene/Q PAPI found. ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     T3D)
+	echo "NOTE: *** CRAY T3D development environment found. ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     T3E)
+	echo "NOTE: *** CRAY T3E development environment found. ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     CRAY-ALLOCA)
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     SGIMP)
+	echo "NOTE: *** SGI Symmetric Multiprocessing Environment found. ***"
+        numproc=`/bin/hinv | /bin/grep -v "PU" | /usr/bsd/head -1 | /bin/cut -d" " -f1 `
+	echo NOTE: "*** There are $numproc processors in this system ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     SOL2)
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     SUN386I)
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     SUNX86_64)
+	echo "NOTE: *** Using Solaris 64 bit options.  ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     C90)
+	echo "NOTE: *** Cray C90 development environment found. ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     RENCI_STFF)
+        echo "NOTE: Using RENCI STFF library. ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+       ;;
+     TCLTK)
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     TAU_CHARM)
+				echo "NOTE: Using charm++ (converse) threads"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     PTHREAD_AVAILABLE)
+        echo "NOTE: Using pthreads as the thread package. ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     TBB_AVAILABLE)
+        echo "NOTE: Using pthreads as the thread package for TBB support. ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     TAU_PTHREAD_WRAP)
+        echo "NOTE: Creating LD_PRELOAD wrapper for pthreads. ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     TAU_PAPI_THREADS)
+        echo "NOTE: Using PAPI threads as the thread package. ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     NOCOMM)
+        echo "NOTE: Disabling tracking of communication messages in MPI ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     TAU_SPROC)
+	echo "NOTE: Using SGI sproc as the thread package. ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     PAPI)
+	echo "NOTE: Using PAPI interface for Hardware Performance Counters ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     PERFLIB)
+	echo "NOTE: Using PERFLIB measurement library instead of TAU's"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     PYTHON)
+	echo "NOTE: Using TAU Python bindings ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     PYCUDA)
+	echo "NOTE: Building TAU PyCUDA interface ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     MULTIPLECOUNTERS)
+	echo "NOTE: Using multiple counters for measurement ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     PDT)
+	echo "NOTE: Using PDT for TAU Source Code Instrumentation ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     MPITRACE)
+	echo "NOTE: Using instrumentation of MPI and ancestor events ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     VTF)
+	echo "NOTE: Using VTF3 library to build tau2vtf trace converter ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     OTF)
+	echo "NOTE: Using OTF library to build tau2otf trace converter ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     OTF2)
+	echo "NOTE: Using OTF2 library to build tau2otf2 trace converter ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     OTF2_1_1)
+	echo "NOTE: Using OTF2 v1.1 extensions to build otf2profile converter ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     OTF2_1_2)
+	echo "NOTE: Using OTF2 v1.2 extensions to build tau2otf2 converter ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     OTFSRC)
+	echo "NOTE: Using OTF source based distribution to build tau2otf trace converter ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     OTFLIB_LONGNAME)
+	echo "NOTE: Using -lopen-trace-format instead of -lotf to link the OTF library ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     TAU2EPILOG)
+	echo "NOTE: Using Kojak 2.1+ Epilog write interface to build tau2elg ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     SLOG2)
+	echo "NOTE: Using SLOG2SDK library to build tau2slog2 trace converter ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     DYNINST)
+	echo "NOTE: Using DYNINST for TAU Runtime Instrumentation ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     DYNINST_INC)
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     DYNINST_LIB)
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     DYNINST41)
+	echo "NOTE: Using newer version DYNINST 4.1+ "
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     DYNINST_STATIC_REWRITING_UNSUPPORTED)
+	echo "NOTE: Rewriting static binaries is not supported in this version of DyninstAPI"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     DYNINST6)
+	echo "NOTE: Using newer version DYNINST 6+ "
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     DYNINST7)
+	echo "NOTE: Using newer version DYNINST 7+ "
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     DYNINST8)
+	echo "NOTE: Using newer version DYNINST 8+ "
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     DYNINSTDIR)
+	echo "NOTE: -dyninst=DIR specified"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     DYNINST5.2)
+	echo "NOTE: Using newer version DYNINST 5.2 "
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     JAVA)
+	echo "NOTE: Using Java Virtual Machine Instrumentation ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     JVMTI)
+	echo "NOTE: Using Java Virtual Machine Tool Interface (JVMTI) Instrumentation ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     OPENMP)
+	echo "NOTE: Using OpenMP Threads ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     GOMP_AVAILABLE)
+	echo "NOTE: Using GOMP OpenMP Library Wrapper ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     TLS_AVAILABLE)
+	echo "NOTE: __thread Using Thread Local Storage (TLS) ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     DTLS_AVAILABLE)
+	echo "NOTE: Using __declspec(thread) Thread Local Storage (TLS) ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     PGS_AVAILABLE)
+	echo "NOTE: Using pthread_getspecific() Thread Local Storage (TLS) ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     OPARI)
+	echo "NOTE: Using Opari OpenMP directive rewriting tool ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     OPARI2)
+	echo "NOTE: Using Opari2 OpenMP directive rewriting tool ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     KOJAKOPARI)
+	echo "NOTE: Using KOJAK's Opari implementation ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     MON_MPI)
+        echo "NOTE: Using MPI as TAUmon transport ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     MRNET)
+	echo "NOTE: Using MRNet as TAUmon transport ***"
+	echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     OPARI_REGION)
+	echo "NOTE: Using Opari tool with OpenMP region information ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     OPARI_CONSTRUCT)
+	echo "NOTE: Using Opari tool with OpenMP construct information ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     EBS2OTF)
+        echo "NOTE: Enable Conversion from Event-based Sampling Traces to Open Trace Format ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     EBS_HAS_RT)
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     VAMPIRTRACE)
+	echo "NOTE: Using VAMPIRTRACE Tracing Package ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     SCOREP)
+	echo "NOTE: Using SCOREP Package ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     SCOREPMETADATA)
+	echo "NOTE: Using SCOREP's metadata mappings ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     SCOREPOPARI2)
+	echo "NOTE: Using Opari2 configured with SCOREP Package ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     SCOREPMPI)
+	echo "NOTE: Using SCOREPMPI Package ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     SCOREPOMPI)
+	echo "NOTE: Using SCOREPOMPI Options ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     SCOREP_ADAPTER_INIT)
+	echo "NOTE: Using SCOREP_ADAPTER_INIT Options ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     SCOREPOMP)
+	echo "NOTE: Using SCOREPOMP Options ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     VAMPIRTRACE_5_7_API)
+	echo "NOTE: Using VAMPIRTRACE 5.7 API ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     VAMPIRTRACE_5_12_API)
+	echo "NOTE: Using VAMPIRTRACE 5.12 API ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     VAMPIRTRACEINTS)
+	echo "NOTE: Using -DTAU_64BITTYPES_NEEDED -DHAVE_INTTYPES_H for VampirTrace ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     VAMPIRTRACEMPI)
+	echo "NOTE: Using VAMPIRTRACE's MPI Wrapper Library ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     VAMPIRTRACEOMPI)
+	echo "NOTE: Using VAMPIRTRACE's OpenMP MPI Wrapper Library ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     VAMPIRTRACEOMP)
+	echo "NOTE: Using VAMPIRTRACE's OpenMP Trace Library ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     EPILOG)
+	echo "NOTE: Using EPILOG Tracing Package ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     SCALASCA)
+	echo "NOTE: Detected SCALASCA Package ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     EPILOGMPI)
+	echo "NOTE: Using EPILOG's MPI Wrapper Library ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     EPILOGOMPI)
+	echo "NOTE: Using EPILOG's OpenMP MPI Wrapper Library ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     EPILOGOMP)
+	echo "NOTE: Using EPILOG's OpenMP Trace Library ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     PGIOPENMP)
+	echo "NOTE: Using PGI's OpenMP options ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     INTELOPENMP)
+	echo "NOTE: Using Intel's OpenMP options ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     GNUOPENMP)
+	echo "NOTE: Using GNU's OpenMP options ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     GUIDE)
+	echo "NOTE: Using KAI's Guide OpenMP ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     COMPAQ_GUIDEF90)
+	echo "NOTE: Using Compaq f90 options with Guide ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     PAPIPTHREAD)
+	echo "NOTE: Using multi-threaded access to H/W Performance Counters ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     ANSIC)
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+# PROFILING OPTIONS
+     PROFILE)
+	echo "NOTE: Enabled Profiling. Compiling with -DPROFILING_ON"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+# TRACING OPTIONS
+     TRACE)
+	echo "NOTE: Enabled Tracing. Compiling with -DTRACING_ON"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     BUPC)
+	echo "NOTE: Enabled Berkeley UPC (upcc) GASP support in TAU."
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     GUPC)
+	echo "NOTE: Enabled GNU UPC GASP support in TAU"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     CRAY_UPC)
+	echo "NOTE: Enabled Cray UPC support in TAU"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     XLUPC)
+	echo "NOTE: Enabled IBM XLUPC support in TAU"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     KAI)
+	echo "NOTE: Using KAI KCC options"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     TAU_WINDOWS)
+	echo "NOTE: Using TAU's Windows options"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     MINGW)
+	echo "NOTE: Using TAU's MINGW options"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     SGICOUNTERS)
+	echo "NOTE: Using SGI R10000 Hardware Counters for Profiling"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     BGLTIMERS)
+	echo "NOTE: Using IBM BlueGene/L Fast Low-Overhead Timers for Profiling"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     BGPTIMERS)
+	echo "NOTE: Using IBM BlueGene/Q Fast Low-Overhead Timers for Profiling"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     BGQTIMERS)
+	echo "NOTE: Using IBM BlueGene/P Fast Low-Overhead Timers for Profiling"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     SGITIMERS)
+	echo "NOTE: Using SGI Fast Nanosecond Timers for Profiling"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     CRAYTIMERS)
+	echo "NOTE: Using Cray X1/XT3 fast nanosecond timers for profiling"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     CATAMOUNT)
+	echo "NOTE: Using Cray RS Catamount options"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     CRAYXMT)
+	echo "NOTE: Using Cray XMT options"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     MIC_LINUX)
+	echo "NOTE: Using Intel MIC Linux options"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     MMIC)
+	echo "NOTE: Using Intel -mmic compute node MIC compilation options"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     MPIICPC)
+	echo "NOTE: Using Intel mpiicpc compilation options"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     CRAYCNL)
+	echo "NOTE: Using Cray Compute Node Linux options"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     CRAYCNL_CCE)
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     CRAYCNL_SHARED)
+	echo "NOTE: Using Cray Compute Node Shared Libraries"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     LINUXTIMERS)
+	echo "NOTE: Using Linux TSC Counters for low overhead wallclock time"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     ALPHATIMERS)
+	echo "NOTE: Using Alpha clock_gettime for low overhead wallclock time"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     CPUTIME)
+	echo "NOTE: Using usertime + system time for Profiling"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     PAPIWALLCLOCK)
+	echo "NOTE: Using PAPI's low overhead wall clock time"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     PAPIVIRTUAL)
+	echo "NOTE: Using PAPI's CPU Time (process virtual time)"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     PROFILESTATS)
+	echo "NOTE: Using Profile Statistics (Std. Dev. of Excl time/counts)"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     PROFILEMEMORY)
+	echo "NOTE: Using PROFILEMEMORY options"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     PROFILEHEADROOM)
+	echo "NOTE: Using PROFILEHEADROOM options"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     PROFILECALLPATH)
+	echo "NOTE: Using Call Path Profiles"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     PROFILEPARAM)
+	echo "NOTE: Using Parameter Mapped Profiles"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     PROFILECOMMUNICATORS)
+	echo "NOTE: Tracking MPI calls based on MPI Communicators: PROFILECOMMUNICATORS"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     PROFILEPHASE)
+	echo "NOTE: Using Phase Based Profiling Using Callpaths"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     DEPTHLIMIT)
+	echo "NOTE: Disabling instrumentation beyond a certain callstack depth"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     INTELCXXLIBICC)
+	echo "NOTE: Using INTEL's -cxxlib-icc compilation option"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     DEBUGPROF)
+	echo "NOTE: Using Debugging Mode for Profiling Library -DDEBUG_PROF"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     STDCXXLIB)
+	echo "NOTE: Using Standard C++ Library"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     SOL2CC)
+        echo "NOTE: Solaris2 CC doesn't support RTTI yet, using -DNO_RTTI"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     SUNCC)
+        echo "NOTE: Using SUN's CC compiler"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     SOL2CC_OPENMP)
+        echo "NOTE: Using Solaris CC's -xopenmp option"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     SUNCC_OPENMP)
+        echo "NOTE: Using SUN CC's -xopenmp=parallel option under Linux"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     SOL2PAPI)
+	echo "NOTE: Using PAPI on Solaris (static library) ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     SOLARIS64)
+        echo "NOTE: Using 64 bit compiler options under Solaris"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     X86_64PAPI)
+        echo "NOTE: Using PAPI with x86_64 options"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     X86_64PAPI_NEW)
+        echo "NOTE: Using PAPI with x86_64 options"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     PAPI_WITHOUT_LIB_INC)
+        echo "NOTE: Using PAPI from /usr  directory"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     IBMPAPI)
+	echo "NOTE: Using PAPI with PM Toolkit options ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     BGLPAPI)
+	echo "NOTE: Using PAPI with BGL (libpapi.a) options ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     BGLPAPI_RTS)
+	echo "NOTE: Using PAPI with BGL (libpapi.rts.a) options ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     ALPHAPAPI)
+	echo "NOTE: Using PAPI with DADD options ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     IA64PAPI)
+	echo "NOTE: Using PAPI with IA-64 options (-lpapi) ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     PAPIPFM)
+	echo "NOTE: Using PAPI with -lpfm option ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     PAPIPFMPERFCTR)	
+	echo "NOTE: Using PAPI with -lpfm AND -lperfctr ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     PPC64PAPI)
+	echo "NOTE: Using PAPI with PPC64 options (-lpapi) ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     SGI64PAPI)
+	echo "NOTE: Using PAPI with SGI64 options ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     IBM64PAPI)
+	echo "NOTE: Using PAPI with IBM64 options ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     IBM64PAPILINUX)
+	echo "NOTE: Using PAPI with IBM64 Linux options ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     ARMLINUXPAPI)
+	echo "NOTE: Using PAPI with ARM Linux options ***"
+	echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     IBM64LINUX)
+	echo "NOTE: Using IBM64 Linux options ***"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     GNU)
+	echo "NOTE: GNU g++ options used"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     TAU_STRSIGNAL_OK)
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     RTTI)
+	echo "NOTE: <typeinfo.h> available"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     NORTTI)
+	echo "NOTE: No Runtime Type Information available"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     KAINOEX)
+	echo "NOTE: Using KAI with no exceptions for compiling"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     SGICCNOEX)
+	echo "NOTE: Using SGI CC with no exceptions for compiling"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     SETNODE0)
+	echo "NOTE: Using default node no of 0 instead of -1"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     HP_FORTRAN)
+	echo "NOTE: HP Fortran compiler specific options used"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     GNU_FORTRAN)
+	echo "NOTE: GNU f77 Fortran compiler specific options used"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     SC_GFORTRAN)
+	echo "NOTE: SiCortex scgfortran compiler specific options used"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     G95_FORTRAN)
+	echo "NOTE: g95 compiler specific options used"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     GNU_GFORTRAN)
+	echo "NOTE: GNU gfortran compiler specific options used"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     GNU_GFORTRAN4)
+	echo "NOTE: GNU gfortran4 compiler specific options used"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     SGI_FORTRAN)
+	echo "NOTE: SGI f90 compiler specific options used"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     IBM_FORTRAN)
+	echo "NOTE: IBM xlf90 compiler specific options used"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     IBMXLFAPPLE)
+	echo "NOTE: IBM XLF compiler for Apple Mac OS X options used"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     IBMXLCAPPLE)
+	echo "NOTE: IBM xlC/xlc++ compiler for Apple Mac OS X options used"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     IBM64_FORTRAN)
+	echo "NOTE: IBM 64 bit f90 compiler specific options used"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     PPC64XLF)
+        echo "NOTE: IBM xlf90 compiler for Linux options used"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     PPC64XLC)
+        echo "NOTE: IBM xlc compiler for Linux options used"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     IBM64LINUX_XLF)
+        echo "NOTE: IBM 64 bit xlf90 compiler for Linux options used"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     MPIIFORT)
+        echo "NOTE: Intel mpiifort compiler options used"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     FX)
+        echo "NOTE: Fujitsu mpifrtpx compiler options used"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     IBM64LINUX_XLC)
+        echo "NOTE: IBM 64 bit xlc compiler for Linux options used"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     THREADSAFE_COMPILERS)
+	echo "NOTE: Using xlf90_r instead of xlf90 IBM compiler"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     CRAY_FORTRAN)
+	echo "NOTE: Cray f90 compiler specific options used"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     CRAY_X1_FORTRAN)
+	echo "NOTE: Cray ftn compiler specific options used"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     PGI_FORTRAN)
+	echo "NOTE: PGI pgf90 compiler specific options used"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     PGI_CATAMOUNT)
+	echo "NOTE: Catamount PGI pgf90 compiler specific options used"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     ABSOFT_FORTRAN)
+	echo "NOTE: Absoft f90 compiler specific options used"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     LAHEY_FORTRAN)
+	echo "NOTE: Lahey lf95 compiler specific options used"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     LAHEY64_FORTRAN)
+	echo "NOTE: Lahey lf95 64 bit compiler specific options used"
+	echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     NAGWARE_FORTRAN)
+	echo "NOTE: NAGWARE nagfor compiler specific options used"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     FUJITSU_FORTRAN)
+	echo "NOTE: Fujitsu F90 compiler specific options used"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     NEC_FORTRAN)
+	echo "NOTE: NEC f90 compiler specific options used"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     SUN_FORTRAN)
+	echo "NOTE: Sun f90 compiler specific options used"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     COMPAQ_FORTRAN)
+	echo "NOTE: Compaq f90 compiler specific options used"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     KAI_FORTRAN)
+	echo "NOTE: KAI guidef90 compiler specific options used"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     INTEL_FORTRAN)
+	echo "NOTE: Intel efc compiler specific options used"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     INTEL32_FORTRAN)
+	echo "NOTE: Intel ifc compiler specific options used"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     INTELIFORT)
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     INTEL32_ON_64)
+	echo "NOTE: Using 32-bit Intel compilers on a 64-bit machine"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     INTEL81FIX)
+	echo "NOTE: Using -cxxlib-gcc and gcc libraries to link with ifort"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     INTEL10FIX)
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     INTEL12FIX)
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     COMPINST_GNU)
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     COMPINST_CRAYCC)
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     CRAYCNL_PAPI_SHARED)
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     COMPINST_PGI)
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     COMPINST_XL)
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     COMPINST_INTEL9)
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     FORCESHARED)
+	echo "NOTE: Using Shared Libraries by default"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     NOSHARED)
+	echo "NOTE: Disabling building of shared objects"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     LD_AUDITOR_AVAILABLE)
+	echo "NOTE: Using LD AUDITOR"
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+	;;
+     TAU_OPENMP_NESTED)
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     SGI_MPT_MPI)
+        echo "s/#$1#\(.*\)/$bs\1#$1#/g" >> $sedout
+        ;;
+     *)
+	echo "ERROR: Unknown argument directive \`$1' to FixMakefile"
+	;;
+    esac
+
+shift
+done
+
+#############################################################################
+# Ok, I have built up $sedout, now apply it to all the Makefile\* I can find!
+#############################################################################
+
+# OK, stop here, and let another script actually hack all the Makefiles
+echo "Script to modify Makefiles created."
+

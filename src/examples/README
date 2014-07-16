@@ -1,0 +1,269 @@
+This directory contains example programs that illustrate the use of TAU
+instrumentation and measurement options.
+
+taucompiler     - This directory has examples on using the TAU compiler scripts
+                  tau_cxx.sh, tau_cc.sh and tau_f90.sh to replace your compilers.
+                  This requires TAU to be configured with -mpi -pdt=<dir> parameters.
+                  Please refer to the c, mpic++, and f90 subdirectories. 
+ 
+taututorial     - This MPI C++ example shows how to integerate TAU in your
+                  build system. This requires TAU to be configured with 
+                  -mpiinc=<dir> -mpilib=<dir> -pdt=<dir> options. Please 
+                  refer to the README file in this subdirectory for more 
+                  information. 
+
+instrument 	- This contains a simple C++ example that shows how TAU's
+		  API can be used for manually instrumenting a C++ program.
+
+threads		- A simple multi-threaded program that shows how the main
+	 	  function of a thread is instrumented. Performance data 
+		  is generated for each thread of execution. Uses pthread
+ 		  library and TAU must be configured with -pthread option.
+
+cthreads	- Same as threads above, but for a C program. An 
+		  instrumented C program may be compiled with a C compiler,
+		  but needs to be linked with a C++ linker.
+
+upc             - Shows how to use TAU with GASP and compiler based
+                  instrumentation for a UPC program with the Berkeley upcc 
+                  compiler and GASP profiling interface.
+
+sproc		- SGI sproc threads example. TAU should be configured with
+		  -sproc option to use this.
+
+pi		- An MPI program that calculates the value of pi and e. It
+		  highlights the use of TAU's MPI wrapper library. TAU needs
+		  to be configured with -mpiinc=<dir> and -mpilib=<dir> to 
+		  use this.
+
+mpishlib        - Demonstrates the use of MPI wrapper library in instrumenting
+                  a shared object. The MPI application is instrumented is 
+                  instrumented as well. TAU needs to be configured with 
+                  -mpiinc=<dir> and -mpilib=<dir> flags. 
+
+python          - Instrumentation of a python application can be done 
+                  automatically or manually using the TAU Python bindings. Two 
+                  examples, auto.py and manual.py demonstrate this respectively.
+                  TAU needs to be configured with 
+                  -pythoninc=<dir that contains Python.h> 
+                  option and the user needs to set PYTHONPATH to 
+                  <taudir>/<arch>/lib to use this feature. 
+
+traceinput      - To build a trace converter/trace reader application, we 
+                  provide the TAU trace input library. This directory contains
+                  two examples (in c and c++ subdirectories) that illustrate 
+                  how an application can use the trace input API to read online
+                  or post-mortem TAU binary traces. It shows how the user can 
+                  register routines with the callback interface and how TAU 
+                  invokes these routines when events take place. 
+
+tracewriter     - To write performance data in the TAU trace format we provide a
+		  trace writer library.  This directory contains an example that
+		  illustrates how an application can use the trace writer API to
+		  produce TAU trace files.  It includes demonstrations of the 
+		  creation of all TAU trace event types. 
+
+javatracewriter - The java tracewriter API allows java programs to produce the 
+		  TAU trace format using an API equivalent to the C/C++ trace
+		  writer.  This directory contains an example java tracewriter 
+		  program which is equivalent to the example in the tracewriter 
+		  directory.
+
+papi		- A matrix multiply example that shows how to use TAU statement
+		  level timers for comparing the performance of two algorithms 
+		  for matrix multiplication. When used with PAPI or PCL, this
+		  can highlight the cache behaviors of these algorithms. TAU 
+		  should be configured with -papi=<dir> or -pcl=<dir> and the 
+		  user should set PAPI_EVENT or PCL_EVENT respective environment
+		  variables, to use this.
+
+papithreads	- Same as papi, but uses threads to highlight how hardware 
+		  performance counters may be used in a multi-threaded 
+		  application. When it is used with PAPI, TAU should be 
+		  configured with -papi=<dir> -pthread
+
+autoinstrument  - Shows the use of Program Database Toolkit (PDT) for 
+		  automating the insertion of TAU macros in the source code. It
+		  requires configuring TAU with the -pdt=<dir> option. The 
+		  Makefile is modified to illustrate the use of a source to 
+		  source translator (tau_instrumentor). 
+
+analyze		- Shows the use of tau_analyze, a utility that generates selective
+		  instrumentation lists for use with tau_instrumentor based on
+		  the analysis of collected program information and a user defined 
+		  instrumentation scenario. The tau_analyze utility expands on the
+		  functionality of the tau_reduce utility. TAU must be configured 
+		  with -pdt=<dir> option.
+
+
+reduce          - Shows the use of tau_reduce, a utility that can read profiles 
+                  and a set of rules and determine which routines should not 
+                  be instrumented (for frequently called light-weight routines).
+                  See <tau>/utils/TAU_REDUCE.README file for further details. 
+                  It requires configuring TAU with -pdt=<dir> option.
+
+cinstrument     - Shows the use of PDT for C. Requires configuring TAU with 
+                  -pdt=<dir> option.
+
+mixedmode	- This example illustrates the use of PDT, hand-instrumentation
+		  (for threads), MPI library instrumentation and TAU system 
+		  call wrapper library instrumentation. Requires configuring TAU
+		  with -mpiinc=<dir> -mpilib=<dir> -pdt=<dir> -pthread options.
+
+pdt_mpi         - This directory contains C, C++ and F90 examples that 
+		  illustrate how TAU/PDT can be used with MPI. Requires 
+                  configuring TAU with -pdt=<dir> -mpiinc=<dir> -mpilib=<dir> 
+                  options. You may also try this with the -TRACE -epilog=<dir> 
+                  options to use the EPILOG tracing package (from FZJ). 
+
+callpath        - Shows the use of callpath profiling. Requires configuring
+                  TAU with the -PROFILECALLPATH option. Setting the environment
+                  variable TAU_CALLPATH_DEPTH changes the depth of the callpath
+                  recorded by TAU. The default value of this variable is 2. 
+                  The name of the routine "a => b => c" represents the time 
+                  spent in routine c when it was called by b when b was called 
+                  by a. See the README file in the callpath directory for an 
+                  example.
+
+phase           - Shows the use of phase based profiling. Requires configuring
+                  TAU with the -PROFILEPHASE option. See the README file in the
+                  phase directory for details about the API and an example.
+
+selective	- This example illustrates the use of PDT, and selective 
+		  profiling using profile groups in the tau_instrumentor. 
+		  Requires configuring TAU with -pdt=<dir> -fortran=<...> 
+		  options.
+
+fortran & f90   - Show how to instrument a simple Fortran 90 program. A C++ 
+		  linker needs to be used when linking the fortran application.
+
+NPB2.3		- The NAS Parallel Benchmark 2.3 [from NASA Ames]. It shows how
+		  to use TAU's MPI wrapper with a manually instrumented Fortran
+		  program. LU and SP are the two benchmarks. LU is instrumented
+	 	  completely, while only parts of the SP program are 
+		  instrumented to contrast the coverage of routines. In both 
+		  cases MPI level instrumentation is complete. TAU needs to be
+		  configured with -mpiinc=<dir> and -mpilib=<dir> to use this.
+
+dyninst		- An example that shows the use of DyninstAPI [U. Maryland, 
+		  U. Wisconsin] to insert TAU instrumentation. Using Dyninst, 
+		  no modifications are needed and tau_run, a runtime 
+		  instrumentor, inserts TAU calls at routine transitions in 
+		  the program. [This represents work in progress]. 
+
+dyninstthreads  - The above example with threads.
+
+java/pi		- Shows a java program for calculating the value of pi. It 
+		  illustrates the use of the TAU JVMPI layer for instrumenting
+		  a Java program without any modifications to its source code,
+		  byte-code or the JVM. It requires a Java 2 compliant JVM and
+		  TAU needs to be configured with the -jdk=<dir> option to use
+		  this. 
+
+java/api	- The same Pi program as above that illustrates the use of the 
+                  TAU Java API for source level instrumentation. See the README
+                  file in that directory for details on how to compile and run
+                  the application.
+
+openmp		- Shows how to manually instrument an OpenMP program using the 
+		  TAU API. There are subdirectories for C, C++ and F90 to show
+		  the differences in instrumentation and Makefiles. TAU needs to
+		  be configured with the -openmp option to use this. 
+
+opari		- Opari is an OpenMP directive rewriting tool that works with 
+		  TAU. Configure TAU with -opari=<dir> option to use this. This
+		  provides detailed instrumentation of OpenMP constructs. There 
+		  are subdirectories for C++, pdt_f90, and OpenMPI to 
+                  demonstrate the use of this tool. The pdt_f90 directory 
+		  contains an example that shows the use of PDT with Opari for
+ 		  a Fortran 90 program. 
+
+openmpi		- Illustrates TAU's support for hybrid exection models in the 
+		  form of MPI for message passing and OpenMP threads. TAU needs
+		  to be configured with -mpiinc=<dir> -mpilib=<dir> -openmp
+		  options to use this. 
+
+fork		- Illustrates how to register a forked process with TAU. TAU
+		  provides two options: TAU_INCLUDE_PARENT_DATA  and 
+		  TAU_EXCLUDE_PARENT_DATA which allows the child process to 
+		  inherit or clear the performance data when the fork takes 
+		  place. 
+
+
+mapping		- Illustrates two examples in the embedded and external 
+                  subdirecto ries. These correspond to profiling at the object 
+                  level, where the time spent in a method is displayed for a 
+                  specific object. There are two ways to achieve this using an 
+                  embedded association, that requires an extension of the class 
+                  definition with a TAU pointer and a second scheme of external 
+                  hash-table lookup that relies on looking at the object 
+                  address at each method invocation. Both these examples 
+                  illustrate the use of the TAU Mapping API.
+
+multicounters   - Illustrates the use of multiple measurement options configured
+                  simultaneously in TAU. See README file for instructions on 
+                  setting the env. variables COUNTERS<1-25> for specifying 
+                  measurements. Requires configuring TAU with -MULTIPLECOUNTERS.
+
+selectiveAccess - Illustrates the use of TAU API for runtime access of TAU
+	  	  performance data. A program can get information about routines
+		  executing in its context. This can be used in conjunction with
+		  multiple counters. 
+
+memory          - TAU can sample memory utilization on some platforms using the 
+                  getrusage() system call and interrupts. This directory illustrates
+                  how sampling can be used to track the maximum resident set size. 
+                  See the README file in the memory directory for further information.
+
+malloc          - TAU's malloc and free wrappers can help pinpoint where the memory was
+                  allocated/deallocated in a C/C++ program. It can show the size of memory
+                  malloc'ed and free'd along with the source file name and line number. 
+
+userevent       - TAU's user defined events can show context information 
+                  highlighting the callpath that led to the event. This is 
+                  supported using the TAU_REGISTER_CONTEXT_EVENT and 
+                  TAU_CONTEXT_EVENT calls. It uses the TAU_CALLPATH_DEPTH env.
+                  variable. This feature works independently of the callpath 
+                  or phase profiling options, which apply to bracketed entry and
+                  exit events - not atomic events. You can disable tracking 
+                  the callpath at runtime. 
+
+headroom        - TAU's memory headroom evalution options are discussed at 
+                  length in the examples/headroom/README file. The amount of
+                  heap memory that can be allocated at any given point in the 
+                  program's execution are tracked in this directory (and three
+                  subdirectories - track, here, and available). -PROFILEHEADROOM
+                  configuration option may be used with these examples. 
+
+mpitrace        - Kojak's Expert tool needs traces that record events that call
+                  MPI routines. We track this information at runtime when TAU
+                  is configured with the -MPITRACE option. This example 
+                  illustrates its use. 
+
+loops 		- TAU can instrument automatically at outer-loop boundaries. 
+                  This example describes the syntax of the selective 
+                  instrumentation file. See loops/c++/README file for details.
+                  TAU should be configured with -pdt=<dir> to use this option.
+
+param           - TAU can profile routines based on runtime parameters. This is
+                  enabled with the -PROFILEPARAM configuration option in TAU. 
+                  It is used in TAU's MPI wrapper library to partition the time
+                  spent in MPI_Send() based on the message size. This example 
+                  illustrates how we can use it in an application to track 
+                  its execution time based on an argument. 
+                  
+memoryleakdetect- TAU can instrument C/C++ programs that use malloc/free/realloc
+                  calls to track the location and extent of memory leaks using 
+                  TAU's wrapper for memory tracking. Simply add 
+                  -optDetectMemoryLeaks to your TAU_COMPILER options 
+                  (TAU_OPTIONS env. variable) to enable this feature. 
+                  Not only does TAU detect the location based on line and 
+                  file name, it also correlates the callstack at the time of 
+                  memory allocation, so you can examine the callpaths in the 
+                  program that led to memory allocations where corresponding 
+                  deallocations were missing. See examples/memoryleakdetect.
+
+iowrappers      - TAU can build POSIX I/O wrappers using ./configure -iowrapper.
+                  To build wrappers automatically for external packages (such as 
+                  HDF5), see examples/iowrappers/hdf5 and posixio. The tau_wrap tool
+                  generates wrappers for a given header file.  

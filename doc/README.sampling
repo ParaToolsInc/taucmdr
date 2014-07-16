@@ -1,0 +1,144 @@
+************************************************************************
+*****                       TAU EBS Sampling                       *****
+************************************************************************
+
+***********************
+*** DATA GENERATION ***
+***********************
+TAU has a prototype sampling infrastructure.  It can be used to generated
+sampling based traces from the TAU measurement library.  These traces can be
+processed and read into ParaProf to augment profile data collected via standard
+measurement probes or viewed as traces in OTF format.
+
+** Typical use:
+
+1) Enabled sampling by setting the environment variable TAU_SAMPLING=1.
+
+2) Set a sample source and sampling period (default: "itimer", 
+1,000 microseconds between samples) with TAU_EBS_SOURCE and TAU_EBS_PERIOD.  
+When choosing a PAPI metric, the period variable is used as the overflow 
+sample point.  E.g.
+
+   export TAU_EBS_SOURCE=PAPI_TOT_CYC
+   export TAU_EBS_PERIOD=3000000
+
+will sample about every 1000 ms on a 3.0Ghz CPU as PAPI will trigger an
+overflow event every 3,000,000 CPU cycles.
+
+** TAU EBS Sampling through tau_exec:
+
+On machines that support dynamic shared libraries, we offer support
+for sampling through the tau_exec mechanism. Please refer to
+documentation on tau_exec for more details:
+
+Eg. mpirun -n 8 tau_exec -ebs -ebs_source=PAPI_TOT_CYC 
+	-ebs_period=3000000 <exe> <exe options>
+
+**************
+*** OUTPUT ***
+**************
+Sampled traces are output in the current working directory, up to three 
+for each thread. Raw and definition files are written on all platforms:
+ 
+   ebstrace.raw.<pid>.<nid>.<cid>.<tid>
+   ebstrace.def.<pid>.<nid>.<cid>.<tid>
+
+   Map files are written only on supported platforms. For platforms like 
+   the Bluegene/P which does not support the generation of map files, EBS 
+   sampling has to be performed on single static execution binaries:
+
+   ebstrace.map.<pid>.<nid>.<cid>.<tid>
+
+***********************
+*** POST-PROCESSING *** 
+***********************
+
+*** Enhanced ParaProf Profiles ***
+
+1) Process the traces with tau2/<arch>/bin/tau_ebs_process.pl to generate 
+processed traces for paraprof. Some platforms will require the environment 
+variable TAU_EBS_EXE to be set to the full path of the executable. These
+include:
+
+   a. Bluegene/P - no map file support.
+   b. Cray XT5 - executable path at runtime is different from 
+        real executable path and is transient.
+
+   The processed trace files are of the form:
+
+   ebstrace.processed.<pid>.<nid>.<cid>.<tid>
+
+2) View in paraprof. ParaProf will read the processed trace files above 
+along with the standard profile.<pid>.<nid>.<cid>.<tid> files to present
+visualization of the combined information.
+
+*** Converting to OTF (Open Trace Format) for third party tools like Vampir ***
+
+1) Please make sure the version of TAU was built with ebs2otf support. 
+As of this release, we support only OTF 1.8 (sturgeon):
+
+   ./configure -ebs2otf -otfinc=<dir> -otflib=<dir> [other options]
+
+   It is also possible to use the -otf=<dir> option. However that option
+has the side-effect of turning on TAU tracing as a default. EBS traces
+currently work only with TAU profiles.
+
+   Currently, OTF has to be built with GCC compilers. If this is not 
+supported on your working machine, post-processing can be performed on
+the generated logs on another platform.
+
+2) Generate EBS traces as above.
+
+3) Make sure the environment variables PERL5LIB and LD_LIBRARY_PATH are
+   correctly set:
+   
+   export PERL5LIB=$TAUROOT/tau2/<arch>/lib
+   export LD_LIBRARY_PATH=<OTF installed library>:$LD_LIBRARY_PATH
+
+4) Run converter:
+
+   $HOME/tau2/<arch>/bin/tau_ebs2otf.pl
+
+5) View in vampir: 
+ 
+   vampir ebstrace.otf
+
+***********************
+*** Advanced Topics ***
+***********************
+
+*** Collecting EBS callstack traces ***
+
+To collect EBS callstack traces, you must download and build HPCToolkit
+(http://hpctoolkit.org) 4.9.2, r2138 for which we supply a patch to enable TAU
+integration. This feature is currently beta and will be more fully 
+supported in later versions.
+
+1) Download, patch and build HPCToolkit 4.9.2 r2138
+
+   wget https://outreach.scidac.gov/frs/download.php/162/hpctoolkit-TRUNK-4.9.2-r2138.tar.gz
+   wget https://outreach.scidac.gov/frs/download.php/163/hpctoolkit-externals-TRUNK-4.9.2-r2138.tar.gz
+   tar -xzf hpctoolkit-externals-TRUNK-4.9.2-r2138.tar.gz
+   tar -xzf hpctoolkit-TRUNK-4.9.2-r2138.tar.gz
+   cd hpctoolkit-externals-TRUNK-4.9.2-r2138
+   ./configure --prefix=/usr/local/packages/hpctoolkit-externals
+   make && make install
+   cd ../hpctoolkit-TRUNK-4.9.2-r2138
+   patch -p2 < $HOME/tau2/tools/src/contrib/hpctoolkit-4.9.2-r2138.patch
+   ./configure --with-papi=/usr/local/packages/papi --with-externals=/usr/local/packages/src/hpctoolkit-externals-TRUNK-4.9.2-r2138 --prefix=/usr/local/packages/hpctoolkit
+   make && make install
+
+2) Configure TAU with HPCToolkit:
+  
+   ./configure -hpctoolkit-src-dir=/usr/local/packages/src/hpctoolkit-TRUNK-4.9.2-r2138 -hpctoolkit-install-dir=/usr/local/packages/hpctoolkit [other options]
+
+3) Generate and analyze traces as above.  Profiles will now have integrated callstacks.  OTF traces will have full callpaths.
+
+   When using HPCToolkit, you must run the program using hpcrun from the
+   install directory of hpctoolkit.  You must also give it parameters as if it
+   were being used as the measurement system, but those values will not be used
+   as the HPCToolkit measurement system is disabled by the patch.  An example
+   run is as follows:
+
+   hpcrun -e PAPI_TOT_CYC@100000 ./simple
+
