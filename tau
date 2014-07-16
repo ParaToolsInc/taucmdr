@@ -41,6 +41,9 @@ HERE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 SRC="src"
 BUILD="build"
 
+# Go to the script directory
+cd "$HERE"
+
 # Quietly update build directory
 make -s -C "$HERE" build BUILD="$BUILD" SRC="$SRC"
 
