@@ -73,8 +73,6 @@ static void initialize_functionArray();
 #ifndef TAU_MAX_METRICS
 #define TAU_MAX_METRICS 25
 #endif
-/* Global Variable holding the number of counters */
-int Tau_Global_numCounters = -1;
 
 static TauUserEvent **traceCounterEvents;
 

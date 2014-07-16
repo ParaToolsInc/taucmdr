@@ -945,7 +945,7 @@ extern "C" void Tau_context_metadata(const char *name, const char *value) {
     char *fname = (char*)(malloc(sizeof(char)*(strlen(fi->GetName()) + strlen(fi->GetType()) + 2)));
     sprintf(fname, "%s %s", fi->GetName(), fi->GetType());
 	key->timer_context = fname;
-	key->call_number = fi->GetCalls(tid);
+	key->call_number = fi->GetNumCalls(tid);
 	key->timestamp = (x_uint64)current->StartTime[0];
   }
   key->name = strdup(name);
@@ -975,7 +975,7 @@ extern "C" void Tau_structured_metadata(const Tau_metadata_object_t *object, boo
       char *fname = (char*)(malloc(sizeof(char)*(strlen(fi->GetName()) + strlen(fi->GetType()) + 2)));
       sprintf(fname, "%s %s", fi->GetName(), fi->GetType());
 	  key->timer_context = fname;
-	  key->call_number = fi->GetCalls(tid);
+	  key->call_number = fi->GetNumCalls(tid);
 	  key->timestamp = (x_uint64)current->StartTime[0];
     }
   }
@@ -1007,7 +1007,7 @@ extern "C" void Tau_phase_metadata(const char *name, const char *value) {
       char *fname = (char*)(malloc(sizeof(char)*(strlen(fi->GetName()) + strlen(fi->GetType()) + 2)));
       sprintf(fname, "%s %s", fi->GetName(), fi->GetType());
 	  key->timer_context = fname;
-	  key->call_number = fi->GetCalls(tid);
+	  key->call_number = fi->GetNumCalls(tid);
 	  key->timestamp = (x_uint64)current->StartTime[0];
 	  break;
     }    

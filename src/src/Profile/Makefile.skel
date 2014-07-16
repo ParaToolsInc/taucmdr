@@ -66,7 +66,7 @@ CFLAGS        = $(DEFINES) $(TAU_MPI_INCLUDE) $(CEXTRA) $(USER_OPT) $(TAUINC) $(
 
 INCDIR	      = $(TAUROOT)/include/Profile
 
-HDRS	      = $(INCDIR)/Profiler.h 	 $(INCDIR)/ProfileGroups.h    \
+HDRS	      = $(INCDIR)/Profiler.h 	 $(INCDIR)/ProfileGroups.h    $(INCDIR)/TauGlobal.h \
 		$(INCDIR)/TauAPI.h 	 $(INCDIR)/ProfileHeaders.h   \
 		$(INCDIR)/PthreadLayer.h $(INCDIR)/RtsLayer.h         \
 		$(INCDIR)/FunctionInfo.h $(INCDIR)/UserEvent.h        \
@@ -90,6 +90,7 @@ HDRS	      = $(INCDIR)/Profiler.h 	 $(INCDIR)/ProfileGroups.h    \
 		$(INCDIR)/TauMmapMemMgr.h $(INCDIR)/TauPathHash.h \
 		$(INCDIR)/agent_util.h	$(INCDIR)/java_crw_demo.h \
 		$(INCDIR)/adb.h         $(INCDIR)/jdwp.h          \
+		
 
 LDFLAGS	      =
 
@@ -124,7 +125,7 @@ TAU_SAMPLING_O = TauSampling.o TauSampling_hpctoolkit.o TauSampling_stackwalker.
 #CUPTI#TAU_CUPTI_COUNTER_OBJS=CuptiLayer40.o #ENDIF#
 #CUPTI_ACTIVITY#TAU_CUPTI_COUNTER_OBJS=CuptiLayer.o #ENDIF#
 
-OBJS	      = Profiler.o UserEvent.o FunctionInfo.o \
+OBJS	      = Profiler.o UserEvent.o FunctionInfo.o TauGlobal.o \
 		RtsLayer.o RtsThread.o TauCAPI.o TauFAPI.o TauMapping.o \
 		TauHooks.o TauHandler.o TauMemory.o TauMetaData.o TauEnv.o \
 		TauInit.o Comp_intel9.o Comp_pgi.o Comp_xl.o Comp_gnu.o \
@@ -626,6 +627,9 @@ Profile.class	: Profile.java
 
 Profiler.o 	: Profiler.cpp $(HDRS)
 	$(CXX) $(CXXFLAGS)   -c $(@:.o=.cpp)
+
+TauGlobal.o  : TauGlobal.cpp $(HDRS)
+	$(CXX) $(CXXFLAGS) -c TauGlobal.cpp
 
 TauMetaData.o 	: TauMetaData.cpp $(HDRS)
 	$(CXX) $(CXXFLAGS) $(TAU_MPI_INCLUDE) -c $(@:.o=.cpp)

@@ -423,7 +423,7 @@ void TraceCallStack(int tid, Profiler *current) {
   if (current) {
     // Trace all the previous records before tracing self
     TraceCallStack(tid, current->ParentProfiler);
-    TauTraceEventSimple(current->ThisFunction->GetFunctionId(), 1, tid);
+    TauTraceEventSimple(current->ThisFunction->GetId(), 1, tid);
     DEBUGPROFMSG("TRACE CORRECTED: "<<current->ThisFunction->GetName()<<endl;);
   }
 }
@@ -499,7 +499,7 @@ int TauTraceDumpEDF(int tid) {
   fprintf(fp,"0 TAUEVENT 0 \".TAU <unknown event>\" TriggerValue\n");
   
   for (it = TheFunctionDB().begin(); it != TheFunctionDB().end(); it++) {
-    fprintf(fp, "%ld %s 0 \"%s %s\" EntryExit\n", (long)((*it)->GetFunctionId()),
+    fprintf(fp, "%ld %s 0 \"%s %s\" EntryExit\n", (long)((*it)->GetId()),
 	    (*it)->GetPrimaryGroup(), (*it)->GetName(), (*it)->GetType() );
   }
   

@@ -612,22 +612,21 @@ void Profiler::CallSiteStart(int tid)
         CallSiteFunction = new FunctionInfo(tempName.c_str(), "", ThisFunction->GetProfileGroup(), grname.c_str(),
             true);
       }
-      CallSiteFunction->isCallSite = true;
-      CallSiteFunction->callSiteKeyId = callsiteKeyId;
-      CallSiteFunction->callSiteResolved = false;
+      CallSiteFunction->SetIsCallSite(true);
+      CallSiteFunction->SetCallSiteKeyId(callsiteKeyId);
+      CallSiteFunction->SetCallSiteResolved(false);
 
-      CallSiteFunction->firstSpecializedFunction = NULL;    // non-base functions are always NULL
-      string tempName = string(shortenedName);
-      CallSiteFunction->SetShortName(tempName);
+      CallSiteFunction->SetFirstSpecializedFunction(NULL);    // non-base functions are always NULL
+      CallSiteFunction->SetShortName(shortenedName);
       TheCallSitePathMap().insert(map<TAU_CALLSITE_PATH_MAP_TYPE>::value_type(key, CallSiteFunction));
       RtsLayer::UnLockEnv();
     } else {
       CallSiteFunction = (*itPath).second;
       // sanity check
       if (CallSiteFunction != NULL) {
-        if (CallSiteFunction->callSiteKeyId != callsiteKeyId) {
-          fprintf(stderr, "WARNING: Something is wrong. FI has Id %lu from Unwind %lu\n", CallSiteFunction->callSiteKeyId,
-              callsiteKeyId);
+        if (CallSiteFunction->GetCallSiteKeyId() != callsiteKeyId) {
+          fprintf(stderr, "WARNING: Something is wrong. FI has Id %lu from Unwind %lu\n",
+              CallSiteFunction->GetCallSiteKeyId(), callsiteKeyId);
         }
       }
     }
@@ -637,33 +636,30 @@ void Profiler::CallSiteStart(int tid)
     if (itKey == TheCallSiteFirstKeyMap().end()) {
       // BASE Function not previously encountered. The callsite is necessarily unique.
       //   So, no callsite resolution is required.
-      ThisFunction->firstSpecializedFunction = CallSiteFunction;
+      ThisFunction->SetFirstSpecializedFunction(CallSiteFunction);
       TheCallSiteFirstKeyMap().insert(map<TAU_CALLSITE_FIRSTKEY_MAP_TYPE>::value_type(ThisFunction, CallSiteFunction));
     } else {
       FunctionInfo *firstCallSiteFunction = (*itKey).second;
-      if (CallSiteFunction->callSiteKeyId != firstCallSiteFunction->callSiteKeyId) {
+      if (CallSiteFunction->GetCallSiteKeyId() != firstCallSiteFunction->GetCallSiteKeyId()) {
         // Different callsite. Try to resolve it if it has not already been resolved.
         //   If it has already been resolved, the first FI must also necessarily
         //   be resolved.
-        if (!CallSiteFunction->callSiteResolved) {
+        if (!CallSiteFunction->IsCallSiteResolved()) {
           // resolve the local callsite first.
           unsigned long resolvedCallSite = 0;
-          resolvedCallSite = determineCallSiteViaId(CallSiteFunction->callSiteKeyId,
-              firstCallSiteFunction->callSiteKeyId);
-          TAU_VERBOSE("%d Got the final callsite %p\n", CallSiteFunction->callSiteKeyId, resolvedCallSite);
+          resolvedCallSite = determineCallSiteViaId(CallSiteFunction->GetCallSiteKeyId(),
+              firstCallSiteFunction->GetCallSiteKeyId());
           // Register the resolution of this callsite key
-          CallSiteFunction->callSiteResolved = true;
-          TheCallSiteIdVector()[CallSiteFunction->callSiteKeyId]->resolved = true;
-          TheCallSiteIdVector()[CallSiteFunction->callSiteKeyId]->resolvedCallSite = resolvedCallSite;
+          CallSiteFunction->SetCallSiteResolved(true);
+          TheCallSiteIdVector()[CallSiteFunction->GetCallSiteKeyId()]->resolved = true;
+          TheCallSiteIdVector()[CallSiteFunction->GetCallSiteKeyId()]->resolvedCallSite = resolvedCallSite;
 
-          if (!firstCallSiteFunction->callSiteResolved) {
-            resolvedCallSite = determineCallSiteViaId(firstCallSiteFunction->callSiteKeyId,
-                CallSiteFunction->callSiteKeyId);
-            TAU_VERBOSE("%d Got the final master callsite %p\n", firstCallSiteFunction->callSiteKeyId,
-                resolvedCallSite);
-            firstCallSiteFunction->callSiteResolved = true;
-            TheCallSiteIdVector()[firstCallSiteFunction->callSiteKeyId]->resolved = true;
-            TheCallSiteIdVector()[firstCallSiteFunction->callSiteKeyId]->resolvedCallSite = resolvedCallSite;
+          if (!firstCallSiteFunction->IsCallSiteResolved()) {
+            resolvedCallSite = determineCallSiteViaId(firstCallSiteFunction->GetCallSiteKeyId(),
+                CallSiteFunction->GetCallSiteKeyId());
+            firstCallSiteFunction->SetCallSiteResolved(true);
+            TheCallSiteIdVector()[firstCallSiteFunction->GetCallSiteKeyId()]->resolved = true;
+            TheCallSiteIdVector()[firstCallSiteFunction->GetCallSiteKeyId()]->resolvedCallSite = resolvedCallSite;
           }
         }
       }
@@ -796,7 +792,7 @@ extern "C" void finalizeCallSites_if_necessary()
   for (vector<FunctionInfo *>::iterator fI_iter = TheFunctionDB().begin(); fI_iter != TheFunctionDB().end();
       fI_iter++) {
     FunctionInfo *theFunction = *fI_iter;
-    if (theFunction->isCallSite) {
+    if (theFunction->IsCallSite()) {
       candidates->push_back(theFunction);
     }
   }
@@ -807,7 +803,7 @@ extern "C" void finalizeCallSites_if_necessary()
     FunctionInfo *candidate = *cs_it;
 
     string *callSiteName = new string("");
-    tau_cs_info_t *callsiteInfo = TheCallSiteIdVector()[candidate->callSiteKeyId];
+    tau_cs_info_t *callsiteInfo = TheCallSiteIdVector()[candidate->GetCallSiteKeyId()];
     *callSiteName = *callSiteName + *(callsiteInfo->resolvedName);
 
     if (TauEnv_get_callpath()) {
@@ -821,15 +817,15 @@ extern "C" void finalizeCallSites_if_necessary()
       newFunction->AddExclTime(candidate->GetExclTime(tid), tid);
       newFunction->AddInclTime(candidate->GetInclTime(tid), tid);
       // Has as many calls as the measured callsite.
-      newFunction->SetCalls(tid, candidate->GetCalls(tid));
-      newFunction->SetSubrs(tid, candidate->GetSubrs(tid));
+      newFunction->SetNumCalls(tid, candidate->GetNumCalls(tid));
+      newFunction->SetNumSubrs(tid, candidate->GetNumSubrs(tid));
       RtsLayer::UnLockDB();
     }
 
     // Now rename the candidate with the completely resolved name
     //    printf("candidate name %s\n", candidate->GetName());
     string tempName = string(candidate->GetName() + *callSiteName);
-    candidate->SetName(tempName);
+    candidate->SetName(strdup(tempName.c_str()));
   }
 }
 #endif

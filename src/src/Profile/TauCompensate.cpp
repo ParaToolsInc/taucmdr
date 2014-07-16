@@ -26,6 +26,8 @@ using namespace std;
 #include <stdlib.h>
 #include <limits.h>
 
+using namespace tau;
+
 static int compensateInitialized = 0;
 
 extern "C" int Tau_compensate_initialization() {
@@ -115,10 +117,10 @@ int TauCalibrateNullTimer(void) {
 
   /* Get thread id */
   tid = RtsLayer::myThread();
-  int n = ((FunctionInfo*)tnull)->GetCalls(tid);
+  int n = ((FunctionInfo*)tnull)->GetNumCalls(tid);
 
-  double *nullincltime = ((FunctionInfo*)tnull)->GetInclTime(tid);
-  double *oneincltime  = ((FunctionInfo*)tone)->GetInclTime(tid);
+  double const * nullincltime = ((FunctionInfo*)tnull)->GetInclTime(tid);
+  double const * oneincltime  = ((FunctionInfo*)tone)->GetInclTime(tid);
   for (i=0; i < Tau_Global_numCounters; i++) {
     /* n*(a+b+c+d) + b+c = tone */
     TheTauNullTimerOverhead()[i] = nullincltime[i]/n;

@@ -4,6 +4,7 @@
 #include <utility>
 #include <cstdio>
 #include <cstring>
+#include <TauGlobal.h>
 
 // Putting "using namespace" statements in header files can create ambiguity
 // between user-defined symbols and std symbols, creating unparsable code
@@ -29,7 +30,7 @@
    operation could be made conservative to keep these operations to a
    minimum.
 */
-#define TAU_PATHHASH_DEFAULT_SIZE 63 
+#define TAU_PATHHASH_DEFAULT_SIZE 63
 
 /* *CWL* - This is limited in scope for TAU path keys
    (EBS, CallSites) only. As such, the key will always be (unsigned long *).
@@ -58,7 +59,7 @@ class TauPathAccumulator {
   TauPathAccumulator(int inCount, double firstValues[TAU_MAX_COUNTERS]) {
     count = inCount;
     int i;
-    for (i = 0; i < Tau_Global_numCounters ; i++) {
+    for (i = 0; i < tau::Tau_Global_numCounters ; i++) {
       accumulator[i] = firstValues[i];
     }
   }
@@ -66,7 +67,7 @@ class TauPathAccumulator {
   TauPathAccumulator() {
     count = 0;
     int i;
-    for (i = 0; i < Tau_Global_numCounters ; i++) {
+    for (i = 0; i < tau::Tau_Global_numCounters ; i++) {
       accumulator[i] = 0.0;
     }
   }
