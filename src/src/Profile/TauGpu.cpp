@@ -333,7 +333,7 @@ void Tau_gpu_register_gpu_event(GpuEvent *id, double startTime, double endTime)
 	for (int i=0;i<number_of_attributes;i++)
 	{
 		TauContextUserEvent* e = attr[i].userEvent;
-		tau_measurement_t event_data = attr[i].data;
+		TAU_EVENT_DATATYPE event_data = attr[i].data;
 		TAU_CONTEXT_EVENT_THREAD(e, event_data, task);
 	}
 	/*	
@@ -475,7 +475,7 @@ void Tau_gpu_register_gpu_atomic_event(GpuEvent *event)
 	for (int i=0;i<number_of_attributes;i++)
 	{
 		TauContextUserEvent* e = attr[i].userEvent;
-		tau_measurement_t event_data = attr[i].data;
+		TAU_EVENT_DATATYPE event_data = attr[i].data;
 		TAU_CONTEXT_EVENT_THREAD(e, event_data, task);
 	}
 }

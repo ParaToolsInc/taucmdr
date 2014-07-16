@@ -183,13 +183,13 @@ string TauFormulateNameString(Profiler * current)
   for (; i < depth-1; ++i) {
     fi = path[i]->ThisFunction;
     buff << fi->GetName();
-    if (fi->GetType().length() > 0)
+    if (strlen(fi->GetType()) > 0)
       buff << " " << fi->GetType();
     buff << " => ";
   }
   fi = path[i]->ThisFunction;
   buff << fi->GetName();
-  if (fi->GetType().length() > 0)
+  if (strlen(fi->GetType()) > 0)
     buff << " " << fi->GetType();
 
   free((void*)path);
@@ -231,7 +231,7 @@ void Profiler::CallPathStart(int tid)
     CallpathMap::iterator it = pathMap.find(comparison);
     if (it == pathMap.end()) {
       string callpathname = TauFormulateNameString(this);
-      string grname = string("TAU_CALLPATH|") + ThisFunction->GetPrimaryGroup();
+      string grname = string("TAU_CALLPATH|") + RtsLayer::PrimaryGroup(ThisFunction->GetAllGroups());
       CallPathFunction = new FunctionInfo(callpathname, "", ThisFunction->GetProfileGroup(), grname.c_str(), true);
       pathMap[comparison] = CallPathFunction;
     } else {

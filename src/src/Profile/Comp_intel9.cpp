@@ -50,7 +50,7 @@
 #endif
 
 using namespace std;
-using namespace tau;
+
 
 static int intel_init = 1;
 

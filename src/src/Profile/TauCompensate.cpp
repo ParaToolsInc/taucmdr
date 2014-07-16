@@ -26,8 +26,6 @@ using namespace std;
 #include <stdlib.h>
 #include <limits.h>
 
-using namespace tau;
-
 static int compensateInitialized = 0;
 
 extern "C" int Tau_compensate_initialization() {

@@ -279,8 +279,8 @@ int TauRenameTimer(char *oldName, char *newName)
   TAU_VERBOSE("Inside TauRenameTimer: Old = %s, New = %s\n", oldName, newName);
   for (it = TheFunctionDB().begin(); it != TheFunctionDB().end(); it++){
     //Check to see that it is one of the requested functions.
-    TAU_VERBOSE("Comparing %s with %s\n", (*it)->GetName().c_str(), oldName);
-    if (strcmp(oldName, (*it)->GetName().c_str()) == 0)
+    TAU_VERBOSE("Comparing %s with %s\n", (*it)->GetName(), oldName);
+    if (strcmp(oldName, (*it)->GetName()) == 0)
     {
       (*it)->SetName(*newfuncname);
       TAU_VERBOSE("Renaming %s to%s\n", oldName, newfuncname->c_str());
@@ -472,7 +472,7 @@ void traceExit(int id)
   bool disableinstr = false;
   if ( curr && ((Profiler *)curr)->ParentProfiler == (Profiler *) NULL)
   {
-    if (((FunctionInfo*)fi)->GetName() == "main") {
+    if (strncmp(((FunctionInfo *)fi)->GetName(), "main",4)== 0) {
       disableinstr = true;
       TAU_VERBOSE("Disabling instrumentation!\n");
     }

@@ -131,7 +131,7 @@ void TauUserEvent::AddEventToDB()
 ///////////////////////////////////////////////////////////
 // TriggerEvent records the value of data in the UserEvent
 ///////////////////////////////////////////////////////////
-void TauUserEvent::TriggerEvent(tau_measurement_t data, int tid, double timestamp, int use_ts)
+void TauUserEvent::TriggerEvent(TAU_EVENT_DATATYPE data, int tid, double timestamp, int use_ts)
 {
   if (!Tau_global_getLightsOut()) {
 #ifdef TAU_VAMPIRTRACE
@@ -251,7 +251,7 @@ void TauUserEvent::TriggerEvent(tau_measurement_t data, int tid, double timestam
 
 void TauUserEvent::ReportStatistics(bool ForEachThread)
 {
-  tau_measurement_t TotalNumEvents, TotalSumValue, Minima, Maxima;
+  TAU_EVENT_DATATYPE TotalNumEvents, TotalSumValue, Minima, Maxima;
   vector<TauUserEvent*>::iterator it;
 
   Maxima = Minima = 0;
@@ -373,13 +373,13 @@ string TauContextUserEvent::FormulateContextNameString(Profiler * current)
       for (++i; i < depth-1; ++i) {
         fi = path[i]->ThisFunction;
         buff << fi->GetName();
-        if (fi->GetType().length() > 0)
+        if (strlen(fi->GetType()) > 0)
           buff << " " << fi->GetType();
         buff << " => ";
       }
       fi = path[i]->ThisFunction;
       buff << fi->GetName();
-      if (fi->GetType().length() > 0)
+      if (strlen(fi->GetType()) > 0)
         buff << " " << fi->GetType();
 
       delete[] path;
@@ -396,7 +396,7 @@ string TauContextUserEvent::FormulateContextNameString(Profiler * current)
 ////////////////////////////////////////////////////////////////////////////
 // Trigger the context event
 ////////////////////////////////////////////////////////////////////////////
-void TauContextUserEvent::TriggerEvent(tau_measurement_t data, int tid, double timestamp, int use_ts)
+void TauContextUserEvent::TriggerEvent(TAU_EVENT_DATATYPE data, int tid, double timestamp, int use_ts)
 {
   static ContextEventMap contextMap;
   if (!Tau_global_getLightsOut()) {
