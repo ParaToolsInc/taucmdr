@@ -7,7 +7,7 @@
 #
 
 HERE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-SRC="src"
+SRC="tau"
 BUILD="build"
 
 # Defaults
