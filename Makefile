@@ -8,7 +8,7 @@
 # Set to 1 to force source code refresh on every build
 DEVEL = 1
 
-SRC = src
+SRC = tau
 BUILD = build
 RM = rm -rf
 
