@@ -40,8 +40,6 @@ build:
 realclean:
 	$(RM) $(BUILD)
 	$(RM) .active_stub*
-	$(RM) .all_configs
-	$(RM) .last_config
 	$(RM) etc
 	$(RM) examples
 	$(RM) include
@@ -54,3 +52,6 @@ realclean:
 	$(RM) apple
 	$(RM) mic_linux
 
+reset: realclean
+	$(RM) .all_configs
+	$(RM) .last_config
