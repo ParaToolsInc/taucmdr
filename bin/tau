@@ -37,15 +37,17 @@
 #OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 ################################################################################
-HERE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-SRC="src"
+TAU_HOME="$( cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd )"
+SRC="tau"
 BUILD="build"
 
+echo $TAU_HOME
+
 # Go to the script directory
-cd "$HERE"
+cd "$TAU_HOME"
 
 # Quietly update build directory
-make -s -C "$HERE" build BUILD="$BUILD" SRC="$SRC"
+make -s build BUILD="$BUILD" SRC="$SRC"
 
 # Add TAU top level directory to PYTHONPATH
 export TAU_MASTER_SRC_DIR="$BUILD"
