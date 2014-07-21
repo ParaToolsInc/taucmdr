@@ -41,7 +41,7 @@ import subprocess
 import taucmd
 from taucmd import commands
 from taucmd.docopt import docopt
-from taucmd.project import Registry
+from taucmd.registry import Registry
 from pkgutil import walk_packages
 from textwrap import dedent
 

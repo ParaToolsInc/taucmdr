@@ -36,30 +36,29 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 import os
-import sys
-import subprocess
+import pprint
 import taucmd
-from taucmd import util
+from taucmd.registry import getUserRegistry, getSystemRegistry
 from taucmd.docopt import docopt
-from taucmd.registry import Registry
 
 LOGGER = taucmd.getLogger(__name__)
 
-SHORT_DESCRIPTION = "Build your application with 'make' and the TAU compilers."
+SHORT_DESCRIPTION = "Show TAU settings."
+
+COMMAND = 'tau settings list'
 
 USAGE = """
 Usage:
-  tau make [<args>...]
-  tau make -h | --help
+  %(command)s [options]
+  %(command)s -h | --help
 """
 
 HELP = """
-'tau make' help page to be written.
+Help page to be written.
 """
 
-
 def getUsage():
-    return USAGE
+    return USAGE % {'command': COMMAND}
 
 def getHelp():
     return HELP
@@ -68,32 +67,33 @@ def main(argv):
     """
     Program entry point
     """
+
     # Parse command line arguments
-    args = docopt(USAGE, argv=argv, options_first=True)
+    usage = getUsage()
+    args = docopt(usage, argv=argv)
     LOGGER.debug('Arguments: %s' % args)
     
-    registry = Registry()
-    if not len(registry):
-        LOGGER.info("There are no TAU projects in %r.  See 'tau project create'." % os.getcwd())
-        return 1
-
-    # Check project compatibility
-    proj = registry.getSelectedProject()
-    LOGGER.info('Using TAU project %r' % proj.getName())
+    user = args['--user']
+    system = args['--system']
+    both = not (user or system)
+    
+    user_defaults = getUserRegistry().defaults
+    system_defaults = getSystemRegistry().defaults
+    
+    if user:
+        print '*'*80
+        print 'User-level new project default settings'
+        pprint.pprint(user_defaults)
+    if system:
+        print '*'*80
+        print 'System-level new project default settings'
+        pprint.pprint(system_defaults)
         
-    # Compile the project if needed
-    proj.compile()
+    effective = system_defaults.copy()
+    effective.update(user_defaults)
     
-    # Set the environment
-    env = proj.getTauMakeEnvironment()
-    
-    # Get compiler flags
-    tau_flags = proj.getTauMakeFlags()
-    
-    # Execute the application
-    cmd = ['make'] + tau_flags + args['<args>']
-    LOGGER.debug('Creating subprocess: cmd=%r, env=%r' % (cmd, env))
-    proc = subprocess.Popen(cmd, env=env, stdout=sys.stdout, stderr=sys.stderr)
-    retval = proc.wait()
-    
-    return retval
+    print '*'*80
+    print 'New project default settings'
+    pprint.pprint(effective)
+
+    return 0

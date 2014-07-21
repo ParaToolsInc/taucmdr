@@ -41,7 +41,7 @@ import subprocess
 import taucmd
 from taucmd import util
 from taucmd.docopt import docopt
-from taucmd.project import Registry
+from taucmd.registry import Registry
 
 LOGGER = taucmd.getLogger(__name__)
 

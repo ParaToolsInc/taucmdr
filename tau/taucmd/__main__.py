@@ -37,6 +37,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import sys
 import taucmd
+import traceback
 from pkgutil import walk_packages
 from taucmd import commands
 from taucmd import util
@@ -52,7 +53,7 @@ Usage:
   tau -h | --help
   tau --version
 
-Tau Commands:
+Commands:
 %(command_descr)s
 
 Shortcuts:  
@@ -65,11 +66,11 @@ Shortcuts:
   <trace>          View trace data (*.otf *.slog2, etc.) in Jumpshot
                    An alias for 'tau show <trace>' 
 
-TAU Options:
+Options:
   --log=<level>    Output level.  [default: %(log_default)s]
                    <level> can be CRITICAL, ERRROR, WARNING, INFO, or DEBUG
 
-See 'tau help <command>' for more information on a specific command.
+See 'tau <command> --help' for more information on a specific command.
 """
 
 LOGGER = taucmd.getLogger(__name__)

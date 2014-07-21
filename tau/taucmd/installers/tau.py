@@ -139,7 +139,7 @@ def getPrefix(config):
     parts.extend([part.lower() for part in nameparts if config[part]])
     parts.sort()
     name = '_'.join(parts)
-    prefix = os.path.join(taucmd.TAUCMD_HOME, 'tau', name)
+    prefix = os.path.join(taucmd.USER_TAU_DIR, 'tau', name)
     return prefix
 
 

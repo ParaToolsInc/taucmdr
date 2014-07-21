@@ -102,7 +102,7 @@ def getConfigureCommand(config):
 
 def getPrefix(config):
     # TODO: Support other compilers 
-    prefix = os.path.join(taucmd.TAUCMD_HOME, 'bfd', 'GNU')
+    prefix = os.path.join(taucmd.USER_TAU_DIR, 'bfd', 'GNU')
     return prefix
 
 

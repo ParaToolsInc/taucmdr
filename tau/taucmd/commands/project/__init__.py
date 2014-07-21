@@ -44,21 +44,24 @@ LOGGER = taucmd.getLogger(__name__)
 
 SHORT_DESCRIPTION = "Create and manage TAU projects."
 
+COMMAND = 'tau project'
+
 USAGE = """
 Usage:
-  tau project <command> [<args>...]
-  tau project -h | --help
+  %(command)s <subcommand> [<args>...]
+  %(command)s -h | --help
 
-Project Commands:
+Subcommands:
 %(command_descr)s
 """
 
 HELP = """
-'tau project' help page to be written.
-"""
+'%(command)s' help page to be written.
+""" % {'command': COMMAND}
 
 def getUsage():
-    return USAGE % {'command_descr': commands.getSubcommands(__name__)}
+    return USAGE % {'command': COMMAND,
+                    'command_descr': commands.getSubcommands(__name__)}
 
 def getHelp():
     return HELP
@@ -73,22 +76,22 @@ def main(argv):
     args = docopt(usage, argv=argv, options_first=True)
     LOGGER.debug('Arguments: %s' % args)
     
-    # Check for -h | --help (why doesn't this work automatically?)
-    idx = args['<command>'].find('-h')
+    # Check for -h | --help
+    idx = args['<subcommand>'].find('-h')
     if (idx == 0) or (idx == 1):
         print usage
         return 0
     
     # Try to execute as a tau command
-    cmd = args['<command>']
+    cmd = args['<subcommand>']
     cmd_args = args['<args>']
     cmd_module = 'taucmd.commands.project.%s' % cmd   
     
     try:
         __import__(cmd_module)
-        LOGGER.debug('Recognized %r as tau project command' % cmd)
+        LOGGER.debug('Recognized %r as a %s subcommand' % (cmd, COMMAND))
         return sys.modules[cmd_module].main(['project', cmd] + cmd_args)
     except ImportError:
-        LOGGER.debug('%r not recognized as a tau project command' % cmd)
+        LOGGER.debug('%r not recognized as a %s subcommand' % (cmd, COMMAND))
         print usage
         return 1

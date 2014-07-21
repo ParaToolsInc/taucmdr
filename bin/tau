@@ -39,18 +39,16 @@
 ################################################################################
 TAU_HOME="$( cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd )"
 SRC="tau"
-BUILD="build"
-
-echo $TAU_HOME
+#BUILD="build"
 
 # Go to the script directory
 cd "$TAU_HOME"
 
 # Quietly update build directory
-make -s build BUILD="$BUILD" SRC="$SRC"
+#make -s build BUILD="$BUILD" SRC="$SRC"
 
 # Add TAU top level directory to PYTHONPATH
-export TAU_MASTER_SRC_DIR="$BUILD"
+export TAU_MASTER_SRC_DIR="$TAU_HOME/$SRC"
 export PYTHONPATH=$TAU_MASTER_SRC_DIR:$PYTHONPATH
 
 # Invoke TAU Commander

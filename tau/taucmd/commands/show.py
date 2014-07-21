@@ -44,7 +44,7 @@ import taucmd
 from threading import Thread
 from taucmd import util, TauNotImplementedError
 from taucmd.docopt import docopt
-from taucmd.project import Registry
+from taucmd.registry import Registry
 
 LOGGER = taucmd.getLogger(__name__)
 

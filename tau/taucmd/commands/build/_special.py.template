@@ -39,7 +39,7 @@ import os
 import sys
 import subprocess
 import taucmd
-from taucmd.project import Registry
+from taucmd.Registry import Registry
 from taucmd.commands.build import TAU_CXX
 
 LOGGER = taucmd.getLogger(__name__)

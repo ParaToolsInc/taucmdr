@@ -37,7 +37,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import os
 import taucmd
-from taucmd.project import Registry
+from taucmd.registry import getUserRegistry
 from taucmd.docopt import docopt
 
 LOGGER = taucmd.getLogger(__name__)
@@ -74,22 +74,21 @@ def main(argv):
     LOGGER.debug('Arguments: %s' % args)
     proj_name = args['<name>']
     
-    registry = Registry()
+    registry = getUserRegistry()
     
     # Show a specific project's settings if name is given
     if proj_name:
         try:
-            print registry[proj_name]
+            print registry.projects[proj_name]
         except KeyError:
             LOGGER.error("No project named %r exists.  See 'tau project list --help'." % proj_name)
             return 1
     else:
-        if len(registry):
-            print 'Projects in %r' % os.getcwd()
+        if len(registry.projects):
+            selected_name = registry.getSelectedProject().getName()
+            print 'Projects in %r' % registry.registry_dir
             print '-'*80
-            for project in registry:
-                name = project.getName()
-                selected_name = registry.getSelectedProject().getName()
+            for name, project in registry.projects.iteritems():
                 if name == selected_name:
                     marker = '* '
                 else:
@@ -100,6 +99,6 @@ def main(argv):
                     print '\n'
                          
         else:
-            LOGGER.info("No projects defined in %r.  See 'tau project create'." % os.getcwd())
+            LOGGER.info("No projects defined in %r.  See 'tau project create'." % registry.registry_dir)
             return 1
     return 0
