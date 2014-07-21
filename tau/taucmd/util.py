@@ -109,6 +109,7 @@ def extract(tgz, dest):
     LOGGER.debug('Created %r' % full_dest)
     return full_dest
 
+
 def getTauVersion():
     """
     Opens TAU header files to get the TAU version
@@ -125,3 +126,11 @@ def getTauVersion():
         except IOError:
             continue
     return '(unknown)'
+
+
+def detectDefaultTarget():
+    """
+    Use TAU's archfind script to detect the target architecture
+    """
+    cmd = os.path.join(taucmd.TAU_MASTER_SRC_DIR, 'utils', 'archfind')
+    return subprocess.check_output(cmd).strip()

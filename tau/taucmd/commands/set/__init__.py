@@ -35,31 +35,37 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-import os
 import sys
-import subprocess
 import taucmd
-from taucmd import util
+from taucmd import commands
 from taucmd.docopt import docopt
-from taucmd.registry import Registry
 
 LOGGER = taucmd.getLogger(__name__)
 
-SHORT_DESCRIPTION = "Build your application with 'make' and the TAU compilers."
+COMMAND = 'tau set'
+
+SHORT_DESCRIPTION = "Manage TAU settings and defaults."
 
 USAGE = """
 Usage:
-  tau make [<args>...]
-  tau make -h | --help
+  %(command)s [options] <subcommand> [<args>...]
+  %(command)s -h | --help
+
+Subcommands:
+%(command_descr)s
+
+Options:
+  --user        Apply settings to this user.
+  --system      Apply settings to all users.
 """
 
 HELP = """
-'tau make' help page to be written.
-"""
-
+'%(command)s' help page to be written.
+""" % {'command': COMMAND}
 
 def getUsage():
-    return USAGE
+    return USAGE % {'command': COMMAND,
+                    'command_descr': commands.getSubcommands(__name__)}
 
 def getHelp():
     return HELP
@@ -68,32 +74,28 @@ def main(argv):
     """
     Program entry point
     """
+
     # Parse command line arguments
-    args = docopt(USAGE, argv=argv, options_first=True)
+    usage = getUsage()
+    args = docopt(usage, argv=argv, options_first=True)
     LOGGER.debug('Arguments: %s' % args)
     
-    registry = Registry()
-    if not len(registry):
-        LOGGER.info("There are no TAU projects in %r.  See 'tau project create'." % os.getcwd())
+    # Check for -h | --help (why doesn't this work automatically?)
+    idx = args['<subcommand>'].find('-h')
+    if (idx == 0) or (idx == 1):
+        print usage
+        return 0
+    
+    # Try to execute as a tau command
+    cmd = args['<subcommand>']
+    cmd_args = args['<args>']
+    cmd_module = 'taucmd.commands.set.%s' % cmd
+    
+    try:
+        __import__(cmd_module)
+        LOGGER.debug('Recognized %r as a %s command' % (cmd, COMMAND))
+        return sys.modules[cmd_module].main(['set', cmd] + cmd_args)
+    except ImportError:
+        LOGGER.debug('%r not recognized as a %s command' % (cmd, COMMAND))
+        print usage
         return 1
-
-    # Check project compatibility
-    proj = registry.getSelectedProject()
-    LOGGER.info('Using TAU project %r' % proj.getName())
-        
-    # Compile the project if needed
-    proj.compile()
-    
-    # Set the environment
-    env = proj.getTauMakeEnvironment()
-    
-    # Get compiler flags
-    tau_flags = proj.getTauMakeFlags()
-    
-    # Execute the application
-    cmd = ['make'] + tau_flags + args['<args>']
-    LOGGER.debug('Creating subprocess: cmd=%r, env=%r' % (cmd, env))
-    proc = subprocess.Popen(cmd, env=env, stdout=sys.stdout, stderr=sys.stderr)
-    retval = proc.wait()
-    
-    return retval

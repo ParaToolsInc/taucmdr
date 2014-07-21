@@ -41,6 +41,17 @@ import logging
 import traceback
 import textwrap
 
+# Tau source code root directory
+try:
+    TAU_MASTER_SRC_DIR = os.environ['TAU_MASTER_SRC_DIR']
+except KeyError:
+    print '!'*80
+    print '!'
+    print '! CRITICAL ERROR: TAU_MASTER_SRC_DIR environment variable not set.'
+    print '!'
+    print '!'*80
+    exit(1)
+
 # Contact for bugs, etc.
 HELP_CONTACT = '<tau-bugs@cs.uoregon.edu>'
 
@@ -56,22 +67,14 @@ PACKAGE_HOME = os.path.dirname(os.path.realpath(__file__))
 # Search paths for included files
 INCLUDE_PATH = [os.path.realpath('.')]
 
-# User-specific TAU files
-TAUCMD_HOME = os.path.join(os.path.expanduser('~'), '.tau')
+# User-level TAU files
+USER_TAU_DIR = os.path.join(os.path.expanduser('~'), '.tau')
+
+# System-level TAU files
+SYSTEM_TAU_DIR = os.path.realpath(os.path.join(TAU_MASTER_SRC_DIR, '..'))
 
 # User-specific source code and build directory
-SRC_DIR = os.path.join(TAUCMD_HOME, 'src')
-
-# Tau source code root directory
-try:
-    TAU_MASTER_SRC_DIR = os.environ['TAU_MASTER_SRC_DIR']
-except KeyError:
-    print '!'*80
-    print '!'
-    print '! CRITICAL ERROR: TAU_MASTER_SRC_DIR environment variable not set.'
-    print '!'
-    print '!'*80
-    exit(1)
+SRC_DIR = os.path.join(USER_TAU_DIR, 'src')
 
 DEFAULT_TAU_COMPILER_OPTIONS = ['-optRevert']
 

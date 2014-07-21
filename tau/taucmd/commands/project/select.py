@@ -36,7 +36,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 import taucmd
-from taucmd.project import Registry, ProjectNameError
+from taucmd.registry import Registry
+from taucmd.project import ProjectNameError
 from taucmd.docopt import docopt
 
 LOGGER = taucmd.getLogger(__name__)

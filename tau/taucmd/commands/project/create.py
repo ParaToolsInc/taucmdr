@@ -40,86 +40,39 @@ import sys
 import subprocess
 import string
 import taucmd
+import pprint
 from datetime import datetime
-from taucmd import util
-from taucmd.project import Registry, ProjectNameError
+from taucmd import util, project
+from taucmd.registry import Registry
 from taucmd.docopt import docopt
 
 LOGGER = taucmd.getLogger(__name__)
 
 SHORT_DESCRIPTION = "Create a new named TAU project configuration."
 
+COMMAND = 'tau project create'
+
 USAGE = """
 Usage:
-  tau project create [--name=<name>] [options]
-  tau project create -h | --help
+  %(command)s [options]
+  %(command)s -h | --help
   
-Architecture Options:
-  --target-arch=<arch>              Set target architecture. [default: %(target_default)s]
-
-Compiler Options:
-  --cc=<compiler>                   Set C compiler.
-  --c++=<compiler>                  Set C++ compiler.  
-  --fortran=<compiler>              Set Fortran compiler.
-  --upc=<compiler>                  Set UPC compiler.
-
-Assisting Library Options:
-  --pdt=(download|<path>|none)      Program Database Toolkit (PDT) installation path. [default: download]
-  --bfd=(download|<path>|none)      GNU Binutils installation path. [default: download]
-  --dyninst=<path>                  DyninstAPI installation path.
-  --papi=<path>                     Performance API (PAPI) installation path.
-  
-Thread Options:
-  --openmp                          Enable OpenMP instrumentation.
-  --pthreads                        Enable pthreads instrumentation.
-  
-Message Passing Interface (MPI) Options:
-  --mpi                             Enable MPI instrumentation.
-  --mpi-include=<path>              MPI header files installation path.
-  --mpi-lib=<path>                  MPI library files installation path.
-
-NVIDIA CUDA Options:
-  --cuda                            Enable NVIDIA CUDA instrumentation.
-  --cuda-sdk=<path>                 NVIDIA CUDA SDK installation directory. [default: /usr/local/cuda]
-
-Universal Parallel C (UPC) Options:
-  --upc-gasnet=<path>               GASNET installation path.
-  --upc-network=<network>           Set UPC network.
-
-Memory Options:
-  --memory                          Enable memory instrumentation.
-  --memory-debug                    Enable memory debugging.
-
-I/O and Communication Options:
-  --comm-matrix                     Build the application's communication matrix.
-  --io                              Enable I/O instrumentation.
-
-Callpath Options:
-  --callpath=<number>               Set the callpath depth in the application profile. [default: 0]
-  
-Measurement Options:
-  --profile                         Enable application profiling.
-  --trace                           Enable application tracing.
-  --sample                          Enable application sampling.  Requires --bfd.
+Project Options:
+  --name=<name>                Set the project name.     
+%(project_options)s
 """
 
 HELP = """
-'project create' page to be written.
-"""
+'%(command)s' page to be written.
+""" % {'command': COMMAND}
 
 def getUsage():
-    return USAGE % {'target_default': detectTarget()}
+    return USAGE % {'command': COMMAND,
+                    'project_options': project.getProjectOptions()}
 
 def getHelp():
     return HELP
 
-
-def detectTarget():
-    """
-    Use TAU's archfind script to detect the target architecture
-    """
-    cmd = os.path.join(taucmd.TAU_MASTER_SRC_DIR, 'utils', 'archfind')
-    return subprocess.check_output(cmd).strip()
 
 def isValidProjectName(name):
     valid = set(string.digits + string.letters + '-_.')
@@ -132,11 +85,15 @@ def main(argv):
     """
     # Parse command line arguments
     usage = getUsage()
+    #print usage
     args = docopt(usage, argv=argv)
     LOGGER.debug('Arguments: %s' % args)
+    config = project.getConfigFromOptions(args)
+    LOGGER.debug('Project config: %s' % pprint.pformat(config))
+    
     
     # Get project name
-    proj_name = args['--name']
+    proj_name = config['name']
     if proj_name and not isValidProjectName(proj_name):
         LOGGER.error('%r is not a valid project name.  Use only letters, numbers, dot (.), dash (-), and underscore (_).' % proj_name)
         return 1
@@ -146,37 +103,17 @@ def main(argv):
         if not isValidProjectName(proj_name):
             print 'ERROR: %r is not a valid project name.  Use only letters, numbers, dot (.), dash (-), and underscore (_).' % proj_name
             proj_name = None
-    args['--name'] = proj_name
+    config['name'] = proj_name
     
-    # Make sure at least one measurement method is used
-    if not (args['--profile'] or args['--trace'] or args['--sample']):
-        args['--profile'] = True
-        
-    # Strip and check args
-    config = {'name': proj_name,
-              'refresh': True,
-              'tau-version': util.getTauVersion(),
-              'modified': datetime.now()}
-    exclude = ['--help', '-h', '--no-select']
-    for key, val in args.iteritems():
-        if key[0:2] == '--' and not key in exclude:
-            if key in ['--pdt', '--bfd']:
-                if val.upper() == 'NONE':
-                    config[key[2:]] = None
-                elif val.upper() == 'DOWNLOAD':
-                    config[key[2:]] = 'download'
-                else:
-                    config[key[2:]] = val
-            else:
-                config[key[2:]] = val
-
-    # TODO: Other PDT compilers
-    config['pdt_c++'] = 'g++'
+    # Set additional project config flags
+    config.update({'refresh': True,
+                   'tau-version': util.getTauVersion(),
+                   'modified': datetime.now()})
 
     registry = Registry()
     try:
         proj = registry.addProject(config)
-    except ProjectNameError:
+    except project.ProjectNameError:
         LOGGER.error("Project %r already exists.  See 'tau project create --help' and maybe use the --name option." % proj_name)
         return 1
 

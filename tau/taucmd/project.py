@@ -41,113 +41,239 @@ import glob
 import taucmd
 import pickle
 import pprint
+import subprocess
 from textwrap import dedent
 from datetime import datetime
+from taucmd import TauError
 from taucmd.installers import pdt, bfd, tau
 from taucmd import util
 
 
 LOGGER = taucmd.getLogger(__name__)
 
+PROJECT_OPTIONS = """
+Architecture Options:
+  --target-arch=<arch>         Set target architecture.             [default: %(target-arch_default)s]
 
-    
+Compiler Options:
+  --cc=<compiler>              Set C compiler.                      [default: %(cc_default)s]
+  --c++=<compiler>             Set C++ compiler.                    [default: %(cxx_default)s]
+  --fortran=<compiler>         Set Fortran compiler.                [default: %(fc_default)s]
+  --upc=<compiler>             Set UPC compiler.                    [default: %(upc_default)s]
+
+Assisting Library Options:
+  --pdt=(download|<path>)      PDT installation path.               [default: %(pdt_default)s]
+  --no-pdt                     Disable PDT source instrumentation.
+  --bfd=(download|<path>)      GNU Binutils installation path.      [default: %(bfd_default)s]
+  --no-bfd                     Disable source location resolution.
+  --unwind=(download|<path>)   libunwind installation path.         [default: %(unwind_default)s]
+  --no-unwind                  Disable callstack unwinding.
+  --papi=(download|<path>)     PAPI installation path.              [default: %(papi_default)s]
+  --no-papi                    Disable hardware metrics.
+  --dyninst=(download|<path>)  DyninstAPI installation path.        [default: %(dyninst_default)s]
+  --no-dyninst                 Disable binary instrumentation.
+
+Thread Options:
+  --openmp                     Enable OpenMP measurement.           [default: %(openmp_default)s]
+  --no-openmp                  Disable OpenMP measurement.          
+  --pthreads                   Enable pthreads measurement.         [default: %(pthreads_default)s]
+  --no-pthreads                Disable pthreads measurement.        
+
+Message Passing Interface (MPI) Options:                            
+  --mpi                        Enable MPI measurement.              [default: %(mpi_default)s]
+  --no-mpi                     Disable MPI measurement.
+  --mpi-include=<path>         MPI header files installation path.  [default: %(mpi-include_default)s]
+  --mpi-lib=<path>             MPI library files installation path. [default: %(mpi-lib_default)s]
+
+NVIDIA CUDA Options:
+  --cuda                       Enable CUDA measurement.             [default: %(cuda_default)s]
+  --no-cuda                    Disable CUDA measurement.
+  --cuda-sdk=<path>            CUDA SDK installation path.          [default: %(cuda-sdk_default)s]
+
+Universal Parallel C (UPC) Options:
+  --upc-gasnet=<path>          GASNET installation path.            [default: %(upc-gasnet_default)s]
+  --upc-network=<network>      Set UPC network.                     [default: %(upc-network_default)s]
+
+Memory Options:
+  --memory                     Enable memory measurement.           [default: %(memory_default)s]
+  --no-memory                  Disable memory measurement.
+  --memory-debug               Enable memory debugging.             [default: %(memory-debug_default)s]
+  --no-memory-debug            Disable memory debugging.
+
+I/O and Communication Options:
+  --io                         Enable I/O measurement.              [default: %(io_default)s]
+  --no-io                      Disable I/O measurement.
+  --comm-matrix                Enable communication matrix.         [default: %(comm-matrix_default)s]
+  --no-comm-matrix             Disable communication matrix.
+  
+Measurement Options:
+  --callpath=<number>          Set the callpath measurement depth.  [default: %(callpath_default)s]
+  --profile                    Enable profiling.                    [default: %(profile_default)s]
+  --no-profile                 Disable profiling.
+  --trace                      Enable tracing.                      [default: %(trace_default)s]
+  --no-trace                   Disable tracing.
+  --sample                     Enable event-based sampling.         [default: %(sample_default)s]
+  --no-sample                  Disable event-based sampling.
+"""
+
+_UNDEFINED_DEFAULTS = {'target-arch_default': util.detectDefaultTarget(),
+                       'cc_default': 'gcc',
+                       'cxx_default': 'g++',
+                       'fc_default': 'gfortran',
+                       'upc_default': 'gupc',
+                       'pdt_default': 'download',
+                       'bfd_default': 'download',
+                       'unwind_default': 'download',
+                       'papi_default': 'download',
+                       'dyninst_default': 'download',
+                       'openmp_default': False,
+                       'pthreads_default': False,
+                       'mpi_default': False,
+                       'mpi-include_default': '/usr/include',
+                       'mpi-lib_default': '/usr/lib',
+                       'cuda_default': False,
+                       'cuda-sdk_default': '/usr/local/cuda',
+                       'upc-gasnet_default': '/usr/local',
+                       'upc-network_default': 'smp',
+                       'memory_default': False,
+                       'memory-debug_default': False,
+                       'io_default': True,
+                       'comm-matrix_default': False,
+                       'callpath_default': '2',
+                       'profile_default': True,
+                       'trace_default': False,
+                       'sample_default': False}
+
+def getProjectOptions():
+    userDefaults = taucmd.registry.getUserRegistry().defaults
+    systemDefaults = taucmd.registry.getSystemRegistry().defaults
+     
+    defaults = {}
+    features = []
+    enabled = []
+    disabled = []
+    for key, val in _UNDEFINED_DEFAULTS.iteritems():
+        try:
+            default = userDefaults[key]
+        except KeyError:
+            try:
+                default = systemDefaults[key]
+            except KeyError:
+                default = val
+        if val == False:
+            val = 'disabled'
+        elif val == True:
+            val = 'enabled'
+        defaults[key] = val
+    try:
+        return PROJECT_OPTIONS % defaults
+    except KeyError, e:
+        raise TauError('%s: Check _UNDEFINED_DEFAULTS' % str(e))
+
+
+def getConfigFromOptions(args):
+    """
+    Strip and check command line arguments and apply defaults
+    """
+    userDefaults = taucmd.registry.getUserRegistry().defaults
+    systemDefaults = taucmd.registry.getSystemRegistry().defaults
+
+    config = {}
+    exclude = ['--help', '-h']
+    downloadable = ['pdt', 'bfd', 'unwind', 'papi', 'dyninst']
+    for key, val in args.iteritems():
+        if key[0:2] == '--' and key[0:5] != '--no-' and key not in exclude:
+            key = key[2:]
+            # Check for corresponding '--no-*' argument
+            nokey = '--no-%s' % key
+            try:
+                noval = args[nokey]
+            except KeyError:
+                config[key] = val
+                continue
+            if val and noval:
+                raise TauConfigurationError('Both %s and %s were specified.  Please pick one.' % (key, nokey))
+            elif noval:
+                config[key] = False
+            elif val:
+                if key in downloadable and val.upper() == 'DOWNLOAD':
+                    config[key] = 'download'
+                else:
+                    config[key] = val
+            else:
+                try:
+                    config[key] = userDefaults[key]
+                except KeyError:
+                    try:
+                        config[key] = systemDefaults[key]
+                    except KeyError:
+                        config[key] = _UNDEFINED_DEFAULTS['%s_default' % key]
+
+
+    # TODO: Other PDT compilers
+    config['pdt_c++'] = 'g++'
+    return config
+
+
+# _BOOL_OPTIONS = [('openmp', 'OpenMP measurement', False),
+#                  ('pthreads', 'pthreads measurement', False),
+#                  ('mpi', 'MPI measurement', False),
+#                  ('cuda', 'NVIDIA CUDA measurement', False),
+#                  ('memory', 'Memory measurement', False),
+#                  ('memory-debug', 'Memory debugging', False),
+#                  ('io', 'I/O measurement', True),
+#                  ('comm-matrix', 'Communication matrix', False),
+#                  ('profile', 'Profiling', True),
+#                  ('trace', 'Tracing', False),
+#                  ('sample', 'Event-based sampling', False)]
+
+# def getProjectCommandLineOptions():
+#     userDefaults = taucmd.registry.getUserRegistry().defaults
+#     systemDefaults = taucmd.registry.getSystemRegistry().defaults
+#     
+#     fmt = '    {:<27}{:<37}{}'
+#     defaults = {}
+#     features = []
+#     enabled = []
+#     disabled = []
+#     for key, val in _UNDEFINED_DEFAULTS.iteritems():
+#         try:
+#             default = userDefaults[key]
+#         except KeyError:
+#             try:
+#                 default = systemDefaults[key]
+#             except KeyError:
+#                 default = val
+#         defaults[key] = val
+#     for opt in _BOOL_OPTIONS:
+#         key, desc, undef = opt
+#         try:
+#             default = userDefaults[key]
+#         except KeyError:
+#             try:
+#                 default = systemDefaults[key]
+#             except KeyError:
+#                 default = undef
+#         if default:
+#             enabled.append(key)
+#             features.append(fmt.format(key, desc, '[default: enabled]'))
+#         else:
+#             disabled.append(key)
+#             features.append(fmt.format(key, desc, '[default: disabled]'))
+#         defaults['enable_default'] = ','.join(enabled)
+#         defaults['disable_default'] = ','.join(disabled)
+#         defaults['features'] = '\n'.join(features)
+#     try:
+#         return PROJECT_OPTIONS % defaults
+#     except KeyError, e:
+#         raise TauError('%s: Check _UNDEFINED_DEFAULTS and _PROJECT_BOOL_OPTIONS' % str(e))
+
+
 class ProjectNameError(Exception):
     def __init__(self, value):
         self.value = value
     def __str__(self):
         return repr(self.value)
-
-
-class Registry(object):
-    """
-    TODO: Docs
-    """
-    def __init__(self, projects_dir='.tau'):
-        self.projects_dir = projects_dir
-        self.projects = None
-        self.selected = None
-        self.load()
-        
-    def __str__(self):
-        return 'Selected: %s\nProjects:\n%s' % (self.selected, pprint.pformat(self.projects))
-    
-    def __len__(self):
-        return len(self.projects)
-    
-    def __iter__(self):
-        for config in self.projects.itervalues():
-            yield Project(self, config)
-            
-    def __getitem__(self, key):
-        return Project(self, self.projects[key])
-    
-    def load(self):
-        if self.projects:
-            LOGGER.debug('Project registry already loaded.')
-        try:
-            file_path = os.path.join(self.projects_dir, 'projects')
-            with open(file_path, 'rb') as fp:
-                self.selected, self.projects = pickle.load(fp)
-            LOGGER.debug('Project registry loaded from %r' % file_path)
-        except:
-            LOGGER.debug('Project registry file %r does not exist.' % file_path)
-            self.selected = None
-            self.projects = {}
-
-    def save(self):
-        util.mkdirp(self.projects_dir)
-        file_path = os.path.join(self.projects_dir, 'projects')
-        with open(file_path, 'wb') as fp:
-            pickle.dump((self.selected, self.projects), fp)
-        LOGGER.debug('Project registry written to %r' % file_path)
-
-    def getSelectedProject(self):
-        try:
-            return Project(self, self.projects[self.selected])
-        except:
-            pass
-        return None
-    
-    def setSelectedProject(self, proj_name):
-        # Set a project as selected
-        projects = self.projects
-        if not proj_name in projects:
-            raise KeyError
-        self.selected = proj_name
-        self.save()
-
-    def addProject(self, config, select=True):
-        # Create the project object and update the registry
-        LOGGER.debug('Adding project: %r' % config)
-        proj = Project(self, config)
-        proj_name = proj.getName()
-        projects = self.projects
-        if proj_name in projects:
-            raise ProjectNameError('Project %r already exists.')
-        projects[proj_name] = proj.config
-        if select or not self.selected:
-            self.selected = proj_name
-        self.save()
-        return proj
-
-    def deleteProject(self, proj_name):
-        projects = self.projects
-        try:
-            del projects[proj_name]
-            LOGGER.debug('Removed %r from project registry' % proj_name)
-        except KeyError:
-            raise ProjectNameError('No project named %r.' % proj_name)
-        # Update selected if necessary
-        if self.selected == proj_name:
-            self.selected = None
-            for next_name in projects.iterkeys():
-                if next_name != proj_name:
-                    self.selected = next_name
-                    break
-        # Save registry
-        self.save()
-        # TODO: Delete project files
-        
 
 
 class Project(object):
