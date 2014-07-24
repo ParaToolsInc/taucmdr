@@ -37,28 +37,32 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import os
 import taucmd
-from taucmd.registry import getUserRegistry
+from taucmd.util import pformatList
+from taucmd.registry import REGISTRY, SYSTEM_REGISTRY_DIR
 from taucmd.docopt import docopt
 
 LOGGER = taucmd.getLogger(__name__)
 
-SHORT_DESCRIPTION = "Show all TAU project configurations in this directory."
+SHORT_DESCRIPTION = "Show TAU project information."
+
+COMMAND = ' '.join(['tau'] + (__name__.split('.')[2:]))
 
 USAGE = """
 Usage:
-  tau project list [options] [<name>]
-  tau project list -h | --help
+  %(command)s [options] [<name>]
+  %(command)s -h | --help
   
 Options:
-  --long                     Show all project information.
-"""
+  --system                     Apply change to TAU installation at %(global_path)r. 
+""" 
 
 HELP = """
 Help page to be written.
 """
 
 def getUsage():
-    return USAGE
+    return USAGE % {'command': COMMAND,
+                    'global_path': SYSTEM_REGISTRY_DIR}
 
 def getHelp():
     return HELP
@@ -72,33 +76,15 @@ def main(argv):
     usage = getUsage()
     args = docopt(usage, argv=argv)
     LOGGER.debug('Arguments: %s' % args)
-    proj_name = args['<name>']
     
-    registry = getUserRegistry()
-    
-    # Show a specific project's settings if name is given
-    if proj_name:
+    system = args['--system']
+    name = args['<name>']
+    if name:
         try:
-            print registry.projects[proj_name]
+            LOGGER.info(REGISTRY[name])
         except KeyError:
-            LOGGER.error("No project named %r exists.  See 'tau project list --help'." % proj_name)
+            LOGGER.error("There is no project named %r.  Try 'tau project create --name=%s'." % (name, name))
             return 1
     else:
-        if len(registry.projects):
-            selected_name = registry.getSelectedProject().getName()
-            print 'Projects in %r' % registry.registry_dir
-            print '-'*80
-            for name, project in registry.projects.iteritems():
-                if name == selected_name:
-                    marker = '* '
-                else:
-                    marker = ''
-                print '%s%s' % (marker, name)
-                if args['--long']:
-                    print project
-                    print '\n'
-                         
-        else:
-            LOGGER.info("No projects defined in %r.  See 'tau project create'." % registry.registry_dir)
-            return 1
+        LOGGER.info(REGISTRY.getProjectListing())
     return 0

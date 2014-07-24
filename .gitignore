@@ -62,3 +62,5 @@ local.properties
 .texlipse
 .ptp-sync
 
+# TAU Commander registry files
+registry

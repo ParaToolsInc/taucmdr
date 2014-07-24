@@ -35,67 +35,77 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+import os
 import sys
+import subprocess
+import string
+import pprint
 import taucmd
-from taucmd import commands
+from textwrap import dedent
+from datetime import datetime
+from taucmd import util, project, TauConfigurationError
+from taucmd.registry import REGISTRY, SYSTEM_REGISTRY_DIR
+from taucmd.util import pformatDict
 from taucmd.docopt import docopt
+
 
 LOGGER = taucmd.getLogger(__name__)
 
-COMMAND = 'tau set'
+SHORT_DESCRIPTION = "Set default project and configure defaults for new TAU projects."
 
-SHORT_DESCRIPTION = "Manage TAU settings and defaults."
+COMMAND = ' '.join(['tau'] + (__name__.split('.')[2:]))
 
 USAGE = """
 Usage:
-  %(command)s [options] <subcommand> [<args>...]
+  %(command)s [<name>] 
+  %(command)s [options]
   %(command)s -h | --help
-
-Subcommands:
-%(command_descr)s
-
-Options:
-  --user        Apply settings to this user.
-  --system      Apply settings to all users.
+  
+Subcommand Options:
+  --system                     Apply change to TAU installation at %(global_path)r.
+%(project_options)s
+Use '%(command)s' to see currently configured defaults.
+Use '%(command)s <name>' to set <name> as the default project.
+Use '%(command)s --opt0 --opt1 ...' to set defaults for new projects.
 """
 
 HELP = """
-'%(command)s' help page to be written.
+'%(command)s' page to be written.
 """ % {'command': COMMAND}
 
 def getUsage():
     return USAGE % {'command': COMMAND,
-                    'command_descr': commands.getSubcommands(__name__)}
+                    'global_path': SYSTEM_REGISTRY_DIR,
+                    'project_options': project.getProjectOptions(show_defaults=False)}
 
 def getHelp():
     return HELP
+
 
 def main(argv):
     """
     Program entry point
     """
-
     # Parse command line arguments
-    usage = getUsage()
-    args = docopt(usage, argv=argv, options_first=True)
+    args = docopt(getUsage(), argv=argv)
     LOGGER.debug('Arguments: %s' % args)
     
-    # Check for -h | --help (why doesn't this work automatically?)
-    idx = args['<subcommand>'].find('-h')
-    if (idx == 0) or (idx == 1):
-        print usage
-        return 0
-    
-    # Try to execute as a tau command
-    cmd = args['<subcommand>']
-    cmd_args = args['<args>']
-    cmd_module = 'taucmd.commands.set.%s' % cmd
-    
-    try:
-        __import__(cmd_module)
-        LOGGER.debug('Recognized %r as a %s command' % (cmd, COMMAND))
-        return sys.modules[cmd_module].main(['set', cmd] + cmd_args)
-    except ImportError:
-        LOGGER.debug('%r not recognized as a %s command' % (cmd, COMMAND))
-        print usage
-        return 1
+    system = args['--system']
+    name = args['<name>']
+    if name:
+        # Set default project
+        try:
+            REGISTRY.setDefaultProject(name)
+        except KeyError:
+            LOGGER.error("No project named %r exists.  See 'tau project list' for project names." % name)
+            return 1
+        LOGGER.info(REGISTRY.getProjectListing())
+    else:
+        # Set new project defaults
+        config = project.getConfigFromOptions(args, apply_defaults=False)
+        if len(config):
+            LOGGER.debug('Project config: %s' % config)
+            REGISTRY.updateDefaultValues(config, system)
+            REGISTRY.save()
+        LOGGER.info(REGISTRY.getDefaultValueListing())
+    return 0
