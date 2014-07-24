@@ -38,10 +38,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import os
 import sys
 import glob
-import taucmd
-import pickle
-import pprint
 import subprocess
+import taucmd
 from textwrap import dedent
 from datetime import datetime
 from taucmd import TauError
@@ -51,148 +49,159 @@ from taucmd import util
 
 LOGGER = taucmd.getLogger(__name__)
 
-PROJECT_OPTIONS = """
+_PROJECT_DOCOPT = """
 Architecture Options:
-  --target-arch=<arch>         Set target architecture.             [default: %(target-arch_default)s]
+  --target-arch=<arch>         Set target architecture.             %(target-arch_default)s
 
 Compiler Options:
-  --cc=<compiler>              Set C compiler.                      [default: %(cc_default)s]
-  --c++=<compiler>             Set C++ compiler.                    [default: %(cxx_default)s]
-  --fortran=<compiler>         Set Fortran compiler.                [default: %(fc_default)s]
-  --upc=<compiler>             Set UPC compiler.                    [default: %(upc_default)s]
+  --cc=<compiler>              Set C compiler.                      %(cc_default)s
+  --c++=<compiler>             Set C++ compiler.                    %(c++_default)s
+  --fortran=<compiler>         Set Fortran compiler.                %(fortran_default)s
+  --upc=<compiler>             Set UPC compiler.                    %(upc_default)s
 
 Assisting Library Options:
-  --pdt=(download|<path>)      PDT installation path.               [default: %(pdt_default)s]
+  --pdt=(download|<path>)      PDT installation path.               %(pdt_default)s
   --no-pdt                     Disable PDT source instrumentation.
-  --bfd=(download|<path>)      GNU Binutils installation path.      [default: %(bfd_default)s]
-  --no-bfd                     Disable source location resolution.
-  --unwind=(download|<path>)   libunwind installation path.         [default: %(unwind_default)s]
+  --bfd=(download|<path>)      GNU Binutils installation path.      %(bfd_default)s
+  --no-bfd                     Disable source location resolution via GNU Binutils.
+  --unwind=(download|<path>)   libunwind installation path.         %(unwind_default)s
   --no-unwind                  Disable callstack unwinding.
-  --papi=(download|<path>)     PAPI installation path.              [default: %(papi_default)s]
+  --papi=(download|<path>)     PAPI installation path.              %(papi_default)s
   --no-papi                    Disable hardware metrics.
-  --dyninst=(download|<path>)  DyninstAPI installation path.        [default: %(dyninst_default)s]
+  --dyninst=(download|<path>)  DyninstAPI installation path.        %(dyninst_default)s
   --no-dyninst                 Disable binary instrumentation.
 
 Thread Options:
-  --openmp                     Enable OpenMP measurement.           [default: %(openmp_default)s]
+  --openmp                     Enable OpenMP measurement.           %(openmp_default)s
   --no-openmp                  Disable OpenMP measurement.          
-  --pthreads                   Enable pthreads measurement.         [default: %(pthreads_default)s]
+  --pthreads                   Enable pthreads measurement.         %(pthreads_default)s
   --no-pthreads                Disable pthreads measurement.        
 
 Message Passing Interface (MPI) Options:                            
-  --mpi                        Enable MPI measurement.              [default: %(mpi_default)s]
+  --mpi                        Enable MPI measurement.              %(mpi_default)s
   --no-mpi                     Disable MPI measurement.
-  --mpi-include=<path>         MPI header files installation path.  [default: %(mpi-include_default)s]
-  --mpi-lib=<path>             MPI library files installation path. [default: %(mpi-lib_default)s]
+  --mpi-include=<path>         MPI header files installation path.  %(mpi-include_default)s
+  --mpi-lib=<path>             MPI library files installation path. %(mpi-lib_default)s
 
 NVIDIA CUDA Options:
-  --cuda                       Enable CUDA measurement.             [default: %(cuda_default)s]
+  --cuda                       Enable CUDA measurement.             %(cuda_default)s
   --no-cuda                    Disable CUDA measurement.
-  --cuda-sdk=<path>            CUDA SDK installation path.          [default: %(cuda-sdk_default)s]
+  --cuda-sdk=<path>            CUDA SDK installation path.          %(cuda-sdk_default)s
 
 Universal Parallel C (UPC) Options:
-  --upc-gasnet=<path>          GASNET installation path.            [default: %(upc-gasnet_default)s]
-  --upc-network=<network>      Set UPC network.                     [default: %(upc-network_default)s]
+  --upc-gasnet=<path>          GASNET installation path.            %(upc-gasnet_default)s
+  --upc-network=<network>      Set UPC network.                     %(upc-network_default)s
 
 Memory Options:
-  --memory                     Enable memory measurement.           [default: %(memory_default)s]
+  --memory                     Enable memory measurement.           %(memory_default)s
   --no-memory                  Disable memory measurement.
-  --memory-debug               Enable memory debugging.             [default: %(memory-debug_default)s]
+  --memory-debug               Enable memory debugging.             %(memory-debug_default)s
   --no-memory-debug            Disable memory debugging.
 
 I/O and Communication Options:
-  --io                         Enable I/O measurement.              [default: %(io_default)s]
+  --io                         Enable I/O measurement.              %(io_default)s
   --no-io                      Disable I/O measurement.
-  --comm-matrix                Enable communication matrix.         [default: %(comm-matrix_default)s]
+  --comm-matrix                Enable communication matrix.         %(comm-matrix_default)s
   --no-comm-matrix             Disable communication matrix.
   
 Measurement Options:
-  --callpath=<number>          Set the callpath measurement depth.  [default: %(callpath_default)s]
-  --profile                    Enable profiling.                    [default: %(profile_default)s]
+  --callpath=<number>          Set the callpath measurement depth.  %(callpath_default)s
+  --profile                    Enable profiling.                    %(profile_default)s
   --no-profile                 Disable profiling.
-  --trace                      Enable tracing.                      [default: %(trace_default)s]
+  --trace                      Enable tracing.                      %(trace_default)s
   --no-trace                   Disable tracing.
-  --sample                     Enable event-based sampling.         [default: %(sample_default)s]
+  --sample                     Enable event-based sampling.         %(sample_default)s
   --no-sample                  Disable event-based sampling.
 """
 
-_UNDEFINED_DEFAULTS = {'target-arch_default': util.detectDefaultTarget(),
-                       'cc_default': 'gcc',
-                       'cxx_default': 'g++',
-                       'fc_default': 'gfortran',
-                       'upc_default': 'gupc',
-                       'pdt_default': 'download',
-                       'bfd_default': 'download',
-                       'unwind_default': 'download',
-                       'papi_default': 'download',
-                       'dyninst_default': 'download',
-                       'openmp_default': False,
-                       'pthreads_default': False,
-                       'mpi_default': False,
-                       'mpi-include_default': '/usr/include',
-                       'mpi-lib_default': '/usr/lib',
-                       'cuda_default': False,
-                       'cuda-sdk_default': '/usr/local/cuda',
-                       'upc-gasnet_default': '/usr/local',
-                       'upc-network_default': 'smp',
-                       'memory_default': False,
-                       'memory-debug_default': False,
-                       'io_default': True,
-                       'comm-matrix_default': False,
-                       'callpath_default': '2',
-                       'profile_default': True,
-                       'trace_default': False,
-                       'sample_default': False}
 
-def getProjectOptions():
-    userDefaults = taucmd.registry.getUserRegistry().defaults
-    systemDefaults = taucmd.registry.getSystemRegistry().defaults
-     
-    defaults = {}
-    features = []
-    enabled = []
-    disabled = []
-    for key, val in _UNDEFINED_DEFAULTS.iteritems():
-        try:
-            default = userDefaults[key]
-        except KeyError:
-            try:
-                default = systemDefaults[key]
-            except KeyError:
-                default = val
-        if val == False:
-            val = 'disabled'
-        elif val == True:
-            val = 'enabled'
-        defaults[key] = val
+
+_DEFAULTS = {'name': None,
+             'target-arch': util.detectDefaultTarget(),
+             'cc': 'gcc',
+             'c++': 'g++',
+             'fortran': 'gfortran',
+             'upc': 'gupc',
+             'pdt': 'download',
+             'pdt_c++': 'g++',
+             'bfd': 'download',
+             'unwind': 'download',
+             'papi': 'download',
+             'dyninst': 'download',
+             'openmp': False,
+             'pthreads': False,
+             'mpi': False,
+             'mpi-include': '/usr/include',
+             'mpi-lib': '/usr/lib',
+             'cuda': False,
+             'cuda-sdk': '/usr/local/cuda',
+             'upc-gasnet': '/usr/local',
+             'upc-network': 'smp',
+             'memory': False,
+             'memory-debug': False,
+             'io': True,
+             'comm-matrix': False,
+             'callpath': '2',
+             'profile': True,
+             'trace': False,
+             'sample': False}
+
+def _getDefault(key):
+    """
+    Return default value
+    """
     try:
-        return PROJECT_OPTIONS % defaults
+        default = taucmd.registry.REGISTRY.getDefaultValue(key)
+    except KeyError:
+        default = _DEFAULTS[key]
+    return default
+
+
+def getProjectOptions(show_defaults=True):
+    """
+    Returns a string of command line options formatted for docopt
+    """
+    defaults = {}
+    for key, val in _DEFAULTS.iteritems():
+        default = _getDefault(key)
+        if default == False:
+            default = 'disabled'
+        elif default == True:
+            default = 'enabled'
+        defaults[key] = default
+    keys = ['%s_default' % key for key in defaults.iterkeys()]
+    if show_defaults:
+        vals = ['[default: %s]' % val for val in defaults.itervalues()]
+    else:
+        vals = ['']*len(defaults)
+    default_strs = dict(zip(keys, vals))
+    try:
+        return _PROJECT_DOCOPT % default_strs
     except KeyError, e:
-        raise TauError('%s: Check _UNDEFINED_DEFAULTS' % str(e))
+        raise TauError('%s: Check %s._DEFAULTS' % (str(e), __name__))
 
 
-def getConfigFromOptions(args):
+def getConfigFromOptions(args, apply_defaults=True):
     """
     Strip and check command line arguments and apply defaults
     """
-    userDefaults = taucmd.registry.getUserRegistry().defaults
-    systemDefaults = taucmd.registry.getSystemRegistry().defaults
-
     config = {}
-    exclude = ['--help', '-h']
     downloadable = ['pdt', 'bfd', 'unwind', 'papi', 'dyninst']
+    exclude = ['--help', '-h', '--system', '--makedefault']
     for key, val in args.iteritems():
         if key[0:2] == '--' and key[0:5] != '--no-' and key not in exclude:
             key = key[2:]
-            # Check for corresponding '--no-*' argument
             nokey = '--no-%s' % key
             try:
                 noval = args[nokey]
             except KeyError:
-                config[key] = val
+                if val:
+                    config[key] = val
+                elif apply_defaults:
+                    config[key] = _getDefault(key)
                 continue
             if val and noval:
-                raise TauConfigurationError('Both %s and %s were specified.  Please pick one.' % (key, nokey))
+                raise TauConfigurationError('Both %r and %r were specified.  Please pick one.' % (key, nokey))
             elif noval:
                 config[key] = False
             elif val:
@@ -200,73 +209,9 @@ def getConfigFromOptions(args):
                     config[key] = 'download'
                 else:
                     config[key] = val
-            else:
-                try:
-                    config[key] = userDefaults[key]
-                except KeyError:
-                    try:
-                        config[key] = systemDefaults[key]
-                    except KeyError:
-                        config[key] = _UNDEFINED_DEFAULTS['%s_default' % key]
-
-
-    # TODO: Other PDT compilers
-    config['pdt_c++'] = 'g++'
+            elif apply_defaults:
+                config[key] = _getDefault(key)
     return config
-
-
-# _BOOL_OPTIONS = [('openmp', 'OpenMP measurement', False),
-#                  ('pthreads', 'pthreads measurement', False),
-#                  ('mpi', 'MPI measurement', False),
-#                  ('cuda', 'NVIDIA CUDA measurement', False),
-#                  ('memory', 'Memory measurement', False),
-#                  ('memory-debug', 'Memory debugging', False),
-#                  ('io', 'I/O measurement', True),
-#                  ('comm-matrix', 'Communication matrix', False),
-#                  ('profile', 'Profiling', True),
-#                  ('trace', 'Tracing', False),
-#                  ('sample', 'Event-based sampling', False)]
-
-# def getProjectCommandLineOptions():
-#     userDefaults = taucmd.registry.getUserRegistry().defaults
-#     systemDefaults = taucmd.registry.getSystemRegistry().defaults
-#     
-#     fmt = '    {:<27}{:<37}{}'
-#     defaults = {}
-#     features = []
-#     enabled = []
-#     disabled = []
-#     for key, val in _UNDEFINED_DEFAULTS.iteritems():
-#         try:
-#             default = userDefaults[key]
-#         except KeyError:
-#             try:
-#                 default = systemDefaults[key]
-#             except KeyError:
-#                 default = val
-#         defaults[key] = val
-#     for opt in _BOOL_OPTIONS:
-#         key, desc, undef = opt
-#         try:
-#             default = userDefaults[key]
-#         except KeyError:
-#             try:
-#                 default = systemDefaults[key]
-#             except KeyError:
-#                 default = undef
-#         if default:
-#             enabled.append(key)
-#             features.append(fmt.format(key, desc, '[default: enabled]'))
-#         else:
-#             disabled.append(key)
-#             features.append(fmt.format(key, desc, '[default: disabled]'))
-#         defaults['enable_default'] = ','.join(enabled)
-#         defaults['disable_default'] = ','.join(disabled)
-#         defaults['features'] = '\n'.join(features)
-#     try:
-#         return PROJECT_OPTIONS % defaults
-#     except KeyError, e:
-#         raise TauError('%s: Check _UNDEFINED_DEFAULTS and _PROJECT_BOOL_OPTIONS' % str(e))
 
 
 class ProjectNameError(Exception):
@@ -280,15 +225,17 @@ class Project(object):
     """
     TODO: DOCS
     """
-    def __init__(self, registry, config):
-        config['tau-prefix'] = tau.getPrefix(config)
-        config['pdt-prefix'] = pdt.getPrefix(config)
-        config['bfd-prefix'] = bfd.getPrefix(config)
-        self.registry = registry
+    def __init__(self, config):
         self.config = config
+        self.config.update({'refresh': True,
+                            'tau-version': util.getTauVersion(),
+                            'modified': datetime.now(),
+                            'tau-prefix': tau.getPrefix(config),
+                            'pdt-prefix': pdt.getPrefix(config),
+                            'bfd-prefix': bfd.getPrefix(config)})
 
     def __str__(self):
-        return pprint.pformat(self.config)
+        return util.pformatDict(self.config)
 
     def getName(self):
         config = self.config
@@ -371,7 +318,7 @@ class Project(object):
             devnull.close() 
         config['refresh'] = False
         config['modified'] = datetime.now()
-        self.registry.save()
+        taucmd.registry.REGISTRY.save()
         
     def getEnvironment(self):
         """

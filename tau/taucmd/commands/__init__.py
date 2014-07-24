@@ -39,16 +39,18 @@ import sys
 from pkgutil import walk_packages
 
 
-def getSubcommands(command):
+def getSubcommands(command, depth=1):
     """
     Builds listing of command names with short description
     """
     parts = []
-    for module in [n for _, n, _ in walk_packages(sys.modules[command].__path__, sys.modules[command].__name__+'.')]:
-        __import__(module)
-        descr = sys.modules[module].SHORT_DESCRIPTION
-        name = '{:<15}'.format(module.split('.')[-1])
-        parts.append('  %s  %s' % (name, descr))
+    depth = len(sys.modules[command].__name__.split('.')) + depth
+    for _, module, _ in walk_packages(sys.modules[command].__path__, sys.modules[command].__name__+'.'):
+        if len(module.split('.')) <= depth:
+            __import__(module)
+            descr = sys.modules[module].SHORT_DESCRIPTION
+            name = '{:<15}'.format(module.split('.')[-1])
+            parts.append('  %s  %s' % (name, descr))
     return '\n'.join(parts)
 
 

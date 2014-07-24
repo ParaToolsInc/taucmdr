@@ -53,6 +53,10 @@ Usage:
   tau -h | --help
   tau --version
 
+Options:
+  --log=<level>    Output level.  [default: %(log_default)s]
+                   <level> can be CRITICAL, ERRROR, WARNING, INFO, or DEBUG
+
 Commands:
 %(command_descr)s
 
@@ -65,10 +69,6 @@ Shortcuts:
                    An alias for 'tau show <profile>'
   <trace>          View trace data (*.otf *.slog2, etc.) in Jumpshot
                    An alias for 'tau show <trace>' 
-
-Options:
-  --log=<level>    Output level.  [default: %(log_default)s]
-                   <level> can be CRITICAL, ERRROR, WARNING, INFO, or DEBUG
 
 See 'tau <command> --help' for more information on a specific command.
 """
@@ -96,11 +96,11 @@ def executeCommand(cmd, cmd_args):
     try:
         __import__(cmd_module)
         LOGGER.debug('Recognized %r as tau subcommand' % cmd)
-        return sys.modules[cmd_module].main([cmd] + cmd_args)
     except ImportError:
         # It wasn't a tau command, but that's OK
         LOGGER.debug('%r not recognized as a TAU command' % cmd)
-    return None
+        return None
+    return sys.modules[cmd_module].main([cmd] + cmd_args)
 
 def main():
     """

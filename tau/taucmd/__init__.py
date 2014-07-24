@@ -51,6 +51,12 @@ except KeyError:
     print '!'
     print '!'*80
     exit(1)
+    
+# Check for custom line marker
+try:
+    TAU_LINE_MARKER = os.environ['TAU_LINE_MARKER']
+except KeyError:
+    TAU_LINE_MARKER = 'TAU:'
 
 # Contact for bugs, etc.
 HELP_CONTACT = '<tau-bugs@cs.uoregon.edu>'
@@ -118,7 +124,7 @@ class LogFormatter(logging.Formatter, object):
     Custom log message formatter.
     """
     
-    LINE_MARKER = 'TAU:'
+    LINE_MARKER = TAU_LINE_MARKER
     
     
     def __init__(self):

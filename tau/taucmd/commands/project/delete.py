@@ -37,7 +37,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import os
 import taucmd
-from taucmd.registry import Registry
+from taucmd import TauError
+from taucmd.registry import REGISTRY, SYSTEM_REGISTRY_DIR
 from taucmd.project import ProjectNameError
 from taucmd.docopt import docopt
 from shutil import rmtree
@@ -46,23 +47,29 @@ LOGGER = taucmd.getLogger(__name__)
 
 SHORT_DESCRIPTION = "Delete a TAU project configuration."
 
+COMMAND = ' '.join(['tau'] + (__name__.split('.')[2:]))
+
 USAGE = """
 Usage:
-  tau project delete <name>
-  tau project delete -h | --help
-
+  %(command)s [options] <name>
+  %(command)s -h | --help
+  
+Subcommand Options:
+  --system                   Delete project from TAU installation at %(global_path)r.
+  
 See 'tau project list' for project names.
 """
 
 HELP = """
-Help page to be written.
+%(command)r help page to be written.
 """
 
 def getUsage():
-    return USAGE
+    return USAGE % {'command': COMMAND,
+                    'global_path': SYSTEM_REGISTRY_DIR}
 
 def getHelp():
-    return HELP
+    return HELP % {'command': COMMAND}
 
 def main(argv):
     """
@@ -72,15 +79,23 @@ def main(argv):
     usage = getUsage()
     args = docopt(usage, argv=argv)
     LOGGER.debug('Arguments: %s' % args)
-    
-    proj_name = args['<name>']
 
-    registry = Registry()
-    try:
-        registry.deleteProject(proj_name)
-    except ProjectNameError:
-        LOGGER.error("No project named %r exists.  See 'tau project list' for project names." % proj_name)
-        return 1
+    system = args['--system']    
+    proj_name = args['<name>']
     
-    LOGGER.info("Project %r deleted.  See 'tau project list' for a listing of projects in %r" % (proj_name, os.getcwd()))
+    try:
+        REGISTRY.deleteProject(proj_name, system)
+    except ProjectNameError:
+        if system and REGISTRY.isUserProject(proj_name):
+            LOGGER.error("Project %r is a user project.  Try '%s %s'" % 
+                         (proj_name, COMMAND, proj_name))
+        elif not system and REGISTRY.isSystemProject(proj_name):
+            LOGGER.error("Project %r is a system project.  Try '%s --system %s'" % 
+                         (proj_name, COMMAND, proj_name))
+        else:
+            LOGGER.error("There is no project named %r. See 'tau project list' for project names." % proj_name)
+        return 1
+    except:
+        raise TauError('Failed to delete project %r.' % proj_name)
+    LOGGER.info("Project %r deleted." % proj_name)
     return 0

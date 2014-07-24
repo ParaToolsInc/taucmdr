@@ -120,7 +120,7 @@ def simpleCompile(compiler, argv):
     LOGGER.debug('Arguments: %r' % argv)
     cmd_args = argv[2:]
     
-    # Get selected project
+    # Get default project
     registry = Registry()
     proj = registry.getSelectedProject()
     if not proj:

@@ -43,6 +43,7 @@ import taucmd
 import urllib
 import tarfile
 
+
 LOGGER = taucmd.getLogger(__name__)
 
 
@@ -110,27 +111,66 @@ def extract(tgz, dest):
     return full_dest
 
 
+_tauVersion = None
 def getTauVersion():
     """
     Opens TAU header files to get the TAU version
     """
-    header_files=['TAU.h', 'TAU.h.default']
-    pattern = re.compile('#define\s+TAU_VERSION\s+"(.*)"')
-    for hfile in header_files:
-        try:
-            with open('%s/include/%s' % (taucmd.TAU_MASTER_SRC_DIR, hfile), 'r') as tau_h:
-                for line in tau_h:
-                    match = pattern.match(line) 
-                    if match:
-                        return match.group(1)
-        except IOError:
-            continue
-    return '(unknown)'
+    def _parseHeadersForVersion(header_files):
+        pattern = re.compile('#define\s+TAU_VERSION\s+"(.*)"')
+        for hfile in header_files:
+            try:
+                with open('%s/include/%s' % (taucmd.TAU_MASTER_SRC_DIR, hfile), 'r') as tau_h:
+                    for line in tau_h:
+                        match = pattern.match(line) 
+                        if match:
+                            return match.group(1)
+            except IOError:
+                continue
+        return None
 
+    global _tauVersion
+    if not _tauVersion:
+        _tauVersion = _parseHeadersForVersion(['TAU.h', 'TAU.h.default'])
+        if not _tauVersion:
+            _tauVersion = '(unknown)'
+    return _tauVersion
+    
 
+_detectedTarget = None
 def detectDefaultTarget():
     """
     Use TAU's archfind script to detect the target architecture
     """
-    cmd = os.path.join(taucmd.TAU_MASTER_SRC_DIR, 'utils', 'archfind')
-    return subprocess.check_output(cmd).strip()
+    global _detectedTarget
+    if not _detectedTarget:
+        cmd = os.path.join(taucmd.TAU_MASTER_SRC_DIR, 'utils', 'archfind')
+        _detectedTarget = subprocess.check_output(cmd).strip()
+    return _detectedTarget
+
+def pformatDict(d, title=None, empty_msg='No items.', indent=0):
+    if title:
+        line = '{:=<75}\n'.format('== %s ==' % title)
+    else:
+        line = '' 
+    if len(d):
+        longest = max(map(len, d.keys()))
+        space = ' '*indent
+        items = '\n'.join(['{}{:<{width}} : {}'.format(space, key, val, width=longest)
+                           for key, val in sorted(d.iteritems())])
+    else:
+        items = empty_msg
+    return '%(line)s%(items)s' % {'line': line, 'items': items}
+    
+def pformatList(d, title=None, empty_msg='No items.', indent=0):
+    if title:
+        line = '{:=<75}\n'.format('== %s ==' % title)
+    else:
+        line = ''
+    if len(d):
+        space = ' '*indent
+        items = '\n'.join(['%s%s' % (space, val) for val in sorted(d)])
+    else:
+        items = empty_msg
+    return '%(line)s%(items)s' % {'line': line, 'items': items}
+    
