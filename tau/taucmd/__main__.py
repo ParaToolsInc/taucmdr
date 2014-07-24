@@ -54,8 +54,9 @@ Usage:
   tau --version
 
 Options:
-  --log=<level>    Output level.  [default: %(log_default)s]
-                   <level> can be CRITICAL, ERRROR, WARNING, INFO, or DEBUG
+  --verbose        Same as --log=DEBUG
+  --quiet          Same as --log=CRITICAL
+  --log=<level>    Output level, one of CRITICAL, ERRROR, WARNING, INFO, or DEBUG.
 
 Commands:
 %(command_descr)s
@@ -126,7 +127,25 @@ def main():
     args = docopt(usage, version=tau_version, options_first=True)
 
     # Set log level
-    taucmd.setLogLevel(args['--log'])
+    verbose = args['--verbose']
+    quiet = args['--quiet']
+    log = args['--log']
+    if sum([verbose, quiet, bool(log)]) > 1:
+        LOGGER.error("Please specify exactly one of --verbose, --quiet, or --log")
+        return 1
+    if verbose:
+        level = 'DEBUG'
+    elif quiet:
+        level = 'CRITICAL'
+    elif log:
+        level = log
+    else:
+        level = 'INFO'
+    try:
+        taucmd.setLogLevel(level)
+    except ValueError:
+        LOGGER.error("Invalid output level: %s" % level)
+        return 1
     LOGGER.debug('Arguments: %s' % args)
     LOGGER.debug('Verbosity level: %s' % taucmd.LOG_LEVEL)
 
