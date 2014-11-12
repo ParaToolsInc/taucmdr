@@ -38,7 +38,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import os
 import sys
 import taucmd
-from taucmd import TauUnknownCommandError
+from taucmd import UnknownCommandError
 from docopt import docopt
 
 LOGGER = taucmd.getLogger(__name__)
@@ -63,6 +63,13 @@ def getUsage():
 def getHelp():
     return HELP
 
+
+def guess_filetype(filename):
+    import mimetypes
+    mimetypes.init()
+    return mimetypes.guess_type(filename)
+
+
 def main(argv):
     """
     Program entry point
@@ -77,7 +84,6 @@ def main(argv):
     cmd_module = 'taucmd.commands.%s' % cmd
     try:
         __import__(cmd_module)
-        LOGGER.debug('Recognized %r as tau subcommand' % cmd)
         print '-'*80
         print sys.modules[cmd_module].getUsage()
         print '-'*80
@@ -85,8 +91,26 @@ def main(argv):
         print sys.modules[cmd_module].getHelp()
         print '-'*80
     except ImportError:
-        # It wasn't a tau command, but that's OK
-        LOGGER.error('%r not recognized as tau subcommand' % cmd)
-        return 1
-
-    return 0
+        # Not a TAU command, but that's OK
+        pass
+    
+    # Get the filetype and try to be helpful.
+    type, encoding = guess_filetype(cmd)
+    if type:
+        type, subtype = type.split('/')
+        if type == 'application':
+            hint = "%r is a binary file.  Try 'tau run %r'" % (cmd, cmd)
+        elif type == 'text':
+            if subtype[-3:] == 'src' or 'fortran' in subtype:
+                hint = "%r is a source code file.  Try 'tau make' to build your application." % cmd
+            elif subtype[-3:] == 'hdr':
+                hint = "%r is a header file.  Try 'tau make' to build your application." % cmd
+            else:
+                hint = "%r is an unrecognized text file.\nSee 'tau --help' and use the appropriate subcommand." % cmd
+        else:
+            hint = "TAU can't automatically recognize %r files.\nSee 'tau --help' and use the appropriate subcommand." % type
+        raise UnknownCommandError(cmd, hint)
+    else:
+        raise UnknownCommandError(cmd)
+    
+    return EXIT_SUCCESS

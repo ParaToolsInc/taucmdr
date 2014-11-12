@@ -43,7 +43,7 @@ import taucmd
 import pprint
 from textwrap import dedent
 from datetime import datetime
-from taucmd import util, project, TauConfigurationError, TauError
+from taucmd import util, project, ConfigurationError
 from taucmd.registry import REGISTRY, SYSTEM_REGISTRY_DIR
 from taucmd.project import ProjectNameError
 from taucmd.docopt import docopt
@@ -60,9 +60,9 @@ Usage:
   %(command)s -h | --help
   
 Subcommand Options:
-  --name=<name>              Set the project name.
-  --makedefault              After creating the project, make it as the default project.
-  --system                   Create project in TAU installation at %(global_path)r. 
+  --name=<name>     Set the project name.
+  --default         After creating the project, make it as the default project.
+  --system          Create project in TAU installation at %(system_path)r. 
 %(project_options)s
 """
 
@@ -72,7 +72,7 @@ HELP = """
 
 def getUsage():
     return USAGE % {'command': COMMAND,
-                    'global_path': SYSTEM_REGISTRY_DIR,
+                    'system_path': SYSTEM_REGISTRY_DIR,
                     'project_options': project.getProjectOptions(show_defaults=True)}
 
 def getHelp():
@@ -93,14 +93,14 @@ def main(argv):
     args = docopt(usage, argv=argv)
     LOGGER.debug('Arguments: %s' % args)
     
-    system = args['--system']    
-    makedefault = args['--makedefault']
+    system = args['--system'] 
+    default = args['--default']
     proj_name = args['--name']
 
     if proj_name and not isValidProjectName(proj_name):
         LOGGER.error('%r is not a valid project name.\n'
                      'Use only letters, numbers, dot (.), dash (-), and underscore (_).' % proj_name)
-        return 1
+        return taucmd.EXIT_FAILURE
     while not proj_name:
         print 'TAU: Enter project name> ',
         proj_name = sys.stdin.readline().strip()
@@ -117,18 +117,11 @@ def main(argv):
     LOGGER.info(util.pformatDict(config, title='New project settings'))
     
     try:
-        proj = REGISTRY.addProject(config, system)
+        proj = REGISTRY.addProject(config, default, system)
     except ProjectNameError:
-        raise TauConfigurationError("Project %r already exists. See 'tau project create --help'." % proj_name)
-#     except:
-#         raise TauError('Failed to create project %r' % proj_name)
-#         return 1
+        raise ConfigurationError("Project %r already exists. See 'tau project create --help'." % proj_name)
     LOGGER.info('Created new project %r.' % proj_name)
     
-    if makedefault or not REGISTRY.default_project:
-        REGISTRY.setDefaultProject(proj_name)
-        LOGGER.info("Project %r set as default.  Use 'tau project default <name>' to choose a different default project." % proj_name)
-
 #     LOGGER.info("""
 # Next steps:
 # Apply TAU to your application to gather performance data.  You can recompile

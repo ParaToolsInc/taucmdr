@@ -87,14 +87,6 @@ def main(argv):
     if (idx == 0) or (idx == 1):
         print usage
         return 0
-              
-    # Try to execute as a tau command
-    cmd_module = '%s.%s' % (__name__, cmd)   
-    try:
-        __import__(cmd_module)
-    except ImportError:
-        LOGGER.debug('%r not recognized as a %s subcommand' % (cmd, COMMAND))
-        print usage
-        return 1
-    LOGGER.debug('Recognized %r as a %s subcommand' % (cmd, COMMAND))
-    return sys.modules[cmd_module].main(['project', cmd] + cmd_args)
+
+    # Execute as a tau command
+    return commands.executeCommand(['project', cmd], cmd_args)

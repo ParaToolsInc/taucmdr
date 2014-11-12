@@ -39,7 +39,6 @@
 ################################################################################
 TAU_HOME="$( cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd )"
 SRC="tau"
-#BUILD="build"
 
 # Go to the script directory
 cd "$TAU_HOME"
@@ -50,6 +49,12 @@ cd "$TAU_HOME"
 # Add TAU top level directory to PYTHONPATH
 export TAU_MASTER_SRC_DIR="$TAU_HOME/$SRC"
 export PYTHONPATH=$TAU_MASTER_SRC_DIR:$PYTHONPATH
+
+# Check python
+if ! which python >/dev/null 2>&1 ; then
+  echo "ERROR: 'python' not found in PATH"
+  exit 1
+fi
 
 # Invoke TAU Commander
 python $TAU_MASTER_SRC_DIR/taucmd/__main__.py "$@"

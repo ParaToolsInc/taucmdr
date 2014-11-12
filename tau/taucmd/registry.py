@@ -39,7 +39,7 @@ import os
 import pickle
 import pprint
 import taucmd
-from taucmd import util
+from taucmd import util, ConfigurationError
 
 LOGGER = taucmd.getLogger(__name__)
 
@@ -49,8 +49,28 @@ SYSTEM_REGISTRY_DIR = taucmd.SYSTEM_TAU_DIR
 
 class Items(object):
     def __init__(self):
+        self.default_name = None
         self.defaults = {}
         self.projects = {}
+
+    def load(self, directory):
+        file_path = os.path.join(directory, 'registry')
+        try:
+            with open(file_path, 'rb') as fp:
+                self.__dict__.update(pickle.load(fp))
+        except IOError:
+            LOGGER.debug('Registry file %r missing, inaccessable, or corrupt.' % file_path)
+        else:
+            LOGGER.debug('Registry items loaded from %r' % file_path)
+            
+    def save(self, directory):
+        util.mkdirp(directory)
+        file_path = os.path.join(directory, 'registry')
+        with open(file_path, 'wb') as fp:
+            pickle.dump(self.__dict__, fp)
+        LOGGER.debug('Registry items written to %r' % file_path)
+
+
     
 class Registry(object):
     """
@@ -59,147 +79,138 @@ class Registry(object):
     def __init__(self):
         self._tau_version = util.getTauVersion()
         self._populated = False
-        self.default_project = None
+        self._selected_name = None
         self.user = Items()
         self.system = Items()
         self.load()
         
     def __len__(self):
+        """The number of projects in the registry"""
         return len(self.user.projects) + len(self.system.projects)
 
     def __iter__(self):
+        """Iterate over projects"""
         for projects in [self.user.projects, self.system.projects]:
             for proj in projects.itervalues():
                 yield proj
               
     def __getitem__(self, key):
+        """Get projects"""
         try:
             return self.user.projects[key]
         except KeyError:
             return self.system.projects[key]
         
-    def _loadUserItems(self):
-        file_path = os.path.join(USER_REGISTRY_DIR, 'registry')
-        try:
-            with open(file_path, 'rb') as fp:
-                self.default_project, self.user = pickle.load(fp)
-        except IOError:
-            LOGGER.debug('Registry file %r missing, inaccessable, or corrupt.' % file_path)
-        else:
-            LOGGER.debug('User items loaded from %r' % file_path)
-            
-    def _saveUserItems(self):
-        util.mkdirp(USER_REGISTRY_DIR)
-        file_path = os.path.join(USER_REGISTRY_DIR, 'registry')
-        with open(file_path, 'wb') as fp:
-            pickle.dump((self.default_project, self.user), fp)
-        LOGGER.debug('User items written to %r' % file_path)
-
-    def _loadSystemItems(self):
-        file_path = os.path.join(SYSTEM_REGISTRY_DIR, 'registry')
-        try:
-            with open(file_path, 'rb') as fp:
-                self.system = pickle.load(fp)
-        except IOError:
-            LOGGER.debug('Registry file %r missing, inaccessable, or corrupt.' % file_path)
-        else:
-            LOGGER.debug('System items loaded from %r' % file_path)
-
-    def _saveSystemItems(self):
-        try:
-            util.mkdirp(SYSTEM_REGISTRY_DIR)
-        except OSError as e:
-            if e.errno in [errno.EACCESS, errno.EPERM]:
-                LOGGER.info("You don't have permissions to create directory %r. System-level changes not saved." % SYSTEM_REGISTRY_DIR)
-                return
-            else: 
-                raise
-        file_path = os.path.join(SYSTEM_REGISTRY_DIR, 'registry')
-        try:
-            with open(file_path, 'wb') as fp:
-                pickle.dump(self.system, fp)
-        except OSError as e:
-            if e.errno in [errno.EACCESS, errno.EPERM]:
-                LOGGER.info("You don't have permissions write to %r. System-level changes not saved." % file_path)
-        LOGGER.debug('System items written to %r' % file_path)
-
     def load(self):
+        """Load the registry from file"""
         if self._populated:
             LOGGER.debug('Registry already loaded.')
         else:
-            self._loadSystemItems()
-            self._loadUserItems()
+            self.user.load(USER_REGISTRY_DIR)
+            self.system.load(SYSTEM_REGISTRY_DIR)
             self._populated = True
-        return self
 
     def save(self):
+        """Save the registry to file"""
         if not self._populated:
             LOGGER.debug('Not saving empty registry')
         else:
-            self._saveSystemItems()
-            self._saveUserItems()
-        return self
+            self.user.save(USER_REGISTRY_DIR)
+            try:
+                self.system.save(SYSTEM_REGISTRY_DIR)
+            except OSError as e:
+                if e.errno in [errno.EACCESS, errno.EPERM]:
+                    LOGGER.info("You don't have permissions write to %r. System-level changes not saved." % SYSTEM_REGISTRY_DIR)
+                else:
+                    raise
 
-    def getDefaultProject(self):
+    def getSelectedProject(self):
+        """
+        Return the selected project
+        
+        The selected project is chosen in this order: 
+        1) The the project specified by the user for this invocation
+        2) The user's default project
+        3) The system's default project
+        4) None
+        """
+        name = self._selected_name
+        if not name:
+            name = self.user.default_name
+        if not name:
+            name = self.system.default_name
+        if not name:
+            LOGGER.debug('No selected project')
+            raise ConfigurationError("A TAU project has not been selected.  \n%s" % 
+                                     self.getProjectListing(),
+                                     hint="See 'tau project default' or use the '--project' option.")
         try:
-            return self.user.projects[self.default_project]
+            proj = self.user.projects[name]
         except KeyError:
             try:
-                return self.system.projects[self.default_project]
-            except KeyError:
-                return None
+                proj = self.system.projects[name]
+            except:
+                raise ConfigurationError("A TAU project has not been selected.  \n%s" % 
+                                         self.getProjectListing())
+        LOGGER.info('Using TAU project %r' % proj.getName())
 
-    def setDefaultProject(self, proj_name):
-        if not (proj_name in self.user.projects or 
-                proj_name in self.system.projects):
+
+    def setDefaultProject(self, proj_name, system=False):
+        items = self.system if system else self.user
+        if not (proj_name in items.projects):
             raise KeyError
-        self.default_project = proj_name
+        items.default_name = proj_name
         self.save()
-        
+
     def isUserProject(self, name):
         return name in self.user.projects
     
     def isSystemProject(self, name):
         return name in self.system.projects
         
-    def addProject(self, config, system=False):
+    def addProject(self, config, default=False, system=False):
         """
         Create the project object and update the registry
         """
         LOGGER.debug('Adding project: %s' % config)
         proj = taucmd.project.Project(config)
         proj_name = proj.getName()
-        projects = self.system.projects if system else self.user.projects
-        if proj_name in projects:
+        items = self.system if system else self.user
+        if proj_name in items.projects:
             raise taucmd.project.ProjectNameError('Project %r already exists.' % proj_name)
-        projects[proj_name] = proj
+        items.projects[proj_name] = proj
+        if default:
+            items.default_name = proj_name
         self.save()
         return proj
 
     def deleteProject(self, proj_name, system=False):
-        projects = self.system.projects if system else self.user.projects
+        items = self.system if system else self.user
         try:
-            del projects[proj_name]
+            del items.projects[proj_name]
         except KeyError:
             raise taucmd.project.ProjectNameError('No project named %r.' % proj_name)
         LOGGER.debug('Removed %r from registry' % proj_name)
-        if self.default_project == proj_name:
-            self.default_project = None
+        if items.default_name == proj_name:
+            items.default_name = None
             LOGGER.info("There is no default project. Use 'tau project default <name>' set the default project.")
         self.save()
         # TODO: Delete project files
         
     def getProjectListing(self):
-        empty_msg = "No projects. See 'tau project create'"
-        uproj = ['%s [default]' % name if name == self.default_project else name
-                     for name in self.user.projects.iterkeys()]
-        sproj = ['%s [default]' % name if name == self.default_project else name
-                     for name in self.system.projects.iterkeys()]
+        """
+        Return a string listing of all available projects
+        """
+        empty_msg = "No projects. See 'tau project create --help'"
+        uproj = ['%s [default]' % name if name == self.default_name else name
+                 for name in self.user.projects.iterkeys()]
+        sproj = ['%s [default]' % name if name == self.default_name else name
+                 for name in self.system.projects.iterkeys()]
         ulisting = util.pformatList(uproj, empty_msg=empty_msg, 
                                     title='User Projects (%s)' % USER_REGISTRY_DIR)
         slisting = util.pformatList(sproj, empty_msg=empty_msg, 
                                     title='System Projects (%s)' % SYSTEM_REGISTRY_DIR)
-        return '\n'.join([slisting, ulisting])
+        return '\n'.join(['', slisting, '', ulisting, ''])
     
     def setDefaultValue(self, key, val, system=False):
         if system:
@@ -212,7 +223,7 @@ class Registry(object):
             return self.user.defaults[key]
         except KeyError:
             return self.system.defaults[key]
-        
+
     def updateDefaultValues(self, d, system=False):
         if system:
             self.system.defaults.update(d)
@@ -232,8 +243,6 @@ class Registry(object):
         elisting = util.pformatDict(defaults,
                                     title="New Project Effective Defaults",
                                     empty_msg=empty_msg)
-        default_proj = util.pformatList([REGISTRY.default_project],
-                                        title="Default project")
-        return '\n'.join([slisting, ulisting, elisting, default_proj])
+        return '\n'.join([slisting, ulisting, elisting])
 
 REGISTRY = Registry()

@@ -42,9 +42,9 @@ import re
 import subprocess
 import taucmd
 from threading import Thread
-from taucmd import util, TauNotImplementedError
+from taucmd import util, NotImplementedError
 from taucmd.docopt import docopt
-from taucmd.registry import Registry
+from taucmd.registry import REGISTRY
 
 LOGGER = taucmd.getLogger(__name__)
 
@@ -102,11 +102,10 @@ def main(argv):
     LOGGER.debug('Arguments: %s' % args)
     
     # Check project compatibility
-    registry = Registry()
-    proj = registry.getSelectedProject()
+    proj = REGISTRY.getSelectedProject()
     if not proj:
-        LOGGER.info("There are no TAU projects in %r.  See 'tau project create'." % os.getcwd())
-        return 1
+        LOGGER.info("A TAU project has not been selected.  See 'tau project --help'.")
+        return taucmd.EXIT_FAILURE
     LOGGER.info('Using TAU project %r' % proj.getName())
     
     # Read files from PWD if no files given
@@ -119,7 +118,7 @@ def main(argv):
         LOGGER.debug('Found files: %r' % args_files)
         
     if args['--no-gui']:
-        raise TauNotImplementedError('--no-gui option is not implemented', '--no-gui')
+        raise NotImplementedError('--no-gui option is not implemented', '--no-gui')
         
     # Compile the project if needed
     proj.compile()

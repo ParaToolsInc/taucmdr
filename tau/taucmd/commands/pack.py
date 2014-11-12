@@ -42,7 +42,7 @@ import subprocess
 import taucmd
 from taucmd import util
 from taucmd.docopt import docopt
-from taucmd.registry import Registry
+from taucmd.registry import REGISTRY
 
 LOGGER = taucmd.getLogger(__name__)
 
@@ -81,11 +81,7 @@ def main(argv):
     LOGGER.debug('Arguments: %s' % args)
 
     # Get selected project
-    registry = Registry()
-    proj = registry.getSelectedProject()
-    if not proj:
-        LOGGER.info("There are no TAU projects in %r.  See 'tau project create'." % os.getcwd())
-        return 1
+    proj = REGISTRY.getSelectedProject()
 
     # Check for profiles
     profiles = args['<profile>']
@@ -93,7 +89,7 @@ def main(argv):
         profiles = glob.glob('profile.*.*.*')
         if not profiles:
             LOGGER.error('No profile files in %r' % os.getcwd())
-            return 1
+            return taucmd.EXIT_FAILURE
 
     # Get project name
     if args['--no-project-name']:

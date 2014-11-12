@@ -36,16 +36,36 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 import sys
+import taucmd
+from taucmd import UnknownCommandError
 from pkgutil import walk_packages
 
 
-def getSubcommands(command, depth=1):
+LOGGER = taucmd.getLogger(__name__)
+
+
+def getCommands():
     """
     Builds listing of command names with short description
     """
     parts = []
-    depth = len(sys.modules[command].__name__.split('.')) + depth
-    for _, module, _ in walk_packages(sys.modules[command].__path__, sys.modules[command].__name__+'.'):
+    mod_names = [n for _, n, _ in walk_packages(__path__, __name__+'.') if n.count('.') == 2]
+    for module in mod_names:
+        __import__(module)
+        descr = sys.modules[module].SHORT_DESCRIPTION
+        name = '{0:<15}'.format(module.split('.')[-1])
+        parts.append('  %s  %s' % (name, descr))
+    return '\n'.join(parts)
+
+
+def getSubcommands(command, depth=1):
+    """
+    Builds listing of subcommand names with short description
+    """
+    parts = []
+    command_module = sys.modules[command] 
+    depth = len(command_module.__name__.split('.')) + depth
+    for _, module, _ in walk_packages(command_module.__path__, command_module.__name__+'.'):
         if len(module.split('.')) <= depth:
             __import__(module)
             descr = sys.modules[module].SHORT_DESCRIPTION
@@ -53,4 +73,17 @@ def getSubcommands(command, depth=1):
             parts.append('  %s  %s' % (name, descr))
     return '\n'.join(parts)
 
+
+def executeCommand(cmd, cmd_args=[]):
+    """
+    Import the command module and run its 'main'
+    """
+    cmd_module = 'taucmd.commands.%s' % '.'.join(cmd)
+    try:
+        __import__(cmd_module)
+        LOGGER.debug('Recognized %r as TAU command' % cmd)
+    except ImportError:
+        LOGGER.debug('%r not recognized as a TAU command' % cmd)
+        raise UnknownCommandError(' '.join(cmd))
+    return sys.modules[cmd_module].main(cmd + cmd_args)
 
