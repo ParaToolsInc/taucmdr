@@ -53,7 +53,7 @@ Usage:
   %(command)s -h | --help
   
 Options:
-  --system                     Apply change to TAU installation at %(global_path)r. 
+  --system                     Apply change to TAU installation at %(system_path)r. 
 """ 
 
 HELP = """
@@ -62,7 +62,7 @@ Help page to be written.
 
 def getUsage():
     return USAGE % {'command': COMMAND,
-                    'global_path': SYSTEM_REGISTRY_DIR}
+                    'system_path': SYSTEM_REGISTRY_DIR}
 
 def getHelp():
     return HELP
@@ -84,7 +84,7 @@ def main(argv):
             LOGGER.info(REGISTRY[name])
         except KeyError:
             LOGGER.error("There is no project named %r.  Try 'tau project create --name=%s'." % (name, name))
-            return 1
+            return taucmd.EXIT_FAILURE
     else:
         LOGGER.info(REGISTRY.getProjectListing())
     return 0

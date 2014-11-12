@@ -37,7 +37,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import os
 import taucmd
-from taucmd import TauError
 from taucmd.registry import REGISTRY, SYSTEM_REGISTRY_DIR
 from taucmd.project import ProjectNameError
 from taucmd.docopt import docopt
@@ -55,7 +54,7 @@ Usage:
   %(command)s -h | --help
   
 Subcommand Options:
-  --system                   Delete project from TAU installation at %(global_path)r.
+  --system                   Delete project from TAU installation at %(system_path)r.
   
 See 'tau project list' for project names.
 """
@@ -66,7 +65,7 @@ HELP = """
 
 def getUsage():
     return USAGE % {'command': COMMAND,
-                    'global_path': SYSTEM_REGISTRY_DIR}
+                    'system_path': SYSTEM_REGISTRY_DIR}
 
 def getHelp():
     return HELP % {'command': COMMAND}
@@ -94,8 +93,8 @@ def main(argv):
                          (proj_name, COMMAND, proj_name))
         else:
             LOGGER.error("There is no project named %r. See 'tau project list' for project names." % proj_name)
-        return 1
+        return taucmd.EXIT_FAILURE
     except:
-        raise TauError('Failed to delete project %r.' % proj_name)
+        raise taucmd.Error('Failed to delete project %r.' % proj_name)
     LOGGER.info("Project %r deleted." % proj_name)
     return 0

@@ -42,9 +42,8 @@ import subprocess
 import taucmd
 from textwrap import dedent
 from datetime import datetime
-from taucmd import TauError
 from taucmd.installers import pdt, bfd, tau
-from taucmd import util
+from taucmd import util, InternalError, ConfigurationError
 
 
 LOGGER = taucmd.getLogger(__name__)
@@ -178,7 +177,7 @@ def getProjectOptions(show_defaults=True):
     try:
         return _PROJECT_DOCOPT % default_strs
     except KeyError, e:
-        raise TauError('%s: Check %s._DEFAULTS' % (str(e), __name__))
+        raise InternalError('%s: Check %s._DEFAULTS' % (str(e), __name__))
 
 
 def getConfigFromOptions(args, apply_defaults=True):
@@ -201,7 +200,7 @@ def getConfigFromOptions(args, apply_defaults=True):
                     config[key] = _getDefault(key)
                 continue
             if val and noval:
-                raise TauConfigurationError('Both %r and %r were specified.  Please pick one.' % (key, nokey))
+                raise ConfigurationError('Both %r and %r were specified.  Please pick one.' % (key, nokey))
             elif noval:
                 config[key] = False
             elif val:
@@ -213,12 +212,26 @@ def getConfigFromOptions(args, apply_defaults=True):
                 config[key] = _getDefault(key)
     return config
 
+class ProjectNameError(ConfigurationError):
+    """
+    Indicates that an invalid project name was specified.
+    """
+    def __init__(self, value, hint="Try 'tau project --help'."):
+        super(ProjectNameError,self).__init__(value)
+        self.hint = hint
 
-class ProjectNameError(Exception):
-    def __init__(self, value):
-        self.value = value
-    def __str__(self):
-        return repr(self.value)
+    def handle(self):
+        hint = 'Hint: %s\n' % self.hint if self.hint else ''
+        message = textwrap.dedent("""
+        %(value)s
+        %(hint)s
+        TAU cannot proceed with the given inputs.
+        Please review the input files and command line parameters
+        or contact %(contact)s for assistance.""" % 
+        {'value': self.value, 'hint': hint, 'contact': HELP_CONTACT})
+        getLogger(__name__).critical(message)
+        sys.exit(-1)
+
 
 
 class Project(object):

@@ -39,7 +39,7 @@ import os
 import sys
 import subprocess
 import taucmd
-from taucmd.Registry import Registry
+from taucmd.Registry import REGISTRY
 from taucmd.commands.build import TAU_CXX
 
 LOGGER = taucmd.getLogger(__name__)
@@ -74,15 +74,14 @@ def main(argv):
     cmd_args = argv[2:]
     if not cmd_args:
         print "ERROR: no options specified"
-        return 1
+        return taucmd.EXIT_FAILURE
     
-    registry = Registry()
-    if not len(registry.projects):
+    if not len(REGISTRY):
         print "There are no TAU projects in %r.  See 'tau project create'." % os.getcwd()
-        return 1
+        return taucmd.EXIT_FAILURE
 
     # Check project compatibility
-    proj = registry.getSelectedProject()
+    proj = REGISTRY.getSelectedProject()
     print 'Using TAU project %r' % proj.getName()
     if not proj.supportsCompiler(COMMAND):
         print "Warning: %r project may not support the %r compiler command.  Supported compilers: %r" % (proj.getName(), COMMAND, proj.getCompilers())

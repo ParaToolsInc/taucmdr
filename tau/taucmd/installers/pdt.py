@@ -41,7 +41,6 @@ import subprocess
 import taucmd
 import shutil
 from taucmd import util
-from taucmd import TauError, TauNotImplementedError
 
 LOGGER = taucmd.getLogger(__name__)
 
@@ -109,7 +108,7 @@ def install(config, stdout=sys.stdout, stderr=sys.stderr):
         LOGGER.debug('Assuming user-supplied PDT at %r is properly installed' % pdt)
         return
     else:
-        raise TauError('Invalid PDT directory %r' % pdt)
+        raise taucmd.Error('Invalid PDT directory %r' % pdt)
     
     # Banner
     LOGGER.info('Installing PDT at %r' % prefix)
@@ -122,7 +121,7 @@ def install(config, stdout=sys.stdout, stderr=sys.stderr):
     proc = subprocess.Popen(cmd, cwd=srcdir, stdout=stdout, stderr=stderr)
     if proc.wait():
         shutil.rmtree(prefix, ignore_errors=True)
-        raise TauError('PDT configure failed.')
+        raise taucmd.Error('PDT configure failed.')
 
     # Execute make
     cmd = ['make', '-j', 'install']
@@ -131,7 +130,7 @@ def install(config, stdout=sys.stdout, stderr=sys.stderr):
     proc = subprocess.Popen(cmd, cwd=srcdir, stdout=stdout, stderr=stderr)
     if proc.wait():
         shutil.rmtree(prefix, ignore_errors=True)
-        raise TauError('PDT compilation failed.')
+        raise taucmd.Error('PDT compilation failed.')
     
     # Clean up
     shutil.rmtree(srcdir)

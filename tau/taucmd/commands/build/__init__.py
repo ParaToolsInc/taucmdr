@@ -41,7 +41,7 @@ import subprocess
 import taucmd
 from taucmd import commands
 from taucmd.docopt import docopt
-from taucmd.registry import Registry
+from taucmd.registry import REGISTRY
 from pkgutil import walk_packages
 from textwrap import dedent
 
@@ -109,6 +109,7 @@ def getUsage():
 def getHelp():
     return HELP
 
+
 def isKnownCompiler(cmd):
     """
     Returns True if cmd is a known compiler command
@@ -116,17 +117,13 @@ def isKnownCompiler(cmd):
     known = SIMPLE_COMPILERS.keys() + [n for _, n, _ in walk_packages(sys.modules[__name__].__path__)]
     return cmd in known
 
+
 def simpleCompile(compiler, argv):
     LOGGER.debug('Arguments: %r' % argv)
     cmd_args = argv[2:]
     
-    # Get default project
-    registry = Registry()
-    proj = registry.getSelectedProject()
-    if not proj:
-        LOGGER.info("There are no TAU projects in %r.  See 'tau project create'." % os.getcwd())
-        return 1
-    LOGGER.info('Using TAU project %r' % proj.getName())
+    # Get selected project
+    proj = REGISTRY.getSelectedProject()
 
     # Check project compatibility
     if not proj.supportsCompiler(compiler):
@@ -140,7 +137,7 @@ def simpleCompile(compiler, argv):
 
     # Set the environment
     env = proj.getTauCompilerEnvironment()
-    
+
     # Get compiler flags
     flags = proj.getTauCompilerFlags()
     
@@ -177,13 +174,5 @@ def main(argv):
     if cmd in SIMPLE_COMPILERS:
         return simpleCompile(cmd, argv)
 
-    # Try to execute as a tau command
-    cmd_module = 'taucmd.commands.build.%s' % cmd
-    try:
-        __import__(cmd_module)
-        LOGGER.debug('Recognized %r as a tau build command' % cmd)
-        return sys.modules[cmd_module].main(['build', cmd] + cmd_args)
-    except ImportError:
-        LOGGER.debug('%r not recognized as a tau build command' % cmd)
-        print usage
-        return 1
+    # Execute as a tau command
+    return commands.executeCommand(['build', cmd], cmd_args)

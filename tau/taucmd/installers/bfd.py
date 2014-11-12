@@ -41,7 +41,6 @@ import subprocess
 import taucmd
 import shutil
 from taucmd import util
-from taucmd import TauError
 
 LOGGER = taucmd.getLogger(__name__)
 
@@ -125,7 +124,7 @@ def install(config, stdout=sys.stdout, stderr=sys.stderr):
         LOGGER.debug('Assuming user-supplied BFD at %r is properly installed' % bfd)
         return
     else:
-        raise TauError('Invalid BFD directory %r' % bfd)
+        raise taucmd.Error('Invalid BFD directory %r' % bfd)
     
     # Banner
     LOGGER.info('Installing BFD at %r' % prefix)
@@ -139,7 +138,7 @@ def install(config, stdout=sys.stdout, stderr=sys.stderr):
     #proc = subprocess.Popen(' '.join(cmd), cwd=srcdir, stdout=stdout, stderr=stderr, shell=True)
     if proc.wait():
         shutil.rmtree(prefix, ignore_errors=True)
-        raise TauError('BFD configure failed.')
+        raise taucmd.Error('BFD configure failed.')
 
     # Execute make
     cmd = ['make']
@@ -149,7 +148,7 @@ def install(config, stdout=sys.stdout, stderr=sys.stderr):
     #proc = subprocess.Popen(' '.join(cmd), cwd=srcdir, stdout=stdout, stderr=stderr, shell=True)
     if proc.wait():
         shutil.rmtree(prefix, ignore_errors=True)
-        raise TauError('BFD compilation failed.')
+        raise taucmd.Error('BFD compilation failed.')
 
     # Execute make install
     cmd = ['make', 'install']
@@ -159,7 +158,7 @@ def install(config, stdout=sys.stdout, stderr=sys.stderr):
     #proc = subprocess.Popen(' '.join(cmd), cwd=srcdir, stdout=stdout, stderr=stderr, shell=True)
     if proc.wait():
         shutil.rmtree(prefix, ignore_errors=True)
-        raise TauError('BFD compilation failed.')
+        raise taucmd.Error('BFD compilation failed.')
     
     # Cleanup
     shutil.rmtree(srcdir)

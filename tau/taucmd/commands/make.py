@@ -41,7 +41,7 @@ import subprocess
 import taucmd
 from taucmd import util
 from taucmd.docopt import docopt
-from taucmd.registry import Registry
+from taucmd.registry import REGISTRY
 
 LOGGER = taucmd.getLogger(__name__)
 
@@ -69,17 +69,11 @@ def main(argv):
     Program entry point
     """
     # Parse command line arguments
-    args = docopt(USAGE, argv=argv, options_first=True)
+    args = docopt(USAGE, argv=argv)
     LOGGER.debug('Arguments: %s' % args)
     
-    registry = Registry()
-    if not len(registry):
-        LOGGER.info("There are no TAU projects in %r.  See 'tau project create'." % os.getcwd())
-        return 1
-
     # Check project compatibility
-    proj = registry.getSelectedProject()
-    LOGGER.info('Using TAU project %r' % proj.getName())
+    proj = REGISTRY.getSelectedProject()
         
     # Compile the project if needed
     proj.compile()

@@ -43,7 +43,7 @@ import pprint
 import taucmd
 from textwrap import dedent
 from datetime import datetime
-from taucmd import util, project, TauConfigurationError
+from taucmd import util, project
 from taucmd.registry import REGISTRY, SYSTEM_REGISTRY_DIR
 from taucmd.util import pformatDict
 from taucmd.docopt import docopt
@@ -62,7 +62,7 @@ Usage:
   %(command)s -h | --help
   
 Subcommand Options:
-  --system                     Apply change to TAU installation at %(global_path)r.
+  --system                     Apply change to TAU installation at %(system_path)r.
 %(project_options)s
 Use '%(command)s' to see currently configured defaults.
 Use '%(command)s <name>' to set <name> as the default project.
@@ -75,7 +75,7 @@ HELP = """
 
 def getUsage():
     return USAGE % {'command': COMMAND,
-                    'global_path': SYSTEM_REGISTRY_DIR,
+                    'system_path': SYSTEM_REGISTRY_DIR,
                     'project_options': project.getProjectOptions(show_defaults=False)}
 
 def getHelp():
@@ -98,7 +98,7 @@ def main(argv):
             REGISTRY.setDefaultProject(name)
         except KeyError:
             LOGGER.error("No project named %r exists.  See 'tau project list' for project names." % name)
-            return 1
+            return taucmd.EXIT_FAILURE
         LOGGER.info(REGISTRY.getProjectListing())
     else:
         # Set new project defaults
