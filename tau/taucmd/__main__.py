@@ -86,9 +86,6 @@ def main():
     Program entry point
     """
 
-    # Set the default exception handler
-    sys.excepthook = taucmd.error.excepthook
-
     # Check Python version
     if sys.version_info < taucmd.MINIMUM_PYTHON_VERSION:
         version = '.'.join(map(str, sys.version_info[0:3]))
@@ -155,7 +152,7 @@ def main():
         return commands.executeCommand([shortcut], [cmd] + cmd_args)
 
     # Not sure what to do at this point, so advise the user and exit
-    LOGGER.info("Unknown command.  Calling 'tau help %r' to get advice." % cmd)
+    LOGGER.info("Unknown command.  Calling 'tau help %s' to get advice." % cmd)
     return commands.executeCommand(['help'], [cmd])
     
 # Command line execution

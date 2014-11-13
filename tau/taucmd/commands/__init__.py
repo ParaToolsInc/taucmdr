@@ -74,16 +74,39 @@ def getSubcommands(command, depth=1):
     return '\n'.join(parts)
 
 
+def _getMain(cmd):
+    if len(cmd):
+        cmd_module = 'taucmd.commands.%s' % '.'.join(cmd)
+        __import__(cmd_module)
+        try:
+            main = sys.modules[cmd_module].main
+        except AttributeError:
+            LOGGER.debug("%s.main doesn't exist" % cmd_module)
+            main = none
+        else:
+            LOGGER.debug("Found %s.main" % cmd_module)
+        return main
+    else:
+        return None
+
 def executeCommand(cmd, cmd_args=[]):
     """
-    Import the command module and run its 'main'
+    Import the command module and run its main routine
     """
-    cmd_module = 'taucmd.commands.%s' % '.'.join(cmd)
     try:
-        __import__(cmd_module)
+        main = _getMain(cmd)
         LOGGER.debug('Recognized %r as TAU command' % cmd)
     except ImportError:
         LOGGER.debug('%r not recognized as a TAU command' % cmd)
+        parent = cmd[:-1]
+        while len(parent):
+            main = _getMain(parent)
+            if main:
+                LOGGER.debug('Getting help from %r' % parent)
+                return main(parent + ['--help'])
+            else:
+                parent = parent[:-1]
         raise UnknownCommandError(' '.join(cmd))
-    return sys.modules[cmd_module].main(cmd + cmd_args)
+    else:
+        return main(cmd + cmd_args)
 
