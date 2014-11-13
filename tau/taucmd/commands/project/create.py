@@ -110,7 +110,8 @@ def main(argv):
             proj_name = None
     args['--name'] = proj_name
 
-    config = project.getConfigFromOptions(args)
+    config = project.getConfigFromOptions(args,
+                                          exclude=['--help', '-h', '--system', '--default'])
     LOGGER.debug('Project config: %s' % pprint.pformat(config))
     
     # Show new project settings

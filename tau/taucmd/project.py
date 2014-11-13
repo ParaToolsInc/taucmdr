@@ -180,13 +180,12 @@ def getProjectOptions(show_defaults=True):
         raise InternalError('%s: Check %s._DEFAULTS' % (str(e), __name__))
 
 
-def getConfigFromOptions(args, apply_defaults=True):
+def getConfigFromOptions(args, apply_defaults=True, exclude=[]):
     """
     Strip and check command line arguments and apply defaults
     """
     config = {}
     downloadable = ['pdt', 'bfd', 'unwind', 'papi', 'dyninst']
-    exclude = ['--help', '-h', '--system', '--makedefault']
     for key, val in args.iteritems():
         if key[0:2] == '--' and key[0:5] != '--no-' and key not in exclude:
             key = key[2:]
