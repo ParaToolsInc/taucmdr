@@ -57,7 +57,9 @@ HELP = """
 Prints the help page for a specified command.
 """
 
-_KNOWN_FILES = {'makefile': ("makefile script", "See 'tau make --help' for help building with make")}
+_KNOWN_FILES = {'makefile': ("makefile script", "See 'tau make --help' for help building with make"),
+                'a.out': ("binary executable", "See 'tau run --help' for help profile this file"),
+                '.exe': ("binary executable", "See 'tau run --help' for help profile this file")}
 
 _MIME_HINTS = {None: {
                       None: ("unknown file", "See 'tau --help' or contact %s for assistance" % HELP_CONTACT),
@@ -136,7 +138,6 @@ def main(argv):
     if not os.path.exists(cmd):
         hint = "A file named %r could not be found.\nCheck the file path and permissions." % cmd
         raise UnknownCommandError(cmd, hint)
-    
     
     # Do we recognize the file name?
     try:
