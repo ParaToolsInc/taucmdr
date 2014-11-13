@@ -38,7 +38,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import os
 import sys
 import taucmd
-from taucmd import UnknownCommandError
+from taucmd import UnknownCommandError, HELP_CONTACT
 from docopt import docopt
 
 LOGGER = taucmd.getLogger(__name__)
@@ -57,17 +57,55 @@ HELP = """
 Prints the help page for a specified command.
 """
 
+_KNOWN_FILES = {'makefile': ("makefile script", "See 'tau make --help' for help building with make")}
+
+_MIME_HINTS = {None: {
+                      None: ("unknown file", "See 'tau --help' or contact %s for assistance" % HELP_CONTACT),
+                      'gzip': ("compressed file", "Please specify an executable file")
+                      },
+               'application': {
+                               None: ("unknown binary file", "See 'tau --help' or contact %s for assistance" % HELP_CONTACT),
+                               'sharedlib': ("shared library", "Please specify an executable file"),
+                               'archive': ("archive file", "Please specify an executable file"),
+                               'tar': ("archive file", "Please specify an executable file"),
+                               'unknown': ("unknown binary file", "See 'tau --help' or contact %s for assistance" % HELP_CONTACT),
+                               },
+               'text': {
+                        None: ("unknown text file", "See 'tau --help' or contact %s for assistance." % HELP_CONTACT),
+                        'src': ("source code file", "See 'tau build --help' for help compiling this file"),
+                        'hdr': ("source header file", "See 'tau build --help' for help instrumenting this file"),
+                        'fortran': ("fortran source code file", "See 'tau build --help' for help compiling this file"),
+                        'plain': ("text file", "See 'tau --help' or contact %s for assistance" % HELP_CONTACT),
+                        }
+               }
+
+def _fuzzy_index(d, k):
+    """Return d[key] where ((key in k) == true) or return d[None]"""
+    for key in d.iterkeys():
+        if key and (key in k):
+            return d[key]
+    return d[None]
+
+def _guess_filetype(filename):
+    """Return a (type, encoding) tuple for a file""" 
+    import mimetypes
+    mimetypes.init()
+    type = mimetypes.guess_type(filename)
+    if not type[0]:
+        textchars = bytearray([7,8,9,10,12,13,27]) + bytearray(range(0x20, 0x100))
+        with open(filename) as f:
+            if f.read(1024).translate(None, textchars):
+                type = ('application/unknown', None)
+            else:
+                type = ('text/plain', None)
+    return type
+
+
 def getUsage():
     return USAGE
 
 def getHelp():
     return HELP
-
-
-def guess_filetype(filename):
-    import mimetypes
-    mimetypes.init()
-    return mimetypes.guess_type(filename)
 
 
 def main(argv):
@@ -94,21 +132,35 @@ def main(argv):
         # Not a TAU command, but that's OK
         pass
     
+    # Is this a file?
+    if not os.path.exists(cmd):
+        hint = "A file named %r could not be found.\nCheck the file path and permissions." % cmd
+        raise UnknownCommandError(cmd, hint)
+    
+    
+    # Do we recognize the file name?
+    try:
+        desc, hint = _fuzzy_index(_KNOWN_FILES, cmd.lower())
+    except KeyError:
+        pass
+    else:
+        article = 'an' if desc[0] in 'aeiou' else 'a'
+        hint = '%r is %s %s.\n%s.' % (cmd, article, desc, hint)
+        raise UnknownCommandError(cmd, hint)
+    
     # Get the filetype and try to be helpful.
-    type, encoding = guess_filetype(cmd)
+    type, encoding = _guess_filetype(cmd)
+    LOGGER.debug("%r has type (%s, %s)" % (cmd, type, encoding))
     if type:
         type, subtype = type.split('/')
-        if type == 'application':
-            hint = "%r is a binary file.  Try 'tau run %r'" % (cmd, cmd)
-        elif type == 'text':
-            if subtype[-3:] == 'src' or 'fortran' in subtype:
-                hint = "%r is a source code file.  Try 'tau make' to build your application." % cmd
-            elif subtype[-3:] == 'hdr':
-                hint = "%r is a header file.  Try 'tau make' to build your application." % cmd
-            else:
-                hint = "%r is an unrecognized text file.\nSee 'tau --help' and use the appropriate subcommand." % cmd
+        try:
+            type_hints = _MIME_HINTS[type]
+        except KeyError:
+            hint = "TAU doesn't recognize %r.\nSee 'tau --help' and use the appropriate subcommand." % cmd
         else:
-            hint = "TAU can't automatically recognize %r files.\nSee 'tau --help' and use the appropriate subcommand." % type
+            desc, hint = _fuzzy_index(type_hints, subtype)
+            article = 'an' if desc[0] in 'aeiou' else 'a'
+            hint = '%r is %s %s.\n%s.' % (cmd, article, desc, hint)
         raise UnknownCommandError(cmd, hint)
     else:
         raise UnknownCommandError(cmd)

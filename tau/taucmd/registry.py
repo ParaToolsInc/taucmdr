@@ -39,7 +39,7 @@ import os
 import pickle
 import pprint
 import taucmd
-from taucmd import util, ConfigurationError
+from taucmd import util, ConfigurationError, InternalError
 
 LOGGER = taucmd.getLogger(__name__)
 
@@ -141,17 +141,19 @@ class Registry(object):
             name = self.system.default_name
         if not name:
             LOGGER.debug('No selected project')
+            if not (len(self.system.projects) or len(self.user.projects)):
+                hint = "See 'tau project create --help' for help creating a new project."
+            else:
+                hint="Use 'tau project default <name>' to set a default project, or use the '--project' option."
             raise ConfigurationError("A TAU project has not been selected.  \n%s" % 
-                                     self.getProjectListing(),
-                                     hint="See 'tau project default' or use the '--project' option.")
+                                     self.getProjectListing(), hint)
         try:
             proj = self.user.projects[name]
         except KeyError:
             try:
                 proj = self.system.projects[name]
             except:
-                raise ConfigurationError("A TAU project has not been selected.  \n%s" % 
-                                         self.getProjectListing())
+                raise InternalError("%r is the selected project, but it doesn't exist." % name)
         LOGGER.info('Using TAU project %r' % proj.getName())
 
 
