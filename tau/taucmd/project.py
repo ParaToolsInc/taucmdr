@@ -43,7 +43,7 @@ import taucmd
 from textwrap import dedent
 from datetime import datetime
 from taucmd import util
-from taucmd.installers import pdt, bfd, tau
+from taucmd.pkgs import pdt, bfd, tau
 from taucmd.error import InternalError, ConfigurationError
 
 
@@ -218,17 +218,24 @@ class Project(object):
     """
     TODO: DOCS
     """
-    def __init__(self, config):
+    def __init__(self, config, prefix):
         self.config = config
-        self.config.update({'refresh': True,
-                            'tau-version': util.getTauVersion(),
-                            'modified': datetime.now(),
-                            'tau-prefix': tau.getPrefix(config),
-                            'pdt-prefix': pdt.getPrefix(config),
-                            'bfd-prefix': bfd.getPrefix(config)})
+        compiler_prefix = '_'.join(self.getCompilers().values().sort())
+        self.prefix = os.path.join(prefix, compiler_prefix)
+        self.source_prefix = os.path.join(prefix, 'src')
 
     def __str__(self):
         return util.pformatDict(self.config)
+    
+    def __len__(self):
+        return len(self.config)
+
+    def __iter__(self):
+        for item in self.config.iteritems():
+            yield item
+              
+    def __getitem__(self, key):
+        return self.config[key]
 
     def getName(self):
         config = self.config
@@ -312,7 +319,7 @@ class Project(object):
         config['refresh'] = False
         config['modified'] = datetime.now()
         taucmd.registry.REGISTRY.save()
-        
+
     def getEnvironment(self):
         """
         Returns an environment for use with subprocess.Popen that specifies 

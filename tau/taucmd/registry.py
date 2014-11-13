@@ -36,54 +36,59 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 import os
+import sys
 import pickle
 import pprint
 import taucmd
 from taucmd import util
-from taucmd.error import ConfigurationError, InternalError, ProjectNameError
+from taucmd import HELP_CONTACT, USER_TAU_DIR, SYSTEM_TAU_DIR
+from taucmd.error import ConfigurationError, InternalError
+from taucmd.error import ProjectNameError, RegistryError
 
 LOGGER = taucmd.getLogger(__name__)
 
-USER_REGISTRY_DIR = taucmd.USER_TAU_DIR
 
-SYSTEM_REGISTRY_DIR = taucmd.SYSTEM_TAU_DIR
-
-class Items(object):
-    def __init__(self, path):
-        self.path = path
+class Registry(object):
+    def __init__(self, prefix):
+        self.prefix = prefix
         self.default_name = None
+        self.locked = False
         self.defaults = {}
         self.projects = {}
-
+        self._registry_file = os.path.join(prefix, 'registry')
+        
     def load(self):
-        file_path = os.path.join(self.path, 'registry')
-        try:
-            with open(file_path, 'rb') as fp:
-                self.__dict__.update(pickle.load(fp))
-        except IOError:
-            LOGGER.debug('Registry file %r missing, inaccessable, or corrupt.' % file_path)
+        if not os.path.exists(self._registry_file):
+            LOGGER.debug("Registry file %r doesn't exist yet." % self._registry_file)
         else:
-            LOGGER.debug('Registry items loaded from %r' % file_path)
+            try:
+                with open(self._registry_file, 'rb') as fp:
+                    self.__dict__.update(pickle.load(fp))
+            except IOError:
+                raise RegistryError('Registry file %r inaccessable or corrupt.' % self._registry_file)
+            except:
+                raise RegistryError('%r raised while loading registry file %r.' % (sys.exc_info()[1], self._registry_file),
+                                    'The registry may be corrupt.  Contact %s for help.' % HELP_CONTACT)
+            else:
+                LOGGER.debug('Registry loaded from %r' % self._registry_file)
             
     def save(self):
-        util.mkdirp(self.path)
-        file_path = os.path.join(self.path, 'registry')
+        util.mkdirp(self.prefix)
+        file_path = os.path.join(self.prefix, 'registry')
         with open(file_path, 'wb') as fp:
             pickle.dump(self.__dict__, fp)
-        LOGGER.debug('Registry items written to %r' % file_path)
+        LOGGER.debug('Registry written to %r' % file_path)
 
 
-    
-class Registry(object):
+class GlobalRegistry(object):
     """
     TODO: Docs
     """
     def __init__(self):
-        self._tau_version = util.getTauVersion()
         self._populated = False
         self._selected_name = None
-        self.user = Items(USER_REGISTRY_DIR)
-        self.system = Items(SYSTEM_REGISTRY_DIR)
+        self.user = Registry(USER_TAU_DIR)
+        self.system = Registry(SYSTEM_TAU_DIR)
         self.load()
         
     def __len__(self):
@@ -122,7 +127,7 @@ class Registry(object):
                 self.system.save()
             except OSError as e:
                 if e.errno in [errno.EACCESS, errno.EPERM]:
-                    LOGGER.info("You don't have permissions write to %r. System-level changes not saved." % self.system.path)
+                    LOGGER.info("You don't have permissions write to %r. System-level changes not saved." % self.system.prefix)
                 else:
                     raise
 
@@ -147,7 +152,7 @@ class Registry(object):
                 hint = "See 'tau project create --help' for help creating a new project."
             else:
                 hint="Use 'tau project default <name>' to set a default project, or use the '--project' option."
-            raise ConfigurationError("A TAU project has not been selected.  \n%s" % 
+            raise ConfigurationError("A TAU project has not been selected.\n%s" % 
                                      self.getProjectListing(), hint)
         LOGGER.debug("Project %r is selected" % name)
         try:
@@ -162,12 +167,11 @@ class Registry(object):
         LOGGER.info('Using TAU project %r' % proj.getName())
         return proj
 
-
     def setDefaultProject(self, proj_name, system=False):
-        items = self.system if system else self.user
-        if not (proj_name in items.projects):
+        reg = self.system if system else self.user
+        if not (proj_name in reg.projects):
             raise KeyError
-        items.default_name = proj_name
+        reg.default_name = proj_name
         self.save()
 
     def isUserProject(self, name):
@@ -181,28 +185,29 @@ class Registry(object):
         Create the project object and update the registry
         """
         LOGGER.debug('Adding project: %s' % config)
-        proj = taucmd.project.Project(config)
+        reg = self.system if system else self.user
+        proj = taucmd.project.Project(config, reg.prefix)
         proj_name = proj.getName()
-        items = self.system if system else self.user
-        if proj_name in items.projects:
-            raise ProjectNameError("A project named %r already exists at %r." % (proj_name, items.path))
-        if not len(items.projects):
+        
+        if proj_name in reg.projects:
+            raise ProjectNameError("A project named %r already exists at %r." % (proj_name, reg.prefix))
+        if not len(reg.projects):
             default = True
-        items.projects[proj_name] = proj
+        reg.projects[proj_name] = proj
         if default:
-            items.default_name = proj_name
+            reg.default_name = proj_name
         self.save()
         return proj
 
     def deleteProject(self, proj_name, system=False):
-        items = self.system if system else self.user
+        reg = self.system if system else self.user
         try:
-            del items.projects[proj_name]
+            del reg.projects[proj_name]
         except KeyError:
             raise ProjectNameError('No project named %r.' % proj_name)
         LOGGER.debug('Removed %r from registry' % proj_name)
-        if items.default_name == proj_name:
-            items.default_name = None
+        if reg.default_name == proj_name:
+            reg.default_name = None
             LOGGER.info("There is no default project. Use 'tau project default <name>' set the default project.")
         self.save()
         # TODO: Delete project files
@@ -217,9 +222,9 @@ class Registry(object):
         sproj = ['%s [default]' % name if name == self.system.default_name else name
                  for name in self.system.projects.iterkeys()]
         ulisting = util.pformatList(uproj, empty_msg=empty_msg, 
-                                    title='User Projects (%s)' % self.user.path)
+                                    title='User Projects (%s)' % self.user.prefix)
         slisting = util.pformatList(sproj, empty_msg=empty_msg, 
-                                    title='System Projects (%s)' % self.system.path)
+                                    title='System Projects (%s)' % self.system.prefix)
         return '\n'.join(['', slisting, '', ulisting, ''])
     
     def setDefaultValue(self, key, val, system=False):
@@ -245,14 +250,15 @@ class Registry(object):
         defaults = self.system.defaults.copy()
         defaults.update(self.user.defaults)
         ulisting = util.pformatDict(self.user.defaults, 
-                                    title="New Project User Defaults (%r)" % self.user.path, 
+                                    title="New Project User Defaults (%r)" % self.user.prefix, 
                                     empty_msg=empty_msg)
         slisting = util.pformatDict(self.system.defaults, 
-                                    title="New Project System Defaults (%r)" % self.system.path, 
+                                    title="New Project System Defaults (%r)" % self.system.prefix, 
                                     empty_msg=empty_msg)
         elisting = util.pformatDict(defaults,
                                     title="New Project Effective Defaults",
                                     empty_msg=empty_msg)
         return '\n'.join([slisting, ulisting, elisting])
 
-REGISTRY = Registry()
+# Instantiate the global registry
+REGISTRY = GlobalRegistry()

@@ -36,9 +36,27 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 import sys
-from taucmd import getLogger, HELP_CONTACT, EXIT_FAILURE 
+from taucmd import getLogger, HELP_CONTACT, EXIT_FAILURE, EXIT_WARNING 
 
 LOGGER = getLogger(__name__)
+
+
+def _default_handle(etype, e, tb):
+    import traceback
+    traceback.print_exception(etype, e, tb)
+    args = [arg for arg in sys.argv[1:] 
+            if not ('--log' in arg or '--verbose' in arg)] 
+    message = """
+An unexpected %(typename)s exception was raised.
+Please contact %(contact)s for assistance.
+If possible, please include the output of this command:
+
+tau --log=DEBUG %(cmd)s""" % {'typename': etype.__name__, 
+                      'cmd': ' '.join(args), 
+                      'contact': HELP_CONTACT}
+    LOGGER.critical(message)
+    sys.exit(EXIT_FAILURE)
+
 
 class Error(Exception):
     """
@@ -49,7 +67,16 @@ class Error(Exception):
     def __str__(self):
         return repr(self.value)
     def handle(self):
-        raise self
+        _default_handle(sys.exc_info())
+
+
+class InternalError(Error):
+    """
+    Indicates that an internal error has occurred
+    """
+    def __init__(self, value, hint="Contact %s" % HELP_CONTACT):
+        super(InternalError, self).__init__(value)
+        self.hint = hint
 
 
 class ConfigurationError(Error):
@@ -57,7 +84,7 @@ class ConfigurationError(Error):
     Indicates that Tau cannot succeed with the given parameters
     """
     def __init__(self, value, hint="Try 'tau --help'."):
-        super(ConfigurationError,self).__init__(value)
+        super(ConfigurationError, self).__init__(value)
         self.hint = hint
 
     def handle(self):
@@ -78,8 +105,8 @@ class NotImplementedError(Error):
     """
     Indicates that a promised feature has not been implemented yet
     """
-    def __init__(self, value, missing, hint="Try 'tau --help'."):
-        super(NotImplementedError,self).__init__(value)
+    def __init__(self, value, missing, hint="Contact %s" % HELP_CONTACT):
+        super(NotImplementedError, self).__init__(value)
         self.missing = missing
         self.hint = hint
         
@@ -102,7 +129,7 @@ class UnknownCommandError(Error):
     Indicates that a specified command is unknown
     """
     def __init__(self, value, hint="Try 'tau --help'."):
-        super(UnknownCommandError,self).__init__(value)
+        super(UnknownCommandError, self).__init__(value)
         self.hint = hint
         
     def handle(self):
@@ -122,30 +149,59 @@ class ProjectNameError(ConfigurationError):
     Indicates that an invalid project name was specified.
     """
     def __init__(self, value, hint="Try 'tau project --help'."):
-        super(ProjectNameError,self).__init__(value)
+        super(ProjectNameError, self).__init__(value)
         self.hint = hint
 
     def handle(self):
         hint = 'Hint: %s\n' % self.hint if self.hint else ''
-        message = dedent("""
+        message = """
 %(value)s
 
 %(hint)s
+
 TAU cannot proceed with the given inputs.
 Please review the input files and command line parameters
 or contact %(contact)s for assistance.""" % {'value': self.value, 
                                              'hint': hint, 
-                                             'contact': HELP_CONTACT})
+                                             'contact': HELP_CONTACT}
         LOGGER.critical(message)
-        sys.exit(-1)
+        sys.exit(EXIT_FAILURE)
 
-class InternalError(Error):
+
+class RegistryError(Error):
     """
-    Indicates that an internal error has occurred
+    Indicates that there is a problem with the project registry
     """
-    def __init__(self, value, hint="Try 'tau --help'."):
-        super(InternalError,self).__init__(value)
+    def __init__(self, value, hint="Contact %s for help" % HELP_CONTACT):
+        super(RegistryError, self).__init__(value)
         self.hint = hint
+        
+    def handle(self):
+        hint = 'Hint: %s\n' % self.hint if self.hint else ''
+        message = """
+%(value)s
+
+%(hint)s""" % {'value': self.value, 'hint': hint}
+        LOGGER.critical(message)
+        sys.exit(EXIT_FAILURE)
+
+
+class PackageError(Error):
+    """
+    Indicates a problem in package installation
+    """
+    def __init__(self, value, hint="Contact %s for help" % HELP_CONTACT):
+        super(PackageError, self).__init__(value)
+        self.hint = hint
+        
+    def handle(self):
+        hint = 'Hint: %s\n' % self.hint if self.hint else ''
+        message = """
+%(value)s
+
+%(hint)s""" % {'value': self.value, 'hint': hint}
+        LOGGER.critical(message)
+        sys.exit(EXIT_FAILURE)
 
 
 def excepthook(etype, e, tb):
@@ -159,18 +215,7 @@ def excepthook(etype, e, tb):
         try:
             sys.exit(e.handle())
         except AttributeError:
-            import traceback
-            traceback.print_exception(etype, e, tb)
-            args = [arg for arg in sys.argv[1:] 
-                    if not ('--log' in arg or '--verbose' in arg)] 
-            message = """
-An unexpected %(typename)s exception was raised.
-Please contact %(contact)s for assistance.
-If possible, please include the output of this command:
+            _default_handle(etype, e, tb)
 
-tau --log=DEBUG %(cmd)s""" % {'typename': etype.__name__, 
-                              'cmd': ' '.join(args), 
-                              'contact': HELP_CONTACT}
-            LOGGER.critical(message)
-            sys.exit(EXIT_FAILURE)
-             
+# Set the default exception handler
+sys.excepthook = excepthook
