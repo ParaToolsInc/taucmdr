@@ -228,6 +228,7 @@ class UnknownCommandError(Error):
         hint = 'Hint: %s' % self.hint if self.hint else ''
         message = """
 %(value)r is not a TAU subcommand.
+
 %(hint)s""" % {'value': self.value, 
                'hint': hint, 
                'contact': HELP_CONTACT}

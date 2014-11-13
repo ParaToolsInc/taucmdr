@@ -39,6 +39,7 @@
 ################################################################################
 TAU_HOME="$( cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd )"
 SRC="tau"
+CWD="$PWD"
 
 # Go to the script directory
 cd "$TAU_HOME"
@@ -56,6 +57,7 @@ if ! which python >/dev/null 2>&1 ; then
   exit 1
 fi
 
-# Invoke TAU Commander
+# Go back to the original location and invoke TAU Commander
+cd "$CWD" 
 python $TAU_MASTER_SRC_DIR/taucmd/__main__.py "$@"
 
