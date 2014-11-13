@@ -41,7 +41,8 @@ import taucmd
 import traceback
 from pkgutil import walk_packages
 from taucmd import commands
-from taucmd import util, UnknownCommandError
+from taucmd import util
+from taucmd.error import UnknownCommandError
 from taucmd.registry import REGISTRY
 from taucmd.commands import build, run, show
 from taucmd.docopt import docopt
@@ -86,7 +87,7 @@ def main():
     """
 
     # Set the default exception handler
-    sys.excepthook = taucmd.excepthook
+    sys.excepthook = taucmd.error.excepthook
 
     # Check Python version
     if sys.version_info < taucmd.MINIMUM_PYTHON_VERSION:

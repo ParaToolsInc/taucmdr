@@ -43,9 +43,9 @@ import taucmd
 import pprint
 from textwrap import dedent
 from datetime import datetime
-from taucmd import util, project, ConfigurationError
+from taucmd import util, project
+from taucmd.error import ConfigurationError, ProjectNameError
 from taucmd.registry import REGISTRY, SYSTEM_REGISTRY_DIR
-from taucmd.project import ProjectNameError
 from taucmd.docopt import docopt
 
 LOGGER = taucmd.getLogger(__name__)
@@ -101,6 +101,12 @@ def main(argv):
         LOGGER.error('%r is not a valid project name.\n'
                      'Use only letters, numbers, dot (.), dash (-), and underscore (_).' % proj_name)
         return taucmd.EXIT_FAILURE
+
+    # Show new project settings
+    config = project.getConfigFromOptions(args,
+                                          exclude=['--help', '-h', '--system', '--default'])
+    LOGGER.info(util.pformatDict(config, title='New project settings'))
+    
     while not proj_name:
         print 'TAU: Enter project name> ',
         proj_name = sys.stdin.readline().strip()
@@ -108,20 +114,11 @@ def main(argv):
             LOGGER.error('%r is not a valid project name.\n'
                          'Use only letters, numbers, dot (.), dash (-), and underscore (_).' % proj_name)
             proj_name = None
-    args['--name'] = proj_name
-
-    config = project.getConfigFromOptions(args,
-                                          exclude=['--help', '-h', '--system', '--default'])
+    config['name'] = proj_name
     LOGGER.debug('Project config: %s' % pprint.pformat(config))
     
-    # Show new project settings
-    LOGGER.info(util.pformatDict(config, title='New project settings'))
-    
-    try:
-        proj = REGISTRY.addProject(config, default, system)
-    except ProjectNameError:
-        raise ConfigurationError("Project %r already exists. See 'tau project create --help'." % proj_name)
-    LOGGER.info('Created new project %r.' % proj_name)
+    proj = REGISTRY.addProject(config, default, system)
+    LOGGER.info('Created a new project named %r.' % proj_name)
     
 #     LOGGER.info("""
 # Next steps:

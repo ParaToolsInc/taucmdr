@@ -42,8 +42,9 @@ import subprocess
 import taucmd
 from textwrap import dedent
 from datetime import datetime
+from taucmd import util
 from taucmd.installers import pdt, bfd, tau
-from taucmd import util, InternalError, ConfigurationError
+from taucmd.error import InternalError, ConfigurationError
 
 
 LOGGER = taucmd.getLogger(__name__)
@@ -210,26 +211,6 @@ def getConfigFromOptions(args, apply_defaults=True, exclude=[]):
             elif apply_defaults:
                 config[key] = _getDefault(key)
     return config
-
-class ProjectNameError(ConfigurationError):
-    """
-    Indicates that an invalid project name was specified.
-    """
-    def __init__(self, value, hint="Try 'tau project --help'."):
-        super(ProjectNameError,self).__init__(value)
-        self.hint = hint
-
-    def handle(self):
-        hint = 'Hint: %s\n' % self.hint if self.hint else ''
-        message = textwrap.dedent("""
-        %(value)s
-        %(hint)s
-        TAU cannot proceed with the given inputs.
-        Please review the input files and command line parameters
-        or contact %(contact)s for assistance.""" % 
-        {'value': self.value, 'hint': hint, 'contact': HELP_CONTACT})
-        getLogger(__name__).critical(message)
-        sys.exit(-1)
 
 
 

@@ -42,7 +42,8 @@ import re
 import subprocess
 import taucmd
 from threading import Thread
-from taucmd import util, NotImplementedError
+from taucmd import util
+from taucmd.error import NotImplementedError
 from taucmd.docopt import docopt
 from taucmd.registry import REGISTRY
 
