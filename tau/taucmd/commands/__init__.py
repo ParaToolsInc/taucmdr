@@ -37,7 +37,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import sys
 import taucmd
-from taucmd import UnknownCommandError
+from taucmd.error import UnknownCommandError
 from pkgutil import walk_packages
 
 

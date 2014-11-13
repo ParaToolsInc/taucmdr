@@ -38,7 +38,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import os
 import sys
 import taucmd
-from taucmd import UnknownCommandError, HELP_CONTACT
+from taucmd.error import UnknownCommandError
 from docopt import docopt
 
 LOGGER = taucmd.getLogger(__name__)
@@ -57,27 +57,29 @@ HELP = """
 Prints the help page for a specified command.
 """
 
+_GENERIC_HELP = "See 'tau --help' or contact %s for assistance" % taucmd.HELP_CONTACT
+
 _KNOWN_FILES = {'makefile': ("makefile script", "See 'tau make --help' for help building with make"),
                 'a.out': ("binary executable", "See 'tau run --help' for help profile this file"),
                 '.exe': ("binary executable", "See 'tau run --help' for help profile this file")}
 
 _MIME_HINTS = {None: {
-                      None: ("unknown file", "See 'tau --help' or contact %s for assistance" % HELP_CONTACT),
+                      None: ("unknown file", _GENERIC_HELP),
                       'gzip': ("compressed file", "Please specify an executable file")
                       },
                'application': {
-                               None: ("unknown binary file", "See 'tau --help' or contact %s for assistance" % HELP_CONTACT),
+                               None: ("unknown binary file", _GENERIC_HELP),
                                'sharedlib': ("shared library", "Please specify an executable file"),
                                'archive': ("archive file", "Please specify an executable file"),
                                'tar': ("archive file", "Please specify an executable file"),
-                               'unknown': ("unknown binary file", "See 'tau --help' or contact %s for assistance" % HELP_CONTACT),
+                               'unknown': ("unknown binary file", ),
                                },
                'text': {
-                        None: ("unknown text file", "See 'tau --help' or contact %s for assistance." % HELP_CONTACT),
+                        None: ("unknown text file", _GENERIC_HELP),
                         'src': ("source code file", "See 'tau build --help' for help compiling this file"),
                         'hdr': ("source header file", "See 'tau build --help' for help instrumenting this file"),
                         'fortran': ("fortran source code file", "See 'tau build --help' for help compiling this file"),
-                        'plain': ("text file", "See 'tau --help' or contact %s for assistance" % HELP_CONTACT),
+                        'plain': ("text file", _GENERIC_HELP),
                         }
                }
 

@@ -38,7 +38,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import os
 import taucmd
 from taucmd.registry import REGISTRY, SYSTEM_REGISTRY_DIR
-from taucmd.project import ProjectNameError
+from taucmd.error import ProjectNameError
 from taucmd.docopt import docopt
 from shutil import rmtree
 
