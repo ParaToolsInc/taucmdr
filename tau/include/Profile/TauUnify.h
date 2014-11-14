@@ -18,8 +18,6 @@
 #ifndef _TAU_UNIFY_H_
 #define _TAU_UNIFY_H_
 
-#include <TauGlobal.h>
-
 
 /** Unification object containing the local -> global mapping table */
 typedef struct {
@@ -100,10 +98,10 @@ public:
 /** Adapter class for the interval event database */
 class FunctionEventLister : public EventLister {
   int getNumEvents() {
-    return tau::TheFunctionDB().size();
+    return TheFunctionDB().size();
   }
   const char *getEvent(int id) {
-    return tau::TheFunctionDB()[id]->GetFullName();
+    return TheFunctionDB()[id]->GetFullName();
   }
 };
 

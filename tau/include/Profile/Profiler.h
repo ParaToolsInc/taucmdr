@@ -160,12 +160,6 @@ class KtauProfiler;
 #endif /* defined(TAUKTAU) */
 
 
-namespace tau {
-//=============================================================================
-
-// Forward Declaration
-class FunctionInfo;
-
 /*
 //////////////////////////////////////////////////////////////////////
 //
@@ -180,6 +174,7 @@ class FunctionInfo;
 //
 //////////////////////////////////////////////////////////////////////
 */
+namespace tau {
 class Profiler
 {
 public:
@@ -194,7 +189,7 @@ public:
   FunctionInfo *CallPathFunction;
   FunctionInfo *CallSiteFunction;
 
-  Profiler() {};
+  Profiler() : heapmem(0) {};
   ~Profiler() {};
   
   void Start(int tid = RtsLayer::myThread());
@@ -241,7 +236,7 @@ public:
   void *address[TAU_SAMP_NUM_ADDRESSES];
 
   /* For tracking heap memory */
-  void *extraInfo;
+  double heapmem;
 
   // Callsite discovery
   unsigned long callsites[TAU_SAMP_NUM_ADDRESSES+1];

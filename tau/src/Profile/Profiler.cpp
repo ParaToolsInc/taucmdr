@@ -94,10 +94,9 @@ static int matchFunction(FunctionInfo *fi, const char **inFuncs, int numFuncs);
 
 extern "C" int Tau_get_usesMPI();
 extern "C" void Tau_shutdown(void);
-extern "C" int Tau_profile_exit_all_tasks();
+extern "C" void Tau_profile_exit_most_threads();
 extern "C" int TauCompensateInitialized(void);
 
-void Tau_unwind_unwindTauContext(Profiler *myProfiler);
 x_uint64 Tau_get_firstTimeStamp();
 
 //////////////////////////////////////////////////////////////////////
@@ -153,7 +152,7 @@ void TauProfiler_EnableAllEventsOnCallStack(int tid, Profiler * current)
       TauProfiler_EnableAllEventsOnCallStack(tid, current->ParentProfiler);
       /* process the current event */
       DEBUGPROFMSG(RtsLayer::myNode() << " Processing EVENT " << current->ThisFunction->GetName() << endl);
-      TauTraceEvent(current->ThisFunction->GetId(), 1, tid, (x_uint64)current->StartTime[0], 1);
+      TauTraceEvent(current->ThisFunction->GetFunctionId(), 1, tid, (x_uint64)current->StartTime[0], 1);
       TauMetrics_triggerAtomicEvents((x_uint64)current->StartTime[0], current->StartTime, tid);
     }
   }
@@ -270,7 +269,7 @@ void Profiler::Start(int tid)
   if (RecordEvent) {
 #endif /* TAU_MPITRACE */
   if (TauEnv_get_tracing()) {
-    TauTraceEvent(ThisFunction->GetId(), 1 /* entry */, tid, TimeStamp, 1 /* use supplied timestamp */);
+    TauTraceEvent(ThisFunction->GetFunctionId(), 1 /* entry */, tid, TimeStamp, 1 /* use supplied timestamp */);
     TauMetrics_triggerAtomicEvents(TimeStamp, StartTime, tid);
   }
 #ifdef TAU_MPITRACE
@@ -457,7 +456,7 @@ void Profiler::Stop(int tid, bool useLastTimeStamp)
   if (RecordEvent) {
 #endif /* TAU_MPITRACE */
   if (TauEnv_get_tracing()) {
-    TauTraceEvent(ThisFunction->GetId(), -1 /* exit */, tid, TimeStamp, 1 /* use supplied timestamp */);
+    TauTraceEvent(ThisFunction->GetFunctionId(), -1 /* exit */, tid, TimeStamp, 1 /* use supplied timestamp */);
     TauMetrics_triggerAtomicEvents(TimeStamp, CurrentTime, tid);
   }
 #ifdef TAU_MPITRACE
@@ -547,23 +546,23 @@ void Profiler::Stop(int tid, bool useLastTimeStamp)
   /********************************************************************************/
   if (TauEnv_get_throttle()) {
     /* if the frequency of events is high, disable them */
-    double inclusiveTime;
-    inclusiveTime = ThisFunction->GetInclTime(tid, 0);
+    long numCalls = ThisFunction->GetCalls(tid);
+    double inclusiveTime = ThisFunction->GetInclTimeForCounter(tid, 0);
     /* here we get the array of double values representing the double 
      metrics. We choose the first counter */
 
-    if ((ThisFunction->GetNumCalls(tid) > TauEnv_get_throttle_numcalls())
-        && (inclusiveTime / ThisFunction->GetNumCalls(tid) < TauEnv_get_throttle_percall()) && AddInclFlag) {
+    /* Putting AddInclFlag means we can't throttle recursive calls */
+    if (AddInclFlag &&
+        (numCalls > TauEnv_get_throttle_numcalls()) &&
+        (inclusiveTime / numCalls < TauEnv_get_throttle_percall()))
+    {
       RtsLayer::LockDB();
-      /* Putting AddInclFlag means we can't throttle recursive calls */
       ThisFunction->SetProfileGroup(TAU_DISABLE);
-      ThisFunction->SetPrimaryGroup("TAU_DISABLE");
-      //const char *func_type = ThisFunction->GetType();
+      ThisFunction->SetPrimaryGroupName("TAU_DISABLE");
       ThisFunction->SetType("[THROTTLED]");
-      //cout <<"TAU<"<<RtsLayer::myNode()<<">: Throttle: Disabling "<<ThisFunction->GetName()<<endl;
-      TAU_VERBOSE("TAU<%d,%d>: Throttle: Disabling %s\n", RtsLayer::myNode(), RtsLayer::myThread(),
-          ThisFunction->GetName());
       RtsLayer::UnLockDB();
+      TAU_VERBOSE("TAU<%d,%d>: Throttle: Disabling %s\n",
+          RtsLayer::myNode(), RtsLayer::myThread(), ThisFunction->GetName());
     }
   }
   /********************************************************************************/
@@ -595,21 +594,12 @@ void Profiler::Stop(int tid, bool useLastTimeStamp)
     if (strcmp(ThisFunction->GetName(), "_fini") == 0) {
       TheSafeToDumpData() = 0;
     }
-    if (tid == 0) {
-      Tau_profile_exit_all_tasks();
-    }
 #ifdef TAU_GPU
     //Stop all other running tasks.
     if (tid == 0) {
-      //printf("exiting all tasks....\n");
-      Tau_profile_exit_all_tasks();
+      Tau_profile_exit_most_threads();
     }
 #endif
-#ifndef TAU_WINDOWS
-    if (tid == 0) {
-      atexit(Tau_shutdown);
-    }
-#endif //TAU_WINDOWS
     if (TheSafeToDumpData()) {
       if (!RtsLayer::isCtorDtor(ThisFunction->GetName())) {
         // Not a destructor of a static object - its a function like main
@@ -834,8 +824,8 @@ void TauProfiler_getFunctionValues(const char **inFuncs, int numFuncs, double **
       continue;
     }
 
-    (*numCalls)[funcPos] = fi->GetNumCalls(tid);
-    (*numSubr)[funcPos] = fi->GetNumSubrs(tid);
+    (*numCalls)[funcPos] = fi->GetCalls(tid);
+    (*numSubr)[funcPos] = fi->GetSubrs(tid);
 
     int posCounter = 0;
     for (int m = 0; m < Tau_Global_numCounters; m++) {
@@ -883,10 +873,10 @@ void TauProfiler_PurgeData(int tid)
 
   // Reset The Function Database
   for (it = TheFunctionDB().begin(); it != TheFunctionDB().end(); it++) {
-    (*it)->SetNumCalls(tid, 0);
-    (*it)->SetNumSubrs(tid, 0);
-    (*it)->SetExclTime(tid, 0.0);
-    (*it)->SetInclTime(tid, 0.0);
+    (*it)->SetCalls(tid, 0);
+    (*it)->SetSubrs(tid, 0);
+    (*it)->SetExclTimeZero(tid);
+    (*it)->SetInclTimeZero(tid);
   }
 
   // Reset the Atomit/User Event Database
@@ -1077,10 +1067,8 @@ int TauProfiler_updateIntermediateStatistics(int tid)
       //            internal structures stored in the FunctionInfo object.
       //         b) InclTime and ExclTime are used for threaded programs.
       //            Note that InclTime and ExclTime allocates memory.
-
-      // FIXME: This is wrong
-      double * InclTime = const_cast<double*>(fi->GetInclTime(tid));
-      double * ExclTime = const_cast<double*>(fi->GetExclTime(tid));
+      double *InclTime = fi->GetInclTime(tid);
+      double *ExclTime = fi->GetExclTime(tid);
 
       double inclusiveToAdd[TAU_MAX_COUNTERS];
       double prevStartTime[TAU_MAX_COUNTERS];
@@ -1097,6 +1085,11 @@ int TauProfiler_updateIntermediateStatistics(int tid)
             excltime[c] += inclusiveToAdd[c] - prevStartTime[c];
             // *CWL* - followup to the data structure insanity issues
             ExclTime[c] += inclusiveToAdd[c] - prevStartTime[c];
+            /*
+             TAU_VERBOSE("[%d] currentTime=%f startValue=%f prevStartTime=%f excltime=%f ExclTime=%f!\n",
+             tid, currentTime[c], current->getStartValues()[c],
+             prevStartTime[c], excltime[c], ExclTime[c]);
+             */
           }
         }
         for (c = 0; c < Tau_Global_numCounters; c++) {
@@ -1146,7 +1139,7 @@ static int writeFunctionData(FILE *fp, int tid, int metric, const char **inFuncs
       continue;
     }
 
-    if (fi->GetNumCalls(tid) == 0) {    // skip this function
+    if (fi->GetCalls(tid) == 0) {    // skip this function
       continue;
     }
 
@@ -1179,7 +1172,7 @@ static int writeFunctionData(FILE *fp, int tid, int metric, const char **inFuncs
           double excltime = ue->GetMean(tid);
           //double excltime = ue->GetMean(tid) * ue->GetNumEvents(tid);
           double incltime = excltime;
-          int calls = fi->GetNumCalls(tid);
+          int calls = fi->GetCalls(tid);
        
           //std::string name = ue->GetName();
 
@@ -1195,7 +1188,7 @@ static int writeFunctionData(FILE *fp, int tid, int metric, const char **inFuncs
       }
        /* 
       if (!found_one) {
-        fprintf(fp, "\"%s\" %ld %ld %.16G %.16G ", fi->GetName(), fi->GetNumCalls(tid), 0, 0.0, 0.0);
+        fprintf(fp, "\"%s\" %ld %ld %.16G %.16G ", fi->GetName(), fi->GetCalls(tid), 0, 0.0, 0.0);
         fprintf(fp, "0 ");    // Indicating that profile calls is turned off
         fprintf(fp, "GROUP=\"%s\" \n", fi->GetAllGroups());
       }*/
@@ -1225,10 +1218,10 @@ static int writeFunctionData(FILE *fp, int tid, int metric, const char **inFuncs
       double excltime = fi->getDumpExclusiveValues(tid)[metric];
 
       if (strlen(fi->GetType()) > 0) {
-        fprintf(fp, "\"%s %s\" %ld %ld %.16G %.16G ", fi->GetName(), fi->GetType(), fi->GetNumCalls(tid), fi->GetNumSubrs(tid),
+        fprintf(fp, "\"%s %s\" %ld %ld %.16G %.16G ", fi->GetName(), fi->GetType(), fi->GetCalls(tid), fi->GetSubrs(tid),
             excltime, incltime);
       } else {
-        fprintf(fp, "\"%s\" %ld %ld %.16G %.16G ", fi->GetName(), fi->GetNumCalls(tid), fi->GetNumSubrs(tid), excltime,
+        fprintf(fp, "\"%s\" %ld %ld %.16G %.16G ", fi->GetName(), fi->GetCalls(tid), fi->GetSubrs(tid), excltime,
             incltime);
       }
 
@@ -1254,7 +1247,7 @@ static int getTrueFunctionCount(int count, int tid, const char **inFuncs, int nu
 
     if (-1 == matchFunction(*it, inFuncs, numFuncs)) {    // skip this function
       trueCount--;
-    } else if (fi->GetNumCalls(tid) == 0) {
+    } else if (fi->GetCalls(tid) == 0) {
       trueCount--;
     }
     if (metricName != NULL)
@@ -1351,7 +1344,7 @@ int TauProfiler_StoreData(int tid)
 
   if (TauEnv_get_ebs_enabled()) {
     // Tau_sampling_finalize(tid);
-    Tau_sampling_finalize_if_necessary();
+    Tau_sampling_finalize_if_necessary(tid);
   }
 #endif
   if (TauEnv_get_profiling()) {

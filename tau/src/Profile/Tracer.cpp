@@ -423,7 +423,7 @@ void TraceCallStack(int tid, Profiler *current) {
   if (current) {
     // Trace all the previous records before tracing self
     TraceCallStack(tid, current->ParentProfiler);
-    TauTraceEventSimple(current->ThisFunction->GetId(), 1, tid);
+    TauTraceEventSimple(current->ThisFunction->GetFunctionId(), 1, tid);
     DEBUGPROFMSG("TRACE CORRECTED: "<<current->ThisFunction->GetName()<<endl;);
   }
 }
@@ -499,7 +499,7 @@ int TauTraceDumpEDF(int tid) {
   fprintf(fp,"0 TAUEVENT 0 \".TAU <unknown event>\" TriggerValue\n");
   
   for (it = TheFunctionDB().begin(); it != TheFunctionDB().end(); it++) {
-    fprintf(fp, "%ld %s 0 \"%s %s\" EntryExit\n", (long)((*it)->GetId()),
+    fprintf(fp, "%ld %s 0 \"%s %s\" EntryExit\n", (long)((*it)->GetFunctionId()),
 	    (*it)->GetPrimaryGroup(), (*it)->GetName(), (*it)->GetType() );
   }
   
@@ -575,6 +575,7 @@ int TauTraceMergeAndConvertTracesIfNecessary(void) {
   const char *conv="tau2vtf";
   char converter[1024] = {0}; 
   FILE *in;
+  int status_code = 0;
   
   /* If we can't find tau2vtf, use tau_convert! */
   sprintf(converter, "%s/%s/bin/%s",tauroot, tauarch, conv);
@@ -607,7 +608,10 @@ int TauTraceMergeAndConvertTracesIfNecessary(void) {
   /* NOTE: BGL will not execute this code as well because the compute node 
      kernels cannot fork tasks. So, on BGL, nothing will happen when the 
      following system command executes */
-  system(cmd);
+  status_code = system(cmd);
+  if (status_code != 0) {
+    TAU_VERBOSE("Warning: unable to execute command: '%s'\n", cmd);
+  }
 #endif /* TAU_CATAMOUNT */
 
   return 0;
