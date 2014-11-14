@@ -101,12 +101,12 @@ or contact %(contact)s for assistance.""" % {'value': self.value,
         sys.exit(EXIT_FAILURE)
 
 
-class NotImplementedError(Error):
+class MissingFeatureError(Error):
     """
     Indicates that a promised feature has not been implemented yet
     """
     def __init__(self, value, missing, hint="Contact %s" % HELP_CONTACT):
-        super(NotImplementedError, self).__init__(value)
+        super(MissingFeatureError, self).__init__(value)
         self.missing = missing
         self.hint = hint
         
@@ -202,6 +202,7 @@ class PackageError(Error):
 %(hint)s""" % {'value': self.value, 'hint': hint}
         LOGGER.critical(message)
         sys.exit(EXIT_FAILURE)
+
 
 
 def excepthook(etype, e, tb):

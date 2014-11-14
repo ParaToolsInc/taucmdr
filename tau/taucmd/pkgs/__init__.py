@@ -35,31 +35,19 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-import os
-import shutil
-from taucmd import util
-from taucmd.error import NotImplementedError
-
 class Package(object):
     """
     Base class for software packages
     """
+    def __init__(self, project):
+        self.project = project
+        self.provides = []
+        self.requires = []
+        self.excludes = []
     
-    def install(self):
-        raise NotImplementedError(None, 'Package.install')
+    def install(self, stdout, stderr):
+        raise NotImplementedError
     
-    def uninstall(self):
-        raise NotImplementedError(None, 'Package.uninstall')
+    def uninstall(self, stdout, stderr):
+        raise NotImplementedError
     
-    def _getSource(self):
-        for src in self.SOURCES:
-            dst = os.path.join(self.project.source_prefix, os.path.basename(src))
-            if src.startswith('http') or src.startswith('ftp'):
-                util.download(src, dst)
-            elif src.startswith('file'):
-                shutil.copy(src, dst)
-            else:
-                raise InternalError("Don't know how to acquire source file %r" % src)
-        src_path = util.extract(dst, self.project.source_prefix)
-        os.remove(dst)
-        return src_path

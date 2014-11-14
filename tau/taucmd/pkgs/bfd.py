@@ -42,24 +42,21 @@ import taucmd
 import shutil
 from taucmd import util
 from taucmd.pkgs import Package
-from taucmd.error import InternalError
+from taucmd.error import InternalError, PackageError
 
 LOGGER = taucmd.getLogger(__name__)
 
 
-class Bfd(Package):
+class BfdPackage(Package):
     """
     GNU binutils package
     """
     
-    PROVIDES = ['bfd']
-    REQUIRES = []
-    EXCLUDES = []
     SOURCES = ['http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/binutils-2.23.2.tar.gz']
 
     def __init__(self, project):
-        self.project = project
-        self.prefix = os.path.join(self.project.prefix, 'bfd') 
+        super(BfdPackage, self).__init__(project)
+        self.prefix = os.path.join(self.project.prefix, 'bfd')
 
     def install(self, stdout=sys.stdout, stderr=sys.stderr):
         config = self.project.config
@@ -67,76 +64,99 @@ class Bfd(Package):
         if not bfd:
             raise InternalError('Tried to install bfd when (not config["bfd"])')
 
+        if os.path.isdir(self.prefix):
+            LOGGER.debug("BFD already installed at %r" % self.prefix)
+            return
+        LOGGER.info('Installing BFD at %r' % self.prefix)
+
         if bfd.lower() == 'download':
-            src = SOURCES
-        if os.path.isdir(bfd):
-            src = []
+            src = self.SOURCES
+        elif os.path.isdir(bfd):
             LOGGER.debug('Assuming user-supplied BFD at %r is properly installed' % bfd)
+            return
         elif os.path.isfile(bfd):
             src = [bfd]
             LOGGER.debug('Will build BFD from user-specified file %r' % bfd)
         else:
+            raise PackageError('Invalid BFD directory %r' % bfd, 
+                               'Verify that the directory exists and that you have correct permissions to access it.')
             
-            raise taucmd.Error('Invalid BFD directory %r' % bfd)
-        
-        # Banner
-        LOGGER.info('Installing BFD at %r' % prefix)
-
         # Configure the source code for this configuration
-        srcdir = BFD_SRC_DIR
-        cmd = getConfigureCommand(config)
+        srcdir = self._getSource(src, stdout, stderr)
+        cmd = self._getConfigureCommand()
         LOGGER.debug('Creating configure subprocess in %r: %r' % (srcdir, cmd))
         LOGGER.info('Configuring BFD...')
         proc = subprocess.Popen(cmd, cwd=srcdir, stdout=stdout, stderr=stderr)
-        #proc = subprocess.Popen(' '.join(cmd), cwd=srcdir, stdout=stdout, stderr=stderr, shell=True)
         if proc.wait():
-            shutil.rmtree(prefix, ignore_errors=True)
-            raise taucmd.Error('BFD configure failed.')
+            shutil.rmtree(self.prefix, ignore_errors=True)
+            raise PackageError('BFD configure failed.')
     
         # Execute make
         cmd = ['make']
         LOGGER.debug('Creating make subprocess in %r: %r' % (srcdir, cmd))
         LOGGER.info('Compiling BFD...')
         proc = subprocess.Popen(cmd, cwd=srcdir, stdout=stdout, stderr=stderr)
-        #proc = subprocess.Popen(' '.join(cmd), cwd=srcdir, stdout=stdout, stderr=stderr, shell=True)
         if proc.wait():
-            shutil.rmtree(prefix, ignore_errors=True)
-            raise taucmd.Error('BFD compilation failed.')
+            shutil.rmtree(self.prefix, ignore_errors=True)
+            raise PackageError('BFD compilation failed.')
     
         # Execute make install
         cmd = ['make', 'install']
         LOGGER.debug('Creating make subprocess in %r: %r' % (srcdir, cmd))
         LOGGER.info('Installing BFD...')
         proc = subprocess.Popen(cmd, cwd=srcdir, stdout=stdout, stderr=stderr)
-        #proc = subprocess.Popen(' '.join(cmd), cwd=srcdir, stdout=stdout, stderr=stderr, shell=True)
         if proc.wait():
-            shutil.rmtree(prefix, ignore_errors=True)
-            raise taucmd.Error('BFD compilation failed.')
+            shutil.rmtree(self.prefix, ignore_errors=True)
+            raise PackageError('BFD installation failed.')
         
         # Cleanup
-        shutil.rmtree(srcdir)
         LOGGER.debug('Recursively deleting %r' % srcdir)
+        shutil.rmtree(srcdir)
         LOGGER.info('BFD installation complete.')
-      
+        
+    def uninstall(self, stdout=sys.stdout, stderr=sys.stderr):
+        LOGGER.debug('Recursively deleting %r' % self.prefix)
+        shutil.rmtree(self.prefix)
+        LOGGER.info('BFD uninstalled.')
+
     def _getConfigureCommand(self):
         """
-        Returns the command that will configure BFD for this project
+        Returns the command that will configure BFD
         """
-        base_flags = {'CFLAGS': '-fPIC', 
-                      'CXXFLAGS': '-fPIC',
-                      '--disable-nls': None, 
-                      '--disable-werror': None}
+        flags = {'CFLAGS': '-fPIC', 
+                 'CXXFLAGS': '-fPIC',
+                 '--disable-nls': None, 
+                 '--disable-werror': None}
         arch_flags = {'bgp': {'CC': '/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc-bgp-linux-gcc',
                               'CXX': '/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc-bgp-linux-g++'},
                       'bgq': {'CC': '/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc64-bgq-linux-gcc',
                               'CXX': '/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc64-bgq-linux-g++'},
                       'rs6000': {'--disable-largefile': None},
                       'ibm64': {'--disable-largefile': None} }
-        arch = config['target-arch']
-        prefix = config['bfd-prefix']
-        flags = _BASE_FLAGS.copy()
-        flags.update(_ARCH_FLAGS.get(arch, {}))
-        parts = ['./configure', '--prefix=%s' % prefix] + ['%s=%s' % i if i[1] else '%s' % i[0] for i in flags.iteritems()]
-        command = ' '.join(parts)
+        flags.update(arch_flags.get(self.project.config['target-arch'], {}))
+        command = ['./configure', '--prefix=%s' % self.prefix] + ['%s=%s' % i if i[1] else '%s' % i[0] for i in flags.iteritems()]
         LOGGER.debug("BFD configure command: %s" % command)
         return command
+
+    def _getSource(self, sources, stdout, stderr):
+        """
+        Downloads or copies BFD source code
+        """
+        for src in sources:
+            dst = os.path.join(self.project.source_prefix, os.path.basename(src))
+            if src.startswith('http') or src.startswith('ftp'):
+                try:
+                    util.download(src, dst, stdout, stderr)
+                except:
+                    continue
+            elif src.startswith('file'):
+                try:
+                    shutil.copy(src, dst)
+                except:
+                    continue
+            else:
+                raise InternalError("Don't know how to acquire source file %r" % src)
+            src_path = util.extract(dst, self.project.source_prefix)
+            os.remove(dst)
+            return src_path
+        raise PackageError('Failed to get source code')

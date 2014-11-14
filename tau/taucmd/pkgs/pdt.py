@@ -41,98 +41,112 @@ import subprocess
 import taucmd
 import shutil
 from taucmd import util
+from taucmd.pkgs import Package
+from taucmd.error import InternalError, PackageError
+
 
 LOGGER = taucmd.getLogger(__name__)
 
-# Default PDT download URL
-PDT_URL = 'http://tau.uoregon.edu/pdt.tgz'
-# For debugging
-#PDT_URL = 'http://localhost:3000/pdtoolkit-3.19p1.tar.gz'
-#PDT_URL = 'http://www.cs.uoregon.edu/research/tau/pdt_releases/pdtoolkit-3.19p1.tar.gz'
 
-# User specific PDT source code location
-PDT_SRC_DIR = os.path.join(taucmd.SRC_DIR, 'pdt')
-
-
-
-def downloadSource(src=PDT_URL):
+class PdtPackage(Package):
     """
-    Downloads and extracts a PDT archive file
+    Program Database Toolkit package
     """
-    dest = os.path.join(taucmd.SRC_DIR, src.split('/')[-1])
-    LOGGER.info('Downloading PDT from %r' % src)
-    util.download(src, dest)
-    extractSource(dest)
-    os.remove(dest)
-
-
-def extractSource(tgz):
-    """
-    Extracts a PDT archive file
-    """
-    pdt_path = util.extract(tgz, taucmd.SRC_DIR)
-    shutil.rmtree(PDT_SRC_DIR, ignore_errors=True)
-    shutil.move(pdt_path, PDT_SRC_DIR)
-
-
-def getConfigureCommand(config):
-    """
-    Returns the command that will configure PDT for a project
-    """
-    # TODO: Support other compilers
-    return ['./configure', '-GNU', '-prefix=%s' % config['pdt-prefix']]
-
-
-def getPrefix(config):
-    # TODO: Support other compilers
-    prefix = os.path.join(taucmd.USER_TAU_DIR, 'pdt', 'GNU')
-    return prefix
-
-
-def install(config, stdout=sys.stdout, stderr=sys.stderr):
-    """
-    Installs PDT
-    """
-    pdt = config['pdt']
-    prefix = getPrefix(config)
-    if not pdt or os.path.isdir(prefix):
-        LOGGER.debug("Skipping PDT installation: pdt=%r, prefix=%r" % (pdt, prefix))
-        return
-
-    # Download and extract PDT if needed
-    if pdt == 'download':
-        downloadSource()
-    elif os.path.isfile(pdt):
-        extractSource(pdt)
-    elif os.path.isdir(pdt):
-        LOGGER.debug('Assuming user-supplied PDT at %r is properly installed' % pdt)
-        return
-    else:
-        raise taucmd.Error('Invalid PDT directory %r' % pdt)
     
-    # Banner
-    LOGGER.info('Installing PDT at %r' % prefix)
+    SOURCES = ['http://tau.uoregon.edu/pdt.tgz']
 
-    # Configure the source code for this configuration
-    srcdir = PDT_SRC_DIR
-    cmd = getConfigureCommand(config)
-    LOGGER.debug('Creating configure subprocess in %r: %r' % (srcdir, cmd))
-    LOGGER.info('Configuring PDT...')
-    proc = subprocess.Popen(cmd, cwd=srcdir, stdout=stdout, stderr=stderr)
-    if proc.wait():
-        shutil.rmtree(prefix, ignore_errors=True)
-        raise taucmd.Error('PDT configure failed.')
+    def __init__(self, project):
+        super(PdtPackage, self).__init__(project)
+        self.prefix = os.path.join(self.project.prefix, 'pdt')
 
-    # Execute make
-    cmd = ['make', '-j', 'install']
-    LOGGER.debug('Creating make subprocess in %r: %r' % (srcdir, cmd))
-    LOGGER.info('Installing PDT...')
-    proc = subprocess.Popen(cmd, cwd=srcdir, stdout=stdout, stderr=stderr)
-    if proc.wait():
-        shutil.rmtree(prefix, ignore_errors=True)
-        raise taucmd.Error('PDT compilation failed.')
+    def install(self, stdout=sys.stdout, stderr=sys.stderr):
+        config = self.project.config
+        pdt = config['pdt']
+        if not pdt:
+            raise InternalError('Tried to install pdt when (not config["pdt"])')
+
+        if os.path.isdir(self.prefix):
+            LOGGER.debug("PDT already installed at %r" % self.prefix)
+            return
+        LOGGER.info('Installing PDT at %r' % self.prefix)
+
+        if pdt.lower() == 'download':
+            src = self.SOURCES
+        elif os.path.isdir(pdt):
+            LOGGER.debug('Assuming user-supplied PDT at %r is properly installed' % pdt)
+            return
+        elif os.path.isfile(pdt):
+            src = [pdt]
+            LOGGER.debug('Will build PDT from user-specified file %r' % pdt)
+        else:
+            raise PackageError('Invalid PDT directory %r' % pdt, 
+                               'Verify that the directory exists and that you have correct permissions to access it.')
+
+        # Configure the source code for this configuration
+        srcdir = self._getSource(src, stdout, stderr)
+        cmd = self._getConfigureCommand()
+        LOGGER.debug('Creating configure subprocess in %r: %r' % (srcdir, cmd))
+        LOGGER.info('Configuring PDT...')
+        proc = subprocess.Popen(cmd, cwd=srcdir, stdout=stdout, stderr=stderr)
+        if proc.wait():
+            shutil.rmtree(self.prefix, ignore_errors=True)
+            raise PackageError('PDT configure failed.')
     
-    # Clean up
-    shutil.rmtree(srcdir)
-    LOGGER.debug('Recursively deleting %r' % srcdir)
-    LOGGER.info('PDT installation complete.')
+        # Execute make
+        cmd = ['make', '-j']
+        LOGGER.debug('Creating make subprocess in %r: %r' % (srcdir, cmd))
+        LOGGER.info('Compiling PDT...')
+        proc = subprocess.Popen(cmd, cwd=srcdir, stdout=stdout, stderr=stderr)
+        if proc.wait():
+            shutil.rmtree(self.prefix, ignore_errors=True)
+            raise PackageError('PDT compilation failed.')
+    
+        # Execute make install
+        cmd = ['make', 'install']
+        LOGGER.debug('Creating make subprocess in %r: %r' % (srcdir, cmd))
+        LOGGER.info('Installing PDT...')
+        proc = subprocess.Popen(cmd, cwd=srcdir, stdout=stdout, stderr=stderr)
+        if proc.wait():
+            shutil.rmtree(self.prefix, ignore_errors=True)
+            raise PackageError('PDT installation failed.')
+        
+        # Cleanup
+        LOGGER.debug('Recursively deleting %r' % srcdir)
+        shutil.rmtree(srcdir)
+        LOGGER.info('PDT installation complete.')
+        
+    def uninstall(self, stdout=sys.stdout, stderr=sys.stderr):
+        LOGGER.debug('Recursively deleting %r' % self.prefix)
+        shutil.rmtree(self.prefix)
+        LOGGER.info('PDT uninstalled.')
+
+    def _getConfigureCommand(self):
+        """
+        Returns the command that will configure PDT
+        """
+        # TODO: Support other compilers
+        return ['./configure', '-GNU', '-prefix=%s' % self.prefix]
+
+    def _getSource(self, sources, stdout, stderr):
+        """
+        Downloads or copies BFD source code
+        """
+        for src in sources:
+            dst = os.path.join(self.project.source_prefix, os.path.basename(src))
+            if src.startswith('http') or src.startswith('ftp'):
+                try:
+                    util.download(src, dst, stdout, stderr)
+                except:
+                    continue
+            elif src.startswith('file'):
+                try:
+                    shutil.copy(src, dst)
+                except:
+                    continue
+            else:
+                raise InternalError("Don't know how to acquire source file %r" % src)
+            src_path = util.extract(dst, self.project.source_prefix)
+            os.remove(dst)
+            return src_path
+        raise PackageError('Failed to get source code')
+

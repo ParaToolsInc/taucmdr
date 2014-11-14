@@ -35,17 +35,9 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-import os
-import sys
-import subprocess
-import string
-import pprint
 import taucmd
-from textwrap import dedent
-from datetime import datetime
-from taucmd import util, project
-from taucmd.registry import REGISTRY, SYSTEM_REGISTRY_DIR
-from taucmd.util import pformatDict
+from taucmd import project
+from taucmd.registry import REGISTRY
 from taucmd.docopt import docopt
 
 
@@ -75,7 +67,7 @@ HELP = """
 
 def getUsage():
     return USAGE % {'command': COMMAND,
-                    'system_path': SYSTEM_REGISTRY_DIR,
+                    'system_path': REGISTRY.system.prefix,
                     'project_options': project.getProjectOptions(show_defaults=False)}
 
 def getHelp():

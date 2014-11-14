@@ -36,6 +36,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 import os
+import sys
 import re
 import subprocess
 import errno
@@ -75,24 +76,28 @@ def which(program):
     return None
 
 
-def download(src, dest):
+def download(src, dest, stdout=sys.stdout, stderr=sys.stderr):
     LOGGER.debug('Downloading %r to %r' % (src, dest))
+    LOGGER.info('Downloading %r' % src)
     mkdirp(os.path.dirname(dest))
     curl = which('curl')
     LOGGER.debug('which curl: %r' % curl)
     wget = which('wget')
     LOGGER.debug('which wget: %r' % wget)
     if curl:
-        if subprocess.call([curl, '-L', src, '-o', dest]) != 0:
-            LOGGER.debug('curl failed to download %r.' % src)     
+        if subprocess.call([curl, '-L', src, '-o', dest], stdout=stdout, stderr=stderr) != 0:
+            LOGGER.debug('curl failed to download %r.' % src)
+            raise IOError
     elif wget:
-        if subprocess.call([wget, src, '-O', dest]) != 0:
+        if subprocess.call([wget, src, '-O', dest], stdout=stdout, stderr=stderr) != 0:
             LOGGER.debug('wget failed to download %r' % src)
+            raise IOError
     else:
-        # Note, this is usually **much** slower than curl or wget
+        # This is usually **much** slower than curl or wget
         def dlProgress(count, blockSize, totalSize):
-            print "% 3.1f%% of %d bytes\r" % (min(100, float(count * blockSize) / totalSize * 100), totalSize),
+            stdout.write("% 3.1f%% of %d bytes\r" % (min(100, float(count * blockSize) / totalSize * 100), totalSize))
         urllib.urlretrieve(src, dest, reporthook=dlProgress)
+
         
     
 def extract(tgz, dest):

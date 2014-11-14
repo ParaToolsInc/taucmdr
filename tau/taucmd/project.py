@@ -38,13 +38,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import os
 import sys
 import glob
-import subprocess
 import taucmd
-from textwrap import dedent
-from datetime import datetime
 from taucmd import util
-from taucmd.pkgs import pdt, bfd, tau
 from taucmd.error import InternalError, ConfigurationError
+from taucmd.pkgs.tau import TauPackage
 
 
 LOGGER = taucmd.getLogger(__name__)
@@ -121,7 +118,6 @@ _DEFAULTS = {'name': None,
              'cc': 'gcc',
              'c++': 'g++',
              'fortran': 'gfortran',
-             'upc': 'gupc',
              'pdt': 'download',
              'pdt_c++': 'g++',
              'bfd': 'download',
@@ -131,12 +127,13 @@ _DEFAULTS = {'name': None,
              'openmp': False,
              'pthreads': False,
              'mpi': False,
-             'mpi-include': '/usr/include',
-             'mpi-lib': '/usr/lib',
+             'mpi-include': None,
+             'mpi-lib': None,
              'cuda': False,
-             'cuda-sdk': '/usr/local/cuda',
-             'upc-gasnet': '/usr/local',
-             'upc-network': 'smp',
+             'cuda-sdk': None,
+             'upc': None,
+             'upc-gasnet': None,
+             'upc-network': None,
              'memory': False,
              'memory-debug': False,
              'io': True,
@@ -187,7 +184,12 @@ def getConfigFromOptions(args, apply_defaults=True, exclude=[]):
     """
     config = {}
     downloadable = ['pdt', 'bfd', 'unwind', 'papi', 'dyninst']
+    arg_sets = {'mpi': ('mpi-include', 'mpi-lib'),
+                'cuda': ('cuda-sdk',),
+                'upc': ('upc-gasnet', 'upc-network')}
     for key, val in args.iteritems():
+        if val == 'None':
+            val = None
         if key[0:2] == '--' and key[0:5] != '--no-' and key not in exclude:
             key = key[2:]
             nokey = '--no-%s' % key
@@ -210,6 +212,10 @@ def getConfigFromOptions(args, apply_defaults=True, exclude=[]):
                     config[key] = val
             elif apply_defaults:
                 config[key] = _getDefault(key)
+    for master, dependents in arg_sets.iteritems():
+        if not config[master]:
+            for dep in dependents:
+                del config[dep]
     return config
 
 
@@ -220,10 +226,12 @@ class Project(object):
     """
     def __init__(self, config, prefix):
         self.config = config
-        compiler_prefix = '_'.join(self.getCompilers().values().sort())
+        self.refresh = True
+        compiler_prefix = '_'.join(sorted(self.getCompilers().values()))
         self.prefix = os.path.join(prefix, compiler_prefix)
         self.source_prefix = os.path.join(prefix, 'src')
-
+        self.tau = TauPackage(self)
+        
     def __str__(self):
         return util.pformatDict(self.config)
     
@@ -259,7 +267,7 @@ class Project(object):
 
     def getCompilers(self):
         compiler_fields = ['cc', 'c++', 'fortran', 'upc']
-        return dict((key, self.config[key]) for key in compiler_fields)
+        return dict((key, self.config[key]) for key in compiler_fields if self.config[key])
     
     def hasCompilers(self):
         compilers = self.getCompilers()
@@ -284,21 +292,13 @@ class Project(object):
         return True
 
     def compile(self):
-        config = self.config
-        if not config['refresh']:
+        if not self.refresh:
+            LOGGER.debug('Project %r already compiled' % self.getName())
             return
         
-        banner = """
-        %(bar)s
-        *
-        * Compiling project %(proj_name)r.
-        * This may take a long time but will only be done once.
-        *
-        %(bar)s
-        """ % {'bar': '*'*80, 'proj_name': config['name']}
-        LOGGER.info(dedent(banner))
-
-        # Control configure/build output
+        LOGGER.info('Compiling project %r.\nThis may take a long time but will only be done once.' % self.getName())
+ 
+        # Control build output
         devnull = None
         if taucmd.LOG_LEVEL == 'DEBUG':
             stdout = sys.stdout
@@ -307,17 +307,13 @@ class Project(object):
             devnull = open(os.devnull, 'w')
             stdout = devnull
             stderr = devnull
-        
-        # Build PDT, BFD, TAU as needed
-        pdt.install(config, stdout, stderr)
-        bfd.install(config, stdout, stderr)
-        tau.install(config, stdout, stderr)
-
+     
+        self.tau.install(stdout, stderr)
+            
         # Mark this configuration as built
         if devnull:
             devnull.close() 
-        config['refresh'] = False
-        config['modified'] = datetime.now()
+        self.refresh = False
         taucmd.registry.REGISTRY.save()
 
     def getEnvironment(self):
@@ -327,7 +323,7 @@ class Project(object):
         """
         config = self.config
         env = dict(os.environ)
-        bindir = os.path.join(config['tau-prefix'], config['target-arch'], 'bin')
+        bindir = os.path.join(self.tau.prefix, config['target-arch'], 'bin')
         try:
             env['PATH'] = bindir + ':' + env['PATH']
             LOGGER.debug('Updated PATH to %r' % env['PATH'])
@@ -341,7 +337,7 @@ class Project(object):
         Returns TAU_MAKEFILE for this configuration
         """
         config = self.config
-        makefiles = os.path.join(config['tau-prefix'], config['target-arch'], 'lib', 'Makefile.tau*')
+        makefiles = os.path.join(self.tau.prefix, config['target-arch'], 'lib', 'Makefile.tau*')
         makefile = glob.glob(makefiles)[0]
         LOGGER.debug('TAU Makefile: %r' % makefile)
         return makefile
