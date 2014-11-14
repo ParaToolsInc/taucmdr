@@ -207,11 +207,11 @@ static int Tau_snapshot_writeSnapshot(const char *name, int to_buffer) {
    for (i=0; i < numFunc; i++) {
      FunctionInfo *fi = TheFunctionDB()[i];
 
-     if (fi->GetNumCalls(tid) > 0) {
+     if (fi->GetCalls(tid) > 0) {
        // get currently stored values
        double *incltime = fi->getDumpInclusiveValues(tid);
        double *excltime = fi->getDumpExclusiveValues(tid);
-       Tau_util_output (out, "%d %ld %ld ", i, fi->GetNumCalls(tid), fi->GetNumSubrs(tid));
+       Tau_util_output (out, "%d %ld %ld ", i, fi->GetCalls(tid), fi->GetSubrs(tid));
        for (c=0; c<Tau_Global_numCounters; c++) {
          Tau_util_output (out, "%.16G %.16G ", excltime[c], incltime[c]);
        }
@@ -305,7 +305,7 @@ int Tau_snapshot_writeUnifiedBuffer(int tid) {
       
       int local_index = functionUnifier->sortMap[globalmap[e]];
       FunctionInfo *fi = TheFunctionDB()[local_index];
-      if (fi->GetNumCalls(tid) > 0) {
+      if (fi->GetCalls(tid) > 0) {
       
       // get currently stored values
 			double *incltime, *excltime;
@@ -319,7 +319,7 @@ int Tau_snapshot_writeUnifiedBuffer(int tid) {
 				incltime = fi->GetInclTime(tid);
 				excltime = fi->GetExclTime(tid);
 			}
-      Tau_util_output (out, "%d %ld %ld ", e, fi->GetNumCalls(tid), fi->GetNumSubrs(tid));
+      Tau_util_output (out, "%d %ld %ld ", e, fi->GetCalls(tid), fi->GetSubrs(tid));
       for (c=0; c<Tau_Global_numCounters; c++) {
 	Tau_util_output (out, "%.16G %.16G ", excltime[c], incltime[c]);
       }

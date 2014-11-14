@@ -44,6 +44,10 @@
 #include <tauroot.h>
 #include <fcntl.h>
 #include <string>
+
+#if TAU_OPENMP // for querying OpenMP settings
+#include "omp.h"
+#endif
 using namespace std;
 
 #ifndef TAU_BGP
@@ -140,6 +144,8 @@ using namespace std;
 #define TAU_TRACK_SIGNALS_DEFAULT 0
 /* In TAU_TRACK_SIGNALS operations, do we invoke gdb? */
 #define TAU_SIGNALS_GDB_DEFAULT 0
+/* Also dump backtrace to stderr */
+#define TAU_ECHO_BACKTRACE_DEFAULT 0
 
 #define TAU_SUMMARY_DEFAULT 0
 
@@ -208,8 +214,9 @@ static int env_tau_lite = 0;
 static int env_track_memory_leaks = 0;
 static int env_track_memory_headroom = 0;
 static int env_track_io_params = 0;
-static int env_track_signals = 0;
-static int env_signals_gdb = 0;
+static int env_track_signals = TAU_TRACK_SIGNALS_DEFAULT;
+static int env_signals_gdb = TAU_SIGNALS_GDB_DEFAULT;
+static int env_echo_backtrace = TAU_ECHO_BACKTRACE_DEFAULT;
 static int env_summary_only = 0;
 static int env_ibm_bg_hwp_counters = 0;
 /* This is a malleable default */
@@ -689,6 +696,10 @@ int TauEnv_get_signals_gdb() {
   return env_signals_gdb;
 }
 
+int TauEnv_get_echo_backtrace() {
+  return env_echo_backtrace;
+}
+
 int TauEnv_get_track_message() {
   return env_track_message;
 }
@@ -854,13 +865,31 @@ int TauEnv_get_memdbg() {
 int TauEnv_get_memdbg_protect_above() {
   return env_memdbg_protect_above;
 }
+void TauEnv_set_memdbg_protect_above(int value) {
+  env_memdbg_protect_above = value;
+  env_memdbg = (env_memdbg_protect_above || 
+                env_memdbg_protect_below || 
+                env_memdbg_protect_free);
+}
 
 int TauEnv_get_memdbg_protect_below() {
   return env_memdbg_protect_below;
 }
+void TauEnv_set_memdbg_protect_below(int value) {
+  env_memdbg_protect_below = value;
+  env_memdbg = (env_memdbg_protect_above || 
+                env_memdbg_protect_below || 
+                env_memdbg_protect_free);
+}
 
 int TauEnv_get_memdbg_protect_free() {
   return env_memdbg_protect_free;
+}
+void TauEnv_set_memdbg_protect_free(int value) {
+  env_memdbg_protect_free = value;
+  env_memdbg = (env_memdbg_protect_above || 
+                env_memdbg_protect_below || 
+                env_memdbg_protect_free);
 }
 
 int TauEnv_get_memdbg_protect_gap() {
@@ -957,6 +986,13 @@ void TauEnv_initialize()
       TAU_METADATA("TAU_LITE", "on");
       env_tau_lite = 1;
     }
+
+    tmp = getconf("TAU_TRACK_POWER");
+    if (parse_bool(tmp, env_track_memory_heap)) {
+      TAU_VERBOSE("TAU: Power tracking Enabled\n");
+      TAU_METADATA("TAU_TRACK_POWER", "on");
+      TAU_TRACK_POWER();
+    } 
 
     tmp = getconf("TAU_TRACK_HEAP");
     if (parse_bool(tmp, env_track_memory_heap)) {
@@ -1113,7 +1149,7 @@ void TauEnv_initialize()
     }
 
     tmp = getconf("TAU_TRACK_IO_PARAMS");
-    if (parse_bool(tmp, env_track_memory_headroom)) {
+    if (parse_bool(tmp, env_track_io_params)) {
       TAU_VERBOSE("TAU: POSIX I/O wrapper parameter tracking enabled\n");
       TAU_METADATA("TAU_TRACK_IO_PARAMS", "on");
       env_track_io_params = 1;
@@ -1135,6 +1171,15 @@ void TauEnv_initialize()
       } else {
         TAU_METADATA("TAU_SIGNALS_GDB", "off");
         env_signals_gdb = 0;
+      }
+      tmp = getconf("TAU_ECHO_BACKTRACE");
+      if (parse_bool(tmp, env_echo_backtrace)) {
+        TAU_VERBOSE("TAU: Backtrace will be echoed to stderr\n");
+        TAU_METADATA("TAU_ECHO_BACKTRACE", "on");
+        env_echo_backtrace = 1;
+      } else {
+        TAU_METADATA("TAU_ECHO_BACKTRACE", "off");
+        env_echo_backtrace = 0;
       }
     } else {
       TAU_METADATA("TAU_TRACK_SIGNALS", "off");
@@ -1522,6 +1567,52 @@ void TauEnv_initialize()
       TAU_VERBOSE("TAU: OpenMP Runtime Support Context none\n");
       TAU_METADATA("TAU_OPENMP_RUNTIME_CONTEXT", "none");
     }
+
+// MPC wht OpenMP isn't initialized before TAU is, so these function calls will hang.
+#if TAU_OPENMP && !defined(TAU_MPC) 
+    omp_sched_t kind;
+    int modifier;
+    omp_get_schedule(&kind, &modifier);
+    const char* schedule;
+    if (kind == omp_sched_static) {
+        schedule = "STATIC";
+    } else if (kind == omp_sched_dynamic) {
+        schedule = "DYNAMIC";
+    } else if ( kind == omp_sched_guided) {
+        schedule = "GUIDED";
+    } else if ( kind == omp_sched_auto) {
+        schedule = "AUTO";
+    } else {
+        schedule = "UNKNOWN";
+    }
+    TAU_METADATA("OMP_SCHEDULE", schedule);
+    sprintf(tmpstr,"%d",modifier);
+    TAU_METADATA("OMP_CHUNK_SIZE", tmpstr);
+
+    int value = omp_get_max_threads();
+    sprintf(tmpstr,"%d",value);
+    TAU_METADATA("OMP_MAX_THREADS", tmpstr);
+
+    value = omp_get_num_procs();
+    sprintf(tmpstr,"%d",value);
+    TAU_METADATA("OMP_NUM_PROCS", tmpstr);
+
+    value = omp_get_dynamic();
+    sprintf(tmpstr,"%s",value?"on":"off");
+    TAU_METADATA("OMP_DYNAMIC", tmpstr);
+
+    value = omp_get_nested();
+    sprintf(tmpstr,"%s",value?"on":"off");
+    TAU_METADATA("OMP_NESTED", tmpstr);
+
+    value = omp_get_thread_limit();
+    sprintf(tmpstr,"%d",value);
+    TAU_METADATA("OMP_THREAD_LIMIT", tmpstr);
+
+    value = omp_get_max_active_levels();
+    sprintf(tmpstr,"%d",value);
+    TAU_METADATA("OMP_MAX_ACTIVE_LEVELS", tmpstr);
+#endif
 
     tmp = getconf("TAU_MEASURE_TAU");
     if (parse_bool(tmp, TAU_EBS_DEFAULT_TAU)) {

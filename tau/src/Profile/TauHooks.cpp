@@ -274,14 +274,20 @@ void TauMPIInitStubInt (int rank)
 int TauRenameTimer(char *oldName, char *newName)
 {
   vector<FunctionInfo *>::iterator it;
+  string *newfuncname = new string(newName);
 
+  TAU_VERBOSE("Inside TauRenameTimer: Old = %s, New = %s\n", oldName, newName);
   for (it = TheFunctionDB().begin(); it != TheFunctionDB().end(); it++){
     //Check to see that it is one of the requested functions.
-    if (strcmp(oldName, (*it)->GetName()) == 0) {
-      (*it)->SetName(newName);
+    TAU_VERBOSE("Comparing %s with %s\n", (*it)->GetName(), oldName);
+    if (strcmp(oldName, (*it)->GetName()) == 0)
+    {
+      (*it)->SetName(*newfuncname);
+      TAU_VERBOSE("Renaming %s to%s\n", oldName, newfuncname->c_str());
       return 1; /* found it! */
     }
   }
+  TAU_VERBOSE("Didn't find the routine!\n");
   return 0; /* didn't find it! */
 }
 

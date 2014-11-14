@@ -1,501 +1,334 @@
-/******************************************************************************
- *
- *                        The TAU Performance System
- *                          http://tau.uoregon.edu/
- *
- * Copyright 1997-2014
- * Department of Computer and Information Science, University of Oregon
- * Advanced Computing Laboratory, Los Alamos National Laboratory
- *
- *****************************************************************************/
-/**
- * @file
- * @brief   Declares class FunctionInfo
- * @date    Created 1998-04-24 00:23:34 +0000
- *
- * @authors
- * Adam Morris <amorris@cs.uoregon.edu>
- * Kevin Huck <khuck@cs.uoregon.edu>
- * Sameer Shende <sameer@cs.uoregon.edu>
- * Scott Biersdorff <scottb@cs.uoregon.edu>
- * Wyatt Joel Spear <wspear@cs.uoregon.edu>
- * John C. Linford <jlinford@paratools.com>
- *
- * @copyright
- * Copyright (c) 1997-2014
- * Department of Computer and Information Science, University of Oregon
- * Advanced Computing Laboratory, Los Alamos National Laboratory
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- * (1) Redistributions of source code must retain the above copyright notice,
- *     this list of conditions and the following disclaimer.
- * (2) Redistributions in binary form must reproduce the above copyright notice,
- *     this list of conditions and the following disclaimer in the documentation
- *     and/or other materials provided with the distribution.
- * (3) Neither the name of ParaTools, Inc. nor the names of its contributors may
- *     be used to endorse or promote products derived from this software without
- *     specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
- */
+/****************************************************************************
+**			TAU Portable Profiling Package			   **
+**			http://www.cs.uoregon.edu/research/tau	           **
+*****************************************************************************
+**    Copyright 1997  						   	   **
+**    Department of Computer and Information Science, University of Oregon **
+**    Advanced Computing Laboratory, Los Alamos National Laboratory        **
+****************************************************************************/
+/***************************************************************************
+ **	File 		: FunctionInfo.h				  **
+ **	Description 	: TAU Profiling Package				  **
+ **	Author		: Sameer Shende					  **
+ **	Contact		: tau-bugs@cs.uoregon.edu                 	  **
+ **	Documentation	: See http://www.cs.uoregon.edu/research/tau      **
+ ***************************************************************************/
 
 #ifndef _FUNCTIONINFO_H_
 #define _FUNCTIONINFO_H_
 
 #include <string>
-#include <sstream>
-#include <vector>
-#include <map>
-#include <stdint.h>
-#include <Profiler.h>
-#include <Profile/UserEvent.h>
-#include <Profile/TauGlobal.h>
-#include <Profile/TauInit.h>
+
+/////////////////////////////////////////////////////////////////////
+//
+// class FunctionInfo
+//
+// This class is intended to be instantiated once per function
+// (or other code block to be timed) as a static variable.
+//
+// It will be constructed the first time the function is called,
+// and that constructor registers this object (and therefore the
+// function) with the timer system.
+//
+//////////////////////////////////////////////////////////////////////
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+extern int Tau_Global_numCounters;
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
+#define TAU_STORAGE(type, variable) type variable[TAU_MAX_THREADS]
+#define TAU_MULTSTORAGE(type, variable) type variable[TAU_MAX_THREADS][TAU_MAX_COUNTERS]
+
+#if defined(TAUKTAU) && defined(TAUKTAU_MERGE)
+#include <Profile/KtauFuncInfo.h>
+#endif /* TAUKTAU && TAUKTAU_MERGE */
+
+#ifdef RENCI_STFF
+#include "Profile/RenciSTFF.h"
+#endif //RENCI_STFF
 
 // For EBS Sampling Profiles with custom allocator support
 #ifndef TAU_WINDOWS
 #include <sys/types.h>
 #include <unistd.h>
+#include <map>
 
 #include <Profile/TauPathHash.h>
-#include <Profile/TauSampling.h>
+#include "Profile/TauSampling.h"
+
+#ifdef TAU_SS_ALLOC_SUPPORT
+#include <Profile/TauSsAllocator.h>
+#define SS_ALLOCATOR tau_ss_allocator
+#else
+#define SS_ALLOCATOR std::allocator
+#endif //TAU_SS_ALLOC_SUPPORT
 #endif //TAU_WINDOWS
 
-
+// Forward declaration
 namespace tau {
-//=============================================================================
+  class TauUserEvent;
+}
 
 
-/******************************************************************************
- * @class FunctionInfo
- *
- * @brief This class instantiated once per code region as a static variable.
- * It will be constructed the first time the function is called, and that
- * constructor registers this object (and therefore the function) with the
- * timer system.
- */
 class FunctionInfo
 {
 public:
+  // Construct with the name of the function and its type.
+  FunctionInfo(const char* name, const char * type, 
+	       TauGroup_t ProfileGroup = TAU_DEFAULT, 
+	       const char *ProfileGroupName = "TAU_DEFAULT", bool InitData = true,
+	       int tid = RtsLayer::myThread());
+  FunctionInfo(const char* name, const std::string& type,
+	       TauGroup_t ProfileGroup = TAU_DEFAULT,
+	       const char *ProfileGroupName = "TAU_DEFAULT", bool InitData = true,
+	       int tid = RtsLayer::myThread());
+  FunctionInfo(const std::string& name, const std::string& type,
+	       TauGroup_t ProfileGroup = TAU_DEFAULT,
+	       const char *ProfileGroupName = "TAU_DEFAULT", bool InitData = true,
+	       int tid = RtsLayer::myThread());
+  FunctionInfo(const std::string& name, const char * type,
+	       TauGroup_t ProfileGroup = TAU_DEFAULT,
+	       const char *ProfileGroupName = "TAU_DEFAULT", bool InitData = true,
+	       int tid = RtsLayer::myThread());
+  
+  FunctionInfo(const FunctionInfo& X) ;
+  // When we exit, we have to clean up.
+  ~FunctionInfo();
+  FunctionInfo& operator= (const FunctionInfo& X) ;
 
-  struct Data
-  {
-    Data() :
-      numCalls(0), numSubrs(0), alreadyOnStack(false),
-      pathHistogram(RtsLayer::getTid())
-    {
-      memset(exclTime, 0, sizeof(exclTime));
-      memset(inclTime, 0, sizeof(inclTime));
+  void FunctionInfoInit(TauGroup_t PGroup, const char *PGroupName, 
+			bool InitData, int tid );
 
-      // FIXME: Get rid of this nasty hack
-      memset(dumpExclusiveValues, 0, sizeof(exclTime));
-      memset(dumpInclusiveValues, 0, sizeof(inclTime));
-    }
+#if defined(TAUKTAU) && defined(TAUKTAU_MERGE)
+  KtauFuncInfo* GetKtauFuncInfo(int tid) { return &(KernelFunc[tid]); }
+#endif /* TAUKTAU && TAUKTAU_MERGE */
 
-    size_t numCalls;
-    size_t numSubrs;
-    bool alreadyOnStack;
-    double exclTime[TAU_MAX_COUNTERS];
-    double inclTime[TAU_MAX_COUNTERS];
+  inline void ExcludeTime(double *t, int tid);
+  inline void AddInclTime(double *t, int tid);
+  inline void AddExclTime(double *t, int tid);
 
-    // FIXME: Get rid of this nasty hack
-    double dumpExclusiveValues[TAU_MAX_COUNTERS];
-    double dumpInclusiveValues[TAU_MAX_COUNTERS];
+  inline void IncrNumCalls(int tid);
+  inline void IncrNumSubrs(int tid);
+  inline bool GetAlreadyOnStack(int tid);
+  inline void SetAlreadyOnStack(bool value, int tid);  
 
-    TauPathHashTable<TauPathAccumulator> pathHistogram;
-  };
+#ifdef TAU_PROFILEMEMORY
+  tau::TauUserEvent * MemoryEvent;
+  tau::TauUserEvent * GetMemoryEvent(void) { return MemoryEvent; }
+#endif // TAU_PROFILEMEMORY
+#ifdef TAU_PROFILEHEADROOM
+  tau::TauUserEvent * HeadroomEvent;
+  tau::TauUserEvent * GetHeadroomEvent(void) { return HeadroomEvent; }
+#endif // TAU_PROFILEHEADROOM
 
-  FunctionInfo(std::string const & _name, std::string const & _type,
-      TauGroup_t _profileGroup=TAU_DEFAULT, char const * _primaryGroup="TAU_DEFAULT",
-      bool init=true, int tid=RtsLayer::myThread());
-
-  ~FunctionInfo() {
-    TheSafeToDumpData() = 0;
+#ifdef RENCI_STFF
+  // signatures for inclusive time for each counter in each thread
+  TAU_MULTSTORAGE(ApplicationSignature*, Signatures);
+  ApplicationSignature** GetSignature(int tid) {
+    return Signatures[tid];
   }
-
-
-  // FIXME: Ugly nasty hack
-  double * getDumpExclusiveValues(int tid) {
-    return ThreadData(tid).dumpExclusiveValues;
-  }
-  // FIXME: Ugly nasty hack
-  double * getDumpInclusiveValues(int tid) {
-    return ThreadData(tid).dumpInclusiveValues;
-  }
-  // FIXME: Ugly nasty hack
-  void getInclusiveValues(int tid, double *values) {
-    Data & d = ThreadData(tid);
-    for(int i=0; i<Tau_Global_numCounters; i++) {
-      values[i] = d.inclTime[i];
-    }
-  }
-  // FIXME: Ugly nasty hack
-  void getExclusiveValues(int tid, double *values) {
-    Data & d = ThreadData(tid);
-    for(int i=0; i<Tau_Global_numCounters; i++) {
-      values[i] = d.exclTime[i];
-    }
-  }
-
-
-  //! TODO: Document
-  uint64_t GetId() {
-    // To avoid data races, we use a lock if the id has not been created
-    while (!id) {
-      RtsLayer::LockDB();
-      RtsLayer::UnLockDB();
-    }
-    return id;
-  }
-
-  // Cached, generated on first access
-  char const * GetFullName();
-
-  // Cached, generated on first access
-  char const * GetGroupString();
-
-  //! TODO: Document
-  // FIXME: Name
-  void addPcSample(unsigned long *pc, int tid, double interval[TAU_MAX_COUNTERS]);
-
-
-  char const * GetName() const {
-    return name;
-  }
-  void SetName(char const * const str) {
-    name = str;
-  }
-
-  char const * GetShortName() const {
-    return shortName;
-  }
-  void SetShortName(char const * const str) {
-    shortName = str;
-  }
-
-  char const * GetType() const {
-    return type;
-  }
-  void SetType(char const * const str) {
-    type = str;
-  }
-
-  char const * GetPrimaryGroup() const {
-    return groupName;
-  }
-  void SetPrimaryGroup(char const * const newGroup) {
-    // TODO: Reset all group info when primary group changes?
-    groupName = newGroup;
-    allGroups = newGroup;
-  }
-
-  char const * GetAllGroups() const {
-    return allGroups;
-  }
-
-  TauUserEvent * GetMemoryEvent() const {
-    return memoryEvent;
-  }
-
-  TauUserEvent * GetHeadroomEvent() const {
-    return headroomEvent;
-  }
-
-  TauGroup_t GetProfileGroup() const {
-    return profileGroup;
-  }
-  void SetProfileGroup(TauGroup_t gr) {
-    profileGroup = gr;
-  }
-
-  bool IsCallSite() const {
-    return isCallSite;
-  }
-  void SetIsCallSite(bool value) {
-    isCallSite = value;
-  }
-
-  bool IsCallSiteResolved() const {
-    return callSiteResolved;
-  }
-  void SetCallSiteResolved(bool value) {
-    callSiteResolved = value;
-  }
-
-  unsigned long GetCallSiteKeyId() const {
-    return callSiteKeyId;
-  }
-  void SetCallSiteKeyId(unsigned long id) {
-    callSiteKeyId = id;
-  }
-
-  FunctionInfo * GetFirstSpecializedFunction() const {
-    return firstSpecializedFunction;
-  }
-  void SetFirstSpecializedFunction(FunctionInfo * const fi) {
-    firstSpecializedFunction = fi;
-  }
-
-
-
-  void IncrNumCalls(int tid) {
-    ThreadData(tid).numCalls++;
-  }
-  size_t GetNumCalls(int tid) const {
-    return ThreadData(tid).numCalls;
-  }
-  void SetNumCalls(int tid, long calls) {
-    ThreadData(tid).numCalls = calls;
-  }
-
-  void IncrNumSubrs(int tid) {
-    ThreadData(tid).numSubrs++;
-  }
-  long GetNumSubrs(int tid) const {
-    return ThreadData(tid).numSubrs;
-  }
-  void SetNumSubrs(int tid, long subrs) {
-    ThreadData(tid).numSubrs = subrs;
-  }
-
-  bool GetAlreadyOnStack(int tid) const {
-    return ThreadData(tid).alreadyOnStack;
-  }
-  void SetAlreadyOnStack(bool value, int tid) {
-    ThreadData(tid).alreadyOnStack = value;
-  }
-
-
-
-  void AddExclTime(double const t[], int tid) {
-    Data & d = ThreadData(tid);
-    for (int i=0; i<Tau_Global_numCounters; ++i) {
-      d.exclTime[i] += t[i];
-    }
-  }
-  void AddExclTime(double value, int tid, int counter) {
-    ThreadData(tid).exclTime[counter] += value;
-  }
-
-  double const * GetExclTime(int tid) const {
-    return ThreadData(tid).exclTime;
-  }
-  double GetExclTime(int tid, int counter) const {
-    return ThreadData(tid).exclTime[counter];
-  }
-
-  void SetExclTime(int tid, double value) {
-    Data & d = ThreadData(tid);
-    for (int i=0; i<Tau_Global_numCounters; ++i) {
-      d.exclTime[i] = value;
-    }
-  }
-  void SetExclTime(int tid, double excltime[]) {
-    Data & d = ThreadData(tid);
-    for (int i=0; i<Tau_Global_numCounters; ++i) {
-      d.exclTime[i] = excltime[i];
-    }
-  }
-
-
-
-  void AddInclTime(double const t[], int tid) {
-    Data & d = ThreadData(tid);
-    for (int i=0; i<Tau_Global_numCounters; ++i) {
-      d.inclTime[i] += t[i];
-    }
-  }
-  void AddInclTime(double value, int tid, int counter) {
-    ThreadData(tid).inclTime[counter] += value;
-  }
-
-  double const * GetInclTime(int tid) const {
-    return ThreadData(tid).inclTime;
-  }
-  double GetInclTime(int tid, int counter) const {
-    return ThreadData(tid).inclTime[counter];
-  }
-
-  void SetInclTime(int tid, double value) {
-    Data & d = ThreadData(tid);
-    for (int i=0; i<Tau_Global_numCounters; ++i) {
-      d.inclTime[i] = value;
-    }
-  }
-  void SetInclTime(int tid, double incltime[]) {
-    Data & d = ThreadData(tid);
-    for (int i = 0; i < Tau_Global_numCounters; ++i)
-      d.inclTime[i] = incltime[i];
-  }
-
-
-
-  //! Called by a function to decrease its parent functions time
-  //! exclude from it the time spent in child function
-  void ExcludeTime(double t[], int tid) {
-    Data & d = ThreadData(tid);
-    for (int i=0; i<Tau_Global_numCounters; ++i) {
-      d.exclTime[i] -= t[i];
-    }
-  }
-
-  //! if exclusive time is negative (at Stop) we set it to zero during
-  //! compensation. This function is used to reset it to zero for single
-  //! and multiple counters
-  void ResetExclTimeIfNegative(int tid) {
-    Data & d = ThreadData(tid);
-    for (int i=0; i<Tau_Global_numCounters; i++) {
-      if (d.exclTime[i] < 0) {
-        d.exclTime[i] = 0;
-      }
-    }
-  }
-
-  TauPathHashTable<TauPathAccumulator> const & GetPathHistogram(int tid) const {
-    return ThreadData(tid).pathHistogram;
-  }
-  TauPathHashTable<TauPathAccumulator> & GetPathHistogram(int tid) {
-    return ThreadData(tid).pathHistogram;
-  }
+#endif //RENCI_STFF
 
 private:
+  // A record of the information unique to this function.
+  // Statistics about calling this function.
+	
+#if defined(TAUKTAU) && defined(TAUKTAU_MERGE)
+  TAU_STORAGE(KtauFuncInfo, KernelFunc);
+#endif /* KTAU && KTAU_MERGE */
 
-  std::string ConstructEventName(std::string const & evtName) const {
-    std::ostringstream buff;
-    buff << name;
-    if (strlen(type) > 0) {
-      buff << " " << type;
-    }
-    buff << " - " << evtName;
-    return buff.str();
-  }
+  TAU_STORAGE(long, NumCalls);
+  TAU_STORAGE(long, NumSubrs);
+  TAU_MULTSTORAGE(double, ExclTime);
+  TAU_MULTSTORAGE(double, InclTime);
+  TAU_STORAGE(bool, AlreadyOnStack);
+  TAU_MULTSTORAGE(double, dumpExclusiveValues);
+  TAU_MULTSTORAGE(double, dumpInclusiveValues);
 
-  uint64_t id;
-  char const * name;
-  char const * shortName;
-  char const * fullName;
-  char const * type;
-  TauUserEvent * memoryEvent;
-  TauUserEvent * headroomEvent;
+public:
+  char *Name;
+  char *Type;
+  char *GroupName;
+  char *AllGroups;
+  char const * FullName;
+  x_uint64 FunctionId;
 
-  // TODO: Fix groups
-  char const * groupName;
-  char const * allGroups;
-  TauGroup_t profileGroup;
+  /* For EBS Sampling Profiles */
+  // *CWL* - these need to be per-thread structures, just like the
+  //         the data values above.
+  //         They will also potentially need per-counter information
+  //         eventually.
+  //  map<unsigned long, unsigned int> *pcHistogram;
+#ifndef TAU_WINDOWS
+  TauPathHashTable<TauPathAccumulator> *pathHistogram[TAU_MAX_THREADS];
 
   // For CallSite discovery
   bool isCallSite;
   bool callSiteResolved;
   unsigned long callSiteKeyId;
-  FunctionInfo * firstSpecializedFunction;
+  FunctionInfo *firstSpecializedFunction;
+  char *ShortenedName;
+  void SetShortName(std::string& str) { ShortenedName = strdup(str.c_str()); }
+  const char* GetShortName() const { return ShortenedName; }
 
-  Data __d[TAU_MAX_THREADS];
+  /* EBS Sampling Profiles */
+  void addPcSample(unsigned long *pc, int tid, double interval[TAU_MAX_COUNTERS]);
+#endif // TAU_WINDOWS
 
-  Data & ThreadData() {
-    return __d[RtsLayer::myThread()];
-  }
-  Data const & ThreadData() const {
-    return __d[RtsLayer::myThread()];
-  }
-  Data & ThreadData(int tid) {
-    return __d[tid];
-  }
-  Data const & ThreadData(int tid) const {
-    return __d[tid];
+  inline double *getDumpExclusiveValues(int tid) {
+    return dumpExclusiveValues[tid];
   }
 
+  inline double *getDumpInclusiveValues(int tid) {
+    return dumpInclusiveValues[tid];
+  }
+
+  // Cough up the information about this function.
+  void SetName(std::string & str) { Name = strdup(str.c_str()); }
+  const char* GetName() const { return Name; }
+
+  void SetType(char const * str) {
+    Type = strdup(str);
+  }
+  char const * GetType() const {
+    return Type;
+  }
+
+  const char* GetPrimaryGroup() const { return GroupName; }
+  const char* GetAllGroups() const { return AllGroups; }
+  void SetPrimaryGroupName(const char *newname) {
+    GroupName = strdup(newname);
+    AllGroups = strdup(newname); /* to make it to the profile */
+  }
+  void SetPrimaryGroupName(std::string newname) {
+    GroupName = strdup(newname.c_str());
+    AllGroups = strdup(newname.c_str()); /* to make it to the profile */
+  }
+
+  char const * GetFullName(); /* created on demand, cached */
+
+  x_uint64 GetFunctionId() ;
+  long GetCalls(int tid) { return NumCalls[tid]; }
+  void SetCalls(int tid, long calls) { NumCalls[tid] = calls; }
+  long GetSubrs(int tid) { return NumSubrs[tid]; }
+  void SetSubrs(int tid, long subrs) { NumSubrs[tid] = subrs; }
+  void ResetExclTimeIfNegative(int tid);
+
+
+  double *getInclusiveValues(int tid);
+  double *getExclusiveValues(int tid);
+
+  void getInclusiveValues(int tid, double *values);
+  void getExclusiveValues(int tid, double *values);
+
+  void SetExclTimeZero(int tid) {
+    for(int i=0;i<Tau_Global_numCounters;i++) {
+      ExclTime[tid][i] = 0;
+    }
+  }
+  void SetInclTimeZero(int tid) {
+    for(int i=0;i<Tau_Global_numCounters;i++) {
+      InclTime[tid][i] = 0;
+    }
+  }
+
+  //Returns the array of exclusive counter values.
+  //double * GetExclTime(int tid) { return ExclTime[tid]; }
+  double *GetExclTime(int tid);
+  double *GetInclTime(int tid);
+  inline void SetExclTime(int tid, double *excltime) {
+    for(int i=0;i<Tau_Global_numCounters;i++) {
+      ExclTime[tid][i] = excltime[i];
+    }
+  }
+  inline void SetInclTime(int tid, double *incltime) { 
+    for(int i=0;i<Tau_Global_numCounters;i++)
+      InclTime[tid][i] = incltime[i];
+  }
+
+
+  inline void AddInclTimeForCounter(double value, int tid, int counter) { InclTime[tid][counter] += value; }
+  inline void AddExclTimeForCounter(double value, int tid, int counter) { ExclTime[tid][counter] += value; }
+  inline double GetInclTimeForCounter(int tid, int counter) { return InclTime[tid][counter]; }
+  inline double GetExclTimeForCounter(int tid, int counter) { return ExclTime[tid][counter]; }
+
+  TauGroup_t GetProfileGroup() const {return MyProfileGroup_; }
+  void SetProfileGroup(TauGroup_t gr) {MyProfileGroup_ = gr; }
+
+  bool IsThrottled() const {
+    return ! (RtsLayer::TheEnableInstrumentation() && (MyProfileGroup_ & RtsLayer::TheProfileMask()));
+  }
+
+private:
+  TauGroup_t MyProfileGroup_;
 };
-/* END class FunctionInfo ****************************************************/
 
+// Global variables
+std::vector<FunctionInfo*>& TheFunctionDB(void);
+int& TheSafeToDumpData(void);
+int& TheUsingDyninst(void);
+int& TheUsingCompInst(void);
 
+//
+// For efficiency, make the timing updates inline.
+//
+inline void FunctionInfo::ExcludeTime(double *t, int tid) { 
+  // called by a function to decrease its parent functions time
+  // exclude from it the time spent in child function
+  for (int i=0; i<Tau_Global_numCounters; i++) {
+    ExclTime[tid][i] -= t[i];
+  }
+}
+	
 
-/******************************************************************************
- * @brief
- */
-static inline void tauCreateFI(void ** ptr,
-    std::string const & name, std::string const & type,
-    TauGroup_t profileGroup, char const * profileGroupName)
-{
-  if (!*ptr) {
-    // Protect TAU from itself
-    TauInternalFunctionGuard protects_this_function;
-#ifdef TAU_CHARM
-    if (RtsLayer::myNode() != -1) {
-      RtsLayer::LockEnv();
-    }
-#else
-    RtsLayer::LockEnv();
-#endif
-    if (!*ptr) {
-      *ptr = new FunctionInfo(name, type, profileGroup, profileGroupName);
-    }
-#ifdef TAU_CHARM
-    if (RtsLayer::myNode() != -1) {
-      RtsLayer::UnLockEnv();
-    }
-#else
-    RtsLayer::UnLockEnv();
-#endif
+inline void FunctionInfo::AddInclTime(double *t, int tid) {
+  for (int i=0; i<Tau_Global_numCounters; i++) {
+    InclTime[tid][i] += t[i]; // Add Inclusive time
   }
 }
 
-/******************************************************************************
- * @brief
- */
-static inline void tauCreateFI_signalSafe(void ** ptr,
-    std::string const & name, std::string const & type,
-    TauGroup_t profileGroup, char const * profileGroupName)
-{
-#ifdef TAU_WINDOWS
-  tauCreateFI(ptr, name, type, profileGroup, profileGroupName);
-#else
-  if (!*ptr) {
-    // Protect TAU from itself
-    TauInternalFunctionGuard protects_this_function;
-#ifdef TAU_CHARM
-    if (RtsLayer::myNode() != -1) {
-      RtsLayer::LockEnv();
-    }
-#else
-    RtsLayer::LockEnv();
-#endif
-    if (!*ptr) {
-      /* KAH - Whoops!! We can't call "new" here, because malloc is not
-       * safe in signal handling. therefore, use the special memory
-       * allocation routines */
-      *ptr = Tau_MemMgr_malloc(RtsLayer::unsafeThreadId(), sizeof(FunctionInfo));
-      /*  now, use the placement new function to create a object in
-       *  pre-allocated memory. NOTE - this memory needs to be explicitly
-       *  deallocated by explicitly calling the destructor.
-       *  I think the best place for that is in the destructor for
-       *  the hash table. */
-      new (*ptr) FunctionInfo(name, type, profileGroup, profileGroupName);
-    }
-#ifdef TAU_CHARM
-    if (RtsLayer::myNode() != -1) {
-      RtsLayer::UnLockEnv();
-    }
-#else
-    RtsLayer::UnLockEnv();
-#endif
+inline void FunctionInfo::AddExclTime(double *t, int tid) {
+  for (int i=0; i<Tau_Global_numCounters; i++) {
+    ExclTime[tid][i] += t[i]; // Add Total Time to Exclusive time (-ve)
   }
-#endif /* TAU_WINDOWS */
 }
 
-//=============================================================================
-} // END namespace tau
+inline void FunctionInfo::IncrNumCalls(int tid) {
+  NumCalls[tid]++; // Increment number of calls
+} 
+
+inline void FunctionInfo::IncrNumSubrs(int tid) {
+  NumSubrs[tid]++;  // increment # of subroutines
+}
+
+inline void FunctionInfo::SetAlreadyOnStack(bool value, int tid) {
+  AlreadyOnStack[tid] = value;
+}
+
+inline bool FunctionInfo::GetAlreadyOnStack(int tid) {
+  return AlreadyOnStack[tid];
+}
+
+
+void tauCreateFI(void **ptr, const char *name, const char *type, 
+		 TauGroup_t ProfileGroup , const char *ProfileGroupName);
+void tauCreateFI(void **ptr, const char *name, const std::string& type,
+		 TauGroup_t ProfileGroup , const char *ProfileGroupName);
+void tauCreateFI(void **ptr, const std::string& name, const char *type,
+		 TauGroup_t ProfileGroup , const char *ProfileGroupName);
+void tauCreateFI(void **ptr, const std::string& name, const std::string& type,
+		 TauGroup_t ProfileGroup , const char *ProfileGroupName);
+void tauCreateFI_signalSafe(void **ptr, const std::string& name, const char *type, 
+         TauGroup_t ProfileGroup, const char *ProfileGroupName);
 
 
 #endif /* _FUNCTIONINFO_H_ */
+/***************************************************************************
+ * $RCSfile: FunctionInfo.h,v $   $Author: amorris $
+ * $Revision: 1.57 $   $Date: 2010/03/19 00:21:13 $
+ * POOMA_VERSION_ID: $Id: FunctionInfo.h,v 1.57 2010/03/19 00:21:13 amorris Exp $ 
+ ***************************************************************************/

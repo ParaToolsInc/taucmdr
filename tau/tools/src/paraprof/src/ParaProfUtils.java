@@ -2,6 +2,7 @@ package edu.uoregon.tau.paraprof;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Frame;
@@ -41,7 +42,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSeparator;
+import javax.swing.JTextArea;
 import javax.swing.JToolBar;
+import javax.swing.SwingUtilities;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
@@ -415,11 +418,13 @@ public class ParaProfUtils {
         JFrame window = null; 
         try {
         	window = ThreeDeeCommMatrixWindow.createCommunicationMatrixWindow(ppTrial, parentFrame);
-        } catch (UnsatisfiedLinkError e) {
-            JOptionPane.showMessageDialog(parentFrame, "Unable to load jogl library.  Possible reasons:\n"
-                    + "libjogl.so is not in your LD_LIBRARY_PATH.\n"
-                    + "Jogl is not built for this platform.\nOpenGL is not installed\n\n"
-                    + "Jogl is available at jogl.dev.java.net\n\n" + "Message : " + e.getMessage());
+        } 
+        catch(NoClassDefFoundError e){
+        	printLibjoglError(parentFrame,e);
+        }
+        
+        catch (UnsatisfiedLinkError e) {
+        	printLibjoglError(parentFrame,e);
         } catch (UnsupportedClassVersionError e) {
             JOptionPane.showMessageDialog(parentFrame,
                     "Unsupported class version.  Are you sure you're using Java 1.4 or above?");
@@ -447,11 +452,14 @@ public class ParaProfUtils {
         
         try {
             window = ThreeDeeWindow.createThreeDeeWindow(ppTrial, parentFrame);//new ThreeDeeWindow(ppTrial, parentFrame);
-        } catch (UnsatisfiedLinkError e) {
-            JOptionPane.showMessageDialog(parentFrame, "Unable to load jogl library.  Possible reasons:\n"
-                    + "libjogl.so is not in your LD_LIBRARY_PATH.\n"
-                    + "Jogl is not built for this platform.\nOpenGL is not installed\n\n"
-                    + "Jogl is available at jogl.dev.java.net\n\n" + "Message : " + e.getMessage());
+        } 
+        
+        catch(NoClassDefFoundError e){
+        	printLibjoglError(parentFrame,e);
+        }
+        
+        catch (UnsatisfiedLinkError e) {
+           printLibjoglError(parentFrame,e);
         } catch (UnsupportedClassVersionError e) {
             JOptionPane.showMessageDialog(parentFrame,
                     "Unsupported class version.  Are you sure you're using Java 1.4 or above?");
@@ -463,6 +471,24 @@ public class ParaProfUtils {
             window.setVisible(true);
         }
         
+    }
+    
+    private static void printLibjoglError(JFrame parentFrame, Error e){
+    	
+    	String lowerOS = System.getProperty("os.name").toLowerCase();
+    	String macline="";
+    	if(lowerOS.indexOf("mac")>=0){
+    		macline="You are on a 64 bit Mac and thus need to install 32 bit compatable Java 6, available here:\n http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/JavaForOSX2014-001.dmg\n\n";
+    	}
+    	
+    	String text = "Unable to load jogl library.  Possible reasons:\n"
+    			+ macline
+                + "libjogl.so is not in your LD_LIBRARY_PATH.\n"
+                + "Jogl is not built for this platform.\nOpenGL is not installed\n\n"
+                + "Jogl is available at jogl.dev.java.net\n\n" + "Message : " + e.getMessage();
+    	
+    	JTextArea area = new JTextArea(text);
+    	 JOptionPane.showMessageDialog(parentFrame, area);
     }
 
     public static JMenu createWindowsMenu(final ParaProfTrial ppTrial, final JFrame owner) {
@@ -1181,8 +1207,24 @@ public class ParaProfUtils {
         JMenuItem jMenuItem = new JMenuItem(text);
         jMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                ContextEventWindow w = new ContextEventWindow(ppTrial, thread, owner);
-                w.setVisible(true);
+
+            	Runnable bt = new Runnable(){
+
+					public void run() {
+						try{
+						owner.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+						ContextEventWindow w = new ContextEventWindow(ppTrial, thread, owner);
+		                w.setVisible(true);
+						}finally{
+							owner.setCursor(Cursor.getDefaultCursor());
+		            	}
+		                
+						
+					}
+            		
+            	};
+            	new java.lang.Thread(bt).start();
+
             }
         });
         return jMenuItem;

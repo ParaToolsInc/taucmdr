@@ -103,6 +103,10 @@ void TauUserEvent::AddEventToDB()
   TauInternalFunctionGuard protects_this_function;
 
   RtsLayer::LockDB();
+  TheEventDB().push_back(this);
+  DEBUGPROFMSG("Successfully registered event " << GetName() << endl;);
+  DEBUGPROFMSG("Size of eventDB is " << TheEventDB().size() <<endl);
+
   /* Set user event id */
   eventId = RtsLayer::GenerateUniqueId();
 #ifdef TAU_VAMPIRTRACE
@@ -121,10 +125,6 @@ void TauUserEvent::AddEventToDB()
   SCOREP_Tau_InitMetric( &handle, GetName().c_str(), "units");
   eventId=handle;
 #endif
-  TheEventDB().push_back(this);
-  DEBUGPROFMSG("Successfully registered event " << GetName() << endl;);
-  DEBUGPROFMSG("Size of eventDB is " << TheEventDB().size() <<endl);
-
   RtsLayer::UnLockDB();
 }
 
@@ -406,21 +406,25 @@ void TauContextUserEvent::TriggerEvent(TAU_EVENT_DATATYPE data, int tid, double 
 
     if (contextEnabled) {
       Profiler * current = TauInternal_CurrentProfiler(tid);
-      long * comparison = FormulateContextComparisonArray(current);
+      if (current) {
+        long * comparison = FormulateContextComparisonArray(current);
 
-      RtsLayer::LockDB();
-      ContextEventMap::iterator it = contextMap.find(comparison);
-      if (it == contextMap.end()) {
-        contextEvent = new TauUserEvent(
-            FormulateContextNameString(current),
-            userEvent->IsMonotonicallyIncreasing());
-        contextMap[comparison] = contextEvent;
+        RtsLayer::LockDB();
+        ContextEventMap::iterator it = contextMap.find(comparison);
+        if (it == contextMap.end()) {
+          contextEvent = new TauUserEvent(
+              FormulateContextNameString(current),
+              userEvent->IsMonotonicallyIncreasing());
+          contextMap[comparison] = contextEvent;
+        } else {
+          contextEvent = it->second;
+          delete[] comparison;
+        }
+        RtsLayer::UnLockDB();
+        contextEvent->TriggerEvent(data, tid, timestamp, use_ts);
       } else {
-        contextEvent = it->second;
-        delete[] comparison;
+        // do nothing - there is no context.
       }
-      RtsLayer::UnLockDB();
-      contextEvent->TriggerEvent(data, tid, timestamp, use_ts);
     }
     userEvent->TriggerEvent(data, tid, timestamp, use_ts);
   }
