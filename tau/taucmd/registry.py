@@ -37,11 +37,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import os
 import sys
+import errno
 import pickle
-import pprint
 import taucmd
 from taucmd import util
-from taucmd import HELP_CONTACT, USER_TAU_DIR, SYSTEM_TAU_DIR
+from taucmd import HELP_CONTACT, USER_PREFIX, SYSTEM_PREFIX
 from taucmd.error import ConfigurationError, InternalError
 from taucmd.error import ProjectNameError, RegistryError
 
@@ -87,8 +87,8 @@ class GlobalRegistry(object):
     def __init__(self):
         self._populated = False
         self._selected_name = None
-        self.user = Registry(USER_TAU_DIR)
-        self.system = Registry(SYSTEM_TAU_DIR)
+        self.user = Registry(USER_PREFIX)
+        self.system = Registry(SYSTEM_PREFIX)
         self.load()
         
     def __len__(self):
@@ -126,7 +126,7 @@ class GlobalRegistry(object):
             try:
                 self.system.save()
             except OSError as e:
-                if e.errno in [errno.EACCESS, errno.EPERM]:
+                if e.errno in [errno.EACCES, errno.EPERM]:
                     LOGGER.info("You don't have permissions write to %r. System-level changes not saved." % self.system.prefix)
                 else:
                     raise

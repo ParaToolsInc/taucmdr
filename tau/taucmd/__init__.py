@@ -96,7 +96,7 @@ class LogFormatter(logging.Formatter, object):
     LINE_WIDTH = 80
     LINE_MARKER = TAU_LINE_MARKER
     TEXT_WRAPPER = textwrap.TextWrapper(width=(LINE_WIDTH-len(LINE_MARKER)), 
-                                        subsequent_indent=LINE_MARKER+'    ',
+                                        subsequent_indent=LINE_MARKER+'  ',
                                         break_long_words=False,
                                         break_on_hyphens=False,
                                         drop_whitespace=False)

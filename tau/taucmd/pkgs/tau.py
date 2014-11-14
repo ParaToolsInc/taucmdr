@@ -37,146 +37,159 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import os
 import sys
-import glob
-import subprocess
-import fnmatch
-import taucmd
 import shutil
+import fnmatch
+import subprocess
+import taucmd
+from taucmd import TAU_MASTER_SRC_DIR
+from taucmd.pkgs import Package
+from taucmd.pkgs.bfd import BfdPackage
+from taucmd.pkgs.pdt import PdtPackage
+from taucmd.error import PackageError
 
 LOGGER = taucmd.getLogger(__name__)
 
-# User specific TAU source code location
-TAU_SRC_DIR = os.path.join(taucmd.SRC_DIR, 'tau')
 
-
-
-def cloneSource(dest=TAU_SRC_DIR, source=taucmd.TAU_MASTER_SRC_DIR):
+class TauPackage(Package):
     """
-    Makes a fresh clone of the TAU source code
+    TAU package
     """
-    # Don't copy if the source already exists
-    if os.path.exists(dest) and os.path.isdir(dest):
-        LOGGER.debug('TAU source code directory %r already exists.' % dest)
-        return
-    # Filename filter for copytree
-    def ignore(path, names):
-        globs = ['*.o', '*.a', '*.so', '*.dylib', '*.pyc', 'a.out', 
-                 '.all_configs', '.last_config', '.project', '.cproject',
-                 '.git', '.gitignore', '.ptp-sync', '.pydevproject']
-        # Ignore bindirs in the top level directory
-        if path == source:
-            bindirs = ['x86_64', 'bgl', 'bgp', 'bgq', 'craycnl', 'apple']
-            globs.extend(bindirs)
-        # Build set of ignored files
-        ignored_names = []
-        for pattern in globs:
-            ignored_names.extend(fnmatch.filter(names, pattern))
-        return set(ignored_names)
-
-    LOGGER.debug('Copying from %r to %r' % (source, dest))
-    LOGGER.info('Creating new copy of TAU at %r.  This will only be done once.' % dest)
-    shutil.copytree(source, dest, ignore=ignore)
-
-
-def translateConfigureArg(config, key, val):
-    """
-    Gets the configure script argument(s) corresponding to a Tau Commander argument
-    """
-    # Ignore unspecified arguments
-    if not val:
-        return []
-    # No parameter flags
-    noparam = {'mpi': '-mpi',
-               'openmp': '-opari',
-               'pthreads': '-pthread',
-               'pdt': '-pdt=%s' % config['pdt-prefix'],
-               'bfd': '-bfd=%s' % config['bfd-prefix'],
-               'cuda': '-cuda=%s' % config['cuda-sdk']}
-    # One parameter flags
-    oneparam = {'dyninst': '-dyninst=%s',
-                'mpi-include': '-mpiinc=%s',
-                'mpi-lib': '-mpilib=%s',
-                'papi': '-papi=%s',
-                'tau-prefix': '-prefix=%s',
-                'target-arch': '-arch=%s',
-                'upc': '-upc=%s',
-                'upc-gasnet': '-gasnet=%s',
-                'upc-network': '-upcnetwork=%s',
-                #TODO: Translate compiler command correctly
-                'cc': '-cc=%s',
-                'c++': '-c++=%s',
-                'fortran': '-fortran=%s',
-                'pdt_c++': '-pdt_c++=%s'}
-    # Attempt no-argument translation
-    try:
-        return [noparam[key]]
-    except KeyError:
-        pass
-    # Attempt one-argument translation
-    try:
-        return [oneparam[key] % val]
-    except KeyError:
-        pass
-    # Couldn't translate the argument
-    return []
-
-
-def getConfigureCommand(config):
-    """
-    Returns the command that will configure TAU for this project
-    """
-    cmd = ['./configure']
-    for key, val in config.iteritems():
-        cmd.extend(translateConfigureArg(config, key, val))
-    return cmd
-
-
-def getPrefix(config):
-    nameparts = ['bfd', 'cuda', 'dyninst', 'mpi', 'openmp', 'papi', 'pdt', 'pthreads']
-    valueparts = ['c++', 'cc', 'fortran', 'target-arch', 'upc', 'upc-network']
-    parts = [config[part].lower() for part in valueparts if config[part]]
-    parts.extend([part.lower() for part in nameparts if config[part]])
-    parts.sort()
-    name = '_'.join(parts)
-    prefix = os.path.join(taucmd.USER_TAU_DIR, 'tau', name)
-    return prefix
-
-
-def install(config, stdout=sys.stdout, stderr=sys.stderr):
-    """
-    Installs TAU
-    """
-    prefix = getPrefix(config)
-    if os.path.isdir(prefix):
-        LOGGER.debug("Skipping TAU installation.  %r is a directory." % prefix)
-        return
     
-    # Banner
-    LOGGER.info('Installing TAU at %r' % prefix)
+    def __init__(self, project):
+        super(TauPackage, self).__init__(project)
+        keys = ['bfd', 'cuda', 'dyninst', 'mpi', 'openmp', 'papi', 'pdt', 'pthreads']
+        name = '_'.join(sorted([k.lower() for k in keys if self.project.config.get(k)]))
+        self.prefix = os.path.join(self.project.prefix, 'tau', name)
 
-    # Clone the TAU source code to the user's home directory
-    cloneSource()
+    def install(self, stdout=sys.stdout, stderr=sys.stderr):
+        # Install dependencies
+        config = self.project.config
+        if config['bfd']:
+            self.bfd = BfdPackage(self.project)
+            self.bfd.install(stdout, stderr)
+        if config['pdt']:
+            self.pdt = PdtPackage(self.project)
+            self.pdt.install(stdout, stderr)
+        if config['unwind']:
+            # FIXME: UnwindPackage
+            config['unwind'] = None
+        if config['papi']:
+            # FIXME: PapiPackage
+            config['papi'] = None
+        if config['dyninst']:
+            # FIXME: DyninstPackage
+            config['dyninst'] = None
+        if config['cuda']:
+            # FIXME: CudaPackage
+            config['cuda'] = None
+        
+        if os.path.isdir(self.prefix):
+            LOGGER.debug("TAU already installed at %r" % self.prefix)
+            return
+        LOGGER.info('Installing TAU at %r' % self.prefix)
 
-    # Configure the source code for this configuration
-    srcdir = TAU_SRC_DIR
-    cmd = getConfigureCommand(config)
-    LOGGER.debug('Creating configure subprocess in %r: %r' % (srcdir, cmd))
-    LOGGER.info('Configuring TAU...')
-    proc = subprocess.Popen(cmd, cwd=srcdir, stdout=stdout, stderr=stderr)
-    if proc.wait():
-        shutil.rmtree(prefix, ignore_errors=True)
-        raise taucmd.Error('TAU configure failed.')
-    
-    # Execute make
-    cmd = ['make', '-j', 'install']
-    LOGGER.debug('Creating make subprocess in %r: %r' % (srcdir, cmd))
-    LOGGER.info('Compiling TAU...')
-    proc = subprocess.Popen(cmd, cwd=srcdir, stdout=stdout, stderr=stderr)
-    if proc.wait():
-        shutil.rmtree(prefix, ignore_errors=True)
-        raise taucmd.Error('TAU compilation failed.')
-    
-    # Leave source, we'll probably need it again soon
-    LOGGER.debug('Preserving %r for future use' % srcdir)
-    LOGGER.info('TAU installation complete.')
+        # Configure the source code for this project
+        srcdir = self._getSource(TAU_MASTER_SRC_DIR)
+        cmd = self._getConfigureCommand()
+        LOGGER.debug('Creating configure subprocess in %r: %r' % (srcdir, cmd))
+        LOGGER.info('Configuring TAU...')
+        proc = subprocess.Popen(cmd, cwd=srcdir, stdout=stdout, stderr=stderr)
+        if proc.wait():
+            shutil.rmtree(self.prefix, ignore_errors=True)
+            raise PackageError('TAU configure failed.')
+        
+        # Execute make
+        cmd = ['make', '-j', 'install']
+        LOGGER.debug('Creating make subprocess in %r: %r' % (srcdir, cmd))
+        LOGGER.info('Compiling TAU...')
+        proc = subprocess.Popen(cmd, cwd=srcdir, stdout=stdout, stderr=stderr)
+        if proc.wait():
+            shutil.rmtree(self.prefix, ignore_errors=True)
+            raise PackageError('TAU compilation failed.')
+        
+        # Leave source, we'll probably need it again soon
+        LOGGER.debug('Preserving %r for future use' % srcdir)
+        LOGGER.info('TAU installation complete.')
+        
+    def uninstall(self, stdout=sys.stdout, stderr=sys.stderr):
+        LOGGER.debug('Recursively deleting %r' % self.prefix)
+        shutil.rmtree(self.prefix)
+        LOGGER.info('TAU uninstalled.')
+
+    def _getSource(self, source):
+        """
+        Makes a fresh clone of the TAU source code
+        """
+        dest = os.path.join(self.project.source_prefix, 'tau')
+        # Don't copy if the source already exists
+        if os.path.exists(dest) and os.path.isdir(dest):
+            LOGGER.debug('TAU source code directory %r already exists.' % dest)
+        else:
+            def ignore(path, names):
+                globs = ['*.o', '*.a', '*.so', '*.dylib', '*.pyc', 'a.out', 
+                         '.all_configs', '.last_config', '.project', '.cproject',
+                         '.git', '.gitignore', '.ptp-sync', '.pydevproject']
+                # Ignore bindirs in the top level directory
+                if path == source:
+                    bindirs = ['x86_64', 'bgl', 'bgp', 'bgq', 'craycnl', 'apple']
+                    globs.extend(bindirs)
+                # Build set of ignored files
+                ignored_names = []
+                for pattern in globs:
+                    ignored_names.extend(fnmatch.filter(names, pattern))
+                return set(ignored_names)
+            LOGGER.debug('Copying from %r to %r' % (source, dest))
+            LOGGER.info('Creating new copy of TAU at %r.  This will only be done once.' % dest)
+            shutil.copytree(source, dest, ignore=ignore)
+        return dest
+
+    def _translateConfigureArg(self, key, val):
+        """
+        Gets the configure script argument(s) corresponding to a Tau Commander argument
+        """
+
+    def _getConfigureCommand(self):
+        """
+        Returns the command that will configure TAU for this project
+        """
+        config = self.project.config
+        # Excluded (e.g. runtime) flags
+        excluded = ['name', 'cuda', 'profile', 'trace', 'sample', 'callpath', 
+                    'memory', 'memory-debug', 'comm-matrix']
+        # No parameter flags
+        noparam = {'mpi': '-mpi',
+                   'openmp': '-opari',
+                   'pthreads': '-pthread',
+                   'io': '-iowrapper',
+                   'pdt': '-pdt=%s' % self.pdt.prefix,
+                   'bfd': '-bfd=%s' % self.bfd.prefix,
+                   'unwind': '-unwind=%s' % 'FIXME',
+                   'cuda-sdk': '-cuda=%s' % 'FIXME'}
+        # One parameter flags
+        oneparam = {'dyninst': '-dyninst=%s',
+                    'mpi-include': '-mpiinc=%s',
+                    'mpi-lib': '-mpilib=%s',
+                    'papi': '-papi=%s',
+                    'target-arch': '-arch=%s',
+                    'upc': '-upc=%s',
+                    'upc-gasnet': '-gasnet=%s',
+                    'upc-network': '-upcnetwork=%s',
+                    #TODO: Translate compiler command correctly
+                    'cc': '-cc=%s',
+                    'c++': '-c++=%s',
+                    'fortran': '-fortran=%s',
+                    'pdt_c++': '-pdt_c++=%s'}
+
+        cmd = ['./configure', '-prefix=%s' % self.prefix]
+        for key, val in config.iteritems():
+            if val and key not in excluded:
+                try:
+                    arg = [noparam[key]]
+                except KeyError:
+                    try:
+                        arg = [oneparam[key] % val]
+                    except KeyError:
+                        raise PackageError("Couldn't find an appropriate configure argument for %r" % key)
+                cmd.extend(arg)
+        return cmd
         

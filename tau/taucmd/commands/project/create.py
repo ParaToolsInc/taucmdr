@@ -35,17 +35,12 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-import os
 import sys
-import subprocess
 import string
 import taucmd
 import pprint
-from textwrap import dedent
-from datetime import datetime
 from taucmd import util, project
-from taucmd.error import ConfigurationError, ProjectNameError
-from taucmd.registry import REGISTRY, SYSTEM_REGISTRY_DIR
+from taucmd.registry import REGISTRY
 from taucmd.docopt import docopt
 
 LOGGER = taucmd.getLogger(__name__)
@@ -72,7 +67,7 @@ HELP = """
 
 def getUsage():
     return USAGE % {'command': COMMAND,
-                    'system_path': SYSTEM_REGISTRY_DIR,
+                    'system_path': REGISTRY.system.prefix,
                     'project_options': project.getProjectOptions(show_defaults=True)}
 
 def getHelp():
@@ -117,23 +112,7 @@ def main(argv):
     config['name'] = proj_name
     LOGGER.debug('Project config: %s' % pprint.pformat(config))
     
-    proj = REGISTRY.addProject(config, default, system)
+    REGISTRY.addProject(config, default, system)
     LOGGER.info('Created a new project named %r.' % proj_name)
     
-#     LOGGER.info("""
-# Next steps:
-# Apply TAU to your application to gather performance data.  You can recompile
-# your application with TAU and/or execute your application with TAU.
-# 
-# To compile with TAU:
-#   - Use the 'make' command.  For example, if you normally build your application
-#     by typing 'make', instead type 'tau make'.  This works for any make target.
-#   - Change your compiler command to 'tau <your_compiler>'.  For example, if your
-#     compiler command is 'mpicc', compile your code with 'tau mpicc'.
-# 
-# To execute with TAU:
-#   - Change your application launch command to 'tau <your_application>'.
-#     For example, if you launch your application with 'mpirun -np 4 ./foo' instead
-#     launch with 'tau mpirun -np 4 ./foo'.
-# """ % {'proj_name': proj_name, 'reg_dir': registry.registry_dir})
     return 0

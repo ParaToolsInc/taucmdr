@@ -35,15 +35,13 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-import os
 import sys
 import glob
 import re
 import subprocess
 import taucmd
 from threading import Thread
-from taucmd import util
-from taucmd.error import NotImplementedError
+from taucmd.error import MissingFeatureError
 from taucmd.docopt import docopt
 from taucmd.registry import REGISTRY
 
@@ -119,7 +117,7 @@ def main(argv):
         LOGGER.debug('Found files: %r' % args_files)
         
     if args['--no-gui']:
-        raise NotImplementedError('--no-gui option is not implemented', '--no-gui')
+        raise MissingFeatureError('--no-gui option is not implemented', '--no-gui')
         
     # Compile the project if needed
     proj.compile()
