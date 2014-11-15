@@ -84,21 +84,24 @@ def download(src, dest, stdout=sys.stdout, stderr=sys.stderr):
     LOGGER.debug('which curl: %r' % curl)
     wget = which('wget')
     LOGGER.debug('which wget: %r' % wget)
-    if curl:
-        if subprocess.call([curl, '-L', src, '-o', dest], stdout=stdout, stderr=stderr) != 0:
-            LOGGER.debug('curl failed to download %r.' % src)
-            raise IOError
-    elif wget:
-        if subprocess.call([wget, src, '-O', dest], stdout=stdout, stderr=stderr) != 0:
-            LOGGER.debug('wget failed to download %r' % src)
-            raise IOError
-    else:
-        # This is usually **much** slower than curl or wget
-        def dlProgress(count, blockSize, totalSize):
-            stdout.write("% 3.1f%% of %d bytes\r" % (min(100, float(count * blockSize) / totalSize * 100), totalSize))
+    curl_cmd = [curl, '-L', src, '-o', dest] if curl else None
+    wget_cmd = [wget, src, '-O', dest] if wget else None
+    for cmd in [curl_cmd, wget_cmd]:
+        if cmd:
+            ret = subprocess.call(cmd, stdout=stdout, stderr=stderr)
+            if ret != 0:
+                LOGGER.warning('%s failed to download %r.' % (cmd[0], src))
+            else:
+                return ret
+    # Fallback: this is usually **much** slower than curl or wget
+    def dlProgress(count, blockSize, totalSize):
+        stdout.write("% 3.1f%% of %d bytes\r" % (min(100, float(count * blockSize) / totalSize * 100), totalSize))
+    try:
         urllib.urlretrieve(src, dest, reporthook=dlProgress)
+    except:
+        LOGGER.warning('urllib failed to download %r' % src)
+    raise IOError('failed to download %r' % src)
 
-        
     
 def extract(tgz, dest):
     with tarfile.open(tgz) as fp:

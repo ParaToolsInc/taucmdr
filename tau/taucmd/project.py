@@ -54,65 +54,56 @@ Compiler Options:
   --cc=<compiler>              Set C compiler.                      %(cc_default)s
   --c++=<compiler>             Set C++ compiler.                    %(c++_default)s
   --fortran=<compiler>         Set Fortran compiler.                %(fortran_default)s
-  --upc=<compiler>             Set UPC compiler.                    %(upc_default)s
 
 Assisting Library Options:
   --pdt=(download|<path>)      PDT installation path.               %(pdt_default)s
-  --no-pdt                     Disable PDT source instrumentation.
   --bfd=(download|<path>)      GNU Binutils installation path.      %(bfd_default)s
-  --no-bfd                     Disable source location resolution via GNU Binutils.
   --unwind=(download|<path>)   libunwind installation path.         %(unwind_default)s
-  --no-unwind                  Disable callstack unwinding.
   --papi=(download|<path>)     PAPI installation path.              %(papi_default)s
-  --no-papi                    Disable hardware metrics.
   --dyninst=(download|<path>)  DyninstAPI installation path.        %(dyninst_default)s
-  --no-dyninst                 Disable binary instrumentation.
 
 Thread Options:
   --openmp                     Enable OpenMP measurement.           %(openmp_default)s
-  --no-openmp                  Disable OpenMP measurement.          
   --pthreads                   Enable pthreads measurement.         %(pthreads_default)s
-  --no-pthreads                Disable pthreads measurement.        
 
 Message Passing Interface (MPI) Options:                            
-  --mpi                        Enable MPI measurement.              %(mpi_default)s
-  --no-mpi                     Disable MPI measurement.
+  --mpi                        Enable MPI.                          %(mpi_default)s
   --mpi-include=<path>         MPI header files installation path.  %(mpi-include_default)s
   --mpi-lib=<path>             MPI library files installation path. %(mpi-lib_default)s
 
 NVIDIA CUDA Options:
   --cuda                       Enable CUDA measurement.             %(cuda_default)s
-  --no-cuda                    Disable CUDA measurement.
   --cuda-sdk=<path>            CUDA SDK installation path.          %(cuda-sdk_default)s
 
 Universal Parallel C (UPC) Options:
+  --upc=<compiler>             Enable UPC and set compiler command.
   --upc-gasnet=<path>          GASNET installation path.            %(upc-gasnet_default)s
   --upc-network=<network>      Set UPC network.                     %(upc-network_default)s
 
 Memory Options:
   --memory                     Enable memory measurement.           %(memory_default)s
-  --no-memory                  Disable memory measurement.
   --memory-debug               Enable memory debugging.             %(memory-debug_default)s
-  --no-memory-debug            Disable memory debugging.
 
 I/O and Communication Options:
   --io                         Enable I/O measurement.              %(io_default)s
-  --no-io                      Disable I/O measurement.
   --comm-matrix                Enable communication matrix.         %(comm-matrix_default)s
-  --no-comm-matrix             Disable communication matrix.
   
 Measurement Options:
-  --callpath=<number>          Set the callpath measurement depth.  %(callpath_default)s
   --profile                    Enable profiling.                    %(profile_default)s
-  --no-profile                 Disable profiling.
   --trace                      Enable tracing.                      %(trace_default)s
-  --no-trace                   Disable tracing.
   --sample                     Enable event-based sampling.         %(sample_default)s
-  --no-sample                  Disable event-based sampling.
+  --callpath=<number>          Set the callpath measurement depth.  %(callpath_default)s
+  
+Hints:
+  Use '--no-<option>' to disable <option>.
+  Defaults can be changed via 'tau project default'.
 """
 
 
 
+# True: the option is boolean and enabled
+# False: the is of any kind and is disabled
+# None: the option has no default 
 _DEFAULTS = {'name': None,
              'target-arch': util.detectDefaultTarget(),
              'cc': 'gcc',
@@ -127,13 +118,13 @@ _DEFAULTS = {'name': None,
              'openmp': False,
              'pthreads': False,
              'mpi': False,
-             'mpi-include': None,
-             'mpi-lib': None,
+             'mpi-include': False,
+             'mpi-lib': False,
              'cuda': False,
-             'cuda-sdk': None,
-             'upc': None,
-             'upc-gasnet': None,
-             'upc-network': None,
+             'cuda-sdk': False,
+             'upc': False,
+             'upc-gasnet': False,
+             'upc-network': False,
              'memory': False,
              'memory-debug': False,
              'io': False,
@@ -180,43 +171,41 @@ def getProjectOptions(show_defaults=True):
 
 def getConfigFromOptions(args, apply_defaults=True, exclude=[]):
     """
-    Strip and check command line arguments and apply defaults
+    Check command line arguments and apply defaults
     """
     config = {}
     downloadable = ['pdt', 'bfd', 'unwind', 'papi', 'dyninst']
-    arg_sets = {'mpi': ('mpi-include', 'mpi-lib'),
-                'cuda': ('cuda-sdk',),
-                'upc': ('upc-gasnet', 'upc-network'),
-                'memory': ('memory-debug',)}
-    for key, val in args.iteritems():
-        if val in ['None', 'disabled']:
-            val = None
-        if key[0:2] == '--' and key[0:5] != '--no-' and key not in exclude:
-            key = key[2:]
-            nokey = '--no-%s' % key
-            try:
-                noval = args[nokey]
-            except KeyError:
-                if val:
-                    config[key] = val
-                elif apply_defaults:
-                    config[key] = _getDefault(key)
-                continue
-            if val and noval:
-                raise ConfigurationError('Both %r and %r were specified.  Please pick one.' % (key, nokey))
-            elif noval:
+    for key_arg, val in args.iteritems():
+        try:
+            val = {'enabled': True, 'disabled': False}[val]
+        except KeyError:
+            pass
+        if (key_arg.startswith('--') and not key_arg.startswith('--no-') and key_arg not in exclude):
+            key = key_arg[2:]
+            nokey_arg = '--no-%s' % key
+            if args[nokey_arg]:
+                overridden = '%s=%s' % (key_arg, val) if val else str(key_arg)
+                LOGGER.info('NOTE: %s overrides %s' % (nokey_arg, overridden))
                 config[key] = False
             elif val:
-                if key in downloadable and val.upper() == 'DOWNLOAD':
-                    config[key] = 'download'
-                else:
-                    config[key] = val
+                config[key] = 'download' if (key in downloadable and val.lower() == 'download') else val
             elif apply_defaults:
                 config[key] = _getDefault(key)
-    for master, dependents in arg_sets.iteritems():
-        if not config[master]:
-            for dep in dependents:
-                del config[dep]
+    try:
+        config['callpath'] = int(config['callpath'])
+    except ValueError:
+        raise ConfigurationError('The argument to --callpath must be an integer')
+    config = dict([i for i in config.items() if i[1]])
+    measurements = ['profile', 'trace', 'sample']
+    if not any(map(lambda x: x in config, measurements)):
+        raise ConfigurationError('At least one of [%s] is required.' \
+                                 % ', '.join(map(lambda x: '--%s' % x, measurements)),
+                                 "See 'tau project create --help.'")
+    required = ['target-arch', 'cc', 'c++']
+    for req in required:
+        if not req in config:
+            raise ConfigurationError('--%s is required.' % req,
+                                     "See 'tau project create --help'.")
     return config
 
 
@@ -268,7 +257,7 @@ class Project(object):
 
     def getCompilers(self):
         compiler_fields = ['cc', 'c++', 'fortran', 'upc']
-        return dict((key, self.config[key]) for key in compiler_fields if self.config[key])
+        return dict((key, self.config[key]) for key in compiler_fields if self.config.get(key))
     
     def hasCompilers(self):
         compilers = self.getCompilers()

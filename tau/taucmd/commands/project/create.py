@@ -58,7 +58,7 @@ Usage:
   
 Subcommand Options:
   --name=<name>     Set the project name.
-  --default         After creating the project, make it as the default project.
+  --default         After creating the project, make it the default project.
   --system          Create project in TAU installation at %(system_path)r. 
 %(project_options)s
 """
@@ -87,7 +87,7 @@ def main(argv):
     """
     # Parse command line arguments
     usage = getUsage()
-    args = docopt(usage, argv=argv)
+    args = docopt(usage, argv=argv, enable_no_option=True)
     LOGGER.debug('Arguments: %s' % args)
     
     system = args['--system'] 
