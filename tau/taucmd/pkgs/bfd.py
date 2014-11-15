@@ -162,7 +162,7 @@ class BfdPackage(Package):
             if src.startswith('http') or src.startswith('ftp'):
                 try:
                     util.download(src, dst, stdout, stderr)
-                except:
+                except IOError:
                     continue
             elif src.startswith('file'):
                 try:
