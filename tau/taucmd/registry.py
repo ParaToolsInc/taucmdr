@@ -78,6 +78,34 @@ class Registry(object):
         with open(file_path, 'wb') as fp:
             pickle.dump(self.__dict__, fp)
         LOGGER.debug('Registry written to %r' % file_path)
+    
+    def isReadable(self):
+        test_file = os.path.join(self.prefix, 'test')
+        try:
+            with open(test_file, 'r') as fp:
+                fp.readline()
+            os.remove(test_file)
+        except IOError:
+            return False
+        except:
+            raise InternalError('Unexpected %r in isReadable' % (sys.exc_info(),))
+        else:
+            return True
+        
+        
+    def isWritable(self):
+        test_file = os.path.join(self.prefix, 'test')
+        try:
+            with open(test_file, 'w') as fp:
+                fp.write('x')
+            os.remove(test_file)
+        except IOError:
+            return False
+        except:
+            raise InternalError('Unexpected %r in isWritable' % (sys.exc_info(),))
+        else:
+            return True
+        
 
 
 class GlobalRegistry(object):
@@ -98,8 +126,11 @@ class GlobalRegistry(object):
     def __iter__(self):
         """Iterate over projects"""
         for projects in [self.user.projects, self.system.projects]:
-            for proj in projects.itervalues():
-                yield proj
+            for i in projects.iteritems():
+                yield i
+                
+    def __contains__(self, item):
+        return item in self.user.projects or item in self.system.projects
               
     def __getitem__(self, key):
         """Get projects"""
@@ -156,11 +187,11 @@ class GlobalRegistry(object):
                                      self.getProjectListing(), hint)
         LOGGER.debug("Project %r is selected" % name)
         try:
-            LOGGER.debug("User projects: %r" % '\n'.join(self.user.projects.keys()))
+            LOGGER.debug("User projects: %s" % ', '.join(self.user.projects.keys()))
             proj = self.user.projects[name]
         except KeyError:
             try:
-                LOGGER.debug("System projects: %r" % '\n'.join(self.system.projects.keys()))
+                LOGGER.debug("System projects: %s" % ', '.join(self.system.projects.keys()))
                 proj = self.system.projects[name]
             except:
                 raise InternalError("%r is the selected project, but it doesn't exist." % name)
@@ -186,7 +217,7 @@ class GlobalRegistry(object):
         """
         LOGGER.debug('Adding project: %s' % config)
         reg = self.system if system else self.user
-        proj = taucmd.project.Project(config, reg.prefix)
+        proj = taucmd.project.Project(config, reg)
         proj_name = proj.getName()
         
         if proj_name in reg.projects:

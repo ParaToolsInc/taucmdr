@@ -60,28 +60,19 @@ class TauPackage(Package):
         keys = ['bfd', 'cuda', 'dyninst', 'mpi', 'openmp', 'papi', 'pdt', 'pthreads']
         name = '_'.join(sorted([k.lower() for k in keys if self.project.config.get(k)]))
         self.prefix = os.path.join(self.project.prefix, 'tau', name)
+        self.bfd = BfdPackage(self.project)
+        self.pdt = PdtPackage(self.project)
+        self.unwind = None # FIXME: UnwindPackage
+        self.papi = None
+        self.dyninst = None
+        self.cuda = None       
 
     def install(self, stdout=sys.stdout, stderr=sys.stderr):
         # Install dependencies
-        config = self.project.config
-        if config['bfd']:
-            self.bfd = BfdPackage(self.project)
+        if self.bfd:
             self.bfd.install(stdout, stderr)
-        if config['pdt']:
-            self.pdt = PdtPackage(self.project)
+        if self.pdt:
             self.pdt.install(stdout, stderr)
-        if config['unwind']:
-            # FIXME: UnwindPackage
-            config['unwind'] = None
-        if config['papi']:
-            # FIXME: PapiPackage
-            config['papi'] = None
-        if config['dyninst']:
-            # FIXME: DyninstPackage
-            config['dyninst'] = None
-        if config['cuda']:
-            # FIXME: CudaPackage
-            config['cuda'] = None
         
         if os.path.isdir(self.prefix):
             LOGGER.debug("TAU already installed at %r" % self.prefix)
@@ -92,7 +83,7 @@ class TauPackage(Package):
         srcdir = self._getSource(TAU_MASTER_SRC_DIR)
         cmd = self._getConfigureCommand()
         LOGGER.debug('Creating configure subprocess in %r: %r' % (srcdir, cmd))
-        LOGGER.info('Configuring TAU...')
+        LOGGER.info('Configuring TAU...\n%s' % ' '.join(cmd))
         proc = subprocess.Popen(cmd, cwd=srcdir, stdout=stdout, stderr=stderr)
         if proc.wait():
             shutil.rmtree(self.prefix, ignore_errors=True)
@@ -101,7 +92,7 @@ class TauPackage(Package):
         # Execute make
         cmd = ['make', '-j', 'install']
         LOGGER.debug('Creating make subprocess in %r: %r' % (srcdir, cmd))
-        LOGGER.info('Compiling TAU...')
+        LOGGER.info('Compiling TAU...\n%s' % ' '.join(cmd))
         proc = subprocess.Popen(cmd, cwd=srcdir, stdout=stdout, stderr=stderr)
         if proc.wait():
             shutil.rmtree(self.prefix, ignore_errors=True)
@@ -120,7 +111,8 @@ class TauPackage(Package):
         """
         Makes a fresh clone of the TAU source code
         """
-        dest = os.path.join(self.project.source_prefix, 'tau')
+        source_prefix = os.path.join(self.project.registry.prefix, 'src')
+        dest = os.path.join(source_prefix, 'tau')
         # Don't copy if the source already exists
         if os.path.exists(dest) and os.path.isdir(dest):
             LOGGER.debug('TAU source code directory %r already exists.' % dest)
@@ -153,6 +145,9 @@ class TauPackage(Package):
         Returns the command that will configure TAU for this project
         """
         config = self.project.config
+        pdt_prefix = self.pdt.prefix if config['pdt'] == 'download' else config['pdt']
+        bfd_prefix = self.bfd.prefix if config['bfd'] == 'download' else config['bfd']
+        
         # Excluded (e.g. runtime) flags
         excluded = ['name', 'cuda', 'profile', 'trace', 'sample', 'callpath', 
                     'memory', 'memory-debug', 'comm-matrix']
@@ -161,9 +156,9 @@ class TauPackage(Package):
                    'openmp': '-opari',
                    'pthreads': '-pthread',
                    'io': '-iowrapper',
-                   'pdt': '-pdt=%s' % self.pdt.prefix,
-                   'bfd': '-bfd=%s' % self.bfd.prefix,
-                   'unwind': '-unwind=%s' % 'FIXME',
+                   'pdt': '-pdt=%s' % pdt_prefix,
+                   'bfd': '-bfd=%s' % bfd_prefix,
+                   'unwind': '-unwind=%s' % config['unwind'],
                    'cuda-sdk': '-cuda=%s' % 'FIXME'}
         # One parameter flags
         oneparam = {'dyninst': '-dyninst=%s',

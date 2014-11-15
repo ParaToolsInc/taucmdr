@@ -70,11 +70,7 @@ def main(argv):
     """
     Program entry point
     """
-    # Parse command line arguments
-#     LOGGER.debug('Arguments: %s' % argv)
-#     cmd = argv[1]
-#     cmd_args = argv[2:]
-    args = docopt(USAGE, argv=argv)
+    args = docopt(USAGE, argv=argv, options_first=True)
     LOGGER.debug('Arguments: %s' % args)
     cmd = args['<command>']
     cmd_args = args['<args>']
@@ -92,7 +88,7 @@ def main(argv):
     
     # Get compiler flags
     tau_flags = proj.getTauExecFlags()
-    
+
     # Construct command
     if cmd in ['mpirun', 'mpiexec', 'aprun']:
         subcmd = [cmd]
@@ -117,6 +113,8 @@ def main(argv):
     
     # Execute the application
     LOGGER.debug('Creating subprocess: cmd=%r, env=%r' % (subcmd, env))
+    LOGGER.info('\n'.join(['%s=%s' % i for i in env.iteritems() if i[0].startswith('TAU')]))
+    LOGGER.info(' '.join(subcmd))
     proc = subprocess.Popen(subcmd, env=env, stdout=sys.stdout, stderr=sys.stderr)
     retval = proc.wait()
     

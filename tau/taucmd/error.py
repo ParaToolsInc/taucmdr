@@ -36,13 +36,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 import sys
-from taucmd import getLogger, HELP_CONTACT, EXIT_FAILURE, EXIT_WARNING 
+import traceback
+from taucmd import getLogger, LOG_LEVEL
+from taucmd import HELP_CONTACT, EXIT_FAILURE, EXIT_WARNING 
 
 LOGGER = getLogger(__name__)
 
 
 def _default_handle(etype, e, tb):
-    import traceback
     traceback.print_exception(etype, e, tb)
     args = [arg for arg in sys.argv[1:] 
             if not ('--log' in arg or '--verbose' in arg)] 
@@ -67,7 +68,7 @@ class Error(Exception):
     def __str__(self):
         return repr(self.value)
     def handle(self):
-        _default_handle(sys.exc_info())
+        _default_handle(*sys.exc_info())
 
 
 class InternalError(Error):
@@ -213,6 +214,8 @@ def excepthook(etype, e, tb):
         LOGGER.info('Received keyboard interrupt.  Exiting.')
         sys.exit(EXIT_WARNING)
     else:
+        if LOG_LEVEL == 'DEBUG':
+            traceback.print_exception(etype, e, tb)
         try:
             sys.exit(e.handle())
         except AttributeError:

@@ -35,11 +35,8 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-import os
 import sys
 import taucmd
-import traceback
-from pkgutil import walk_packages
 from taucmd import commands
 from taucmd import util
 from taucmd.error import UnknownCommandError
@@ -149,7 +146,10 @@ def main():
     elif run.isExecutable(cmd):
         shortcut = 'run'
     if shortcut:
+        LOGGER.debug('Trying shortcut %r' % shortcut)
         return commands.executeCommand([shortcut], [cmd] + cmd_args)
+    else:
+        LOGGER.debug('No shortcut found for %r' % cmd)
 
     # Not sure what to do at this point, so advise the user and exit
     LOGGER.info("Unknown command.  Calling 'tau help %s' to get advice." % cmd)

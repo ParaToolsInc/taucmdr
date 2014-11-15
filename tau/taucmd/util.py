@@ -140,7 +140,7 @@ def getTauVersion():
         if not _tauVersion:
             _tauVersion = '(unknown)'
     return _tauVersion
-    
+
 
 _detectedTarget = None
 def detectDefaultTarget():
@@ -161,7 +161,7 @@ def pformatDict(d, title=None, empty_msg='No items.', indent=0):
     if len(d):
         longest = max(map(len, d.keys()))
         space = ' '*indent
-        items = '\n'.join(['{}{:<{width}} : {}'.format(space, key, val, width=longest)
+        items = '\n'.join(['{}{:<{width}} : {}'.format(space, key, repr(val), width=longest)
                            for key, val in sorted(d.iteritems())])
     else:
         items = empty_msg
