@@ -146,8 +146,10 @@ def simpleCompile(compiler, argv):
         cmd = [SIMPLE_COMPILERS[compiler].tau_cmd] + flags + cmd_args
     else:
         cmd = [SIMPLE_COMPILERS[compiler].cmd]
-
+        
     LOGGER.debug('Creating subprocess: cmd=%r, env=%r' % (cmd, env))
+    LOGGER.info('\n'.join(['%s=%s' % i for i in env.iteritems() if i[0].startswith('TAU')]))
+    LOGGER.info(' '.join(cmd))
     proc = subprocess.Popen(cmd, env=env, stdout=sys.stdout, stderr=sys.stderr)
     return proc.wait()
 

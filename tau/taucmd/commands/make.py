@@ -35,11 +35,9 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-import os
 import sys
 import subprocess
 import taucmd
-from taucmd import util
 from taucmd.docopt import docopt
 from taucmd.registry import REGISTRY
 
@@ -87,6 +85,8 @@ def main(argv):
     # Execute the application
     cmd = ['make'] + tau_flags + args['<args>']
     LOGGER.debug('Creating subprocess: cmd=%r, env=%r' % (cmd, env))
+    LOGGER.info('\n'.join(['%s=%s' % i for i in env.iteritems() if i[0].startswith('TAU')]))
+    LOGGER.info(' '.join(cmd))
     proc = subprocess.Popen(cmd, env=env, stdout=sys.stdout, stderr=sys.stderr)
     retval = proc.wait()
     

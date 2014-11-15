@@ -42,7 +42,7 @@ import taucmd
 import shutil
 from taucmd import util
 from taucmd.pkgs import Package
-from taucmd.error import InternalError, PackageError
+from taucmd.error import InternalError, PackageError, ConfigurationError
 
 LOGGER = taucmd.getLogger(__name__)
 
@@ -56,17 +56,31 @@ class BfdPackage(Package):
 
     def __init__(self, project):
         super(BfdPackage, self).__init__(project)
-        self.prefix = os.path.join(self.project.prefix, 'bfd')
+        self.system_prefix = os.path.join(taucmd.registry.REGISTRY.system.prefix, 
+                                          self.project.target_prefix, 'bfd')
+        self.user_prefix =  os.path.join(taucmd.registry.REGISTRY.user.prefix, 
+                                         self.project.target_prefix, 'bfd')
 
     def install(self, stdout=sys.stdout, stderr=sys.stderr):
         config = self.project.config
         bfd = config['bfd']
         if not bfd:
             raise InternalError('Tried to install bfd when (not config["bfd"])')
-
-        if os.path.isdir(self.prefix):
-            LOGGER.debug("BFD already installed at %r" % self.prefix)
-            return
+        
+        for loc in [self.system_prefix, self.user_prefix]:
+            if os.path.isdir(loc):
+                LOGGER.info("Using BFD installation found at %s" % loc)
+                self.prefix = loc
+                return
+        
+        # Try to install systemwide
+        if taucmd.registry.REGISTRY.system.isWritable():
+            self.prefix = self.system_prefix
+        elif taucmd.registry.REGISTRY.user.isWritable():
+            self.prefix = self.user_prefix
+        else:
+            raise ConfigurationError("User-level TAU installation at %r is not writable" % self.user_prefix,
+                                     "Check the file permissions and try again") 
         LOGGER.info('Installing BFD at %r' % self.prefix)
 
         if bfd.lower() == 'download':
@@ -85,7 +99,7 @@ class BfdPackage(Package):
         srcdir = self._getSource(src, stdout, stderr)
         cmd = self._getConfigureCommand()
         LOGGER.debug('Creating configure subprocess in %r: %r' % (srcdir, cmd))
-        LOGGER.info('Configuring BFD...')
+        LOGGER.info('Configuring BFD...\n%s' % ' '.join(cmd))
         proc = subprocess.Popen(cmd, cwd=srcdir, stdout=stdout, stderr=stderr)
         if proc.wait():
             shutil.rmtree(self.prefix, ignore_errors=True)
@@ -94,7 +108,7 @@ class BfdPackage(Package):
         # Execute make
         cmd = ['make']
         LOGGER.debug('Creating make subprocess in %r: %r' % (srcdir, cmd))
-        LOGGER.info('Compiling BFD...')
+        LOGGER.info('Compiling BFD...\n%s' % ' '.join(cmd))
         proc = subprocess.Popen(cmd, cwd=srcdir, stdout=stdout, stderr=stderr)
         if proc.wait():
             shutil.rmtree(self.prefix, ignore_errors=True)
@@ -103,7 +117,7 @@ class BfdPackage(Package):
         # Execute make install
         cmd = ['make', 'install']
         LOGGER.debug('Creating make subprocess in %r: %r' % (srcdir, cmd))
-        LOGGER.info('Installing BFD...')
+        LOGGER.info('Installing BFD...\n%s' % ' '.join(cmd))
         proc = subprocess.Popen(cmd, cwd=srcdir, stdout=stdout, stderr=stderr)
         if proc.wait():
             shutil.rmtree(self.prefix, ignore_errors=True)
@@ -142,8 +156,9 @@ class BfdPackage(Package):
         """
         Downloads or copies BFD source code
         """
+        source_prefix = os.path.join(self.project.registry.prefix, 'src')
         for src in sources:
-            dst = os.path.join(self.project.source_prefix, os.path.basename(src))
+            dst = os.path.join(source_prefix, os.path.basename(src))
             if src.startswith('http') or src.startswith('ftp'):
                 try:
                     util.download(src, dst, stdout, stderr)
@@ -156,7 +171,7 @@ class BfdPackage(Package):
                     continue
             else:
                 raise InternalError("Don't know how to acquire source file %r" % src)
-            src_path = util.extract(dst, self.project.source_prefix)
+            src_path = util.extract(dst, source_prefix)
             os.remove(dst)
             return src_path
         raise PackageError('Failed to get source code')

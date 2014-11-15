@@ -40,8 +40,10 @@ import string
 import taucmd
 import pprint
 from taucmd import util, project
+from taucmd import EXIT_SUCCESS, TAU_LINE_MARKER
 from taucmd.registry import REGISTRY
 from taucmd.docopt import docopt
+from taucmd.error import ProjectNameError
 
 LOGGER = taucmd.getLogger(__name__)
 
@@ -93,17 +95,15 @@ def main(argv):
     proj_name = args['--name']
 
     if proj_name and not isValidProjectName(proj_name):
-        LOGGER.error('%r is not a valid project name.\n'
-                     'Use only letters, numbers, dot (.), dash (-), and underscore (_).' % proj_name)
-        return taucmd.EXIT_FAILURE
+        raise ProjectNameError('%r is not a valid project name.' % proj_name,
+                               'Use only letters, numbers, dot (.), dash (-), and underscore (_).')
 
-    # Show new project settings
-    config = project.getConfigFromOptions(args,
-                                          exclude=['--help', '-h', '--system', '--default'])
+    config = project.getConfigFromOptions(args, exclude=['--help', '-h', '--system', '--default'])
     LOGGER.info(util.pformatDict(config, title='New project settings'))
     
+    prompt = '%sEnter project name> ' % TAU_LINE_MARKER
     while not proj_name:
-        print 'TAU: Enter project name> ',
+        print prompt,
         proj_name = sys.stdin.readline().strip()
         if not isValidProjectName(proj_name):
             LOGGER.error('%r is not a valid project name.\n'
@@ -115,4 +115,4 @@ def main(argv):
     REGISTRY.addProject(config, default, system)
     LOGGER.info('Created a new project named %r.' % proj_name)
     
-    return 0
+    return EXIT_SUCCESS

@@ -122,8 +122,8 @@ _DEFAULTS = {'name': None,
              'pdt_c++': 'g++',
              'bfd': 'download',
              'unwind': 'download',
-             'papi': 'download',
-             'dyninst': 'download',
+             'papi': False,
+             'dyninst': False,
              'openmp': False,
              'pthreads': False,
              'mpi': False,
@@ -136,7 +136,7 @@ _DEFAULTS = {'name': None,
              'upc-network': None,
              'memory': False,
              'memory-debug': False,
-             'io': True,
+             'io': False,
              'comm-matrix': False,
              'callpath': '2',
              'profile': True,
@@ -186,9 +186,10 @@ def getConfigFromOptions(args, apply_defaults=True, exclude=[]):
     downloadable = ['pdt', 'bfd', 'unwind', 'papi', 'dyninst']
     arg_sets = {'mpi': ('mpi-include', 'mpi-lib'),
                 'cuda': ('cuda-sdk',),
-                'upc': ('upc-gasnet', 'upc-network')}
+                'upc': ('upc-gasnet', 'upc-network'),
+                'memory': ('memory-debug',)}
     for key, val in args.iteritems():
-        if val == 'None':
+        if val in ['None', 'disabled']:
             val = None
         if key[0:2] == '--' and key[0:5] != '--no-' and key not in exclude:
             key = key[2:]
@@ -224,14 +225,14 @@ class Project(object):
     """
     TODO: DOCS
     """
-    def __init__(self, config, prefix):
+    def __init__(self, config, registry):
         self.config = config
+        self.registry = registry
         self.refresh = True
-        compiler_prefix = '_'.join(sorted(self.getCompilers().values()))
-        self.prefix = os.path.join(prefix, compiler_prefix)
-        self.source_prefix = os.path.join(prefix, 'src')
+        self.target_prefix = '_'.join([config['target-arch']] + sorted(self.getCompilers().values()))
+        self.prefix = os.path.join(self.registry.prefix, self.target_prefix)
         self.tau = TauPackage(self)
-        
+
     def __str__(self):
         return util.pformatDict(self.config)
     
@@ -296,7 +297,7 @@ class Project(object):
             LOGGER.debug('Project %r already compiled' % self.getName())
             return
         
-        LOGGER.info('Compiling project %r.\nThis may take a long time but will only be done once.' % self.getName())
+        LOGGER.info('Compiling project %r. This will be done only once.' % self.getName())
  
         # Control build output
         devnull = None

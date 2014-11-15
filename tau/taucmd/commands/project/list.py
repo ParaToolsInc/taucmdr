@@ -36,7 +36,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 import taucmd
+from taucmd import util
 from taucmd.registry import REGISTRY
+from taucmd.error import ProjectNameError
 from taucmd.docopt import docopt
 
 LOGGER = taucmd.getLogger(__name__)
@@ -78,11 +80,20 @@ def main(argv):
     system = args['--system']
     name = args['<name>']
     if name:
+        projects = REGISTRY.system.projects if system else REGISTRY.user.projects
+        flags = ' --system' if system else ''
+        hint = "Try 'tau project list' to see all projects or\n"\
+               "'tau project create%(flags)s --name=%(name)s' to create a "\
+               "new project named %(name)r" % {'flags': flags, 'name': name}
         try:
-            LOGGER.info(REGISTRY[name])
+            LOGGER.info(projects[name])
         except KeyError:
-            LOGGER.error("There is no project named %r.  Try 'tau project create --name=%s'." % (name, name))
-            return taucmd.EXIT_FAILURE
+            raise ProjectNameError('There is no project named %r' % name, hint)
     else:
-        LOGGER.info(REGISTRY.getProjectListing())
+        selected = REGISTRY.getSelectedProject()
+        sel_msg = util.pformatList([selected], empty_msg='No selected project', 
+                                   title='Selected Project (%s)' % selected['name'])
+        lst_msg = REGISTRY.getProjectListing() 
+        LOGGER.info('%s\n%s' % (lst_msg, sel_msg))
+
     return 0
