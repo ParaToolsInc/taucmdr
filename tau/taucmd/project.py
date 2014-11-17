@@ -195,15 +195,14 @@ def getConfigFromOptions(args, apply_defaults=True, exclude=[]):
         config['callpath'] = int(config['callpath'])
     except ValueError:
         raise ConfigurationError('The argument to --callpath must be an integer')
-    config = dict([i for i in config.items() if i[1]])
     measurements = ['profile', 'trace', 'sample']
-    if not any(map(lambda x: x in config, measurements)):
+    if not any(map(lambda x: config[x], measurements)):
         raise ConfigurationError('At least one of [%s] is required.' \
                                  % ', '.join(map(lambda x: '--%s' % x, measurements)),
                                  "See 'tau project create --help.'")
     required = ['target-arch', 'cc', 'c++']
     for req in required:
-        if not req in config:
+        if not config[req]:
             raise ConfigurationError('--%s is required.' % req,
                                      "See 'tau project create --help'.")
     return config

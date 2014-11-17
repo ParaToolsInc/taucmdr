@@ -37,7 +37,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import taucmd
 from taucmd.registry import REGISTRY
-from taucmd.error import ProjectNameError
+from taucmd.error import ProjectNameError, InternalError
 from taucmd.docopt import docopt
 
 LOGGER = taucmd.getLogger(__name__)
@@ -92,7 +92,5 @@ def main(argv):
         else:
             LOGGER.error("There is no project named %r. See 'tau project list' for project names." % proj_name)
         return taucmd.EXIT_FAILURE
-    except:
-        raise taucmd.Error('Failed to delete project %r.' % proj_name)
     LOGGER.info("Project %r deleted." % proj_name)
     return 0
