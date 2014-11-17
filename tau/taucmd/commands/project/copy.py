@@ -47,13 +47,13 @@ from taucmd.error import ProjectNameError
 
 LOGGER = taucmd.getLogger(__name__)
 
-SHORT_DESCRIPTION = "Create a new TAU project configuration."
+SHORT_DESCRIPTION = "Copy an existing TAU project configuration."
 
 COMMAND = ' '.join(['tau'] + (__name__.split('.')[2:]))
 
 USAGE = """
 Usage:
-  %(command)s [options]
+  %(command)s <name> [options]
   %(command)s -h | --help
   
 Subcommand Options:
@@ -90,15 +90,24 @@ def main(argv):
     args = docopt(usage, argv=argv, enable_no_option=True)
     LOGGER.debug('Arguments: %s' % args)
     
+    old_name = args['<name>']
     system = args['--system'] 
     default = args['--default']
     proj_name = args['--name']
+    
+    try:
+        old = REGISTRY[old_name]
+    except KeyError:
+        raise ProjectNameError('No project named %r.' % old_name,
+                               "See 'tau project list' for a list of project names.")
 
     if proj_name and not isValidProjectName(proj_name):
         raise ProjectNameError('%r is not a valid project name.' % proj_name,
                                'Use only letters, numbers, dot (.), dash (-), and underscore (_).')
 
-    config = project.getConfigFromOptions(args, exclude=['--help', '-h', '--system', '--default'])
+    new_config = project.getConfigFromOptions(args, exclude=['--help', '-h', '--system', '--default'])
+    config = old.config.copy()
+    config.update(new_config)
     LOGGER.info(util.pformatDict(dict([i for i in config.items() if i[1]]), title='New project settings'))
     
     prompt = '%sEnter project name> ' % TAU_LINE_MARKER
@@ -113,5 +122,8 @@ def main(argv):
     LOGGER.debug('Project config: %s' % pprint.pformat(config))
     
     REGISTRY.addProject(config, default, system)
-    LOGGER.info('Created a new project named %r.' % proj_name)
+    LOGGER.info('Created a new project named %r.' % proj_name)    
+    if not default:
+        LOGGER.info("NOTE: The new project has not been set as default.  "\
+                    "Use 'tau project default %r' to make it the default")
     return EXIT_SUCCESS

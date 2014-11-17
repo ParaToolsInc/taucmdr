@@ -227,6 +227,9 @@ class GlobalRegistry(object):
         reg.projects[proj_name] = proj
         if default:
             reg.default_name = proj_name
+            LOGGER.info("%r is now the new %s default project" % (proj_name, "system" if system else "user"))
+        else:
+            LOGGER.info("Use 'tau project default %s' to select a default project." % proj_name)
         self.save()
         return proj
 
@@ -236,12 +239,18 @@ class GlobalRegistry(object):
             del reg.projects[proj_name]
         except KeyError:
             raise ProjectNameError('No project named %r.' % proj_name)
-        LOGGER.debug('Removed %r from registry' % proj_name)
+        else:
+            LOGGER.debug('Removed %r from registry' % proj_name)
         if reg.default_name == proj_name:
-            reg.default_name = None
-            LOGGER.info("There is no default project. Use 'tau project default <name>' set the default project.")
+            LOGGER.info("Default project deleted.")
+            if len(reg.projects):
+                reg.default_name = reg.projects.itervalues().next().config['name']
+                LOGGER.info("Selected %r to be the new default project" % reg.default_name)
+            else:
+                reg.default_name = None
+                LOGGER.info("There is no default project. See 'tau project default'.")
         self.save()
-        # TODO: Delete project files
+        # TODO: Delete project files?
         
     def getProjectListing(self):
         """
