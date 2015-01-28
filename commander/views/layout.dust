@@ -10,9 +10,10 @@
 
 	{! !bootstrap core css must be linked before other css! !}
   <link href="/css/bootstrap.min.css" media="all" rel="stylesheet" />
+	<link href="/css/layout.css" media="all" rel="stylesheet" />
 
   <title>{+title}Default Title{/title}</title>
-	<link href="/css/{+stylesheet}default{/stylesheet}.css" media="all" rel="stylesheet" />
+	<link href="/css/dashboard.css" media="all" rel="stylesheet" />
 
 	<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
 	<!--[if lt IE 9]>
@@ -21,11 +22,64 @@
 	<![endif]-->
 </head>
 <body>
-	{+body/}
+	<nav class="navbar navbar-inverse navbar-fixed-top">
+		<div class="container-fluid">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+					<span class="sr-only">Toggle navigation</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href="#">TAU Commander</a>
+			</div>
+			<div id="navbar" class="navbar-collapse collapse">
+				<ul class="nav navbar-nav navbar-right">
+					<li><a href="#">Dashboard</a></li>
+					<li><a href="#">Settings</a></li>
+					<li><a href="#">Profile</a></li>
+					<li><a href="#">Help</a></li>
+				</ul>
+				<form class="navbar-form navbar-right">
+					<input type="text" class="form-control" placeholder="Search...">
+				</form>
+			</div>
+		</div>
+	</nav>
+
+	<div id="wrapper">
+		<div id="sidebar-wrapper">
+			<ul class="sidebar-nav" id="sidebar">     
+				<li><a id="menu-toggle" href="#">Menu<span id="main_icon" class="glyphicon glyphicon-align-justify"></span></a></li>
+				<li><a>Link1<span class="glyphicon glyphicon-link"></span></a></li>
+				<li><a>Link2<span class="glyphicon glyphicon-link"></span></a></li>
+				<li><a>Link3<span class="glyphicon glyphicon-link"></span></a></li>
+				<li><a>Link4<span class="glyphicon glyphicon-link"></span></a></li>
+			</ul>
+		</div>
+
+		<div id="page-content-wrapper">
+			<div class="page-content inset">
+				<div class="row">
+					<div class="col-md-12">
+						{+content/}
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</div> {! wrapper !}
+
 	<script src="/js/ios-orientationchange-fix.js"></script>
 	<script src="/js/jquery.min.js"></script>
 	<script src="/js/bootstrap.min.js"></script>
 	<script src="/js/docs.min.js"></script>
 	<script src="/js/ie10-viewport-bug-workaround.js"></script>
+	<script language="javascript">
+		$("#menu-toggle").click(function(e) {
+			e.preventDefault();
+			$("#wrapper").toggleClass("active");
+		});
+	</script>
 </body>
 </html>
