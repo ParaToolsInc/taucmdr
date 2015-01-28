@@ -12,14 +12,6 @@ body {
   border-bottom: 1px solid #eee;
 }
 
-.main {
-  padding: 20px;
-}
-
-.main .page-header {
-  margin-top: 0;
-}
-
 .row{
     margin-left:0px;
     margin-right:0px;
@@ -38,7 +30,7 @@ body {
     background: #222;
     position: fixed;
     height: 100%;
-    z-index: 10000;
+    z-index: 10;
     transition: all .4s ease 0s;
 }
 
@@ -165,9 +157,3 @@ body {
 	}
 }
 
-@media (min-width: 768px) {
-  .main {
-    padding-right: 40px;
-    padding-left: 40px;
-  }
-}
