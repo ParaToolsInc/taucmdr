@@ -1,0 +1,7 @@
+{>layout/}
+{<title}Targets{/title}
+
+{<content}
+<h1 class="page-header">Targets</h1>
+{/content}
+
