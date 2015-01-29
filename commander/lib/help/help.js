@@ -11,7 +11,7 @@ var express = require('express')
   , app = exports = module.exports = express();
 
 // Don't just use, but also export in case another module needs to use these as well.
-exports.callbacks    = require('./controllers/dashboard');
+exports.callbacks    = require('./controllers/help');
 exports.models       = require('./models'); 
 
 //-- For increased module encapsulation, you could also serve templates with module-local 

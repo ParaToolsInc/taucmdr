@@ -6,13 +6,13 @@
 * 
 */
 
-// Third-party libraries
+// Libraries
 var express = require('express')
   , app = exports = module.exports = express();
 
 // Don't just use, but also export in case another module needs to use these as well.
-exports.callbacks    = require('./controllers/dashboard');
-exports.models       = require('./models'); 
+exports.callbacks    = require('./controllers/projects');
+exports.models       = require('./models');
 
 //-- For increased module encapsulation, you could also serve templates with module-local 
 //-- paths, but using shared layouts and partials may become tricky
@@ -21,5 +21,6 @@ exports.models       = require('./models');
 //app.set('view engine', 'handlebars');
 //app.engine('handlebars', hbs.__express);
 
-// Module's Routes. Please note this is actually under /hello, because module is attached under /hello
+// Module's Routes. Note this is actually under wherever the module is attached
 app.get('/', exports.callbacks.render);
+

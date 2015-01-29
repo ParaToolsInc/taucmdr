@@ -1,10 +1,9 @@
 // Third party libraries
 var express = require('express')
-  , exports = module.exports = express()
-  , app = exports;
+  , app = exports = module.exports = express();
 
 // Local includes
 var dashboard = require('./dashboard');
 
 // Global routes
-app.get('/', dashboard.callbacks.renderDashboard);
+app.get('/', dashboard.callbacks.render);
