@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+	<meta name="description" content="{+description}TAU Commander{/description}"/>
+	<meta name="author" content="{+author}ParaTools, Inc.{/author}"/>
+	<link rel="icon" href="/favicon.ico"/>
+  <link href="/css/bootstrap.min.css" media="all" rel="stylesheet" />
+	<link href="/css/layout.css" media="all" rel="stylesheet" />
+
+	{+head/}
+
+  <title>TAU Commander :: {+title/}</title>
+
+	<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+	<!--[if lt IE 9]>
+		<script src="/js/html5shiv.min.js"></script>
+		<script src="/js/respond.min.js"></script>
+	<![endif]-->
+</head>
+<body>
+	<nav class="navbar navbar-inverse navbar-fixed-top">
+		<div class="container-fluid">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" id="menu-toggle" href="#"><span id="main_icon" class="glyphicon glyphicon-align-justify"></span></a>
+				<a class="navbar-brand" href="/dashboard">TAU Commander</a>
+				<a class="navbar-brand" href="http://www.paratools.com/"><small><sub>ParaTools, Inc.</sub></small></a>
+			</div>
+			<div id="navbar" class="navbar-collapse collapse">
+				<ul class="nav navbar-nav navbar-right">
+					<li><a href="#"><span class="glyphicon glyphicon-cog"> Settings</a></li>
+					<li><a href="#"><span class="glyphicon glyphicon-user"> Profile</a></li>
+				</ul>
+				<form class="navbar-form navbar-right">
+					<input type="text" class="form-control" placeholder="Search...">
+				</form>
+			</div>
+		</div>
+	</nav>
+
+	<div id="wrapper" class="active">
+		<div id="sidebar-wrapper">
+			<ul id="sidebar">
+				<li><a class="menu-item" href="/dashboard">Dashboard<span class="glyphicon glyphicon-th"></span></a></li>
+				<li><a class="menu-item" href="/projects">Projects<span class="glyphicon glyphicon-ok-circle"></span></a></li>
+				<li><a class="menu-item" href="/targets">Targets<span class="glyphicon glyphicon-screenshot"></span></a></li>
+				<li><a class="menu-item" href="/analysis">Analysis<span class="glyphicon glyphicon-signal"></span></a></li>
+				<li><a class="menu-item" href="/help">Help<span class="glyphicon glyphicon-question-sign"></span></a></li>
+			</ul>
+		</div>
+
+		<div id="page-content-wrapper">
+			<div class="page-content inset">
+				<div class="container-fluid">
+					<div class="row">
+						<div class="col-sm-12">
+							{+content/}
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</div> {! wrapper !}
+
+	{+foot/}
+	<script src="/js/ios-orientationchange-fix.js"></script>
+	<script src="/js/jquery.min.js"></script>
+	<script src="/js/bootstrap.min.js"></script>
+	<script src="/js/ie10-viewport-bug-workaround.js"></script>
+	<script language="javascript">
+		$("#menu-toggle").click(function(e) {
+			e.preventDefault();
+			$("#wrapper").toggleClass("active");
+		});
+	</script>
+</body>
+</html>
