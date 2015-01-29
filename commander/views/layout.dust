@@ -30,7 +30,7 @@
 				<span class="icon-bar"></span>
 				<span class="icon-bar"></span>
 				</button>
-				<a class="navbar-brand" id="menu-toggle" href="#"><span id="main_icon" class="glyphicon glyphicon-align-justify"></span></a>
+				<a class="navbar-brand" id="menu-toggle" href="#"><span id="main_icon" class="glyphicon glyphicon-th-list"></span></a>
 				<a class="navbar-brand" href="/dashboard">TAU Commander</a>
 				<a class="navbar-brand" href="http://www.paratools.com/"><small><sub>ParaTools, Inc.</sub></small></a>
 			</div>
