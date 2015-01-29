@@ -18,14 +18,13 @@ body {
 }
 
 #wrapper {
-    padding-left: 70px;
     transition: all .4s ease 0s;
     height: 100%
 }
 
 #sidebar-wrapper {
     margin-left: -150px;
-    left: 40px;
+    left: 0px;
     width: 150px;
     background: #222;
     position: fixed;
@@ -34,7 +33,7 @@ body {
     transition: all .4s ease 0s;
 }
 
-.sidebar-nav {
+#sidebar {
     display: block;
     float: left;
     width: 150px;
@@ -59,20 +58,25 @@ body {
   width: 100%;
 }
 
-.sidebar-nav li a {
-    color: #999;
-    display: block;
-    float: left;
-    text-decoration: none;
-    width: 150px;
-    background: #252525;
-    border-top: 1px solid #373737;
-    border-bottom: 1px solid #1A1A1A;
-    -webkit-transition: background .5s;
-    -moz-transition: background .5s;
-    -o-transition: background .5s;
-    -ms-transition: background .5s;
-    transition: background .5s;
+#wrapper #sidebar .menu-item {
+	visibility: hidden;
+}
+
+#wrapper.active #sidebar li a {
+	visibility: visible;
+	color: #999;
+	display: block;
+	float: left;
+	text-decoration: none;
+	width: 150px;
+	background: #252525;
+	border-top: 1px solid #373737;
+	border-bottom: 1px solid #1A1A1A;
+	-webkit-transition: background .5s;
+	-moz-transition: background .5s;
+	-o-transition: background .5s;
+	-ms-transition: background .5s;
+	transition: background .5s;
 }
 .sidebar_name {
     padding-top: 25px;
@@ -80,48 +84,28 @@ body {
     opacity: .7;
 }
 
-.sidebar-nav li {
+#sidebar li {
   line-height: 40px;
   text-indent: 20px;
 }
 
-.sidebar-nav li a {
+#sidebar li a {
   color: #999999;
   display: block;
   text-decoration: none;
 }
 
-.sidebar-nav li a:hover {
+#wrapper.active #sidebar li a:hover {
   color: #fff;
   background: rgba(255,255,255,0.2);
   text-decoration: none;
 }
 
-.sidebar-nav li a:active,
-.sidebar-nav li a:focus {
+#wrapper.active #sidebar li a:active,
+#wrapper.active #sidebar li a:focus {
   text-decoration: none;
 }
 
-.sidebar-nav > .sidebar-brand {
-  height: 65px;
-  line-height: 60px;
-  font-size: 18px;
-}
-
-.sidebar-nav > .sidebar-brand a {
-  color: #999999;
-}
-
-.sidebar-nav > .sidebar-brand a:hover {
-  color: #fff;
-  background: none;
-}
-
-#main_icon {
-   float:right;
-   padding-right: 65px;
-   padding-top:20px;
-}
 #sidebar-wrapper li a span.glyphicon {
    float:right;
    padding-top:15px;
@@ -140,13 +124,6 @@ body {
 }
 
 @media (max-width:767px) {
-	#wrapper {
-			padding-left: 70px;
-			transition: all .4s ease 0s;
-	}
-  #sidebar-wrapper {
-			left: 40px;
-	}
   #wrapper.active {
 			padding-left: 150px;
 	}
