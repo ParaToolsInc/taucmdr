@@ -1,55 +1,48 @@
-[![GitHub Link](https://img.shields.io/github/stars/inadarei/nodebootstrap.svg?style=flat)](https://github.com/inadarei/nodebootstrap)
-![npm version](https://img.shields.io/npm/v/nodebootstrap.svg?style=flat)
-![build status](https://travis-ci.org/inadarei/nodebootstrap.svg?branch=master)
-[![Codacy Badge](https://www.codacy.com/project/badge/41c49bb9c9384b7e8042f1e6c9645431)](https://www.codacy.com/public/irakli/nodebootstrap_2)
-[![Code Climate](https://codeclimate.com/github/inadarei/nodebootstrap/badges/gpa.svg)](https://codeclimate.com/github/inadarei/nodebootstrap)
-![dependencies](https://img.shields.io/david/inadarei/nodebootstrap.svg?style=flat)
-
 # TAU Commander
 
 ## Requirements
 
-[Node.js](http://nodejs.org/)
-[Express.js](http://expressjs.com)
-[Bootstrap](http://twitter.github.com/bootstrap/)
+ * [Node.js >0.10.x](http://nodejs.org/)
 
-## Quick Start:
+## Quick Start
 
-Install node and npm via your package manager. [This blog post](http://freshblurbs.com/install-node-js-and-express-js-nginx-debian-lenny) can help on Debian/Ubuntu and you can figure out similar steps, with the help of [HomeBrew](http://mxcl.github.com/homebrew/) on Mac.  
-
-Run following comamands to bootstrap TAU Commander:
-
-```console
-$ npm install -g supervisor
-$ npm install -g bower
-$ npm install
+```
+npm install
 ./bin/start.sh
 ```
-navigate to
+Navigate to ```http://localhost:3000/``` and enjoy.
 
+## Slow Start
+
+You can install Node.js via your package manager but *be certain* that your 
+distro comes with the right version. If not, go to http://nodejs.org and 
+download/install direct from the source.
+
+Once you have Node.js, install supervisor via npm:
+```console
+sudo npm install -g supervisor
 ```
-http://localhost:3000/
-```
+Now follow the instructions under ***Quick Start***.
 
 ## Shell Scripts
 
-* `dev_start.sh` starts the taucmdr.js node app in single-CPU mode with
+ * ```dev_start.sh``` starts the taucmdr.js node app in single-CPU mode with
   hot-realoading of code enabled. Use for active development.
-* `start.sh` starts taucmdr.js without hot-reloading, but with as many child
+ * `start.sh` starts taucmdr.js without hot-reloading, but with as many child
   processes as you have CPU cores. Use for production.
-* stop.sh is a counterpart of start.sh to easily stop running background processes.
+ * stop.sh is a counterpart of start.sh to easily stop running background processes.
 
 ## Runtime Environment
 
 These environment variables change runtime behavior and startup mode:
 
-* `NODE_ENV` - defaults to "production"
-* `NODE_CLUSTERED` - defaults to 1 (on)
-* `NODE_HOT_RELOAD` - defaults to 0 (off)
-* `NODE_SERVE_STATIC` - defaults to 0 (off) - Tip: don't use Node to serve static
+* ```NODE_ENV``` - defaults to "production"
+* ```NODE_CLUSTERED``` - defaults to 1 (on)
+* ```NODE_HOT_RELOAD``` - defaults to 0 (off)
+* ```NODE_SERVE_STATIC``` - defaults to 0 (off) - Tip: don't use Node to serve static
   content in production
-* `NODE_CONFIG_DIR` - defaults to "config" folder in the current folder
-* `NODE_LOG_DIR` - defaults to "logs" folder in the current folder
+* ```NODE_CONFIG_DIR``` - defaults to "config" folder in the current folder
+* ```NODE_LOG_DIR``` - defaults to "logs" folder in the current folder
 
 ## Hot Reloading vs. Daemon-izing Script.
 
@@ -57,11 +50,11 @@ In production environments it is a good idea to daemon-ize your Node process usi
 the process if it accidentally crashes.
 
 In development, it is much more important to have "hot-reloading" of code available. This feature can be provided
-with Supervisor.js package. If you set `NODE_HOT_RELOAD` to 1, start.sh will run in hot-reloading mode watching your
+with Supervisor.js package. If you set ```NODE_HOT_RELOAD``` to 1, start.sh will run in hot-reloading mode watching your
 main script, libs folder and config folder.
 
 Unfortunately, Supervisor and Forever packages do not work nicely with each other, so you can only use one
-or the other, at this point. Setting `NODE_HOT_RELOAD` to 1 disables backgrounding of your script and runs your Node
+or the other, at this point. Setting ```NODE_HOT_RELOAD``` to 1 disables backgrounding of your script and runs your Node
 application in foreground (which, to be fair, in most cases, is what you probably want during development, anyway).
 
 ## File Limits
