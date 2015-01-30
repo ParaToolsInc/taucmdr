@@ -1,7 +1,0 @@
-{>layout/}
-{<title}Help{/title}
-
-{<content}
-<h1 class="page-header">Help</h1>
-{/content}
-
