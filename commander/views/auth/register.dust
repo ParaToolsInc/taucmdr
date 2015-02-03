@@ -1,0 +1,175 @@
+{> layout /}
+{<title}Tau Commander :: Registration{/title}
+
+{<content}
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-xs-12 col-sm-8 col-md-6 col-sm-offset-2 col-md-offset-3">
+      <form role="form" action="/auth/local/register" method="post">
+        <h2>TAU Commander Registration</h2>
+        <hr>       
+        {?error}
+        <div class="alert alert-danger">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+            {?error_message}
+              {error_message}
+            {:else}
+              {error}
+            {/error_message}
+        </div>
+        {/error}
+
+        <div class="col-lg-12">
+          <div class="form-group has-feedback {?email_error}has-error{/email_error}">
+            <input type="email" name="email" id="email" class="form-control input-lg" placeholder="Email Address" value="{email}" tabindex="1">
+            {?email_error}
+            <span class="glyphicon glyphicon-remove form-control-feedback" aria-hidden="true"></span>
+            {/email_error}            
+          </div>
+        </div>
+
+        <div class="col-lg-12">
+          <div class="form-group has-feedback {?username_error}has-error{/username_error}">
+            <input type="text" name="username" id="username" class="form-control input-lg" placeholder="Username" value="{username}" tabindex="2">
+            {?username_error}
+            <span class="glyphicon glyphicon-remove form-control-feedback" aria-hidden="true"></span>
+            {/username_error}
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-xs-12 col-sm-6 col-md-6">
+            <div class="form-group has-feedback {?password_error}has-error{/password_error}">
+              <input type="password" name="password" id="password" class="form-control input-lg" placeholder="Password" tabindex="3">
+              {?password_error}
+              <span class="glyphicon glyphicon-remove form-control-feedback" aria-hidden="true"></span>
+              {/password_error}
+            </div>
+          </div>
+          <div class="col-xs-12 col-sm-6 col-md-6">
+            <div class="form-group">
+              <input type="password" name="password_confirmation" id="password_confirmation" class="form-control input-lg" placeholder="Confirm Password" tabindex="4">
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-xs-4 col-sm-3 col-md-3">
+            <span class="button-checkbox">
+              <button type="button" class="btn" data-color="info" tabindex="8"> I Agree</button>
+              <input type="checkbox" name="t_and_c" id="t_and_c" class="hidden" value="1">
+            </span>
+          </div>
+          <div class="col-xs-8 col-sm-9 col-md-9">
+             By clicking <strong class="label label-primary">Register</strong>, you agree to the <a href="#" data-toggle="modal" data-target="#t_and_c_m">Terms and Conditions</a> set out by this site, including our Cookie Use.
+          </div>
+        </div>
+        
+        <hr>
+        <div class="row">
+          <div class="col-xs-12 col-md-6">
+            <input type="submit" value="Register" class="btn btn-primary btn-block btn-lg" tabindex="9">
+          </div>
+          <div class="col-xs-12 col-md-6">
+            <a href="/login" class="btn btn-lg">Already have an account?</a>
+          </div>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+<!-- T&C Modal -->
+<div class="modal fade" id="t_and_c_m" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h4 class="modal-title" id="myModalLabel">Terms and Conditions</h4>
+      </div>
+      <div class="modal-body">
+        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Similique, itaque, modi, aliquam nostrum at sapiente consequuntur natus odio reiciendis perferendis rem nisi tempore possimus ipsa porro delectus quidem dolorem ad.</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Similique, itaque, modi, aliquam nostrum at sapiente consequuntur natus odio reiciendis perferendis rem nisi tempore possimus ipsa porro delectus quidem dolorem ad.</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Similique, itaque, modi, aliquam nostrum at sapiente consequuntur natus odio reiciendis perferendis rem nisi tempore possimus ipsa porro delectus quidem dolorem ad.</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Similique, itaque, modi, aliquam nostrum at sapiente consequuntur natus odio reiciendis perferendis rem nisi tempore possimus ipsa porro delectus quidem dolorem ad.</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Similique, itaque, modi, aliquam nostrum at sapiente consequuntur natus odio reiciendis perferendis rem nisi tempore possimus ipsa porro delectus quidem dolorem ad.</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Similique, itaque, modi, aliquam nostrum at sapiente consequuntur natus odio reiciendis perferendis rem nisi tempore possimus ipsa porro delectus quidem dolorem ad.</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Similique, itaque, modi, aliquam nostrum at sapiente consequuntur natus odio reiciendis perferendis rem nisi tempore possimus ipsa porro delectus quidem dolorem ad.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal">I Agree</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+</div>
+{/content}
+
+{<script}
+<script>
+  $(function () {
+    $('.button-checkbox').each(function () {
+      var $widget = $(this),
+          $button = $widget.find('button'),
+          $checkbox = $widget.find('input:checkbox'),
+          color = $button.data('color'),
+          settings = {
+              on: {
+                  icon: 'glyphicon glyphicon-check'
+              },
+              off: {
+                  icon: 'glyphicon glyphicon-unchecked'
+              }
+          };
+
+      /* Event Handlers */
+      $button.on('click', function () {
+          $checkbox.prop('checked', !$checkbox.is(':checked'));
+          $checkbox.triggerHandler('change');
+          updateDisplay();
+      });
+      $checkbox.on('change', function () {
+          updateDisplay();
+      });
+
+      /* Actions */
+      function updateDisplay() {
+          var isChecked = $checkbox.is(':checked');
+
+          /* Set the button's state */
+          $button.data('state', (isChecked) ? "on" : "off");
+
+          /* Set the button's icon */
+          $button.find('.state-icon')
+              .removeClass()
+              .addClass('state-icon ' + settings[$button.data('state')].icon);
+
+          /* Update the button's color */
+          if (isChecked) {
+              $button
+                  .removeClass('btn-default')
+                  .addClass('btn-' + color + ' active');
+          }
+          else {
+              $button
+                  .removeClass('btn-' + color + ' active')
+                  .addClass('btn-default');
+          }
+      }
+
+      /* Initialization */
+      function init() {
+          updateDisplay();
+          if ($button.find('.state-icon').length == 0) {
+              $button.prepend('<i class="state-icon ' + settings[$button.data('state')].icon + '"></i>');
+          }
+      }
+      init();
+    });
+  });
+</script>
+{/script}

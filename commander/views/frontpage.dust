@@ -1,0 +1,52 @@
+{> layout /}
+
+{<style}
+<style>
+/* Move down content because we have a fixed navbar that is 50px tall */
+body {
+  padding-top: 50px;
+  padding-bottom: 20px;
+}
+.jumbotron {
+  background-image: url("/images/frontpage-paraprof.png");
+  background-position: 0%;
+  background-size: cover;
+  background-repeat: no-repeat;
+  color: white;
+  text-shadow: black 0.3em 0.3em 0.3em;
+}
+</style>
+{/style}
+
+{<content}
+<!-- Main jumbotron for a primary marketing message or call to action -->
+<div class="jumbotron">
+  <div class="container">
+    <h1>TAU Commander</h1>
+    <p>Neat marketing description of TAU Commander goes here as the tagline.</p>
+    <p><a class="btn btn-primary btn-lg" href="/register" role="button">Register for free &raquo;</a></p>
+  </div>
+</div>
+
+<div class="container">
+  <!-- Example row of columns -->
+  <div class="row">
+    <div class="col-md-4">
+      <h2>Instrument</h2>
+      <p>Marketing blurb about instrumentation or something...</p>
+      <p><a class="btn btn-default" href="#" role="button">View details &raquo;</a></p>
+    </div>
+    <div class="col-md-4">
+      <h2>Measure</h2>
+      <p>Marketing blurb about measurement or something...</p>
+      <p><a class="btn btn-default" href="#" role="button">View details &raquo;</a></p>
+   </div>
+    <div class="col-md-4">
+      <h2>Analyze</h2>
+      <p>Marketing blurb about analysis or something...</p>
+      <p><a class="btn btn-default" href="#" role="button">View details &raquo;</a></p>
+    </div>
+  </div>
+</div> <!-- /container -->
+
+{/content}
