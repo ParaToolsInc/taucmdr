@@ -32,7 +32,6 @@ body {
     height: auto;
 }
 
-
 #sidebar {
     display: block;
     float: left;
@@ -55,6 +54,11 @@ body {
   -o-transition: background .5s;
   -ms-transition: background .5s;
   transition: background .5s;
+}
+
+#sidebar li a:hover {
+  color: #fff;
+  background-color: #428bca;
 }
 
 .nav-sidebar > .active > a,
