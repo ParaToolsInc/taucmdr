@@ -8853,17 +8853,17 @@ else
     fi
     if [ ! -d ${tauprefix}/${architecture} ] ; then
 	echo "making directory $tauprefix/$architecture lib bin"
-	mkdir ${tauprefix}/${architecture}
-	mkdir ${tauprefix}/${architecture}/lib
-	mkdir ${tauprefix}/${architecture}/bin
+	mkdir -p ${tauprefix}/${architecture}
+	mkdir -p ${tauprefix}/${architecture}/lib
+	mkdir -p ${tauprefix}/${architecture}/bin
     else
 	if [ "x$architecture" = "x" ] ; then
 	    echo "making directory $tauprefix lib bin"
 	    if [ ! -d ${tauprefix}/bin ] ; then
-		mkdir ${tauprefix}/bin
+		mkdir -p ${tauprefix}/bin
 	    fi
 	    if [ ! -d ${tauprefix}/lib ] ; then
-		mkdir ${tauprefix}/lib
+		mkdir -p ${tauprefix}/lib
 	    fi
 	fi
     fi
