@@ -1,0 +1,43 @@
+{> layout /}
+{<title}Tau Commander :: Login{/title}
+
+{<content}
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-xs-12 col-sm-8 col-md-6 col-sm-offset-2 col-md-offset-3">
+      <form role="form" action="/auth/local" method="post">
+        <h2>TAU Commander Login</h2>
+        <hr>
+        {?errors}
+        <div class="alert alert-danger">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+            Incorrect Username or Password!
+        </div>
+        {/errors}
+        <div class="col-lg-12">
+          <div class="form-group">
+            <input type="text" name="identifier" id="identifier" class="form-control input-lg" placeholder="Email Address or Username" tabindex="1">
+          </div>
+        </div>
+        <div class="col-lg-12">
+          <div class="form-group">
+            <input type="password" name="password" id="password" class="form-control input-lg" placeholder="Password" tabindex="2">
+          </div>
+        </div>       
+        <hr>
+        <div class="row">
+          <div class="col-xs-12 col-md-6">
+            <input type="submit" value="Login" class="btn btn-success btn-block btn-lg" tabindex="3">
+          </div>
+          <div class="col-xs-12 col-md-6">
+            <a href="/register" class="btn btn-lg">Need an account?</a>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{/content}
