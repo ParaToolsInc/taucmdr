@@ -53,7 +53,7 @@
 
   <body>
     <nav class="navbar navbar-inverse navbar-fixed-top">
-      <div class="container">
+      <div class="container-fluid">
         <div class="navbar-header">
           <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
             <span class="sr-only">Toggle navigation</span>
@@ -62,11 +62,20 @@
             <span class="icon-bar"></span>
           </button>
           <a class="navbar-brand" href="/">TAU Commander</a>
+          {?user}
+          <p class="navbar-text">Signed in as {user.username}</p>
+          {/user}
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-right">
-            <li><a href="/">Home</a></li>
+            {?user}
+            <li><a href="/dashboard">Dashboard</a></li>
+            <li><a href="/settings">Settings</a></li>
+            <li class="divider"></li>
+            <li><a href="/logout">Logout</a></li>
+            {:else}
             <li><a href="/login">Login</a></li>
+            {/user}
           </ul>
         </div><!--/.nav-collapse -->
       </div>
@@ -136,6 +145,7 @@
     <script src="/js/bootstrap.min.js"></script>
     <script src="/js/ie10-viewport-bug-workaround.js"></script>
     <script src="/js/ios-orientationchange-fix.js"></script>
+    <script src="/js/validator.min.js"></script>
     <!--SCRIPTS END-->
     {+script/}
   </body>

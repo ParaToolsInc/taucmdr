@@ -5,7 +5,7 @@
  * should look. It currently includes the minimum amount of functionality for
  * the basics of Passport.js to work.
  */
-var AuthController = {
+module.exports = {
   /**
    * Render the login page
    *
@@ -88,7 +88,7 @@ var AuthController = {
    * @param {Object} res
    */
   register: function (req, res) {
-    var context = req.flash('form')[0] || {}
+    var locals = req.flash('form')[0] || {}
       , flash_err = req.flash('error')
       , err = flash_err.toString().toLowerCase().split('.');
 
@@ -97,6 +97,9 @@ var AuthController = {
         passport: {
           username: {
             missing: 'Please provide a username',
+            exists: 'An account with that username already exists'
+          },
+          user: {
             exists: 'An account with that username already exists'
           },
           email: {
@@ -111,18 +114,18 @@ var AuthController = {
       }
     };
 
-    context['error'] = flash_err;
+    locals['error'] = flash_err;
     try {
       var kind = err[0]
         , module = err[1]
         , field = err[2]
         , problem = err[3];
-      context['error_message'] = flash_err; //err_message[kind][module][field][problem];
-      context[field+"_error"] = problem;
+      locals['error_message'] = err_message[kind][module][field][problem];
+      locals[field+"_error"] = problem;
     } catch (thrown) {
-      context['error_message'] = 'Unknown error: ' + thrown.toString();
+      locals['error_message'] = 'Unknown error: ' + thrown.toString() + ' : ' + flash_err;
     }
-    res.view(context);
+    res.view(locals);
   },
 
   /**
@@ -195,7 +198,7 @@ var AuthController = {
 
         // Upon successful login, send the user to the homepage were req.user
         // will available.
-        res.redirect('/');
+        res.redirect('/dashboard');
       });
     });
   },
@@ -210,5 +213,3 @@ var AuthController = {
     passport.disconnect(req, res);
   }
 };
-
-module.exports = AuthController;

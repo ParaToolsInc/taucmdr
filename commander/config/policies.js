@@ -26,15 +26,11 @@ module.exports.policies = {
   *                                                                          *
   ***************************************************************************/
 
-  '*': [ 'passport' ],
+  FrontpageController: [ 'passport' ],
+  AuthController: [ 'passport' ],
 
-/*
-  UserController: {
-    '*': 'isAuthenticated',
-    login: true,
-    signup: true
-  }
-*/
+  // Need an authenticated session to access anything else
+  '*': [ 'passport', 'sessionAuth' ]
 
   /***************************************************************************
   *                                                                          *

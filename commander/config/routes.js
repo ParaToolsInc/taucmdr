@@ -32,9 +32,7 @@ module.exports.routes = {
   *                                                                          *
   ***************************************************************************/
 
-  '/': {
-    view: 'frontpage'
-  },
+  'get /': 'FrontpageController.view',
 
   'get /login': 'AuthController.login',
   'get /logout': 'AuthController.logout',
@@ -47,9 +45,7 @@ module.exports.routes = {
   'get /auth/:provider/callback': 'AuthController.callback',
   'get /auth/:provider/:action': 'AuthController.callback',
 
-  '/dashboard': {
-    view: 'authorized/dashboard'
-  }
+  'get /dashboard': 'DashboardController.view'
 
   /***************************************************************************
   *                                                                          *
