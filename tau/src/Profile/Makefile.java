@@ -43,7 +43,7 @@ TauJava.o :	TauJava.cpp
 $(INSTALLDEST)/$(TARGET): $(TARGET)
 		@echo Installing $? in $(INSTALLDEST)
 		if [ -d $(INSTALLDEST) ] ; then true; \
-                   else mkdir $(INSTALLDEST) ;fi
+                   else mkdir -p $(INSTALLDEST) ;fi
 		$(TAU_INSTALL) $? $(INSTALLDEST)
 clean: 	
 	$(RM) core TauJava.o $(TARGET)

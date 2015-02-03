@@ -87,8 +87,8 @@ def main():
     if sys.version_info < taucmd.MINIMUM_PYTHON_VERSION:
         version = '.'.join(map(str, sys.version_info[0:3]))
         expected = '.'.join(map(str, taucmd.MINIMUM_PYTHON_VERSION))
-        LOGGER.warning("Your Python version is %s, but '%s' expects Python %s or later.  Please update Python." % 
-                       (version, sys.argv[0], expected))
+        LOGGER.error("Your Python version is %s, but %r expects Python %s or later. Please update Python." % 
+                     (version, sys.argv[0], expected))
 
     # Get tau version
     tau_version = util.getTauVersion()
