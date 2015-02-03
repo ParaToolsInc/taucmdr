@@ -75,6 +75,10 @@ NVIDIA CUDA Options:
   --cuda                       Enable CUDA measurement.             %(cuda_default)s
   --cuda-sdk=<path>            CUDA SDK installation path.          %(cuda-sdk_default)s
 
+Symmetric Hierarchical Memory (SHMEM) Options:
+  --shmem=<compiler>           Enable SHMEM and set compiler.       %(shmem_default)s
+  --shmem-runtime              Measure time in SHMEM runtime.       %(shmem-runtime_default)s
+
 Universal Parallel C (UPC) Options:
   --upc=<compiler>             Enable UPC and set compiler command.
   --upc-gasnet=<path>          GASNET installation path.            %(upc-gasnet_default)s
@@ -122,6 +126,8 @@ _DEFAULTS = {'name': None,
              'mpi-lib': False,
              'cuda': False,
              'cuda-sdk': False,
+             'shmem': False,
+             'shmem-runtime': False,
              'upc': False,
              'upc-gasnet': False,
              'upc-network': False,
