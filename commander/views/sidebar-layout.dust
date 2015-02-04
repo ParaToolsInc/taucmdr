@@ -1,165 +1,154 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>TAU Commander :: {+title/}</title>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="description" content="{+description}TAU Commander{/description}">
-    <meta name="author" content="{+author}ParaTools, Inc.{/author}">
-    <link rel="icon" href="/favicon.ico">
+{>base/}
 
-    <!-- Viewport mobile tag for sensible mobile support -->
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+{<layout-title}TAU Commander :: {+title/}{/layout-title}
 
-    <!--  
-        Stylesheets and Preprocessors
-        ==============================
+{<layout-style}
+<style>
+body {
+  padding-top: 50px;
+}
 
-        You can always bring in CSS files manually with `<link>` tags, or asynchronously
-        using a solution like AMD (RequireJS).  Or, if you like, you can take advantage 
-        of Sails' conventional asset pipeline (boilerplate Gruntfile).
+.navbar-fixed-top {
+  border: 0;
+}
 
-        By default, stylesheets from your `assets/styles` folder are included
-        here automatically (between STYLES and STYLES END). Both CSS (.css) and LESS (.less)
-        are supported. In production, your styles will be minified and concatenated into
-        a single file.
-        
-        To customize any part of the built-in behavior, just edit `tasks/pipeline.js`.
-        For example, here are a few things you could do:
-            
-            + Change the order of your CSS files
-            + Import stylesheets from other directories
-            + Use a different or additional preprocessor, like SASS, SCSS or Stylus
-    -->
+#wrapper {
+    transition: all .4s ease 0s;
+    height: 100%
+}
 
-    <!--STYLES-->
-    <link rel="stylesheet" href="/styles/bootstrap.min.css">
-    <link rel="stylesheet" href="/styles/bootstrap-theme.min.css">
-    <link rel="stylesheet" href="/styles/importer.css">
-    <link rel="stylesheet" href="/styles/layout.css">
-    <!--STYLES END-->
-    {+style/}
+#sidebar-wrapper {
+    margin-left: -175px;
+    left: 0px;
+    width: 175px;
+    background: #222;
+    position: fixed;
+    height: 100%;
+    z-index: 10;
+    transition: all .4s ease 0s;
+    background-color: #f5f5f5;
+    border-right: 1px solid #eee;
+}
 
-    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
-    <!--[if lt IE 9]>
-      <script src="/js/html5shiv.min.js"></script>
-      <script src="/js/respond.min.js"></script>
-    <![endif]-->
-  </head>
+#page-content-wrapper {
+    padding-left: 0;
+    margin-left: 0;
+    width: 100%;
+    height: auto;
+}
 
-  <body>
+#sidebar {
+    display: block;
+    float: left;
+    width: 175px;
+    list-style: none;
+    margin-top: 20px;
+    padding: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
 
-    <nav class="navbar navbar-inverse navbar-fixed-top">
-      <div class="container-fluid">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="navbar-brand" id="menu-toggle" href="#"><span id="main_icon" class="glyphicon glyphicon-th-list"></span></a><a class="navbar-brand" id="menu-toggle" href="#">TAU Commander / {+title/}</a>
-        </div>
-        <div id="navbar" class="navbar-collapse collapse">
-          <ul class="nav navbar-nav navbar-right">
-            {?user}
-            <li class="dropdown">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">{user.username} <span class="caret"></span></a>
-              <ul class="dropdown-menu" role="menu">
-                <li><a href="/settings">Settings</a></li>
-                <li><a href="/logout">Logout</a></li>
-              </ul>
-            </li>
-            {:else}
-            <li><a href="/login">Login</a></li>
-            {/user}
-          </ul>
-        </div><!--/.nav-collapse -->
-      </div>
-    </nav>
+#sidebar li a {
+  color: rgb(51, 51, 51);
+  text-decoration: none;
+  display: block;
+  float: left;
+  width: 175px;
+  -webkit-transition: background .5s;
+  -moz-transition: background .5s;
+  -o-transition: background .5s;
+  -ms-transition: background .5s;
+  transition: background .5s;
+}
 
-    <div id="wrapper" class="bar-visible">
-      <div id="sidebar-wrapper">
-        <ul id="sidebar" class="nav nav-sidebar">
-          {! <li class="active"><a href="#">Overview <span class="sr-only">(current)</span></a></li> !}
-          <li><a href="/dashboard">Dashboard<span class="glyphicon glyphicon-th"></span></a></li>
-          <li><a href="/projects">Projects<span class="glyphicon glyphicon-ok-circle"></span></a></li>
-          <li><a href="/targets">Targets<span class="glyphicon glyphicon-screenshot"></span></a></li>
-          <li><a href="/analysis">Analysis<span class="glyphicon glyphicon-signal"></span></a></li>
-          <li><a href="/help">Help<span class="glyphicon glyphicon-question-sign"></span></a></li>
-        </ul>
-      </div>
-      <div id="page-content-wrapper">
-        <div class="container-fluid">
-          {+content/}
-        </div>
-      </div>
+#sidebar li a:hover {
+  color: #fff;
+  background-color: #428bca;
+}
+
+.nav-sidebar > .active > a,
+.nav-sidebar > .active > a:hover,
+.nav-sidebar > .active > a:focus {
+  color: #fff;
+  background-color: #428bca;
+}
+
+#sidebar .glyphicon {
+   float:right;
+}
+
+#wrapper.bar-visible {
+    padding-left: 175px;
+}
+#wrapper.bar-visible #sidebar-wrapper {
+    left: 175px;
+}
+</style>
+{+style/}
+{/layout-style}
+
+{<layout-header}
+<nav class="navbar navbar-inverse navbar-fixed-top">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" id="menu-toggle" href="#"><span id="main_icon" class="glyphicon glyphicon-th-list"></span></a><a class="navbar-brand" id="menu-toggle" href="#">TAU Commander / {+title/}</a>
     </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav navbar-right">
+        {?user}
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">{user.username} <span class="caret"></span></a>
+          <ul class="dropdown-menu" role="menu">
+            <li><a href="/settings">Settings</a></li>
+            <li><a href="/logout">Logout</a></li>
+          </ul>
+        </li>
+        {:else}
+        <li><a href="/login">Login</a></li>
+        {/user}
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div>
+</nav>
+{+header/}
+{/layout-header}
 
+{<layout-content}
+<div id="wrapper" class="bar-visible">
+  <div id="sidebar-wrapper">
+    <ul id="sidebar" class="nav nav-sidebar">
+      {! <li class="active"><a href="#">Overview <span class="sr-only">(current)</span></a></li> !}
+      <li><a href="/dashboard">Dashboard<span class="glyphicon glyphicon-th"></span></a></li>
+      <li><a href="/project">Projects<span class="glyphicon glyphicon-ok-circle"></span></a></li>
+      <li><a href="/target">Targets<span class="glyphicon glyphicon-screenshot"></span></a></li>
+      <li><a href="/analysis">Analysis<span class="glyphicon glyphicon-signal"></span></a></li>
+      <li><a href="/help">Help<span class="glyphicon glyphicon-question-sign"></span></a></li>
+    </ul>
+  </div>
+  <div id="page-content-wrapper">
+    <div class="container-fluid">
+      {+content/}
+    </div>
+  </div>
+</div>
+{/layout-content}
 
-    <!--
-        Client-side Templates
-        ========================
+{<layout-footer}
+{+footer/}
+{/layout-footer}
 
-        HTML templates are important prerequisites of modern, rich client applications.
-        To work their magic, frameworks like Backbone, Angular, Ember, and Knockout require
-        that you load these templates client-side.
-
-        By default, your Gruntfile is configured to automatically load and precompile
-        client-side JST templates in your `assets/templates` folder, then
-        include them here automatically (between TEMPLATES and TEMPLATES END).
-        
-        To customize this behavior to fit your needs, just edit `tasks/pipeline.js`.
-        For example, here are a few things you could do:
-
-            + Import templates from other directories
-            + Use a different template engine (handlebars, jade, dust, etc.)
-            + Internationalize your client-side templates using a server-side
-              stringfile before they're served.
-    -->
-
-    <!--TEMPLATES-->
-    
-    <!--TEMPLATES END-->
-
-
-    <!--
-
-      Client-side Javascript
-      ========================
-
-      You can always bring in JS files manually with `script` tags, or asynchronously
-      on the client using a solution like AMD (RequireJS).  Or, if you like, you can 
-      take advantage of Sails' conventional asset pipeline (boilerplate Gruntfile).
-
-      By default, files in your `assets/js` folder are included here
-      automatically (between SCRIPTS and SCRIPTS END).  Both JavaScript (.js) and
-      CoffeeScript (.coffee) are supported. In production, your scripts will be minified
-      and concatenated into a single file.
-      
-      To customize any part of the built-in behavior, just edit `tasks/pipeline.js`.
-      For example, here are a few things you could do:
-          
-          + Change the order of your scripts
-          + Import scripts from other directories
-          + Use a different preprocessor, like TypeScript
-
-    -->
-
-    <!--SCRIPTS-->
-    <script src="/js/dependencies/sails.io.js"></script>
-    <script src="/js/dependencies/jquery.min.js"></script>
-    <script src="/js/bootstrap.min.js"></script>
-    <script src="/js/ie10-viewport-bug-workaround.js"></script>
-    <script src="/js/ios-orientationchange-fix.js"></script>
-    <script src="/js/validator.min.js"></script>
-    <!--SCRIPTS END-->
-
-    <script language="javascript">
-      $("#menu-toggle").click(function(e) {
-        e.preventDefault();
-        $("#wrapper").toggleClass("bar-visible");
-      });
-    </script>
-  </body>
-</html>
+{<layout-script}
+<script language="javascript">
+  $("#menu-toggle").click(function(e) {
+    e.preventDefault();
+    $("#wrapper").toggleClass("bar-visible");
+  });
+</script>
+{+script/}
+{/layout-script}

@@ -32,7 +32,7 @@ module.exports.routes = {
   *                                                                          *
   ***************************************************************************/
 
-  'get /': 'FrontpageController.view',
+  'get /': 'FrontpageController.main',
 
   'get /login': 'AuthController.login',
   'get /logout': 'AuthController.logout',
@@ -43,10 +43,7 @@ module.exports.routes = {
 
   'get /auth/:provider': 'AuthController.provider',
   'get /auth/:provider/callback': 'AuthController.callback',
-  'get /auth/:provider/:action': 'AuthController.callback',
-
-  'get /dashboard': 'DashboardController.view',
-  'get /projects': 'ProjectController.view'
+  'get /auth/:provider/:action': 'AuthController.callback'
 
   /***************************************************************************
   *                                                                          *

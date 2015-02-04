@@ -108,7 +108,7 @@ module.exports = {
           },
           password: {
             missing: 'Please provide a password',
-            invalid: 'Password must be at least ' + sails.models.passport + ' characters long'
+            invalid: 'Password must be at least 6 characters long'
           }
         }
       }
