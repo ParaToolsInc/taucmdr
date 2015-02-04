@@ -7,7 +7,7 @@
 
 module.exports = {
 
-	/**
+  /**
    * Render the dashboard
    *
    * @param {Object} req
