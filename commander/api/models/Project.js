@@ -7,16 +7,19 @@
 
 module.exports = {
 
+  schema: true,
+  
   attributes: {
 
-    owner: {
-      model: 'user'
+    name: {
+      type: 'string',
+      required: true
     },
 
-    name: {
-      type: 'string'
+    user: { 
+      model: 'User', 
+      required: true 
     }
-
 
   }
 };

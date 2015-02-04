@@ -13,8 +13,8 @@ module.exports = {
    * @param {Object} req
    * @param {Object} res
    */
-  view: function (req, res) {
-    res.view();
+  main: function (req, res) {
+    res.view('project/main');
   }
 	
 };

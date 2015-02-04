@@ -15,10 +15,9 @@
 // (if you're using LESS with the built-in default config, you'll want
 //  to change `assets/styles/importer.less` instead.)
 var cssFilesToInject = [
-  'styles/bootstrap.min.css',
-  'styles/bootstrap-theme.min.css',
-  'styles/**/*.css',
-  'styles/layout.css'
+  'styles/grunt/bootstrap.min.css',
+  'styles/grunt/bootstrap-theme.min.css',
+  'styles/grunt/**/*.css'
 ];
 
 
@@ -34,7 +33,7 @@ var jsFilesToInject = [
 
   // All of the rest of your client-side js files
   // will be injected here in no particular order.
-  'js/**/*.js'
+  'js/grunt/**/*.js'
 ];
 
 
