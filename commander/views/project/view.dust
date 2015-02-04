@@ -1,0 +1,7 @@
+{> sidebar-layout /}
+{<title}Projects{/title}
+
+{<content}
+<h1 class="page-header">Projects</h1>
+{/content}
+

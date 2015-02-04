@@ -45,7 +45,8 @@ module.exports.routes = {
   'get /auth/:provider/callback': 'AuthController.callback',
   'get /auth/:provider/:action': 'AuthController.callback',
 
-  'get /dashboard': 'DashboardController.view'
+  'get /dashboard': 'DashboardController.view',
+  'get /projects': 'ProjectController.view'
 
   /***************************************************************************
   *                                                                          *
