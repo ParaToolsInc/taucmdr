@@ -88,7 +88,7 @@ module.exports = {
    * @param {Object} res
    */
   register: function (req, res) {
-    var locals = req.flash('form')[0] || {}
+    var locals = req.flash('form') || {}
       , flash_err = req.flash('error')
       , err = flash_err.toString().toLowerCase().split('.');
 
@@ -167,7 +167,7 @@ module.exports = {
       } else if (flashError) {
         req.flash('error', flashError);
       }
-      req.flash('form', req.body);
+      req.flash('form', req.body[0]);
 
       // If an error was thrown, redirect the user to the
       // login, register or disconnect action initiator view.
@@ -198,7 +198,7 @@ module.exports = {
 
         // Upon successful login, send the user to the homepage were req.user
         // will available.
-        res.redirect('/dashboard');
+        res.redirect('/project');
       });
     });
   },

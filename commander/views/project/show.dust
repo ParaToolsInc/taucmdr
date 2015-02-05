@@ -1,0 +1,46 @@
+{> sidebar-layout /}
+{<title}{target.name}{/title}
+
+{<content}
+<h1 class="page-header">{target.name}</h1>
+
+<hr>
+<div class="row">
+  <div class="col-xs-12 col-md-2">
+    <a href="/target/edit/{target.id}" class="btn btn-primary btn-block" role="button">Edit</a>
+  </div>
+  <div class="col-xs-12 col-md-2">
+    <a href="#" class="btn btn-danger btn-block" role="button" name="delete_button" id="delete_button">Delete</a>
+  </div>
+  <div class="col-xs-12 col-md-2">
+    <a href="/target" class="btn btn-default btn-block" role="button">Cancel</a>
+  </div>
+</div>
+
+<div class="modal fade" id="delete_warning" role="dialog" aria-labelledby="Warning" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h4 class="modal-title">Warning</h4>
+      </div>
+      <div class="modal-body">
+        Deleting this target cannot be undone.  Are you sure?
+      </div>
+      <div class="modal-footer">
+        <a href="/target/destroy/{target.id}" class="btn btn-danger" role="button" name="confirm_delete" id="confirm_delete">Delete</a>
+        <button type="button" data-dismiss="modal" class="btn btn-default">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+{/content}
+
+{<script}
+<script>
+$('a[name="delete_button"]').on('click', function(e) {
+  e.preventDefault();
+  $('#delete_warning').modal({keyboard: false});
+});
+</script>
+{/script}

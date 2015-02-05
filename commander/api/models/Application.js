@@ -1,5 +1,5 @@
 /**
-* Project.js
+* Application.js
 *
 * @description :: TODO: You might write a short summary of how this model works and what it represents here.
 * @docs        :: http://sailsjs.org/#!documentation/models
@@ -8,36 +8,46 @@
 module.exports = {
 
   schema: true,
-  
+
   attributes: {
 
     // One-to-many association
-    user: { 
+    user: {
       model: 'User', 
       required: true 
     },
 
-    // Project name
+    // Application name
     name: {
       type: 'string',
       required: true
     },
 
-    // Targets used by this project
-    targets: {
-      collection: 'Target'
+    openmp: {
+      type: 'boolean',
+      defaultsTo: false
     },
 
-    // Applications used by this project
-    applications: {
-      collection: 'Application'
+    pthreads: {
+      type: 'boolean',
+      defaultsTo: false
     },
 
-    // Analyses used by this project
-    analyses: {
-      collection: 'Analysis'
+    mpi: {
+      type: 'boolean',
+      defaultsTo: false
+    },
+
+    cuda: {
+      type: 'boolean',
+      defaultsTo: false
+    },
+
+    shmem: {
+      type: 'boolean',
+      defaultsTo: false
     }
-
+    
   }
 };
 

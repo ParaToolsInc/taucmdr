@@ -1,0 +1,214 @@
+{> sidebar-layout /}
+{<title}New Project{/title}
+
+{<style}
+<style>
+.state-icon {
+    left: -5px;
+}
+.list-group-item-primary {
+    color: rgb(255, 255, 255);
+    background-color: rgb(66, 139, 202);
+}
+</style>
+{/style}
+
+{<content}
+<h1 class="page-header">New Project</h1>
+<div class="row">
+  <div class="col-xs-12 col-sm-8 col-md-6 col-sm-offset-2 col-md-offset-3">
+    <div class="alert alert-danger {^error}hidden{/error}" id="error_alert">
+      <p id="error_alert_message">
+      {?error_message}
+        {error_message}
+      {:else}
+        {error}
+      {/error_message}
+      </p>
+    </div>
+  </div>
+</div>
+
+<form id="mainform" role="form" action="/project/create" method="post">
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="form-group has-feedback {?name_error}has-error{/name_error}">
+        <label class="control-label" for="name">Project Name</label>
+        <input type="text" name="name" id="name" class="form-control input-lg" placeholder="Project Name" tabindex="1" required/>
+        <span class="glyphicon glyphicon-remove form-control-feedback {^name_error}hidden{/name_error}" aria-hidden="true"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-xs-4">
+      <h3 class="text-center">Targets</h3>
+      {?targets}
+      <div class="well">
+        <ul class="list-group checked-list-box">
+          {#targets}
+          <li class="list-group-item">{name}</li>
+          {/targets}
+        </ul>
+      </div>
+      {/targets}
+      <div class="row">
+        <div class="col-xs-12">
+          <a class="btn btn-info btn-block" href="/target/new" role="button">New Target</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xs-4">
+      <h3 class="text-center">Applications</h3>
+      {?applications}
+      <div class="well">
+        <ul class="list-group checked-list-box">
+          {#applications}
+          <li class="list-group-item">{name}</li>
+          {/applications}
+        </ul>
+      </div>
+      {/applications}
+      <div class="row">
+        <div class="col-xs-12">
+          <a class="btn btn-info btn-block" href="/application/new" role="button">New Application</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xs-4">
+      <h3 class="text-center">Analyses</h3>
+      {?analyses}
+      <div class="well">
+        <ul class="list-group checked-list-box">
+          {#analyses}
+          <li class="list-group-item">{name}</li>
+          {/analyses}
+        </ul>
+      </div>
+      {/analyses}
+      <div class="row">
+        <div class="col-xs-12">
+          <a class="btn btn-info btn-block" href="/analysis/new" role="button">New Analysis</a>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+
+  <hr>
+  <div class="row">
+    <div class="col-xs-12 col-md-2">
+      <input type="submit" value="Create Project" class="btn btn-primary btn-block" tabindex="9">
+    </div>
+    <div class="col-xs-12 col-md-2">
+      <a href="/project" class="btn btn-default btn-block" role="button">Cancel</a>
+    </div>
+  </div>
+</div>
+
+  <input type="hidden" name="user" id="user" value="{user.id}"/>
+  <input type="hidden" name="_csrf" value="{_csrf}"/>
+</form>
+{/content}
+
+{<script}
+<script src="/js/jquery.validate.min.js"></script>
+<script>
+  $("#mainform").validate({
+    highlight: function(element) {
+      $(element).closest('.form-group').addClass('has-error');
+      $(element).siblings('.glyphicon').removeClass('hidden');
+    },
+    unhighlight: function(element) {
+      $(element).closest('.form-group').removeClass('has-error');
+      $(element).siblings('.glyphicon').addClass('hidden');
+    },
+    invalidHandler: function(event, validator) {
+      var errors = validator.numberOfInvalids();
+      if (errors) {
+        var message = errors == 1
+          ? 'Please correct the highlighted field.'
+          : 'Please correct the highlighted fields.';
+        $("#error_alert_message").html(message);
+        $("#error_alert").removeClass('hidden');
+      } else {
+        $("#error_alert").addClass('hidden');
+      }
+    },
+    errorElement: 'span',
+    errorClass: 'help-block',
+    errorPlacement: function(error, element) {
+      if(element.parent('.input-group').length) {
+        error.insertAfter(element.parent());
+      } else {
+        error.insertAfter(element);
+      }
+    }
+  });
+
+$(function () {
+  $('.list-group.checked-list-box .list-group-item').each(function () {
+    var $widget = $(this),
+        $checkbox = $('<input type="checkbox" class="hidden" />'),
+        color = ($widget.data('color') ? $widget.data('color') : "primary"),
+        style = ($widget.data('style') == "button" ? "btn-" : "list-group-item-"),
+        settings = {
+            on: { icon: 'glyphicon glyphicon-check' },
+            off: { icon: 'glyphicon glyphicon-unchecked' }
+        };
+    $widget.css('cursor', 'pointer');
+    $widget.append($checkbox);
+
+    $widget.on('click', function () {
+      $checkbox.prop('checked', !$checkbox.is(':checked'));
+      $checkbox.triggerHandler('change');
+      updateDisplay();
+    });
+    $checkbox.on('change', function () {
+      updateDisplay();
+    });
+      
+    function updateDisplay() {
+      var isChecked = $checkbox.is(':checked');
+
+      $widget.data('state', (isChecked) ? "on" : "off");
+
+      $widget.find('.state-icon')
+          .removeClass()
+          .addClass('state-icon ' + settings[$widget.data('state')].icon);
+
+      if (isChecked) {
+        $widget.addClass(style + color + ' active');
+      } else {
+        $widget.removeClass(style + color + ' active');
+      }
+    }
+
+    function init() {
+      if ($widget.data('checked') == true) {
+        $checkbox.prop('checked', !$checkbox.is(':checked'));
+      }
+        
+      updateDisplay();
+
+      if ($widget.find('.state-icon').length == 0) {
+        $widget.prepend('<span class="state-icon ' + settings[$widget.data('state')].icon + '"></span>');
+      }
+    }
+    init();
+  });
+  
+  $('#get-checked-data').on('click', function(event) {
+    event.preventDefault(); 
+    var checkedItems = {}, counter = 0;
+    $("#check-list-box li.active").each(function(idx, li) {
+      checkedItems[counter] = $(li).text();
+      counter++;
+    });
+    $('#display-json').html(JSON.stringify(checkedItems, null, '\t'));
+  });
+});
+</script>
+{/script}

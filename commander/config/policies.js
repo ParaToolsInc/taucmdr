@@ -30,7 +30,7 @@ module.exports.policies = {
   AuthController: [ 'passport' ],
 
   // Need an authenticated session to access anything else
-  '*': [ 'passport', 'sessionAuth' ]
+  '*': [ 'passport', 'sessionAuth', 'sidebar' ]
 
   /***************************************************************************
   *                                                                          *

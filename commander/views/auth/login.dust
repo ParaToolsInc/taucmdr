@@ -19,13 +19,13 @@
         {/errors}
         <div class="col-lg-12">
           <div class="form-group">
-            <label for="identifier">Email Address or Username</label>
+            <label class="control-label" for="identifier">Email Address or Username</label>
             <input type="text" name="identifier" id="identifier" class="form-control input-lg" placeholder="Email Address or Username" tabindex="1">
           </div>
         </div>
         <div class="col-lg-12">
           <div class="form-group">
-            <label for="password">Password</label>
+            <label class="control-label" for="password">Password</label>
             <input type="password" name="password" id="password" class="form-control input-lg" placeholder="Password" tabindex="2">
           </div>
         </div>       

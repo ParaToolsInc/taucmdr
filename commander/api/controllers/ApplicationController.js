@@ -1,24 +1,24 @@
 /**
- * TargetController
+ * ApplicationController
  *
- * @description :: Server-side logic for managing targets
+ * @description :: Server-side logic for managing applications
  * @help        :: See http://links.sailsjs.org/docs/controllers
  */
 
  module.exports = {
 
   dashboard: function(req, res, next) {
-    Target.find({}).exec(function (err, targets) {
+    Application.find({}).exec(function (err, applications) {
       if (err) {
         sails.log.error(err);
         return next(err);
       }
-      if (!targets) {
-        sails.log.warn('No targets found.');
+      if (!applications) {
+        sails.log.debug('No applications found.');
         return next();
       }
       res.view({
-        targets: targets
+        applications: applications
       });
     });
   },
@@ -30,17 +30,17 @@
   show: function(req, res, next) {
     var id = req.param('id');
     if (!id) return next();
-    Target.findOne(id).exec(function (err, target) {
+    Application.findOne(id).exec(function (err, application) {
       if (err) {
         sails.log.error(err);
         return next(err);
       }
-      if (!target) {
-        sails.log.warn('Target ID '+id+' not found.');
+      if (!application) {
+        sails.log.debug('Application ID '+id+' not found.');
         return next();
       }
       res.view({
-        target: target
+        application: application
       });
     });
   },
@@ -48,56 +48,56 @@
   edit: function(req, res, next) {
     var id = req.param('id');
     if (!id) return next();
-    Target.findOne(id).exec(function (err, target) {
+    Application.findOne(id).exec(function (err, application) {
       if (err) {
         sails.log.error(err);
         return next(err);
       }
-      if (!target) {
-        sails.log.warn('Target ID '+id+' not found.');
+      if (!application) {
+        sails.log.debug('Application ID '+id+' not found.');
         return next();
       }
       res.view({
-        target: target
+        application: application
       });
     });
   },
 
   create: function(req, res, next) {
-    Target.create(req.params.all()).exec(function (err, target) {
+    Application.create(req.params.all()).exec(function (err, application) {
       if (err) {
         sails.log.error(err);
         return next(err);
       }
-      res.redirect('/target');
+      res.redirect('/application');
     });
   },
 
   update: function(req, res, next) {
     var id = req.param('id');
     if (!id) return next();
-    Target.update({id: id}, req.params.all()).exec(function (err, target) {
+    Application.update({id: id}, req.params.all()).exec(function (err, application) {
       if (err) {
         sails.log.error(err);
         return next(err);
       }
-      if (!target) {
-        sails.log.warn('Target ID '+id+' not found.');
+      if (!application) {
+        sails.log.debug('Application ID '+id+' not found.');
         return next();
       }
-      res.redirect('/target/show/'+id);
+      res.redirect('/application/show/'+id);
     });
   },
 
   destroy: function(req, res, next) {
     var id = req.param('id');
     if (!id) return next();
-    Target.destroy({id: id}).exec(function (err) {
+    Application.destroy({id: id}).exec(function (err) {
       if (err) {
         sails.log.error(err);
         return next(err);
       }
-      res.redirect('/target');
+      res.redirect('/application');
     });
   }
 

@@ -1,8 +1,0 @@
-{> sidebar-layout /}
-{<title}Dashboard{/title}
-
-{<content}
-<h1 class="page-header">TAU Commander</h1>
-Welcome to TAU Commander
-{/content}
-

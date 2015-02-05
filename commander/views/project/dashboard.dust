@@ -1,13 +1,13 @@
 {> sidebar-layout /}
-{<title}Targets{/title}
+{<title}Projects{/title}
 
 {<style}
 <style>
-.target-widget {
+.project-widget {
   text-align: center;
 }
 
-.target-widget .icon { 
+.project-widget .icon { 
   display: block; 
   font-size: 96px; 
   line-height: 96px; 
@@ -18,18 +18,18 @@
 {/style}
 
 {<content}
-<h1 class="page-header">Targets</h1>
+<h1 class="page-header">Projects</h1>
 <div class="row">
   <div class="col-xs-12 col-sm-4 col-md-3 col-lg-2">
-    <div class="target-widget well well-sm">
+    <div class="project-widget well well-sm">
       <div class="icon"><i class="glyphicon glyphicon-plus-sign"></i></div>
-      <a href="/target/new" class="btn btn-primary btn-md">Add New Target</a>
+      <a href="/project/new" class="btn btn-primary btn-md">Add New Project</a>
     </div>
   </div>
 
-  {#targets}
+  {#projects}
   <div class="col-xs-12 col-sm-4 col-md-3 col-lg-2">
-    <a class="target-widget thumbnail" href="/target/edit?name={name}">
+    <a class="project-widget thumbnail" href="/project/show/{id}">
       {?image}
       <img data-src="holder.js/100%x200" alt="Generic placeholder thumbnail">
       {:else}
@@ -40,7 +40,7 @@
       </div>
     </a>
   </div>
-  {/targets}
+  {/projects}
   
 </div>
 {/content}
