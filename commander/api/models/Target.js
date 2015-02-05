@@ -11,15 +11,28 @@ module.exports = {
 
   attributes: {
 
+    // One-to-many association
+    user: {
+      model: 'User', 
+      required: true 
+    },
+
+    // Target name
     name: {
       type: 'string',
       required: true
     },
 
-    user: {
-      model: 'User', 
-      required: true 
+    // Host architecture
+    host_arch: {
+      type: 'string',
+      required: true
     },
+
+    // Coprocessing device architecture
+    device_arch: {
+      type: 'string'
+    }
 
     // toJSON: function() {
     //   var obj = this.toObject();

@@ -63,12 +63,12 @@ body {
 
 #sidebar li a:hover {
   color: #fff;
-  background-color: #428bca;
+  background-color: #ccc;
 }
 
-.nav-sidebar > .active > a,
-.nav-sidebar > .active > a:hover,
-.nav-sidebar > .active > a:focus {
+#sidebar > .active > a,
+#sidebar > .active > a:hover,
+#sidebar > .active > a:focus {
   color: #fff;
   background-color: #428bca;
 }
@@ -123,12 +123,11 @@ body {
 <div id="wrapper" class="bar-visible">
   <div id="sidebar-wrapper">
     <ul id="sidebar" class="nav nav-sidebar">
-      {! <li class="active"><a href="#">Overview <span class="sr-only">(current)</span></a></li> !}
-      <li><a href="/dashboard">Dashboard<span class="glyphicon glyphicon-th"></span></a></li>
-      <li><a href="/project">Projects<span class="glyphicon glyphicon-ok-circle"></span></a></li>
-      <li><a href="/target">Targets<span class="glyphicon glyphicon-screenshot"></span></a></li>
-      <li><a href="/analysis">Analysis<span class="glyphicon glyphicon-signal"></span></a></li>
-      <li><a href="/help">Help<span class="glyphicon glyphicon-question-sign"></span></a></li>
+      {#sidebar_items}
+      <li {?active}class="active"{/active}>
+        <a href="{href}">{title} {?active}<span class="sr-only">(current)</span>{/active} <span class="glyphicon {icon}"></span></a>
+      </li>
+      {/sidebar_items}
     </ul>
   </div>
   <div id="page-content-wrapper">

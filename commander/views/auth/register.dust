@@ -6,13 +6,10 @@
 <div class="container-fluid">
   <div class="row">
     <div class="col-xs-12 col-sm-8 col-md-6 col-sm-offset-2 col-md-offset-3">
-      <form role="form" action="/auth/local/register" method="post" onsubmit="return validateForm();">
+      <form id="regform" role="form" action="/auth/local/register" method="post">
         <h2>TAU Commander Registration</h2>
         <hr>       
         <div class="alert alert-danger {^error}hidden{/error}" id="error_alert">
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
             <p id="error_alert_message">
             {?error_message}
               {error_message}
@@ -25,9 +22,10 @@
         <div class="row">
           <div class="col-lg-12">
             <div class="form-group has-feedback {?email_error}has-error{/email_error}">
-              <label for="email">Email Address</label>
-              <input type="email" name="email" id="email" class="form-control input-lg" placeholder="Email Address" value="{email}" tabindex="1">
+              <label class="control-label" for="email">Email Address</label>
+              <input type="email" name="email" id="email" class="form-control input-lg" placeholder="Email Address" value="{email}" tabindex="1" required>
               <span class="glyphicon glyphicon-remove form-control-feedback {^email_error}hidden{/email_error}" aria-hidden="true"></span>
+              <span class="sr-only">(error)</span>
             </div>
           </div>
         </div>
@@ -35,8 +33,8 @@
         <div class="row">
           <div class="col-lg-12">
             <div class="form-group has-feedback {?username_error}has-error{/username_error}">
-              <label for="username">Username</label>
-              <input type="text" name="username" id="username" class="form-control input-lg" placeholder="Username" value="{username}" tabindex="2">
+              <label class="control-label" for="username">Username</label>
+              <input type="text" name="username" id="username" class="form-control input-lg" placeholder="Username" value="{username}" tabindex="2" required>
               <span class="glyphicon glyphicon-remove form-control-feedback {^username_error}hidden{/username_error}" aria-hidden="true"></span>
             </div>
           </div>
@@ -45,15 +43,15 @@
         <div class="row">
           <div class="col-xs-12 col-sm-6 col-md-6">
             <div class="form-group has-feedback {?password_error}has-error{/password_error}">
-              <label for="password">Password</label>
-              <input type="password" name="password" id="password" class="form-control input-lg" placeholder="Password" tabindex="3">
+              <label class="control-label" for="password">Password</label>
+              <input type="password" name="password" id="password" class="form-control input-lg" placeholder="Password" tabindex="3" required>
               <span class="glyphicon glyphicon-remove form-control-feedback {^password_error}hidden{/password_error}" aria-hidden="true"></span>
             </div>
           </div>
           <div class="col-xs-12 col-sm-6 col-md-6">
             <div class="form-group has-feedback {?password_error}has-error{/password_error}">
-              <label for="confirm_password">Confirm Password</label>
-              <input type="password" name="confirm_password" id="confirm_password" class="form-control input-lg" placeholder="Confirm Password" tabindex="4">
+              <label class="control-label" for="confirm_password">Confirm Password</label>
+              <input type="password" name="confirm_password" id="confirm_password" class="form-control input-lg" placeholder="Confirm Password" tabindex="4" required>
               <span class="glyphicon glyphicon-remove form-control-feedback {^password_error}hidden{/password_error}" aria-hidden="true"></span>
             </div>
           </div>
@@ -61,10 +59,12 @@
 
         <div class="row">
           <div class="col-xs-4 col-sm-3 col-md-3">
-            <span class="button-checkbox">
-              <button type="button" class="btn" data-color="info" tabindex="8"> I Agree</button>
-              <input type="checkbox" name="tc" id="tc" class="hidden" value="1">
-            </span>
+            <div class="form-group has-feedback">
+              <span id="button-checkbox">
+                <button type="button" class="btn control-label" data-color="info" tabindex="8"> I Agree</button>
+                <input type="checkbox" name="tc" id="tc" class="hidden" value="1" required>
+              </span>
+            </div>
           </div>
           <div class="col-xs-8 col-sm-9 col-md-9">
              By clicking <strong class="label label-primary">Register</strong>, you agree to the <a href="#" data-toggle="modal" data-target="#t_and_c_m">Terms and Conditions</a> set out by this site, including our Cookie Use.
@@ -86,7 +86,7 @@
   </div>
 
 <!-- T&C Modal -->
-<div class="modal fade" id="t_and_c_m" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<div class="modal fade" id="t_and_c_m" tabindex="-1" role="dialog" aria-labelledby="Terms and Conditions" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
@@ -107,59 +107,57 @@
 {/content}
 
 {<script}
-<script src="/js/validator.min.js"></script>
+<script src="/js/jquery.validate.min.js"></script>
 <script>
 
-  function validateForm() {
-    var validateField = function(selector, validator, message) {
-      var field = $(selector)
-        , parent = field.parent()
-        , error_alert = $("#error_alert")
-        , error_alert_message = $("#error_alert_message")
-        , valid = validator(field.val());
-      if (!valid) {
-        parent.addClass('has-error');
-        parent.removeClass('has-success');
-        parent.children('.glyphicon').removeClass('hidden');
-        error_alert_message.text(message || "Unknown error");
-        error_alert.removeClass('hidden');
+  $("#regform").validate({
+    messages: {
+      password: 'The passwords do not match.',
+      confirm_password: 'The passwords do not match.',
+    },
+    submitHandler: function(form) {
+      var tc = $("#tc");
+      if(!tc.is(':checked')) {
+        $("#error_alert_message").html('Please accept the Terms and Conditions.');
+        $("#error_alert").removeClass('hidden');
+        tc.closest('.form-group').addClass('has-error');
       } else {
-        parent.addClass('has-success');
-        parent.removeClass('has-error');
-        parent.children('.glyphicon').addClass('hidden');
-        error_alert.addClass('hidden');
+        form.submit();
       }
-      return valid;
-    };
-
-    var fields = {
-      "#email": [ 
-        validator.isEmail, 
-        'Please enter a valid email address' ],
-      "#username": [
-        validator.isAlphanumeric,
-        "Please use only letters and numbers in your username" ],
-      "#password": [
-        function (x) { return validator.isLength(x, 6); },
-        "Please use at least six characters in your password" ],
-      "#confirm_password": [ 
-        function (x) { return validator.equals(x, $("#password").val()); },
-        "The passwords do not match." ],
-      "#tc": [ 
-        function(x) { return $("#tc").is(':checked'); }, 
-        "Please agree to the Terms and Conditions" ]
-    };
-
-    for (key in fields) {
-      var field = fields[key]
-        , valid = validateField(key, field[0], field[1]);
-      if (!valid) return false;
+    },
+    highlight: function(element) {
+      $(element).closest('.form-group').addClass('has-error');
+      $(element).siblings('.glyphicon').removeClass('hidden');
+    },
+    unhighlight: function(element) {
+      $(element).closest('.form-group').removeClass('has-error');
+      $(element).siblings('.glyphicon').addClass('hidden');
+    },
+    invalidHandler: function(event, validator) {
+      var errors = validator.numberOfInvalids();
+      if (errors) {
+        var message = errors == 1
+          ? 'Please correct the highlighted field.'
+          : 'Please correct the highlighted fields.';
+        $("#error_alert_message").html(message);
+        $("#error_alert").removeClass('hidden');
+      } else {
+        $("#error_alert").addClass('hidden');
+      }
+    },
+    errorElement: 'span',
+    errorClass: 'help-block',
+    errorPlacement: function(error, element) {
+      if(element.parent('.input-group').length) {
+        error.insertAfter(element.parent());
+      } else {
+        error.insertAfter(element);
+      }
     }
-    return true;
-  }
+  });
 
   $(function () {
-    $('.button-checkbox').each(function () {
+    $('#button-checkbox').each(function () {
       var $widget = $(this),
           $button = $widget.find('button'),
           $checkbox = $widget.find('input:checkbox'),

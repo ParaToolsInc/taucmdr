@@ -1,8 +1,8 @@
 {> sidebar-layout /}
-{<title}{target.name}{/title}
+{<title}{project.name}{/title}
 
 {<content}
-<h1 class="page-header">{target.name}</h1>
+<h1 class="page-header">{project.name}</h1>
 <div class="row">
   <div class="col-xs-12 col-sm-8 col-md-6 col-sm-offset-2 col-md-offset-3">
     <div class="alert alert-danger {^error}hidden{/error}" id="error_alert">
@@ -17,12 +17,12 @@
   </div>
 </div>
 
-<form id="mainform" role="form" action="/target/update" method="post">
+<form id="mainform" role="form" action="/project/update" method="post">
   <div class="row">
     <div class="col-lg-12">
       <div class="form-group has-feedback {?name_error}has-error{/name_error}">
-        <label class="control-label" for="name">Target Name</label>
-        <input type="text" name="name" id="name" class="form-control input-lg" placeholder="Target Name" value="{target.name}" tabindex="1" required/>
+        <label class="control-label" for="name">Project Name</label>
+        <input type="text" name="name" id="name" class="form-control input-lg" placeholder="Project Name" value="{project.name}" tabindex="1" required/>
         <span class="glyphicon glyphicon-remove form-control-feedback {^name_error}hidden{/name_error}" aria-hidden="true"></span>
       </div>
     </div>
@@ -31,14 +31,14 @@
   <hr>
   <div class="row">
     <div class="col-xs-12 col-md-4 col-md-offset-2">
-      <input type="submit" value="Update Target" class="btn btn-primary btn-block" tabindex="9">
+      <input type="submit" value="Update Project" class="btn btn-primary btn-block" tabindex="9">
     </div>
     <div class="col-xs-12 col-md-4">
-      <a href="/target" class="btn btn-default btn-block" role="button">Cancel</a>
+      <a href="/project" class="btn btn-default btn-block" role="button">Cancel</a>
     </div>
   </div>
   <input type="hidden" name="user" id="user" value="{user.id}"/>
-  <input type="hidden" name="id" id="id" value="{target.id}"/>
+  <input type="hidden" name="id" id="id" value="{project.id}"/>
   <input type="hidden" name="_csrf" value="{_csrf}"/>
 </form>
 {/content}

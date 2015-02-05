@@ -21,4 +21,8 @@ module.exports = {
   //   connection: 'someMongodbServer'
   // }
 
+  log: {
+    level: 'debug'
+  }
+
 };
