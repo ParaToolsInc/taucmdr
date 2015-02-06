@@ -35,17 +35,20 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+# System modules
 import sys
 import string
-import tau
 import pprint
-from tau import util, project
-from tau import EXIT_SUCCESS, TAU_LINE_MARKER
-from tau.registry import REGISTRY
-from tau.docopt import docopt
-from tau.error import ProjectNameError
+from docopt import docopt
 
-LOGGER = tau.getLogger(__name__)
+# TAU modules
+from tau import getLogger, EXIT_SUCCESS, TAU_LINE_MARKER
+from project import getProjectOptions, getConfigFromOptions
+from error import ProjectNameError
+from registry import getRegistry
+
+LOGGER = getLogger(__name__)
+
 
 SHORT_DESCRIPTION = "Copy an existing TAU project configuration."
 
@@ -69,8 +72,8 @@ HELP = """
 
 def getUsage():
     return USAGE % {'command': COMMAND,
-                    'system_path': REGISTRY.system.prefix,
-                    'project_options': project.getProjectOptions(show_defaults=True)}
+                    'system_path': getRegistry().system.prefix,
+                    'project_options': getProjectOptions(show_defaults=True)}
 
 def getHelp():
     return HELP
@@ -96,7 +99,7 @@ def main(argv):
     proj_name = args['--name']
     
     try:
-        old = REGISTRY[old_name]
+        old = getRegistry()[old_name]
     except KeyError:
         raise ProjectNameError('No project named %r.' % old_name,
                                "See 'tau project list' for a list of project names.")
@@ -105,7 +108,7 @@ def main(argv):
         raise ProjectNameError('%r is not a valid project name.' % proj_name,
                                'Use only letters, numbers, dot (.), dash (-), and underscore (_).')
 
-    new_config = project.getConfigFromOptions(args, exclude=['--help', '-h', '--system', '--default'])
+    new_config = getConfigFromOptions(args, exclude=['--help', '-h', '--system', '--default'])
     config = old.config.copy()
     config.update(new_config)
     LOGGER.info(util.pformatDict(dict([i for i in config.items() if i[1]]), title='New project settings'))
@@ -121,7 +124,7 @@ def main(argv):
     config['name'] = proj_name
     LOGGER.debug('Project config: %s' % pprint.pformat(config))
     
-    REGISTRY.addProject(config, default, system)
+    getRegistry().addProject(config, default, system)
     LOGGER.info('Created a new project named %r.' % proj_name)    
     if not default:
         LOGGER.info("NOTE: The new project has not been set as default.  "\

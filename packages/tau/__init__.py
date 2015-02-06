@@ -35,11 +35,11 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+# System modules
 import os
 import sys
 import logging
 import textwrap
-import tau
 
 # Exit codes
 EXIT_FAILURE = -100
@@ -48,11 +48,11 @@ EXIT_SUCCESS = 0
 
 # Tau source code root directory
 try:
-    TAU_MASTER_SRC_DIR = os.environ['TAU_MASTER_SRC_DIR']
+    __TAU_HOME__ = os.environ['__TAU_HOME__']
 except KeyError:
     print '!'*80
     print '!'
-    print '! CRITICAL ERROR: TAU_MASTER_SRC_DIR environment variable not set.'
+    print '! CRITICAL ERROR: __TAU_HOME__ environment variable not set.'
     print '!'
     print '!'*80
     exit(EXIT_FAILURE)
@@ -67,7 +67,7 @@ except KeyError:
 HELP_CONTACT = '<support@paratools.com>'
 
 # Logging level
-LOG_LEVEL = 'INFO'
+LOG_LEVEL = 'DEBUG'
 
 #Expected Python version
 MINIMUM_PYTHON_VERSION = (2, 7)
@@ -82,7 +82,7 @@ INCLUDE_PATH = [os.path.realpath('.')]
 USER_PREFIX = os.path.join(os.path.expanduser('~'), '.tau')
 
 # System-level TAU files
-SYSTEM_PREFIX = os.path.realpath(os.path.join(TAU_MASTER_SRC_DIR, '..', 'installed'))
+SYSTEM_PREFIX = os.path.realpath(os.path.join(__TAU_HOME__, '.system'))
 
 # TODO: Probably shouldn't be here...
 DEFAULT_TAU_COMPILER_OPTIONS = ['-optRevert']
@@ -135,7 +135,7 @@ class LogFormatter(logging.Formatter, object):
         elif record.levelno == logging.DEBUG:
             return self.debug_msg(record)
         else:
-            raise tau.error.InternalError(record.levelno, 'Unknown record level (name: %s)' % record.levelname)
+            raise RuntimeError('Unknown record level (name: %s)' % record.levelname)
 
 _loggers = set()
 _handler = logging.StreamHandler(sys.stdout)

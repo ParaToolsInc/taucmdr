@@ -35,17 +35,21 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+# System modules
 import sys
 import string
-import tau
 import pprint
-from tau import util, project
-from tau import EXIT_SUCCESS, TAU_LINE_MARKER
-from tau.registry import REGISTRY
-from tau.docopt import docopt
-from tau.error import ProjectNameError
+from docopt import docopt
 
-LOGGER = tau.getLogger(__name__)
+# TAU modules
+from tau import getLogger, TAU_LINE_MARKER, EXIT_SUCCESS
+from util import pformatDict
+from project import getProjectOptions, getConfigFromOptions
+from error import ProjectNameError
+from registry import getRegistry
+
+
+LOGGER = getLogger(__name__)
 
 SHORT_DESCRIPTION = "Create a new TAU project configuration."
 
@@ -69,8 +73,8 @@ HELP = """
 
 def getUsage():
     return USAGE % {'command': COMMAND,
-                    'system_path': REGISTRY.system.prefix,
-                    'project_options': project.getProjectOptions(show_defaults=True)}
+                    'system_path': getRegistry().system.prefix,
+                    'project_options': getProjectOptions(show_defaults=True)}
 
 def getHelp():
     return HELP
@@ -98,8 +102,8 @@ def main(argv):
         raise ProjectNameError('%r is not a valid project name.' % proj_name,
                                'Use only letters, numbers, dot (.), dash (-), and underscore (_).')
 
-    config = project.getConfigFromOptions(args, exclude=['--help', '-h', '--system', '--default'])
-    LOGGER.info(util.pformatDict(dict([i for i in config.items() if i[1]]), title='New project settings'))
+    config = getConfigFromOptions(args, exclude=['--help', '-h', '--system', '--default'])
+    LOGGER.info(pformatDict(dict([i for i in config.items() if i[1]]), title='New project settings'))
     
     prompt = '%sEnter project name> ' % TAU_LINE_MARKER
     while not proj_name:
@@ -112,6 +116,6 @@ def main(argv):
     config['name'] = proj_name
     LOGGER.debug('Project config: %s' % pprint.pformat(config))
     
-    REGISTRY.addProject(config, default, system)
+    getRegistry().addProject(config, default, system)
     LOGGER.info('Created a new project named %r.' % proj_name)
     return EXIT_SUCCESS

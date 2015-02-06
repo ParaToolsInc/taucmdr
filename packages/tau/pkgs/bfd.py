@@ -35,16 +35,21 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+# System modules
 import os
 import sys
 import subprocess
-import tau
 import shutil
-from tau import util
-from tau.pkgs import Package
-from tau.error import InternalError, PackageError, ConfigurationError
 
-LOGGER = tau.getLogger(__name__)
+# TAU modules
+from tau import getLogger
+from util import download, extract
+from pkgs import Package
+from error import InternalError, PackageError, ConfigurationError
+from registry import getRegistry
+
+
+LOGGER = getLogger(__name__)
 
 
 class BfdPackage(Package):
@@ -56,9 +61,9 @@ class BfdPackage(Package):
 
     def __init__(self, project):
         super(BfdPackage, self).__init__(project)
-        self.system_prefix = os.path.join(tau.registry.REGISTRY.system.prefix, 
+        self.system_prefix = os.path.join(getRegistry().system.prefix, 
                                           self.project.target_prefix, 'bfd')
-        self.user_prefix =  os.path.join(tau.registry.REGISTRY.user.prefix, 
+        self.user_prefix =  os.path.join(getRegistry().user.prefix, 
                                          self.project.target_prefix, 'bfd')
 
     def install(self, stdout=sys.stdout, stderr=sys.stderr):
@@ -74,9 +79,9 @@ class BfdPackage(Package):
                 return
         
         # Try to install systemwide
-        if tau.registry.REGISTRY.system.isWritable():
+        if getRegistry().system.isWritable():
             self.prefix = self.system_prefix
-        elif tau.registry.REGISTRY.user.isWritable():
+        elif getRegistry().user.isWritable():
             self.prefix = self.user_prefix
         else:
             raise ConfigurationError("User-level TAU installation at %r is not writable" % self.user_prefix,
@@ -161,7 +166,7 @@ class BfdPackage(Package):
             dst = os.path.join(source_prefix, os.path.basename(src))
             if src.startswith('http') or src.startswith('ftp'):
                 try:
-                    util.download(src, dst, stdout, stderr)
+                    download(src, dst, stdout, stderr)
                 except IOError:
                     continue
             elif src.startswith('file'):
@@ -171,7 +176,7 @@ class BfdPackage(Package):
                     continue
             else:
                 raise InternalError("Don't know how to acquire source file %r" % src)
-            src_path = util.extract(dst, source_prefix)
+            src_path = extract(dst, source_prefix)
             os.remove(dst)
             return src_path
         raise PackageError('Failed to get source code')

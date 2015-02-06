@@ -35,17 +35,19 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+# System modules
 import os
 import sys
 import re
 import subprocess
 import errno
-import tau
 import urllib
 import tarfile
 
+# TAU modules
+from tau import getLogger
 
-LOGGER = tau.getLogger(__name__)
+LOGGER = getLogger(__name__)
 
 
 def mkdirp(path):
@@ -119,42 +121,13 @@ def extract(tgz, dest):
     return full_dest
 
 
-_tauVersion = None
-def getTauVersion():
-    """
-    Opens TAU header files to get the TAU version
-    """
-    def _parseHeadersForVersion(header_files):
-        pattern = re.compile('#define\s+TAU_VERSION\s+"(.*)"')
-        for hfile in header_files:
-            try:
-                with open('%s/include/%s' % (tau.TAU_MASTER_SRC_DIR, hfile), 'r') as tau_h:
-                    for line in tau_h:
-                        match = pattern.match(line) 
-                        if match:
-                            return match.group(1)
-            except IOError:
-                continue
-        return None
-
-    global _tauVersion
-    if not _tauVersion:
-        _tauVersion = _parseHeadersForVersion(['TAU.h', 'TAU.h.default'])
-        if not _tauVersion:
-            _tauVersion = '(unknown)'
-    return _tauVersion
-
-
-_detectedTarget = None
 def detectDefaultTarget():
     """
     Use TAU's archfind script to detect the target architecture
     """
-    global _detectedTarget
-    if not _detectedTarget:
-        cmd = os.path.join(tau.TAU_MASTER_SRC_DIR, 'utils', 'archfind')
-        _detectedTarget = subprocess.check_output(cmd).strip()
-    return _detectedTarget
+#     cmd = os.path.join(tau.TAU_MASTER_SRC_DIR, 'utils', 'archfind')
+#     return subprocess.check_output(cmd).strip()
+    return "x86_64"
 
 def pformatDict(d, title=None, empty_msg='No items.', indent=0):
     if title:

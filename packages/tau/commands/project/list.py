@@ -35,13 +35,16 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-import tau
-from tau import util
-from tau.registry import REGISTRY
-from tau.error import ProjectNameError
-from tau.docopt import docopt
+# System modules
+from docopt import docopt
 
-LOGGER = tau.getLogger(__name__)
+# TAU modules
+from tau import getLogger
+from util import pformatList
+from error import ProjectNameError
+from registry import getRegistry
+
+LOGGER = getLogger(__name__)
 
 SHORT_DESCRIPTION = "Show TAU project information."
 
@@ -62,7 +65,7 @@ Help page to be written.
 
 def getUsage():
     return USAGE % {'command': COMMAND,
-                    'system_path': REGISTRY.system.prefix}
+                    'system_path': getRegistry().system.prefix}
 
 def getHelp():
     return HELP
@@ -80,7 +83,7 @@ def main(argv):
     system = args['--system']
     name = args['<name>']
     if name:
-        projects = REGISTRY.system.projects if system else REGISTRY.user.projects
+        projects = getRegistry().system.projects if system else getRegistry().user.projects
         flags = ' --system' if system else ''
         hint = "Try 'tau project list' to see all projects or\n"\
                "'tau project create%(flags)s --name=%(name)s' to create a "\
@@ -90,10 +93,10 @@ def main(argv):
         except KeyError:
             raise ProjectNameError('There is no project named %r' % name, hint)
     else:
-        selected = REGISTRY.getSelectedProject()
-        sel_msg = util.pformatList([selected], empty_msg='No selected project', 
+        selected = getRegistry().getSelectedProject()
+        sel_msg = pformatList([selected], empty_msg='No selected project', 
                                    title='Selected Project (%s)' % selected['name'])
-        lst_msg = REGISTRY.getProjectListing() 
+        lst_msg = getRegistry().getProjectListing() 
         LOGGER.info('%s\n%s' % (lst_msg, sel_msg))
 
     return 0

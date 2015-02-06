@@ -35,12 +35,15 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+# System modules
 import sys
-import tau
-from tau import commands
-from tau.docopt import docopt
 
-LOGGER = tau.getLogger(__name__)
+# TAU modules
+from tau import getLogger
+from commands import getSubcommands, executeCommand
+from docopt import docopt
+
+LOGGER = getLogger(__name__)
 
 SHORT_DESCRIPTION = "Create and manage TAU projects."
 
@@ -48,7 +51,7 @@ COMMAND = ' '.join(['tau'] + (__name__.split('.')[2:]))
 
 USAGE = """
 Usage:
-  %(command)s [<subcommand>] [<args>...]
+  %(command)s <subcommand> [<args>...]
   %(command)s -h | --help
 
 Subcommands:
@@ -61,7 +64,7 @@ HELP = """
 
 def getUsage():
     return USAGE % {'command': COMMAND,
-                    'command_descr': commands.getSubcommands(__name__)}
+                    'command_descr': getSubcommands(__name__)}
 
 def getHelp():
     return HELP
@@ -78,9 +81,6 @@ def main(argv):
     
     cmd = args['<subcommand>']
     cmd_args = args['<args>']
-    if not cmd:
-        # Show projects if no subcommand given
-        cmd = 'list'
 
     # Check for -h | --help
     idx = cmd.find('-h')
@@ -89,4 +89,4 @@ def main(argv):
         return 0
 
     # Execute as a tau command
-    return commands.executeCommand(['project', cmd], cmd_args)
+    return executeCommand(['project', cmd], cmd_args)

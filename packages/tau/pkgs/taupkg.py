@@ -35,19 +35,22 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+# System modules
 import os
 import sys
 import shutil
 import fnmatch
 import subprocess
-import tau
-from tau import TAU_MASTER_SRC_DIR
-from tau.pkgs import Package
-from tau.pkgs.bfd import BfdPackage
-from tau.pkgs.pdt import PdtPackage
-from tau.error import PackageError
 
-LOGGER = tau.getLogger(__name__)
+# TAU modules
+from tau import getLogger
+from registry import getRegistry
+from pkgs import Package
+from bfd import BfdPackage
+from pdt import PdtPackage
+from error import PackageError
+
+LOGGER = getLogger(__name__)
 
 
 class TauPackage(Package):
@@ -55,32 +58,63 @@ class TauPackage(Package):
     TAU package
     """
     
+    SOURCES = ['http://tau.uoregon.edu/tau.tgz']
+    
     def __init__(self, project):
         super(TauPackage, self).__init__(project)
         keys = ['bfd', 'cuda', 'dyninst', 'mpi', 'openmp', 'papi', 'pdt', 'pthreads']
         name = '_'.join(sorted([k.lower() for k in keys if self.project.config.get(k)]))
-        self.prefix = os.path.join(self.project.prefix, 'tau', name)
+        self.system_prefix = os.path.join(getRegistry().system.prefix, 
+                                  self.project.target_prefix, 'tau')
+        self.user_prefix =  os.path.join(getRegistry().user.prefix, 
+                                         self.project.target_prefix, 'tau')
         self.bfd = BfdPackage(self.project)
         self.pdt = PdtPackage(self.project)
         self.unwind = None # FIXME: UnwindPackage
         self.papi = None
         self.dyninst = None
-        self.cuda = None       
+        self.cuda = None
 
     def install(self, stdout=sys.stdout, stderr=sys.stderr):
+        config = self.project.config
+        tau_opt = config['tau']
+
         # Install dependencies
         if self.bfd:
             self.bfd.install(stdout, stderr)
         if self.pdt:
             self.pdt.install(stdout, stderr)
         
-        if os.path.isdir(self.prefix):
-            LOGGER.debug("TAU already installed at %r" % self.prefix)
-            return
+        for loc in [self.system_prefix, self.user_prefix]:
+            if os.path.isdir(loc):
+                LOGGER.info("Using TAU installation found at %s" % loc)
+                self.prefix = loc
+                return
+
+        # Try to install systemwide
+        if getRegistry().system.isWritable():
+            self.prefix = self.system_prefix
+        elif getRegistry().user.isWritable():
+            self.prefix = self.user_prefix
+        else:
+            raise ConfigurationError("User-level TAU installation at %r is not writable" % self.user_prefix,
+                                     "Check the file permissions and try again") 
         LOGGER.info('Installing TAU at %r' % self.prefix)
 
-        # Configure the source code for this project
-        srcdir = self._getSource(TAU_MASTER_SRC_DIR)
+        if tau_opt.lower() == 'download':
+            src = self.SOURCES
+        elif os.path.isdir(tau_opt):
+            LOGGER.debug('Assuming user-supplied TAU at %r is properly installed' % tau_opt)
+            return
+        elif os.path.isfile(tau_opt):
+            src = ['file://'+tau_opt]
+            LOGGER.debug('Will build TAU from user-specified file %r' % tau_opt)
+        else:
+            raise PackageError('Invalid TAU directory %r' % tau_opt, 
+                               'Verify that the directory exists and that you have correct permissions to access it.')
+
+        # Configure the source code for this configuration
+        srcdir = self._getSource(src, stdout, stderr)
         cmd = self._getConfigureCommand()
         LOGGER.debug('Creating configure subprocess in %r: %r' % (srcdir, cmd))
         LOGGER.info('Configuring TAU...\n%s' % ' '.join(cmd))
@@ -107,33 +141,29 @@ class TauPackage(Package):
         shutil.rmtree(self.prefix)
         LOGGER.info('TAU uninstalled.')
 
-    def _getSource(self, source):
+    def _getSource(self, sources, stdout, stderr):
         """
-        Makes a fresh clone of the TAU source code
+        Downloads or copies TAU source code
         """
         source_prefix = os.path.join(self.project.registry.prefix, 'src')
-        dest = os.path.join(source_prefix, 'tau')
-        # Don't copy if the source already exists
-        if os.path.exists(dest) and os.path.isdir(dest):
-            LOGGER.debug('TAU source code directory %r already exists.' % dest)
-        else:
-            def ignore(path, names):
-                globs = ['*.o', '*.a', '*.so', '*.dylib', '*.pyc', 'a.out', 
-                         '.all_configs', '.last_config', '.project', '.cproject',
-                         '.git', '.gitignore', '.ptp-sync', '.pydevproject']
-                # Ignore bindirs in the top level directory
-                if path == source:
-                    bindirs = ['x86_64', 'bgl', 'bgp', 'bgq', 'craycnl', 'apple']
-                    globs.extend(bindirs)
-                # Build set of ignored files
-                ignored_names = []
-                for pattern in globs:
-                    ignored_names.extend(fnmatch.filter(names, pattern))
-                return set(ignored_names)
-            LOGGER.debug('Copying from %r to %r' % (source, dest))
-            LOGGER.info('Creating new copy of TAU at %r.  This will only be done once.' % dest)
-            shutil.copytree(source, dest, ignore=ignore)
-        return dest
+        for src in sources:
+            dst = os.path.join(source_prefix, os.path.basename(src))
+            if src.startswith('http://') or src.startswith('ftp://'):
+                try:
+                    util.download(src, dst, stdout, stderr)
+                except:
+                    continue
+            elif src.startswith('file://'):
+                try:
+                    shutil.copy(src, dst)
+                except:
+                    continue
+            else:
+                raise InternalError("Don't know how to acquire source file %r" % src)
+            src_path = util.extract(dst, source_prefix)
+            os.remove(dst)
+            return src_path
+        raise PackageError('Failed to get source code')
 
     def _translateConfigureArg(self, key, val):
         """

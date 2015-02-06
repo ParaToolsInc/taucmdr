@@ -35,17 +35,20 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+# System modules
 import os
 import sys
 import subprocess
-import tau
-from tau import commands
-from tau.docopt import docopt
-from tau.registry import REGISTRY
+import docopt
 from pkgutil import walk_packages
 from textwrap import dedent
 
-LOGGER = tau.getLogger(__name__)
+# TAU modules
+from tau import getLogger
+from commands import getSubcommands, executeCommand
+from registry import getRegistry
+
+LOGGER = getLogger(__name__)
 
 SHORT_DESCRIPTION = "Instrument programs during compilation and/or linking."
 
@@ -104,7 +107,7 @@ def getUsage():
     parts = ['  %s  %s' % ('{:<15}'.format(comp.cmd), comp.short_descr) for comp in SIMPLE_COMPILERS.itervalues()]
     parts.sort()
     return USAGE % {'simple_descr': '\n'.join(parts), 
-                    'command_descr': commands.getSubcommands(__name__)}
+                    'command_descr': getSubcommands(__name__)}
 
 def getHelp():
     return HELP
@@ -123,7 +126,7 @@ def simpleCompile(compiler, argv):
     cmd_args = argv[2:]
     
     # Get selected project
-    proj = REGISTRY.getSelectedProject()
+    proj = getRegistry().getSelectedProject()
 
     # Check project compatibility
     if not proj.supportsCompiler(compiler):
@@ -177,4 +180,4 @@ def main(argv):
         return simpleCompile(cmd, argv)
 
     # Execute as a tau command
-    return commands.executeCommand(['build', cmd], cmd_args)
+    return executeCommand(['build', cmd], cmd_args)

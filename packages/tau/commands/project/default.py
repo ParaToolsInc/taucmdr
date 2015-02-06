@@ -35,13 +35,16 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-import tau
-from tau import project
-from tau.registry import REGISTRY
-from tau.docopt import docopt
+# System modules
+from docopt import docopt
+
+# TAU modules
+from tau import getLogger, EXIT_FAILURE
+from project import getProjectOptions, getConfigFromOptions
+from registry import getRegistry
 
 
-LOGGER = tau.getLogger(__name__)
+LOGGER = getLogger(__name__)
 
 SHORT_DESCRIPTION = "Set default project and configure defaults for new TAU projects."
 
@@ -67,8 +70,8 @@ HELP = """
 
 def getUsage():
     return USAGE % {'command': COMMAND,
-                    'system_path': REGISTRY.system.prefix,
-                    'project_options': project.getProjectOptions(show_defaults=False)}
+                    'system_path': getRegistry().system.prefix,
+                    'project_options': getProjectOptions(show_defaults=False)}
 
 def getHelp():
     return HELP
@@ -87,17 +90,17 @@ def main(argv):
     if name:
         # Set default project
         try:
-            REGISTRY.setDefaultProject(name)
+            getRegistry().setDefaultProject(name)
         except KeyError:
             LOGGER.error("No project named %r exists.  See 'tau project list' for project names." % name)
-            return tau.EXIT_FAILURE
-        LOGGER.info(REGISTRY.getProjectListing())
+            return EXIT_FAILURE
+        LOGGER.info(getRegistry().getProjectListing())
     else:
         # Set new project defaults
-        config = project.getConfigFromOptions(args, apply_defaults=False)
+        config = getConfigFromOptions(args, apply_defaults=False)
         if len(config):
             LOGGER.debug('Project config: %s' % config)
-            REGISTRY.updateDefaultValues(config, system)
-            REGISTRY.save()
-        LOGGER.info(REGISTRY.getDefaultValueListing())
+            getRegistry().updateDefaultValues(config, system)
+            getRegistry().save()
+        LOGGER.info(getRegistry().getDefaultValueListing())
     return 0

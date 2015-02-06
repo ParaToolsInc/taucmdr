@@ -35,17 +35,20 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+# System modules
 import os
 import sys
 import subprocess
-import tau
 import shutil
-from tau import util
-from tau.pkgs import Package
-from tau.error import InternalError, PackageError, ConfigurationError
 
+# TAU modules
+from tau import getLogger
+from util import download, extract
+from pkgs import Package
+from error import InternalError, PackageError, ConfigurationError
+from registry import getRegistry
 
-LOGGER = tau.getLogger(__name__)
+LOGGER = getLogger(__name__)
 
 
 class PdtPackage(Package):
@@ -57,9 +60,9 @@ class PdtPackage(Package):
 
     def __init__(self, project):
         super(PdtPackage, self).__init__(project)
-        self.system_prefix = os.path.join(tau.registry.REGISTRY.system.prefix, 
+        self.system_prefix = os.path.join(getRegistry().system.prefix, 
                                           self.project.target_prefix, 'pdt')
-        self.user_prefix =  os.path.join(tau.registry.REGISTRY.user.prefix, 
+        self.user_prefix =  os.path.join(getRegistry().user.prefix, 
                                          self.project.target_prefix, 'pdt')
 
     def install(self, stdout=sys.stdout, stderr=sys.stderr):
@@ -75,9 +78,9 @@ class PdtPackage(Package):
                 return
         
         # Try to install systemwide
-        if tau.registry.REGISTRY.system.isWritable():
+        if getRegistry().system.isWritable():
             self.prefix = self.system_prefix
-        elif tau.registry.REGISTRY.user.isWritable():
+        elif getRegistry().user.isWritable():
             self.prefix = self.user_prefix
         else:
             raise ConfigurationError("User-level TAU installation at %r is not writable" % self.user_prefix,
@@ -90,7 +93,7 @@ class PdtPackage(Package):
             LOGGER.debug('Assuming user-supplied PDT at %r is properly installed' % pdt)
             return
         elif os.path.isfile(pdt):
-            src = [pdt]
+            src = ['file://'+pdt]
             LOGGER.debug('Will build PDT from user-specified file %r' % pdt)
         else:
             raise PackageError('Invalid PDT directory %r' % pdt, 
@@ -143,24 +146,24 @@ class PdtPackage(Package):
 
     def _getSource(self, sources, stdout, stderr):
         """
-        Downloads or copies BFD source code
+        Downloads or copies PDT source code
         """
         source_prefix = os.path.join(self.project.registry.prefix, 'src')
         for src in sources:
             dst = os.path.join(source_prefix, os.path.basename(src))
-            if src.startswith('http') or src.startswith('ftp'):
+            if src.startswith('http://') or src.startswith('ftp://'):
                 try:
-                    util.download(src, dst, stdout, stderr)
+                    download(src, dst, stdout, stderr)
                 except:
                     continue
-            elif src.startswith('file'):
+            elif src.startswith('file://'):
                 try:
                     shutil.copy(src, dst)
                 except:
                     continue
             else:
                 raise InternalError("Don't know how to acquire source file %r" % src)
-            src_path = util.extract(dst, source_prefix)
+            src_path = extract(dst, source_prefix)
             os.remove(dst)
             return src_path
         raise PackageError('Failed to get source code')

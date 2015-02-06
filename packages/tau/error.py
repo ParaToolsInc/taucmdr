@@ -35,10 +35,14 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+# System modules
 import sys
 import traceback
+
+# TAU modules
 from tau import getLogger, LOG_LEVEL
 from tau import HELP_CONTACT, EXIT_FAILURE, EXIT_WARNING 
+
 
 LOGGER = getLogger(__name__)
 

@@ -35,13 +35,17 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+# System modules
 import os
 import sys
-import tau
-from tau.error import UnknownCommandError
+
+# TAU modules
+from tau import getLogger, HELP_CONTACT
+from error import UnknownCommandError
 from docopt import docopt
 
-LOGGER = tau.getLogger(__name__)
+
+LOGGER = getLogger(__name__)
 
 SHORT_DESCRIPTION = "Get help with a command."
 
@@ -57,7 +61,7 @@ HELP = """
 Prints the help page for a specified command.
 """
 
-_GENERIC_HELP = "See 'tau --help' or contact %s for assistance" % tau.HELP_CONTACT
+_GENERIC_HELP = "See 'tau --help' or contact %s for assistance" % HELP_CONTACT
 
 _KNOWN_FILES = {'makefile': ("makefile script", "See 'tau make --help' for help building with make"),
                 'a.out': ("binary executable", "See 'tau run --help' for help profile this file"),
