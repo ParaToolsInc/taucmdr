@@ -449,15 +449,18 @@ def parse_argv(tokens, options, options_first=False):
     return parsed
 
 
-def parse_defaults(doc):
+def parse_defaults(doc, enable_no_option):
     defaults = []
     for s in parse_section('options:', doc):
         # FIXME corner case "bla: options: --foo"
         _, _, s = s.partition(':')  # get rid of "options:"
-        split = re.split('\n[ \t]*(-\S+?)', '\n' + s)[1:]
+        split = re.split('\n *(-\S+?)', '\n' + s)[1:]
         split = [s1 + s2 for s1, s2 in zip(split[::2], split[1::2])]
         options = [Option.parse(s) for s in split if s.startswith('-')]
         defaults += options
+    if enable_no_option:
+        defaults += [Option(o.short, '--no-%s' % o.long[2:], 0, False) 
+                     for o in defaults]
     return defaults
 
 
@@ -487,7 +490,8 @@ class Dict(dict):
         return '{%s}' % ',\n '.join('%r: %r' % i for i in sorted(self.items()))
 
 
-def docopt(doc, argv=None, help=True, version=None, options_first=False):
+def docopt(doc, argv=None, help=True, version=None, 
+           options_first=False, enable_no_option=False):
     """Parse `argv` based on command-line interface described in `doc`.
 
     `docopt` creates your command-line interface based on its
@@ -511,6 +515,8 @@ def docopt(doc, argv=None, help=True, version=None, options_first=False):
     options_first : bool (default: False)
         Set to True to require options precede positional arguments,
         i.e. to forbid options and positional arguments intermix.
+    enable_no_option : bool (default: False)
+        For every option add a corresponding '--no-<option>'
 
     Returns
     -------
@@ -559,7 +565,8 @@ def docopt(doc, argv=None, help=True, version=None, options_first=False):
         raise DocoptLanguageError('More than one "usage:" (case-insensitive).')
     DocoptExit.usage = usage_sections[0]
 
-    options = parse_defaults(doc)
+    options = parse_defaults(doc, enable_no_option)
+
     pattern = parse_pattern(formal_usage(DocoptExit.usage), options)
     # [default] syntax for argument is disabled
     #for a in pattern.flat(Argument):
@@ -569,7 +576,7 @@ def docopt(doc, argv=None, help=True, version=None, options_first=False):
     argv = parse_argv(Tokens(argv), list(options), options_first)
     pattern_options = set(pattern.flat(Option))
     for options_shortcut in pattern.flat(OptionsShortcut):
-        doc_options = parse_defaults(doc)
+        doc_options = parse_defaults(doc, enable_no_option)
         options_shortcut.children = list(set(doc_options) - pattern_options)
         #if any_options:
         #    options_shortcut.children += [Option(o.short, o.long, o.argcount)

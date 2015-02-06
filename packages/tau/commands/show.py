@@ -35,17 +35,21 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+# System modules
 import sys
 import glob
 import re
 import subprocess
-import tau
 from threading import Thread
-from tau.error import MissingFeatureError
-from tau.docopt import docopt
-from tau.registry import REGISTRY
+from docopt import docopt
 
-LOGGER = tau.getLogger(__name__)
+# TAU modules
+from tau import getLogger, EXIT_FAILURE
+from error import MissingFeatureError
+from registry import getRegistry
+
+
+LOGGER = getLogger(__name__)
 
 SHORT_DESCRIPTION = "Display application profile or trace data."
 
@@ -101,10 +105,10 @@ def main(argv):
     LOGGER.debug('Arguments: %s' % args)
     
     # Check project compatibility
-    proj = REGISTRY.getSelectedProject()
+    proj = getRegistry().getSelectedProject()
     if not proj:
         LOGGER.info("A TAU project has not been selected.  See 'tau project --help'.")
-        return tau.EXIT_FAILURE
+        return EXIT_FAILURE
     LOGGER.info('Using TAU project %r' % proj.getName())
     
     # Read files from PWD if no files given

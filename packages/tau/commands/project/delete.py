@@ -35,12 +35,16 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-import tau
-from tau.registry import REGISTRY
-from tau.error import ProjectNameError, InternalError
-from tau.docopt import docopt
+# System modules
+from docopt import docopt
 
-LOGGER = tau.getLogger(__name__)
+# TAU modules
+from tau import getLogger, EXIT_FAILURE
+from error import ProjectNameError, InternalError
+from registry import getRegistry
+
+
+LOGGER = getLogger(__name__)
 
 SHORT_DESCRIPTION = "Delete a TAU project configuration."
 
@@ -63,7 +67,7 @@ HELP = """
 
 def getUsage():
     return USAGE % {'command': COMMAND,
-                    'system_path': REGISTRY.system.prefix}
+                    'system_path': getRegistry().system.prefix}
 
 def getHelp():
     return HELP % {'command': COMMAND}
@@ -81,16 +85,16 @@ def main(argv):
     proj_name = args['<name>']
     
     try:
-        REGISTRY.deleteProject(proj_name, system)
+        getRegistry().deleteProject(proj_name, system)
     except ProjectNameError:
-        if system and REGISTRY.isUserProject(proj_name):
+        if system and getRegistry().isUserProject(proj_name):
             LOGGER.error("Project %r is a user project.  Try '%s %s'" % 
                          (proj_name, COMMAND, proj_name))
-        elif not system and REGISTRY.isSystemProject(proj_name):
+        elif not system and getRegistry().isSystemProject(proj_name):
             LOGGER.error("Project %r is a system project.  Try '%s --system %s'" % 
                          (proj_name, COMMAND, proj_name))
         else:
             LOGGER.error("There is no project named %r. See 'tau project list' for project names." % proj_name)
-        return tau.EXIT_FAILURE
+        return EXIT_FAILURE
     LOGGER.info("Project %r deleted." % proj_name)
     return 0

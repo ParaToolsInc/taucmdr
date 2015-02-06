@@ -35,16 +35,21 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+# System modules
 import os
 import sys
 import glob
-import tau
-from tau import util
-from tau.error import InternalError, ConfigurationError
-from tau.pkgs.tau import TauPackage
+import errno
+import pickle
 
+# TAU modules
+from tau import getLogger, HELP_CONTACT, USER_PREFIX, SYSTEM_PREFIX, LOG_LEVEL, DEFAULT_TAU_COMPILER_OPTIONS
+from util import detectDefaultTarget, pformatDict, pformatList, mkdirp
+from error import ConfigurationError, InternalError, ProjectNameError, RegistryError
+from registry import getRegistry
 
-LOGGER = tau.getLogger(__name__)
+LOGGER = getLogger(__name__)
+
 
 _PROJECT_DOCOPT = """
 Architecture Options:
@@ -109,7 +114,7 @@ Hints:
 # False: the is of any kind and is disabled
 # None: the option has no default 
 _DEFAULTS = {'name': None,
-             'target-arch': util.detectDefaultTarget(),
+             'target-arch': detectDefaultTarget(),
              'cc': 'gcc',
              'c++': 'g++',
              'fortran': 'gfortran',
@@ -145,7 +150,7 @@ def _getDefault(key):
     Return default value
     """
     try:
-        default = tau.registry.REGISTRY.getDefaultValue(key)
+        default = getRegistry().getDefaultValue(key)
     except KeyError:
         default = _DEFAULTS[key]
     return default
@@ -220,6 +225,7 @@ class Project(object):
     TODO: DOCS
     """
     def __init__(self, config, registry):
+        from tau.pkgs.taupkg import TauPackage
         self.config = config
         self.registry = registry
         self.refresh = True
@@ -228,7 +234,7 @@ class Project(object):
         self.tau = TauPackage(self)
 
     def __str__(self):
-        return util.pformatDict(self.config)
+        return pformatDict(self.config)
     
     def __len__(self):
         return len(self.config)
@@ -295,7 +301,7 @@ class Project(object):
  
         # Control build output
         devnull = None
-        if tau.LOG_LEVEL == 'DEBUG':
+        if LOG_LEVEL == 'DEBUG':
             stdout = sys.stdout
             stderr = sys.stderr
         else:
@@ -309,7 +315,7 @@ class Project(object):
         if devnull:
             devnull.close() 
         self.refresh = False
-        tau.registry.REGISTRY.save()
+        getRegistry().save()
 
     def getEnvironment(self):
         """
@@ -358,11 +364,11 @@ class Project(object):
         """
         env = self.getEnvironment()
         options = []
-        if tau.LOG_LEVEL == 'DEBUG':
+        if LOG_LEVEL == 'DEBUG':
             options.append('-optVerbose')
         else:
             options.append('-optQuiet')
-        env['TAU_OPTIONS'] = ' '.join(tau.DEFAULT_TAU_COMPILER_OPTIONS + options)
+        env['TAU_OPTIONS'] = ' '.join(DEFAULT_TAU_COMPILER_OPTIONS + options)
         env['TAU_MAKEFILE'] = self.getTauMakefile()
         return env
 
@@ -435,4 +441,3 @@ class Project(object):
             if key in parts and val:
                 flags.append(parts[key])
         return flags
-

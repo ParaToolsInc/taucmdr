@@ -35,13 +35,17 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+# System modules
 import sys
 import subprocess
-import tau
-from tau.docopt import docopt
-from tau.registry import REGISTRY
+from docopt import docopt
 
-LOGGER = tau.getLogger(__name__)
+# TAU modules
+from tau import getLogger
+from registry import getRegistry
+
+LOGGER = getLogger(__name__)
+
 
 SHORT_DESCRIPTION = "Build your application with 'make' and the TAU compilers."
 
@@ -71,7 +75,7 @@ def main(argv):
     LOGGER.debug('Arguments: %s' % args)
     
     # Check project compatibility
-    proj = REGISTRY.getSelectedProject()
+    proj = getRegistry().getSelectedProject()
         
     # Compile the project if needed
     proj.compile()

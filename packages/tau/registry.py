@@ -35,17 +35,18 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+# System modules
 import os
 import sys
 import errno
 import pickle
-import tau
-from tau import util
-from tau import HELP_CONTACT, USER_PREFIX, SYSTEM_PREFIX
-from tau.error import ConfigurationError, InternalError
-from tau.error import ProjectNameError, RegistryError
 
-LOGGER = tau.getLogger(__name__)
+# TAU modules
+from tau import getLogger, HELP_CONTACT, USER_PREFIX, SYSTEM_PREFIX
+from util import mkdirp, pformatDict, pformatList
+from error import ConfigurationError, InternalError, ProjectNameError, RegistryError
+
+LOGGER = getLogger(__name__)
 
 
 class Registry(object):
@@ -56,7 +57,7 @@ class Registry(object):
         self.defaults = {}
         self.projects = {}
         self._registry_file = os.path.join(prefix, 'registry')
-        
+
     def load(self):
         if not os.path.exists(self._registry_file):
             LOGGER.debug("Registry file %r doesn't exist yet." % self._registry_file)
@@ -66,14 +67,11 @@ class Registry(object):
                     self.__dict__.update(pickle.load(fp))
             except IOError:
                 raise RegistryError('Registry file %r inaccessable or corrupt.' % self._registry_file)
-            except:
-                raise RegistryError('%r raised while loading registry file %r.' % (sys.exc_info()[1], self._registry_file),
-                                    'The registry may be corrupt.  Contact %s for help.' % HELP_CONTACT)
             else:
                 LOGGER.debug('Registry loaded from %r' % self._registry_file)
             
     def save(self):
-        util.mkdirp(self.prefix)
+        mkdirp(self.prefix)
         file_path = os.path.join(self.prefix, 'registry')
         with open(file_path, 'wb') as fp:
             pickle.dump(self.__dict__, fp)
@@ -113,12 +111,13 @@ class GlobalRegistry(object):
     TODO: Docs
     """
     def __init__(self):
+        LOGGER.debug('********New global registry instance')
         self._populated = False
         self._selected_name = None
         self.user = Registry(USER_PREFIX)
         self.system = Registry(SYSTEM_PREFIX)
         self.load()
-        
+
     def __len__(self):
         """The number of projects in the registry"""
         return len(self.user.projects) + len(self.system.projects)
@@ -215,9 +214,10 @@ class GlobalRegistry(object):
         """
         Create the project object and update the registry
         """
+        from tau.project import Project
         LOGGER.debug('Adding project: %s' % config)
         reg = self.system if system else self.user
-        proj = tau.project.Project(config, reg)
+        proj = Project(config, reg)
         proj_name = proj.getName()
         
         if proj_name in reg.projects:
@@ -261,9 +261,9 @@ class GlobalRegistry(object):
                  for name in self.user.projects.iterkeys()]
         sproj = ['%s [default]' % name if name == self.system.default_name else name
                  for name in self.system.projects.iterkeys()]
-        ulisting = util.pformatList(uproj, empty_msg=empty_msg, 
+        ulisting = pformatList(uproj, empty_msg=empty_msg, 
                                     title='User Projects (%s)' % self.user.prefix)
-        slisting = util.pformatList(sproj, empty_msg=empty_msg, 
+        slisting = pformatList(sproj, empty_msg=empty_msg, 
                                     title='System Projects (%s)' % self.system.prefix)
         return '\n'.join(['', slisting, '', ulisting, ''])
     
@@ -289,16 +289,20 @@ class GlobalRegistry(object):
         empty_msg = "No defaults. See 'tau project default'"
         defaults = self.system.defaults.copy()
         defaults.update(self.user.defaults)
-        ulisting = util.pformatDict(self.user.defaults, 
+        ulisting = pformatDict(self.user.defaults, 
                                     title="New Project User Defaults (%r)" % self.user.prefix, 
                                     empty_msg=empty_msg)
-        slisting = util.pformatDict(self.system.defaults, 
+        slisting = pformatDict(self.system.defaults, 
                                     title="New Project System Defaults (%r)" % self.system.prefix, 
                                     empty_msg=empty_msg)
-        elisting = util.pformatDict(defaults,
+        elisting = pformatDict(defaults,
                                     title="New Project Effective Defaults",
                                     empty_msg=empty_msg)
         return '\n'.join([slisting, ulisting, elisting])
 
-# Instantiate the global registry
-REGISTRY = GlobalRegistry()
+_registry = None
+def getRegistry():
+    global _registry
+    if not _registry:
+        _registry = GlobalRegistry()
+    return _registry

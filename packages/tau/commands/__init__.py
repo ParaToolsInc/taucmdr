@@ -35,13 +35,16 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+# System modules
 import sys
-import tau
-from tau.error import UnknownCommandError
+
+# TAU modules
+from tau import getLogger
+from error import UnknownCommandError
 from pkgutil import walk_packages
 
 
-LOGGER = tau.getLogger(__name__)
+LOGGER = getLogger(__name__)
 
 
 def getCommands():
@@ -62,13 +65,23 @@ def getSubcommands(command, depth=1):
     """
     Builds listing of subcommand names with short description
     """
+    LOGGER.debug('Getting subcommands of %r' % command)
     parts = []
     command_module = sys.modules[command] 
     depth = len(command_module.__name__.split('.')) + depth
     for _, module, _ in walk_packages(command_module.__path__, command_module.__name__+'.'):
         if len(module.split('.')) <= depth:
-            __import__(module)
-            descr = sys.modules[module].SHORT_DESCRIPTION
+            LOGGER.debug('importing %r' % module)
+            
+            # from spam.ham import eggs, sausage as saus
+#             _temp = __import__('spam.ham', globals(), locals(), ['eggs', 'sausage'], -1)
+#             eggs = _temp.eggs
+#             saus = _temp.sausage
+            
+            _tmp = __import__(module, globals(), locals(), ['SHORT_DESCRIPTION'], -1)
+            descr = _tmp.SHORT_DESCRIPTION
+#             __import__(module)
+#             descr = sys.modules[module].SHORT_DESCRIPTION
             name = '{:<15}'.format(module.split('.')[-1])
             parts.append('  %s  %s' % (name, descr))
     return '\n'.join(parts)
@@ -77,7 +90,7 @@ def getSubcommands(command, depth=1):
 def _getMain(cmd):
     if len(cmd):
         cmd_module = 'tau.commands.%s' % '.'.join(cmd)
-        __import__(cmd_module)
+        __import__(cmd_module) 
         try:
             main = sys.modules[cmd_module].main
         except AttributeError:

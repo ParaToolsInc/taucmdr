@@ -37,12 +37,12 @@
 #OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 ################################################################################
-TAU_HOME="$( cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd )"
-
 if ! which python >/dev/null 2>&1 ; then
   echo "ERROR: 'python' not found in PATH"
-  exit 1
+  exit 100
 fi
 
-export PYTHONPATH=$TAU_HOME/packages:$PYTHONPATH
-python $TAU_HOME/packages/tau/__main__.py "$@"
+export __TAU_HOME__="$( cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd )"
+export PYTHONPATH=$__TAU_HOME__/packages:$PYTHONPATH
+
+python $__TAU_HOME__/packages/tau/__main__.py "$@"

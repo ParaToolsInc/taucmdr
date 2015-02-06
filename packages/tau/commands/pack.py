@@ -35,16 +35,20 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+# System modules
 import os
 import sys
 import glob
 import subprocess
-import tau
-from tau import util
-from tau.docopt import docopt
-from tau.registry import REGISTRY
+from docopt import docopt
 
-LOGGER = tau.getLogger(__name__)
+# TAU modules
+from tau import getLogger, EXIT_FAILURE
+from util import which
+from registry import getRegistry
+
+
+LOGGER = getLogger(__name__)
 
 SHORT_DESCRIPTION = "Package profile files into a PPK file."
 
@@ -70,7 +74,7 @@ def getHelp():
     return HELP
 
 def isExecutable(cmd):
-    return util.which(cmd) != None
+    return which(cmd) != None
 
 def main(argv):
     """
@@ -81,7 +85,7 @@ def main(argv):
     LOGGER.debug('Arguments: %s' % args)
 
     # Get selected project
-    proj = REGISTRY.getSelectedProject()
+    proj = getRegistry().getSelectedProject()
 
     # Check for profiles
     profiles = args['<profile>']
@@ -89,7 +93,7 @@ def main(argv):
         profiles = glob.glob('profile.*.*.*')
         if not profiles:
             LOGGER.error('No profile files in %r' % os.getcwd())
-            return tau.EXIT_FAILURE
+            return EXIT_FAILURE
 
     # Get project name
     if args['--no-project-name']:

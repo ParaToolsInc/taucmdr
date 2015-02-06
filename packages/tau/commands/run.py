@@ -35,15 +35,20 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+# System modules
 import os
 import sys
 import subprocess
-import tau
-from tau import util
-from tau.docopt import docopt
-from tau.registry import REGISTRY
+from docopt import docopt
 
-LOGGER = tau.getLogger(__name__)
+# TAU modules
+from tau import getLogger
+from util import which
+from registry import getRegistry
+
+
+LOGGER = getLogger(__name__)
+
 
 SHORT_DESCRIPTION = "Gather measurements from an application."
 
@@ -64,7 +69,7 @@ def getHelp():
     return HELP
 
 def isExecutable(cmd):
-    return util.which(cmd) != None
+    return which(cmd) != None
 
 def main(argv):
     """
@@ -76,7 +81,7 @@ def main(argv):
     cmd_args = args['<args>']
 
     # Check project compatibility
-    proj = REGISTRY.getSelectedProject()
+    proj = getRegistry().getSelectedProject()
     if not proj.supportsExec(cmd):
         LOGGER.warning("%r project may not be compatible with %r." % (proj.getName(), cmd))
         

@@ -35,17 +35,21 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+# System modules
 import sys
-import tau
-from tau import commands
-from tau import util
-from tau.error import UnknownCommandError
-from tau.registry import REGISTRY
-from tau.commands import build, run, show
-from tau.docopt import docopt
+from docopt import docopt
+
+# TAU modules
+from tau import MINIMUM_PYTHON_VERSION, EXIT_FAILURE
+from tau import getLogger, setLogLevel, LOG_LEVEL
+from registry import getRegistry
+from commands import getCommands, executeCommand
+from commands import build, run, show
+from error import UnknownCommandError
+
 
 USAGE = """
-The Tau Performance System (%(tau_version)s)
+The Tau Performance System
 http://tau.uoregon.edu/
 
 Usage:
@@ -74,9 +78,8 @@ Aliases:
 See 'tau <command> --help' for more information on <command>.
 """
 
-LOGGER = tau.getLogger(__name__)
+LOGGER = getLogger(__name__)
 
-       
 
 def main():
     """
@@ -84,27 +87,23 @@ def main():
     """
 
     # Check Python version
-    if sys.version_info < tau.MINIMUM_PYTHON_VERSION:
+    if sys.version_info < MINIMUM_PYTHON_VERSION:
         version = '.'.join(map(str, sys.version_info[0:3]))
-        expected = '.'.join(map(str, tau.MINIMUM_PYTHON_VERSION))
+        expected = '.'.join(map(str, MINIMUM_PYTHON_VERSION))
         LOGGER.error("Your Python version is %s, but %r expects Python %s or later. Please update Python." % 
                      (version, sys.argv[0], expected))
-
-    # Get tau version
-    tau_version = util.getTauVersion()
-
+   
     # Parse command line arguments
-    usage = USAGE % {'tau_version': tau_version,
-                     'log_default': tau.LOG_LEVEL,
-                     'command_descr': commands.getCommands()}
-    args = docopt(usage, version=tau_version, options_first=True)
+    usage = USAGE % {'log_default': LOG_LEVEL,
+                     'command_descr': getCommands()}
+    args = docopt(usage, options_first=True)
 
     # Set log level
     verbose = args['--verbose']
     log = args['--log']
     if sum([verbose, bool(log)]) > 1:
         LOGGER.error("Please specify either --verbose or --log")
-        return tau.EXIT_FAILURE
+        return EXIT_FAILURE
     if verbose:
         level = 'DEBUG'
     elif log:
@@ -112,27 +111,28 @@ def main():
     else:
         level = 'INFO'
     try:
-        tau.setLogLevel(level)
+        setLogLevel(level)
     except ValueError:
         LOGGER.error("Invalid output level: %s" % level)
-        return tau.EXIT_FAILURE
+        return EXIT_FAILURE
     LOGGER.debug('Arguments: %s' % args)
-    LOGGER.debug('Verbosity level: %s' % tau.LOG_LEVEL)
+    LOGGER.debug('Verbosity level: %s' % LOG_LEVEL)
     
     # Set selected project
     selected = args['--project']
     if selected:
-        if selected in REGISTRY:
-            REGISTRY._selected_name = selected
+        if selected in getRegistry():
+            getRegistry()._selected_name = selected
         else:
             LOGGER.error("There is no project named %r.  See 'tau project list' for available projects." % selected)
-            return tau.EXIT_FAILURE
+            return EXIT_FAILURE
 
     # Try to execute as a TAU command
     cmd = args['<command>']
     cmd_args = args['<args>']
     try:
-        return commands.executeCommand([cmd], cmd_args)
+        LOGGER.debug('Executing %r %r' % (cmd, cmd_args))
+        return executeCommand([cmd], cmd_args)
     except UnknownCommandError:
         # Not a TAU command, but that's OK
         pass
@@ -147,13 +147,13 @@ def main():
         shortcut = 'run'
     if shortcut:
         LOGGER.debug('Trying shortcut %r' % shortcut)
-        return commands.executeCommand([shortcut], [cmd] + cmd_args)
+        return executeCommand([shortcut], [cmd] + cmd_args)
     else:
         LOGGER.debug('No shortcut found for %r' % cmd)
 
     # Not sure what to do at this point, so advise the user and exit
     LOGGER.info("Unknown command.  Calling 'tau help %s' to get advice." % cmd)
-    return commands.executeCommand(['help'], [cmd])
+    return executeCommand(['help'], [cmd])
     
 # Command line execution
 if __name__ == "__main__":
