@@ -23,6 +23,12 @@ module.exports = {
       required: true
     },
 
+    // Target OS
+    os: {
+      type: 'string',
+      required: true
+    },
+
     // Host architecture
     host_arch: {
       type: 'string',
