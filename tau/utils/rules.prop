@@ -1,3 +1,0 @@
-#example rule file
-usec > 1000 & numcalls = 1 & numsubrs < 2
-cumusec < 1000 & percent = 0 & numcalls < 5

@@ -1,3 +1,0 @@
-BEGIN_INSTRUMENT_SECTION
-loops file="loop_test.c" routine="double multiply(void) C"
-END_INSTRUMENT_SECTION
