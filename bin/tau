@@ -11,7 +11,7 @@
 #
 #@section COPYRIGHT
 #
-#Copyright (c) 2013, ParaTools, Inc.
+#Copyright (c) 2015 ParaTools, Inc.
 #All rights reserved.
 #
 #Redistribution and use in source and binary forms, with or without 
@@ -38,26 +38,11 @@
 #
 ################################################################################
 TAU_HOME="$( cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd )"
-SRC="tau"
-CWD="$PWD"
 
-# Go to the script directory
-cd "$TAU_HOME"
-
-# Quietly update build directory
-#make -s build BUILD="$BUILD" SRC="$SRC"
-
-# Add TAU top level directory to PYTHONPATH
-export TAU_MASTER_SRC_DIR="$TAU_HOME/$SRC"
-export PYTHONPATH=$TAU_MASTER_SRC_DIR:$PYTHONPATH
-
-# Check python
 if ! which python >/dev/null 2>&1 ; then
   echo "ERROR: 'python' not found in PATH"
   exit 1
 fi
 
-# Go back to the original location and invoke TAU Commander
-cd "$CWD" 
-python $TAU_MASTER_SRC_DIR/taucmd/__main__.py "$@"
-
+export PYTHONPATH=$TAU_HOME/tau:$PYTHONPATH
+python $TAU_HOME/tau/taucmd/__main__.py "$@"
