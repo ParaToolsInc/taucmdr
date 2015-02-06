@@ -1,3 +1,0 @@
-#!/bin/sh
-
-java -cp ../classes:${HOME}/cvs/tau2/tools/src/paraprof/src:${HOME}/cvs/tau2/tools/src/dms/dms.jar TauIL.Tool $@
