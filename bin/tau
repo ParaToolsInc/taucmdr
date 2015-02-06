@@ -44,5 +44,5 @@ if ! which python >/dev/null 2>&1 ; then
   exit 1
 fi
 
-export PYTHONPATH=$TAU_HOME/tau:$PYTHONPATH
-python $TAU_HOME/tau/taucmd/__main__.py "$@"
+export PYTHONPATH=$TAU_HOME/packages:$PYTHONPATH
+python $TAU_HOME/packages/tau/__main__.py "$@"
