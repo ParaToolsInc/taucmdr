@@ -42,7 +42,8 @@ import errno
 import pickle
 
 # TAU modules
-from tau import getLogger, HELP_CONTACT, USER_PREFIX, SYSTEM_PREFIX
+from tau import USER_PREFIX, SYSTEM_PREFIX
+from logger import getLogger
 from util import mkdirp, pformatDict, pformatList
 from error import ConfigurationError, InternalError, ProjectNameError, RegistryError
 

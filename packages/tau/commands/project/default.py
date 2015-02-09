@@ -39,7 +39,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 from docopt import docopt
 
 # TAU modules
-from tau import getLogger, EXIT_FAILURE
+from tau import EXIT_FAILURE
+from logger import getLogger
 from project import getProjectOptions, getConfigFromOptions
 from registry import getRegistry
 

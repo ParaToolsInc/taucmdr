@@ -39,7 +39,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 from docopt import docopt
 
 # TAU modules
-from tau import getLogger
+from logger import getLogger
 from util import pformatList
 from error import ProjectNameError
 from registry import getRegistry

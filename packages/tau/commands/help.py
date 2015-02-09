@@ -40,7 +40,8 @@ import os
 import sys
 
 # TAU modules
-from tau import getLogger, HELP_CONTACT
+from tau import HELP_CONTACT
+from logger import getLogger
 from error import UnknownCommandError
 from docopt import docopt
 

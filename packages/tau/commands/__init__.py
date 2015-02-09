@@ -39,7 +39,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import sys
 
 # TAU modules
-from tau import getLogger
+from logger import getLogger
 from error import UnknownCommandError
 from pkgutil import walk_packages
 
@@ -48,78 +48,70 @@ LOGGER = getLogger(__name__)
 
 
 def getCommands():
-    """
-    Builds listing of command names with short description
-    """
-    parts = []
-    mod_names = [n for _, n, _ in walk_packages(__path__, __name__+'.') if n.count('.') == 2]
-    for module in mod_names:
-        __import__(module)
-        descr = sys.modules[module].SHORT_DESCRIPTION
-        name = '{0:<15}'.format(module.split('.')[-1])
-        parts.append('  %s  %s' % (name, descr))
-    return '\n'.join(parts)
+  """
+  Builds listing of command names with short description
+  """
+  parts = []
+  for _, module, _ in walk_packages(__path__, __name__+'.'):
+    if module.count('.') == 1:
+      __import__(module)
+      descr = sys.modules[module].SHORT_DESCRIPTION
+      name = '{0:<15}'.format(module.split('.')[-1])
+      parts.append('  %s  %s' % (name, descr))
+  return '\n'.join(parts)
 
 
 def getSubcommands(command, depth=1):
-    """
-    Builds listing of subcommand names with short description
-    """
-    LOGGER.debug('Getting subcommands of %r' % command)
-    parts = []
-    command_module = sys.modules[command] 
-    depth = len(command_module.__name__.split('.')) + depth
-    for _, module, _ in walk_packages(command_module.__path__, command_module.__name__+'.'):
-        if len(module.split('.')) <= depth:
-            LOGGER.debug('importing %r' % module)
-            
-            # from spam.ham import eggs, sausage as saus
-#             _temp = __import__('spam.ham', globals(), locals(), ['eggs', 'sausage'], -1)
-#             eggs = _temp.eggs
-#             saus = _temp.sausage
-            
-            _tmp = __import__(module, globals(), locals(), ['SHORT_DESCRIPTION'], -1)
-            descr = _tmp.SHORT_DESCRIPTION
-#             __import__(module)
-#             descr = sys.modules[module].SHORT_DESCRIPTION
-            name = '{:<15}'.format(module.split('.')[-1])
-            parts.append('  %s  %s' % (name, descr))
-    return '\n'.join(parts)
+  """
+  Builds listing of subcommand names with short description
+  """
+  LOGGER.debug('Getting subcommands of %r' % command)
+  parts = []
+  command_module = sys.modules[command] 
+  depth = len(command_module.__name__.split('.')) + depth
+  for _, module, _ in walk_packages(command_module.__path__, command_module.__name__+'.'):
+    if len(module.split('.')) <= depth:
+      LOGGER.debug('importing %r' % module)
+      __import__(module)
+      descr = sys.modules[module].SHORT_DESCRIPTION
+      name = '{:<15}'.format(module.split('.')[-1])
+      parts.append('  %s  %s' % (name, descr))
+  return '\n'.join(parts)
 
 
 def _getMain(cmd):
-    if len(cmd):
-        cmd_module = 'tau.commands.%s' % '.'.join(cmd)
-        __import__(cmd_module) 
-        try:
-            main = sys.modules[cmd_module].main
-        except AttributeError:
-            LOGGER.debug("%s.main doesn't exist" % cmd_module)
-            main = none
-        else:
-            LOGGER.debug("Found %s.main" % cmd_module)
-        return main
+  if len(cmd):
+    cmd_module = 'tau.commands.%s' % '.'.join(cmd)
+    __import__(cmd_module) 
+    try:
+      main = sys.modules[cmd_module].main
+    except AttributeError:
+      LOGGER.debug("%s.main doesn't exist" % cmd_module)
+      main = none
     else:
-        return None
+      LOGGER.debug("Found %s.main" % cmd_module)
+    return main
+  else:
+    return None
 
 def executeCommand(cmd, cmd_args=[]):
     """
     Import the command module and run its main routine
     """
     try:
-        main = _getMain(cmd)
-        LOGGER.debug('Recognized %r as TAU command' % cmd)
+      main = _getMain(cmd)
+      LOGGER.debug('Recognized %r as TAU command' % cmd)
     except ImportError:
-        LOGGER.debug('%r not recognized as a TAU command' % cmd)
-        parent = cmd[:-1]
-        while len(parent):
-            main = _getMain(parent)
-            if main:
-                LOGGER.debug('Getting help from %r' % parent)
-                return main(parent + ['--help'])
-            else:
-                parent = parent[:-1]
-        raise UnknownCommandError(' '.join(cmd))
+      LOGGER.debug('%r not recognized as a TAU command' % cmd)
+      parent = cmd[:-1]
+      while len(parent):
+        main = _getMain(parent)
+        if main:
+          LOGGER.debug('Getting help from %r' % parent)
+          return main(parent + ['--help'])
+        else:
+          parent = parent[:-1]
+      raise UnknownCommandError(' '.join(cmd))
     else:
-        return main(cmd + cmd_args)
+      return main(cmd + cmd_args)
 

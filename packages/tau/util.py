@@ -45,7 +45,7 @@ import urllib
 import tarfile
 
 # TAU modules
-from tau import getLogger
+from logger import getLogger
 
 LOGGER = getLogger(__name__)
 

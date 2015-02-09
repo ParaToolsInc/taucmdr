@@ -39,7 +39,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import sys
 
 # TAU modules
-from tau import getLogger
+from logger import getLogger
 from commands import getSubcommands, executeCommand
 from docopt import docopt
 

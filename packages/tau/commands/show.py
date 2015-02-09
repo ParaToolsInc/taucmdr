@@ -44,7 +44,8 @@ from threading import Thread
 from docopt import docopt
 
 # TAU modules
-from tau import getLogger, EXIT_FAILURE
+from tau import EXIT_FAILURE
+from logger import getLogger
 from error import MissingFeatureError
 from registry import getRegistry
 
