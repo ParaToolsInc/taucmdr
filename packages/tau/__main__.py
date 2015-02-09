@@ -41,7 +41,7 @@ from docopt import docopt
 
 # TAU modules
 from tau import MINIMUM_PYTHON_VERSION, EXIT_FAILURE
-from tau import getLogger, setLogLevel, LOG_LEVEL
+from logger import getLogger, setLogLevel, LOG_LEVEL
 from registry import getRegistry
 from commands import getCommands, executeCommand
 from commands import build, run, show

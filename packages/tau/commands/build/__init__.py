@@ -39,12 +39,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import os
 import sys
 import subprocess
-import docopt
+from docopt import docopt
 from pkgutil import walk_packages
 from textwrap import dedent
 
 # TAU modules
-from tau import getLogger
+from logger import getLogger
 from commands import getSubcommands, executeCommand
 from registry import getRegistry
 

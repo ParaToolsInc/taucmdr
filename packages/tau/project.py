@@ -43,7 +43,8 @@ import errno
 import pickle
 
 # TAU modules
-from tau import getLogger, HELP_CONTACT, USER_PREFIX, SYSTEM_PREFIX, LOG_LEVEL, DEFAULT_TAU_COMPILER_OPTIONS
+from tau import DEFAULT_TAU_COMPILER_OPTIONS
+from logger import getLogger, LOG_LEVEL
 from util import detectDefaultTarget, pformatDict, pformatList, mkdirp
 from error import ConfigurationError, InternalError, ProjectNameError, RegistryError
 from registry import getRegistry
@@ -225,7 +226,7 @@ class Project(object):
     TODO: DOCS
     """
     def __init__(self, config, registry):
-        from tau.pkgs.taupkg import TauPackage
+        from tau.packages.tau import TauPackage
         self.config = config
         self.registry = registry
         self.refresh = True

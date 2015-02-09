@@ -40,8 +40,8 @@ import sys
 import traceback
 
 # TAU modules
-from tau import getLogger, LOG_LEVEL
 from tau import HELP_CONTACT, EXIT_FAILURE, EXIT_WARNING 
+from logger import getLogger, LOG_LEVEL
 
 
 LOGGER = getLogger(__name__)

@@ -42,7 +42,8 @@ import pprint
 from docopt import docopt
 
 # TAU modules
-from tau import getLogger, TAU_LINE_MARKER, EXIT_SUCCESS
+from tau import EXIT_SUCCESS
+from logger import getLogger
 from util import pformatDict
 from project import getProjectOptions, getConfigFromOptions
 from error import ProjectNameError
@@ -57,11 +58,10 @@ COMMAND = ' '.join(['tau'] + (__name__.split('.')[2:]))
 
 USAGE = """
 Usage:
-  %(command)s [options]
+  %(command)s --name=<name> [options]
   %(command)s -h | --help
   
 Subcommand Options:
-  --name=<name>     Set the project name.
   --default         After creating the project, make it the default project.
   --system          Create project in TAU installation at %(system_path)r. 
 %(project_options)s
@@ -96,26 +96,17 @@ def main(argv):
     
     system = args['--system'] 
     default = args['--default']
-    proj_name = args['--name']
+    name = args['--name']
 
-    if proj_name and not isValidProjectName(proj_name):
-        raise ProjectNameError('%r is not a valid project name.' % proj_name,
+    if name and not isValidProjectName(name):
+        raise ProjectNameError('%r is not a valid project name.' % name,
                                'Use only letters, numbers, dot (.), dash (-), and underscore (_).')
 
     config = getConfigFromOptions(args, exclude=['--help', '-h', '--system', '--default'])
+    config['name'] = name
     LOGGER.info(pformatDict(dict([i for i in config.items() if i[1]]), title='New project settings'))
-    
-    prompt = '%sEnter project name> ' % TAU_LINE_MARKER
-    while not proj_name:
-        print prompt,
-        proj_name = sys.stdin.readline().strip()
-        if not isValidProjectName(proj_name):
-            LOGGER.error('%r is not a valid project name.\n'
-                         'Use only letters, numbers, dot (.), dash (-), and underscore (_).' % proj_name)
-            proj_name = None
-    config['name'] = proj_name
     LOGGER.debug('Project config: %s' % pprint.pformat(config))
     
     getRegistry().addProject(config, default, system)
-    LOGGER.info('Created a new project named %r.' % proj_name)
+    LOGGER.info('Created a new project named %r.' % name)
     return EXIT_SUCCESS
