@@ -44,7 +44,7 @@ from tau import HELP_CONTACT, EXIT_FAILURE, EXIT_WARNING
 from logger import getLogger, LOG_LEVEL
 
 
-LOGGER = getLogger(__name__)
+LOGGER = getLogger('error')
 
 
 def _default_handle(etype, e, tb):
@@ -126,86 +126,6 @@ Please contact %(contact)s for assistance.""" % {'missing': self.missing,
                                                  'hint': hint, 
                                                  'contact': HELP_CONTACT}
         LOGGER.error(message)
-        sys.exit(EXIT_FAILURE)
-
-
-class UnknownCommandError(Error):
-    """
-    Indicates that a specified command is unknown
-    """
-    def __init__(self, value, hint="Try 'tau --help'."):
-        super(UnknownCommandError, self).__init__(value)
-        self.hint = hint
-        
-    def handle(self):
-        hint = 'Hint: %s' % self.hint if self.hint else ''
-        message = """
-%(value)r is not a TAU subcommand.
-
-%(hint)s""" % {'value': self.value, 
-               'hint': hint, 
-               'contact': HELP_CONTACT}
-        LOGGER.error(message)
-        sys.exit(EXIT_FAILURE)
-
-
-class ProjectNameError(ConfigurationError):
-    """
-    Indicates that an invalid project name was specified.
-    """
-    def __init__(self, value, hint="Try 'tau project --help'."):
-        super(ProjectNameError, self).__init__(value)
-        self.hint = hint
-
-    def handle(self):
-        hint = 'Hint: %s\n' % self.hint if self.hint else ''
-        message = """
-%(value)s
-
-%(hint)s
-
-TAU cannot proceed with the given inputs.
-Please review the input files and command line parameters
-or contact %(contact)s for assistance.""" % {'value': self.value, 
-                                             'hint': hint, 
-                                             'contact': HELP_CONTACT}
-        LOGGER.critical(message)
-        sys.exit(EXIT_FAILURE)
-
-
-class RegistryError(Error):
-    """
-    Indicates that there is a problem with the project registry
-    """
-    def __init__(self, value, hint="Contact %s for help" % HELP_CONTACT):
-        super(RegistryError, self).__init__(value)
-        self.hint = hint
-        
-    def handle(self):
-        hint = 'Hint: %s\n' % self.hint if self.hint else ''
-        message = """
-%(value)s
-
-%(hint)s""" % {'value': self.value, 'hint': hint}
-        LOGGER.critical(message)
-        sys.exit(EXIT_FAILURE)
-
-
-class PackageError(Error):
-    """
-    Indicates a problem in package installation
-    """
-    def __init__(self, value, hint="Contact %s for help" % HELP_CONTACT):
-        super(PackageError, self).__init__(value)
-        self.hint = hint
-        
-    def handle(self):
-        hint = 'Hint: %s\n' % self.hint if self.hint else ''
-        message = """
-%(value)s
-
-%(hint)s""" % {'value': self.value, 'hint': hint}
-        LOGGER.critical(message)
         sys.exit(EXIT_FAILURE)
 
 

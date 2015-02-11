@@ -48,7 +48,7 @@ except KeyError:
     TAU_LINE_MARKER = 'TAU: '
 
 # Logging level
-LOG_LEVEL = 'DEBUG'
+LOG_LEVEL = 'INFO'
 
 LINE_WIDTH = 80
 LINE_MARKER = TAU_LINE_MARKER
@@ -118,3 +118,6 @@ def setLogLevel(level):
     _handler.setLevel(LOG_LEVEL)
     for logger in _loggers:
         logger.setLevel(LOG_LEVEL)
+
+def getLogLevel():
+  return LOG_LEVEL

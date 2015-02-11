@@ -35,67 +35,51 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-# System modules
-from docopt import docopt
-
 # TAU modules
-from tau import EXIT_FAILURE
+from tau import EXIT_SUCCESS
 from logger import getLogger
-from error import ProjectNameError, InternalError
-from registry import getRegistry
+from arguments import getParser
+from api.project import Project
 
 
 LOGGER = getLogger(__name__)
 
-SHORT_DESCRIPTION = "Delete a TAU project configuration."
+SHORT_DESCRIPTION = "Delete a project."
 
 COMMAND = ' '.join(['tau'] + (__name__.split('.')[2:]))
 
 USAGE = """
 Usage:
-  %(command)s [options] <name>
+  %(command)s <project_name>
   %(command)s -h | --help
-  
-Subcommand Options:
-  --system                   Delete project from TAU installation at %(system_path)r.
-  
-See 'tau project list' for project names.
 """
 
 HELP = """
-%(command)r help page to be written.
-"""
+'%(command)s' page to be written.
+""" 
 
 def getUsage():
-    return USAGE % {'command': COMMAND,
-                    'system_path': getRegistry().system.prefix}
+  return USAGE % {'command': COMMAND}
 
 def getHelp():
-    return HELP % {'command': COMMAND}
+  return HELP % {'command': COMMAND}
+
 
 def main(argv):
-    """
-    Program entry point
-    """
-    # Parse command line arguments
-    usage = getUsage()
-    args = docopt(usage, argv=argv)
-    LOGGER.debug('Arguments: %s' % args)
-
-    system = args['--system']    
-    proj_name = args['<name>']
-    
-    try:
-        getRegistry().deleteProject(proj_name, system)
-    except ProjectNameError:
-        if system and getRegistry().isUserProject(proj_name):
-            LOGGER.error("Project %r is a user project.  Try '%s %s'" % 
-                         (proj_name, COMMAND, proj_name))
-        elif not system and getRegistry().isSystemProject(proj_name):
-            LOGGER.error("Project %r is a system project.  Try '%s --system %s'" % 
-                         (proj_name, COMMAND, proj_name))
-        else:
-            LOGGER.error("There is no project named %r. See 'tau project list' for project names." % proj_name)
-        return EXIT_FAILURE
-    LOGGER.info("Project %r deleted." % proj_name)
-    return 0
+  """
+  Program entry point
+  """
+  # Parse command line arguments
+  arguments = [ (('name',), {'help': "Name of project configuration to delete",
+                             'metavar': '<project_name>'}) ]  
+  parser = getParser(arguments,
+                     prog=COMMAND, 
+                     usage=USAGE % {'command': COMMAND}, 
+                     description=SHORT_DESCRIPTION)
+  args = parser.parse_args(args=argv)
+  LOGGER.debug('Arguments: %s' % args)
+  
+  Project.delete({'name': args.name})
+  
+  LOGGER.info('Deleted project %r' % args.name)
+  return EXIT_SUCCESS

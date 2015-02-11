@@ -39,64 +39,73 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import os
 import sys
 
+
 # TAU modules
-from tau import HELP_CONTACT
+from tau import HELP_CONTACT, EXIT_SUCCESS
 from logger import getLogger
-from error import UnknownCommandError
-from docopt import docopt
+from commands import UnknownCommandError
+from arguments import getParser, REMAINDER
 
 
 LOGGER = getLogger(__name__)
 
-SHORT_DESCRIPTION = "Get help with a command."
+_name_parts = __name__.split('.')[2:]
+COMMAND = ' '.join(['tau'] + _name_parts)
+
+SHORT_DESCRIPTION = "Show help for a command."
 
 USAGE = """
-Usage:
-  tau help <command>
-  tau -h | --help
-  
-Use quotes to group commands, e.g. tau help 'project create'.
-"""
+  %(command)s <command>
+  %(command)s -h | --help
+""" % {'command': COMMAND}
 
 HELP = """
-Prints the help page for a specified command.
+Show help for a command.
 """
+
+USAGE_EPILOG = """
+Use quotes to group commands, e.g. %(command)s 'project create'.
+""" % {'command': COMMAND}
+
+
 
 _GENERIC_HELP = "See 'tau --help' or contact %s for assistance" % HELP_CONTACT
 
-_KNOWN_FILES = {'makefile': ("makefile script", "See 'tau make --help' for help building with make"),
-                'a.out': ("binary executable", "See 'tau run --help' for help profile this file"),
-                '.exe': ("binary executable", "See 'tau run --help' for help profile this file")}
+_KNOWN_FILES = {'makefile': ("makefile script", 
+                             "See 'tau make --help' for help building with make"),
+                'a.out': ("binary executable", 
+                          "See 'tau run --help' for help with profiling this program"),
+                '.exe': ("binary executable", 
+                         "See 'tau run --help' for help with profiling this program")}
 
-_MIME_HINTS = {None: {
-                      None: ("unknown file", _GENERIC_HELP),
-                      'gzip': ("compressed file", "Please specify an executable file")
-                      },
-               'application': {
-                               None: ("unknown binary file", _GENERIC_HELP),
+_MIME_HINTS = {None: {None: ("unknown file", _GENERIC_HELP),
+                      'gzip': ("compressed file", "Please specify an executable file")},
+               'application': {None: ("unknown binary file", _GENERIC_HELP),
                                'sharedlib': ("shared library", "Please specify an executable file"),
                                'archive': ("archive file", "Please specify an executable file"),
                                'tar': ("archive file", "Please specify an executable file"),
-                               'unknown': ("unknown binary file", ),
-                               },
-               'text': {
-                        None: ("unknown text file", _GENERIC_HELP),
+                               'unknown': ("unknown binary file", )},
+               'text': {None: ("unknown text file", _GENERIC_HELP),
                         'src': ("source code file", "See 'tau build --help' for help compiling this file"),
                         'hdr': ("source header file", "See 'tau build --help' for help instrumenting this file"),
                         'fortran': ("fortran source code file", "See 'tau build --help' for help compiling this file"),
-                        'plain': ("text file", _GENERIC_HELP),
-                        }
+                        'plain': ("text file", _GENERIC_HELP)}
                }
 
 def _fuzzy_index(d, k):
-    """Return d[key] where ((key in k) == true) or return d[None]"""
+    """
+    Return d[key] where ((key in k) == true) or return d[None]
+    """
     for key in d.iterkeys():
         if key and (key in k):
             return d[key]
     return d[None]
 
+
 def _guess_filetype(filename):
-    """Return a (type, encoding) tuple for a file""" 
+    """
+    Return a (type, encoding) tuple for a file
+    """ 
     import mimetypes
     mimetypes.init()
     type = mimetypes.guess_type(filename)
@@ -111,66 +120,74 @@ def _guess_filetype(filename):
 
 
 def getUsage():
-    return USAGE
+  return '\n'.join([USAGE, USAGE_EPILOG]) 
+
 
 def getHelp():
-    return HELP
+  return HELP % {'command': COMMAND}
 
 
 def main(argv):
-    """
-    Program entry point
-    """
+  """
+  Program entry point
+  """
+  arguments = [ (('command',), {'help': "Command to receive help with",
+                                'metavar': '<command>',
+                                'nargs': REMAINDER})]
+  parser = getParser(arguments,
+                     prog=COMMAND, 
+                     usage=USAGE, 
+                     description=SHORT_DESCRIPTION,
+                     epilog=USAGE_EPILOG)
+  args = parser.parse_args(args=argv)
+  LOGGER.debug('Arguments: %s' % args)
     
-    # Parse command line arguments
-    args = docopt(USAGE, argv=argv)
-    LOGGER.debug('Arguments: %s' % args)
-    
-    # Try to look up a Tau command's built-in help page
-    cmd = args['<command>'].replace(' ', '.')
-    cmd_module = 'tau.commands.%s' % cmd
-    try:
-        __import__(cmd_module)
-        print '-'*80
-        print sys.modules[cmd_module].getUsage()
-        print '-'*80
-        print '\nHelp:',
-        print sys.modules[cmd_module].getHelp()
-        print '-'*80
-    except ImportError:
-        # Not a TAU command, but that's OK
-        pass
-    
-    # Is this a file?
-    if not os.path.exists(cmd):
-        hint = "A file named %r could not be found.\nCheck the file path and permissions." % cmd
-        raise UnknownCommandError(cmd, hint)
-    
-    # Do we recognize the file name?
-    try:
-        desc, hint = _fuzzy_index(_KNOWN_FILES, cmd.lower())
-    except KeyError:
-        pass
-    else:
-        article = 'an' if desc[0] in 'aeiou' else 'a'
-        hint = '%r is %s %s.\n%s.' % (cmd, article, desc, hint)
-        raise UnknownCommandError(cmd, hint)
-    
-    # Get the filetype and try to be helpful.
-    type, encoding = _guess_filetype(cmd)
-    LOGGER.debug("%r has type (%s, %s)" % (cmd, type, encoding))
-    if type:
-        type, subtype = type.split('/')
-        try:
-            type_hints = _MIME_HINTS[type]
-        except KeyError:
-            hint = "TAU doesn't recognize %r.\nSee 'tau --help' and use the appropriate subcommand." % cmd
-        else:
-            desc, hint = _fuzzy_index(type_hints, subtype)
-            article = 'an' if desc[0] in 'aeiou' else 'a'
-            hint = '%r is %s %s.\n%s.' % (cmd, article, desc, hint)
-        raise UnknownCommandError(cmd, hint)
-    else:
-        raise UnknownCommandError(cmd)
-    
+  # Try to look up a Tau command's built-in help page
+  cmd = '.'.join(args.command)
+  cmd_module = 'tau.commands.%s' % cmd
+  try:
+    __import__(cmd_module)
+    print '-'*80
+    print sys.modules[cmd_module].getUsage()
+    print '-'*80
+    print '\nHelp:',
+    print sys.modules[cmd_module].getHelp()
+    print '-'*80
     return EXIT_SUCCESS
+  except ImportError:
+    # Not a TAU command, but that's OK
+    pass
+  
+  # Is this a file?
+  if not os.path.exists(cmd):
+    hint = "A file named %r could not be found.\nCheck the file path and permissions." % cmd
+    raise UnknownCommandError(cmd, hint)
+  
+  # Do we recognize the file name?
+  try:
+    desc, hint = _fuzzy_index(_KNOWN_FILES, cmd.lower())
+  except KeyError:
+    pass
+  else:
+    article = 'an' if desc[0] in 'aeiou' else 'a'
+    hint = '%r is %s %s.\n%s.' % (cmd, article, desc, hint)
+    raise UnknownCommandError(cmd, hint)
+  
+  # Get the filetype and try to be helpful.
+  type, encoding = _guess_filetype(cmd)
+  LOGGER.debug("%r has type (%s, %s)" % (cmd, type, encoding))
+  if type:
+    type, subtype = type.split('/')
+    try:
+      type_hints = _MIME_HINTS[type]
+    except KeyError:
+      hint = "TAU doesn't recognize %r.\nSee 'tau --help' and use the appropriate subcommand." % cmd
+    else:
+      desc, hint = _fuzzy_index(type_hints, subtype)
+      article = 'an' if desc[0] in 'aeiou' else 'a'
+      hint = '%r is %s %s.\n%s.' % (cmd, article, desc, hint)
+    raise UnknownCommandError(cmd, hint)
+  else:
+    raise UnknownCommandError(cmd)
+  
+  return EXIT_SUCCESS

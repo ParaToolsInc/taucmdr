@@ -37,76 +37,49 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # System modules
 import sys
-import string
-import pprint
-from docopt import docopt
 
 # TAU modules
 from tau import EXIT_SUCCESS
 from logger import getLogger
-from util import pformatDict
-from project import getProjectOptions, getConfigFromOptions
-from error import ProjectNameError
-from registry import getRegistry
+from arguments import getParserFromModel
+from commands import executeCommand
+from api.project import Project
 
 
 LOGGER = getLogger(__name__)
 
-SHORT_DESCRIPTION = "Create a new TAU project configuration."
+SHORT_DESCRIPTION = "Create a new project."
 
 COMMAND = ' '.join(['tau'] + (__name__.split('.')[2:]))
 
 USAGE = """
-Usage:
-  %(command)s --name=<name> [options]
+  %(command)s <project_name> [options]
   %(command)s -h | --help
-  
-Subcommand Options:
-  --default         After creating the project, make it the default project.
-  --system          Create project in TAU installation at %(system_path)r. 
-%(project_options)s
 """
 
 HELP = """
 '%(command)s' page to be written.
-""" % {'command': COMMAND}
+"""
 
 def getUsage():
-    return USAGE % {'command': COMMAND,
-                    'system_path': getRegistry().system.prefix,
-                    'project_options': getProjectOptions(show_defaults=True)}
+  return USAGE % {'command': COMMAND}
 
 def getHelp():
-    return HELP
-
-
-def isValidProjectName(name):
-    valid = set(string.digits + string.letters + '-_.')
-    return set(name) <= valid
+  return HELP  % {'command': COMMAND}
 
 
 def main(argv):
-    """
-    Program entry point
-    """
-    # Parse command line arguments
-    usage = getUsage()
-    args = docopt(usage, argv=argv, enable_no_option=True)
-    LOGGER.debug('Arguments: %s' % args)
-    
-    system = args['--system'] 
-    default = args['--default']
-    name = args['--name']
-
-    if name and not isValidProjectName(name):
-        raise ProjectNameError('%r is not a valid project name.' % name,
-                               'Use only letters, numbers, dot (.), dash (-), and underscore (_).')
-
-    config = getConfigFromOptions(args, exclude=['--help', '-h', '--system', '--default'])
-    config['name'] = name
-    LOGGER.info(pformatDict(dict([i for i in config.items() if i[1]]), title='New project settings'))
-    LOGGER.debug('Project config: %s' % pprint.pformat(config))
-    
-    getRegistry().addProject(config, default, system)
-    LOGGER.info('Created a new project named %r.' % name)
-    return EXIT_SUCCESS
+  """
+  Program entry point
+  """
+  parser = getParserFromModel(Project,
+                              prog=COMMAND,
+                              usage=USAGE % {'command': COMMAND}, 
+                              description=SHORT_DESCRIPTION) 
+  args = parser.parse_args(args=argv)
+  LOGGER.debug('Arguments: %s' % args)
+  
+  Project.create(args.__dict__)
+  
+  LOGGER.info('Created a new project named %r.' % args.name)
+  return executeCommand(['project', 'list'], [args.name])

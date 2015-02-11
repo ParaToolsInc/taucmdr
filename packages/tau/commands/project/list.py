@@ -35,68 +35,72 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-# System modules
-from docopt import docopt
-
 # TAU modules
+from tau import USER_PREFIX, EXIT_SUCCESS
 from logger import getLogger
-from util import pformatList
-from error import ProjectNameError
-from registry import getRegistry
+from util import pformatList, pformatDict
+from error import ConfigurationError
+from arguments import getParser, SUPPRESS
+from api.project import Project
+
 
 LOGGER = getLogger(__name__)
 
-SHORT_DESCRIPTION = "Show TAU project information."
+SHORT_DESCRIPTION = "List projects or show project details."
 
 COMMAND = ' '.join(['tau'] + (__name__.split('.')[2:]))
 
 USAGE = """
 Usage:
-  %(command)s [options] [<name>]
+  %(command)s
+  %(command)s <project_name>
   %(command)s -h | --help
-  
-Options:
-  --system                     Apply change to TAU installation at %(system_path)r. 
-""" 
-
-HELP = """
-Help page to be written.
 """
 
+HELP = """
+'%(command)s' page to be written.
+""" % {'command': COMMAND}
+
+
 def getUsage():
-    return USAGE % {'command': COMMAND,
-                    'system_path': getRegistry().system.prefix}
+  return USAGE % {'command': COMMAND}
+
 
 def getHelp():
-    return HELP
+  return HELP
+
 
 def main(argv):
-    """
-    Program entry point
-    """
-
-    # Parse command line arguments
-    usage = getUsage()
-    args = docopt(usage, argv=argv)
-    LOGGER.debug('Arguments: %s' % args)
-    
-    system = args['--system']
-    name = args['<name>']
-    if name:
-        projects = getRegistry().system.projects if system else getRegistry().user.projects
-        flags = ' --system' if system else ''
-        hint = "Try 'tau project list' to see all projects or\n"\
-               "'tau project create%(flags)s --name=%(name)s' to create a "\
-               "new project named %(name)r" % {'flags': flags, 'name': name}
-        try:
-            LOGGER.info(projects[name])
-        except KeyError:
-            raise ProjectNameError('There is no project named %r' % name, hint)
+  """
+  Program entry point
+  """ 
+  arguments = [(('name',), {'help': "Name of project configuration to show",
+                            'metavar': '<project_name>', 
+                            'nargs': '?',
+                            'default': SUPPRESS})]
+  parser = getParser(arguments,
+                     prog=COMMAND, 
+                     usage=USAGE % {'command': COMMAND}, 
+                     description=SHORT_DESCRIPTION)
+  args = parser.parse_args(args=argv)
+  LOGGER.debug('Arguments: %s' % args)
+  
+  try:
+    name = args.name
+  except AttributeError:
+    listing = pformatList([t.name for t in Project.search()],
+                          empty_msg="No projects. See 'tau project create --help'", 
+                          title='Projects (%s)' % USER_PREFIX)
+    LOGGER.info(listing)
+  else:
+    try:
+      found = Project.search({'name': name})[0]
+    except IndexError:
+      raise ConfigurationError('There is no project named %r.' % name,
+                               'Try `tau project list` to see all project names.')
     else:
-        selected = getRegistry().getSelectedProject()
-        sel_msg = pformatList([selected], empty_msg='No selected project', 
-                                   title='Selected Project (%s)' % selected['name'])
-        lst_msg = getRegistry().getProjectListing() 
-        LOGGER.info('%s\n%s' % (lst_msg, sel_msg))
-
-    return 0
+      listing = pformatDict(found.data(),
+                            title='Project "%s"' % found.name)
+      LOGGER.info(listing)
+  
+  return EXIT_SUCCESS

@@ -35,11 +35,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-# System modules
 import os
-import sys
-import logging
-import textwrap
 
 # Exit codes
 EXIT_FAILURE = -100
@@ -60,20 +56,13 @@ except KeyError:
 # Contact for bugs, etc.
 HELP_CONTACT = '<support@paratools.com>'
 
+PROJECT_URL = 'http://www.taucommander.com/'
+
 #Expected Python version
 MINIMUM_PYTHON_VERSION = (2, 7)
-
-# Path to this package
-PACKAGE_HOME = os.path.dirname(os.path.realpath(__file__))
-
-# Search paths for included files
-INCLUDE_PATH = [os.path.realpath('.')]
 
 # User-level TAU files
 USER_PREFIX = os.path.join(os.path.expanduser('~'), '.tau')
 
 # System-level TAU files
 SYSTEM_PREFIX = os.path.realpath(os.path.join(__TAU_HOME__, '.system'))
-
-# TODO: Probably shouldn't be here...
-DEFAULT_TAU_COMPILER_OPTIONS = ['-optRevert']

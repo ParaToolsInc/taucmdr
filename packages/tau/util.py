@@ -50,18 +50,19 @@ from logger import getLogger
 LOGGER = getLogger(__name__)
 
 
-def mkdirp(path):
+def mkdirp(*args):
     """
     Creates a directory and all its parents.
     """
-    try:
-        os.makedirs(path)
-        LOGGER.debug('Created directory %r' % path)
-    except OSError as exc:
-        if exc.errno == errno.EEXIST and os.path.isdir(path): pass
-        else: raise
+    for path in args:
+      try:
+          os.makedirs(path)
+          LOGGER.debug('Created directory %r' % path)
+      except OSError as exc:
+          if exc.errno == errno.EEXIST and os.path.isdir(path): pass
+          else: raise
 
-        
+
 def which(program):
     def is_exec(fpath):
         return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
@@ -78,6 +79,29 @@ def which(program):
     return None
 
 
+def isAccessable(path, mode):
+    try:
+        with open(path, mode) as fp:
+            return true
+    except IOError:
+        return False
+    except:
+        raise InternalError('Unexpected %r in isReadable' % (sys.exc_info(),))
+
+    
+def isWritable(self):
+    test_file = os.path.join(self.prefix, 'test')
+    try:
+        with open(test_file, 'w') as fp:
+            fp.write('x')
+        os.remove(test_file)
+    except IOError:
+        return False
+    except:
+        raise InternalError('Unexpected %r in isWritable' % (sys.exc_info(),))
+    else:
+        return True
+    
 def download(src, dest, stdout=sys.stdout, stderr=sys.stderr):
     LOGGER.debug('Downloading %r to %r' % (src, dest))
     LOGGER.info('Downloading %r' % src)
