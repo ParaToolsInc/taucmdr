@@ -17,10 +17,28 @@ module.exports = {
       required: true 
     },
 
+    // Projects this application belongs to
+    projects: {
+      collection: 'Project',
+      via: 'applications'
+    },
+
     // Application name
     name: {
       type: 'string',
       required: true
+    },
+
+    version: {
+      type: 'string',
+    },
+
+    source: {
+      type: 'binary',
+    },
+
+    repo: {
+      type: 'string',
     },
 
     openmp: {
@@ -46,8 +64,13 @@ module.exports = {
     shmem: {
       type: 'boolean',
       defaultsTo: false
-    }
+    },
     
+    mpc: {
+      type: 'boolean',
+      defaultsTo: false
+    }
+
   }
 };
 

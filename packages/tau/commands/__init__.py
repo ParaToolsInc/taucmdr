@@ -37,17 +37,50 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # System modules
 import sys
-
-# TAU modules
-from logger import getLogger
-from error import UnknownCommandError
 from pkgutil import walk_packages
 
+# TAU modules
+from tau import HELP_CONTACT, EXIT_FAILURE
+from logger import getLogger
+from error import Error
 
-LOGGER = getLogger(__name__)
+
+LOGGER = getLogger('commands')
+
+
+class UnknownCommandError(Error):
+    """
+    Indicates that a specified command is unknown
+    """
+    def __init__(self, value, hint="Try 'tau --help'."):
+        super(UnknownCommandError, self).__init__(value)
+        self.hint = hint
+        
+    def handle(self):
+        hint = 'Hint: %s' % self.hint if self.hint else ''
+        message = """
+%(value)r is not a TAU subcommand.
+
+%(hint)s""" % {'value': self.value, 
+               'hint': hint, 
+               'contact': HELP_CONTACT}
+        LOGGER.error(message)
+        sys.exit(EXIT_FAILURE)
 
 
 def getCommands():
+  """
+  Builds list of command names
+  """
+  names = []
+  for _, module, _ in walk_packages(__path__, __name__+'.'):
+    if module.count('.') == 1:
+      __import__(module)
+      name = module.split('.')[-1]
+      names.append(name)
+  return names
+
+def getCommandsHelp():
   """
   Builds listing of command names with short description
   """
@@ -56,12 +89,27 @@ def getCommands():
     if module.count('.') == 1:
       __import__(module)
       descr = sys.modules[module].SHORT_DESCRIPTION
-      name = '{0:<15}'.format(module.split('.')[-1])
+      name = '{0:<12}'.format(module.split('.')[-1])
       parts.append('  %s  %s' % (name, descr))
   return '\n'.join(parts)
 
 
 def getSubcommands(command, depth=1):
+  """
+  Builds list of subcommand names
+  """
+  LOGGER.debug('Getting subcommands of %r' % command)
+  names = []
+  command_module = sys.modules[command] 
+  depth = len(command_module.__name__.split('.')) + depth
+  for _, module, _ in walk_packages(command_module.__path__, command_module.__name__+'.'):
+    if len(module.split('.')) <= depth:
+      LOGGER.debug('importing %r' % module)
+      __import__(module)
+      names.append(module.split('.')[-1])
+  return names
+
+def getSubcommandsHelp(command, depth=1):
   """
   Builds listing of subcommand names with short description
   """
@@ -74,44 +122,44 @@ def getSubcommands(command, depth=1):
       LOGGER.debug('importing %r' % module)
       __import__(module)
       descr = sys.modules[module].SHORT_DESCRIPTION
-      name = '{:<15}'.format(module.split('.')[-1])
+      name = '{:<12}'.format(module.split('.')[-1])
       parts.append('  %s  %s' % (name, descr))
   return '\n'.join(parts)
 
 
-def _getMain(cmd):
+def getCommandAttribute(cmd, attr_name):
   if len(cmd):
     cmd_module = 'tau.commands.%s' % '.'.join(cmd)
-    __import__(cmd_module) 
+    __import__(cmd_module)
     try:
-      main = sys.modules[cmd_module].main
+      attr = getattr(sys.modules[cmd_module], attr_name)
     except AttributeError:
-      LOGGER.debug("%s.main doesn't exist" % cmd_module)
-      main = none
+      LOGGER.debug("%s.%s doesn't exist" % (cmd_module, attr_name))
+      attr = None
     else:
-      LOGGER.debug("Found %s.main" % cmd_module)
-    return main
+      LOGGER.debug("Found %s.%s" % (cmd_module, attr_name))
+    return attr
   else:
     return None
+
 
 def executeCommand(cmd, cmd_args=[]):
     """
     Import the command module and run its main routine
     """
     try:
-      main = _getMain(cmd)
+      main = getCommandAttribute(cmd, 'main')
       LOGGER.debug('Recognized %r as TAU command' % cmd)
     except ImportError:
       LOGGER.debug('%r not recognized as a TAU command' % cmd)
       parent = cmd[:-1]
       while len(parent):
-        main = _getMain(parent)
+        main = getCommandAttribute(parent, 'main')
         if main:
           LOGGER.debug('Getting help from %r' % parent)
-          return main(parent + ['--help'])
+          return main(['--help'])
         else:
           parent = parent[:-1]
       raise UnknownCommandError(' '.join(cmd))
     else:
-      return main(cmd + cmd_args)
-
+      return main(cmd_args)

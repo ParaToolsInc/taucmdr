@@ -14,21 +14,41 @@ module.exports = {
       type: 'string', 
       unique: true 
     },
+
     email: { 
-      type: 'email',  
+      type: 'email',
       unique: true 
     },
+
     passports: { 
       collection: 'Passport', 
       via: 'user' 
     },
+
+    projects: {
+      collection: 'Project',
+      via: 'user'
+    },
+
     targets: {
       collection: 'Target',
       via: 'user'
     },
-    projects: {
-      collection: 'Project',
+
+    applications: {
+      collection: 'Application',
+      via: 'user'
+    },
+
+    measurements: {
+      collection: 'Measurement',
+      via: 'user'
+    },
+
+    debuggers: {
+      collection: 'Debugger',
       via: 'user'
     }
+
   }
 };

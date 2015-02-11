@@ -40,53 +40,61 @@ import sys
 
 # TAU modules
 from logger import getLogger
-from commands import getSubcommands, executeCommand
-from docopt import docopt
+from commands import getSubcommands, getSubcommandsHelp, executeCommand
+from arguments import getParser, REMAINDER
+
 
 LOGGER = getLogger(__name__)
 
-SHORT_DESCRIPTION = "Create and manage TAU projects."
+_name_parts = __name__.split('.')[2:]
+COMMAND = ' '.join(['tau'] + _name_parts)
 
-COMMAND = ' '.join(['tau'] + (__name__.split('.')[2:]))
+SHORT_DESCRIPTION = "Create and manage projects."
 
 USAGE = """
-Usage:
-  %(command)s <subcommand> [<args>...]
+  %(command)s <subcommand> [options]
   %(command)s -h | --help
-
-Subcommands:
-%(command_descr)s
-"""
-
-HELP = """
-'%(command)s' help page to be written.
 """ % {'command': COMMAND}
 
+HELP = """
+'%(command)s' page to be written.
+""" % {'command': COMMAND}
+
+USAGE_EPILOG = """
+Subcommands:
+%(command_descr)s
+
+See '%(command)s <subcommand> --help' for more information on <subcommand>.
+""" % {'command': COMMAND,
+       'command_descr': getSubcommandsHelp(__name__)}
+
+
 def getUsage():
-    return USAGE % {'command': COMMAND,
-                    'command_descr': getSubcommands(__name__)}
+  return '\n'.join([USAGE, USAGE_EPILOG]) 
+
 
 def getHelp():
-    return HELP
+  return HELP % {'command': COMMAND}
+
 
 def main(argv):
-    """
-    Program entry point
-    """
-
-    # Parse command line arguments
-    usage = getUsage()
-    args = docopt(usage, argv=argv, options_first=True)
-    LOGGER.debug('Arguments: %s' % args)
-    
-    cmd = args['<subcommand>']
-    cmd_args = args['<args>']
-
-    # Check for -h | --help
-    idx = cmd.find('-h')
-    if (idx == 0) or (idx == 1):
-        print usage
-        return 0
-
-    # Execute as a tau command
-    return executeCommand(['project', cmd], cmd_args)
+  """
+  Program entry point
+  """
+  arguments = [ (('subcommand',), {'help': "See 'Subcommands' below",
+                                   'choices': getSubcommands(__name__),
+                                   'metavar': '<subcommand>'}),
+                (('options',), {'help': "Options to be passed to <subcommand>",
+                                'metavar': '[options]',
+                                'nargs': REMAINDER})]
+  parser = getParser(arguments,
+                     prog=COMMAND, 
+                     usage=USAGE, 
+                     description=SHORT_DESCRIPTION,
+                     epilog=USAGE_EPILOG)
+  args = parser.parse_args(args=argv)
+  LOGGER.debug('Arguments: %s' % args)
+  
+  subcommand = args.subcommand
+  options = args.options
+  return executeCommand(_name_parts + [subcommand], options)

@@ -17,14 +17,20 @@ module.exports = {
       required: true 
     },
 
+    // Projects this target belongs to
+    projects: {
+      collection: 'Project',
+      via: 'targets'
+    },
+
     // Target name
     name: {
       type: 'string',
       required: true
     },
 
-    // Target OS
-    os: {
+    // Host OS
+    host_os: {
       type: 'string',
       required: true
     },
@@ -38,14 +44,17 @@ module.exports = {
     // Coprocessing device architecture
     device_arch: {
       type: 'string'
-    }
+    },
 
-    // toJSON: function() {
-    //   var obj = this.toObject();
-    //   delete obj._csrf;
-    //   delete obj.toJSON;
-    //   return obj;
-    // }
+    compilers: {
+      collection: 'Compiler',
+      via: 'target'
+    },
+
+    packages: {
+      collection: 'Package',
+      via: 'target'
+    }
 
   }
 };
