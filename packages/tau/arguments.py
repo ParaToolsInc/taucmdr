@@ -36,6 +36,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 import argparse
+from copy import copy
 
 SUPPRESS = argparse.SUPPRESS
 REMAINDER = argparse.REMAINDER
@@ -92,7 +93,7 @@ def getParser(arguments, prog=None, usage=None, description=None, epilog=None):
   return parser
 
 
-def getParserFromModel(model, use_defaults=True, 
+def getParserFromModel(model, use_defaults=True,
                        prog=None, usage=None, description=None, epilog=None):
   """
   Builds an argparse.ArgumentParser from a model's attributes
@@ -108,7 +109,9 @@ def getParserFromModel(model, use_defaults=True,
     except KeyError:
       pass
     else:
+      all_options = dict(options)
+#       all_options.update(options)
       if not use_defaults or 'default' not in options:
-        options['default'] = argparse.SUPPRESS
-      parser.add_argument(*flags, **options)
+        all_options['default'] = argparse.SUPPRESS
+      parser.add_argument(*flags, **all_options)
   return parser

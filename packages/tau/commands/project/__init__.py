@@ -49,7 +49,7 @@ LOGGER = getLogger(__name__)
 _name_parts = __name__.split('.')[2:]
 COMMAND = ' '.join(['tau'] + _name_parts)
 
-SHORT_DESCRIPTION = "Create and manage projects."
+SHORT_DESCRIPTION = "Create and manage project configurations."
 
 USAGE = """
   %(command)s <subcommand> [options]
@@ -69,30 +69,32 @@ See '%(command)s <subcommand> --help' for more information on <subcommand>.
        'command_descr': getSubcommandsHelp(__name__)}
 
 
+
+_arguments = [ (('subcommand',), {'help': "See 'Subcommands' below",
+                                  'choices': getSubcommands(__name__),
+                                  'metavar': '<subcommand>'}),
+              (('options',), {'help': "Options to be passed to <subcommand>",
+                              'metavar': '[options]',
+                              'nargs': REMAINDER})]
+PARSER = getParser(_arguments,
+                   prog=COMMAND, 
+                   usage=USAGE, 
+                   description=SHORT_DESCRIPTION,
+                   epilog=USAGE_EPILOG)
+
 def getUsage():
-  return '\n'.join([USAGE, USAGE_EPILOG]) 
+  return PARSER.format_help() 
 
 
 def getHelp():
-  return HELP % {'command': COMMAND}
+  return HELP
 
 
 def main(argv):
   """
   Program entry point
   """
-  arguments = [ (('subcommand',), {'help': "See 'Subcommands' below",
-                                   'choices': getSubcommands(__name__),
-                                   'metavar': '<subcommand>'}),
-                (('options',), {'help': "Options to be passed to <subcommand>",
-                                'metavar': '[options]',
-                                'nargs': REMAINDER})]
-  parser = getParser(arguments,
-                     prog=COMMAND, 
-                     usage=USAGE, 
-                     description=SHORT_DESCRIPTION,
-                     epilog=USAGE_EPILOG)
-  args = parser.parse_args(args=argv)
+  args = PARSER.parse_args(args=argv)
   LOGGER.debug('Arguments: %s' % args)
   
   subcommand = args.subcommand

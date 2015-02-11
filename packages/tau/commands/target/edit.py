@@ -61,7 +61,7 @@ HELP = """
 PARSER = getParserFromModel(Target,
                             use_defaults=False,
                             prog=COMMAND, 
-                            usage=USAGE, 
+                            usage=USAGE,
                             description=SHORT_DESCRIPTION)
 PARSER.add_argument('--name',
                     help="New name of the target configuration",

@@ -48,35 +48,38 @@ from api.project import Project
 
 LOGGER = getLogger(__name__)
 
-SHORT_DESCRIPTION = "Create a new project."
+SHORT_DESCRIPTION = "Create a new project configuration."
 
 COMMAND = ' '.join(['tau'] + (__name__.split('.')[2:]))
 
 USAGE = """
   %(command)s <project_name> [options]
   %(command)s -h | --help
-"""
+""" % {'command': COMMAND}
 
 HELP = """
 '%(command)s' page to be written.
-"""
+""" % {'command': COMMAND}
+
+PARSER = getParserFromModel(Project,
+                            prog=COMMAND,
+                            usage=USAGE, 
+                            description=SHORT_DESCRIPTION) 
+
 
 def getUsage():
-  return USAGE % {'command': COMMAND}
+  return PARSER.format_help() 
+
 
 def getHelp():
-  return HELP  % {'command': COMMAND}
+  return HELP
 
 
 def main(argv):
   """
   Program entry point
   """
-  parser = getParserFromModel(Project,
-                              prog=COMMAND,
-                              usage=USAGE % {'command': COMMAND}, 
-                              description=SHORT_DESCRIPTION) 
-  args = parser.parse_args(args=argv)
+  args = PARSER.parse_args(args=argv)
   LOGGER.debug('Arguments: %s' % args)
   
   Project.create(args.__dict__)

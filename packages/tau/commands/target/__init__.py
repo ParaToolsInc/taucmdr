@@ -94,7 +94,7 @@ def main(argv):
   """
   Program entry point
   """
-  args = parser.parse_args(args=argv)
+  args = PARSER.parse_args(args=argv)
   LOGGER.debug('Arguments: %s' % args)
   
   subcommand = args.subcommand

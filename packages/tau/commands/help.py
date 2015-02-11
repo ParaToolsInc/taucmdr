@@ -63,9 +63,7 @@ HELP = """
 Show help for a command.
 """
 
-USAGE_EPILOG = """
-Use quotes to group commands, e.g. %(command)s 'project create'.
-""" % {'command': COMMAND}
+USAGE_EPILOG = ''
 
 
 

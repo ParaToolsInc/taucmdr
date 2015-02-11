@@ -52,33 +52,36 @@ COMMAND = ' '.join(['tau'] + (__name__.split('.')[2:]))
 USAGE = """
   %(command)s <application_name> [options]
   %(command)s -h | --help
-"""
+""" % {'command': COMMAND}
 
 HELP = """
 '%(command)s' page to be written.
-"""
+""" % {'command': COMMAND}
+
+PARSER = getParserFromModel(Application,
+                            use_defaults=False,
+                            prog=COMMAND, 
+                            usage=USAGE,
+                            description=SHORT_DESCRIPTION)
+PARSER.add_argument('--name',
+                    help="New name of the application configuration",
+                    metavar='<new_name>', dest='new_name',
+                    default=SUPPRESS)
+
 
 def getUsage():
-  return USAGE % {'command': COMMAND}
+  return PARSER.format_help() 
+
 
 def getHelp():
-  return HELP  % {'command': COMMAND}
+  return HELP
 
 
 def main(argv):
   """
   Program entry point
   """
-  parser = getParserFromModel(Application,
-                              use_defaults=False,
-                              prog=COMMAND, 
-                              usage=USAGE % {'command': COMMAND}, 
-                              description=SHORT_DESCRIPTION)
-  parser.add_argument('--name',
-                      help="New name of the application configuration",
-                      metavar='<new_name>', dest='new_name',
-                      default=SUPPRESS)
-  args = parser.parse_args(args=argv)
+  args = PARSER.parse_args(args=argv)
   LOGGER.debug('Arguments: %s' % args)
 
   name = args.name
