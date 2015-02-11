@@ -46,7 +46,7 @@ from api.project import Project
 
 LOGGER = getLogger(__name__)
 
-SHORT_DESCRIPTION = "List projects or show project details."
+SHORT_DESCRIPTION = "List project configurations or show configuration details."
 
 COMMAND = ' '.join(['tau'] + (__name__.split('.')[2:]))
 
@@ -61,9 +61,18 @@ HELP = """
 '%(command)s' page to be written.
 """ % {'command': COMMAND}
 
+_arguments = [(('name',), {'help': "Name of project configuration to show",
+                           'metavar': '<project_name>', 
+                           'nargs': '?',
+                           'default': SUPPRESS})]
+PARSER = getParser(_arguments,
+                   prog=COMMAND, 
+                   usage=USAGE % {'command': COMMAND}, 
+                   description=SHORT_DESCRIPTION)
+
 
 def getUsage():
-  return USAGE % {'command': COMMAND}
+  return PARSER.format_help() 
 
 
 def getHelp():
@@ -74,15 +83,7 @@ def main(argv):
   """
   Program entry point
   """ 
-  arguments = [(('name',), {'help': "Name of project configuration to show",
-                            'metavar': '<project_name>', 
-                            'nargs': '?',
-                            'default': SUPPRESS})]
-  parser = getParser(arguments,
-                     prog=COMMAND, 
-                     usage=USAGE % {'command': COMMAND}, 
-                     description=SHORT_DESCRIPTION)
-  args = parser.parse_args(args=argv)
+  args = PARSER.parse_args(args=argv)
   LOGGER.debug('Arguments: %s' % args)
   
   try:

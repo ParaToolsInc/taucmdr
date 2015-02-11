@@ -44,7 +44,7 @@ from api.project import Project
 
 LOGGER = getLogger(__name__)
 
-SHORT_DESCRIPTION = "Delete a project."
+SHORT_DESCRIPTION = "Delete project configurations."
 
 COMMAND = ' '.join(['tau'] + (__name__.split('.')[2:]))
 
@@ -52,31 +52,32 @@ USAGE = """
 Usage:
   %(command)s <project_name>
   %(command)s -h | --help
-"""
+""" % {'command': COMMAND}
 
 HELP = """
 '%(command)s' page to be written.
-""" 
+""" % {'command': COMMAND}
+
+_arguments = [ (('name',), {'help': "Name of project configuration to delete",
+                            'metavar': '<project_name>'}) ]  
+PARSER = getParser(_arguments,
+                   prog=COMMAND, 
+                   usage=USAGE % {'command': COMMAND}, 
+                   description=SHORT_DESCRIPTION)
 
 def getUsage():
-  return USAGE % {'command': COMMAND}
+  return PARSER.format_help() 
+
 
 def getHelp():
-  return HELP % {'command': COMMAND}
+  return HELP
 
 
 def main(argv):
   """
   Program entry point
   """
-  # Parse command line arguments
-  arguments = [ (('name',), {'help': "Name of project configuration to delete",
-                             'metavar': '<project_name>'}) ]  
-  parser = getParser(arguments,
-                     prog=COMMAND, 
-                     usage=USAGE % {'command': COMMAND}, 
-                     description=SHORT_DESCRIPTION)
-  args = parser.parse_args(args=argv)
+  args = PARSER.parse_args(args=argv)
   LOGGER.debug('Arguments: %s' % args)
   
   Project.delete({'name': args.name})
