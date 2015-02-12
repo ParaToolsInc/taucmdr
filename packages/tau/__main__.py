@@ -54,11 +54,11 @@ COMMAND = 'tau'
 USAGE = """
   %(command)s <command> [options]
   %(command)s -h | --help
-""" 
+"""  % {'command': COMMAND}
 
 HELP = """
 '%(command)s' page to be written.
-"""
+""" % {'command': COMMAND}
 
 USAGE_EPILOG = """
 Commands:
@@ -69,14 +69,31 @@ Commands:
                 An alias for 'tau execute <executable>'
                     
 See 'tau <command> --help' for more information on <command>.
-"""
+"""  % {'command_descr': getCommandsHelp()}
+
+_arguments = [ (('command',), {'help': "See 'Commands' below",
+                               'choices': getCommands(),
+                               'metavar': '<command>'}),
+              (('options',), {'help': "Options to be passed to <command>",
+                               'metavar': '[options]',
+                               'nargs': REMAINDER}),
+              (('-v', '--verbose'), {'help': "Set logging level to DEBUG",
+                                     'metavar': '', 
+                                     'const': 'DEBUG', 
+                                     'default': 'INFO', 
+                                     'action': 'store_const'}) ]
+PARSER = getParser(_arguments,
+                   prog=COMMAND, 
+                   usage=USAGE, 
+                   description=SHORT_DESCRIPTION,
+                   epilog=USAGE_EPILOG)
 
 
 def getUsage():
-  return USAGE % {'command': COMMAND}
+  return PARSER.format_help()
 
 def getHelp():
-  return HELP % {'command': COMMAND}
+  return HELP
 
 def main():
   """
@@ -90,24 +107,7 @@ def main():
     LOGGER.error("Your Python version is %s but Python %s or later is required. Please update Python." % 
                  (version, sys.argv[0], expected))
 
-  # Parse command line arguments
-  arguments = [ (('command',), {'help': "See 'Commands' below",
-                                'choices': getCommands(),
-                                'metavar': '<command>'}),
-                (('options',), {'help': "Options to be passed to <command>",
-                                'metavar': '[options]',
-                                'nargs': REMAINDER}),
-                (('-v', '--verbose'), {'help': "Set logging level to DEBUG",
-                                       'metavar': '', 
-                                       'const': 'DEBUG', 
-                                       'default': 'INFO', 
-                                       'action': 'store_const'}) ]
-  parser = getParser(arguments,
-                     prog=COMMAND, 
-                     usage=USAGE % {'command': COMMAND}, 
-                     description=SHORT_DESCRIPTION,
-                     epilog=USAGE_EPILOG % {'command_descr': getCommandsHelp()})
-  args = parser.parse_args()
+  args = PARSER.parse_args()
   
   # Set verbosity level
   setLogLevel(args.verbose)
