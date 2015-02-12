@@ -79,7 +79,7 @@ class Project(Model):
       'via': 'project'
     },
   }
-  
+
   _valid_name = set(string.digits + string.letters + '-_.')
   
   def onCreate(self):
