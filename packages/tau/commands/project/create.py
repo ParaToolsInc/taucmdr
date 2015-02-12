@@ -53,7 +53,7 @@ LOGGER = getLogger(__name__)
 
 SHORT_DESCRIPTION = "Create a new project configuration."
 
-COMMAND = ' '.join(['tau'] + (__name__.split('.')[2:]))
+COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
 
 USAGE = """
   %(command)s <project_name> [targets] [applications] [measurements]

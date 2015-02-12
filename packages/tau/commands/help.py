@@ -43,8 +43,8 @@ import sys
 # TAU modules
 from tau import HELP_CONTACT, EXIT_SUCCESS
 from logger import getLogger
-from commands import UnknownCommandError
-from arguments import getParser, REMAINDER
+from commands import executeCommand, UnknownCommandError
+from arguments import getParser 
 
 
 LOGGER = getLogger(__name__)
@@ -55,16 +55,21 @@ COMMAND = ' '.join(['tau'] + _name_parts)
 SHORT_DESCRIPTION = "Show help for a command."
 
 USAGE = """
-  %(command)s <command>
+  %(command)s {<command>|<file_name>}
   %(command)s -h | --help
 """ % {'command': COMMAND}
 
 HELP = """
-Show help for a command.
+Show help for a command line or file.
 """
 
-USAGE_EPILOG = ''
-
+_arguments = [ (('command',), {'help': "A TAU command, system command, or file",
+                               'metavar': '{<command>|<file_name>}',
+                               'nargs': '+'})]
+PARSER = getParser(_arguments,
+                   prog=COMMAND, 
+                   usage=USAGE, 
+                   description=SHORT_DESCRIPTION)
 
 
 _GENERIC_HELP = "See 'tau --help' or contact %s for assistance" % HELP_CONTACT
@@ -118,74 +123,74 @@ def _guess_filetype(filename):
 
 
 def getUsage():
-  return '\n'.join([USAGE, USAGE_EPILOG]) 
+  return PARSER.format_help() 
 
 
 def getHelp():
-  return HELP % {'command': COMMAND}
+  return HELP
+
+
+def showCommandHelp(module_name):
+  __import__(module_name)
+  module = sys.modules[module_name]
+  LOGGER.info("""
+%(bar)s
+
+%(usage)s
+
+%(bar)s
+
+%(help)s
+
+%(bar)s""" % {'bar': '-'*80, 
+              'usage': module.getUsage(),
+              'help': module.getHelp()})
 
 
 def main(argv):
   """
   Program entry point
   """
-  arguments = [ (('command',), {'help': "Command to receive help with",
-                                'metavar': '<command>',
-                                'nargs': REMAINDER})]
-  parser = getParser(arguments,
-                     prog=COMMAND, 
-                     usage=USAGE, 
-                     description=SHORT_DESCRIPTION,
-                     epilog=USAGE_EPILOG)
-  args = parser.parse_args(args=argv)
+  args = PARSER.parse_args(args=argv)
   LOGGER.debug('Arguments: %s' % args)
     
   # Try to look up a Tau command's built-in help page
   cmd = '.'.join(args.command)
-  cmd_module = 'tau.commands.%s' % cmd
   try:
-    __import__(cmd_module)
-    print '-'*80
-    print sys.modules[cmd_module].getUsage()
-    print '-'*80
-    print '\nHelp:',
-    print sys.modules[cmd_module].getHelp()
-    print '-'*80
+    showCommandHelp('commands.%s' % cmd)
     return EXIT_SUCCESS
   except ImportError:
-    # Not a TAU command, but that's OK
     pass
-  
+
   # Is this a file?
-  if not os.path.exists(cmd):
-    hint = "A file named %r could not be found.\nCheck the file path and permissions." % cmd
-    raise UnknownCommandError(cmd, hint)
-  
-  # Do we recognize the file name?
-  try:
-    desc, hint = _fuzzy_index(_KNOWN_FILES, cmd.lower())
-  except KeyError:
-    pass
-  else:
-    article = 'an' if desc[0] in 'aeiou' else 'a'
-    hint = '%r is %s %s.\n%s.' % (cmd, article, desc, hint)
-    raise UnknownCommandError(cmd, hint)
-  
-  # Get the filetype and try to be helpful.
-  type, encoding = _guess_filetype(cmd)
-  LOGGER.debug("%r has type (%s, %s)" % (cmd, type, encoding))
-  if type:
-    type, subtype = type.split('/')
+  if os.path.exists(cmd): 
+    # Do we recognize the file name?
     try:
-      type_hints = _MIME_HINTS[type]
+      desc, hint = _fuzzy_index(_KNOWN_FILES, cmd.lower())
     except KeyError:
-      hint = "TAU doesn't recognize %r.\nSee 'tau --help' and use the appropriate subcommand." % cmd
+      pass
     else:
-      desc, hint = _fuzzy_index(type_hints, subtype)
       article = 'an' if desc[0] in 'aeiou' else 'a'
       hint = '%r is %s %s.\n%s.' % (cmd, article, desc, hint)
-    raise UnknownCommandError(cmd, hint)
-  else:
-    raise UnknownCommandError(cmd)
+      raise UnknownCommandError(cmd, hint)
+    
+    # Get the filetype and try to be helpful.
+    type, encoding = _guess_filetype(cmd)
+    LOGGER.debug("%r has type (%s, %s)" % (cmd, type, encoding))
+    if type:
+      type, subtype = type.split('/')
+      try:
+        type_hints = _MIME_HINTS[type]
+      except KeyError:
+        hint = "TAU doesn't recognize %r.\nSee 'tau --help' and use the appropriate subcommand." % cmd
+      else:
+        desc, hint = _fuzzy_index(type_hints, subtype)
+        article = 'an' if desc[0] in 'aeiou' else 'a'
+        hint = '%r is %s %s.\n%s.' % (cmd, article, desc, hint)
+      raise UnknownCommandError(cmd, hint)
+    else:
+      raise UnknownCommandError(cmd)
   
+  # Not a file, not a command, let's just show TAU usage and exit
+  showCommandHelp('__main__')
   return EXIT_SUCCESS

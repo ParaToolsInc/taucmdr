@@ -40,13 +40,13 @@ import sys
 
 # TAU modules
 from logger import getLogger
-from commands import getSubcommands, getSubcommandsHelp, executeCommand
+from commands import getCommands, getCommandsHelp, executeCommand
 from arguments import getParser, REMAINDER
 
 
 LOGGER = getLogger(__name__)
 
-_name_parts = __name__.split('.')[2:]
+_name_parts = __name__.split('.')[1:]
 COMMAND = ' '.join(['tau'] + _name_parts)
 
 SHORT_DESCRIPTION = "Create and manage application configurations."
@@ -66,12 +66,11 @@ Subcommands:
 
 See '%(command)s <subcommand> --help' for more information on <subcommand>.
 """ % {'command': COMMAND,
-       'command_descr': getSubcommandsHelp(__name__)}
+       'command_descr': getCommandsHelp(__name__)}
 
 
 
 _arguments = [ (('subcommand',), {'help': "See 'Subcommands' below",
-                                  'choices': getSubcommands(__name__),
                                   'metavar': '<subcommand>'}),
               (('options',), {'help': "Options to be passed to <subcommand>",
                               'metavar': '[options]',

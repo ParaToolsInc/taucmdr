@@ -48,7 +48,7 @@ LOGGER = getLogger(__name__)
 
 SHORT_DESCRIPTION = "List project configurations or show configuration details."
 
-COMMAND = ' '.join(['tau'] + (__name__.split('.')[2:]))
+COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
 
 USAGE = """
 Usage:

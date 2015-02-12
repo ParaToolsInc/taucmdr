@@ -36,6 +36,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 import os
+import sys
 
 # Exit codes
 EXIT_FAILURE = -100
@@ -44,14 +45,16 @@ EXIT_SUCCESS = 0
 
 # Tau source code root directory
 try:
-    __TAU_HOME__ = os.environ['__TAU_HOME__']
+  __TAU_HOME__ = os.environ['__TAU_HOME__']
 except KeyError:
-    print '!'*80
-    print '!'
-    print '! CRITICAL ERROR: __TAU_HOME__ environment variable not set.'
-    print '!'
-    print '!'*80
-    exit(EXIT_FAILURE)
+  sys.stderr.write("""
+%(bar)s
+!
+! CRITICAL ERROR: __TAU_HOME__ environment variable not set.
+!
+%(bar)s
+""" % {'bar': '!'*80})
+  exit(EXIT_FAILURE)
     
 # Contact for bugs, etc.
 HELP_CONTACT = '<support@paratools.com>'

@@ -46,7 +46,7 @@ LOGGER = getLogger(__name__)
 
 SHORT_DESCRIPTION = "Delete measurement configurations."
 
-COMMAND = ' '.join(['tau'] + (__name__.split('.')[2:]))
+COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
 
 USAGE = """
 Usage:

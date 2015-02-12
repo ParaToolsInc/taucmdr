@@ -47,7 +47,7 @@ LOGGER = getLogger(__name__)
 
 SHORT_DESCRIPTION = "Modify an existing target configuration."
 
-COMMAND = ' '.join(['tau'] + (__name__.split('.')[2:]))
+COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
 
 USAGE = """
   %(command)s <target_name> [options]

@@ -50,7 +50,7 @@ LOGGER = getLogger(__name__)
 
 SHORT_DESCRIPTION = "Create a new measurement configuration."
 
-COMMAND = ' '.join(['tau'] + (__name__.split('.')[2:]))
+COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
 
 USAGE = """
   %(command)s <measurement_name> [options]

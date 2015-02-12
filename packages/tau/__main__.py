@@ -67,12 +67,16 @@ Commands:
                 An alias for 'tau build <compiler>'
   <executable>  A program executable, e.g. ./a.out
                 An alias for 'tau execute <executable>'
-                    
-See 'tau <command> --help' for more information on <command>.
+
+Hints:
+ - All parameters can be specified partially e.g. these all do the same thing:
+     tau target create my_new_target --device_arch=GPU
+     tau targ cre my_new_target --device=GPU
+     tau t c my_new_target --d=GPU
+ - See 'tau <command> --help' for more information on <command>.
 """  % {'command_descr': getCommandsHelp()}
 
 _arguments = [ (('command',), {'help': "See 'Commands' below",
-                               'choices': getCommands(),
                                'metavar': '<command>'}),
               (('options',), {'help': "Options to be passed to <command>",
                                'metavar': '[options]',
@@ -108,6 +112,9 @@ def main():
                  (version, sys.argv[0], expected))
 
   args = PARSER.parse_args()
+  cmd = args.command
+  cmd_args = args.options
+
   
   # Set verbosity level
   setLogLevel(args.verbose)
@@ -115,14 +122,11 @@ def main():
   LOGGER.debug('Verbosity level: %s' % getLogLevel())
   
   # Try to execute as a TAU command
-  cmd = args.command
-  cmd_args = args.options
   try:
-      LOGGER.debug('Executing %r %r' % (cmd, cmd_args))
       return executeCommand([cmd], cmd_args)
   except UnknownCommandError:
-      # Not a TAU command, but that's OK
       pass
+
 
   # Check shortcuts
 #     shortcut = None

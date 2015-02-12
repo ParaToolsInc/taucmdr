@@ -43,9 +43,11 @@ from pkgutil import walk_packages
 from tau import HELP_CONTACT, EXIT_FAILURE
 from logger import getLogger
 from error import Error
+from pprint import pprint
 
+LOGGER = getLogger(__name__)
 
-LOGGER = getLogger('commands')
+_commands = {__name__: {}}
 
 
 class UnknownCommandError(Error):
@@ -59,7 +61,7 @@ class UnknownCommandError(Error):
     def handle(self):
         hint = 'Hint: %s' % self.hint if self.hint else ''
         message = """
-%(value)r is not a TAU subcommand.
+%(value)r is not a valid TAU command.
 
 %(hint)s""" % {'value': self.value, 
                'hint': hint, 
@@ -68,98 +70,106 @@ class UnknownCommandError(Error):
         sys.exit(EXIT_FAILURE)
 
 
-def getCommands():
-  """
-  Builds list of command names
-  """
-  names = []
-  for _, module, _ in walk_packages(__path__, __name__+'.'):
-    if module.count('.') == 1:
-      __import__(module)
-      name = module.split('.')[-1]
-      names.append(name)
-  return names
+class AmbiguousCommandError(Error):
+    """
+    Indicates that a specified partial command is ambiguous
+    """
+    def __init__(self, value, matches, hint="Try 'tau --help'."):
+        super(AmbiguousCommandError, self).__init__(value)
+        self.hint = hint
+        self.matches = matches
+        
+    def handle(self):
+        hint = 'Hint: %s' % self.hint if self.hint else ''
+        message = """
+Command %(value)r is ambiguous: %(matches)r
 
-def getCommandsHelp():
+%(hint)s""" % {'value': self.value,
+               'matches': self.matches, 
+               'hint': hint, 
+               'contact': HELP_CONTACT}
+        LOGGER.error(message)
+        sys.exit(EXIT_FAILURE)
+
+
+def getCommands(root=__name__):
+  """
+  Returns commands at the specified level
+  """
+  def _lookup(c, d):
+    if len(c) == 1: return d[c[0]]
+    else: return _lookup(c[1:], d[c[0]])
+
+  def _walking_import(module, c, d):
+    car = c[0]
+    cdr = c[1:]
+    if cdr:
+      _walking_import(module, cdr, d[car])
+    elif not car in d:
+        d[car] = {}
+        __import__(module)
+        d[car]['__module__'] = sys.modules[module]
+
+  command_module = sys.modules[__name__]
+  for _, module, _ in walk_packages(command_module.__path__, command_module.__name__+'.'):
+    try:
+      _lookup(module.split('.'), _commands)
+    except KeyError:
+      _walking_import(module, module.split('.'), _commands)
+
+  return _lookup(root.split('.'), _commands)
+
+
+def getCommandsHelp(root=__name__):
   """
   Builds listing of command names with short description
   """
   parts = []
-  for _, module, _ in walk_packages(__path__, __name__+'.'):
-    if module.count('.') == 1:
-      __import__(module)
-      descr = sys.modules[module].SHORT_DESCRIPTION
-      name = '{0:<12}'.format(module.split('.')[-1])
-      parts.append('  %s  %s' % (name, descr))
+  commands = getCommands(root)
+  for cmd, subcmds in commands.iteritems():
+    descr = subcmds['__module__'].SHORT_DESCRIPTION
+    name = '{:<12}'.format(cmd)
+    parts.append('  %s  %s' % (name, descr))
   return '\n'.join(parts)
-
-
-def getSubcommands(command, depth=1):
-  """
-  Builds list of subcommand names
-  """
-  LOGGER.debug('Getting subcommands of %r' % command)
-  names = []
-  command_module = sys.modules[command] 
-  depth = len(command_module.__name__.split('.')) + depth
-  for _, module, _ in walk_packages(command_module.__path__, command_module.__name__+'.'):
-    if len(module.split('.')) <= depth:
-      LOGGER.debug('importing %r' % module)
-      __import__(module)
-      names.append(module.split('.')[-1])
-  return names
-
-def getSubcommandsHelp(command, depth=1):
-  """
-  Builds listing of subcommand names with short description
-  """
-  LOGGER.debug('Getting subcommands of %r' % command)
-  parts = []
-  command_module = sys.modules[command] 
-  depth = len(command_module.__name__.split('.')) + depth
-  for _, module, _ in walk_packages(command_module.__path__, command_module.__name__+'.'):
-    if len(module.split('.')) <= depth:
-      LOGGER.debug('importing %r' % module)
-      __import__(module)
-      descr = sys.modules[module].SHORT_DESCRIPTION
-      name = '{:<12}'.format(module.split('.')[-1])
-      parts.append('  %s  %s' % (name, descr))
-  return '\n'.join(parts)
-
-
-def getCommandAttribute(cmd, attr_name):
-  if len(cmd):
-    cmd_module = 'tau.commands.%s' % '.'.join(cmd)
-    __import__(cmd_module)
-    try:
-      attr = getattr(sys.modules[cmd_module], attr_name)
-    except AttributeError:
-      LOGGER.debug("%s.%s doesn't exist" % (cmd_module, attr_name))
-      attr = None
-    else:
-      LOGGER.debug("Found %s.%s" % (cmd_module, attr_name))
-    return attr
-  else:
-    return None
 
 
 def executeCommand(cmd, cmd_args=[]):
-    """
-    Import the command module and run its main routine
-    """
+  """
+  Import the command module and run its main routine
+  """
+  def _resolve(c, d):
+    if not c: 
+      return []
+    car = c[0]
+    cdr = c[1:]
     try:
-      main = getCommandAttribute(cmd, 'main')
-      LOGGER.debug('Recognized %r as TAU command' % cmd)
-    except ImportError:
-      LOGGER.debug('%r not recognized as a TAU command' % cmd)
-      parent = cmd[:-1]
-      while len(parent):
-        main = getCommandAttribute(parent, 'main')
-        if main:
-          LOGGER.debug('Getting help from %r' % parent)
-          return main(['--help'])
-        else:
-          parent = parent[:-1]
+      matches = [(car, d[car])]
+    except KeyError:
+      matches = [i for i in d.iteritems() if i[0].startswith(car)]
+    if len(matches) == 1:
+      return [matches[0][0]] + _resolve(cdr, matches[0][1])
+    elif len(matches) == 0:
       raise UnknownCommandError(' '.join(cmd))
+    elif len(matches) > 1:
+      raise AmbiguousCommandError(' '.join(cmd), [m[0] for m in matches])
+
+  while len(cmd):
+    root = '.'.join([__name__] + cmd)
+    try:
+      main = getCommands(root)['__module__'].main
+    except KeyError:
+      LOGGER.debug('%r not recognized as a TAU command' % cmd)
+      try:
+        cmd = _resolve(cmd, _commands[__name__])
+      except UnknownCommandError:
+        if len(cmd) <= 1: 
+          raise
+        parent = cmd[:-1]
+        LOGGER.debug('Getting help from parent command %r' % parent)
+        return executeCommand(parent, ['--help'])
+      else:
+        return executeCommand(cmd, cmd_args)
+    except AttributeError:
+      raise InternalError("'main(argv)' undefined in command %r" % cmd)
     else:
       return main(cmd_args)
