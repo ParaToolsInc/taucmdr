@@ -47,7 +47,7 @@ LOGGER = getLogger(__name__)
 
 SHORT_DESCRIPTION = "Modify an existing project configuration."
 
-COMMAND = ' '.join(['tau'] + (__name__.split('.')[2:]))
+COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
 
 USAGE = """
   %(command)s <project_name> [options]
