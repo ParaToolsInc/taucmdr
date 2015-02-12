@@ -94,14 +94,12 @@ def main(argv):
                           title='Targets (%s)' % USER_PREFIX)
     LOGGER.info(listing)
   else:
-    try:
-      found = Target.search({'name': name})[0]
-    except IndexError:
+    found = Target.named(name)
+    if not found:
       raise ConfigurationError('There is no target named %r.' % name,
                                'Try `tau target list` to see all target names.')
     else:
-      listing = pformatDict(found.data(),
-                            title='Target "%s"' % found.name)
+      listing = pformatDict(found.data(), title='Target "%s"' % found.name)
       LOGGER.info(listing)
   
   return EXIT_SUCCESS

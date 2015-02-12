@@ -43,7 +43,7 @@ import subprocess
 
 # TAU modules
 from logger import getLogger
-from model import Model, ModelError
+from model import Model, ModelError, ByName
 from arguments import SUPPRESS
 
 
@@ -63,7 +63,6 @@ def detectDefaultHostArch():
     """
     here = os.path.dirname(os.path.realpath(__file__))
     cmd = os.path.join(os.path.dirname(here), 'util', 'archfind', 'archfind')
-    print cmd
     return subprocess.check_output(cmd).strip()
 
 
@@ -74,7 +73,7 @@ def detectDefaultDeviceArch():
   return SUPPRESS
 
 
-class Target(Model):
+class Target(Model, ByName):
   """
   Target data model
   """

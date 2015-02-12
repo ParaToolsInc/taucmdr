@@ -94,9 +94,8 @@ def main(argv):
                           title='Measurements (%s)' % USER_PREFIX)
     LOGGER.info(listing)
   else:
-    try:
-      found = Measurement.search({'name': name})[0]
-    except IndexError:
+    found = Measurement.named(name)
+    if not found:
       raise ConfigurationError('There is no measurement named %r.' % name,
                                'Try `tau measurement list` to see all measurement names.')
     else:

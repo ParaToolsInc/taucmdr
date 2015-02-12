@@ -85,17 +85,17 @@ _arguments = [ (('name',), {'help': "Project name",
                                  'metavar': 'target',
                                  'nargs': '+',
                                  'default': SUPPRESS,
-                                 'dest': 'expl_targets'}),
+                                 'dest': 'expl_target'}),
                (('--applications',), {'help': "Application configurations in this project",
                                       'metavar': 'application',
                                       'nargs': '+',
                                       'default': SUPPRESS,
-                                      'dest': 'expl_applications'}),
+                                      'dest': 'expl_application'}),
                (('--measurements',), {'help': "Measurement configurations in this project",
                                       'metavar': 'measurement',
                                       'nargs': '+',
                                       'default': SUPPRESS,
-                                      'dest': 'expl_measurements'}) ]  
+                                      'dest': 'expl_measurement'}) ]  
 PARSER = getParser(_arguments,
                    prog=COMMAND, 
                    usage=USAGE, 
@@ -124,39 +124,31 @@ def main(argv):
   
   implicit = getattr(args, 'targets', []) + getattr(args, 'applications', []) + getattr(args, 'measurements', [])
   for name in implicit:
-    target = Target.search({'name': name})
-    if not target:
-      application = Application.search({'name': name})
-      if not application:
-        measurement = Measurement.search({'name': name})
-        if not measurement:
-          PARSER.error('There is not target, application, or measurement named %r' % name)
-        else:
-          measurements.append(measurement)
-      else:
-        applications.append(application)
-    else:
-      targets.append(target)
+    t = Target.named(name)
+    a = Application.named(name)
+    m = Measurement.named(name)
+    tam = set([t,a,m]) - set([None])
+    if len(tam) > 1:
+      PARSER.error('%r is ambigous' % name)
+    elif len(tam) == 0:
+      PARSER.error('%r is not target, application, or measurement' % name)
+    elif t:
+      targets.append(t)
+    elif a:
+      applications.append(a)
+    elif m:
+      measurements.append(m)
   
-  for target_name in getattr(args, 'expl_targets', []):
-    target = Target.search({'name': target_name})
-    if not target:
-      PARSER.error('There is no target named %r' % target_name)
-    else:
-      targets.append(target)
+  def _checkExplicit(model, acc):
+    for name in getattr(args, 'expl_%s' % model.model_name, []):
+      found = model.named(name)
+      if not found:
+        PARSER.error('There is no %s named %r' % (model.model_name, name))
+      acc.append(found)
       
-  print targets
-
-#   for application_name in args.expl_applications:
-#     if not Application.exists({'name': application_name}):
-#       PARSER.error('There is no application named %r' % application_name)
-#   
-#   for measurement_name in args.expl_measurements:
-#     if not Measurement.exists({'name': measurement_name}):
-#       PARSER.error('There is no measurement named %r' % measurement_name)
-
-  
-  
+  _checkExplicit(Target, targets)
+  _checkExplicit(Application, applications)
+  _checkExplicit(Measurement, measurements)
   
   LOGGER.info('Created a new project named %r.' % args.name)
   return executeCommand(['project', 'list'], [args.name])
