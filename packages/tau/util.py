@@ -145,14 +145,6 @@ def extract(tgz, dest):
     return full_dest
 
 
-def detectDefaultTarget():
-    """
-    Use TAU's archfind script to detect the target architecture
-    """
-#     cmd = os.path.join(tau.TAU_MASTER_SRC_DIR, 'utils', 'archfind')
-#     return subprocess.check_output(cmd).strip()
-    return "x86_64"
-
 def pformatDict(d, title=None, empty_msg='No items.', indent=0):
     if title:
         line = '{:=<75}\n'.format('== %s ==' % title)

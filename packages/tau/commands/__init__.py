@@ -51,45 +51,45 @@ _commands = {__name__: {}}
 
 
 class UnknownCommandError(Error):
-    """
-    Indicates that a specified command is unknown
-    """
-    def __init__(self, value, hint="Try 'tau --help'."):
-        super(UnknownCommandError, self).__init__(value)
-        self.hint = hint
+  """
+  Indicates that a specified command is unknown
+  """
+  def __init__(self, value, hint="Try 'tau --help'."):
+    super(UnknownCommandError, self).__init__(value)
+    self.hint = hint
         
-    def handle(self):
-        hint = 'Hint: %s' % self.hint if self.hint else ''
-        message = """
+  def handle(self):
+    hint = 'Hint: %s' % self.hint if self.hint else ''
+    message = """
 %(value)r is not a valid TAU command.
 
 %(hint)s""" % {'value': self.value, 
                'hint': hint, 
                'contact': HELP_CONTACT}
-        LOGGER.error(message)
-        sys.exit(EXIT_FAILURE)
+    LOGGER.error(message)
+    sys.exit(EXIT_FAILURE)
 
 
 class AmbiguousCommandError(Error):
-    """
-    Indicates that a specified partial command is ambiguous
-    """
-    def __init__(self, value, matches, hint="Try 'tau --help'."):
-        super(AmbiguousCommandError, self).__init__(value)
-        self.hint = hint
-        self.matches = matches
-        
-    def handle(self):
-        hint = 'Hint: %s' % self.hint if self.hint else ''
-        message = """
+  """
+  Indicates that a specified partial command is ambiguous
+  """
+  def __init__(self, value, matches, hint="Try 'tau --help'."):
+    super(AmbiguousCommandError, self).__init__(value)
+    self.hint = hint
+    self.matches = matches
+      
+  def handle(self):
+    hint = 'Hint: %s' % self.hint if self.hint else ''
+    message = """
 Command %(value)r is ambiguous: %(matches)r
 
 %(hint)s""" % {'value': self.value,
                'matches': self.matches, 
                'hint': hint, 
                'contact': HELP_CONTACT}
-        LOGGER.error(message)
-        sys.exit(EXIT_FAILURE)
+    LOGGER.error(message)
+    sys.exit(EXIT_FAILURE)
 
 
 def getCommands(root=__name__):
@@ -101,8 +101,7 @@ def getCommands(root=__name__):
     else: return _lookup(c[1:], d[c[0]])
 
   def _walking_import(module, c, d):
-    car = c[0]
-    cdr = c[1:]
+    car, cdr = c[0], c[1:]
     if cdr:
       _walking_import(module, cdr, d[car])
     elif not car in d:
@@ -140,8 +139,7 @@ def executeCommand(cmd, cmd_args=[]):
   def _resolve(c, d):
     if not c: 
       return []
-    car = c[0]
-    cdr = c[1:]
+    car, cdr = c[0], c[1:]
     try:
       matches = [(car, d[car])]
     except KeyError:
@@ -160,7 +158,7 @@ def executeCommand(cmd, cmd_args=[]):
     except KeyError:
       LOGGER.debug('%r not recognized as a TAU command' % cmd)
       try:
-        cmd = _resolve(cmd, _commands[__name__])
+        resolved = _resolve(cmd, _commands[__name__])
       except UnknownCommandError:
         if len(cmd) <= 1: 
           raise
@@ -168,7 +166,8 @@ def executeCommand(cmd, cmd_args=[]):
         LOGGER.debug('Getting help from parent command %r' % parent)
         return executeCommand(parent, ['--help'])
       else:
-        return executeCommand(cmd, cmd_args)
+        LOGGER.debug('Resolved ambiguous command %r to %r' % (cmd, resolved))
+        return executeCommand(resolved, cmd_args)
     except AttributeError:
       raise InternalError("'main(argv)' undefined in command %r" % cmd)
     else:

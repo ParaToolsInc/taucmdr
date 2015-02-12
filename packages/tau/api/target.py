@@ -36,14 +36,42 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 # System modules
+import os
 import string
+import platform
+import subprocess
 
 # TAU modules
 from logger import getLogger
 from model import Model, ModelError
+from arguments import SUPPRESS
 
 
 LOGGER = getLogger(__name__)
+
+
+def detectDefaultHostOS():
+  """
+  Detect the default host operating system
+  """
+  return platform.system()
+  
+
+def detectDefaultHostArch():
+    """
+    Use TAU's archfind script to detect the host target architecture
+    """
+    here = os.path.dirname(os.path.realpath(__file__))
+    cmd = os.path.join(os.path.dirname(here), 'util', 'archfind', 'archfind')
+    print cmd
+    return subprocess.check_output(cmd).strip()
+
+
+def detectDefaultDeviceArch():
+  """
+  Detect coprocessors
+  """
+  return SUPPRESS
 
 
 class Target(Model):
@@ -72,7 +100,7 @@ class Target(Model):
       'argparse': (('--host_os',), 
                    {'help': 'Host operating system',
                     'metavar': '<os>',
-                    'default': 'Linux'})
+                    'default': detectDefaultHostOS()})
     },
     'host_arch': {
       'type': 'string',
@@ -80,13 +108,14 @@ class Target(Model):
       'argparse': (('--host_arch',), 
                    {'help': 'Host architecture',
                     'metavar': '<arch>',
-                    'default': 'x86_64'})
+                    'default': detectDefaultHostArch()})
     },
     'device_arch': {
       'type': 'string',
       'argparse': (('--device_arch',), 
                    {'help': 'Coprocessor architecture',
-                    'metavar': '<arch>'})
+                    'metavar': '<arch>',
+                    'default': detectDefaultDeviceArch()})
     },
     'compilers': {
       'collection': 'Compiler',
