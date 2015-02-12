@@ -58,25 +58,26 @@ USAGE = """
 
 HELP = """
 '%(command)s' page to be written.
-""" % {'command': COMMAND}
-
-USAGE_EPILOG = """
-Commands:
-%(command_descr)s
-  <compiler>    A compiler command, e.g. gcc, mpif90, upcc, nvcc, etc. 
-                An alias for 'tau build <compiler>'
-  <executable>  A program executable, e.g. ./a.out
-                An alias for 'tau execute <executable>'
 
 Hints:
  - All parameters can be specified partially e.g. these all do the same thing:
      tau target create my_new_target --device_arch=GPU
      tau targ cre my_new_target --device=GPU
      tau t c my_new_target --d=GPU
- - See 'tau <command> --help' for more information on <command>.
+""" % {'command': COMMAND}
+
+USAGE_EPILOG = """
+commands:
+%(command_descr)s
+  <compiler>    A compiler command, e.g. gcc, mpif90, upcc, nvcc, etc. 
+                An alias for 'tau build <compiler>'
+  <executable>  A program executable, e.g. ./a.out
+                An alias for 'tau execute <executable>'
+
+See 'tau help <command>' for more information on <command>.
 """  % {'command_descr': getCommandsHelp()}
 
-_arguments = [ (('command',), {'help': "See 'Commands' below",
+_arguments = [ (('command',), {'help': "See 'commands' below",
                                'metavar': '<command>'}),
               (('options',), {'help': "Options to be passed to <command>",
                                'metavar': '[options]',
@@ -98,6 +99,7 @@ def getUsage():
 
 def getHelp():
   return HELP
+
 
 def main():
   """
@@ -126,7 +128,6 @@ def main():
       return executeCommand([cmd], cmd_args)
   except UnknownCommandError:
       pass
-
 
   # Check shortcuts
 #     shortcut = None

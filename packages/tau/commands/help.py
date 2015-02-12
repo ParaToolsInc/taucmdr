@@ -44,7 +44,7 @@ import sys
 from tau import HELP_CONTACT, EXIT_SUCCESS
 from logger import getLogger
 from commands import executeCommand, UnknownCommandError
-from arguments import getParser 
+from arguments import getParser, REMAINDER
 
 
 LOGGER = getLogger(__name__)
@@ -65,7 +65,7 @@ Show help for a command line or file.
 
 _arguments = [ (('command',), {'help': "A TAU command, system command, or file",
                                'metavar': '{<command>|<file_name>}',
-                               'nargs': '+'})]
+                               'nargs': REMAINDER})]
 PARSER = getParser(_arguments,
                    prog=COMMAND, 
                    usage=USAGE, 
@@ -130,7 +130,7 @@ def getHelp():
   return HELP
 
 
-def showCommandHelp(module_name):
+def exitWithHelp(module_name):
   __import__(module_name)
   module = sys.modules[module_name]
   LOGGER.info("""
@@ -145,6 +145,7 @@ def showCommandHelp(module_name):
 %(bar)s""" % {'bar': '-'*80, 
               'usage': module.getUsage(),
               'help': module.getHelp()})
+  return EXIT_SUCCESS
 
 
 def main(argv):
@@ -153,12 +154,14 @@ def main(argv):
   """
   args = PARSER.parse_args(args=argv)
   LOGGER.debug('Arguments: %s' % args)
+  
+  if not args.command:
+    return exitWithHelp('__main__')
     
   # Try to look up a Tau command's built-in help page
   cmd = '.'.join(args.command)
   try:
-    showCommandHelp('commands.%s' % cmd)
-    return EXIT_SUCCESS
+    return exitWithHelp('commands.%s' % cmd)
   except ImportError:
     pass
 
@@ -192,5 +195,4 @@ def main(argv):
       raise UnknownCommandError(cmd)
   
   # Not a file, not a command, let's just show TAU usage and exit
-  showCommandHelp('__main__')
-  return EXIT_SUCCESS
+  return exitWithHelp('__main__')
