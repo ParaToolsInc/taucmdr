@@ -40,13 +40,13 @@ import string
 
 # TAU modules
 from logger import getLogger
-from model import Model, ModelError
+from model import Model, ModelError, ByName
 
 
 LOGGER = getLogger(__name__)
 
 
-class Project(Model):
+class Project(Model, ByName):
   """
   Project data model
   """

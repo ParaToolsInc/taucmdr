@@ -40,14 +40,14 @@ import string
 
 # TAU modules
 from logger import getLogger
-from model import Model, ModelError
+from model import Model, ModelError, ByName
 from arguments import ParseBooleanAction, SUPPRESS
 
 
 LOGGER = getLogger(__name__)
 
 
-class Measurement(Model):
+class Measurement(Model, ByName):
   """
   Measurement data model
   """

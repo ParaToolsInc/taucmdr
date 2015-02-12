@@ -40,14 +40,14 @@ import string
 
 # TAU modules
 from logger import getLogger
-from model import Model, ModelError
+from model import Model, ModelError, ByName
 from arguments import ParseBooleanAction
 
 
 LOGGER = getLogger(__name__)
 
 
-class Application(Model):
+class Application(Model, ByName):
   """
   Application data model
   """

@@ -44,6 +44,7 @@ import storage
 from tau import HELP_CONTACT, EXIT_FAILURE
 from logger import getLogger
 from error import ConfigurationError
+from docutils.nodes import field
 
 
 LOGGER = getLogger(__name__)
@@ -175,3 +176,15 @@ class Model(object):
     Delete the records that match the given keys
     """
     return storage.remove(cls.model_name, keys)
+
+
+class ByName(object):
+  """
+  Mixin for a model with a unique 'name' field
+  """
+  @classmethod
+  def named(cls, name):
+    try:
+      return cls.search({'name': name})[0]
+    except IndexError:
+      return None

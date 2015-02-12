@@ -94,9 +94,8 @@ def main(argv):
                           title='Applications (%s)' % USER_PREFIX)
     LOGGER.info(listing)
   else:
-    try:
-      found = Application.search({'name': name})[0]
-    except IndexError:
+    found = Application.named(name)
+    if not found:
       raise ConfigurationError('There is no application named %r.' % name,
                                'Try `tau application list` to see all application names.')
     else:

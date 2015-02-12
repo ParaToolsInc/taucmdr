@@ -94,9 +94,8 @@ def main(argv):
                           title='Projects (%s)' % USER_PREFIX)
     LOGGER.info(listing)
   else:
-    try:
-      found = Project.search({'name': name})[0]
-    except IndexError:
+    found = Project.named(name)
+    if not found:
       raise ConfigurationError('There is no project named %r.' % name,
                                'Try `tau project list` to see all project names.')
     else:
