@@ -43,7 +43,10 @@ from tau import EXIT_SUCCESS
 from logger import getLogger
 from arguments import getParserFromModel
 from commands import executeCommand
+from model import ModelKeyError
+from error import ConfigurationError
 from api.target import Target
+
 
 
 LOGGER = getLogger(__name__)
@@ -82,7 +85,11 @@ def main(argv):
   args = PARSER.parse_args(args=argv)
   LOGGER.debug('Arguments: %s' % args)
   
-  Target.create(args.__dict__)
+  try:
+    Target.create(args.__dict__)
+  except ModelKeyError:
+    raise ConfigurationError('A target named %r already exists' % args.name,
+                             'Type `tau target list` to see all target names')
   
   LOGGER.info('Created a new target named %r.' % args.name)
   return executeCommand(['target', 'list'], [args.name])

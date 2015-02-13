@@ -40,44 +40,55 @@ import sys
 import json
 
 # TAU modules
-import storage
 from tau import HELP_CONTACT, EXIT_FAILURE
 from logger import getLogger
-from error import ConfigurationError
-from docutils.nodes import field
+from error import InternalError
+from storage import user_storage as storage
 
 
 LOGGER = getLogger(__name__)
 
 
-class ModelError(ConfigurationError):
-    """
-    Indicates that invalid model data was given.
-    """
-    def __init__(self, value, hint="Try 'tau project --help'."):
-        super(ModelError, self).__init__(value)
-        self.hint = hint
+class ModelError(InternalError):
+  """
+  Indicates that invalid model data was given.
+  """
+  def __init__(self, model_cls, value):
+    super(ModelError, self).__init__(value)
+    self.model_cls = model_cls
 
-    def handle(self):
-        hint = 'Hint: %s\n' % self.hint if self.hint else ''
-        message = """
+  def handle(self):
+    message = """
+Error in model %(model_name)s:
 %(value)s
 
-%(hint)s
+This is a bug in TAU. 
+Please contact %(contact)s for assistance.""" % {'model_name': self.model_cls.model_name,
+                                                 'value': self.value, 
+                                                 'contact': HELP_CONTACT}
+    LOGGER.critical(message)
+    sys.exit(EXIT_FAILURE)
+        
 
-TAU cannot proceed with the given inputs.
-Please review the input files and command line parameters
-or contact %(contact)s for assistance.""" % {'value': self.value, 
-                                             'hint': hint, 
-                                             'contact': HELP_CONTACT}
-        LOGGER.critical(message)
-        sys.exit(EXIT_FAILURE)
+class ModelKeyError(ModelError):
+  def __init__(self, model_cls, unique):
+    super(ModelKeyError, self).__init__(
+            model_cls, 'A record with one of %r already exists' % unique)
+
+
+class ModelAssociationError(ModelError):
+  def __init__(self, model_cls, attr):
+    super(ModelAssociationError, self).__init__(
+            'Invalid association: %r' % attr)
 
 
 class Model(object):
   """
   The "M" in MVC
   """
+  
+  enforce_schema = True
+  
   def __init__(self, data):
     self.__dict__.update(self._validate(data))
     self.onCreate()
@@ -88,10 +99,10 @@ class Model(object):
   def onCreate(self):
     pass
   
-  def onUpdate(self):
-    pass
-
   def data(self):
+    """
+    Returns model data fields as a dictionary
+    """
     data = {}
     for name in self.attributes.iterkeys():
       try:
@@ -99,35 +110,66 @@ class Model(object):
       except AttributeError:
         pass
     return data
+
+  def primaryKey(self):
+    """
+    Returns the value of the primary key field or None if no primary key defined
+    """
+    return getattr(self, self.primary_key, None)
   
   @classmethod
-  def _validate(cls, data, raise_on_nonschema=True):
+  def _validate(cls, data):
     """
     Validates the given data against the model schema
     A new dictionary containing validated data is returned
     """
     validated = {}
-    for attr, desc in cls.attributes.iteritems():
+    for attr, props in cls.attributes.iteritems():
       # Check required fields
-      if desc.get('required', False):
+      if props.get('required', False):
         try:
           validated[attr] = data[attr]
         except KeyError:
-          raise ModelError('%r is required' % attr)
+          raise ModelError(cls, '%r is required' % attr)
         else: 
           continue
       # Apply defaults
       try:
-        default = desc['defaultsTo']
+        default = props['defaultsTo']
       except KeyError:
         pass
       else:
         validated[attr] = data.get(attr, default)
         continue
-      # Empty collections are an empty list 
-      if desc.get('collection', False):
+      # Check model associations 
+      try:
+        collection_type = props['collection']
+      except KeyError:
+        pass
+      else: 
+        collection_model = getModel(collection_type)
+        try:
+          via = props['via']
+        except KeyError:
+          if collection_model:
+            raise ModelError(cls, "'collection(%r)' does not define 'via' in %r" % 
+                             (collection_type, cls.model_name))
+        else:
+          if not collection_model:
+            raise ModelError(cls, "'collection(%r)' defines 'via' on non-model in %r" % 
+                             (collection_type, cls.model_name))
+          try:
+            via_attr = collection_model.attributes[via]
+          except KeyError:
+            raise ModelError(cls, "'collection(%r)' defines 'via' on undefined attribute %s.attributes.%s in %r" % 
+                             (collection_type, collection_model.__name__, via, cls.model_name))
+          else:
+            if not ('model' in via_attr or 'collection' in via_attr):
+              raise ModelError(cls, "'collection(%r)' defines 'via' on non-model attribute %s.attributes.%s in %r" % 
+                               (collection_type, collection_model.__name__, via, cls.model_name))
+        # Empty collections are an empty list
         value = data.get(attr, [])
-        validated[attr] = value if value else [] 
+        validated[attr] = value if value else []
       # Flag non-schema fields and ignore `None` fields
       try:
         value = data[attr]
@@ -136,19 +178,13 @@ class Model(object):
       else:
         if value != None:
           validated[attr] = value
-    if raise_on_nonschema:
+    # Enforce schema
+    if cls.enforce_schema:
       for key in data:
         if not key in cls.attributes:
-          raise ModelError('Data field %r not described in %s schema' % (key, cls.model_name))
+          raise ModelError(cls, 'Data field %r not described in %s schema' % (key, cls.model_name))
     return validated
 
-  @classmethod
-  def create(cls, fields):
-    """
-    Store a new model record
-    """
-    return storage.insert(cls.model_name, cls(fields))
-  
   @classmethod
   def search(cls, keys=None):
     """
@@ -162,11 +198,66 @@ class Model(object):
     Return true if a record matching the given keys exists
     """
     return storage.contains(cls.model_name, keys)
+  
+  @classmethod
+  def withPrimaryKey(cls, key):
+    """
+    Return the record with the given primary key
+    """
+    try:
+      return cls(storage.search(cls.model_name, {cls.primary_key: key})[0])
+    except IndexError:
+      raise ModelError(cls, 'Primary key (%r == %r) does not exist' % 
+                       (cls.primary_key, key))
 
   @classmethod
-  def edit(cls, keys, fields):
+  def create(cls, fields):
     """
-    Change the fields of the record that match the given keys
+    Store a new model record
+    """
+    model = cls(fields)
+    unique = dict([(attr, getattr(model, attr)) 
+                   for attr, _ in cls.uniqueAttributes()])
+    if storage.contains(cls.model_name, unique):
+      raise ModelKeyError(cls, unique)
+
+    # Update N-N and N-1 relationships
+    for attr, props in cls.attributesWith('collection'):
+      via = props['via']
+      foreign_cls = getModel(props['collection'])
+      foreign_keys = getattr(model, attr)
+      for foreign_key in foreign_keys:
+        foreign_model = foreign_cls.withPrimaryKey(foreign_key)
+        if 'model' in foreign_cls.attributes[via]:
+          updated_keys = model.primaryKey()
+        elif 'collection' in foreign_cls.attributes[via]:
+          updated_keys = getattr(foreign_model, via)
+          updated_keys.append(model.primaryKey())
+        storage.update(foreign_cls.model_name,
+                       {foreign_cls.primary_key: foreign_model.primaryKey()},
+                       {via: updated_keys})
+    
+    # Update 1-N and 1-1 relationships
+    for attr, props in cls.attributesWith('model'):
+      via = props['via']
+      foreign_cls = getModel(props['model'])
+      foreign_key = getattr(model, attr)
+      foreign_model = foreign_cls.withPrimaryKey(foreign_key)
+      if 'model' in foreign_cls.attributes[via]:
+        updated_keys = model.primaryKey()
+      elif 'collection' in foreign_cls.attributes[via]:
+        updated_keys = getattr(foreign_model, via)
+        updated_keys.append(model.primaryKey())
+      storage.update(foreign_cls.model_name,
+                     {foreign_cls.primary_key: foreign_model.primaryKey()},
+                     {via: updated_keys})
+
+    return storage.insert(cls.model_name, model.data())
+  
+  @classmethod
+  def update(cls, keys, fields):
+    """
+    Change the fields of all records that match the given keys
     """
     return storage.update(cls.model_name, keys, fields)
   
@@ -175,16 +266,122 @@ class Model(object):
     """
     Delete the records that match the given keys
     """
+    for model in cls.search(keys):
+      # Update N-N and N-1 relationships
+      for attr, props in cls.attributesWith('collection'):
+        via = props['via']
+        foreign_cls = getModel(props['collection'])
+        foreign_keys = getattr(model, attr)
+        for foreign_key in foreign_keys:
+          foreign_model = foreign_cls.withPrimaryKey(foreign_key)
+          if 'model' in foreign_cls.attributes[via]:
+            updated_keys = None
+          elif 'collection' in foreign_cls.attributes[via]:
+            updated_keys = list(set(getattr(foreign_model, via)) - set(model.primaryKey()))
+          storage.update(foreign_cls.model_name,
+                         {foreign_cls.primary_key: foreign_model.primaryKey()},
+                         {via: updated_keys})
+      
+      # Update 1-N and 1-1 relationships
+      for attr, props in cls.attributesWith('model'):
+        via = props['via']
+        foreign_cls = getModel(props['model'])
+        foreign_key = getattr(model, attr)
+        foreign_model = foreign_cls.withPrimaryKey(foreign_key)
+        if 'model' in foreign_cls.attributes[via]:
+          updated_keys = None
+        elif 'collection' in foreign_cls.attributes[via]:
+          updated_keys = list(set(getattr(foreign_model, via)) - set(model.primaryKey()))
+        storage.update(foreign_cls.model_name,
+                       {foreign_cls.primary_key: foreign_model.primaryKey()},
+                       {via: updated_keys})
+    
     return storage.remove(cls.model_name, keys)
+  
+  @classmethod
+  def attributesWith(cls, property):
+    """
+    Yield attributes that have the specified property
+    """
+    for i in cls.attributes.iteritems():
+      if i[1].get(property, False):
+        yield i
+
+  @classmethod
+  def uniqueAttributes(cls):
+    """
+    Yield attributes that must have unique values
+    """
+    primary_key = getattr(cls, 'primary_key', None)
+    for i in cls.attributes.iteritems():
+      if primary_key and i[0] == primary_key:
+        yield i
+      else:
+        try:
+          attr_val = i[1]['unique']
+        except KeyError:
+          continue
+        else:
+          if attr_val:
+            yield i
+
+  @classmethod
+  def requiredAttributes(cls):
+    """
+    Yield attributes that must have values
+    """
+    primary_key = getattr(cls, 'primary_key', None)
+    for i in cls.attributes.iteritems():
+      if primary_key and i[0] == primary_key:
+        yield i
+      else:
+        try:
+          attr_val = i[1]['required']
+        except KeyError:
+          continue
+        else:
+          if attr_val:
+            yield i
+
+
+
+class ByID(object):
+  """
+  Mixin for a model with a unique 'id' field
+  """
+  primary_key = 'id'
+  
+  @classmethod
+  def withId(cls, id):
+    try:
+      return cls.search({'id': id})[0]
+    except IndexError:
+      return None
 
 
 class ByName(object):
   """
   Mixin for a model with a unique 'name' field
   """
+  primary_key = 'name'
+  
   @classmethod
-  def named(cls, name):
+  def withName(cls, name):
     try:
       return cls.search({'name': name})[0]
     except IndexError:
       return None
+    
+    
+def getModel(name):
+  """
+  Returns the named model class or None if no such model exists
+  """
+  module_name = '.'.join(['tau', 'api', name.lower()])
+  class_name = name.lower().capitalize()
+  try:
+    module = __import__(module_name, globals(), locals(), [class_name], -1)
+  except ImportError:
+    return None
+  else:
+    return getattr(module, class_name, None)

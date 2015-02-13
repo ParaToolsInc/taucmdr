@@ -69,116 +69,86 @@ class StorageError(Error):
         sys.exit(EXIT_FAILURE)
 
 
-def _safe_openDB(prefix, db_name='local.json'):
+class Storage(object):
   """
-  Create the local storage location and return a TinyDB object
+  TODO: Classdocs
   """
-  try:
-    mkdirp(prefix)
-  except:
-    raise StorageError('Cannot create directory %r' % path, 'Check that you have `write` access')
-  try:
-    return TinyDB(os.path.join(prefix, db_name))
-  except:
-    raise StorageError('Cannot create %r' % path, 'Check that you have `write` access')
+  def __init__(self, prefix, db_name='local.json'):
+    """
+    Create the local storage location
+    """
+    try:
+      mkdirp(prefix)
+    except:
+      raise StorageError('Cannot create directory %r' % path, 'Check that you have `write` access')
+    try:
+      self.db = TinyDB(os.path.join(prefix, db_name))
+    except:
+      raise StorageError('Cannot create %r' % path, 'Check that you have `write` access')
 
-# Initialize the user-space database
-_user_db = _safe_openDB(USER_PREFIX, 'local.json')
+  def _getQuery(self, keys, operator='or'):
+    """
+    Returns a query object from a dictionary of keys
+    """
+    def _and(lhs, rhs): return (lhs & rhs)
+    def _or(lhs, rhs): return (lhs | rhs)
+    join = {'and': _and, 'or': _or}[operator]
+    iter = keys.iteritems()
+    key, val = iter.next()
+    query = (where(key) == val)
+    for key, value in iter:
+      query = join(query, (where(key) == value))
+    return query
 
-# Initialize the system-space database
-_system_db = _safe_openDB(SYSTEM_PREFIX, 'local.json')
-
-
-def _get_table(table_name, system=False):
-  """
-  Returns a handle for the table with the given name
-  """
-  db = _system_db if system else _user_db
-  return db.table(table_name)
-
-
-def _get_query(keys, operator='or'):
-  """
-  Returns a query object from a dictionary of keys
-  """
-  def _and(lhs, rhs): return (lhs & rhs)
-  def _or(lhs, rhs): return (lhs | rhs)
-  join = {'and': _and, 'or': _or}[operator]
-  iter = keys.iteritems()
-  key, val = iter.next()
-  query = (where(key) == val)
-  for key, value in iter:
-    query = join(query, (where(key) == value))
-  return query
-
-
-def transact(table_name, callback, system=False):
-  """
-  Execute a database transaction on the specified table
-  """
-  table = _get_table(table_name, system)
-  with transaction(table) as tr:
-    return callback(tr)
-
-
-def insert(table_name, model, system=False):
-  """
-  Create a new record in the specified table
-  """
-  for attr, desc in model.attributes.iteritems():
-    if desc.get('unique', False):
-      try:
-        value = getattr(model, attr)
-      except AttributeError:
-        pass
-      else:
-        if contains(table_name, {attr: value}):
-          raise StorageError('A record with %r == %r already exists in %r' % (attr, value, table_name))
-
-  return transact(table_name,
-                  lambda table: table.insert(model.data()))
-
-
-def search(table_name, keys=None, system=False):
-  """
-  Return a list of records from the specified table that 
-  match the provided keys
-  """
-  table = _get_table(table_name, system)
-  if keys:
-    # FIXME: transactions don't have a search() method
-    return transact(table_name,
-                    lambda _: table.search(_get_query(keys)))
-  else:
-    # FIXME: transactions don't have an all() method
-    return transact(table_name,
-                lambda _: table.all())
-
+  def transact(self, table_name, callback):
+    """
+    Execute a database transaction on the specified table
+    """
+    table = self.db.table(table_name)
+    with transaction(table) as tr:
+      return callback(tr)
     
-def contains(table_name, keys, system=False):
-  """
-  Return True if the specified table contains at least one 
-  record that matches the provided keys
-  """
-  table = _get_table(table_name, system)
-  # FIXME: transactions don't have a contains() method
-  return transact(table_name,
-                  lambda _: table.contains(_get_query(keys)))
+  def insert(self, table_name, fields):
+    """
+    Create a new record in the specified table
+    """
+    return self.transact(table_name,
+                         lambda table: table.insert(fields))
+
+  def search(self, table_name, keys=None):
+    """
+    Return a list of records from the specified table that 
+    match the provided keys
+    """
+    table = self.db.table(table_name)
+    # FIXME: transactions don't have search() or all () methods
+    callback = (lambda _: table.search(self._getQuery(keys))) if keys else (lambda _: table.all())
+    return self.transact(table_name, callback)
+
+  def contains(self, table_name, keys):
+    """
+    Return True if the specified table contains at least one 
+    record that matches the provided keys
+    """
+    table = self.db.table(table_name)
+    # FIXME: transactions don't have a contains() method
+    return self.transact(table_name,
+                         lambda _: table.contains(self._getQuery(keys)))
+
+  def update(self, table_name, keys, fields):
+    """
+    Updates the record that matches keys to contain values from fields
+    """
+    return self.transact(table_name,
+                         lambda table: table.update(fields, self._getQuery(keys)))
+
+  def remove(self, table_name, keys):
+    """
+    Remove all records that match keys
+    """
+    return self.transact(table_name,
+                         lambda table: table.remove(self._getQuery(keys)))
 
 
-def update(table_name, keys, fields, system=False):
-  """
-  Updates the record that matches keys to contain values from fields
-  """
-  return transact(table_name,
-                  lambda table: table.update(fields,
-                                             _get_query(keys)))
-
-
-def remove(table_name, keys, system=False):
-  """
-  Remove all records that match keys
-  """
-  return transact(table_name,
-                  lambda table: table.remove(_get_query(keys)))
-
+user_storage = Storage(USER_PREFIX, 'local.json')
+system_storage = Storage(SYSTEM_PREFIX, 'local.json')

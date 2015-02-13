@@ -52,8 +52,7 @@ COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
 
 USAGE = """
 Usage:
-  %(command)s
-  %(command)s <project_name>
+  %(command)s [project_name] [project_name] ...
   %(command)s -h | --help
 """
 
@@ -61,9 +60,9 @@ HELP = """
 '%(command)s' page to be written.
 """ % {'command': COMMAND}
 
-_arguments = [(('name',), {'help': "Name of project configuration to show",
-                           'metavar': '<project_name>', 
-                           'nargs': '?',
+_arguments = [(('names',), {'help': "If given, show details for this project",
+                           'metavar': 'project_name', 
+                           'nargs': '*',
                            'default': SUPPRESS})]
 PARSER = getParser(_arguments,
                    prog=COMMAND, 
@@ -87,20 +86,19 @@ def main(argv):
   LOGGER.debug('Arguments: %s' % args)
   
   try:
-    name = args.name
+    names = args.names
   except AttributeError:
     listing = pformatList([t.name for t in Project.search()],
                           empty_msg="No projects. See 'tau project create --help'", 
                           title='Projects (%s)' % USER_PREFIX)
     LOGGER.info(listing)
   else:
-    found = Project.named(name)
-    if not found:
-      raise ConfigurationError('There is no project named %r.' % name,
-                               'Try `tau project list` to see all project names.')
-    else:
-      listing = pformatDict(found.data(),
-                            title='Project "%s"' % found.name)
-      LOGGER.info(listing)
-  
+    for name in names:
+      found = Project.withName(name)
+      if not found:
+        raise ConfigurationError('There is no project named %r.' % name,
+                                 'Try `tau project list` to see all project names.')
+      else:
+        listing = pformatDict(found.data(), title='Project "%s"' % found.name)
+        LOGGER.info(listing)
   return EXIT_SUCCESS
