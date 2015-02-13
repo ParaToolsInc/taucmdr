@@ -94,6 +94,6 @@ def main(argv):
     updates['name'] = new_name
     del updates['new_name']
   
-  Measurement.edit({'name': name}, updates)
+  Measurement.update({'name': name}, updates)
   
   return executeCommand(['measurement', 'list'], [args.name])

@@ -47,6 +47,7 @@ from api.project import Project
 from api.target import Target
 from api.application import Application
 from api.measurement import Measurement
+from tau.arguments import getParserFromModel
 
 
 LOGGER = getLogger(__name__)
@@ -67,40 +68,26 @@ HELP = """
 
 HELP_EPILOG = ""
 
-_arguments = [ (('name',), {'help': "Project name",
-                            'metavar': '<project_name>'}),
-               (('targets',), {'help': "Target configurations in this project",
-                               'metavar': '[targets]',
-                               'nargs': '*',
-                               'default': SUPPRESS}),
-               (('applications',), {'help': "Application configurations in this project",
-                                    'metavar': '[applications]',
-                                    'nargs': '*',
-                                    'default': SUPPRESS}),
-               (('measurements',), {'help': "Measurement configurations in this project",
-                                    'metavar': '[measurements]',
-                                    'nargs': '*',
-                                    'default': SUPPRESS}),  
-               (('--targets',), {'help': "Indicates that the following objects are targets",
-                                 'metavar': 'target',
-                                 'nargs': '+',
-                                 'default': SUPPRESS,
-                                 'dest': 'expl_target'}),
-               (('--applications',), {'help': "Application configurations in this project",
-                                      'metavar': 'application',
-                                      'nargs': '+',
-                                      'default': SUPPRESS,
-                                      'dest': 'expl_application'}),
-               (('--measurements',), {'help': "Measurement configurations in this project",
-                                      'metavar': 'measurement',
-                                      'nargs': '+',
-                                      'default': SUPPRESS,
-                                      'dest': 'expl_measurement'}) ]  
-PARSER = getParser(_arguments,
-                   prog=COMMAND, 
-                   usage=USAGE, 
-                   description=SHORT_DESCRIPTION,
-                   epilog=HELP_EPILOG)
+PARSER = getParserFromModel(Project,
+                            prog=COMMAND, 
+                            usage=USAGE, 
+                            description=SHORT_DESCRIPTION,
+                            epilog=HELP_EPILOG)
+PARSER.add_argument('impl_targets', 
+                    help="Target configurations in this project",
+                    metavar='[targets]', 
+                    nargs='*',
+                    default=SUPPRESS)
+PARSER.add_argument('impl_applications', 
+                    help="Application configurations in this project",
+                    metavar='[applications]', 
+                    nargs='*', 
+                    default=SUPPRESS)
+PARSER.add_argument('impl_measurements', 
+                    help="Measurement configurations in this project",
+                    metavar='[measurements]',
+                    nargs='*',
+                    default=SUPPRESS)  
 
 
 def getUsage():
@@ -118,37 +105,43 @@ def main(argv):
   args = PARSER.parse_args(args=argv)
   LOGGER.debug('Arguments: %s' % args)
   
-  targets = []
-  applications = []
-  measurements = []
-  
-  implicit = getattr(args, 'targets', []) + getattr(args, 'applications', []) + getattr(args, 'measurements', [])
-  for name in implicit:
-    t = Target.named(name)
-    a = Application.named(name)
-    m = Measurement.named(name)
-    tam = set([t,a,m]) - set([None])
-    if len(tam) > 1:
-      PARSER.error('%r is ambigous' % name)
-    elif len(tam) == 0:
-      PARSER.error('%r is not target, application, or measurement' % name)
-    elif t:
-      targets.append(t)
-    elif a:
-      applications.append(a)
-    elif m:
-      measurements.append(m)
-  
-  def _checkExplicit(model, acc):
-    for name in getattr(args, 'expl_%s' % model.model_name, []):
-      found = model.named(name)
+  for attr, model in [('targets', Target), 
+                      ('applications', Application), 
+                      ('measurements', Measurement)]:
+    names = getattr(args, attr, [])
+    for name in names:
+      found = model.withName(name)
       if not found:
         PARSER.error('There is no %s named %r' % (model.model_name, name))
-      acc.append(found)
-      
-  _checkExplicit(Target, targets)
-  _checkExplicit(Application, applications)
-  _checkExplicit(Measurement, measurements)
+    setattr(args, attr, names)
+  
+  implicit = (getattr(args, 'impl_targets', []) + 
+              getattr(args, 'impl_applications', []) + 
+              getattr(args, 'impl_measurements', []))
+  for name in implicit:
+    t = Target.withName(name)
+    a = Application.withName(name)
+    m = Measurement.withName(name)
+    tam = set([t,a,m]) - set([None])
+    if len(tam) > 1:
+      PARSER.error('%r is ambigous, please use --targets, --applications,'
+                   ' or --measurements to specify configuration type' % name)
+    elif len(tam) == 0:
+      PARSER.error('%r is not a target, application, or measurement' % name)
+    elif t:
+      args.targets.append(t.name)
+    elif a:
+      args.applications.append(a.name)
+    elif m:
+      args.measurements.append(m.name)
+  try:
+    del args.impl_targets
+    del args.impl_applications
+    del args.impl_measurements
+  except AttributeError:
+    pass
+  
+  Project.create(args.__dict__)
   
   LOGGER.info('Created a new project named %r.' % args.name)
   return executeCommand(['project', 'list'], [args.name])

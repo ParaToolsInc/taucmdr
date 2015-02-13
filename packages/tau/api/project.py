@@ -41,6 +41,7 @@ import string
 # TAU modules
 from logger import getLogger
 from model import Model, ModelError, ByName
+from arguments import SUPPRESS
 
 
 LOGGER = getLogger(__name__)
@@ -56,28 +57,41 @@ class Project(Model, ByName):
   attributes = {
     'name': {
       'type': 'string',
-      'required': True,
-      'unique': True,
       'argparse': (('name',), 
                    {'help': 'Project name',
                     'metavar': '<project_name>'})
     },
     'targets': {
       'collection': 'Target',
-      'via': 'project'
+      'via': 'projects',
+      'argparse': (('--targets',), 
+                   {'help': "Indicates that the following objects are targets",
+                    'metavar': 'target',
+                    'nargs': '+',
+                    'default': SUPPRESS})
     },
     'applications': {
       'collection': 'Application',
-      'via': 'project'
+      'via': 'projects',
+      'argparse': (('--applications',), 
+                   {'help': "Application configurations in this project",
+                    'metavar': 'application',
+                    'nargs': '+',
+                    'default': SUPPRESS}),
     },
     'measurements': {
       'collection': 'Measurement',
-      'via': 'project'
+      'via': 'projects',
+      'argparse': (('--measurements',), 
+                   {'help': "Measurement configurations in this project",
+                    'metavar': 'measurement',
+                    'nargs': '+',
+                    'default': SUPPRESS})
     },
-    'trials': {
-      'collection': 'Trial',
-      'via': 'project'
-    },
+#     'trials': {
+#       'collection': 'Trial',
+#       'via': 'project'
+#     },
   }
 
   _valid_name = set(string.digits + string.letters + '-_.')

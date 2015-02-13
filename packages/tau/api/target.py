@@ -87,8 +87,6 @@ class Target(Model, ByName):
     },
     'name': {
       'type': 'string',
-      'required': True,
-      'unique': True,
       'argparse': (('name',), 
                    {'help': 'Target configuration name',
                     'metavar': '<target_name>'})
@@ -116,14 +114,14 @@ class Target(Model, ByName):
                     'metavar': '<arch>',
                     'default': detectDefaultDeviceArch()})
     },
-    'compilers': {
-      'collection': 'Compiler',
-      'via': 'target'
-    },
-    'packages': {
-      'collection': 'Package',
-      'via': 'target'
-    }
+#     'compilers': {
+#       'collection': 'Compiler',
+#       'via': 'target'
+#     },
+#     'packages': {
+#       'collection': 'Package',
+#       'via': 'target'
+#     }
   }
   
   _valid_name = set(string.digits + string.letters + '-_.')

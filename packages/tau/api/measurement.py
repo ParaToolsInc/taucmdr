@@ -61,8 +61,6 @@ class Measurement(Model, ByName):
     },
     'name': {
       'type': 'string',
-      'required': True,
-      'unique': True,
       'argparse': (('name',), 
                    {'help': 'Measurement configuration name',
                     'metavar': '<measurement_name>'})

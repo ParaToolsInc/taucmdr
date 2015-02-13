@@ -94,6 +94,6 @@ def main(argv):
     updates['name'] = new_name
     del updates['new_name']
   
-  Application.edit({'name': name}, updates)
+  Application.update({'name': name}, updates)
   
   return executeCommand(['application', 'list'], [args.name])

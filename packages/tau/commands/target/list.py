@@ -52,8 +52,7 @@ COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
 
 USAGE = """
 Usage:
-  %(command)s
-  %(command)s <target_name>
+  %(command)s [target_name] [target_name] ...
   %(command)s -h | --help
 """
 
@@ -61,9 +60,9 @@ HELP = """
 '%(command)s' page to be written.
 """ % {'command': COMMAND}
 
-_arguments = [(('name',), {'help': "Name of target configuration to show",
-                           'metavar': '<target_name>', 
-                           'nargs': '?',
+_arguments = [(('names',), {'help': "If given, show details for this target",
+                           'metavar': 'target_name', 
+                           'nargs': '*',
                            'default': SUPPRESS})]
 PARSER = getParser(_arguments,
                    prog=COMMAND, 
@@ -87,19 +86,21 @@ def main(argv):
   LOGGER.debug('Arguments: %s' % args)
   
   try:
-    name = args.name
+    names = args.names
   except AttributeError:
-    listing = pformatList([t.name for t in Target.search()],
+    found = ['%s %s' % (t.name, t.projects if t.projects else '')
+             for t in Target.search()]
+    listing = pformatList(found,
                           empty_msg="No targets. See 'tau target create --help'", 
                           title='Targets (%s)' % USER_PREFIX)
     LOGGER.info(listing)
   else:
-    found = Target.named(name)
-    if not found:
-      raise ConfigurationError('There is no target named %r.' % name,
-                               'Try `tau target list` to see all target names.')
-    else:
-      listing = pformatDict(found.data(), title='Target "%s"' % found.name)
-      LOGGER.info(listing)
-  
+    for name in names:
+      found = Target.withName(name)
+      if not found:
+        raise ConfigurationError('There is no target named %r.' % name,
+                                 'Try `tau target list` to see all target names.')
+      else:
+        listing = pformatDict(found.data(), title='Target "%s"' % found.name)
+        LOGGER.info(listing)
   return EXIT_SUCCESS

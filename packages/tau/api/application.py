@@ -61,8 +61,6 @@ class Application(Model, ByName):
     },
     'name': {
       'type': 'string',
-      'required': True,
-      'unique': True,
       'argparse': (('name',), 
                    {'help': 'Application configuration name',
                     'metavar': '<application_name>'})

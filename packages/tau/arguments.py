@@ -103,15 +103,10 @@ def getParserFromModel(model, use_defaults=True,
                                    description=description,
                                    epilog=epilog,
                                    formatter_class=ArgparseHelpFormatter)
-  for attr, desc in model.attributes.iteritems():
-    try:
-      flags, options = desc['argparse']
-    except KeyError:
-      pass
-    else:
-      all_options = dict(options)
-#       all_options.update(options)
-      if not use_defaults or 'default' not in options:
-        all_options['default'] = argparse.SUPPRESS
-      parser.add_argument(*flags, **all_options)
+  for attr, props in model.attributesWith('argparse'):
+    flags, options = props['argparse']
+    all_options = dict(options)
+    if not use_defaults or 'default' not in options:
+      all_options['default'] = argparse.SUPPRESS
+    parser.add_argument(*flags, **all_options)
   return parser
