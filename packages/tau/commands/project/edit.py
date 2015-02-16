@@ -41,6 +41,9 @@ from logger import getLogger
 from commands import executeCommand
 from arguments import getParser, SUPPRESS
 from api.project import Project
+from api.target import Target
+from api.application import Application
+from api.measurement import Measurement
 
 
 LOGGER = getLogger(__name__)
@@ -128,11 +131,12 @@ def main(argv):
   LOGGER.debug('Arguments: %s' % args)
 
   name = args.name
-  updates = {'name': getattr(args, 'new_name', name)}
-  
-  project = Project.withName(name)
+  project = Project.withName(name) 
   if not project:
     PARSER.error('There is no project named %r' % name)
+
+  updates = dict(project.data())
+  updates['name'] = getattr(args, 'new_name', name)
   targets = set(project.targets)
   applications = set(project.applications)
   measurements = set(project.measurements)
@@ -147,7 +151,7 @@ def main(argv):
         PARSER.error('There is no %s named %r' % (model.model_name, name))
       dest.add(name)
 
-  for name in set(args.add):
+  for name in set(getattr(args, "add", [])):
     t = Target.withName(name)
     a = Application.withName(name)
     m = Measurement.withName(name)
@@ -174,7 +178,7 @@ def main(argv):
         PARSER.error('There is no %s named %r' % (model.model_name, name))
       dest.remove(name)
 
-  for name in set(args.remove):
+  for name in set(getattr(args, "remove", [])):
     t = Target.withName(name)
     a = Application.withName(name)
     m = Measurement.withName(name)
@@ -194,7 +198,7 @@ def main(argv):
   updates['targets'] = list(targets)
   updates['applications'] = list(applications)
   updates['measurements'] = list(measurements)
-    
+   
   Target.update({'name': name}, updates)
     
   return executeCommand(['project', 'list'], [args.name])
