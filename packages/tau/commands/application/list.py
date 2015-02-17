@@ -89,7 +89,7 @@ def main(argv):
   try:
     name = args.name
   except AttributeError:
-    listing = pformatList([t.name for t in Application.search()],
+    listing = pformatList([t['name'] for t in Application.search()],
                           empty_msg="No applications. See 'tau application create --help'", 
                           title='Applications (%s)' % USER_PREFIX)
     LOGGER.info(listing)
@@ -99,8 +99,8 @@ def main(argv):
       raise ConfigurationError('There is no application named %r.' % name,
                                'Try `tau application list` to see all application names.')
     else:
-      listing = pformatDict(found.data(),
-                            title='Application "%s"' % found.name)
+      listing = pformatDict(found.data,
+                            title='Application "%s"' % found['name'])
       LOGGER.info(listing)
   
   return EXIT_SUCCESS

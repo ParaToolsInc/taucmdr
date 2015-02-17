@@ -43,7 +43,7 @@ from tau import EXIT_SUCCESS
 from logger import getLogger
 from arguments import getParserFromModel
 from commands import executeCommand
-from model import ModelKeyError
+from model import UniqueAttributeError
 from error import ConfigurationError
 from api.target import Target
 
@@ -87,7 +87,7 @@ def main(argv):
   
   try:
     Target.create(args.__dict__)
-  except ModelKeyError:
+  except UniqueAttributeError:
     raise ConfigurationError('A target named %r already exists' % args.name,
                              'Type `tau target list` to see all target names')
   

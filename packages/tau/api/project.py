@@ -52,11 +52,12 @@ class Project(Model, ByName):
   Project data model
   """
   
-  model_name = 'project'
+  model_name = 'Project'
   
   attributes = {
     'name': {
       'type': 'string',
+      'unique': True,
       'argparse': (('name',), 
                    {'help': 'Project name',
                     'metavar': '<project_name>'})
@@ -97,6 +98,6 @@ class Project(Model, ByName):
   _valid_name = set(string.digits + string.letters + '-_.')
   
   def onCreate(self):
-    if set(self.name) > Project._valid_name:
-      raise ModelError('%r is not a valid project name.' % self.name,
+    if set(self['name']) > Project._valid_name:
+      raise ModelError('%r is not a valid project name.' % self['name'],
                        'Use only letters, numbers, dot (.), dash (-), and underscore (_).')

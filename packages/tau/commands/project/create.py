@@ -105,42 +105,43 @@ def main(argv):
   args = PARSER.parse_args(args=argv)
   LOGGER.debug('Arguments: %s' % args)
   
-  for attr, model in [('targets', Target), 
-                      ('applications', Application), 
-                      ('measurements', Measurement)]:
-    names = getattr(args, attr, [])
-    for name in names:
+  targets = set()
+  applications = set()
+  measurements = set()
+  
+  for attr, model, dest in [('targets', Target, targets), 
+                            ('applications', Application, applications), 
+                            ('measurements', Measurement, measurements)]:
+    for name in getattr(args, attr, []):
       found = model.withName(name)
       if not found:
         PARSER.error('There is no %s named %r' % (model.model_name, name))
-    setattr(args, attr, names)
+      dest.append(found.eid)
+      
+    for name in getattr(args, 'impl_'+attr, []):
+      t = Target.withName(name)
+      a = Application.withName(name)
+      m = Measurement.withName(name)
+      tam = set([t,a,m]) - set([None])
+      if len(tam) > 1:
+        PARSER.error('%r is ambigous, please use --targets, --applications,'
+                     ' or --measurements to specify configuration type' % name)
+      elif len(tam) == 0:
+        PARSER.error('%r is not a target, application, or measurement' % name)
+      elif t:
+        targets.add(t.eid)
+      elif a:
+        applications.add(a.eid)
+      elif m:
+        measurements.add(m.eid)
+    try:
+      delattr(args, 'impl_'+attr)
+    except AttributeError:
+      pass
   
-  implicit = (getattr(args, 'impl_targets', []) + 
-              getattr(args, 'impl_applications', []) + 
-              getattr(args, 'impl_measurements', []))
-  for name in implicit:
-    t = Target.withName(name)
-    a = Application.withName(name)
-    m = Measurement.withName(name)
-    tam = set([t,a,m]) - set([None])
-    if len(tam) > 1:
-      PARSER.error('%r is ambigous, please use --targets, --applications,'
-                   ' or --measurements to specify configuration type' % name)
-    elif len(tam) == 0:
-      PARSER.error('%r is not a target, application, or measurement' % name)
-    elif t:
-      args.targets.append(t.name)
-    elif a:
-      args.applications.append(a.name)
-    elif m:
-      args.measurements.append(m.name)
-  try:
-    del args.impl_targets
-    del args.impl_applications
-    del args.impl_measurements
-  except AttributeError:
-    pass
-  
+  args.targets = list(targets)
+  args.applications = list(applications)
+  args.measurements = list(measurements)
   Project.create(args.__dict__)
   
   LOGGER.info('Created a new project named %r.' % args.name)
