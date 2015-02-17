@@ -88,7 +88,7 @@ def main(argv):
   try:
     names = args.names
   except AttributeError:
-    found = ['%s %s' % (t['name'], t['projects'] if t['projects'] else '')
+    found = ['%s %s' % (t.name, t.projects if t.projects else '')
              for t in Target.search()]
     listing = pformatList(found,
                           empty_msg="No targets. See 'tau target create --help'", 
@@ -101,6 +101,6 @@ def main(argv):
         raise ConfigurationError('There is no target named %r.' % name,
                                  'Try `tau target list` to see all target names.')
       else:
-        listing = pformatDict(found.data, title='Target "%s"' % found['name'])
+        listing = pformatDict(found.data(), title='Target "%s"' % found.name)
         LOGGER.info(listing)
   return EXIT_SUCCESS

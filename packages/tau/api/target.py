@@ -78,7 +78,7 @@ class Target(Model, ByName):
   Target data model
   """
   
-  model_name = 'Target'
+  model_name = 'target'
   
   attributes = {
     'projects': {
@@ -87,7 +87,6 @@ class Target(Model, ByName):
     },
     'name': {
       'type': 'string',
-      'unique': True,
       'argparse': (('name',), 
                    {'help': 'Target configuration name',
                     'metavar': '<target_name>'})
@@ -128,6 +127,6 @@ class Target(Model, ByName):
   _valid_name = set(string.digits + string.letters + '-_.')
   
   def onCreate(self):
-    if set(self['name']) > Target._valid_name:
-      raise ModelError('%r is not a valid target name.' % self['name'],
+    if set(self.name) > Target._valid_name:
+      raise ModelError('%r is not a valid target name.' % self.name,
                        'Use only letters, numbers, dot (.), dash (-), and underscore (_).')

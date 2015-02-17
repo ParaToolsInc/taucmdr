@@ -135,7 +135,7 @@ def main(argv):
   if not project:
     PARSER.error('There is no project named %r' % name)
 
-  updates = dict(project.data)
+  updates = dict(project.data())
   updates['name'] = getattr(args, 'new_name', name)
   targets = set(project.targets)
   applications = set(project.applications)
@@ -144,11 +144,12 @@ def main(argv):
   for attr, model, dest in [('add_targets', Target, targets), 
                             ('add_applications', Application, applications), 
                             ('add_measurements', Measurement, measurements)]:
-    for name in getattr(args, attr, []):
+    names = getattr(args, attr, [])
+    for name in names:
       found = model.withName(name)
       if not found:
         PARSER.error('There is no %s named %r' % (model.model_name, name))
-      dest.add(found.eid)
+      dest.add(name)
 
   for name in set(getattr(args, "add", [])):
     t = Target.withName(name)
@@ -161,20 +162,21 @@ def main(argv):
     elif len(tam) == 0:
       PARSER.error('%r is not a target, application, or measurement' % name)
     elif t:
-      targets.add(t.eid)
+      targets.add(t.name)
     elif a:
-      applications.add(a.eid)
+      applications.add(a.name)
     elif m:
-      measurements.add(m.eid)
+      measurements.add(m.name)
 
   for attr, model, dest in [('remove_targets', Target, targets), 
                             ('remove_applications', Application, applications), 
                             ('remove_measurements', Measurement, measurements)]:
-    for name in getattr(args, attr, []):
+    names = getattr(args, attr, [])
+    for name in names:
       found = model.withName(name)
       if not found:
         PARSER.error('There is no %s named %r' % (model.model_name, name))
-      dest.remove(found.eid)
+      dest.remove(name)
 
   for name in set(getattr(args, "remove", [])):
     t = Target.withName(name)
@@ -187,11 +189,11 @@ def main(argv):
     elif len(tam) == 0:
       PARSER.error('%r is not a target, application, or measurement' % name)
     elif t:
-      targets.remove(t.eid)
+      targets.remove(t.name)
     elif a:
-      applications.remove(a.eid)
+      applications.remove(a.name)
     elif m:
-      measurements.remove(m.eid)
+      measurements.remove(m.name)
       
   updates['targets'] = list(targets)
   updates['applications'] = list(applications)

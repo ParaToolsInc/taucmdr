@@ -39,7 +39,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import os
 import sys
 from tinydb import TinyDB, where
-from tinyrecord import transaction as tiny_transaction
+from tinyrecord import transaction
 
 # TAU modules
 from tau import USER_PREFIX, SYSTEM_PREFIX, HELP_CONTACT, EXIT_FAILURE
@@ -55,9 +55,8 @@ class StorageError(Error):
     """
     Indicates that there is a problem with storage
     """
-    def __init__(self, storage, value, hint="Contact %s for help" % HELP_CONTACT):
+    def __init__(self, value, hint="Contact %s for help" % HELP_CONTACT):
         super(StorageError, self).__init__(value)
-        self.storage = storage
         self.hint = hint
         
     def handle(self):
@@ -68,7 +67,7 @@ class StorageError(Error):
 %(hint)s""" % {'value': self.value, 'hint': hint}
         LOGGER.critical(message)
         sys.exit(EXIT_FAILURE)
- 
+
 
 class Storage(object):
   """
@@ -81,13 +80,11 @@ class Storage(object):
     try:
       mkdirp(prefix)
     except:
-      raise StorageError(self, 'Cannot create directory %r' % path, 
-                         'Check that you have `write` access')
+      raise StorageError('Cannot create directory %r' % path, 'Check that you have `write` access')
     try:
       self.db = TinyDB(os.path.join(prefix, db_name))
     except:
-      raise StorageError(self, 'Cannot create %r' % path, 
-                         'Check that you have `write` access')
+      raise StorageError('Cannot create %r' % path, 'Check that you have `write` access')
 
   def _getQuery(self, keys, operator='or'):
     """
@@ -108,52 +105,35 @@ class Storage(object):
     Execute a database transaction on the specified table
     """
     table = self.db.table(table_name)
-    with tiny_transaction(table) as tr:
+    with transaction(table) as tr:
       return callback(tr)
     
   def insert(self, table_name, fields):
     """
-    Insert a new record in the specified table
+    Create a new record in the specified table
     """
     return self.transact(table_name,
                          lambda table: table.insert(fields))
 
-  def insert_multiple(self, table_name, records):
-    """
-    Insert multiple new records in the specified table
-    """
-    return self.transact(table_name, 
-                         lambda table: table.insert_multiple(records))
-  
-  def search(self, table_name, keys=None, eids=None):
+  def search(self, table_name, keys=None):
     """
     Return a list of records from the specified table that 
     match the provided keys
     """
-    # FIXME: TinDB transactions don't have search() or all () methods
     table = self.db.table(table_name)
-    if eids is not None:
-      callback = lambda _: table.search(eids=eids)
-    elif keys:
-      callback = lambda _: table.search(self._getQuery(keys))
-    else:
-      callback = lambda _: table.all()
+    # FIXME: transactions don't have search() or all () methods
+    callback = (lambda _: table.search(self._getQuery(keys))) if keys else (lambda _: table.all())
     return self.transact(table_name, callback)
 
-  def contains(self, table_name, keys=None, eids=None):
+  def contains(self, table_name, keys):
     """
     Return True if the specified table contains at least one 
     record that matches the provided keys
     """
-    # FIXME: TinDB transactions don't have search() or all () methods
     table = self.db.table(table_name)
-    if eids is not None:
-      callback = lambda _: table.contains(eids=eids)
-    elif keys is not None:
-      callback = lambda _: table.contains(self._getQuery(keys))
-    else:
-      raise StorageError(self, 'Storage.contains expects either keys or eids')
-    return self.transact(table_name, callback)
+    # FIXME: transactions don't have a contains() method
+    return self.transact(table_name,
+                         lambda _: table.contains(self._getQuery(keys)))
 
   def update(self, table_name, keys, fields):
     """
