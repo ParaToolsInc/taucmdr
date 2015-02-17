@@ -88,7 +88,7 @@ def main(argv):
   try:
     names = args.names
   except AttributeError:
-    listing = pformatList([t.name for t in Project.search()],
+    listing = pformatList([t['name'] for t in Project.search()],
                           empty_msg="No projects. See 'tau project create --help'", 
                           title='Projects (%s)' % USER_PREFIX)
     LOGGER.info(listing)
@@ -99,6 +99,6 @@ def main(argv):
         raise ConfigurationError('There is no project named %r.' % name,
                                  'Try `tau project list` to see all project names.')
       else:
-        listing = pformatDict(found.data(), title='Project "%s"' % found.name)
+        listing = pformatDict(found.data, title='Project "%s"' % found['name'])
         LOGGER.info(listing)
   return EXIT_SUCCESS

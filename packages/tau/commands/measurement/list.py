@@ -89,7 +89,7 @@ def main(argv):
   try:
     name = args.name
   except AttributeError:
-    listing = pformatList([t.name for t in Measurement.search()],
+    listing = pformatList([t['name'] for t in Measurement.search()],
                           empty_msg="No measurements. See 'tau measurement create --help'", 
                           title='Measurements (%s)' % USER_PREFIX)
     LOGGER.info(listing)
@@ -99,8 +99,8 @@ def main(argv):
       raise ConfigurationError('There is no measurement named %r.' % name,
                                'Try `tau measurement list` to see all measurement names.')
     else:
-      listing = pformatDict(found.data(),
-                            title='Measurement "%s"' % found.name)
+      listing = pformatDict(found.data,
+                            title='Measurement "%s"' % found['name'])
       LOGGER.info(listing)
   
   return EXIT_SUCCESS

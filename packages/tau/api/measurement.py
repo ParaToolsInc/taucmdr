@@ -52,7 +52,7 @@ class Measurement(Model, ByName):
   Measurement data model
   """
   
-  model_name = 'measurement'
+  model_name = 'Measurement'
   
   attributes = {
     'projects': {
@@ -61,6 +61,7 @@ class Measurement(Model, ByName):
     },
     'name': {
       'type': 'string',
+      'unique': True,
       'argparse': (('name',), 
                    {'help': 'Measurement configuration name',
                     'metavar': '<measurement_name>'})
@@ -179,7 +180,7 @@ class Measurement(Model, ByName):
   _valid_name = set(string.digits + string.letters + '-_.')
   
   def onCreate(self):
-    if set(self.name) > Measurement._valid_name:
-      raise ModelError('%r is not a valid measurement name.' % self.name,
+    if set(self['name']) > Measurement._valid_name:
+      raise ModelError('%r is not a valid measurement name.' % self['name'],
                        'Use only letters, numbers, dot (.), dash (-), and underscore (_).')
 
