@@ -101,7 +101,8 @@ class Model(object, IterableUserDict):
     """
     for attr, props in (self.attributesWith('collection', 'model')):
       foreign_model = getModel(props['collection'])
-      self[attr] = [foreign_model.get(eid=eid) for eid in self[attr]]
+      self[attr] = [foreign_model.one(eid=eid) for eid in self[attr]]
+    return self
   
   @classmethod
   def _validate(cls, data):
@@ -172,7 +173,7 @@ class Model(object, IterableUserDict):
     return validated
   
   @classmethod
-  def get(cls, keys=None, eid=None):
+  def one(cls, keys=None, eid=None):
     """
     Returns the record with the given keys or element id
     """
@@ -210,7 +211,7 @@ class Model(object, IterableUserDict):
       foreign_model = getModel(props['collection'])
       foreign_keys = model[attr]
       for foreign_key in foreign_keys:
-        associated = foreign_model.get(eid=foreign_key)
+        associated = foreign_model.one(eid=foreign_key)
         if not associated:
           raise ModelError(foreign_model, 'No record with ID %r' % foreign_key)
         if 'model' in associated.attributes[via]:
@@ -239,7 +240,7 @@ class Model(object, IterableUserDict):
           added = new_foreign_keys - old_foreign_keys
           deled = old_foreign_keys - new_foreign_keys
           for foreign_key in added:
-            associated = foreign_model.get(eid=foreign_key)
+            associated = foreign_model.one(eid=foreign_key)
             if not associated:
               raise ModelError(foreign_model, 'No record with ID %r' % foreign_key)
             if 'model' in associated.attributes[via]:
@@ -248,7 +249,7 @@ class Model(object, IterableUserDict):
               updated_keys = list(set(associated[via] + [model.eid]))
             storage.update(foreign_model.model_name, {via: updated_keys}, eids=[foreign_key])
           for foreign_key in deled:
-            associated = foreign_model.get(eid=foreign_key)
+            associated = foreign_model.one(eid=foreign_key)
             if not associated:
               raise ModelError(foreign_model, 'No record with ID %r' % foreign_key)
             if 'model' in associated.attributes[via]:
@@ -269,7 +270,7 @@ class Model(object, IterableUserDict):
         foreign_model = getModel(props['collection'])
         foreign_keys = model[attr]
         for foreign_key in foreign_keys:
-          associated = foreign_model.get(eid=foreign_key)
+          associated = foreign_model.one(eid=foreign_key)
           if not associated:
             raise ModelError(foreign_model, 'No record with ID %r' % foreign_key)
           if 'model' in associated.attributes[via]:
@@ -296,7 +297,7 @@ class ByName(object):
   """
   @classmethod
   def withName(cls, name):
-    return cls.get({'name': name})
+    return cls.one({'name': name})
     
     
 def getModel(name):

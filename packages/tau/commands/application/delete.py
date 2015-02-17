@@ -38,6 +38,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # TAU modules
 from tau import EXIT_SUCCESS
 from logger import getLogger
+from commands import executeCommand
 from arguments import getParser
 from api.application import Application
 
@@ -83,4 +84,4 @@ def main(argv):
   Application.delete({'name': args.name})
   
   LOGGER.info('Deleted application %r' % args.name)
-  return EXIT_SUCCESS
+  return executeCommand(['application', 'list'], [])
