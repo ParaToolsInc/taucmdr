@@ -52,7 +52,7 @@ class Application(Model, ByName):
   Application data model
   """
   
-  model_name = 'Application'
+  model_name = 'application'
   
   attributes = {
     'projects': {
@@ -61,7 +61,6 @@ class Application(Model, ByName):
     },
     'name': {
       'type': 'string',
-      'unique': True,
       'argparse': (('name',), 
                    {'help': 'Application configuration name',
                     'metavar': '<application_name>'})
@@ -155,7 +154,7 @@ class Application(Model, ByName):
   _valid_name = set(string.digits + string.letters + '-_.')
   
   def onCreate(self):
-    if set(self['name']) > Application._valid_name:
-      raise ModelError('%r is not a valid application name.' % self['name'],
+    if set(self.name) > Application._valid_name:
+      raise ModelError('%r is not a valid application name.' % self.name,
                        'Use only letters, numbers, dot (.), dash (-), and underscore (_).')
 
