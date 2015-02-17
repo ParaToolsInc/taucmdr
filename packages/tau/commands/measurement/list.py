@@ -52,8 +52,7 @@ COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
 
 USAGE = """
 Usage:
-  %(command)s
-  %(command)s <measurement_name>
+  %(command)s [measurement_name] [measurement_name] ...
   %(command)s -h | --help
 """
 
@@ -61,9 +60,9 @@ HELP = """
 '%(command)s' page to be written.
 """ % {'command': COMMAND}
 
-_arguments = [(('name',), {'help': "Name of measurement configuration to show",
-                           'metavar': '<measurement_name>', 
-                           'nargs': '?',
+_arguments = [(('names',), {'help': "If given, show details for the measurement with this name",
+                           'metavar': 'measurement_name', 
+                           'nargs': '*',
                            'default': SUPPRESS})]
 PARSER = getParser(_arguments,
                    prog=COMMAND, 
@@ -87,20 +86,22 @@ def main(argv):
   LOGGER.debug('Arguments: %s' % args)
   
   try:
-    name = args.name
+    names = args.names
   except AttributeError:
-    listing = pformatList([t.name for t in Measurement.search()],
+    found = ['%s %s' % (t['name'], t['projects'] if t['projects'] else '')
+             for t in Measurement.search()]
+    listing = pformatList(found,
                           empty_msg="No measurements. See 'tau measurement create --help'", 
                           title='Measurements (%s)' % USER_PREFIX)
     LOGGER.info(listing)
   else:
-    found = Measurement.withName(name)
-    if not found:
-      raise ConfigurationError('There is no measurement named %r.' % name,
-                               'Try `tau measurement list` to see all measurement names.')
-    else:
-      listing = pformatDict(found.data(),
-                            title='Measurement "%s"' % found.name)
-      LOGGER.info(listing)
-  
+    for name in names:
+      found = Measurement.withName(name)
+      if not found:
+        raise ConfigurationError('There is no measurement named %r.' % name,
+                                 'Try `tau measurement list` to see all measurement names.')
+      else:
+        found.populate()
+        listing = pformatDict(found.data, title='Measurement "%s"' % found['name'])
+        LOGGER.info(listing)
   return EXIT_SUCCESS

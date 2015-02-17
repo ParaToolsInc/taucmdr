@@ -43,14 +43,17 @@ from tau import EXIT_SUCCESS
 from logger import getLogger
 from arguments import getParserFromModel
 from commands import executeCommand
+from model import UniqueAttributeError
+from error import ConfigurationError
 from api.application import Application
+
 
 
 LOGGER = getLogger(__name__)
 
 SHORT_DESCRIPTION = "Create a new application configuration."
 
-COMMAND = ' '.join(['tau'] + (__name__.split('.')[2:]))
+COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
 
 USAGE = """
   %(command)s <application_name> [options]
@@ -82,7 +85,11 @@ def main(argv):
   args = PARSER.parse_args(args=argv)
   LOGGER.debug('Arguments: %s' % args)
   
-  Application.create(args.__dict__)
+  try:
+    Application.create(args.__dict__)
+  except UniqueAttributeError:
+    raise ConfigurationError('A application named %r already exists' % args.name,
+                             'Type `tau application list` to see all application names')
   
   LOGGER.info('Created a new application named %r.' % args.name)
   return executeCommand(['application', 'list'], [args.name])

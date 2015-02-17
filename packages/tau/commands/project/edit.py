@@ -39,7 +39,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 from tau import EXIT_SUCCESS
 from logger import getLogger
 from commands import executeCommand
-from arguments import getParser, SUPPRESS
+from arguments import getParserFromModel, SUPPRESS
 from api.project import Project
 from api.target import Target
 from api.application import Application
@@ -61,11 +61,8 @@ HELP = """
 '%(command)s' page to be written.
 """ % {'command': COMMAND}
 
-_arguments = [(('name',), 
-               {'help': "Name of project configuration to edit",
-                'metavar': '<project_name>'}),
-              (('--name',), 
-               {'help': "New name of the project configuration",
+_arguments = [(('--rename',), 
+               {'help': "Rename the project configuration",
                 'metavar': '<new_name>',
                 'dest': 'new_name',
                 'default': SUPPRESS}),
@@ -110,10 +107,14 @@ _arguments = [(('name',),
                 'nargs': '+',
                 'default': SUPPRESS})]
 
-PARSER = getParser(_arguments,
-                   prog=COMMAND, 
-                   usage=USAGE,
-                   description=SHORT_DESCRIPTION)
+PARSER = getParserFromModel(Project,
+                            prog=COMMAND,
+                            usage=USAGE, 
+                            description=SHORT_DESCRIPTION)
+for arg in _arguments:
+  flags, options = arg
+  PARSER.add_argument(*flags, **options)
+
 
 def getUsage():
   return PARSER.format_help() 
@@ -130,16 +131,16 @@ def main(argv):
   args = PARSER.parse_args(args=argv)
   LOGGER.debug('Arguments: %s' % args)
 
-  name = args.name
-  project = Project.withName(name) 
+  project_name = args.name
+  project = Project.withName(project_name)
   if not project:
-    PARSER.error('There is no project named %r' % name)
+    PARSER.error('There is no project named %r' % project_name)
 
-  updates = dict(project.data())
-  updates['name'] = getattr(args, 'new_name', name)
-  targets = set(project.targets)
-  applications = set(project.applications)
-  measurements = set(project.measurements)
+  updates = dict(project.data)
+  updates['name'] = getattr(args, 'new_name', project_name)
+  targets = set(project['targets'])
+  applications = set(project['applications'])
+  measurements = set(project['measurements'])
   
   for attr, model, dest in [('add_targets', Target, targets), 
                             ('add_applications', Application, applications), 
@@ -149,7 +150,7 @@ def main(argv):
       found = model.withName(name)
       if not found:
         PARSER.error('There is no %s named %r' % (model.model_name, name))
-      dest.add(name)
+      dest.add(found.eid)
 
   for name in set(getattr(args, "add", [])):
     t = Target.withName(name)
@@ -162,11 +163,11 @@ def main(argv):
     elif len(tam) == 0:
       PARSER.error('%r is not a target, application, or measurement' % name)
     elif t:
-      targets.add(t.name)
+      targets.add(t.eid)
     elif a:
-      applications.add(a.name)
+      applications.add(a.eid)
     elif m:
-      measurements.add(m.name)
+      measurements.add(m.eid)
 
   for attr, model, dest in [('remove_targets', Target, targets), 
                             ('remove_applications', Application, applications), 
@@ -176,7 +177,7 @@ def main(argv):
       found = model.withName(name)
       if not found:
         PARSER.error('There is no %s named %r' % (model.model_name, name))
-      dest.remove(name)
+      dest.remove(found.eid)
 
   for name in set(getattr(args, "remove", [])):
     t = Target.withName(name)
@@ -189,16 +190,16 @@ def main(argv):
     elif len(tam) == 0:
       PARSER.error('%r is not a target, application, or measurement' % name)
     elif t:
-      targets.remove(t.name)
+      targets.remove(t.eid)
     elif a:
-      applications.remove(a.name)
+      applications.remove(a.eid)
     elif m:
-      measurements.remove(m.name)
+      measurements.remove(m.eid)
       
   updates['targets'] = list(targets)
   updates['applications'] = list(applications)
   updates['measurements'] = list(measurements)
    
-  Target.update({'name': name}, updates)
+  Project.update(updates, {'name': project_name})
     
-  return executeCommand(['project', 'list'], [args.name])
+  return executeCommand(['project', 'list'], [updates['name']])

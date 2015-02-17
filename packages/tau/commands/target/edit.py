@@ -63,8 +63,8 @@ PARSER = getParserFromModel(Target,
                             prog=COMMAND, 
                             usage=USAGE,
                             description=SHORT_DESCRIPTION)
-PARSER.add_argument('--name',
-                    help="New name of the target configuration",
+PARSER.add_argument('--rename',
+                    help="Rename the target configuration",
                     metavar='<new_name>', dest='new_name',
                     default=SUPPRESS)
 
@@ -94,6 +94,6 @@ def main(argv):
     updates['name'] = new_name
     del updates['new_name']
   
-  Target.update({'name': name}, updates)
+  Target.update(updates, {'name': name})
   
   return executeCommand(['target', 'list'], [args.name])

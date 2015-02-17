@@ -52,11 +52,12 @@ class Project(Model, ByName):
   Project data model
   """
   
-  model_name = 'project'
+  model_name = 'Project'
   
   attributes = {
     'name': {
       'type': 'string',
+      'unique': True,
       'argparse': (('name',), 
                    {'help': 'Project name',
                     'metavar': '<project_name>'})
@@ -64,29 +65,14 @@ class Project(Model, ByName):
     'targets': {
       'collection': 'Target',
       'via': 'projects',
-      'argparse': (('--targets',), 
-                   {'help': "Indicates that the following objects are targets",
-                    'metavar': 'target',
-                    'nargs': '+',
-                    'default': SUPPRESS})
     },
     'applications': {
       'collection': 'Application',
       'via': 'projects',
-      'argparse': (('--applications',), 
-                   {'help': "Application configurations in this project",
-                    'metavar': 'application',
-                    'nargs': '+',
-                    'default': SUPPRESS}),
     },
     'measurements': {
       'collection': 'Measurement',
       'via': 'projects',
-      'argparse': (('--measurements',), 
-                   {'help': "Measurement configurations in this project",
-                    'metavar': 'measurement',
-                    'nargs': '+',
-                    'default': SUPPRESS})
     },
 #     'trials': {
 #       'collection': 'Trial',
@@ -97,6 +83,6 @@ class Project(Model, ByName):
   _valid_name = set(string.digits + string.letters + '-_.')
   
   def onCreate(self):
-    if set(self.name) > Project._valid_name:
-      raise ModelError('%r is not a valid project name.' % self.name,
+    if set(self['name']) > Project._valid_name:
+      raise ModelError('%r is not a valid project name.' % self['name'],
                        'Use only letters, numbers, dot (.), dash (-), and underscore (_).')

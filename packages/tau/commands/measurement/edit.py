@@ -63,8 +63,8 @@ PARSER = getParserFromModel(Measurement,
                             prog=COMMAND, 
                             usage=USAGE,
                             description=SHORT_DESCRIPTION)
-PARSER.add_argument('--name',
-                    help="New name of the measurement configuration",
+PARSER.add_argument('--rename',
+                    help="Rename the measurement configuration",
                     metavar='<new_name>', dest='new_name',
                     default=SUPPRESS)
 
@@ -94,6 +94,6 @@ def main(argv):
     updates['name'] = new_name
     del updates['new_name']
   
-  Measurement.update({'name': name}, updates)
+  Measurement.update(updates, {'name': name})
   
   return executeCommand(['measurement', 'list'], [args.name])
