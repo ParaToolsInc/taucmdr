@@ -86,7 +86,7 @@ _arguments = [ (('command',), {'help': "See 'commands' below",
                                      'metavar': '', 
                                      'const': 'DEBUG', 
                                      'default': 'INFO', 
-                                     'action': 'store_const'}) ]
+                                     'action': 'store_const'})]
 PARSER = getParser(_arguments,
                    prog=COMMAND, 
                    usage=USAGE, 

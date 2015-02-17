@@ -35,9 +35,12 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+# System modules
+from texttable import Texttable
+
 # TAU modules
 from tau import USER_PREFIX, EXIT_SUCCESS
-from logger import getLogger
+from logger import getLogger, LINE_WIDTH
 from util import pformatList, pformatDict
 from error import ConfigurationError
 from arguments import getParser, SUPPRESS
@@ -88,20 +91,42 @@ def main(argv):
   try:
     names = args.names
   except AttributeError:
-    found = ['%s %s' % (t['name'], t['projects'] if t['projects'] else '')
-             for t in Measurement.search()]
-    listing = pformatList(found,
-                          empty_msg="No measurements. See 'tau measurement create --help'", 
-                          title='Measurements (%s)' % USER_PREFIX)
-    LOGGER.info(listing)
+    found = Measurement.search()
   else:
+    found = []
     for name in names:
-      found = Measurement.withName(name)
-      if not found:
-        raise ConfigurationError('There is no measurement named %r.' % name,
-                                 'Try `tau measurement list` to see all measurement names.')
-      else:
-        found.populate()
-        listing = pformatDict(found.data, title='Measurement "%s"' % found['name'])
-        LOGGER.info(listing)
+      t = Measurement.withName(name)
+      if t:
+        found.append(t)
+
+  title = '{:=<75}'.format('== Measurements (%s) ==' % USER_PREFIX)
+  if not found:
+    listing = "No measurements. See 'tau measurement create --help'"
+  else:
+    yesno = lambda x: 'Yes' if x else 'No'
+    table = Texttable(LINE_WIDTH)
+    cols = [('Name', 'r', lambda t: t['name']), 
+            ('Profile', 'c', lambda t: yesno(t['profile'])), 
+            ('Trace', 'c', lambda t: yesno(t['trace'])), 
+            ('Sample', 'c', lambda t: yesno(t['sample'])),
+            ('Source Inst.', 'c', lambda t: yesno(t['source_inst'])),
+            ('Compiler Inst.', 'c', lambda t: yesno(t['compiler_inst'])),
+            ('MPI', 'c', lambda t: yesno(t['mpi'])),
+            ('OpenMP', 'c', lambda t: yesno(t['openmp'])),
+            ('Callpath Depth', 'c', lambda t: t['callpath']),
+            ('Mem. Usage', 'c', lambda t: yesno(t['memory_usage'])),
+            ('Mem. Alloc', 'c', lambda t: yesno(t['memory_alloc'])),
+            ('In Projects', 'l', None)]
+    headers = [header for header, _, _ in cols]
+    rows = [headers]
+    for t in found:
+      t.populate()
+      projects = ', '.join([p['name'] for p in t['projects']])
+      row = [fnc(t) for _, _, fnc in cols if fnc] + [projects]
+      rows.append(row)
+    table.set_cols_align([align for _, align, _ in cols])
+    table.add_rows(rows)
+    listing = table.draw()
+    
+  LOGGER.info('\n'.join([title, '', listing, '']))
   return EXIT_SUCCESS

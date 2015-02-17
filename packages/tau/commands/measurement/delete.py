@@ -83,4 +83,4 @@ def main(argv):
   Measurement.delete({'name': args.name})
   
   LOGGER.info('Deleted measurement %r' % args.name)
-  return EXIT_SUCCESS
+  return executeCommand(['measurement', 'list'], [])

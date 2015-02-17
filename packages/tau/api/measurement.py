@@ -153,10 +153,10 @@ class Measurement(Model, ByName):
                     'default': 0,
                     'type': int})
     },
-    'memory_use': {
+    'memory_usage': {
       'type': 'boolean',
       'defaultsTo': False,
-      'argparse': (('--memory_use',), 
+      'argparse': (('--memory_usage',), 
                    {'help': 'Measure memory consumption',
                     'metavar': '<flag>',
                     'nargs': '?',

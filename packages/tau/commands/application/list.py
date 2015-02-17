@@ -35,9 +35,12 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+# System modules
+from texttable import Texttable
+
 # TAU modules
 from tau import USER_PREFIX, EXIT_SUCCESS
-from logger import getLogger
+from logger import getLogger, LINE_WIDTH
 from util import pformatList, pformatDict
 from error import ConfigurationError
 from arguments import getParser, SUPPRESS
@@ -88,20 +91,39 @@ def main(argv):
   try:
     names = args.names
   except AttributeError:
-    found = ['%s %s' % (t['name'], t['projects'] if t['projects'] else '')
-             for t in Application.search()]
-    listing = pformatList(found,
-                          empty_msg="No applications. See 'tau application create --help'", 
-                          title='Applications (%s)' % USER_PREFIX)
-    LOGGER.info(listing)
+    found = Application.search()
   else:
+    found = []
     for name in names:
-      found = Application.withName(name)
-      if not found:
-        raise ConfigurationError('There is no application named %r.' % name,
-                                 'Try `tau application list` to see all application names.')
-      else:
-        found.populate()
-        listing = pformatDict(found.data, title='Application "%s"' % found['name'])
-        LOGGER.info(listing)
+      t = Application.withName(name)
+      if t:
+        found.append(t)
+
+  title = '{:=<75}'.format('== Applications (%s) ==' % USER_PREFIX)
+  if not found:
+    listing = "No applications. See 'tau application create --help'"
+  else:
+    table = Texttable(LINE_WIDTH)
+    cols = [('Name', 'r', None), 
+            ('OpenMP', 'c', 'openmp'), 
+            ('Pthreads', 'c', 'pthreads'), 
+            ('MPI', 'c', 'mpi'),
+            ('CUDA', 'c', 'cuda'),
+            ('SHMEM', 'c', 'shmem'),
+            ('MPC', 'c', 'mpc'),
+            ('In Projects', 'l', None)]
+    headers = [header for header, _, _ in cols]
+    rows = [headers]
+    for t in found:
+      t.populate()
+      name = t['name']
+      projects = ', '.join([p['name'] for p in t['projects']])
+      row = [name] + ['Yes' if t.get(attr, None) else '' for _, _, attr in cols if attr] + [projects]
+      rows.append(row)
+    table.set_cols_align([align for _, align, _ in cols])
+    table.add_rows(rows)
+    listing = table.draw()
+    
+  LOGGER.info('\n'.join([title, '', listing, '']))
   return EXIT_SUCCESS
+

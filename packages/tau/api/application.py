@@ -67,29 +67,12 @@ class Application(Model, ByName):
                     'metavar': '<application_name>'})
 
     },
-    'version': {
-      'type': 'string',
-      'argparse': (('--version',), 
-                   {'help': 'Application version',
-                    'metavar': '<version>'})
-    },
-    'source': {
-      'type': 'binary',
-      'argparse': (('--source',), {'help': 'Application source code',
-                                   'metavar': '<source>'})
-    },
-    'repo': {
-      'type': 'string',
-      'argparse': (('--repo',), 
-                   {'help': 'Application repository',
-                    'metavar': '<repo>'})
-    },
     'openmp': {
       'type': 'boolean',
       'defaultsTo': False,
       'argparse': (('--openmp',), 
                    {'help': 'The application uses OpenMP',
-                    'metavar': '<flag>',
+                    'metavar': 'yes/no',
                     'nargs': '?',
                     'const': True,
                     'default': False,
@@ -100,7 +83,7 @@ class Application(Model, ByName):
       'defaultsTo': False,
       'argparse': (('--pthreads',), 
                    {'help': 'The application uses pthreads',
-                    'metavar': '<flag>',
+                    'metavar': 'yes/no',
                     'nargs': '?',
                     'const': True,
                     'default': False,
@@ -111,7 +94,7 @@ class Application(Model, ByName):
       'defaultsTo': False,
       'argparse': (('--mpi',), 
                    {'help': 'The application uses MPI',
-                    'metavar': '<flag>',
+                    'metavar': 'yes/no',
                     'nargs': '?',
                     'const': True,
                     'default': False,
@@ -122,7 +105,7 @@ class Application(Model, ByName):
       'defaultsTo': False,
       'argparse': (('--cuda',), 
                    {'help': 'The application uses NVIDIA CUDA',
-                    'metavar': '<flag>',
+                    'metavar': 'yes/no',
                     'nargs': '?',
                     'const': True,
                     'default': False,
@@ -133,7 +116,7 @@ class Application(Model, ByName):
       'defaultsTo': False,
       'argparse': (('--shmem',), 
                    {'help': 'The application uses SHMEM',
-                    'metavar': '<flag>',
+                    'metavar': 'yes/no',
                     'nargs': '?',
                     'const': True,
                     'default': False,
@@ -144,7 +127,7 @@ class Application(Model, ByName):
       'defaultsTo': False,
       'argparse': (('--mpc',), 
                    {'help': 'The application uses MPC',
-                    'metavar': '<flag>',
+                    'metavar': 'yes/no',
                     'nargs': '?',
                     'const': True,
                     'default': False,

@@ -58,7 +58,7 @@ COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
 
 USAGE = """
   %(command)s <project_name> [targets] [applications] [measurements]
-  %(command)s <project_name> [--targets targets] [--applications applications] [--measurements measurements]
+  %(command)s <project_name> [--targets t [t ...]] [--applications a [a ...]] [--measurements m [m ...]]
   %(command)s -h | --help
 """ % {'command': COMMAND}
 
@@ -72,17 +72,17 @@ PARSER = getParserFromModel(Project,
                             description=SHORT_DESCRIPTION)
 PARSER.add_argument('--targets',
                     help = "Target configurations in this project",
-                    metavar = 'target',
+                    metavar = 't',
                     nargs = '+',
                     default = SUPPRESS)
 PARSER.add_argument('--applications', 
                     help = "Application configurations in this project",
-                    metavar = 'application',
+                    metavar = 'a',
                     nargs = '+',
                     default = SUPPRESS)
 PARSER.add_argument('--measurements', 
                     help = "Measurement configurations in this project",
-                    metavar = 'measurement',
+                    metavar = 'm',
                     nargs = '+',
                     default = SUPPRESS)
 PARSER.add_argument('impl_targets', 

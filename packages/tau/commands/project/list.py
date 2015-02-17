@@ -35,12 +35,16 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+# System modules
+from texttable import Texttable
+
 # TAU modules
 from tau import USER_PREFIX, EXIT_SUCCESS
-from logger import getLogger
+from logger import getLogger, LINE_WIDTH
 from util import pformatList, pformatDict
 from error import ConfigurationError
 from arguments import getParser, SUPPRESS
+from texttable import Texttable
 from api.project import Project
 
 
@@ -88,17 +92,30 @@ def main(argv):
   try:
     names = args.names
   except AttributeError:
-    listing = pformatList([t['name'] for t in Project.search()],
-                          empty_msg="No projects. See 'tau project create --help'", 
-                          title='Projects (%s)' % USER_PREFIX)
-    LOGGER.info(listing)
+    found = Project.search()
   else:
+    found = []
     for name in names:
-      found = Project.withName(name)
-      if not found:
-        raise ConfigurationError('There is no project named %r.' % name,
-                                 'Try `tau project list` to see all project names.')
-      else:
-        listing = pformatDict(found.data, title='Project "%s"' % found['name'])
-        LOGGER.info(listing)
+      t = Project.withName(name)
+      if t:
+        found.append(t)
+
+  title = '{:=<75}'.format('== Projects (%s) ==' % USER_PREFIX)
+  if not found:
+    listing = "No projects. See 'tau project create --help'"
+  else:
+    table = Texttable(LINE_WIDTH)
+    headers = ['Name', 'Targets', 'Applications', 'Measurements']
+    rows = [headers]
+    for p in found:
+      p.populate()
+      targets = '\n'.join([t['name'] for t in p['targets']]) or '/'
+      applications = '\n'.join([t['name'] for t in p['applications']]) or '/'
+      measurements = '\n'.join([t['name'] for t in p['measurements']]) or '/'
+      row = [p['name'], targets, applications, measurements]
+      rows.append(row)
+    table.add_rows(rows)
+    listing = table.draw()
+    
+  LOGGER.info('\n'.join([title, '', listing, '']))
   return EXIT_SUCCESS
