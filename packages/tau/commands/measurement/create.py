@@ -43,7 +43,10 @@ from tau import EXIT_SUCCESS
 from logger import getLogger
 from arguments import getParserFromModel
 from commands import executeCommand
+from model import UniqueAttributeError
+from error import ConfigurationError
 from api.measurement import Measurement
+
 
 
 LOGGER = getLogger(__name__)
@@ -82,7 +85,11 @@ def main(argv):
   args = PARSER.parse_args(args=argv)
   LOGGER.debug('Arguments: %s' % args)
   
-  Measurement.create(args.__dict__)
+  try:
+    Measurement.create(args.__dict__)
+  except UniqueAttributeError:
+    raise ConfigurationError('A measurement named %r already exists' % args.name,
+                             'Type `tau measurement list` to see all measurement names')
   
   LOGGER.info('Created a new measurement named %r.' % args.name)
   return executeCommand(['measurement', 'list'], [args.name])

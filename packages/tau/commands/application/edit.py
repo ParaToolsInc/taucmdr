@@ -47,7 +47,7 @@ LOGGER = getLogger(__name__)
 
 SHORT_DESCRIPTION = "Modify an existing application configuration."
 
-COMMAND = ' '.join(['tau'] + (__name__.split('.')[2:]))
+COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
 
 USAGE = """
   %(command)s <application_name> [options]
@@ -63,8 +63,8 @@ PARSER = getParserFromModel(Application,
                             prog=COMMAND, 
                             usage=USAGE,
                             description=SHORT_DESCRIPTION)
-PARSER.add_argument('--name',
-                    help="New name of the application configuration",
+PARSER.add_argument('--rename',
+                    help="Rename the application configuration",
                     metavar='<new_name>', dest='new_name',
                     default=SUPPRESS)
 
@@ -94,6 +94,6 @@ def main(argv):
     updates['name'] = new_name
     del updates['new_name']
   
-  Application.update({'name': name}, updates)
+  Application.update(updates, {'name': name})
   
   return executeCommand(['application', 'list'], [args.name])

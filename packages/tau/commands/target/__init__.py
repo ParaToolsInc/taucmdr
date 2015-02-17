@@ -60,7 +60,7 @@ HELP = """
 """ % {'command': COMMAND}
 
 USAGE_EPILOG = """
-Subcommands:
+subcommands:
 %(command_descr)s
 
 See '%(command)s <subcommand> --help' for more information on <subcommand>.
@@ -69,7 +69,7 @@ See '%(command)s <subcommand> --help' for more information on <subcommand>.
 
 
 
-_arguments = [ (('subcommand',), {'help': "See 'Subcommands' below",
+_arguments = [ (('subcommand',), {'help': "See 'subcommands' below",
                                   'metavar': '<subcommand>'}),
               (('options',), {'help': "Options to be passed to <subcommand>",
                               'metavar': '[options]',

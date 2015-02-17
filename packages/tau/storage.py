@@ -39,7 +39,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import os
 import sys
 from tinydb import TinyDB, where
-from tinyrecord import transaction
+ 
 
 # TAU modules
 from tau import USER_PREFIX, SYSTEM_PREFIX, HELP_CONTACT, EXIT_FAILURE
@@ -81,8 +81,9 @@ class Storage(object):
       mkdirp(prefix)
     except:
       raise StorageError('Cannot create directory %r' % path, 'Check that you have `write` access')
+    dbfile = os.path.join(prefix, db_name)
     try:
-      self.db = TinyDB(os.path.join(prefix, db_name))
+      self.db = TinyDB(dbfile)
     except:
       raise StorageError('Cannot create %r' % path, 'Check that you have `write` access')
 
@@ -100,54 +101,67 @@ class Storage(object):
       query = join(query, (where(key) == value))
     return query
 
-  def transact(self, table_name, callback):
-    """
-    Execute a database transaction on the specified table
-    """
-    table = self.db.table(table_name)
-    with transaction(table) as tr:
-      return callback(tr)
-    
   def insert(self, table_name, fields):
     """
     Create a new record in the specified table
     """
-    return self.transact(table_name,
-                         lambda table: table.insert(fields))
+    return self.db.table(table_name).insert(fields)
+  
+  def get(self, table_name, keys=None, eid=None):
+    """
+    Return the record with the specified keys or element id
+    """
+    table = self.db.table(table_name)
+    if eid != None:
+      return table.get(eid=eid)
+    elif keys:
+      return table.get(self._getQuery(keys, 'and'))
+    else:
+      return None
 
   def search(self, table_name, keys=None):
     """
     Return a list of records from the specified table that 
-    match the provided keys
+    match any one of the provided keys
     """
     table = self.db.table(table_name)
-    # FIXME: transactions don't have search() or all () methods
-    callback = (lambda _: table.search(self._getQuery(keys))) if keys else (lambda _: table.all())
-    return self.transact(table_name, callback)
+    if keys:
+      return table.search(self._getQuery(keys))
+    else:
+      return table.all()
 
-  def contains(self, table_name, keys):
+  def contains(self, table_name, keys=None, eids=None):
     """
     Return True if the specified table contains at least one 
-    record that matches the provided keys
+    record that matches the provided keys or element IDs
     """
     table = self.db.table(table_name)
-    # FIXME: transactions don't have a contains() method
-    return self.transact(table_name,
-                         lambda _: table.contains(self._getQuery(keys)))
+    if eids != None:
+      return table.contains(eids=eids)
+    elif keys:
+      return table.contains(self._getQuery(keys))
+    else:
+      return False
 
-  def update(self, table_name, keys, fields):
+  def update(self, table_name, fields, keys=None, eids=None):
     """
     Updates the record that matches keys to contain values from fields
     """
-    return self.transact(table_name,
-                         lambda table: table.update(fields, self._getQuery(keys)))
+    table = self.db.table(table_name)
+    if eids != None:
+      return table.update(fields, eids=eids)
+    else:
+      return table.update(fields, self._getQuery(keys))
 
-  def remove(self, table_name, keys):
+  def remove(self, table_name, keys=None, eids=None):
     """
     Remove all records that match keys
     """
-    return self.transact(table_name,
-                         lambda table: table.remove(self._getQuery(keys)))
+    table = self.db.table(table_name)
+    if eids != None:
+      return table.remove(eids=eids)
+    else:
+      return table.remove(self._getQuery(keys))
 
 
 user_storage = Storage(USER_PREFIX, 'local.json')
