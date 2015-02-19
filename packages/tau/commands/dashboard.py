@@ -35,47 +35,53 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-# System modules
-import string
-
 # TAU modules
-from model import Model, ModelError, ByName
+from tau import EXIT_SUCCESS
+from logger import getLogger
+from arguments import getParser
+from commands import executeCommand
 
 
-class Project(Model, ByName):
+LOGGER = getLogger(__name__)
+
+_name_parts = __name__.split('.')[2:]
+COMMAND = ' '.join(['tau'] + _name_parts)
+
+SHORT_DESCRIPTION = "Show all projects and their components."
+
+USAGE = """
+  %(command)s {<command>|<file_name>}
+  %(command)s -h | --help
+""" % {'command': COMMAND}
+
+HELP = """
+Help page to be written.
+"""
+
+PARSER = getParser([],
+                   prog=COMMAND, 
+                   usage=USAGE, 
+                   description=SHORT_DESCRIPTION)
+
+
+def getUsage():
+  return PARSER.format_help() 
+
+
+def getHelp():
+  return HELP
+
+
+def main(argv):
   """
-  Project data model
+  Program entry point
   """
+  args = PARSER.parse_args(args=argv)
+  LOGGER.debug('Arguments: %s' % args)
   
-  attributes = {
-    'name': {
-      'type': 'string',
-      'unique': True,
-      'argparse': (('name',), 
-                   {'help': 'Project name',
-                    'metavar': '<project_name>'})
-    },
-    'targets': {
-      'collection': 'Target',
-      'via': 'projects',
-    },
-    'applications': {
-      'collection': 'Application',
-      'via': 'projects',
-    },
-    'measurements': {
-      'collection': 'Measurement',
-      'via': 'projects',
-    },
-    'experiments': {
-      'collection': 'Experiment',
-      'via': 'project'
-    },
-  }
-
-  _valid_name = set(string.digits + string.letters + '-_.')
+  executeCommand(['target', 'list'])
+  executeCommand(['application', 'list'])
+  executeCommand(['measurement', 'list'])
+  executeCommand(['project', 'list'])
   
-  def onCreate(self):
-    if set(self['name']) > Project._valid_name:
-      raise ModelError('%r is not a valid project name.' % self['name'],
-                       'Use only letters, numbers, dot (.), dash (-), and underscore (_).')
+  return EXIT_SUCCESS

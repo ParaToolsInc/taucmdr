@@ -158,7 +158,7 @@ def main(argv):
     m = Measurement.withName(name)
     tam = set([t,a,m]) - set([None])
     if len(tam) > 1:
-      PARSER.error('%r is ambigous, please use --add-targets, --add-applications,'
+      PARSER.error('%r is ambiguous, please use --add-targets, --add-applications,'
                    ' or --add-measurements to specify configuration type' % name)
     elif len(tam) == 0:
       PARSER.error('%r is not a target, application, or measurement' % name)
@@ -185,7 +185,7 @@ def main(argv):
     m = Measurement.withName(name)
     tam = set([t,a,m]) - set([None])
     if len(tam) > 1:
-      PARSER.error('%r is ambigous, please use --remove-targets, --remove-applications,'
+      PARSER.error('%r is ambiguous, please use --remove-targets, --remove-applications,'
                    ' or --remove-measurements to specify configuration type' % name)
     elif len(tam) == 0:
       PARSER.error('%r is not a target, application, or measurement' % name)

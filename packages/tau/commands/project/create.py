@@ -57,8 +57,7 @@ SHORT_DESCRIPTION = "Create a new project configuration."
 COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
 
 USAGE = """
-  %(command)s <project_name> [targets] [applications] [measurements]
-  %(command)s <project_name> [--targets t [t ...]] [--applications a [a ...]] [--measurements m [m ...]]
+  %(command)s <project_name> [options] [targets] [applications] [measurements]
   %(command)s -h | --help
 """ % {'command': COMMAND}
 
@@ -70,21 +69,6 @@ PARSER = getParserFromModel(Project,
                             prog=COMMAND, 
                             usage=USAGE, 
                             description=SHORT_DESCRIPTION)
-PARSER.add_argument('--targets',
-                    help = "Target configurations in this project",
-                    metavar = 't',
-                    nargs = '+',
-                    default = SUPPRESS)
-PARSER.add_argument('--applications', 
-                    help = "Application configurations in this project",
-                    metavar = 'a',
-                    nargs = '+',
-                    default = SUPPRESS)
-PARSER.add_argument('--measurements', 
-                    help = "Measurement configurations in this project",
-                    metavar = 'm',
-                    nargs = '+',
-                    default = SUPPRESS)
 PARSER.add_argument('impl_targets', 
                     help="Target configurations in this project",
                     metavar='[targets]', 
@@ -100,6 +84,24 @@ PARSER.add_argument('impl_measurements',
                     metavar='[measurements]',
                     nargs='*',
                     default=SUPPRESS)  
+PARSER.add_argument('--add-targets',
+                    help = "Target configurations in this project",
+                    metavar = 't',
+                    nargs = '+',
+                    dest = 'targets',
+                    default = SUPPRESS)
+PARSER.add_argument('--add-applications', 
+                    help = "Application configurations in this project",
+                    metavar = 'a',
+                    nargs = '+',
+                    dest = 'applications',
+                    default = SUPPRESS)
+PARSER.add_argument('--add-measurements', 
+                    help = "Measurement configurations in this project",
+                    metavar = 'm',
+                    nargs = '+',
+                    dest = 'measurements',
+                    default = SUPPRESS)
 
 
 def getUsage():
@@ -136,7 +138,7 @@ def main(argv):
       m = Measurement.withName(name)
       tam = set([t,a,m]) - set([None])
       if len(tam) > 1:
-        PARSER.error('%r is ambigous, please use --targets, --applications,'
+        PARSER.error('%r is ambiguous, please use --targets, --applications,'
                      ' or --measurements to specify configuration type' % name)
       elif len(tam) == 0:
         PARSER.error('%r is not a target, application, or measurement' % name)

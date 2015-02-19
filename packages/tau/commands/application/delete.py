@@ -50,7 +50,6 @@ SHORT_DESCRIPTION = "Delete application configurations."
 COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
 
 USAGE = """
-Usage:
   %(command)s <application_name>
   %(command)s -h | --help
 """ % {'command': COMMAND}

@@ -38,7 +38,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # System modules
 import sys
 import json
-from UserDict import IterableUserDict
 
 # TAU modules
 from tau import HELP_CONTACT, EXIT_FAILURE
@@ -78,100 +77,102 @@ class UniqueAttributeError(ModelError):
 
 
 
-class Model(object, IterableUserDict):
+class Model(object):
   """
   The "M" in MVC
   """
   
+  # If false, allow non-schema data to reside in Model.data
   enforce_schema = True
   
+  # Subclasses override for callback
   def onCreate(self): pass
   
   def __init__(self, fields):
     self.eid = getattr(fields, 'eid', None)
     self.data = self._validate(fields)
     self.onCreate()
+    
+  def __getitem__(self, key):
+    return self.data[key]
+  
+  def get(self, key, default=None):
+    return self.data.get(key, default)
 
   def __repr__(self):
     return json.dumps(self.data)
-  
-  def populate(self):
-    """
-    Populates associated attributes
-    """
-    for attr, props in (self.attributesWith('collection', 'model')):
-      foreign_model = getModel(props['collection'])
-      self[attr] = [foreign_model.one(eid=eid) for eid in self[attr]]
-    return self
-  
+
   @classmethod
   def _validate(cls, data):
     """
     Validates the given data against the model schema
-    A new dictionary containing validated data is returned
     """
-    validated = {}
-    for attr, props in cls.attributes.iteritems():
-      # Check required fields
-      if props.get('required', False):
-        try:
-          validated[attr] = data[attr]
-        except KeyError:
-          raise ModelError(cls, '%r is required' % attr)
-        else: 
-          continue
-      # Apply defaults
-      try:
-        default = props['defaultsTo']
-      except KeyError:
-        pass
-      else:
-        validated[attr] = data.get(attr, default)
-        continue
-      # Check model associations 
-      try:
-        collection_type = props['collection']
-      except KeyError:
-        pass
-      else: 
-        collection_model = getModel(collection_type)
-        try:
-          via = props['via']
-        except KeyError:
-          if collection_model:
-            raise ModelError(cls, "'collection(%r)' does not define 'via' in %r" % 
-                             (collection_type, cls.model_name))
-        else:
-          if not collection_model:
-            raise ModelError(cls, "'collection(%r)' defines 'via' on non-model in %r" % 
-                             (collection_type, cls.model_name))
-          try:
-            via_attr = collection_model.attributes[via]
-          except KeyError:
-            raise ModelError(cls, "'collection(%r)' defines 'via' on undefined attribute %s.attributes.%s in %r" % 
-                             (collection_type, collection_model.__name__, via, cls.model_name))
-          else:
-            if not ('model' in via_attr or 'collection' in via_attr):
-              raise ModelError(cls, "'collection(%r)' defines 'via' on non-model attribute %s.attributes.%s in %r" % 
-                               (collection_type, collection_model.__name__, via, cls.model_name))
-        # Empty collections are an empty list
-        value = data.get(attr, [])
-        validated[attr] = value if value else []
-      # Flag non-schema fields and ignore `None` fields
-      try:
-        value = data[attr]
-      except KeyError:
-        pass
-      else:
-        if value != None:
-          validated[attr] = value
     # Enforce schema
     if cls.enforce_schema:
       for key in data:
         if not key in cls.attributes:
           raise ModelError(cls, 'Data field %r not described in %s schema' % (key, cls.model_name))
+    validated = {}
+    for attr, props in cls.attributes.iteritems():
+      #
+      # TODO: Check types
+      #
+      # Check required fields and defaults
+      try:
+        validated[attr] = data[attr]
+      except KeyError:
+        if 'required' in props:
+          raise ModelError(cls, "'%s' is required but was not defined" % attr)
+        elif 'defaultsTo' in props:
+          validated[attr] = props['defaultsTo']
+      # Check collections
+      if 'collection' in props:
+        value = data.get(attr, [])
+        if not value:
+          value = []
+        elif not isinstance(value, list):
+          raise ModelError(cls, "Value supplied for '%s' is not a list: %r" % (attr, value))
+        else:
+          for id in value:
+            try:
+              int(id)
+            except ValueError:
+              raise ModelError(cls, "Invalid non-integer ID '%s' in '%s'" % (id, attr))
+        validated[attr] = value
+        continue
+      # Check model associations
+      if 'model' in props:
+        value = data.get(attr, None)
+        if not value:
+          value = []
+        elif not isinstance(value, list):
+          try:
+            value = [int(value)]
+          except ValueError:
+            raise ModelError(cls, "Invalid non-integer ID '%s' in '%s'" % (value, attr))
+        validated[attr] = value
+        continue
     return validated
   
+  def populate(self):
+    """
+    Populates associated attributes
+    """
+    from api import MODELS
+    for attr, props in self.attributes.iteritems():
+      try:
+        foreign_model = MODELS[props['model']]
+      except KeyError:
+        try:
+          foreign_model = MODELS[props['collection']]
+        except KeyError:
+          continue
+        else:
+          self.data[attr] = foreign_model.search(eids=self[attr])
+      else:
+        self.data[attr] = foreign_model.one(eid=self[attr][0])
+    return self
+
   @classmethod
   def one(cls, keys=None, eid=None):
     """
@@ -179,13 +180,23 @@ class Model(object, IterableUserDict):
     """
     found = storage.get(cls.model_name, keys, eid)
     return cls(found) if found else None
+  
+  @classmethod
+  def all(cls):
+    """
+    Returns a list of all records
+    """
+    return [cls(result) for result in storage.search(cls.model_name)]
 
   @classmethod
-  def search(cls, keys=None):
+  def search(cls, keys=None, eids=None):
     """
     Return a list of records matching the given keys
     """
-    return [cls(result) for result in storage.search(cls.model_name, keys)]
+    if eids != None:
+      return [cls.one(eid=eid) for eid in eids]
+    else:
+      return cls.all()
   
   @classmethod
   def exists(cls, keys=None, eids=None):
@@ -200,26 +211,26 @@ class Model(object, IterableUserDict):
     Store a new model record and update associations
     """
     model = cls(fields)
-    unique = dict([(attr, model[attr]) 
-                   for attr, _ in cls.attributesWith('unique')])
+    unique = dict([(attr, model[attr])
+                   for attr, props in cls.attributes.iteritems()
+                   if 'unique' in props])
     if storage.contains(cls.model_name, unique):
       raise UniqueAttributeError(cls, unique)
     
     model.eid = storage.insert(cls.model_name, model.data)
-    for attr, props in (cls.attributesWith('collection', 'model')):
-      via = props['via']
-      foreign_model = getModel(props['collection'])
-      foreign_keys = model[attr]
-      for foreign_key in foreign_keys:
-        associated = foreign_model.one(eid=foreign_key)
+    for attr, foreign in cls.associations.iteritems():
+      if not attr: continue
+      foreign_model, via = foreign
+      for key in model.data[attr]:
+        associated = foreign_model.one(eid=key)
         if not associated:
-          raise ModelError(foreign_model, 'No record with ID %r' % foreign_key)
+          raise ModelError(foreign_model, "No record with ID '%s'" % key)
         if 'model' in associated.attributes[via]:
-          updated_keys = [model.eid]
+          updated_field = [model.eid]
         elif 'collection' in associated.attributes[via]:
-          updated_keys = list(set(associated[via] + [model.eid]))
-        storage.update(foreign_model.model_name, {via: updated_keys}, eids=[foreign_key])
-    return model.eid
+          updated_field = list(set(associated[via] + [model.eid]))
+        storage.update(foreign_model.model_name, {via: updated_field}, eids=[key])
+    return model
   
   @classmethod
   def update(cls, fields, keys):
@@ -228,48 +239,25 @@ class Model(object, IterableUserDict):
     and update associations
     """
     for model in cls.search(keys):
-      for attr, props in (cls.attributesWith('collection', 'model')):
+      for attr, foreign in cls.associations.iteritems():
         try:
           new_foreign_keys = set(fields[attr])
         except KeyError:
           continue
-        else:
-          via = props['via']
-          foreign_model = getModel(props['collection'])
-          old_foreign_keys = set(model[attr])
-          added = new_foreign_keys - old_foreign_keys
-          deled = old_foreign_keys - new_foreign_keys
-          for foreign_key in added:
-            associated = foreign_model.one(eid=foreign_key)
-            if not associated:
-              raise ModelError(foreign_model, 'No record with ID %r' % foreign_key)
-            if 'model' in associated.attributes[via]:
-              updated_keys = [model.eid]
-            elif 'collection' in associated.attributes[via]:
-              updated_keys = list(set(associated[via] + [model.eid]))
-            storage.update(foreign_model.model_name, {via: updated_keys}, eids=[foreign_key])
-          for foreign_key in deled:
-            associated = foreign_model.one(eid=foreign_key)
-            if not associated:
-              raise ModelError(foreign_model, 'No record with ID %r' % foreign_key)
-            if 'model' in associated.attributes[via]:
-              updated_keys = []
-            elif 'collection' in associated.attributes[via]:
-              updated_keys = list(set(associated[via]) - set([model.eid]))
-            storage.update(foreign_model.model_name, {via: updated_keys}, eids=[foreign_key])
-    return storage.update(cls.model_name, fields, keys)
-  
-  @classmethod
-  def delete(cls, keys):
-    """
-    Delete the records that match the given keys and update associations
-    """
-    for model in cls.search(keys):
-      for attr, props in (cls.attributesWith('collection', 'model')):
-        via = props['via']
-        foreign_model = getModel(props['collection'])
-        foreign_keys = model[attr]
-        for foreign_key in foreign_keys:
+        foreign_model, via = foreign
+        old_foreign_keys = set(model[attr])
+        added = new_foreign_keys - old_foreign_keys
+        deled = old_foreign_keys - new_foreign_keys
+        for foreign_key in added:
+          associated = foreign_model.one(eid=foreign_key)
+          if not associated:
+            raise ModelError(foreign_model, 'No record with ID %r' % foreign_key)
+          if 'model' in associated.attributes[via]:
+            updated_keys = [model.eid]
+          elif 'collection' in associated.attributes[via]:
+            updated_keys = list(set(associated[via] + [model.eid]))
+          storage.update(foreign_model.model_name, {via: updated_keys}, eids=[foreign_key])
+        for foreign_key in deled:
           associated = foreign_model.one(eid=foreign_key)
           if not associated:
             raise ModelError(foreign_model, 'No record with ID %r' % foreign_key)
@@ -278,17 +266,24 @@ class Model(object, IterableUserDict):
           elif 'collection' in associated.attributes[via]:
             updated_keys = list(set(associated[via]) - set([model.eid]))
           storage.update(foreign_model.model_name, {via: updated_keys}, eids=[foreign_key])
-    return storage.remove(cls.model_name, keys)
+    return storage.update(cls.model_name, fields, keys)
   
   @classmethod
-  def attributesWith(cls, *args):
+  def delete(cls, keys):
     """
-    Yield attributes that have the specified property
+    Delete the records that match the given keys and update associations
     """
-    for i in cls.attributes.iteritems():
-      for property in args:
-        if i[1].get(property, False):
-          yield i
+    for model in cls.search(keys):
+      for attr, foreign in cls.associations.iteritems():
+        foreign_model, via = foreign
+        affected = foreign_model.search(eids=model[attr]) if attr else foreign_model.all() 
+        for associated in affected:
+          if 'model' in associated.attributes[via]:
+            updated_field = []
+          elif 'collection' in associated.attributes[via]:
+            updated_field = list(set(associated[via]) - set([model.eid]))
+          storage.update(foreign_model.model_name, {via: updated_field}, eids=[associated.eid])
+    return storage.remove(cls.model_name, keys)
 
 
 class ByName(object):
@@ -298,17 +293,3 @@ class ByName(object):
   @classmethod
   def withName(cls, name):
     return cls.one({'name': name})
-    
-    
-def getModel(name):
-  """
-  Returns the named model class or None if no such model exists
-  """
-  module_name = '.'.join(['tau', 'api', name.lower()])
-  class_name = name.lower().capitalize()
-  try:
-    module = __import__(module_name, globals(), locals(), [class_name], -1)
-  except ImportError:
-    return None
-  else:
-    return getattr(module, class_name, None)

@@ -50,7 +50,6 @@ SHORT_DESCRIPTION = "Delete project configurations."
 COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
 
 USAGE = """
-Usage:
   %(command)s <project_name>
   %(command)s -h | --help
 """ % {'command': COMMAND}

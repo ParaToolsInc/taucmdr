@@ -55,10 +55,9 @@ SHORT_DESCRIPTION = "List project configurations or show configuration details."
 COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
 
 USAGE = """
-Usage:
   %(command)s [project_name] [project_name] ...
   %(command)s -h | --help
-"""
+""" % {'command': COMMAND}
 
 HELP = """
 '%(command)s' page to be written.
@@ -70,7 +69,7 @@ _arguments = [(('names',), {'help': "If given, show details for this project",
                            'default': SUPPRESS})]
 PARSER = getParser(_arguments,
                    prog=COMMAND, 
-                   usage=USAGE % {'command': COMMAND}, 
+                   usage=USAGE, 
                    description=SHORT_DESCRIPTION)
 
 
@@ -92,7 +91,7 @@ def main(argv):
   try:
     names = args.names
   except AttributeError:
-    found = Project.search()
+    found = Project.all()
   else:
     found = []
     for name in names:
@@ -100,7 +99,7 @@ def main(argv):
       if t:
         found.append(t)
 
-  title = '{:=<75}'.format('== Projects (%s) ==' % USER_PREFIX)
+  title = '{:=<{}}'.format('== Projects (%s) ==' % USER_PREFIX, LINE_WIDTH)
   if not found:
     listing = "No projects. See 'tau project create --help'"
   else:

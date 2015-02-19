@@ -49,7 +49,6 @@ SHORT_DESCRIPTION = "Delete measurement configurations."
 COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
 
 USAGE = """
-Usage:
   %(command)s <measurement_name>
   %(command)s -h | --help
 """ % {'command': COMMAND}

@@ -78,8 +78,6 @@ class Target(Model, ByName):
   Target data model
   """
   
-  model_name = 'Target'
-  
   attributes = {
     'projects': {
       'collection': 'Project',
@@ -97,7 +95,7 @@ class Target(Model, ByName):
       'required': True,
       'argparse': (('--host_os',), 
                    {'help': 'Host operating system',
-                    'metavar': '<os>',
+                    'metavar': 'os',
                     'default': detectDefaultHostOS()})
     },
     'host_arch': {
@@ -105,24 +103,16 @@ class Target(Model, ByName):
       'required': True,
       'argparse': (('--host_arch',), 
                    {'help': 'Host architecture',
-                    'metavar': '<arch>',
+                    'metavar': 'arch',
                     'default': detectDefaultHostArch()})
     },
     'device_arch': {
       'type': 'string',
       'argparse': (('--device_arch',), 
                    {'help': 'Coprocessor architecture',
-                    'metavar': '<arch>',
+                    'metavar': 'arch',
                     'default': detectDefaultDeviceArch()})
     },
-#     'compilers': {
-#       'collection': 'Compiler',
-#       'via': 'target'
-#     },
-#     'packages': {
-#       'collection': 'Package',
-#       'via': 'target'
-#     }
   }
   
   _valid_name = set(string.digits + string.letters + '-_.')

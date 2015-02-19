@@ -55,10 +55,9 @@ SHORT_DESCRIPTION = "List target configurations or show configuration details."
 COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
 
 USAGE = """
-Usage:
   %(command)s [target_name] [target_name] ...
   %(command)s -h | --help
-"""
+""" % {'command': COMMAND}
 
 HELP = """
 '%(command)s' page to be written.
@@ -70,7 +69,7 @@ _arguments = [(('names',), {'help': "If given, show only targets with this name"
                            'default': SUPPRESS})]
 PARSER = getParser(_arguments,
                    prog=COMMAND, 
-                   usage=USAGE % {'command': COMMAND}, 
+                   usage=USAGE, 
                    description=SHORT_DESCRIPTION)
 
 
@@ -91,7 +90,7 @@ def main(argv):
   try:
     names = args.names
   except AttributeError:
-    found = Target.search()
+    found = Target.all()
   else:
     found = []
     for name in names:
@@ -99,7 +98,7 @@ def main(argv):
       if t:
         found.append(t)
 
-  title = '{:=<75}'.format('== Targets (%s) ==' % USER_PREFIX)
+  title = '{:=<{}}'.format('== Targets (%s) ==' % USER_PREFIX, LINE_WIDTH)
   if not found:
     listing = "No targets. See 'tau target create --help'"
   else:

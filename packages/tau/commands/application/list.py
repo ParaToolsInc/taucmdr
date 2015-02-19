@@ -54,10 +54,9 @@ SHORT_DESCRIPTION = "List application configurations or show configuration detai
 COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
 
 USAGE = """
-Usage:
   %(command)s [application_name] [application_name] ...
   %(command)s -h | --help
-"""
+""" % {'command': COMMAND}
 
 HELP = """
 '%(command)s' page to be written.
@@ -69,7 +68,7 @@ _arguments = [(('names',), {'help': "If given, show details for the application 
                            'default': SUPPRESS})]
 PARSER = getParser(_arguments,
                    prog=COMMAND, 
-                   usage=USAGE % {'command': COMMAND}, 
+                   usage=USAGE, 
                    description=SHORT_DESCRIPTION)
 
 
@@ -91,7 +90,7 @@ def main(argv):
   try:
     names = args.names
   except AttributeError:
-    found = Application.search()
+    found = Application.all()
   else:
     found = []
     for name in names:
@@ -99,7 +98,7 @@ def main(argv):
       if t:
         found.append(t)
 
-  title = '{:=<75}'.format('== Applications (%s) ==' % USER_PREFIX)
+  title = '{:=<{}}'.format('== Applications (%s) ==' % USER_PREFIX, LINE_WIDTH)
   if not found:
     listing = "No applications. See 'tau application create --help'"
   else:
