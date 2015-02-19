@@ -35,8 +35,12 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+# System modules
 import argparse
 from copy import copy
+
+# TAU modules
+from logger import LINE_WIDTH
 
 SUPPRESS = argparse.SUPPRESS
 REMAINDER = argparse.REMAINDER
@@ -46,19 +50,26 @@ class ArgparseHelpFormatter(argparse.RawDescriptionHelpFormatter):
   """
   Custom formatter for argparse
   """
-  def __init__(self, prog, indent_increment=2, max_help_position=30, width=None):
+  def __init__(self, prog, indent_increment=2, max_help_position=30, width=LINE_WIDTH):
     super(ArgparseHelpFormatter,self).__init__(prog, indent_increment, max_help_position, width)
 
+  def _split_lines(self, text, width):
+    parts = []
+    for line in text.splitlines():
+      parts.extend(argparse.HelpFormatter._split_lines(self, line, width))
+    return parts
+
   def _get_help_string(self, action):
+    indent = ' '*self._indent_increment
     help = action.help
     choices = getattr(action, 'choices', None)
     if choices:
-      help += '. %s is one of %r' %(action.metavar, choices)
+      help += '\n%s- %s: (%s)' % (indent, action.metavar, ', '.join(choices))
     if '%(default)' not in action.help:
       if action.default is not argparse.SUPPRESS:
         defaulting_nargs = [argparse.OPTIONAL, argparse.ZERO_OR_MORE]
         if action.option_strings or action.nargs in defaulting_nargs:
-          help += ' (default: %(default)s)'
+          help += '\n%s' % indent + '- default: %(default)s'
     return help
   
 
@@ -103,8 +114,11 @@ def getParserFromModel(model, use_defaults=True,
                                    description=description,
                                    epilog=epilog,
                                    formatter_class=ArgparseHelpFormatter)
-  for attr, props in model.attributesWith('argparse'):
-    flags, options = props['argparse']
+  for attr, props in model.attributes.iteritems():
+    try:
+      flags, options = props['argparse']
+    except KeyError:
+      continue
     all_options = dict(options)
     if not use_defaults or 'default' not in options:
       all_options['default'] = argparse.SUPPRESS

@@ -35,47 +35,26 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-# System modules
-import string
-
 # TAU modules
-from model import Model, ModelError, ByName
+from model import Model
 
 
-class Project(Model, ByName):
+class Experiment(Model):
   """
-  Project data model
+  Experiment data model
   """
   
   attributes = {
-    'name': {
-      'type': 'string',
-      'unique': True,
-      'argparse': (('name',), 
-                   {'help': 'Project name',
-                    'metavar': '<project_name>'})
+    'project': {
+      'model': 'Project',
     },
-    'targets': {
-      'collection': 'Target',
-      'via': 'projects',
+    'target': {
+      'model': 'Target',
     },
-    'applications': {
-      'collection': 'Application',
-      'via': 'projects',
+    'application': {
+      'model': 'Application',
     },
-    'measurements': {
-      'collection': 'Measurement',
-      'via': 'projects',
-    },
-    'experiments': {
-      'collection': 'Experiment',
-      'via': 'project'
-    },
+    'measurement': {
+      'model': 'Measurement',
+    }
   }
-
-  _valid_name = set(string.digits + string.letters + '-_.')
-  
-  def onCreate(self):
-    if set(self['name']) > Project._valid_name:
-      raise ModelError('%r is not a valid project name.' % self['name'],
-                       'Use only letters, numbers, dot (.), dash (-), and underscore (_).')

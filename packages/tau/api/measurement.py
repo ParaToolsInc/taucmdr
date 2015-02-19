@@ -39,20 +39,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import string
 
 # TAU modules
-from logger import getLogger
 from model import Model, ModelError, ByName
-from arguments import ParseBooleanAction, SUPPRESS
-
-
-LOGGER = getLogger(__name__)
+from arguments import ParseBooleanAction
 
 
 class Measurement(Model, ByName):
   """
   Measurement data model
   """
-  
-  model_name = 'Measurement'
   
   attributes = {
     'projects': {
@@ -72,7 +66,7 @@ class Measurement(Model, ByName):
       'defaultsTo': True,
       'argparse': (('--profile',), 
                    {'help': 'Gather application profiles',
-                    'metavar': '<flag>',
+                    'metavar': 'T/F',
                     'nargs': '?',
                     'const': True,
                     'default': True,
@@ -83,7 +77,7 @@ class Measurement(Model, ByName):
       'defaultsTo': True,
       'argparse': (('--trace',), 
                    {'help': 'Gather application traces',
-                    'metavar': '<flag>',
+                    'metavar': 'T/F',
                     'nargs': '?',
                     'const': True,
                     'default': False,
@@ -94,7 +88,7 @@ class Measurement(Model, ByName):
       'defaultsTo': True,
       'argparse': (('--sample',), 
                    {'help': 'Gather application program counter samples',
-                    'metavar': '<flag>',
+                    'metavar': 'T/F',
                     'nargs': '?',
                     'const': True,
                     'default': False,
@@ -105,7 +99,7 @@ class Measurement(Model, ByName):
       'defaultsTo': True,
       'argparse': (('--source_inst',), 
                    {'help': 'Use source code parsing to instrument the application',
-                    'metavar': '<flag>',
+                    'metavar': 'T/F',
                     'nargs': '?',
                     'const': True,
                     'default': True,
@@ -115,7 +109,7 @@ class Measurement(Model, ByName):
       'type': 'string',
       'argparse': (('--compiler_inst',), 
                    {'help': 'Use compiler callbacks to instrument the application',
-                    'metavar': '<mode>',
+                    'metavar': 'mode',
                     'nargs': '?',
                     'const': 'always',
                     'default': 'fallback',
@@ -126,7 +120,7 @@ class Measurement(Model, ByName):
       'defaultsTo': False,
       'argparse': (('--mpi',), 
                    {'help': 'Measure time spent in MPI methods',
-                    'metavar': '<flag>',
+                    'metavar': 'T/F',
                     'nargs': '?',
                     'const': True,
                     'default': False,
@@ -136,7 +130,7 @@ class Measurement(Model, ByName):
       'type': 'string',
       'argparse': (('--openmp',), 
                    {'help': 'Method used to measure time spent in OpenMP directives',
-                    'metavar': '<method>',
+                    'metavar': 'method',
                     'nargs': '?',
                     'const': 'opari',
                     'default': 'ignore',
@@ -147,7 +141,7 @@ class Measurement(Model, ByName):
       'defaultsTo': 2,
       'argparse': (('--callpath',), 
                    {'help': 'Set maximum depth of callpath recording',
-                    'metavar': '<depth>',
+                    'metavar': 'depth',
                     'nargs': '?',
                     'const': 2,
                     'default': 0,
@@ -158,7 +152,7 @@ class Measurement(Model, ByName):
       'defaultsTo': False,
       'argparse': (('--memory_usage',), 
                    {'help': 'Measure memory consumption',
-                    'metavar': '<flag>',
+                    'metavar': 'T/F',
                     'nargs': '?',
                     'const': True,
                     'default': False,
@@ -169,7 +163,7 @@ class Measurement(Model, ByName):
       'defaultsTo': False,
       'argparse': (('--memory_alloc',), 
                    {'help': 'Record memory allocation and deallocation events',
-                    'metavar': '<flag>',
+                    'metavar': 'T/F',
                     'nargs': '?',
                     'const': True,
                     'default': False,

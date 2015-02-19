@@ -50,7 +50,6 @@ SHORT_DESCRIPTION = "Delete target configurations."
 COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
 
 USAGE = """
-Usage:
   %(command)s <target_name>
   %(command)s -h | --help
 """ % {'command': COMMAND}

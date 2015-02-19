@@ -54,10 +54,9 @@ SHORT_DESCRIPTION = "List measurement configurations or show configuration detai
 COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
 
 USAGE = """
-Usage:
   %(command)s [measurement_name] [measurement_name] ...
   %(command)s -h | --help
-"""
+""" % {'command': COMMAND}
 
 HELP = """
 '%(command)s' page to be written.
@@ -69,7 +68,7 @@ _arguments = [(('names',), {'help': "If given, show details for the measurement 
                            'default': SUPPRESS})]
 PARSER = getParser(_arguments,
                    prog=COMMAND, 
-                   usage=USAGE % {'command': COMMAND}, 
+                   usage=USAGE, 
                    description=SHORT_DESCRIPTION)
 
 
@@ -91,7 +90,7 @@ def main(argv):
   try:
     names = args.names
   except AttributeError:
-    found = Measurement.search()
+    found = Measurement.all()
   else:
     found = []
     for name in names:
@@ -99,7 +98,7 @@ def main(argv):
       if t:
         found.append(t)
 
-  title = '{:=<75}'.format('== Measurements (%s) ==' % USER_PREFIX)
+  title = '{:=<{}}'.format('== Measurements (%s) ==' % USER_PREFIX, LINE_WIDTH)
   if not found:
     listing = "No measurements. See 'tau measurement create --help'"
   else:

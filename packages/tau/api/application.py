@@ -39,20 +39,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import string
 
 # TAU modules
-from logger import getLogger
 from model import Model, ModelError, ByName
 from arguments import ParseBooleanAction
-
-
-LOGGER = getLogger(__name__)
 
 
 class Application(Model, ByName):
   """
   Application data model
   """
-  
-  model_name = 'Application'
   
   attributes = {
     'projects': {
