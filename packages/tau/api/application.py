@@ -59,7 +59,6 @@ class Application(Model, ByName):
       'argparse': (('name',), 
                    {'help': 'Application configuration name',
                     'metavar': '<application_name>'})
-
     },
     'openmp': {
       'type': 'boolean',

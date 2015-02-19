@@ -44,6 +44,24 @@ class Trial(Model):
   Trial data model
   """
   
-  attributes = {
-    
+  attributes = {      
+    'experiment': {
+      'model': 'Experiment'
+    },
+    'name': {
+      'type': 'string' # not unique
+    },
+    'timestamp': {
+      'type': 'datetime',
+      'required': True
+    },
+    'target_snapshot': {
+      'type': 'json'
+    },
+    'application_snapshot': {
+      'type': 'json'
+    },
+    'measurement_snapshot': {
+      'type': 'json'
+    }
   }

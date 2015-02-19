@@ -36,11 +36,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 # TAU modules
+import settings
 from tau import EXIT_SUCCESS
-from logger import getLogger
+from logger import getLogger, LINE_WIDTH
+from error import InternalError
 from arguments import getParser
 from commands import executeCommand
-
+from api.experiment import Experiment
 
 LOGGER = getLogger(__name__)
 
@@ -83,5 +85,19 @@ def main(argv):
   executeCommand(['application', 'list'])
   executeCommand(['measurement', 'list'])
   executeCommand(['project', 'list'])
+  
+  experiment = Experiment.getSelected()
+  if experiment:
+    experiment.populate()
+    target = experiment['target']
+    application = experiment['application']
+    measurement = experiment['measurement']
+    
+    title = '{:=<{}}'.format('== Selected Experiment ==', LINE_WIDTH)
+    msg = "Application '%s' on target '%s' measured by '%s'" % \
+          (application['name'], target['name'], measurement['name'])
+    LOGGER.info('\n'.join([title, '', msg, '']))
+
+  
   
   return EXIT_SUCCESS

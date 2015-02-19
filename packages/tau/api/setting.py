@@ -36,57 +36,20 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 # TAU modules
-from logger import getLogger
-from error import InternalError
 from model import Model
 
-LOGGER = getLogger(__name__)
 
-class Experiment(Model):
+class Setting(Model):
   """
-  Experiment data model
+  Setting data model
   """
   
-  attributes = {
-    'project': {
-      'model': 'Project',
+  attributes = {      
+    'key': {
+      'type': 'string',
+      'unique': True
     },
-    'target': {
-      'model': 'Target',
-    },
-    'application': {
-      'model': 'Application',
-    },
-    'measurement': {
-      'model': 'Measurement',
-    },
-    'trials': {
-      'collection': 'Trial',
-      'via': 'experiment'
+    'value': {
+      'type': 'string'
     }
   }
-  
-  def select(self):
-    import settings
-    if not self.eid:
-      raise InternalError('Tried to select an experiment without an eid')
-    settings.set('experiment_id', self.eid)
-  
-  def isSelected(self):
-    import settings
-    if self.eid:
-      return settings.get('experiment_id') == self.eid
-    return False
-  
-  @classmethod
-  def getSelected(cls):
-    import settings
-    experiment_id = settings.get('experiment_id')
-    LOGGER.debug('experiment_id: %r' % experiment_id)
-    if experiment_id:
-      experiment = cls.one(eid=experiment_id)
-      if not experiment:
-        raise InternalError('Invalid experiment ID: %r' % experiment_id)
-      return experiment
-    return None
-  

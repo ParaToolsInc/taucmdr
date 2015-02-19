@@ -82,9 +82,6 @@ class Model(object):
   The "M" in MVC
   """
   
-  # If false, allow non-schema data to reside in Model.data
-  enforce_schema = True
-  
   # Subclasses override for callback
   def onCreate(self): pass
   
@@ -103,12 +100,13 @@ class Model(object):
     return json.dumps(self.data)
 
   @classmethod
-  def _validate(cls, data):
+  def _validate(cls, data, enforce_schema=True):
     """
     Validates the given data against the model schema
     """
-    # Enforce schema
-    if cls.enforce_schema:
+    if data is None:
+      return None
+    if enforce_schema:
       for key in data:
         if not key in cls.attributes:
           raise ModelError(cls, 'Data field %r not described in %s schema' % (key, cls.model_name))
@@ -143,13 +141,11 @@ class Model(object):
       # Check model associations
       if 'model' in props:
         value = data.get(attr, None)
-        if not value:
-          value = []
-        elif not isinstance(value, list):
-          try:
-            value = [int(value)]
-          except ValueError:
-            raise ModelError(cls, "Invalid non-integer ID '%s' in '%s'" % (value, attr))
+        try:
+          if int(value) != value:
+            raise ValueError
+        except ValueError:
+          raise ModelError(cls, "Invalid non-integer ID '%s' in '%s'" % (value, attr))
         validated[attr] = value
         continue
     return validated
@@ -170,7 +166,7 @@ class Model(object):
         else:
           self.data[attr] = foreign_model.search(eids=self[attr])
       else:
-        self.data[attr] = foreign_model.one(eid=self[attr][0])
+        self.data[attr] = foreign_model.one(eid=self[attr])
     return self
 
   @classmethod
@@ -195,6 +191,8 @@ class Model(object):
     """
     if eids != None:
       return [cls.one(eid=eid) for eid in eids]
+    elif keys:
+      return [cls(record) for record in storage.search(cls.model_name, keys)]
     else:
       return cls.all()
   
@@ -221,12 +219,16 @@ class Model(object):
     for attr, foreign in cls.associations.iteritems():
       if not attr: continue
       foreign_model, via = foreign
-      for key in model.data[attr]:
+      if 'model' in model.attributes[attr]:
+        foreign_keys = [model.data[attr]]
+      elif 'collection' in model.attributes[attr]:
+        foreign_keys = model.data[attr]
+      for key in foreign_keys:
         associated = foreign_model.one(eid=key)
         if not associated:
           raise ModelError(foreign_model, "No record with ID '%s'" % key)
         if 'model' in associated.attributes[via]:
-          updated_field = [model.eid]
+          updated_field = model.eid
         elif 'collection' in associated.attributes[via]:
           updated_field = list(set(associated[via] + [model.eid]))
         storage.update(foreign_model.model_name, {via: updated_field}, eids=[key])
@@ -253,7 +255,7 @@ class Model(object):
           if not associated:
             raise ModelError(foreign_model, 'No record with ID %r' % foreign_key)
           if 'model' in associated.attributes[via]:
-            updated_keys = [model.eid]
+            updated_keys = model.eid
           elif 'collection' in associated.attributes[via]:
             updated_keys = list(set(associated[via] + [model.eid]))
           storage.update(foreign_model.model_name, {via: updated_keys}, eids=[foreign_key])
@@ -262,7 +264,7 @@ class Model(object):
           if not associated:
             raise ModelError(foreign_model, 'No record with ID %r' % foreign_key)
           if 'model' in associated.attributes[via]:
-            updated_keys = []
+            updated_keys = None
           elif 'collection' in associated.attributes[via]:
             updated_keys = list(set(associated[via]) - set([model.eid]))
           storage.update(foreign_model.model_name, {via: updated_keys}, eids=[foreign_key])
@@ -279,7 +281,7 @@ class Model(object):
         affected = foreign_model.search(eids=model[attr]) if attr else foreign_model.all() 
         for associated in affected:
           if 'model' in associated.attributes[via]:
-            updated_field = []
+            updated_field = None
           elif 'collection' in associated.attributes[via]:
             updated_field = list(set(associated[via]) - set([model.eid]))
           storage.update(foreign_model.model_name, {via: updated_field}, eids=[associated.eid])

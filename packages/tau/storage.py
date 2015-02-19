@@ -79,13 +79,15 @@ class Storage(object):
     """
     try:
       mkdirp(prefix)
+      LOGGER.debug("Created '%s'" % prefix)
     except:
       raise StorageError('Cannot create directory %r' % path, 'Check that you have `write` access')
-    dbfile = os.path.join(prefix, db_name)
+    self.dbfile = os.path.join(prefix, db_name)
     try:
-      self.db = TinyDB(dbfile)
+      self.db = TinyDB(self.dbfile)
     except:
       raise StorageError('Cannot create %r' % path, 'Check that you have `write` access')
+    LOGGER.debug("Opened '%s' for read/write" % self.dbfile)
 
   def _getQuery(self, keys, operator='or'):
     """
@@ -105,6 +107,7 @@ class Storage(object):
     """
     Create a new record in the specified table
     """
+    LOGGER.debug("%r: Inserting %r" % (table_name, fields))
     return self.db.table(table_name).insert(fields)
   
   def get(self, table_name, keys=None, eid=None):
@@ -113,8 +116,10 @@ class Storage(object):
     """
     table = self.db.table(table_name)
     if eid != None:
+      LOGGER.debug("%r: get(eid=%r)" % (table_name, eid))
       return table.get(eid=eid)
     elif keys:
+      LOGGER.debug("%r: get(keys=%r)" % (table_name, keys))
       return table.get(self._getQuery(keys, 'and'))
     else:
       return None
@@ -126,8 +131,10 @@ class Storage(object):
     """
     table = self.db.table(table_name)
     if keys:
-      return table.search(self._getQuery(keys))
+      LOGGER.debug("%r: search(keys=%r)" % (table_name, keys))
+      return table.search(self._getQuery(keys, 'and'))
     else:
+      LOGGER.debug("%r: all()" % table_name)
       return table.all()
 
   def contains(self, table_name, keys=None, eids=None):
@@ -137,8 +144,10 @@ class Storage(object):
     """
     table = self.db.table(table_name)
     if eids != None:
+      LOGGER.debug("%r: contains(eids=%r)" % (table_name, eids))
       return table.contains(eids=eids)
     elif keys:
+      LOGGER.debug("%r: contains(keys=%r)" % (table_name, keys))
       return table.contains(self._getQuery(keys))
     else:
       return False
@@ -149,20 +158,30 @@ class Storage(object):
     """
     table = self.db.table(table_name)
     if eids != None:
+      LOGGER.debug("%r: update(%r, eids=%r)" % (table_name, fields, eids))
       return table.update(fields, eids=eids)
     else:
+      LOGGER.debug("%r: update(%r, keys=%r)" % (table_name, fields, keys))
       return table.update(fields, self._getQuery(keys))
 
   def remove(self, table_name, keys=None, eids=None):
     """
-    Remove all records that match keys
+    Remove all records that match keys or eids from table_name 
     """
     table = self.db.table(table_name)
     if eids != None:
+      LOGGER.debug("%r: remove(eids=%r)" % (table_name, eids))
       return table.remove(eids=eids)
     else:
+      LOGGER.debug("%r: remove(keys=%r)" % (table_name, keys))
       return table.remove(self._getQuery(keys))
 
+  def purge(self, table_name):
+    """
+    Removes all records from the table_name
+    """
+    LOGGER.debug("%r: purge()" % (table_name))
+    return self.db.table(table_name).purge()
 
 user_storage = Storage(USER_PREFIX, 'local.json')
 system_storage = Storage(SYSTEM_PREFIX, 'local.json')
