@@ -41,11 +41,15 @@ from application import Application
 from measurement import Measurement
 from experiment import Experiment
 from project import Project
+from trial import Trial
+from setting import Setting
 
+# List model classes
+MODEL_CLASSES = [Target, Application, Measurement, Project, Experiment, Trial,
+                 Setting]
 
 # Index model classes by name
-MODELS = dict([(cls.__name__, cls) for cls in 
-               [Target, Application, Measurement, Project, Experiment]])
+MODELS = dict([(cls.__name__, cls) for cls in MODEL_CLASSES])
 
 def __getPropsModelName(props):
   try:

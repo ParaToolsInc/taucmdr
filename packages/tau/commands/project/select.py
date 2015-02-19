@@ -150,7 +150,7 @@ def main(argv):
         dest.add(m)
       else:
         PARSER.error('There is no %s named %s' % (attr, name))
-    
+        
     for name in getattr(args, 'impl_'+attr, []):
       t = Target.withName(name)
       a = Application.withName(name)
@@ -177,10 +177,19 @@ def main(argv):
           'measurement': measurement_eid}
   found = Experiment.search(data)
   if not found:
+    LOGGER.debug('Creating new experiment')
     found = Experiment.create(data)
   elif len(found) > 1:
     raise InternalError('More than one experiment with data %r exists!' % data)
   else:
+    LOGGER.debug('Using existing experiment')
     found = found[0]
-  print found
+  
+  found.populate()
+  found.select()
+  
+  LOGGER.info("Application '%s' on target '%s' measured by '%s'" % 
+              (found['application']['name'],
+               found['target']['name'],
+               found['measurement']['name']))
   return EXIT_SUCCESS

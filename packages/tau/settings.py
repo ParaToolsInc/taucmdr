@@ -35,58 +35,43 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+# System modules
+
 # TAU modules
 from logger import getLogger
-from error import InternalError
-from model import Model
+from api.setting import Setting
 
 LOGGER = getLogger(__name__)
 
-class Experiment(Model):
+_data = {}
+
+def _load():
+  for record in Setting.all():
+    key = record['key']
+    val = record['value'] 
+    _data[key] = val
+  LOGGER.debug("Loaded settings: %r" % _data)
+     
+def _save():
+  LOGGER.debug("Saving settings: %r" % _data)
+  for key, val in _data.iteritems():
+    if Setting.exists({'key': key}):
+      Setting.update({'value': val}, {'key': key})
+    else:
+      Setting.create({'key': key, 'value': val})
+
+def get(key):
   """
-  Experiment data model
+  Get the value of setting 'key' or None if not set
   """
-  
-  attributes = {
-    'project': {
-      'model': 'Project',
-    },
-    'target': {
-      'model': 'Target',
-    },
-    'application': {
-      'model': 'Application',
-    },
-    'measurement': {
-      'model': 'Measurement',
-    },
-    'trials': {
-      'collection': 'Trial',
-      'via': 'experiment'
-    }
-  }
-  
-  def select(self):
-    import settings
-    if not self.eid:
-      raise InternalError('Tried to select an experiment without an eid')
-    settings.set('experiment_id', self.eid)
-  
-  def isSelected(self):
-    import settings
-    if self.eid:
-      return settings.get('experiment_id') == self.eid
-    return False
-  
-  @classmethod
-  def getSelected(cls):
-    import settings
-    experiment_id = settings.get('experiment_id')
-    LOGGER.debug('experiment_id: %r' % experiment_id)
-    if experiment_id:
-      experiment = cls.one(eid=experiment_id)
-      if not experiment:
-        raise InternalError('Invalid experiment ID: %r' % experiment_id)
-      return experiment
-    return None
-  
+  return _data.get(key, None)
+
+def set(key, val):
+  """
+  Set setting 'key' to value 'val'
+  """
+  _data[key] = val
+  _save()
+
+# Populate settings  
+_load()
