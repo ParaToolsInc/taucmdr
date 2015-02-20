@@ -86,18 +86,18 @@ def main(argv):
   executeCommand(['measurement', 'list'])
   executeCommand(['project', 'list'])
   
+  title = '{:=<{}}'.format('== Selected Experiment ==', LINE_WIDTH)
   experiment = Experiment.getSelected()
+  LOGGER.debug("Found experiment %r" % experiment)
   if experiment:
     experiment.populate()
     target = experiment['target']
     application = experiment['application']
     measurement = experiment['measurement']
-    
-    title = '{:=<{}}'.format('== Selected Experiment ==', LINE_WIDTH)
     msg = "Application '%s' on target '%s' measured by '%s'" % \
           (application['name'], target['name'], measurement['name'])
-    LOGGER.info('\n'.join([title, '', msg, '']))
-
-  
+  else:
+    msg = "No experiment selected. See `tau project select --help`"
+  LOGGER.info('\n'.join([title, '', msg, '']))  
   
   return EXIT_SUCCESS

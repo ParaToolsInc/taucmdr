@@ -144,7 +144,7 @@ class Measurement(Model, ByName):
                     'metavar': 'depth',
                     'nargs': '?',
                     'const': 2,
-                    'default': 0,
+                    'default': 2,
                     'type': int})
     },
     'memory_usage': {

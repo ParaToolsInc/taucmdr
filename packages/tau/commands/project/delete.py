@@ -80,7 +80,10 @@ def main(argv):
   args = PARSER.parse_args(args=argv)
   LOGGER.debug('Arguments: %s' % args)
   
-  Project.delete({'name': args.name})
+  name = args.name
+  if not Project.exists({'name': name}):
+    PARSER.error("'%s' is not a project name. Type `tau project list` to see valid names." % name)
+  Project.delete({'name': name})
+  LOGGER.info('Deleted project %r' % name)
   
-  LOGGER.info('Deleted project %r' % args.name)
   return executeCommand(['project', 'list'], [])

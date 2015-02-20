@@ -85,6 +85,9 @@ def main(argv):
   LOGGER.debug('Arguments: %s' % args)
 
   name = args.name
+  if not Target.exists({'name': name}):
+    PARSER.error("'%s' is not a target name. Type `tau target list` to see valid names." % name)
+
   updates = args.__dict__
   try:
     new_name = args.new_name

@@ -80,7 +80,10 @@ def main(argv):
   args = PARSER.parse_args(args=argv)
   LOGGER.debug('Arguments: %s' % args)
   
-  Application.delete({'name': args.name})
+  name = args.name
+  if not Application.exists({'name': name}):
+    PARSER.error("'%s' is not a application name. Type `tau application list` to see valid names." % name)
+  Application.delete({'name': name})
+  LOGGER.info('Deleted application %r' % name)
   
-  LOGGER.info('Deleted application %r' % args.name)
   return executeCommand(['application', 'list'], [])

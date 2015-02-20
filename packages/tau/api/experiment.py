@@ -36,6 +36,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 # TAU modules
+import settings
 from logger import getLogger
 from error import InternalError
 from model import Model
@@ -50,15 +51,19 @@ class Experiment(Model):
   attributes = {
     'project': {
       'model': 'Project',
+      'required': True,
     },
     'target': {
       'model': 'Target',
+      'required': True,
     },
     'application': {
       'model': 'Application',
+      'required': True,
     },
     'measurement': {
       'model': 'Measurement',
+      'required': True,
     },
     'trials': {
       'collection': 'Trial',
@@ -66,21 +71,22 @@ class Experiment(Model):
     }
   }
   
+  def onDelete(self):
+    if self.isSelected():
+      settings.unset('experiment_id')
+  
   def select(self):
-    import settings
     if not self.eid:
       raise InternalError('Tried to select an experiment without an eid')
     settings.set('experiment_id', self.eid)
   
   def isSelected(self):
-    import settings
     if self.eid:
       return settings.get('experiment_id') == self.eid
     return False
   
   @classmethod
   def getSelected(cls):
-    import settings
     experiment_id = settings.get('experiment_id')
     LOGGER.debug('experiment_id: %r' % experiment_id)
     if experiment_id:

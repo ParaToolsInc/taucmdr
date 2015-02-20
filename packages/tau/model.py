@@ -84,11 +84,12 @@ class Model(object):
   
   # Subclasses override for callback
   def onCreate(self): pass
+  def onUpdate(self): pass
+  def onDelete(self): pass
   
   def __init__(self, fields):
     self.eid = getattr(fields, 'eid', None)
     self.data = self._validate(fields)
-    self.onCreate()
     
   def __getitem__(self, key):
     return self.data[key]
@@ -137,17 +138,16 @@ class Model(object):
             except ValueError:
               raise ModelError(cls, "Invalid non-integer ID '%s' in '%s'" % (id, attr))
         validated[attr] = value
-        continue
       # Check model associations
-      if 'model' in props:
+      elif 'model' in props:
         value = data.get(attr, None)
-        try:
-          if int(value) != value:
-            raise ValueError
-        except ValueError:
-          raise ModelError(cls, "Invalid non-integer ID '%s' in '%s'" % (value, attr))
-        validated[attr] = value
-        continue
+        if value is not None:
+          try:
+            if int(value) != value:
+              raise ValueError
+          except ValueError:
+            raise ModelError(cls, "Invalid non-integer ID '%s' in '%s'" % (value, attr))
+          validated[attr] = value
     return validated
   
   def populate(self):
@@ -172,7 +172,7 @@ class Model(object):
   @classmethod
   def one(cls, keys=None, eid=None):
     """
-    Returns the record with the given keys or element id
+    Return a single record matching all of 'keys' or element id 'eid'
     """
     found = storage.get(cls.model_name, keys, eid)
     return cls(found) if found else None
@@ -180,22 +180,32 @@ class Model(object):
   @classmethod
   def all(cls):
     """
-    Returns a list of all records
+    Return a list of all records
     """
     return [cls(result) for result in storage.search(cls.model_name)]
 
   @classmethod
   def search(cls, keys=None, eids=None):
     """
-    Return a list of records matching the given keys
+    Return a list of records matching all of 'keys' or element id 'eid'
     """
-    if eids != None:
-      return [cls.one(eid=eid) for eid in eids]
+    if eids is not None:
+      if isinstance(eids, list):
+        return [cls.one(eid=id) for id in eids]
+      else:
+        return [cls.one(eid=eids)]
     elif keys:
       return [cls(record) for record in storage.search(cls.model_name, keys)]
     else:
       return cls.all()
   
+  @classmethod
+  def match(cls, field, regex=None, test=None):
+    """
+    Return a list of records with 'field' matching 'regex'
+    """
+    return [cls(record) for record in storage.match(cls.model_name, field, regex, test)]
+   
   @classmethod
   def exists(cls, keys=None, eids=None):
     """
@@ -213,79 +223,103 @@ class Model(object):
                    for attr, props in cls.attributes.iteritems()
                    if 'unique' in props])
     if storage.contains(cls.model_name, unique):
-      raise UniqueAttributeError(cls, unique)
-    
+      raise UniqueAttributeError(cls, unique)   
     model.eid = storage.insert(cls.model_name, model.data)
     for attr, foreign in cls.associations.iteritems():
-      if not attr: continue
-      foreign_model, via = foreign
-      if 'model' in model.attributes[attr]:
-        foreign_keys = [model.data[attr]]
-      elif 'collection' in model.attributes[attr]:
-        foreign_keys = model.data[attr]
-      for key in foreign_keys:
-        associated = foreign_model.one(eid=key)
-        if not associated:
-          raise ModelError(foreign_model, "No record with ID '%s'" % key)
-        if 'model' in associated.attributes[via]:
-          updated_field = model.eid
-        elif 'collection' in associated.attributes[via]:
-          updated_field = list(set(associated[via] + [model.eid]))
-        storage.update(foreign_model.model_name, {via: updated_field}, eids=[key])
+      if attr:
+        foreign_model, via = foreign
+        if 'model' in model.attributes[attr]:
+          foreign_keys = [model.data[attr]]
+        elif 'collection' in model.attributes[attr]:
+          foreign_keys = model.data[attr]
+        model._addTo(foreign_model, foreign_keys, via)
+    model.onCreate()
     return model
   
   @classmethod
-  def update(cls, fields, keys):
+  def update(cls, fields, keys=None, eids=None):
     """
     Change the fields of all records that match the given keys
     and update associations
     """
-    for model in cls.search(keys):
+    if eids is not None:
+      changing = cls.search(eids=eids)
+    elif keys is not None:
+      changing = cls.search(keys)
+    else:
+      raise InternalError('Model.update() requires either keys or eids')
+    for model in changing:
       for attr, foreign in cls.associations.iteritems():
         try:
           new_foreign_keys = set(fields[attr])
+          old_foreign_keys = set(model[attr])
         except KeyError:
           continue
         foreign_model, via = foreign
-        old_foreign_keys = set(model[attr])
         added = new_foreign_keys - old_foreign_keys
         deled = old_foreign_keys - new_foreign_keys
-        for foreign_key in added:
-          associated = foreign_model.one(eid=foreign_key)
-          if not associated:
-            raise ModelError(foreign_model, 'No record with ID %r' % foreign_key)
-          if 'model' in associated.attributes[via]:
-            updated_keys = model.eid
-          elif 'collection' in associated.attributes[via]:
-            updated_keys = list(set(associated[via] + [model.eid]))
-          storage.update(foreign_model.model_name, {via: updated_keys}, eids=[foreign_key])
-        for foreign_key in deled:
-          associated = foreign_model.one(eid=foreign_key)
-          if not associated:
-            raise ModelError(foreign_model, 'No record with ID %r' % foreign_key)
-          if 'model' in associated.attributes[via]:
-            updated_keys = None
-          elif 'collection' in associated.attributes[via]:
-            updated_keys = list(set(associated[via]) - set([model.eid]))
-          storage.update(foreign_model.model_name, {via: updated_keys}, eids=[foreign_key])
-    return storage.update(cls.model_name, fields, keys)
+        model._addTo(foreign_model, added, via)
+        model._removeFrom(foreign_model.search(eids=list(deled)), via)
+      model.onUpdate()
+    return storage.update(cls.model_name, fields, keys, eids)
   
   @classmethod
-  def delete(cls, keys):
+  def delete(cls, keys=None, eids=None):
     """
     Delete the records that match the given keys and update associations
     """
-    for model in cls.search(keys):
+    if eids is not None:
+      changing = cls.search(eids=eids)
+    elif keys is not None:
+      changing = cls.search(keys)
+    else:
+      raise InternalError('Model.delete() requires either keys or eids')
+    for model in changing:
       for attr, foreign in cls.associations.iteritems():
         foreign_model, via = foreign
-        affected = foreign_model.search(eids=model[attr]) if attr else foreign_model.all() 
-        for associated in affected:
-          if 'model' in associated.attributes[via]:
-            updated_field = None
-          elif 'collection' in associated.attributes[via]:
-            updated_field = list(set(associated[via]) - set([model.eid]))
-          storage.update(foreign_model.model_name, {via: updated_field}, eids=[associated.eid])
-    return storage.remove(cls.model_name, keys)
+        if attr:
+          affected = foreign_model.search(eids=model[attr]) 
+        else:
+          test = lambda x: (model.eid in x if isinstance(x, list) 
+                            else model.eid == x)
+          affected = foreign_model.match(via, test=test)
+        LOGGER.debug('Deleting %s(eid=%s) affects %r' % (cls.model_name, model.eid, affected))
+        model._removeFrom(affected, via)
+      model.onDelete()
+    return storage.remove(cls.model_name, keys, eids)
+
+  def _addTo(self, foreign_cls, keys, attr):
+    LOGGER.debug("Adding %s to '%s' in %s(eids=%s)" % 
+                 (self.eid, attr, foreign_cls.model_name, keys))
+    for key in keys:
+      model = foreign_cls.one(eid=key)
+      if not model:
+        raise ModelError(foreign_cls, "No record with ID '%s'" % key)
+      if 'model' in model.attributes[attr]:
+        updated = self.eid
+      elif 'collection' in model.attributes[attr]:
+        updated = list(set(model[attr] + [self.eid]))
+      storage.update(foreign_cls.model_name, {attr: updated}, eids=key)
+
+  def _removeFrom(self, affected, attr):
+    LOGGER.debug("Removing %s from '%s' in %r" % (self.eid, attr, affected))
+    for model in affected:
+      if 'model' in model.attributes[attr]:
+        if 'required' in model.attributes[attr]:
+          LOGGER.debug("Empty required attr '%s': deleting %s(eid=%s)" % 
+                       (attr, model.model_name, model.eid))
+          model.delete(eids=model.eid)
+        else:
+          storage.update(model.model_name, {attr: None}, eids=model.eid)
+      elif 'collection' in model.attributes[attr]:
+        update = list(set(model[attr]) - set([self.eid]))
+        if 'required' in model.attributes[attr] and len(update) == 0:
+          LOGGER.debug("Empty required attr '%s': deleting %s(eid=%s)" % 
+                       (attr, model.model_name, model.eid))
+          model.delete(eids=model.eid)
+        else:
+          storage.update(model.model_name, {attr: update}, eids=model.eid)
+
 
 
 class ByName(object):
