@@ -134,7 +134,7 @@ def main(argv):
   project_name = args.name
   project = Project.withName(project_name)
   if not project:
-    PARSER.error('There is no project named %r' % project_name)
+    PARSER.error("'%s' is not a project name. Type `tau project list` to see valid names." % project_name)
 
   updates = dict(project.data)
   updates['name'] = getattr(args, 'new_name', project_name)

@@ -161,7 +161,7 @@ def executeCommand(cmd, cmd_args=[]):
         resolved = _resolve(cmd, _commands[__name__])
       except UnknownCommandError:
         if len(cmd) <= 1: 
-          raise
+          raise # We finally give up
         parent = cmd[:-1]
         LOGGER.debug('Getting help from parent command %r' % parent)
         return executeCommand(parent, ['--help'])

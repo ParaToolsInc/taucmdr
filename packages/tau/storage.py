@@ -89,7 +89,7 @@ class Storage(object):
       raise StorageError('Cannot create %r' % path, 'Check that you have `write` access')
     LOGGER.debug("Opened '%s' for read/write" % self.dbfile)
 
-  def _getQuery(self, keys, operator='or'):
+  def _getQuery(self, keys, operator='and'):
     """
     Returns a query object from a dictionary of keys
     """
@@ -115,12 +115,12 @@ class Storage(object):
     Return the record with the specified keys or element id
     """
     table = self.db.table(table_name)
-    if eid != None:
+    if eid is not None:
       LOGGER.debug("%r: get(eid=%r)" % (table_name, eid))
       return table.get(eid=eid)
     elif keys:
       LOGGER.debug("%r: get(keys=%r)" % (table_name, keys))
-      return table.get(self._getQuery(keys, 'and'))
+      return table.get(self._getQuery(keys))
     else:
       return None
 
@@ -132,20 +132,38 @@ class Storage(object):
     table = self.db.table(table_name)
     if keys:
       LOGGER.debug("%r: search(keys=%r)" % (table_name, keys))
-      return table.search(self._getQuery(keys, 'and'))
+      return table.search(self._getQuery(keys))
     else:
       LOGGER.debug("%r: all()" % table_name)
       return table.all()
 
+  def match(self, table_name, field, regex=None, test=None):
+    """
+    Return a list of records where 'field' matches 'regex'
+    """
+    table = self.db.table(table_name)
+    if test is not None:
+      LOGGER.debug('%r: search(where(%r).test(%r))' % (table_name, field, test))
+      return table.search(where(field).test(test))
+    elif regex is not None:
+      LOGGER.debug('%r: search(where(%r).matches(%r))' % (table_name, field, regex))
+      return table.search(where(field).matches(regex))
+    else:
+      LOGGER.debug("%r: search(where(%r).matches('.*'))" % (table_name, field))
+      return table.search(where(field).matches('.*'))
+  
   def contains(self, table_name, keys=None, eids=None):
     """
     Return True if the specified table contains at least one 
     record that matches the provided keys or element IDs
     """
     table = self.db.table(table_name)
-    if eids != None:
+    if eids is not None:
       LOGGER.debug("%r: contains(eids=%r)" % (table_name, eids))
-      return table.contains(eids=eids)
+      if isinstance(eids, list):
+        return table.contains(eids=eids)
+      else:
+        return table.contains(eids=[eids])
     elif keys:
       LOGGER.debug("%r: contains(keys=%r)" % (table_name, keys))
       return table.contains(self._getQuery(keys))
@@ -157,9 +175,12 @@ class Storage(object):
     Updates the record that matches keys to contain values from fields
     """
     table = self.db.table(table_name)
-    if eids != None:
+    if eids is not None:
       LOGGER.debug("%r: update(%r, eids=%r)" % (table_name, fields, eids))
-      return table.update(fields, eids=eids)
+      if isinstance(eids, list):
+        return table.update(fields, eids=eids)
+      else:
+        return table.update(fields, eids=[eids])
     else:
       LOGGER.debug("%r: update(%r, keys=%r)" % (table_name, fields, keys))
       return table.update(fields, self._getQuery(keys))
@@ -169,9 +190,12 @@ class Storage(object):
     Remove all records that match keys or eids from table_name 
     """
     table = self.db.table(table_name)
-    if eids != None:
+    if eids is not None:
       LOGGER.debug("%r: remove(eids=%r)" % (table_name, eids))
-      return table.remove(eids=eids)
+      if isinstance(eids, list):
+        return table.remove(eids=eids)
+      else:
+        return table.remove(eids=[eids])
     else:
       LOGGER.debug("%r: remove(keys=%r)" % (table_name, keys))
       return table.remove(self._getQuery(keys))

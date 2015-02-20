@@ -38,6 +38,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # TAU modules
 from tau import EXIT_SUCCESS
 from logger import getLogger
+from commands import executeCommand
 from arguments import getParser
 from api.measurement import Measurement
 
@@ -79,7 +80,10 @@ def main(argv):
   args = PARSER.parse_args(args=argv)
   LOGGER.debug('Arguments: %s' % args)
   
-  Measurement.delete({'name': args.name})
+  name = args.name
+  if not Measurement.exists({'name': name}):
+    PARSER.error("'%s' is not a measurement name. Type `tau measurement list` to see valid names." % name)
+  Measurement.delete({'name': name})
+  LOGGER.info('Deleted measurement %r' % name)
   
-  LOGGER.info('Deleted measurement %r' % args.name)
   return executeCommand(['measurement', 'list'], [])

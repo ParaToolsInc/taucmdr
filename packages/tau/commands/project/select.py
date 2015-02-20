@@ -49,7 +49,7 @@ from api.experiment import Experiment
 
 LOGGER = getLogger(__name__)
 
-SHORT_DESCRIPTION = "Select project configurations."
+SHORT_DESCRIPTION = "Select project components to form a new experiment."
 
 COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
 

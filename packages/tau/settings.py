@@ -64,6 +64,8 @@ def get(key):
   """
   Get the value of setting 'key' or None if not set
   """
+  if not _data: 
+    _load()
   return _data.get(key, None)
 
 def set(key, val):
@@ -72,6 +74,9 @@ def set(key, val):
   """
   _data[key] = val
   _save()
-
-# Populate settings  
-_load()
+  
+def unset(key):
+  """
+  Remove setting 'key' from the list of settings
+  """
+  Setting.delete({'key': key})

@@ -108,9 +108,9 @@ def main(argv):
     rows = [headers]
     for p in found:
       p.populate()
-      targets = '\n'.join([t['name'] for t in p['targets']]) or '/'
-      applications = '\n'.join([t['name'] for t in p['applications']]) or '/'
-      measurements = '\n'.join([t['name'] for t in p['measurements']]) or '/'
+      targets = '\n'.join([t['name'] for t in p['targets']]) or ''
+      applications = '\n'.join([t['name'] for t in p['applications']]) or ''
+      measurements = '\n'.join([t['name'] for t in p['measurements']]) or ''
       row = [p['name'], targets, applications, measurements]
       rows.append(row)
     table.add_rows(rows)

@@ -80,7 +80,10 @@ def main(argv):
   args = PARSER.parse_args(args=argv)
   LOGGER.debug('Arguments: %s' % args)
   
-  Target.delete({'name': args.name})
+  name = args.name
+  if not Target.exists({'name': name}):
+    PARSER.error("'%s' is not a target name. Type `tau target list` to see valid names." % name)
+  Target.delete({'name': name})
+  LOGGER.info('Deleted target %r' % name)
   
-  LOGGER.info('Deleted target %r' % args.name)
   return executeCommand(['target', 'list'], [])

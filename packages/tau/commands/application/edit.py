@@ -85,6 +85,9 @@ def main(argv):
   LOGGER.debug('Arguments: %s' % args)
 
   name = args.name
+  if not Application.exists({'name': name}):
+    PARSER.error("'%s' is not an application name. Type `tau application list` to see valid names." % name)
+
   updates = args.__dict__
   try:
     new_name = args.new_name
