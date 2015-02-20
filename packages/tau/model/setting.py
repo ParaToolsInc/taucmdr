@@ -36,63 +36,20 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 # TAU modules
-import settings
-from logger import getLogger
-from error import InternalError
-from model import Model
+from controller import Controller
 
-LOGGER = getLogger(__name__)
 
-class Experiment(Model):
+class Setting(Controller):
   """
-  Experiment data model
+  Setting data model controller
   """
   
-  attributes = {
-    'project': {
-      'model': 'Project',
-      'required': True,
+  attributes = {      
+    'key': {
+      'type': 'string',
+      'unique': True
     },
-    'target': {
-      'model': 'Target',
-      'required': True,
-    },
-    'application': {
-      'model': 'Application',
-      'required': True,
-    },
-    'measurement': {
-      'model': 'Measurement',
-      'required': True,
-    },
-    'trials': {
-      'collection': 'Trial',
-      'via': 'experiment'
+    'value': {
+      'type': 'string'
     }
   }
-  
-  def onDelete(self):
-    if self.isSelected():
-      settings.unset('experiment_id')
-  
-  def select(self):
-    if not self.eid:
-      raise InternalError('Tried to select an experiment without an eid')
-    settings.set('experiment_id', self.eid)
-  
-  def isSelected(self):
-    if self.eid:
-      return settings.get('experiment_id') == self.eid
-    return False
-  
-  @classmethod
-  def getSelected(cls):
-    experiment_id = settings.get('experiment_id')
-    LOGGER.debug('experiment_id: %r' % experiment_id)
-    if experiment_id:
-      experiment = cls.one(eid=experiment_id)
-      if not experiment:
-        raise InternalError('Invalid experiment ID: %r' % experiment_id)
-      return experiment
-    return None
-  

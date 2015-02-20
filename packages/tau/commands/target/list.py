@@ -45,7 +45,7 @@ from util import pformatList, pformatDict
 from error import ConfigurationError
 from arguments import getParser, SUPPRESS
 from texttable import Texttable
-from api.target import Target
+from model.target import Target
 
 
 LOGGER = getLogger(__name__)
@@ -113,7 +113,7 @@ def main(argv):
     for t in found:
       t.populate()
       projects = ', '.join([p['name'] for p in t['projects']])
-      row = [t.get(attr, None) for _, _, attr in cols if attr] + [projects]
+      row = [t.get(attr, '') for _, _, attr in cols if attr] + [projects]
       rows.append(row)
     table.set_cols_align([align for _, align, _ in cols])
     table.add_rows(rows)

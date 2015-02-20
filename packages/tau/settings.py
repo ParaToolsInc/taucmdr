@@ -39,7 +39,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # TAU modules
 from logger import getLogger
-from api.setting import Setting
+from model.setting import Setting
 
 LOGGER = getLogger(__name__)
 

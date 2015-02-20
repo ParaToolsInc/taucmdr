@@ -36,12 +36,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 # TAU modules
-from model import Model
+from controller import Controller
 
 
-class Trial(Model):
+class Trial(Controller):
   """
-  Trial data model
+  Trial data model controller
   """
   
   attributes = {      
