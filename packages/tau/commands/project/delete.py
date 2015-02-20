@@ -40,7 +40,7 @@ from tau import EXIT_SUCCESS
 from logger import getLogger
 from commands import executeCommand
 from arguments import getParser
-from api.project import Project
+from model.project import Project
 
 
 LOGGER = getLogger(__name__)

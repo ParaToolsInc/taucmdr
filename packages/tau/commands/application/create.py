@@ -43,9 +43,9 @@ from tau import EXIT_SUCCESS
 from logger import getLogger
 from arguments import getParserFromModel
 from commands import executeCommand
-from model import UniqueAttributeError
+from controller import UniqueAttributeError
 from error import ConfigurationError
-from api.application import Application
+from model.application import Application
 
 
 

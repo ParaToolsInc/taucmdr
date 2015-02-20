@@ -40,11 +40,11 @@ from tau import EXIT_SUCCESS
 from logger import getLogger
 from error import InternalError
 from arguments import getParserFromModel, SUPPRESS
-from api.project import Project
-from api.target import Target
-from api.application import Application
-from api.measurement import Measurement
-from api.experiment import Experiment
+from model.project import Project
+from model.target import Target
+from model.application import Application
+from model.measurement import Measurement
+from model.experiment import Experiment
 
 
 LOGGER = getLogger(__name__)

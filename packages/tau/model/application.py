@@ -39,13 +39,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import string
 
 # TAU modules
-from model import Model, ModelError, ByName
+from controller import Controller, ModelError, ByName
 from arguments import ParseBooleanAction
 
 
-class Application(Model, ByName):
+class Application(Controller, ByName):
   """
-  Application data model
+  Application data model controller
   """
   
   attributes = {

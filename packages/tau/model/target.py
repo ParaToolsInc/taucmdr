@@ -43,7 +43,7 @@ import subprocess
 
 # TAU modules
 from logger import getLogger
-from model import Model, ModelError, ByName
+from controller import Controller, ModelError, ByName
 from arguments import SUPPRESS
 
 
@@ -73,9 +73,9 @@ def detectDefaultDeviceArch():
   return SUPPRESS
 
 
-class Target(Model, ByName):
+class Target(Controller, ByName):
   """
-  Target data model
+  Target data model controller
   """
   
   attributes = {

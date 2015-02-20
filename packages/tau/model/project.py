@@ -39,12 +39,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import string
 
 # TAU modules
-from model import Model, ModelError, ByName
+from controller import Controller, ModelError, ByName
 
 
-class Project(Model, ByName):
+class Project(Controller, ByName):
   """
-  Project data model
+  Project data model controller
   """
   
   attributes = {

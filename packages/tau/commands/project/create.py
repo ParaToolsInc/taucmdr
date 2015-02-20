@@ -43,10 +43,10 @@ from tau import EXIT_SUCCESS
 from logger import getLogger
 from arguments import getParser, SUPPRESS
 from commands import executeCommand
-from api.project import Project
-from api.target import Target
-from api.application import Application
-from api.measurement import Measurement
+from model.project import Project
+from model.target import Target
+from model.application import Application
+from model.measurement import Measurement
 from tau.arguments import getParserFromModel
 
 
@@ -84,23 +84,20 @@ PARSER.add_argument('impl_measurements',
                     metavar='[measurements]',
                     nargs='*',
                     default=SUPPRESS)  
-PARSER.add_argument('--add-targets',
+PARSER.add_argument('--targets',
                     help = "Target configurations in this project",
                     metavar = 't',
                     nargs = '+',
-                    dest = 'targets',
                     default = SUPPRESS)
-PARSER.add_argument('--add-applications', 
+PARSER.add_argument('--applications', 
                     help = "Application configurations in this project",
                     metavar = 'a',
                     nargs = '+',
-                    dest = 'applications',
                     default = SUPPRESS)
-PARSER.add_argument('--add-measurements', 
+PARSER.add_argument('--measurements', 
                     help = "Measurement configurations in this project",
                     metavar = 'm',
                     nargs = '+',
-                    dest = 'measurements',
                     default = SUPPRESS)
 
 

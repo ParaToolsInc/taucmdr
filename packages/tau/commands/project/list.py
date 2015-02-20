@@ -45,7 +45,7 @@ from util import pformatList, pformatDict
 from error import ConfigurationError
 from arguments import getParser, SUPPRESS
 from texttable import Texttable
-from api.project import Project
+from model.project import Project
 
 
 LOGGER = getLogger(__name__)

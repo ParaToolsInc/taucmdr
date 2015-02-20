@@ -42,7 +42,7 @@ from logger import getLogger, LINE_WIDTH
 from error import InternalError
 from arguments import getParser
 from commands import executeCommand
-from api.experiment import Experiment
+from model.experiment import Experiment
 
 LOGGER = getLogger(__name__)
 

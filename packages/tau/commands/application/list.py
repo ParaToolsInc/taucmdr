@@ -44,7 +44,7 @@ from logger import getLogger, LINE_WIDTH
 from util import pformatList, pformatDict
 from error import ConfigurationError
 from arguments import getParser, SUPPRESS
-from api.application import Application
+from model.application import Application
 
 
 LOGGER = getLogger(__name__)

@@ -68,7 +68,7 @@ Please contact %(contact)s for assistance.""" % {'model_name': self.model_cls.mo
                                                  'contact': HELP_CONTACT}
     LOGGER.critical(message)
     sys.exit(EXIT_FAILURE)
-        
+
 
 class UniqueAttributeError(ModelError):
   def __init__(self, model_cls, unique):
@@ -77,9 +77,39 @@ class UniqueAttributeError(ModelError):
 
 
 
-class Model(object):
+class Controller(object):
   """
-  The "M" in MVC
+  The C" in MVC
+  
+  Subclasses reside in the 'model' package and define a member dictionary 
+  'attributes' that describes the data model in the form:
+    <attribute>: {
+      property: value, 
+      [[property: value], ...]
+    }
+    
+  The 'model' package initializes the set 'references' in each class
+  to describe one-sided relationships, e.g.
+    Model_A:
+      attr_x: { 'model': 'Model_C' }
+    Model_B:
+      attr_y: { 'model': 'Model_C' }
+    Model_C:
+      references = set( (Model_A, 'attr_x'), (Model_B, 'attr_y') )
+
+  The 'model' package also initializes the dictionary 'associations' in 
+  each class to describe two-sided relationships, e.g.
+    Model_A:
+      attr_x: {
+        model: Model_B
+        via: attr_k
+      }
+      associations = {attr_x: (Model_B, attr_k)}
+    Model_B:
+      attr_k: {
+        model: Model_A
+      }
+      associations = {attr_k: (Model_A, attr_x)}
   """
   
   # Subclasses override for callback
@@ -154,7 +184,7 @@ class Model(object):
     """
     Populates associated attributes
     """
-    from api import MODELS
+    from tau.model import MODELS
     for attr, props in self.attributes.iteritems():
       try:
         foreign_model = MODELS[props['model']]
@@ -226,13 +256,12 @@ class Model(object):
       raise UniqueAttributeError(cls, unique)   
     model.eid = storage.insert(cls.model_name, model.data)
     for attr, foreign in cls.associations.iteritems():
-      if attr:
-        foreign_model, via = foreign
-        if 'model' in model.attributes[attr]:
-          foreign_keys = [model.data[attr]]
-        elif 'collection' in model.attributes[attr]:
-          foreign_keys = model.data[attr]
-        model._addTo(foreign_model, foreign_keys, via)
+      foreign_model, via = foreign
+      if 'model' in model.attributes[attr]:
+        foreign_keys = [model.data[attr]]
+      elif 'collection' in model.attributes[attr]:
+        foreign_keys = model.data[attr]
+      model._addTo(foreign_model, foreign_keys, via)
     model.onCreate()
     return model
   
@@ -247,14 +276,17 @@ class Model(object):
     elif keys is not None:
       changing = cls.search(keys)
     else:
-      raise InternalError('Model.update() requires either keys or eids')
+      raise InternalError('Controller.update() requires either keys or eids')
     for model in changing:
       for attr, foreign in cls.associations.iteritems():
         try:
           new_foreign_keys = set(fields[attr])
-          old_foreign_keys = set(model[attr])
         except KeyError:
           continue
+        try:
+          old_foreign_keys = set(model[attr])
+        except KeyError:
+          old_foreign_keys = set()
         foreign_model, via = foreign
         added = new_foreign_keys - old_foreign_keys
         deled = old_foreign_keys - new_foreign_keys
@@ -273,17 +305,18 @@ class Model(object):
     elif keys is not None:
       changing = cls.search(keys)
     else:
-      raise InternalError('Model.delete() requires either keys or eids')
+      raise InternalError('Controller.delete() requires either keys or eids')
     for model in changing:
       for attr, foreign in cls.associations.iteritems():
         foreign_model, via = foreign
-        if attr:
-          affected = foreign_model.search(eids=model[attr]) 
-        else:
-          test = lambda x: (model.eid in x if isinstance(x, list) 
-                            else model.eid == x)
-          affected = foreign_model.match(via, test=test)
-        LOGGER.debug('Deleting %s(eid=%s) affects %r' % (cls.model_name, model.eid, affected))
+        affected = foreign_model.search(eids=model[attr]) 
+        LOGGER.debug("Deleting %s(eid=%s) affects '%s' in '%s'" % 
+                     (cls.model_name, model.eid, via, affected))
+        model._removeFrom(affected, via)
+      for foreign_model, via in cls.references:
+        test = lambda x: (model.eid in x if isinstance(x, list) else model.eid == x)
+        affected = foreign_model.match(via, test=test)
+        LOGGER.debug("Deleting %s(eid=%s) affects '%s'" % (cls.model_name, model.eid, affected))
         model._removeFrom(affected, via)
       model.onDelete()
     return storage.remove(cls.model_name, keys, eids)
