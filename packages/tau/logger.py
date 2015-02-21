@@ -40,6 +40,8 @@ import os
 import sys
 import logging
 import textwrap
+import contextlib
+
    
 # Check for custom line marker
 try:
@@ -185,6 +187,23 @@ def setLogLevel(level):
 
 def getLogLevel():
   return LOG_LEVEL
+
+
+@contextlib.contextmanager
+def logging_streams():
+  """
+  Provide stdout, stderr handles that are muted for LOG_LEVEL != 'DEBUG'
+  """
+  save_stdout = sys.stdout
+  save_stderr = sys.stderr
+  if LOG_LEVEL != 'DEBUG':
+    null = open(os.devnull, 'w')
+    sys.stdout = null
+    sys.stderr = null
+  yield
+  sys.stdout = save_stdout
+  sys.stderr = save_stderr
+  
 
 TERM_SIZE = getTerminalSize()
 LINE_WIDTH = TERM_SIZE[0]

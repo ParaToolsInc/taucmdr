@@ -44,29 +44,18 @@ from tinydb import TinyDB, where
 # TAU modules
 from tau import USER_PREFIX, SYSTEM_PREFIX, HELP_CONTACT, EXIT_FAILURE
 from logger import getLogger
-from error import Error
+from error import InternalError
 from util import mkdirp
 
 
 LOGGER = getLogger(__name__)
 
 
-class StorageError(Error):
+class StorageError(InternalError):
     """
     Indicates that there is a problem with storage
     """
-    def __init__(self, value, hint="Contact %s for help" % HELP_CONTACT):
-        super(StorageError, self).__init__(value)
-        self.hint = hint
-        
-    def handle(self):
-        hint = 'Hint: %s\n' % self.hint if self.hint else ''
-        message = """
-%(value)s
-
-%(hint)s""" % {'value': self.value, 'hint': hint}
-        LOGGER.critical(message)
-        sys.exit(EXIT_FAILURE)
+    pass
 
 
 class Storage(object):
@@ -77,6 +66,7 @@ class Storage(object):
     """
     Create the local storage location
     """
+    self._transaction_count = 0
     try:
       mkdirp(prefix)
       LOGGER.debug("Created '%s'" % prefix)
@@ -88,11 +78,30 @@ class Storage(object):
     except:
       raise StorageError('Cannot create %r' % path, 'Check that you have `write` access')
     LOGGER.debug("Opened '%s' for read/write" % self.dbfile)
+    
+  def __enter__(self):
+    """
+    Initiates the database transaction
+    """
+    if self._transaction_count == 0:
+      self._db_copy = self.db._read()
+    self._transaction_count += 1
+    return self
+  
+  def __exit__(self, type, value, traceback):
+    """
+    Finalizes the database transaction
+    """
+    self._transaction_count -= 1
+    if type and self._transaction_count == 0:
+      self.db._write(self._db_copy)
+      self._db_copy = None
 
-  def _getQuery(self, keys, operator='and'):
+  def _getQuery(self, keys, any):
     """
     Returns a query object from a dictionary of keys
     """
+    operator = 'or' if any else 'and'
     def _and(lhs, rhs): return (lhs & rhs)
     def _or(lhs, rhs): return (lhs | rhs)
     join = {'and': _and, 'or': _or}[operator]
@@ -103,14 +112,7 @@ class Storage(object):
       query = join(query, (where(key) == value))
     return query
 
-  def insert(self, table_name, fields):
-    """
-    Create a new record in the specified table
-    """
-    LOGGER.debug("%r: Inserting %r" % (table_name, fields))
-    return self.db.table(table_name).insert(fields)
-  
-  def get(self, table_name, keys=None, eid=None):
+  def get(self, table_name, keys=None, any=False, eid=None):
     """
     Return the record with the specified keys or element id
     """
@@ -118,13 +120,13 @@ class Storage(object):
     if eid is not None:
       LOGGER.debug("%r: get(eid=%r)" % (table_name, eid))
       return table.get(eid=eid)
-    elif keys:
+    elif keys is not None:
       LOGGER.debug("%r: get(keys=%r)" % (table_name, keys))
-      return table.get(self._getQuery(keys))
+      return table.get(self._getQuery(keys, any))
     else:
       return None
 
-  def search(self, table_name, keys=None):
+  def search(self, table_name, keys=None, any=False):
     """
     Return a list of records from the specified table that 
     match any one of the provided keys
@@ -132,7 +134,7 @@ class Storage(object):
     table = self.db.table(table_name)
     if keys:
       LOGGER.debug("%r: search(keys=%r)" % (table_name, keys))
-      return table.search(self._getQuery(keys))
+      return table.search(self._getQuery(keys, any))
     else:
       LOGGER.debug("%r: all()" % table_name)
       return table.all()
@@ -152,7 +154,7 @@ class Storage(object):
       LOGGER.debug("%r: search(where(%r).matches('.*'))" % (table_name, field))
       return table.search(where(field).matches('.*'))
   
-  def contains(self, table_name, keys=None, eids=None):
+  def contains(self, table_name, keys=None, any=False, eids=None):
     """
     Return True if the specified table contains at least one 
     record that matches the provided keys or element IDs
@@ -166,11 +168,18 @@ class Storage(object):
         return table.contains(eids=[eids])
     elif keys:
       LOGGER.debug("%r: contains(keys=%r)" % (table_name, keys))
-      return table.contains(self._getQuery(keys))
+      return table.contains(self._getQuery(keys, any))
     else:
       return False
 
-  def update(self, table_name, fields, keys=None, eids=None):
+  def insert(self, table_name, fields):
+    """
+    Create a new record in the specified table
+    """
+    LOGGER.debug("%r: Inserting %r" % (table_name, fields))
+    return self.db.table(table_name).insert(fields)
+  
+  def update(self, table_name, fields, keys=None, any=False, eids=None):
     """
     Updates the record that matches keys to contain values from fields
     """
@@ -183,9 +192,9 @@ class Storage(object):
         return table.update(fields, eids=[eids])
     else:
       LOGGER.debug("%r: update(%r, keys=%r)" % (table_name, fields, keys))
-      return table.update(fields, self._getQuery(keys))
+      return table.update(fields, self._getQuery(keys, any))
 
-  def remove(self, table_name, keys=None, eids=None):
+  def remove(self, table_name, keys=None, any=False, eids=None):
     """
     Remove all records that match keys or eids from table_name 
     """
@@ -198,7 +207,7 @@ class Storage(object):
         return table.remove(eids=[eids])
     else:
       LOGGER.debug("%r: remove(keys=%r)" % (table_name, keys))
-      return table.remove(self._getQuery(keys))
+      return table.remove(self._getQuery(keys, any))
 
   def purge(self, table_name):
     """
@@ -206,6 +215,7 @@ class Storage(object):
     """
     LOGGER.debug("%r: purge()" % (table_name))
     return self.db.table(table_name).purge()
+
 
 user_storage = Storage(USER_PREFIX, 'local.json')
 system_storage = Storage(SYSTEM_PREFIX, 'local.json')

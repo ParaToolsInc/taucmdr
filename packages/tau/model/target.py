@@ -38,10 +38,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # System modules
 import os
 import string
-import platform
-import subprocess
 
 # TAU modules
+import cf
+from cf import tau
 from logger import getLogger
 from controller import Controller, ModelError, ByName
 from arguments import SUPPRESS
@@ -49,28 +49,6 @@ from arguments import SUPPRESS
 
 LOGGER = getLogger(__name__)
 
-
-def detectDefaultHostOS():
-  """
-  Detect the default host operating system
-  """
-  return platform.system()
-  
-
-def detectDefaultHostArch():
-    """
-    Use TAU's archfind script to detect the host target architecture
-    """
-    here = os.path.dirname(os.path.realpath(__file__))
-    cmd = os.path.join(os.path.dirname(here), 'util', 'archfind', 'archfind')
-    return subprocess.check_output(cmd).strip()
-
-
-def detectDefaultDeviceArch():
-  """
-  Detect coprocessors
-  """
-  return SUPPRESS
 
 
 class Target(Controller, ByName):
@@ -96,7 +74,7 @@ class Target(Controller, ByName):
       'argparse': (('--host_os',), 
                    {'help': 'Host operating system',
                     'metavar': 'os',
-                    'default': detectDefaultHostOS()})
+                    'default': tau.detectDefaultHostOS() or SUPPRESS})
     },
     'host_arch': {
       'type': 'string',
@@ -104,14 +82,23 @@ class Target(Controller, ByName):
       'argparse': (('--host_arch',), 
                    {'help': 'Host architecture',
                     'metavar': 'arch',
-                    'default': detectDefaultHostArch()})
+                    'default': tau.detectDefaultHostArch() or SUPPRESS})
     },
     'device_arch': {
       'type': 'string',
       'argparse': (('--device_arch',), 
                    {'help': 'Coprocessor architecture',
                     'metavar': 'arch',
-                    'default': detectDefaultDeviceArch()})
+                    'default': tau.detectDefaultDeviceArch() or SUPPRESS})
+    },
+    'tau': {
+      'type': 'string',
+      'required': True,
+      'argparse': (('--with-tau',), 
+                   {'help': 'URL or path to an existing TAU installation or archive file',
+                    'metavar': '(<path>|<url>)',
+                    'dest': 'tau',
+                    'default': cf.DEFAULT_TAU_URL})
     },
   }
   

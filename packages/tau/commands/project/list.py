@@ -104,14 +104,14 @@ def main(argv):
     listing = "No projects. See 'tau project create --help'"
   else:
     table = Texttable(LINE_WIDTH)
-    headers = ['Name', 'Targets', 'Applications', 'Measurements']
+    headers = ['Name', 'Targets', 'Applications', 'Measurements', 'Home']
     rows = [headers]
     for p in found:
       p.populate()
       targets = '\n'.join([t['name'] for t in p['targets']]) or ''
       applications = '\n'.join([t['name'] for t in p['applications']]) or ''
       measurements = '\n'.join([t['name'] for t in p['measurements']]) or ''
-      row = [p['name'], targets, applications, measurements]
+      row = [p['name'], targets, applications, measurements, p['prefix']]
       rows.append(row)
     table.add_rows(rows)
     listing = table.draw()

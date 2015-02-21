@@ -62,7 +62,6 @@ def mkdirp(*args):
           if exc.errno == errno.EEXIST and os.path.isdir(path): pass
           else: raise
 
-
 def which(program):
     def is_exec(fpath):
         return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
@@ -85,8 +84,6 @@ def isAccessable(path, mode):
             return true
     except IOError:
         return False
-    except:
-        raise InternalError('Unexpected %r in isReadable' % (sys.exc_info(),))
 
     
 def isWritable(self):
@@ -97,12 +94,19 @@ def isWritable(self):
         os.remove(test_file)
     except IOError:
         return False
-    except:
-        raise InternalError('Unexpected %r in isWritable' % (sys.exc_info(),))
     else:
         return True
     
-def download(src, dest, stdout=sys.stdout, stderr=sys.stderr):
+def download(src, dest):
+  """
+  Downloads 'dest' to 'src'
+  """
+  if src.startswith('file://'):
+    try:
+      shutil.copy(src, dst)
+    except:
+      raise IOError("Failed to download '%s'" % src)
+  else:
     LOGGER.debug('Downloading %r to %r' % (src, dest))
     LOGGER.info('Downloading %r' % src)
     mkdirp(os.path.dirname(dest))
@@ -113,20 +117,20 @@ def download(src, dest, stdout=sys.stdout, stderr=sys.stderr):
     curl_cmd = [curl, '-L', src, '-o', dest] if curl else None
     wget_cmd = [wget, src, '-O', dest] if wget else None
     for cmd in [curl_cmd, wget_cmd]:
-        if cmd:
-            ret = subprocess.call(cmd, stdout=stdout, stderr=stderr)
-            if ret != 0:
-                LOGGER.warning('%s failed to download %r.' % (cmd[0], src))
-            else:
-                return ret
+      if cmd:
+        ret = subprocess.call(cmd, stdout=sys.stdout, stderr=sys.stderr)
+        if ret != 0:
+          LOGGER.warning('%s failed to download %r.' % (cmd[0], src))
+        else:
+          return ret
     # Fallback: this is usually **much** slower than curl or wget
-    def dlProgress(count, blockSize, totalSize):
-        stdout.write("% 3.1f%% of %d bytes\r" % (min(100, float(count * blockSize) / totalSize * 100), totalSize))
+    def _dlProgress(count, blockSize, totalSize):
+      sys.stdout.write("% 3.1f%% of %d bytes\r" % (min(100, float(count * blockSize) / totalSize * 100), totalSize))
     try:
-        urllib.urlretrieve(src, dest, reporthook=dlProgress)
+      urllib.urlretrieve(src, dest, reporthook=_dlProgress)
     except:
-        LOGGER.warning('urllib failed to download %r' % src)
-    raise IOError('failed to download %r' % src)
+      LOGGER.warning('urllib failed to download %r' % src)
+      raise IOError('Failed to download %r' % src)
 
     
 def extract(tgz, dest):

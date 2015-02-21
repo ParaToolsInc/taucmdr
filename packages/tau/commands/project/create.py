@@ -41,13 +41,13 @@ import sys
 # TAU modules
 from tau import EXIT_SUCCESS
 from logger import getLogger
-from arguments import getParser, SUPPRESS
+from arguments import getParserFromModel, SUPPRESS
 from commands import executeCommand
 from model.project import Project
 from model.target import Target
 from model.application import Application
 from model.measurement import Measurement
-from tau.arguments import getParserFromModel
+from controller import UniqueAttributeError
 
 
 LOGGER = getLogger(__name__)
@@ -155,7 +155,10 @@ def main(argv):
   args.applications = list(applications)
   args.measurements = list(measurements)
   
-  Project.create(args.__dict__)
+  try:
+    Project.create(args.__dict__)
+  except UniqueAttributeError:
+    PARSER.error("A project named '%s' already exists." % args.name)
   
   LOGGER.info('Created a new project named %r.' % args.name)
   return executeCommand(['project', 'list'], [args.name])
