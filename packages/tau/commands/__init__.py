@@ -42,7 +42,7 @@ from pkgutil import walk_packages
 # TAU modules
 from tau import HELP_CONTACT, EXIT_FAILURE
 from logger import getLogger
-from error import Error
+from error import ConfigurationError
 from pprint import pprint
 
 LOGGER = getLogger(__name__)
@@ -50,46 +50,30 @@ LOGGER = getLogger(__name__)
 _commands = {__name__: {}}
 
 
-class UnknownCommandError(Error):
+class UnknownCommandError(ConfigurationError):
   """
   Indicates that a specified command is unknown
   """
-  def __init__(self, value, hint="Try 'tau --help'."):
-    super(UnknownCommandError, self).__init__(value)
-    self.hint = hint
-        
-  def handle(self):
-    hint = 'Hint: %s' % self.hint if self.hint else ''
-    message = """
+ 
+  message_fmt = """
 %(value)r is not a valid TAU command.
 
-%(hint)s""" % {'value': self.value, 
-               'hint': hint, 
-               'contact': HELP_CONTACT}
-    LOGGER.error(message)
-    sys.exit(EXIT_FAILURE)
+%(hint)s"""
+ 
+  def __init__(self, value, hint="Try 'tau --help'."):
+    super(UnknownCommandError, self).__init__(value, hint)
 
 
-class AmbiguousCommandError(Error):
+class AmbiguousCommandError(ConfigurationError):
   """
   Indicates that a specified partial command is ambiguous
   """
-  def __init__(self, value, matches, hint="Try 'tau --help'."):
-    super(AmbiguousCommandError, self).__init__(value)
-    self.hint = hint
-    self.matches = matches
-      
-  def handle(self):
-    hint = 'Hint: %s' % self.hint if self.hint else ''
-    message = """
+  message_fmt = """
 Command %(value)r is ambiguous: %(matches)r
 
-%(hint)s""" % {'value': self.value,
-               'matches': self.matches, 
-               'hint': hint, 
-               'contact': HELP_CONTACT}
-    LOGGER.error(message)
-    sys.exit(EXIT_FAILURE)
+%(hint)s"""
+  def __init__(self, value, matches, hint="Try 'tau --help'."):
+    super(AmbiguousCommandError, self).__init__('Command %s is ambiguous: %s' % (value, matches), hint)
 
 
 def getCommands(root=__name__):

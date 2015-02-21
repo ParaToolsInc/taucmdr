@@ -35,11 +35,18 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+# System modules
+import os
+
 # TAU modules
 import settings
 from logger import getLogger
-from error import InternalError
+from error import InternalError, ConfigurationError
 from controller import Controller
+from util import mkdirp
+from model.project import Project
+from model.target import Target
+
 
 LOGGER = getLogger(__name__)
 
@@ -70,6 +77,19 @@ class Experiment(Controller):
       'via': 'experiment'
     }
   }
+  
+  def onCreate(self):
+    from cf import tau
+    project = Project.one(eid=self['project'])
+    prefix = os.path.join(project['prefix'], project['name'])
+    try:
+      mkdirp(prefix)
+    except:
+      raise ConfigurationError('Cannot create directory %r' % prefix, 'Check that you have `write` access')
+    
+    target = Target.one(eid=self['target'])
+    tau.initialize(prefix, target['tau'], target['host_arch'])
+
   
   def onDelete(self):
     if self.isSelected():

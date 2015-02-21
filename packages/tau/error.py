@@ -47,103 +47,91 @@ from logger import getLogger, LOG_LEVEL
 LOGGER = getLogger('error')
 
 
-def _default_handle(etype, e, tb):
-    traceback.print_exception(etype, e, tb)
-    args = [arg for arg in sys.argv[1:] 
-            if not ('--log' in arg or '--verbose' in arg)] 
-    message = """
-An unexpected %(typename)s exception was raised.
-Please contact %(contact)s for assistance.
-If possible, please include the output of this command:
+class Error(Exception):
+  """
+  Base class for errors in Tau
+  """
+  
+  message_fmt = """
+An unexpected %(typename)s exception was raised:
 
-tau --log=DEBUG %(cmd)s""" % {'typename': etype.__name__, 
-                      'cmd': ' '.join(args), 
-                      'contact': HELP_CONTACT}
+%(value)s
+
+Please contact %(contact)s for assistance and 
+include the output of this command:
+
+tau --log=DEBUG %(cmd)s"""
+  
+  def __init__(self, value, hint="Contact %s" % HELP_CONTACT):
+    self.value = value
+    self.hint = hint
+    
+  def handle(self, etype, e, tb):
+    message = self.message_fmt % {'value': self.value,
+                                  'hint': 'Hint: %s' % self.hint,
+                                  'typename': etype.__name__, 
+                                  'cmd': ' '.join([arg for arg in sys.argv[1:]]), 
+                                  'contact': HELP_CONTACT}
+    traceback.print_exception(etype, e, tb)
     LOGGER.critical(message)
     sys.exit(EXIT_FAILURE)
 
 
-class Error(Exception):
-    """
-    Base class for errors in Tau
-    """
-    def __init__(self, value):
-        self.value = value
-    def __str__(self):
-        return repr(self.value)
-    def handle(self):
-        _default_handle(*sys.exc_info())
-
-
 class InternalError(Error):
-    """
-    Indicates that an internal error has occurred
-    """
-    def __init__(self, value, hint="Contact %s" % HELP_CONTACT):
-        super(InternalError, self).__init__(value)
-        self.hint = hint
+  """
+  Indicates that an internal error has occurred
+  These are bad and really shouldn't happen
+  """
+  def __init__(self, value):
+    super(InternalError, self).__init__(value)
 
 
 class ConfigurationError(Error):
-    """
-    Indicates that Tau cannot succeed with the given parameters
-    """
-    def __init__(self, value, hint="Try 'tau --help'."):
-        super(ConfigurationError, self).__init__(value)
-        self.hint = hint
-
-    def handle(self):
-        hint = 'Hint: %s\n' % self.hint if self.hint else ''
-        message = """
+  """
+  Indicates that Tau cannot succeed with the given parameters
+  """
+  
+  message_fmt = """
 %(value)s
 %(hint)s
-TAU cannot proceed with the given inputs.
+
+TAU cannot proceed with the given inputs. 
 Please review the input files and command line parameters
-or contact %(contact)s for assistance.""" % {'value': self.value, 
-                                             'hint': hint, 
-                                             'contact': HELP_CONTACT}
-        LOGGER.error(message)
-        sys.exit(EXIT_FAILURE)
-
-
-class MissingFeatureError(Error):
-    """
-    Indicates that a promised feature has not been implemented yet
-    """
-    def __init__(self, value, missing, hint="Contact %s" % HELP_CONTACT):
-        super(MissingFeatureError, self).__init__(value)
-        self.missing = missing
-        self.hint = hint
-        
-    def handle(self):
-        hint = 'Hint: %s\n' % self.hint if self.hint else ''
-        message = """
-Unimplemented feature %(missing)r: %(value)s
-%(hint)s
-Sorry, you have requested a feature that is not yet implemented.
-Please contact %(contact)s for assistance.""" % {'missing': self.missing, 
-                                                 'value': self.value, 
-                                                 'hint': hint, 
-                                                 'contact': HELP_CONTACT}
-        LOGGER.error(message)
-        sys.exit(EXIT_FAILURE)
+or contact %(contact)s for assistance."""
+  
+  def __init__(self, value, hint="Try `tau --help`"):
+    super(ConfigurationError, self).__init__(value, hint)
 
 
 
 def excepthook(etype, e, tb):
-    """
-    Exception handler for any uncaught exception (except SystemExit).
-    """
-    if etype == KeyboardInterrupt:
-        LOGGER.info('Received keyboard interrupt.  Exiting.')
-        sys.exit(EXIT_WARNING)
-    else:
-        if LOG_LEVEL == 'DEBUG':
-            traceback.print_exception(etype, e, tb)
-        try:
-            sys.exit(e.handle())
-        except AttributeError:
-            _default_handle(etype, e, tb)
+  """
+  Exception handler for any uncaught exception (except SystemExit).
+  """
+  if etype == KeyboardInterrupt:
+    LOGGER.info('Received keyboard interrupt.  Exiting.')
+    sys.exit(EXIT_WARNING)
+  else:
+    if LOG_LEVEL == 'DEBUG':
+      traceback.print_exception(etype, e, tb)
+    try:
+      sys.exit(e.handle(etype, e, tb))
+    except AttributeError, err:
+      traceback.print_exception(etype, e, tb)
+      LOGGER.critical("""
+An unexpected %(typename)s exception was raised:
+
+%(value)s
+
+This is a bug in TAU.
+Please contact %(contact)s for assistance and 
+include the output of this command:
+
+tau --log=DEBUG %(cmd)s""" % {'value': e,
+                              'typename': etype.__name__, 
+                              'cmd': ' '.join([arg for arg in sys.argv[1:]]), 
+                              'contact': HELP_CONTACT})
+      sys.exit(EXIT_FAILURE)
 
 # Set the default exception handler
 sys.excepthook = excepthook
