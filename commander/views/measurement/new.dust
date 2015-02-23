@@ -1,0 +1,128 @@
+{> sidebar-layout /}
+{<title}New Target{/title}
+
+{<content}
+<h1 class="page-header">New Target</h1>
+<div class="row">
+  <div class="col-xs-12 col-sm-8 col-md-6 col-sm-offset-2 col-md-offset-3">
+    <div class="alert alert-danger {^error}hidden{/error}" id="error_alert">
+      <p id="error_alert_message">
+      {?error_message}
+        {error_message}
+      {:else}
+        {error}
+      {/error_message}
+      </p>
+    </div>
+  </div>
+</div>
+
+<form id="mainform" role="form" action="/target/create" method="post">
+  <div class="row">
+    <div class="col-xs-12 col-md-8">
+      <div class="form-group has-feedback {?name_error}has-error{/name_error}">
+        <label class="control-label" for="name">Target Name</label>
+        <input type="text" name="name" id="name" class="form-control input-lg" placeholder="Target Name" tabindex="1" required/>
+        <span class="glyphicon glyphicon-remove form-control-feedback {^name_error}hidden{/name_error}" aria-hidden="true"></span>
+      </div>
+      <div class="form-group has-feedback {?os_error}has-error{/os_error}">
+        <label class="control-label" for="name">Operating System</label>
+        <input type="text" name="os" id="os" class="form-control input-lg" placeholder="Operating System" tabindex="2" required/>
+        <span class="glyphicon glyphicon-remove form-control-feedback {^os_error}hidden{/os_error}" aria-hidden="true"></span>
+      </div>
+      <div class="form-group has-feedback {?host_arch_error}has-error{/host_arch_error}">
+        <label class="control-label" for="name">Host Architecture</label>
+        <input type="text" name="host_arch" id="host_arch" class="form-control input-lg" placeholder="Host Architecture" tabindex="3" required/>
+        <span class="glyphicon glyphicon-remove form-control-feedback {^host_arch_error}hidden{/host_arch_error}" aria-hidden="true"></span>
+      </div>
+    </div>
+    <div class="col-xs-12 col-md-4">
+      <div class="form-group has-feedback {?name_error}has-error{/name_error}">
+        <label class="control-label" for="name">Target Icon</label>
+        <div class="well text-center">
+          <img data-src="holder.js/120x120" alt="Generic placeholder thumbnail">
+          <button class="btn btn-default btn-block">Browse...</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="false">
+    <div class="panel panel-default">
+      <div class="panel-heading" role="tab" id="coproc_heading">
+        <h4 class="panel-title">
+          <a data-toggle="collapse" data-parent="#accordion" href="#coproc_collapse" aria-expanded="true" aria-controls="coproc_collapse">
+            Coprocessor
+          </a>
+        </h4>
+      </div>
+      <div id="coproc_collapse" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="coproc_heading">
+        <div class="panel-body">
+          <div class="radio">
+            <label>
+              <input type="radio" name="device_arch" id="optionsRadios1" value="NVIDIA_CUDA" checked>
+              NVIDIA GPU with CUDA
+            </label>
+          </div>
+          <div class="radio">
+            <label>
+              <input type="radio" name="device_arch" id="optionsRadios2" value="MIC">
+              Intel Xeon Phi
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+  <div class="row">
+    <div class="col-xs-12 col-md-4 col-md-offset-2">
+      <input type="submit" value="Create Target" class="btn btn-primary btn-block" tabindex="9">
+    </div>
+    <div class="col-xs-12 col-md-4">
+      <a href="/target" class="btn btn-default btn-block" role="button">Cancel</a>
+    </div>
+  </div>
+  <input type="hidden" name="user" id="user" value="{user.id}"/>
+  <input type="hidden" name="_csrf" value="{_csrf}"/>
+</form>
+{/content}
+
+{<script}
+<script src="/js/holder.min.js"></script>
+<script src="/js/jquery.validate.min.js"></script>
+<script>
+  $("#mainform").validate({
+    highlight: function(element) {
+      $(element).closest('.form-group').addClass('has-error');
+      $(element).siblings('.glyphicon').removeClass('hidden');
+    },
+    unhighlight: function(element) {
+      $(element).closest('.form-group').removeClass('has-error');
+      $(element).siblings('.glyphicon').addClass('hidden');
+    },
+    invalidHandler: function(event, validator) {
+      var errors = validator.numberOfInvalids();
+      if (errors) {
+        var message = errors == 1
+          ? 'Please correct the highlighted field.'
+          : 'Please correct the highlighted fields.';
+        $("#error_alert_message").html(message);
+        $("#error_alert").removeClass('hidden');
+      } else {
+        $("#error_alert").addClass('hidden');
+      }
+    },
+    errorElement: 'span',
+    errorClass: 'help-block',
+    errorPlacement: function(error, element) {
+      if(element.parent('.input-group').length) {
+        error.insertAfter(element.parent());
+      } else {
+        error.insertAfter(element);
+      }
+    }
+  });
+</script>
+{/script}

@@ -24,7 +24,7 @@ body {
   <div class="container">
     <h1>TAU Commander</h1>
     <p>Neat marketing description of TAU Commander goes here as the tagline.</p>
-    <p><a class="btn btn-primary btn-lg" href="/register" role="button">Register for free &raquo;</a></p>
+    <p><a class="btn btn-primary btn-lg" href="/register" role="button">Register &raquo;</a></p>
   </div>
 </div>
 

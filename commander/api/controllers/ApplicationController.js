@@ -7,7 +7,7 @@
 
  module.exports = {
 
-  dashboard: function(req, res, next) {
+  view: function(req, res, next) {
     Application.find({}).exec(function (err, applications) {
       if (err) {
         sails.log.error(err);

@@ -32,21 +32,23 @@ module.exports.routes = {
   *                                                                          *
   ***************************************************************************/
 
-  'get /': 'FrontpageController.main',
+  'get /': 'FrontpageController.main'
 
-  'get /login': 'AuthController.login',
-  'get /logout': 'AuthController.logout',
-  'get /register': 'AuthController.register',
+, 'get /login': 'AuthController.login'
+, 'get /logout': 'AuthController.logout'
+, 'get /register': 'AuthController.register'
 
-  'post /auth/local': 'AuthController.callback',
-  'post /auth/local/:action': 'AuthController.callback',
+, 'post /auth/local': 'AuthController.callback'
+, 'post /auth/local/:action': 'AuthController.callback'
+, 'get /auth/:provider': 'AuthController.provider'
+, 'get /auth/:provider/callback': 'AuthController.callback'
+, 'get /auth/:provider/:action': 'AuthController.callback'
 
-  'get /auth/:provider': 'AuthController.provider',
-  'get /auth/:provider/callback': 'AuthController.callback',
-  'get /auth/:provider/:action': 'AuthController.callback'
-
-  // 'get /project': 'ProjectController.dashboard',
-  // 'get /target': 'TargetController.dashboard'
+, 'get /dashboard': 'DashboardController.view'
+, 'get /project': 'ProjectController.view'
+, 'get /application': 'ApplicationController.view'
+, 'get /target': 'TargetController.view'
+, 'get /measurement': 'MeasurementController.view'
 
   /***************************************************************************
   *                                                                          *

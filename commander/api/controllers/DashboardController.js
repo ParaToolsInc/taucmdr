@@ -1,12 +1,12 @@
 /**
- * TrialController
+ * DashboardController
  *
- * @description :: Server-side logic for managing trials
+ * @description :: Server-side logic for managing dashboards
  * @help        :: See http://links.sailsjs.org/docs/controllers
  */
 
 module.exports = {
-	
+
   view: function(req, res, next) {
     res.view();
   },
@@ -34,6 +34,6 @@ module.exports = {
   destroy: function(req, res, next) {
     return next();
   }
-
+	
 };
 
