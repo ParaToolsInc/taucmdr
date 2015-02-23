@@ -1,0 +1,102 @@
+{> sidebar-layout /}
+{<title}Dashboard{/title}
+
+{<style}
+<style>
+.project-widget {
+  text-align: center;
+}
+
+.project-widget .icon { 
+  display: block; 
+  font-size: 96px; 
+  line-height: 96px; 
+  margin-bottom: 10px; 
+  text-align: center; 
+}
+</style>
+{/style}
+
+{<content}
+<h1 class="page-header">Dashboard</h1>
+<div class="row">
+  <div class="col-sm-12 col-md-5">
+    <div class="panel panel-default">
+      <div class="panel-heading"><h2 class="panel-title">Last Project</h2></div>
+      <div class="panel-body">
+        <img src="mock/recent_project.png" class="img-responsive img-rounded">
+        <table class="table-condensed" show-header="false">
+          <tbody>
+            <tr><td>Last Modified:</td><td>Tuesday</td></tr>
+            <tr><td>Data Size:</td><td>100MB</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-12 col-md-7">
+    <div class="panel panel-default">
+      <div class="panel-heading"><h2 class="panel-title">Quick Start</h2></div>
+      <div class="panel-body">
+        <form id="qsform" role="form" action="/dashboard/quickstart" method="post">
+          <div class="form-group has-feedback {?measurement_error}has-error{/measurement_error}">
+            <label class="control-label" for="measurement">I want to:</label>
+            <select name="measurement" id="measurement" class="form-control">
+              <option>Profile</option>
+              <option>Trace</option>
+              <option>Sample</option>
+            </select>
+          </div>
+
+          <div class="form-group has-feedback {?application_error}has-error{/application_error}">
+            <label class="control-label" for="application">an application named:</label>
+            <input type="text" name="application" id="application" class="form-control" placeholder="Application Name" required/>
+            <span class="glyphicon glyphicon-remove form-control-feedback {^application_error}hidden{/application_error}" aria-hidden="true"></span>
+          </div>
+
+          <div class="form-group has-feedback {?measurement_error}has-error{/measurement_error}">
+            <label class="control-label" for="measurement">on:</label>
+            <div class="input-group">
+              <div class="input-group-btn">
+                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                  Target... <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" role="menu">
+                  {#targets}
+                  <li><a href="#">{name}</a></li>
+                  {/targets}
+                </ul>
+              </div><!-- /btn-group -->
+              <input type="text" class="form-control" placeholder="New target name...">
+            </div><!-- /input-group -->
+          </div>
+          <input type="submit" value="Make it so" class="btn btn-primary btn-block">
+          <input type="hidden" name="user" id="user" value="{user.id}"/>
+          <input type="hidden" name="_csrf" value="{_csrf}"/>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h3>Recent Projects</h3>
+<hr>
+<div class="row">
+  {#projects}
+  <div class="col-xs-12 col-sm-4 col-md-3 col-lg-2">
+    <a class="project-widget thumbnail" href="/project/show/{id}">
+      {?image}
+      <img data-src="holder.js/100%x200" alt="Generic placeholder thumbnail">
+      {:else}
+      <div class="icon"><i class="glyphicon glyphicon-screenshot"></i></div>
+      {/image}
+      <div class="caption">
+        <h4>{name}</h4>
+      </div>
+    </a>
+  </div>
+  {/projects}
+</div>
+{/content}
+

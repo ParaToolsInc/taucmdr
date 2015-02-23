@@ -1,0 +1,50 @@
+{> sidebar-layout /}
+{<title}Projects{/title}
+
+{<style}
+<style>
+.project-widget {
+  text-align: center;
+}
+
+.project-widget .icon { 
+  display: block; 
+  font-size: 96px; 
+  line-height: 96px; 
+  margin-bottom: 10px; 
+  text-align: center; 
+}
+</style>
+{/style}
+
+{<content}
+<h1 class="page-header">Projects</h1>
+<div class="row">
+  <div class="col-xs-12 col-sm-4 col-md-3 col-lg-2">
+    <div class="project-widget well well-sm">
+      <div class="icon"><i class="glyphicon glyphicon-plus-sign"></i></div>
+      <a href="/project/new" class="btn btn-primary btn-md">Create New...</a>
+    </div>
+  </div>
+
+  {#projects}
+  <div class="col-xs-12 col-sm-4 col-md-3 col-lg-2">
+    <a class="project-widget thumbnail" href="/project/show/{id}">
+      {?image}
+      <img data-src="holder.js/100%x200" alt="Generic placeholder thumbnail">
+      {:else}
+      <div class="icon"><i class="glyphicon glyphicon-screenshot"></i></div>
+      {/image}
+      <div class="caption">
+        <h4>{name}</h4>
+      </div>
+    </a>
+  </div>
+  {/projects}
+  
+</div>
+{/content}
+
+{<script}
+<script src="/js/holder.min.js"></script>
+{/script}

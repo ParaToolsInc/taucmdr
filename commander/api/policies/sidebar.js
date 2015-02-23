@@ -8,10 +8,11 @@
  */
 module.exports = function(req, res, next) {
   var sidebar_items = [
+    {title: 'Dashboard', href: '/dashboard', icon: 'glyphicon-th-large'},
     {title: 'Projects', href: '/project', icon: 'glyphicon-ok-circle'},
     {title: 'Applications', href: '/application', icon: 'glyphicon-modal-window'},
     {title: 'Targets', href: '/target', icon: 'glyphicon-screenshot'},
-    {title: 'Analysis', href: '/analysis', icon: 'glyphicon-stats'},
+    {title: 'Measurements', href: '/measurement', icon: 'glyphicon-stats'},
     {title: 'Help', href: '/help', icon: 'glyphicon-question-sign'},
   ];
 

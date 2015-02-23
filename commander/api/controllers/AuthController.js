@@ -198,7 +198,7 @@ module.exports = {
 
         // Upon successful login, send the user to the homepage were req.user
         // will available.
-        res.redirect('/project');
+        res.redirect('/dashboard');
       });
     });
   },
