@@ -3,7 +3,7 @@
 @author John C. Linford (jlinford@paratools.com)
 @version 1.0
 
-@brief
+@brief 
 
 This file is part of the TAU Performance System
 
@@ -37,57 +37,34 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # System modules
 import os
-import string
-
-# TAU modules
-from environment import USER_PREFIX
-from controller import Controller, ModelError, ByName
+import sys
 
 
-class Project(Controller, ByName):
+def getEnv(name):
   """
-  Project data model controller
+  Gets the value of the environment variable named 'name' or fails
   """
-  
-  attributes = {
-    'name': {
-      'type': 'string',
-      'unique': True,
-      'argparse': (('name',), 
-                   {'help': 'Project name',
-                    'metavar': '<project_name>'})
-    },
-    'targets': {
-      'collection': 'Target',
-      'via': 'projects',
-    },
-    'applications': {
-      'collection': 'Application',
-      'via': 'projects',
-    },
-    'measurements': {
-      'collection': 'Measurement',
-      'via': 'projects',
-    },
-    'experiments': {
-      'collection': 'Experiment',
-      'via': 'project'
-    },
-    'prefix': {
-      'type': 'string',
-      'required': True,
-      'argparse': (('--home',), 
-                   {'help': 'Location for all files and experiment data related to this project',
-                    'metavar': 'path',
-                    'dest': 'prefix',
-                    'default': USER_PREFIX})
-    },
-  }
+  try:
+    return os.environ[name]
+  except KeyError:
+    sys.stderr.write("""
+%(bar)s
+!
+! CRITICAL ERROR: %(name)s environment variable not set.
+!
+%(bar)s
+  """ % {'bar': '!'*80,
+         'name': name})
+    sys.exit(EXIT_FAILURE)
 
-  _valid_name = set(string.digits + string.letters + '-_.')
-  
-  def onCreate(self):
-    if set(self['name']) > Project._valid_name:
-      raise ModelError('%r is not a valid project name.' % self['name'],
-                       'Use only letters, numbers, dot (.), dash (-), and underscore (_).')
-  
+# TAU Commander home path
+__TAU_HOME__ = getEnv('__TAU_HOME__')
+
+# System path
+PATH = getEnv('PATH').split(os.pathsep)
+
+# User-level TAU files
+USER_PREFIX = os.path.join(os.path.expanduser('~'), '.tau')
+
+# System-level TAU files
+SYSTEM_PREFIX = os.path.realpath(os.path.join(__TAU_HOME__, '.system'))

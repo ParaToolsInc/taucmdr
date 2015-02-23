@@ -184,12 +184,12 @@ def main(argv):
   else:
     LOGGER.debug('Using existing experiment')
     found = found[0]
-  
+
   found.populate()
-  found.select()
-  
-  LOGGER.info("Application '%s' on target '%s' measured by '%s'" % 
+  LOGGER.info("'%s' on '%s' measured by '%s'" % 
               (found['application']['name'],
                found['target']['name'],
                found['measurement']['name']))
+  found.select()
+  
   return EXIT_SUCCESS

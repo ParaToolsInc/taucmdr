@@ -39,7 +39,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 from texttable import Texttable
 
 # TAU modules
-from tau import USER_PREFIX, EXIT_SUCCESS
+from tau import EXIT_SUCCESS
+from environment import USER_PREFIX
 from logger import getLogger, LINE_WIDTH
 from util import pformatList, pformatDict
 from error import ConfigurationError

@@ -108,6 +108,7 @@ class Controller(object):
   def __init__(self, fields):
     self.eid = getattr(fields, 'eid', None)
     self.data = self._validate(fields)
+    self.populated = False
     
   def __getitem__(self, key):
     return self.data[key]
@@ -173,18 +174,21 @@ class Controller(object):
     Populates associated attributes
     """
     from tau.model import MODELS
-    for attr, props in self.attributes.iteritems():
-      try:
-        foreign_model = MODELS[props['model']]
-      except KeyError:
+    if not self.populated:
+      LOGGER.debug('Populating %r' % self)
+      for attr, props in self.attributes.iteritems():
         try:
-          foreign_model = MODELS[props['collection']]
+          foreign_model = MODELS[props['model']]
         except KeyError:
-          continue
+          try:
+            foreign_model = MODELS[props['collection']]
+          except KeyError:
+            continue
+          else:
+            self.data[attr] = foreign_model.search(eids=self[attr])
         else:
-          self.data[attr] = foreign_model.search(eids=self[attr])
-      else:
-        self.data[attr] = foreign_model.one(eid=self[attr])
+          self.data[attr] = foreign_model.one(eid=self[attr])
+      self.populated = True
     return self
 
   @classmethod

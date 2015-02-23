@@ -42,7 +42,8 @@ from tinydb import TinyDB, where
  
 
 # TAU modules
-from tau import USER_PREFIX, SYSTEM_PREFIX, HELP_CONTACT, EXIT_FAILURE
+from tau import HELP_CONTACT, EXIT_FAILURE
+from environment import USER_PREFIX, SYSTEM_PREFIX
 from logger import getLogger
 from error import InternalError
 from util import mkdirp

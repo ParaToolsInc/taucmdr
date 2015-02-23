@@ -66,6 +66,9 @@ tau --log=DEBUG %(cmd)s"""
     self.value = value
     self.hint = hint
     
+  def __str__(self):
+    return self.value
+  
   def handle(self, etype, e, tb):
     message = self.message_fmt % {'value': self.value,
                                   'hint': 'Hint: %s' % self.hint,

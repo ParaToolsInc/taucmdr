@@ -35,27 +35,16 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+# System modules
 import os
 import sys
+
 
 # Exit codes
 EXIT_FAILURE = -100
 EXIT_WARNING = 100
 EXIT_SUCCESS = 0
 
-# Tau source code root directory
-try:
-  __TAU_HOME__ = os.environ['__TAU_HOME__']
-except KeyError:
-  sys.stderr.write("""
-%(bar)s
-!
-! CRITICAL ERROR: __TAU_HOME__ environment variable not set.
-!
-%(bar)s
-""" % {'bar': '!'*80})
-  exit(EXIT_FAILURE)
-    
 # Contact for bugs, etc.
 HELP_CONTACT = '<support@paratools.com>'
 
@@ -63,9 +52,3 @@ PROJECT_URL = 'http://www.taucommander.com/'
 
 #Expected Python version
 MINIMUM_PYTHON_VERSION = (2, 7)
-
-# User-level TAU files
-USER_PREFIX = os.path.join(os.path.expanduser('~'), '.tau')
-
-# System-level TAU files
-SYSTEM_PREFIX = os.path.realpath(os.path.join(__TAU_HOME__, '.system'))

@@ -37,6 +37,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # System modules
 import os
+import md5
 
 # TAU modules
 import settings
@@ -75,30 +76,34 @@ class Experiment(Controller):
     'trials': {
       'collection': 'Trial',
       'via': 'experiment'
-    }
+    },
   }
   
   def onCreate(self):
-    from cf import tau
-    project = Project.one(eid=self['project'])
-    prefix = os.path.join(project['prefix'], project['name'])
-    try:
-      mkdirp(prefix)
-    except:
-      raise ConfigurationError('Cannot create directory %r' % prefix, 'Check that you have `write` access')
-    
-    target = Target.one(eid=self['target'])
-    tau.initialize(prefix, target['tau'], target['host_arch'])
-
+    self.select()
   
   def onDelete(self):
     if self.isSelected():
       settings.unset('experiment_id')
   
   def select(self):
+    from cf import tau
     if not self.eid:
       raise InternalError('Tried to select an experiment without an eid')
     settings.set('experiment_id', self.eid)
+
+    self.populate()
+    prefix = self['project']['prefix']
+    try:
+      mkdirp(prefix)
+    except:
+      raise ConfigurationError('Cannot create directory %r' % prefix, 
+                               'Check that you have `write` access')
+    target = self['target']
+    tau_src = target['tau']
+    arch = target['host_arch']
+    tau.initialize(prefix, tau_src, arch=arch)
+
   
   def isSelected(self):
     if self.eid:
