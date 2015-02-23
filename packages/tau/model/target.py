@@ -40,8 +40,7 @@ import os
 import string
 
 # TAU modules
-import cf
-from cf import tau
+from cf import tau, DEFAULT_TAU_URL
 from logger import getLogger
 from controller import Controller, ModelError, ByName
 from arguments import SUPPRESS
@@ -98,7 +97,7 @@ class Target(Controller, ByName):
                    {'help': 'URL or path to an existing TAU installation or archive file',
                     'metavar': '(<path>|<url>)',
                     'dest': 'tau',
-                    'default': cf.DEFAULT_TAU_URL})
+                    'default': DEFAULT_TAU_URL})
     },
   }
   

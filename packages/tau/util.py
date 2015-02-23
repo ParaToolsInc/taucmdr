@@ -45,61 +45,51 @@ import urllib
 import tarfile
 
 # TAU modules
+from tau import EXIT_FAILURE
+from environment import PATH
 from logger import getLogger
+
 
 LOGGER = getLogger(__name__)
 
 
+
 def mkdirp(*args):
-    """
-    Creates a directory and all its parents.
-    """
-    for path in args:
-      try:
-          os.makedirs(path)
-          LOGGER.debug('Created directory %r' % path)
-      except OSError as exc:
-          if exc.errno == errno.EEXIST and os.path.isdir(path): pass
-          else: raise
+  """
+  Creates a directory and all its parents.
+  """
+  for path in args:
+    try:
+      os.makedirs(path)
+      LOGGER.debug('Created directory %r' % path)
+    except OSError as exc:
+      if exc.errno == errno.EEXIST and os.path.isdir(path): pass
+      else: raise
+
 
 def which(program):
-    def is_exec(fpath):
-        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
-    fpath, _ = os.path.split(program)
-    if fpath:
-        if is_exec(program):
-            return program
-    else:
-        for path in os.environ["PATH"].split(os.pathsep):
-            path = path.strip('"')
-            exe_file = os.path.join(path, program)
-            if is_exec(exe_file):
-                return exe_file
-    return None
+  """
+  Returns the full path to 'program'
+  Searches environment.PATH and the current directory
+  """
+  def is_exec(fpath):
+    return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+  fpath, _ = os.path.split(program)
+  if fpath:
+    if is_exec(program):
+      return program
+  else:
+    for path in PATH:
+      path = path.strip('"')
+      exe_file = os.path.join(path, program)
+      if is_exec(exe_file):
+        return exe_file
+  return None
 
 
-def isAccessable(path, mode):
-    try:
-        with open(path, mode) as fp:
-            return true
-    except IOError:
-        return False
-
-    
-def isWritable(self):
-    test_file = os.path.join(self.prefix, 'test')
-    try:
-        with open(test_file, 'w') as fp:
-            fp.write('x')
-        os.remove(test_file)
-    except IOError:
-        return False
-    else:
-        return True
-    
 def download(src, dest):
   """
-  Downloads 'dest' to 'src'
+  Downloads or copies 'dest' to 'src'
   """
   if src.startswith('file://'):
     try:
@@ -107,20 +97,20 @@ def download(src, dest):
     except:
       raise IOError("Failed to download '%s'" % src)
   else:
-    LOGGER.debug('Downloading %r to %r' % (src, dest))
-    LOGGER.info('Downloading %r' % src)
+    LOGGER.debug("Downloading '%s' to '%s'" % (src, dest))
+    LOGGER.info("Downloading '%s'" % src)
     mkdirp(os.path.dirname(dest))
     curl = which('curl')
-    LOGGER.debug('which curl: %r' % curl)
+    LOGGER.debug("which curl: '%s'" % curl)
     wget = which('wget')
-    LOGGER.debug('which wget: %r' % wget)
+    LOGGER.debug("which wget: '%s'" % wget)
     curl_cmd = [curl, '-L', src, '-o', dest] if curl else None
     wget_cmd = [wget, src, '-O', dest] if wget else None
     for cmd in [curl_cmd, wget_cmd]:
       if cmd:
         ret = subprocess.call(cmd, stdout=sys.stdout, stderr=sys.stderr)
         if ret != 0:
-          LOGGER.warning('%s failed to download %r.' % (cmd[0], src))
+          LOGGER.warning("%s failed to download '%s'" % (cmd[0], src))
         else:
           return ret
     # Fallback: this is usually **much** slower than curl or wget
@@ -129,49 +119,59 @@ def download(src, dest):
     try:
       urllib.urlretrieve(src, dest, reporthook=_dlProgress)
     except:
-      LOGGER.warning('urllib failed to download %r' % src)
-      raise IOError('Failed to download %r' % src)
+      LOGGER.warning("urllib failed to download '%s'" % src)
+      raise IOError("Failed to download '%s'" % src)
 
     
-def extract(tgz, dest):
-    with tarfile.open(tgz) as fp:
-        LOGGER.debug('Determining top-level directory name in %r' % tgz)
-        dirs = [d.name for d in fp.getmembers() if d.type == tarfile.DIRTYPE]
-        topdir = min(dirs, key=len)
-        LOGGER.debug('Top-level directory in %r is %r' % (tgz, topdir))
-        full_dest = os.path.join(dest, topdir)
-        LOGGER.debug('Extracting %r to create %r' % (tgz, full_dest))
-        LOGGER.info('Extracting %r' % tgz)
-        mkdirp(dest)
-        fp.extractall(dest)
-    assert os.path.isdir(full_dest)
-    LOGGER.debug('Created %r' % full_dest)
-    return full_dest
+def extract(archive, dest):
+  """
+  Extracts archive file 'archive' to dest
+  """
+  with tarfile.open(archive) as fp:
+    LOGGER.debug("Determining top-level directory name in '%s'" % archive)
+    dirs = [d.name for d in fp.getmembers() if d.type == tarfile.DIRTYPE]
+    topdir = min(dirs, key=len)
+    LOGGER.debug("Top-level directory in '%s' is '%s'" % (archive, topdir))
+    full_dest = os.path.join(dest, topdir)
+    LOGGER.debug("Extracting '%s' to create '%s'" % (archive, full_dest))
+    LOGGER.info("Extracting '%s'" % archive)
+    mkdirp(dest)
+    fp.extractall(dest)
+  assert os.path.isdir(full_dest)
+  LOGGER.debug("Created '%s'" % full_dest)
+  return full_dest
 
 
 def pformatDict(d, title=None, empty_msg='No items.', indent=0):
-    if title:
-        line = '{:=<75}\n'.format('== %s ==' % title)
-    else:
-        line = '' 
-    if len(d):
-        longest = max(map(len, d.keys()))
-        space = ' '*indent
-        items = '\n'.join(['{}{:<{width}} : {}'.format(space, key, repr(val), width=longest)
-                           for key, val in sorted(d.iteritems())])
-    else:
-        items = empty_msg
-    return '%(line)s%(items)s' % {'line': line, 'items': items}
+  """
+  Pretty formater for dictionaries
+  """
+  if title:
+    line = '{:=<75}\n'.format('== %s ==' % title)
+  else:
+    line = '' 
+  if len(d):
+    longest = max(map(len, d.keys()))
+    space = ' '*indent
+    items = '\n'.join(['{}{:<{width}} : {}'.format(space, key, repr(val), width=longest)
+                       for key, val in sorted(d.iteritems())])
+  else:
+    items = empty_msg
+  return '%(line)s%(items)s' % {'line': line, 'items': items}
     
+
 def pformatList(d, title=None, empty_msg='No items.', indent=0):
-    if title:
-        line = '{:=<75}\n'.format('== %s ==' % title)
-    else:
-        line = ''
-    if len(d):
-        space = ' '*indent
-        items = '\n'.join(['%s%s' % (space, val) for val in sorted(d)])
-    else:
-        items = empty_msg
-    return '%(line)s%(items)s' % {'line': line, 'items': items}
+  """
+  Pretty formatter for lists
+  """
+  if title:
+    line = '{:=<75}\n'.format('== %s ==' % title)
+  else:
+    line = ''
+  if len(d):
+    space = ' '*indent
+    items = '\n'.join(['%s%s' % (space, val) for val in sorted(d)])
+  else:
+    items = empty_msg
+  return '%(line)s%(items)s' % {'line': line, 'items': items}
     
