@@ -46,7 +46,7 @@ from controller import Controller, ModelError, ByName
 from arguments import SUPPRESS
 
 
-LOGGER = getLogger(__name__)
+LOGGER = logger.getLogger(__name__)
 
 
 

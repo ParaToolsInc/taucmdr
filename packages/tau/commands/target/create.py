@@ -41,15 +41,15 @@ import sys
 # TAU modules
 from tau import EXIT_SUCCESS
 from logger import getLogger
-from arguments import getParserFromModel
-from commands import executeCommand
+from arguments import args.getParserFromModel
+from commands import commands.executeCommand
 from controller import UniqueAttributeError
 from error import ConfigurationError
 from model.target import Target
 
 
 
-LOGGER = getLogger(__name__)
+LOGGER = logger.getLogger(__name__)
 
 SHORT_DESCRIPTION = "Create a new target configuration."
 
@@ -64,7 +64,7 @@ HELP = """
 '%(command)s' page to be written.
 """ % {'command': COMMAND}
 
-PARSER = getParserFromModel(Target,
+PARSER = args.getParserFromModel(Target,
                             prog=COMMAND,
                             usage=USAGE, 
                             description=SHORT_DESCRIPTION) 
@@ -92,4 +92,4 @@ def main(argv):
                              'Type `tau target list` to see all target names')
   
   LOGGER.info('Created a new target named %r.' % args.name)
-  return executeCommand(['target', 'list'], [args.name])
+  return commands.executeCommand(['target', 'list'], [args.name])

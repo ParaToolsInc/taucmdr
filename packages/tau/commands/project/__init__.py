@@ -40,11 +40,11 @@ import sys
 
 # TAU modules
 from logger import getLogger
-from commands import getCommands, getCommandsHelp, executeCommand
-from arguments import getParser, REMAINDER
+from commands import getCommands, commands.getCommandsHelp, commands.executeCommand
+from arguments import args.getParser, REMAINDER
 
 
-LOGGER = getLogger(__name__)
+LOGGER = logger.getLogger(__name__)
 
 _name_parts = __name__.split('.')[1:]
 COMMAND = ' '.join(['tau'] + _name_parts)
@@ -66,7 +66,7 @@ subcommands:
 
 See '%(command)s <subcommand> --help' for more information on <subcommand>.
 """ % {'command': COMMAND,
-       'command_descr': getCommandsHelp(__name__)}
+       'command_descr': commands.getCommandsHelp(__name__)}
 
 
 
@@ -75,7 +75,7 @@ _arguments = [ (('subcommand',), {'help': "See 'subcommands' below",
               (('options',), {'help': "Options to be passed to <subcommand>",
                               'metavar': '[options]',
                               'nargs': REMAINDER})]
-PARSER = getParser(_arguments,
+PARSER = args.getParser(_arguments,
                    prog=COMMAND, 
                    usage=USAGE, 
                    description=SHORT_DESCRIPTION,
@@ -98,4 +98,4 @@ def main(argv):
   
   subcommand = args.subcommand
   options = args.options
-  return executeCommand(_name_parts + [subcommand], options)
+  return commands.executeCommand(_name_parts + [subcommand], options)

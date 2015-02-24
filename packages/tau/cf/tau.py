@@ -43,13 +43,14 @@ import platform
 import subprocess
 
 # TAU modules
-from environment import PATH
-from util import download, extract
-from logger import getLogger, logging_streams
-from error import ConfigurationError
-from cf import compiler
+import cf
+import logger
+import util
+import error
+import environment as env
 
-LOGGER = getLogger(__name__)
+
+LOGGER = logger.getLogger(__name__)
 
 COMPILER_WRAPPERS = {'CC': 'tau_cc.sh',
                      'CXX': 'tau_cxx.sh',
@@ -112,42 +113,41 @@ COMMANDS = ['jumpshot',
             'trace2profile']
 
 
-def detectDefaultHostOS():
+def _detectDefaultHostOS():
   """
   Detect the default host operating system
   """
   return platform.system()
+DEFAULT_HOST_OS = _detectDefaultHostOS()
 
 
-_defaultHostArch = None
-def detectDefaultHostArch():
+def _detectDefaultHostArch():
     """
     Use TAU's archfind script to detect the host target architecture
     """
-    global _defaultHostArch
-    if not _defaultHostArch:
-      here = os.path.dirname(os.path.realpath(__file__))
-      cmd = os.path.join(os.path.dirname(here), 'util', 'archfind', 'archfind')
-      _defaultHostArch = subprocess.check_output(cmd).strip()
-    return _defaultHostArch
+    here = os.path.dirname(os.path.realpath(__file__))
+    cmd = os.path.join(os.path.dirname(here), 'util', 'archfind', 'archfind')
+    return subprocess.check_output(cmd).strip()
+DEFAULT_HOST_ARCH = _detectDefaultHostArch()
 
 
-def detectDefaultDeviceArch():
+def _detectDefaultDeviceArch():
   """
   Detect coprocessors
   """
   return None
-
+DEFAULT_DEVICE_ARCH = _detectDefaultDeviceArch()
+ 
 
 def verifyInstallation(prefix, arch):
   """
   Returns True if there is a working TAU installation at 'prefix' or raisestau.
-  a ConfigurationError describing why that installation is broken.
+  a error.ConfigurationError describing why that installation is broken.
   """
   LOGGER.debug("Checking TAU installation at '%s' targeting arch '%s'" % (prefix, arch))
   
   if not os.path.exists(prefix):
-    raise ConfigurationError("'%s' does not exist" % prefix)
+    raise error.ConfigurationError("'%s' does not exist" % prefix)
   bin = os.path.join(prefix, arch, 'bin')
   lib = os.path.join(prefix, arch, 'lib')
 
@@ -155,14 +155,14 @@ def verifyInstallation(prefix, arch):
   for cmd in COMMANDS:
     path = os.path.join(bin, cmd)
     if not os.path.exists(path):
-      raise ConfigurationError("'%s' is missing" % path)
+      raise error.ConfigurationError("'%s' is missing" % path)
     if not os.access(path, os.X_OK):
-      raise ConfigurationError("'%s' exists but is not executable" % path)
+      raise error.ConfigurationError("'%s' exists but is not executable" % path)
   
   # Check that there is at least one makefile
   makefile = os.path.join(prefix, 'include', 'Makefile')
   if not os.path.exists(makefile):
-    raise ConfigurationError("'%s' does not exist" % makefile)
+    raise error.ConfigurationError("'%s' does not exist" % makefile)
   
   # Check for the minimal config 'vanilla' makefile
   makefile = os.path.join(lib, 'Makefile.tau')
@@ -173,11 +173,11 @@ def verifyInstallation(prefix, arch):
   LOGGER.debug("Checking tauDB installation at '%s'" % taudb_prefix)
   
   if not os.path.exists(taudb_prefix):
-    raise ConfigurationError("'%s' does not exist" % taudb_prefix)
+    raise error.ConfigurationError("'%s' does not exist" % taudb_prefix)
 
   path = os.path.join(taudb_prefix, 'perfdmf.cfg')
   if not os.path.exists(path):
-    raise ConfigurationError("'%s' does not exist" % path)
+    raise error.ConfigurationError("'%s' does not exist" % path)
 
   LOGGER.debug("tauDB installation at '%s' is valid" % taudb_prefix)
   LOGGER.debug("TAU installation at '%s' is valid" % prefix)
@@ -196,7 +196,7 @@ def initialize(prefix, src, force_reinitialize=False,
   
   # Check compilers
   if compiler_cmd:
-    family = compiler.getFamily(compiler_cmd[0])
+    family = cf.compiler.getFamily(compiler_cmd[0])
       
       
   
@@ -204,7 +204,7 @@ def initialize(prefix, src, force_reinitialize=False,
   # Check if the installation is already initialized
   try:
     verifyInstallation(tau_prefix, arch=arch)
-  except ConfigurationError, err:
+  except error.ConfigurationError, err:
     LOGGER.debug("Invalid installation: %s" % err)
     pass
   else:
@@ -212,16 +212,16 @@ def initialize(prefix, src, force_reinitialize=False,
       return
   
   # Control build output
-  with logging_streams():
+  with logger.logging_streams():
     
     # Download, unpack, or copy TAU source code
     src_prefix = os.path.join(prefix, 'src')
     dst = os.path.join(src_prefix, os.path.basename(src))
     try:
-      download(src, dst)
-      srcdir = extract(dst, src_prefix)
+      util.download(src, dst)
+      srcdir = util.extract(dst, src_prefix)
     except IOError:
-      raise ConfigurationError("Cannot acquire source file '%s'" % src,
+      raise error.ConfigurationError("Cannot acquire source file '%s'" % src,
                                "Check that the file or directory is accessable")
     finally:
       try:
@@ -237,7 +237,7 @@ def initialize(prefix, src, force_reinitialize=False,
     LOGGER.info('Configuring TAU...\n    %s' % ' '.join(cmd))
     proc = subprocess.Popen(cmd, cwd=srcdir, stdout=sys.stdout, stderr=sys.stderr)
     if proc.wait():
-      raise ConfigurationError('TAU configure failed')
+      raise error.ConfigurationError('TAU configure failed')
   
     # Execute make
     cmd = ['make', '-j4', 'install']
@@ -245,7 +245,7 @@ def initialize(prefix, src, force_reinitialize=False,
     LOGGER.info('Compiling TAU...\n    %s' % ' '.join(cmd))
     proc = subprocess.Popen(cmd, cwd=srcdir, stdout=sys.stdout, stderr=sys.stderr)
     if proc.wait():
-        raise ConfigurationError('TAU compilation failed.')
+        raise error.ConfigurationError('TAU compilation failed.')
 
     # Leave source, we'll probably need it again soon
     LOGGER.debug('Preserving %r for future use' % srcdir)
@@ -257,10 +257,10 @@ def initialize(prefix, src, force_reinitialize=False,
     LOGGER.info('Configuring tauDB...\n    %s' % ' '.join(cmd))
     proc = subprocess.Popen(cmd, stdout=sys.stdout, stderr=sys.stderr)
     if proc.wait():
-      raise ConfigurationError('tauDB configure failed.')
+      raise error.ConfigurationError('tauDB configure failed.')
 
     # Add TAU to PATH
-    PATH.append(os.path.join(tau_prefix, arch, 'bin'))
+    env.PATH.append(os.path.join(tau_prefix, arch, 'bin'))
     LOGGER.info('TAU configured successfully')
 
   
@@ -309,7 +309,7 @@ def initialize(prefix, src, force_reinitialize=False,
 #         elif getRegistry().user.isWritable():
 #             self.prefix = self.user_prefix
 #         else:
-#             raise ConfigurationError("User-level TAU installation at %r is not writable" % self.user_prefix,
+#             raise error.ConfigurationError("User-level TAU installation at %r is not writable" % self.user_prefix,
 #                                      "Check the file permissions and try again") 
 #         LOGGER.info('Installing TAU at %r' % self.prefix)
 # 

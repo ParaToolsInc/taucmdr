@@ -46,7 +46,7 @@ from error import InternalError
 from storage import user_storage
 
 
-LOGGER = getLogger(__name__)
+LOGGER = logger.getLogger(__name__)
 
 
 class ModelError(InternalError):

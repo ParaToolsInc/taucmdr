@@ -35,15 +35,13 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-# System modules
-import sys
-
 # TAU modules
-from logger import getLogger
-from commands import getCommands, getCommandsHelp, executeCommand
-from arguments import getParser, REMAINDER
+import logger
+import commands
+import arguments as args
 
-LOGGER = getLogger(__name__)
+
+LOGGER = logger.getLogger(__name__)
 
 _name_parts = __name__.split('.')[1:]
 COMMAND = ' '.join(['tau'] + _name_parts)
@@ -65,7 +63,7 @@ subcommands:
 
 See '%(command)s <subcommand> --help' for more information on <subcommand>.
 """ % {'command': COMMAND,
-       'command_descr': getCommandsHelp(__name__)}
+       'command_descr': commands.getCommandsHelp(__name__)}
 
 
 
@@ -73,12 +71,12 @@ _arguments = [ (('subcommand',), {'help': "See 'subcommands' below",
                                   'metavar': '<subcommand>'}),
                (('options',), {'help': "Options to be passed to <subcommand>",
                                'metavar': '[options]',
-                               'nargs': REMAINDER})]
-PARSER = getParser(_arguments,
-                   prog=COMMAND, 
-                   usage=USAGE, 
-                   description=SHORT_DESCRIPTION,
-                   epilog=USAGE_EPILOG)
+                               'nargs': args.REMAINDER})]
+PARSER = args.getParser(_arguments,
+                        prog=COMMAND, 
+                        usage=USAGE, 
+                        description=SHORT_DESCRIPTION,
+                        epilog=USAGE_EPILOG)
 
 def getUsage():
   return PARSER.format_help() 
@@ -97,4 +95,4 @@ def main(argv):
   
   subcommand = args.subcommand
   options = args.options
-  return executeCommand(_name_parts + [subcommand], options)
+  return commands.executeCommand(_name_parts + [subcommand], options)

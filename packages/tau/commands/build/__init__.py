@@ -44,14 +44,14 @@ from textwrap import dedent
 
 # TAU modules
 from logger import getLogger
-from arguments import getParser, REMAINDER
-from commands import getCommandsHelp, executeCommand
+from arguments import args.getParser, REMAINDER
+from commands import commands.getCommandsHelp, commands.executeCommand
 from cf import tau
 from cf.compiler import COMPILERS
 from model.experiment import Experiment
 
 
-LOGGER = getLogger(__name__)
+LOGGER = logger.getLogger(__name__)
 
 _name_parts = __name__.split('.')[1:]
 COMMAND = ' '.join(['tau'] + _name_parts)
@@ -89,7 +89,7 @@ compiler commands:
 %(simple_descr)s
 %(command_descr)s
 """ % {'simple_descr': _compilersHelp(), 
-       'command_descr': getCommandsHelp(__name__)}
+       'command_descr': commands.getCommandsHelp(__name__)}
 
 
 _arguments = [ (('cmd',), {'help': "Compiler or linker command, e.g. 'gcc'",
@@ -97,7 +97,7 @@ _arguments = [ (('cmd',), {'help': "Compiler or linker command, e.g. 'gcc'",
                (('cmd_args',), {'help': "Compiler arguments",
                                 'metavar': 'args',
                                 'nargs': REMAINDER})]
-PARSER = getParser(_arguments,
+PARSER = args.getParser(_arguments,
                    prog=COMMAND,
                    usage=USAGE, 
                    description=SHORT_DESCRIPTION,
@@ -150,4 +150,4 @@ def main(argv):
     return proc.wait()
 
   # Execute as a tau command
-  return executeCommand(_name_parts + [cmd], cmd_args)
+  return commands.executeCommand(_name_parts + [cmd], cmd_args)

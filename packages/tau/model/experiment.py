@@ -49,7 +49,7 @@ from model.project import Project
 from model.target import Target
 
 
-LOGGER = getLogger(__name__)
+LOGGER = logger.getLogger(__name__)
 
 class Experiment(Controller):
   """

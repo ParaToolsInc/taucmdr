@@ -50,7 +50,7 @@ from environment import PATH
 from logger import getLogger
 
 
-LOGGER = getLogger(__name__)
+LOGGER = logger.getLogger(__name__)
 
 
 

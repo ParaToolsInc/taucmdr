@@ -38,15 +38,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # TAU modules
 from tau import EXIT_SUCCESS
 from logger import getLogger
-from commands import executeCommand
-from arguments import getParserFromModel, SUPPRESS
+from commands import commands.executeCommand
+from arguments import args.getParserFromModel, SUPPRESS
 from model.project import Project
 from model.target import Target
 from model.application import Application
 from model.measurement import Measurement
 
 
-LOGGER = getLogger(__name__)
+LOGGER = logger.getLogger(__name__)
 
 SHORT_DESCRIPTION = "Modify a project configuration."
 
@@ -107,7 +107,7 @@ _arguments = [(('--rename',),
                 'nargs': '+',
                 'default': SUPPRESS})]
 
-PARSER = getParserFromModel(Project,
+PARSER = args.getParserFromModel(Project,
                             prog=COMMAND,
                             usage=USAGE, 
                             description=SHORT_DESCRIPTION)
@@ -202,4 +202,4 @@ def main(argv):
    
   Project.update(updates, {'name': project_name})
     
-  return executeCommand(['project', 'list'], [updates['name']])
+  return commands.executeCommand(['project', 'list'], [updates['name']])

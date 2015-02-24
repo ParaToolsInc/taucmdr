@@ -190,7 +190,7 @@ def getLogLevel():
 
 
 @contextlib.contextmanager
-def logging_streams():
+def logger.logging_streams():
   """
   Provide stdout, stderr handles that are muted for LOG_LEVEL != 'DEBUG'
   """

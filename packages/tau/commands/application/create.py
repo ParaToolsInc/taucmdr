@@ -35,21 +35,17 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-# System modules
-import sys
-
 # TAU modules
-from tau import EXIT_SUCCESS
-from logger import getLogger
-from arguments import getParserFromModel
-from commands import executeCommand
-from controller import UniqueAttributeError
-from error import ConfigurationError
+import logger
+import commands
+import controller
+import error
+import arguments as args
 from model.application import Application
 
 
 
-LOGGER = getLogger(__name__)
+LOGGER = logger.getLogger(__name__)
 
 SHORT_DESCRIPTION = "Create a new application configuration."
 
@@ -64,10 +60,10 @@ HELP = """
 '%(command)s' page to be written.
 """ % {'command': COMMAND}
 
-PARSER = getParserFromModel(Application,
-                            prog=COMMAND,
-                            usage=USAGE, 
-                            description=SHORT_DESCRIPTION) 
+PARSER = args.getParserFromModel(Application,
+                                 prog=COMMAND,
+                                 usage=USAGE, 
+                                 description=SHORT_DESCRIPTION) 
 
 
 def getUsage():
@@ -87,9 +83,9 @@ def main(argv):
   
   try:
     Application.create(args.__dict__)
-  except UniqueAttributeError:
-    raise ConfigurationError('A application named %r already exists' % args.name,
+  except controller.UniqueAttributeError:
+    raise error.ConfigurationError('A application named %r already exists' % args.name,
                              'Type `tau application list` to see all application names')
   
   LOGGER.info('Created a new application named %r.' % args.name)
-  return executeCommand(['application', 'list'], [args.name])
+  return commands.executeCommand(['application', 'list'], [args.name])

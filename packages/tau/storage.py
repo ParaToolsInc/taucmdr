@@ -49,7 +49,7 @@ from error import InternalError
 from util import mkdirp
 
 
-LOGGER = getLogger(__name__)
+LOGGER = logger.getLogger(__name__)
 
 
 class StorageError(InternalError):

@@ -38,12 +38,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # TAU modules
 from tau import EXIT_SUCCESS
 from logger import getLogger
-from commands import executeCommand
-from arguments import getParserFromModel, SUPPRESS
+from commands import commands.executeCommand
+from arguments import args.getParserFromModel, SUPPRESS
 from model.target import Target
 
 
-LOGGER = getLogger(__name__)
+LOGGER = logger.getLogger(__name__)
 
 SHORT_DESCRIPTION = "Modify an existing target configuration."
 
@@ -58,7 +58,7 @@ HELP = """
 '%(command)s' page to be written.
 """ % {'command': COMMAND}
 
-PARSER = getParserFromModel(Target,
+PARSER = args.getParserFromModel(Target,
                             use_defaults=False,
                             prog=COMMAND, 
                             usage=USAGE,
@@ -99,4 +99,4 @@ def main(argv):
   
   Target.update(updates, {'name': name})
   
-  return executeCommand(['target', 'list'], [args.name])
+  return commands.executeCommand(['target', 'list'], [args.name])

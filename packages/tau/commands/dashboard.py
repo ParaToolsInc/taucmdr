@@ -40,11 +40,11 @@ import settings
 from tau import EXIT_SUCCESS
 from logger import getLogger, LINE_WIDTH
 from error import InternalError
-from arguments import getParser
-from commands import executeCommand
+from arguments import args.getParser
+from commands import commands.executeCommand
 from model.experiment import Experiment
 
-LOGGER = getLogger(__name__)
+LOGGER = logger.getLogger(__name__)
 
 _name_parts = __name__.split('.')[2:]
 COMMAND = ' '.join(['tau'] + _name_parts)
@@ -60,7 +60,7 @@ HELP = """
 Help page to be written.
 """
 
-PARSER = getParser([],
+PARSER = args.getParser([],
                    prog=COMMAND, 
                    usage=USAGE, 
                    description=SHORT_DESCRIPTION)
@@ -81,10 +81,10 @@ def main(argv):
   args = PARSER.parse_args(args=argv)
   LOGGER.debug('Arguments: %s' % args)
   
-  executeCommand(['target', 'list'])
-  executeCommand(['application', 'list'])
-  executeCommand(['measurement', 'list'])
-  executeCommand(['project', 'list'])
+  commands.executeCommand(['target', 'list'])
+  commands.executeCommand(['application', 'list'])
+  commands.executeCommand(['measurement', 'list'])
+  commands.executeCommand(['project', 'list'])
   
   title = '{:=<{}}'.format('== Selected Experiment ==', LINE_WIDTH)
   experiment = Experiment.getSelected()

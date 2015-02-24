@@ -40,13 +40,13 @@ import sys
 
 # TAU modules
 from tau import MINIMUM_PYTHON_VERSION, EXIT_FAILURE, PROJECT_URL
-from commands import getCommands, getCommandsHelp, executeCommand, UnknownCommandError
+from commands import getCommands, commands.getCommandsHelp, commands.executeCommand, UnknownCommandError
 from commands import build
 from logger import getLogger, setLogLevel, getLogLevel
-from arguments import getParser, REMAINDER
+from arguments import args.getParser, REMAINDER
 
 
-LOGGER = getLogger(__name__)
+LOGGER = logger.getLogger(__name__)
 
 SHORT_DESCRIPTION = "TAU Commander [ %s ]" % PROJECT_URL
 
@@ -76,7 +76,7 @@ commands:
                 An alias for 'tau execute <executable>'
 
 See 'tau help <command>' for more information on <command>.
-"""  % {'command_descr': getCommandsHelp()}
+"""  % {'command_descr': commands.getCommandsHelp()}
 
 _arguments = [ (('command',), {'help': "See 'commands' below",
                                'metavar': '<command>'}),
@@ -88,7 +88,7 @@ _arguments = [ (('command',), {'help': "See 'commands' below",
                                      'const': 'DEBUG', 
                                      'default': 'INFO', 
                                      'action': 'store_const'})]
-PARSER = getParser(_arguments,
+PARSER = args.getParser(_arguments,
                    prog=COMMAND, 
                    usage=USAGE, 
                    description=SHORT_DESCRIPTION,
@@ -126,7 +126,7 @@ def main():
   
   # Try to execute as a TAU command
   try:
-      return executeCommand([cmd], cmd_args)
+      return commands.executeCommand([cmd], cmd_args)
   except UnknownCommandError:
       pass
 
@@ -140,13 +140,13 @@ def main():
 #     shortcut = 'run'
   if shortcut:
     LOGGER.debug('Trying shortcut %r' % shortcut)
-    return executeCommand([shortcut], [cmd] + cmd_args)
+    return commands.executeCommand([shortcut], [cmd] + cmd_args)
   else:
     LOGGER.debug('No shortcut found for %r' % cmd)
 
   # Not sure what to do at this point, so advise the user and exit
   LOGGER.info("Unknown command.  Calling 'tau help %s' to get advice." % cmd)
-  return executeCommand(['help'], [cmd])
+  return commands.executeCommand(['help'], [cmd])
   
 # Command line execution
 if __name__ == "__main__":

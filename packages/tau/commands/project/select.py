@@ -39,7 +39,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 from tau import EXIT_SUCCESS
 from logger import getLogger
 from error import InternalError
-from arguments import getParserFromModel, SUPPRESS
+from arguments import args.getParserFromModel, SUPPRESS
 from model.project import Project
 from model.target import Target
 from model.application import Application
@@ -47,7 +47,7 @@ from model.measurement import Measurement
 from model.experiment import Experiment
 
 
-LOGGER = getLogger(__name__)
+LOGGER = logger.getLogger(__name__)
 
 SHORT_DESCRIPTION = "Select project components to form a new experiment."
 
@@ -62,7 +62,7 @@ HELP = """
 '%(command)s' page to be written.
 """ % {'command': COMMAND}
 
-PARSER = getParserFromModel(Project,
+PARSER = args.getParserFromModel(Project,
                             prog=COMMAND, 
                             usage=USAGE, 
                             description=SHORT_DESCRIPTION)

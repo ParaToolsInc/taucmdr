@@ -36,14 +36,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 # TAU modules
-from tau import EXIT_SUCCESS
-from logger import getLogger
-from commands import executeCommand
-from arguments import getParser
+import logger
+import commands
+import arguments as args
 from model.application import Application
 
 
-LOGGER = getLogger(__name__)
+LOGGER = logger.getLogger(__name__)
 
 SHORT_DESCRIPTION = "Delete application configurations."
 
@@ -60,7 +59,7 @@ HELP = """
 
 _arguments = [ (('name',), {'help': "Name of application configuration to delete",
                             'metavar': '<application_name>'}) ]  
-PARSER = getParser(_arguments,
+PARSER = args.getParser(_arguments,
                    prog=COMMAND, 
                    usage=USAGE % {'command': COMMAND}, 
                    description=SHORT_DESCRIPTION)
@@ -86,4 +85,4 @@ def main(argv):
   Application.delete({'name': name})
   LOGGER.info('Deleted application %r' % name)
   
-  return executeCommand(['application', 'list'], [])
+  return commands.executeCommand(['application', 'list'], [])

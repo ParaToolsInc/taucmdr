@@ -44,12 +44,12 @@ from environment import USER_PREFIX
 from logger import getLogger, LINE_WIDTH
 from util import pformatList, pformatDict
 from error import ConfigurationError
-from arguments import getParser, SUPPRESS
+from arguments import args.getParser, SUPPRESS
 from texttable import Texttable
 from model.target import Target
 
 
-LOGGER = getLogger(__name__)
+LOGGER = logger.getLogger(__name__)
 
 SHORT_DESCRIPTION = "List target configurations or show configuration details."
 
@@ -68,7 +68,7 @@ _arguments = [(('names',), {'help': "If given, show only targets with this name"
                            'metavar': 'target_name', 
                            'nargs': '*',
                            'default': SUPPRESS})]
-PARSER = getParser(_arguments,
+PARSER = args.getParser(_arguments,
                    prog=COMMAND, 
                    usage=USAGE, 
                    description=SHORT_DESCRIPTION)
