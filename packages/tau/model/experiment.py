@@ -36,6 +36,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 # TAU modules
+import cf.tau
 import logger
 import settings
 import error
@@ -77,18 +78,36 @@ class Experiment(controller.Controller):
   }
   
   def onCreate(self):
-    self.select()
+    pass
   
   def onDelete(self):
     if self.isSelected():
       settings.unset('experiment_id')
   
   def select(self):
-    from cf import tau
     if not self.eid:
       raise error.InternalError('Tried to select an experiment without an eid')
     settings.set('experiment_id', self.eid)
-
+  
+  def isSelected(self):
+    if self.eid:
+      return settings.get('experiment_id') == self.eid
+    return False
+  
+  @classmethod
+  def getSelected(cls):
+    experiment_id = settings.get('experiment_id')
+    if experiment_id:
+      experiment = cls.one(eid=experiment_id)
+      if not experiment:
+        raise error.InternalError('Invalid experiment ID: %r' % experiment_id)
+      return experiment
+    return None
+  
+  def bootstrap(self, compiler_cmd):
+    """
+    Installs all software required to perform the experiment
+    """
     self.populate()
     prefix = self['project']['prefix']
     try:
@@ -99,22 +118,4 @@ class Experiment(controller.Controller):
     target = self['target']
     tau_src = target['tau']
     arch = target['host_arch']
-    tau.initialize(prefix, tau_src, arch=arch)
-
-  
-  def isSelected(self):
-    if self.eid:
-      return settings.get('experiment_id') == self.eid
-    return False
-  
-  @classmethod
-  def getSelected(cls):
-    experiment_id = settings.get('experiment_id')
-    LOGGER.debug('experiment_id: %r' % experiment_id)
-    if experiment_id:
-      experiment = cls.one(eid=experiment_id)
-      if not experiment:
-        raise error.InternalError('Invalid experiment ID: %r' % experiment_id)
-      return experiment
-    return None
-  
+    cf.tau.initialize(prefix, tau_src, arch=arch, compiler_cmd=compiler_cmd)

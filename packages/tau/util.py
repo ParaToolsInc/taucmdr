@@ -75,13 +75,16 @@ def which(program):
   fpath, _ = os.path.split(program)
   if fpath:
     if is_exec(program):
+      LOGGER.debug("which(%s) = '%s'" % (program, program))
       return program
   else:
     for path in environment.PATH:
       path = path.strip('"')
       exe_file = os.path.join(path, program)
       if is_exec(exe_file):
+        LOGGER.debug("which(%s) = '%s'" % (program, exe_file))
         return exe_file
+  LOGGER.debug("which(%s): command not found" % program)
   return None
 
 
