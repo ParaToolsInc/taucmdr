@@ -49,7 +49,7 @@ from error import InternalError, PackageError, ConfigurationError
 from registry import getRegistry
 
 
-LOGGER = getLogger(__name__)
+LOGGER = logger.getLogger(__name__)
 
 
 class BfdPackage(Package):

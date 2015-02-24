@@ -35,20 +35,18 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-# System modules
-
 # TAU modules
-from logger import getLogger, logging_streams
-from error import ConfigurationError
-from cf import tau
+import cf
+import logger
+import error
 
-LOGGER = getLogger(__name__)
+LOGGER = logger.getLogger(__name__)
 
 
 class Compiler(object):
   def __init__(self, cmd, role, family, language):
     self.cmd = cmd
-    self.tau_cmd = tau.COMPILER_WRAPPERS[role]
+    self.tau_cmd = cf.tau.COMPILER_WRAPPERS[role]
     self.family = family
     self.language = language
     self.short_descr = "%s Compiler." % language

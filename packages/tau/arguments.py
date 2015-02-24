@@ -89,7 +89,7 @@ class ParseBooleanAction(argparse.Action):
     setattr(namespace, self.dest, bool_value)
 
 
-def getParser(arguments, prog=None, usage=None, description=None, epilog=None):
+def args.getParser(arguments, prog=None, usage=None, description=None, epilog=None):
   """
   Builds and argparse.ArgumentParser from the given arguments
   """
@@ -104,7 +104,7 @@ def getParser(arguments, prog=None, usage=None, description=None, epilog=None):
   return parser
 
 
-def getParserFromModel(model, use_defaults=True,
+def args.getParserFromModel(model, use_defaults=True,
                        prog=None, usage=None, description=None, epilog=None):
   """
   Builds an argparse.ArgumentParser from a model's attributes

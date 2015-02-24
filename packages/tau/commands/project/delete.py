@@ -38,12 +38,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # TAU modules
 from tau import EXIT_SUCCESS
 from logger import getLogger
-from commands import executeCommand
-from arguments import getParser
+from commands import commands.executeCommand
+from arguments import args.getParser
 from model.project import Project
 
 
-LOGGER = getLogger(__name__)
+LOGGER = logger.getLogger(__name__)
 
 SHORT_DESCRIPTION = "Delete project configurations."
 
@@ -60,7 +60,7 @@ HELP = """
 
 _arguments = [ (('name',), {'help': "Name of project configuration to delete",
                             'metavar': '<project_name>'}) ]  
-PARSER = getParser(_arguments,
+PARSER = args.getParser(_arguments,
                    prog=COMMAND, 
                    usage=USAGE % {'command': COMMAND}, 
                    description=SHORT_DESCRIPTION)
@@ -86,4 +86,4 @@ def main(argv):
   Project.delete({'name': name})
   LOGGER.info('Deleted project %r' % name)
   
-  return executeCommand(['project', 'list'], [])
+  return commands.executeCommand(['project', 'list'], [])

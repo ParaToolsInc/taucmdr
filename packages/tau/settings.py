@@ -41,7 +41,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 from logger import getLogger
 from model.setting import Setting
 
-LOGGER = getLogger(__name__)
+LOGGER = logger.getLogger(__name__)
 
 _data = {}
 

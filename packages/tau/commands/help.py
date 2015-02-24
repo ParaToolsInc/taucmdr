@@ -43,11 +43,11 @@ import sys
 # TAU modules
 from tau import HELP_CONTACT, EXIT_SUCCESS
 from logger import getLogger
-from commands import executeCommand, UnknownCommandError
-from arguments import getParser, REMAINDER
+from commands import commands.executeCommand, UnknownCommandError
+from arguments import args.getParser, REMAINDER
 
 
-LOGGER = getLogger(__name__)
+LOGGER = logger.getLogger(__name__)
 
 _name_parts = __name__.split('.')[2:]
 COMMAND = ' '.join(['tau'] + _name_parts)
@@ -66,7 +66,7 @@ Show help for a command line or file.
 _arguments = [ (('command',), {'help': "A TAU command, system command, or file",
                                'metavar': '{<command>|<file_name>}',
                                'nargs': REMAINDER})]
-PARSER = getParser(_arguments,
+PARSER = args.getParser(_arguments,
                    prog=COMMAND, 
                    usage=USAGE, 
                    description=SHORT_DESCRIPTION)

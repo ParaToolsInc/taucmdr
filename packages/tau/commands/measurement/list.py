@@ -44,11 +44,11 @@ from environment import USER_PREFIX
 from logger import getLogger, LINE_WIDTH
 from util import pformatList, pformatDict
 from error import ConfigurationError
-from arguments import getParser, SUPPRESS
+from arguments import args.getParser, SUPPRESS
 from model.measurement import Measurement
 
 
-LOGGER = getLogger(__name__)
+LOGGER = logger.getLogger(__name__)
 
 SHORT_DESCRIPTION = "List measurement configurations or show configuration details."
 
@@ -67,7 +67,7 @@ _arguments = [(('names',), {'help': "If given, show details for the measurement 
                            'metavar': 'measurement_name', 
                            'nargs': '*',
                            'default': SUPPRESS})]
-PARSER = getParser(_arguments,
+PARSER = args.getParser(_arguments,
                    prog=COMMAND, 
                    usage=USAGE, 
                    description=SHORT_DESCRIPTION)

@@ -45,7 +45,7 @@ from logger import getLogger
 from error import ConfigurationError
 from pprint import pprint
 
-LOGGER = getLogger(__name__)
+LOGGER = logger.getLogger(__name__)
 
 _commands = {__name__: {}}
 
@@ -103,7 +103,7 @@ def getCommands(root=__name__):
   return _lookup(root.split('.'), _commands)
 
 
-def getCommandsHelp(root=__name__):
+def commands.getCommandsHelp(root=__name__):
   """
   Builds listing of command names with short description
   """
@@ -117,7 +117,7 @@ def getCommandsHelp(root=__name__):
   return '\n'.join(parts)
 
 
-def executeCommand(cmd, cmd_args=[]):
+def commands.executeCommand(cmd, cmd_args=[]):
   """
   Import the command module and run its main routine
   """
@@ -149,10 +149,10 @@ def executeCommand(cmd, cmd_args=[]):
           raise # We finally give up
         parent = cmd[:-1]
         LOGGER.debug('Getting help from parent command %r' % parent)
-        return executeCommand(parent, ['--help'])
+        return commands.executeCommand(parent, ['--help'])
       else:
         LOGGER.debug('Resolved ambiguous command %r to %r' % (cmd, resolved))
-        return executeCommand(resolved, cmd_args)
+        return commands.executeCommand(resolved, cmd_args)
     except AttributeError:
       raise InternalError("'main(argv)' undefined in command %r" % cmd)
     else:

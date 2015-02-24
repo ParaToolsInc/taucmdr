@@ -36,14 +36,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 # TAU modules
-from tau import EXIT_SUCCESS
-from logger import getLogger
-from commands import executeCommand
-from arguments import getParserFromModel, SUPPRESS
+import logger
+import commands
+import arguments as args
 from model.application import Application
 
 
-LOGGER = getLogger(__name__)
+LOGGER = logger.getLogger(__name__)
 
 SHORT_DESCRIPTION = "Modify an existing application configuration."
 
@@ -58,7 +57,7 @@ HELP = """
 '%(command)s' page to be written.
 """ % {'command': COMMAND}
 
-PARSER = getParserFromModel(Application,
+PARSER = args.getParserFromModel(Application,
                             use_defaults=False,
                             prog=COMMAND, 
                             usage=USAGE,
@@ -99,4 +98,4 @@ def main(argv):
   
   Application.update(updates, {'name': name})
   
-  return executeCommand(['application', 'list'], [args.name])
+  return commands.executeCommand(['application', 'list'], [args.name])
