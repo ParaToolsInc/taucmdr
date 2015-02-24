@@ -41,6 +41,7 @@ import sys
 # TAU modules
 from tau import MINIMUM_PYTHON_VERSION, EXIT_FAILURE, PROJECT_URL
 from commands import getCommands, getCommandsHelp, executeCommand, UnknownCommandError
+from commands import build
 from logger import getLogger, setLogLevel, getLogLevel
 from arguments import getParser, REMAINDER
 
@@ -130,18 +131,18 @@ def main():
       pass
 
   # Check shortcuts
-#     shortcut = None
-#     if build.isKnownCompiler(cmd):
-#         shortcut = 'build'
-#     elif show.isKnownFileFormat(cmd):
-#         shortcut = 'show'
-#     elif run.isExecutable(cmd):
-#         shortcut = 'run'
-#     if shortcut:
-#         LOGGER.debug('Trying shortcut %r' % shortcut)
-#         return executeCommand([shortcut], [cmd] + cmd_args)
-#     else:
-#         LOGGER.debug('No shortcut found for %r' % cmd)
+  shortcut = None
+  if build.isKnownCompiler(cmd):
+    shortcut = 'build'
+#   elif show.isKnownFileFormat(cmd):
+#     shortcut = 'show'
+#   elif run.isExecutable(cmd):
+#     shortcut = 'run'
+  if shortcut:
+    LOGGER.debug('Trying shortcut %r' % shortcut)
+    return executeCommand([shortcut], [cmd] + cmd_args)
+  else:
+    LOGGER.debug('No shortcut found for %r' % cmd)
 
   # Not sure what to do at this point, so advise the user and exit
   LOGGER.info("Unknown command.  Calling 'tau help %s' to get advice." % cmd)

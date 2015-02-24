@@ -110,7 +110,7 @@ def download(src, dest):
       if cmd:
         ret = subprocess.call(cmd, stdout=sys.stdout, stderr=sys.stderr)
         if ret != 0:
-          LOGGER.warning("%s failed to download '%s'" % (cmd[0], src))
+          LOGGER.warning("%s failed to download '%s'.  Retrying with a different method..." % (cmd[0], src))
         else:
           return ret
     # Fallback: this is usually **much** slower than curl or wget
