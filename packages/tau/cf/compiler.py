@@ -39,47 +39,55 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import cf
 import logger
 import error
+from _dbus_bindings import Dictionary
+from matplotlib.fontconfig_pattern import family_escape
 
 LOGGER = logger.getLogger(__name__)
 
 
 class Compiler(object):
+  """
+  A compiler command
+  """
   def __init__(self, cmd, role, family, language):
-    self.cmd = cmd
-    self.tau_cmd = cf.tau.COMPILER_WRAPPERS[role]
+    self.command = cmd
+    self.role = role
     self.family = family
     self.language = language
+    self.tau_wrapper = cf.tau.COMPILER_WRAPPERS[role]
     self.short_descr = "%s Compiler." % language
     self.usage = "tau build %s [args ...]" % cmd
-    self.help = "Invokes the TAU compiler wrapper script '%s' for %s." % (self.tau_cmd, cmd)
-    
+    self.help = "Invokes the TAU compiler wrapper script '%s' for %s." % (self.tau_wrapper, self.command)
+  
+  def __repr__(self):
+    return repr(self.__dict__)
+
 
 cc = Compiler('cc', 'CC', 'system', 'C')
 c_plus_plus = Compiler('c++', 'CXX', 'system', 'C++')
-f77 = Compiler('f77', 'F77', 'system', 'FORTRAN77')
-f90 = Compiler('f90', 'F90', 'system', 'Fortran90')
-ftn = Compiler('ftn', 'F90', 'system', 'Fortran90')
+f77 = Compiler('f77', 'FC', 'system', 'FORTRAN77')
+f90 = Compiler('f90', 'FC', 'system', 'Fortran90')
+ftn = Compiler('ftn', 'FC', 'system', 'Fortran90')
 
 gcc = Compiler('gcc', 'CC', 'GNU', 'C')
 g_plus_plus = Compiler('g++', 'CXX', 'GNU', 'C++')
-gfortran = Compiler('gfortran', 'F90', 'GNU', 'Fortran90')
+gfortran = Compiler('gfortran', 'FC', 'GNU', 'Fortran90')
 
 icc = Compiler('icc', 'CC', 'Intel', 'C')
 icpc = Compiler('icpc', 'CXX', 'Intel', 'C++')
-ifort = Compiler('ifort', 'F90', 'Intel', 'Fortran90')
+ifort = Compiler('ifort', 'FC', 'Intel', 'Fortran90')
 
 pgcc = Compiler('pgcc', 'CC', 'Portland Group', 'C')
 pgCC = Compiler('pgCC', 'CXX', 'Portland Group', 'C++')
-pgf77 = Compiler('pgf77', 'F77', 'Portland Group', 'FORTRAN77')
-pgf90 = Compiler('ptf90', 'F90', 'Portland Group', 'Fortran90')
+pgf77 = Compiler('pgf77', 'FC', 'Portland Group', 'FORTRAN77')
+pgf90 = Compiler('ptf90', 'FC', 'Portland Group', 'Fortran90')
 
 mpicc = Compiler('mpicc', 'CC', 'MPI', 'C')
 mpicxx = Compiler('mpicxx', 'CXX', 'MPI', 'C++')
 mpic_plus_plus = Compiler('mpic++', 'CXX', 'MPI', 'C++')
 mpiCC = Compiler('mpiCC', 'CXX', 'MPI', 'C++')
-mpif77 = Compiler('mpif77', 'F77', 'MPI', 'FORTRAN77')
-mpif90 = Compiler('mpif90', 'F90', 'MPI', 'Fortran90')
-
+mpif77 = Compiler('mpif77', 'FC', 'MPI', 'FORTRAN77')
+mpif90 = Compiler('mpif90', 'FC', 'MPI', 'Fortran90')
 
 COMPILERS = {'cc': cc,
              'c++': c_plus_plus,
@@ -103,5 +111,21 @@ COMPILERS = {'cc': cc,
              'mpif77': mpif77,
              'mpif90': mpif90}
 
-def getFamily(roles):
-  pass
+
+def getFamily(cmd):
+  LOGGER.debug("Getting compiler family for '%s'" % cmd)
+  try:
+    compiler = COMPILERS[cmd]
+  except KeyError:
+    raise error.InternalError("Invalid compiler command: '%s'" % cmd)
+  family = compiler.family
+  found = {}
+  for comp in COMPILERS.itervalues():
+    if comp.family == family:
+      try:
+        found[comp.role].append(comp)
+      except KeyError:
+        found[comp.role] = [comp]
+  LOGGER.debug('Found compiler family %r' % found)
+  return found
+      

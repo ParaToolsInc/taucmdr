@@ -56,8 +56,7 @@ DEFAULT_SOURCE = 'http://tau.uoregon.edu/tau.tgz'
 
 COMPILER_WRAPPERS = {'CC': 'tau_cc.sh',
                      'CXX': 'tau_cxx.sh',
-                     'F77': 'tau_f77.sh',
-                     'F90': 'tau_f90.sh',
+                     'FC': 'tau_f90.sh',
                      'UPC': 'tau_upc.sh'}
 
 COMMANDS = ['jumpshot',
@@ -139,9 +138,20 @@ def _detectDefaultDeviceArch():
   """
   return None
 DEFAULT_DEVICE_ARCH = _detectDefaultDeviceArch()
- 
 
-def verifyInstallation(prefix, arch):
+def _getFortranConfigureFlag(compiler):
+  if compiler.family != 'MPI':
+     family_map = {'GNU': 'gfortran',
+                   'Intel': 'intel'}
+     try:
+       return family_map[compiler.family]
+     except KeyError:
+       raise InternalError("Unknown compiler family for Fortran: '%s'" % compiler.family)
+  else:
+    # TODO:  Recognize family from MPI compiler
+    raise InternalError("Unknown compiler family for Fortran: '%s'" % compiler.family)
+
+def verifyInstallation(prefix, arch, cc=None, cxx=None, fortran=None):
   """
   Returns True if there is a working TAU installation at 'prefix' or raisestau.
   a error.ConfigurationError describing why that installation is broken.
@@ -187,7 +197,8 @@ def verifyInstallation(prefix, arch):
 
 
 def initialize(prefix, src, force_reinitialize=False, 
-               arch=None, compiler_cmd=None):
+               arch=None, 
+               compiler_cmd=None):
   """
   TODO: Docs
   """
@@ -195,17 +206,36 @@ def initialize(prefix, src, force_reinitialize=False,
   if not arch:
     arch = detectDefaultHostArch()
   LOGGER.debug("Initializing TAU at '%s' from '%s' with arch=%s" % (tau_prefix, src, arch))
-  
+
   # Check compilers
+  cc = None
+  cxx = None
+  fortran = None
   if compiler_cmd:
     family = cf.compiler.getFamily(compiler_cmd[0])
-      
-      
+    for comp in family['CC']:
+      if util.which(comp.command):
+        cc = comp.command
+        break
+    if not cc:
+      raise error.ConfigurationError("Cannot find C compiler command!")
+    LOGGER.debug('Found CC=%s' % cc)
+    for comp in family['CXX']:
+      if util.which(comp.command):
+        cxx = comp.command
+        break
+    if not cxx:
+      raise error.ConfigurationError("Cannot find C++ compiler command!")
+    LOGGER.debug('Found CXX=%s' % cxx)
+    for comp in family['FC']:
+      if util.which(comp.command):
+        # TAU's configure script has a goofy way of specifying the fortran compiler
+        fortran = _getFortranConfigureFlag(comp)
+    LOGGER.debug('Found FC=%s' % fortran)
   
-
   # Check if the installation is already initialized
   try:
-    verifyInstallation(tau_prefix, arch=arch)
+    verifyInstallation(tau_prefix, arch=arch, cc=cc, cxx=cxx, fortran=fortran)
   except error.ConfigurationError, err:
     LOGGER.debug("Invalid installation: %s" % err)
     pass
@@ -226,10 +256,8 @@ def initialize(prefix, src, force_reinitialize=False,
       raise error.ConfigurationError("Cannot acquire source file '%s'" % src,
                                "Check that the file or directory is accessable")
     finally:
-      try:
-        os.remove(dst)
-      except:
-        pass
+      try: os.remove(dst)
+      except: pass
   
     # Initialize installation with a minimal configuration
     prefix_flag = '-prefix=%s' % tau_prefix
