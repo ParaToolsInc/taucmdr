@@ -36,10 +36,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 # TAU modules
-from tau import EXIT_SUCCESS
-from logger import getLogger
-from commands import commands.executeCommand
-from arguments import args.getParserFromModel, SUPPRESS
+import logger
+import commands
+import arguments as args
 from model.project import Project
 from model.target import Target
 from model.application import Application
@@ -65,47 +64,47 @@ _arguments = [(('--rename',),
                {'help': "Rename the project configuration",
                 'metavar': '<new_name>',
                 'dest': 'new_name',
-                'default': SUPPRESS}),
+                'default': args.SUPPRESS}),
               (('--add',), 
                {'help': "Add target, application, or measurement configurations to the project",
                 'metavar': '<conf>',
                 'nargs': '+',
-                'default': SUPPRESS}),
+                'default': args.SUPPRESS}),
               (('--remove',), 
                {'help': "Remove target, application, or measurement configurations from the project",
                 'metavar': '<conf>',
                 'nargs': '+',
-                'default': SUPPRESS}),
+                'default': args.SUPPRESS}),
               (('--add-targets',), 
                {'help': "Add target configurations to the project",
                 'metavar': '<target>',
                 'nargs': '+',
-                'default': SUPPRESS}),
+                'default': args.SUPPRESS}),
               (('--add-applications',), 
                {'help': "Add application configurations to the project",
                 'metavar': '<application>',
                 'nargs': '+',
-                'default': SUPPRESS}),
+                'default': args.SUPPRESS}),
               (('--add-measurements',), 
                {'help': "Add measurement configurations to the project",
                 'metavar': '<measurement>',
                 'nargs': '+',
-                'default': SUPPRESS}),
+                'default': args.SUPPRESS}),
               (('--remove-targets',), 
                {'help': "Remove target configurations from the project",
                 'metavar': '<target>',
                 'nargs': '+',
-                'default': SUPPRESS}),
+                'default': args.SUPPRESS}),
               (('--remove-applications',), 
                {'help': "Remove application configurations from the project",
                 'metavar': '<application>',
                 'nargs': '+',
-                'default': SUPPRESS}),
+                'default': args.SUPPRESS}),
               (('--remove-measurements',), 
                {'help': "Remove measurement configurations from the project",
                 'metavar': '<measurement>',
                 'nargs': '+',
-                'default': SUPPRESS})]
+                'default': args.SUPPRESS})]
 
 PARSER = args.getParserFromModel(Project,
                             prog=COMMAND,

@@ -36,18 +36,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 # System modules
-import os
 import sys
 import subprocess
-from pkgutil import walk_packages
-from textwrap import dedent
 
 # TAU modules
-from logger import getLogger
-from arguments import args.getParser, REMAINDER
-from commands import commands.getCommandsHelp, commands.executeCommand
-from cf import tau
-from cf.compiler import COMPILERS
+import cf.compiler
+import logger
+import commands
+import arguments as args
 from model.experiment import Experiment
 
 
@@ -59,7 +55,7 @@ COMMAND = ' '.join(['tau'] + _name_parts)
 
 def _compilersHelp():
   parts = ['  %s  %s' % ('{:<15}'.format(comp.cmd), comp.short_descr) 
-           for comp in COMPILERS.itervalues()]
+           for comp in cf.compiler.COMPILERS.itervalues()]
   parts.sort()
   return '\n'.join(parts)
 
@@ -67,7 +63,7 @@ def isKnownCompiler(cmd):
   """
   Returns True if cmd is a known compiler command
   """
-  known = COMPILERS.keys()
+  known = cf.compiler.COMPILERS.keys()
 #   known.extend([n for _, n, _ in 
 #                 walk_packages(sys.modules[__name__].__path__)])
   return cmd in known
@@ -96,12 +92,12 @@ _arguments = [ (('cmd',), {'help': "Compiler or linker command, e.g. 'gcc'",
                            'metavar': '<command>'}),
                (('cmd_args',), {'help': "Compiler arguments",
                                 'metavar': 'args',
-                                'nargs': REMAINDER})]
+                                'nargs': args.REMAINDER})]
 PARSER = args.getParser(_arguments,
-                   prog=COMMAND,
-                   usage=USAGE, 
-                   description=SHORT_DESCRIPTION,
-                   epilog=USAGE_EPILOG)
+                        prog=COMMAND,
+                        usage=USAGE, 
+                        description=SHORT_DESCRIPTION,
+                        epilog=USAGE_EPILOG)
 
 def getUsage():
   return PARSER.format_help() 
@@ -126,7 +122,7 @@ def main(argv):
   
   
   
-  if cmd in COMPILERS:
+  if cmd in cf.compiler.COMPILERS:
    
     # Compile the project if needed
     proj.compile()

@@ -35,23 +35,20 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-# System modules
-import os
-import md5
-
 # TAU modules
+import logger
 import settings
-from logger import getLogger
-from error import InternalError, ConfigurationError
-from controller import Controller
-from util import mkdirp
+import error
+import controller
+import util
 from model.project import Project
 from model.target import Target
 
 
 LOGGER = logger.getLogger(__name__)
 
-class Experiment(Controller):
+
+class Experiment(controller.Controller):
   """
   Experiment data model controller
   """
@@ -89,16 +86,16 @@ class Experiment(Controller):
   def select(self):
     from cf import tau
     if not self.eid:
-      raise InternalError('Tried to select an experiment without an eid')
+      raise error.InternalError('Tried to select an experiment without an eid')
     settings.set('experiment_id', self.eid)
 
     self.populate()
     prefix = self['project']['prefix']
     try:
-      mkdirp(prefix)
+      util.mkdirp(prefix)
     except:
-      raise ConfigurationError('Cannot create directory %r' % prefix, 
-                               'Check that you have `write` access')
+      raise error.ConfigurationError('Cannot create directory %r' % prefix, 
+                                     'Check that you have `write` access')
     target = self['target']
     tau_src = target['tau']
     arch = target['host_arch']
@@ -117,7 +114,7 @@ class Experiment(Controller):
     if experiment_id:
       experiment = cls.one(eid=experiment_id)
       if not experiment:
-        raise InternalError('Invalid experiment ID: %r' % experiment_id)
+        raise error.InternalError('Invalid experiment ID: %r' % experiment_id)
       return experiment
     return None
   

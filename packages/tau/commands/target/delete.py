@@ -36,10 +36,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 # TAU modules
-from tau import EXIT_SUCCESS
-from logger import getLogger
-from commands import commands.executeCommand
-from arguments import args.getParser
+import logger
+import commands
+import arguments as args
 from model.target import Target
 
 

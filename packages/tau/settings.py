@@ -35,15 +35,15 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-# System modules
-
 # TAU modules
-from logger import getLogger
+import logger
 from model.setting import Setting
+
 
 LOGGER = logger.getLogger(__name__)
 
 _data = {}
+
 
 def _load():
   for record in Setting.all():

@@ -39,12 +39,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import os
 import sys
 
-
 # TAU modules
-from tau import HELP_CONTACT, EXIT_SUCCESS
-from logger import getLogger
-from commands import commands.executeCommand, UnknownCommandError
-from arguments import args.getParser, REMAINDER
+import tau
+import logger
+import commands
+import arguments as args
 
 
 LOGGER = logger.getLogger(__name__)
@@ -65,14 +64,14 @@ Show help for a command line or file.
 
 _arguments = [ (('command',), {'help': "A TAU command, system command, or file",
                                'metavar': '{<command>|<file_name>}',
-                               'nargs': REMAINDER})]
+                               'nargs': args.REMAINDER})]
 PARSER = args.getParser(_arguments,
-                   prog=COMMAND, 
-                   usage=USAGE, 
-                   description=SHORT_DESCRIPTION)
+                        prog=COMMAND, 
+                        usage=USAGE, 
+                        description=SHORT_DESCRIPTION)
 
 
-_GENERIC_HELP = "See 'tau --help' or contact %s for assistance" % HELP_CONTACT
+_GENERIC_HELP = "See 'tau --help' or contact %s for assistance" % tau.HELP_CONTACT
 
 _KNOWN_FILES = {'makefile': ("makefile script", 
                              "See 'tau make --help' for help building with make"),
@@ -145,7 +144,7 @@ def exitWithHelp(module_name):
 %(bar)s""" % {'bar': '-'*80, 
               'usage': module.getUsage(),
               'help': module.getHelp()})
-  return EXIT_SUCCESS
+  return tau.EXIT_SUCCESS
 
 
 def main(argv):
@@ -175,7 +174,7 @@ def main(argv):
     else:
       article = 'an' if desc[0] in 'aeiou' else 'a'
       hint = '%r is %s %s.\n%s.' % (cmd, article, desc, hint)
-      raise UnknownCommandError(cmd, hint)
+      raise commands.UnknownCommandError(cmd, hint)
     
     # Get the filetype and try to be helpful.
     type, encoding = _guess_filetype(cmd)
@@ -190,9 +189,9 @@ def main(argv):
         desc, hint = _fuzzy_index(type_hints, subtype)
         article = 'an' if desc[0] in 'aeiou' else 'a'
         hint = '%r is %s %s.\n%s.' % (cmd, article, desc, hint)
-      raise UnknownCommandError(cmd, hint)
+      raise commands.UnknownCommandError(cmd, hint)
     else:
-      raise UnknownCommandError(cmd)
+      raise commands.UnknownCommandError(cmd)
   
   # Not a file, not a command, let's just show TAU usage and exit
   return exitWithHelp('__main__')

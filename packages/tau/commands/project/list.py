@@ -39,13 +39,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 from texttable import Texttable
 
 # TAU modules
-from tau import EXIT_SUCCESS
-from environment import USER_PREFIX
-from logger import getLogger, LINE_WIDTH
-from util import pformatList, pformatDict
-from error import ConfigurationError
-from arguments import args.getParser, SUPPRESS
-from texttable import Texttable
+import tau
+import logger
+import arguments as args
+import environment as env
 from model.project import Project
 
 
@@ -67,7 +64,7 @@ HELP = """
 _arguments = [(('names',), {'help': "If given, show details for this project",
                            'metavar': 'project_name', 
                            'nargs': '*',
-                           'default': SUPPRESS})]
+                           'default': args.SUPPRESS})]
 PARSER = args.getParser(_arguments,
                    prog=COMMAND, 
                    usage=USAGE, 
@@ -100,11 +97,12 @@ def main(argv):
       if t:
         found.append(t)
 
-  title = '{:=<{}}'.format('== Projects (%s) ==' % USER_PREFIX, LINE_WIDTH)
+  title = '{:=<{}}'.format('== Projects (%s) ==' % env.USER_PREFIX, 
+                           logger.LINE_WIDTH)
   if not found:
     listing = "No projects. See 'tau project create --help'"
   else:
-    table = Texttable(LINE_WIDTH)
+    table = Texttable(logger.LINE_WIDTH)
     headers = ['Name', 'Targets', 'Applications', 'Measurements', 'Home']
     rows = [headers]
     for p in found:
@@ -118,4 +116,4 @@ def main(argv):
     listing = table.draw()
     
   LOGGER.info('\n'.join([title, '', listing, '']))
-  return EXIT_SUCCESS
+  return tau.EXIT_SUCCESS

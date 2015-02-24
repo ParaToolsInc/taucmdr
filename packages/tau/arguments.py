@@ -37,10 +37,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # System modules
 import argparse
-from copy import copy
 
 # TAU modules
-from logger import LINE_WIDTH
+import logger
+
 
 SUPPRESS = argparse.SUPPRESS
 REMAINDER = argparse.REMAINDER
@@ -50,7 +50,7 @@ class ArgparseHelpFormatter(argparse.RawDescriptionHelpFormatter):
   """
   Custom formatter for argparse
   """
-  def __init__(self, prog, indent_increment=2, max_help_position=30, width=LINE_WIDTH):
+  def __init__(self, prog, indent_increment=2, max_help_position=30, width=logger.LINE_WIDTH):
     super(ArgparseHelpFormatter,self).__init__(prog, indent_increment, max_help_position, width)
 
   def _split_lines(self, text, width):
@@ -89,7 +89,7 @@ class ParseBooleanAction(argparse.Action):
     setattr(namespace, self.dest, bool_value)
 
 
-def args.getParser(arguments, prog=None, usage=None, description=None, epilog=None):
+def getParser(arguments, prog=None, usage=None, description=None, epilog=None):
   """
   Builds and argparse.ArgumentParser from the given arguments
   """
@@ -104,7 +104,7 @@ def args.getParser(arguments, prog=None, usage=None, description=None, epilog=No
   return parser
 
 
-def args.getParserFromModel(model, use_defaults=True,
+def getParserFromModel(model, use_defaults=True,
                        prog=None, usage=None, description=None, epilog=None):
   """
   Builds an argparse.ArgumentParser from a model's attributes

@@ -40,11 +40,11 @@ import sys
 import traceback
 
 # TAU modules
-from tau import HELP_CONTACT, EXIT_FAILURE, EXIT_WARNING 
-from logger import getLogger, LOG_LEVEL
+import tau
+import logger
 
 
-LOGGER = logger.getLogger('error')
+LOGGER = logger.getLogger(__name__)
 
 
 class Error(Exception):
@@ -62,7 +62,7 @@ include the output of this command:
 
 tau --log=DEBUG %(cmd)s"""
   
-  def __init__(self, value, hint="Contact %s" % HELP_CONTACT):
+  def __init__(self, value, hint="Contact %s" % tau.HELP_CONTACT):
     self.value = value
     self.hint = hint
     
@@ -74,10 +74,10 @@ tau --log=DEBUG %(cmd)s"""
                                   'hint': 'Hint: %s' % self.hint,
                                   'typename': etype.__name__, 
                                   'cmd': ' '.join([arg for arg in sys.argv[1:]]), 
-                                  'contact': HELP_CONTACT}
+                                  'contact': tau.HELP_CONTACT}
     traceback.print_exception(etype, e, tb)
     LOGGER.critical(message)
-    sys.exit(EXIT_FAILURE)
+    sys.exit(tau.EXIT_FAILURE)
 
 
 class InternalError(Error):
@@ -113,9 +113,9 @@ def excepthook(etype, e, tb):
   """
   if etype == KeyboardInterrupt:
     LOGGER.info('Received keyboard interrupt.  Exiting.')
-    sys.exit(EXIT_WARNING)
+    sys.exit(tau.EXIT_WARNING)
   else:
-    if LOG_LEVEL == 'DEBUG':
+    if logger.LOG_LEVEL == 'DEBUG':
       traceback.print_exception(etype, e, tb)
     try:
       sys.exit(e.handle(etype, e, tb))
@@ -133,8 +133,8 @@ include the output of this command:
 tau --log=DEBUG %(cmd)s""" % {'value': e,
                               'typename': etype.__name__, 
                               'cmd': ' '.join([arg for arg in sys.argv[1:]]), 
-                              'contact': HELP_CONTACT})
-      sys.exit(EXIT_FAILURE)
+                              'contact': tau.HELP_CONTACT})
+      sys.exit(tau.EXIT_FAILURE)
 
 # Set the default exception handler
 sys.excepthook = excepthook

@@ -37,22 +37,21 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # Sytem modules
 import os
-import sys
 from tinydb import TinyDB, where
  
 
 # TAU modules
-from tau import HELP_CONTACT, EXIT_FAILURE
-from environment import USER_PREFIX, SYSTEM_PREFIX
-from logger import getLogger
-from error import InternalError
-from util import mkdirp
+import logger
+import error
+import util
+import error
+import environment as env
 
 
 LOGGER = logger.getLogger(__name__)
 
 
-class StorageError(InternalError):
+class StorageError(error.InternalError):
     """
     Indicates that there is a problem with storage
     """
@@ -69,7 +68,7 @@ class Storage(object):
     """
     self._transaction_count = 0
     try:
-      mkdirp(prefix)
+      util.mkdirp(prefix)
       LOGGER.debug("Created '%s'" % prefix)
     except:
       raise StorageError('Cannot create directory %r' % path, 'Check that you have `write` access')
@@ -218,5 +217,5 @@ class Storage(object):
     return self.db.table(table_name).purge()
 
 
-user_storage = Storage(USER_PREFIX, 'local.json')
-system_storage = Storage(SYSTEM_PREFIX, 'local.json')
+user_storage = Storage(env.USER_PREFIX, 'local.json')
+system_storage = Storage(env.SYSTEM_PREFIX, 'local.json')

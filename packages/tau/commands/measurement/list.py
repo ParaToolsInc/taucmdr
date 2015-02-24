@@ -39,12 +39,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 from texttable import Texttable
 
 # TAU modules
-from tau import EXIT_SUCCESS
-from environment import USER_PREFIX
-from logger import getLogger, LINE_WIDTH
-from util import pformatList, pformatDict
-from error import ConfigurationError
-from arguments import args.getParser, SUPPRESS
+import tau
+import logger
+import arguments as args
+import environment as env
 from model.measurement import Measurement
 
 
@@ -66,11 +64,11 @@ HELP = """
 _arguments = [(('names',), {'help': "If given, show details for the measurement with this name",
                            'metavar': 'measurement_name', 
                            'nargs': '*',
-                           'default': SUPPRESS})]
+                           'default': args.SUPPRESS})]
 PARSER = args.getParser(_arguments,
-                   prog=COMMAND, 
-                   usage=USAGE, 
-                   description=SHORT_DESCRIPTION)
+                        prog=COMMAND, 
+                        usage=USAGE, 
+                        description=SHORT_DESCRIPTION)
 
 
 def getUsage():
@@ -99,20 +97,21 @@ def main(argv):
       if t:
         found.append(t)
 
-  title = '{:=<{}}'.format('== Measurements (%s) ==' % USER_PREFIX, LINE_WIDTH)
+  title = '{:=<{}}'.format('== Measurements (%s) ==' % env.USER_PREFIX, 
+                           logger.LINE_WIDTH)
   if not found:
     listing = "No measurements. See 'tau measurement create --help'"
   else:
     yesno = lambda x: 'Yes' if x else 'No'
-    table = Texttable(LINE_WIDTH)
+    table = Texttable(logger.LINE_WIDTH)
     cols = [('Name', 'r', lambda t: t['name']), 
             ('Profile', 'c', lambda t: yesno(t['profile'])), 
             ('Trace', 'c', lambda t: yesno(t['trace'])), 
             ('Sample', 'c', lambda t: yesno(t['sample'])),
             ('Source Inst.', 'c', lambda t: yesno(t['source_inst'])),
-            ('Compiler Inst.', 'c', lambda t: yesno(t['compiler_inst'])),
+            ('Compiler Inst.', 'c', lambda t: t['compiler_inst']),
             ('MPI', 'c', lambda t: yesno(t['mpi'])),
-            ('OpenMP', 'c', lambda t: yesno(t['openmp'])),
+            ('OpenMP', 'c', lambda t: t['openmp']),
             ('Callpath Depth', 'c', lambda t: t['callpath']),
             ('Mem. Usage', 'c', lambda t: yesno(t['memory_usage'])),
             ('Mem. Alloc', 'c', lambda t: yesno(t['memory_alloc'])),
@@ -129,4 +128,4 @@ def main(argv):
     listing = table.draw()
     
   LOGGER.info('\n'.join([title, '', listing, '']))
-  return EXIT_SUCCESS
+  return tau.EXIT_SUCCESS

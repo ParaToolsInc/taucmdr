@@ -45,13 +45,11 @@ import urllib
 import tarfile
 
 # TAU modules
-from tau import EXIT_FAILURE
-from environment import PATH
-from logger import getLogger
+import logger
+import environment
 
 
 LOGGER = logger.getLogger(__name__)
-
 
 
 def mkdirp(*args):
@@ -79,7 +77,7 @@ def which(program):
     if is_exec(program):
       return program
   else:
-    for path in PATH:
+    for path in environment.PATH:
       path = path.strip('"')
       exe_file = os.path.join(path, program)
       if is_exec(exe_file):

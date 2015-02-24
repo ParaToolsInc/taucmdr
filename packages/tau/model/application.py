@@ -39,11 +39,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import string
 
 # TAU modules
-from controller import Controller, ModelError, ByName
-from arguments import ParseBooleanAction
+import controller as ctl
+import arguments as args
 
 
-class Application(Controller, ByName):
+class Application(ctl.Controller, ctl.ByName):
   """
   Application data model controller
   """
@@ -69,7 +69,7 @@ class Application(Controller, ByName):
                     'nargs': '?',
                     'const': True,
                     'default': False,
-                    'action': ParseBooleanAction})
+                    'action': args.ParseBooleanAction})
     },
     'pthreads': {
       'type': 'boolean',
@@ -80,7 +80,7 @@ class Application(Controller, ByName):
                     'nargs': '?',
                     'const': True,
                     'default': False,
-                    'action': ParseBooleanAction})
+                    'action': args.ParseBooleanAction})
     },
     'mpi': {
       'type': 'boolean',
@@ -91,7 +91,7 @@ class Application(Controller, ByName):
                     'nargs': '?',
                     'const': True,
                     'default': False,
-                    'action': ParseBooleanAction})
+                    'action': args.ParseBooleanAction})
     },
     'cuda': {
       'type': 'boolean',
@@ -102,7 +102,7 @@ class Application(Controller, ByName):
                     'nargs': '?',
                     'const': True,
                     'default': False,
-                    'action': ParseBooleanAction})
+                    'action': args.ParseBooleanAction})
     },
     'shmem': {
       'type': 'boolean',
@@ -113,7 +113,7 @@ class Application(Controller, ByName):
                     'nargs': '?',
                     'const': True,
                     'default': False,
-                    'action': ParseBooleanAction})
+                    'action': args.ParseBooleanAction})
     },
     'mpc': {
       'type': 'boolean',
@@ -124,7 +124,7 @@ class Application(Controller, ByName):
                     'nargs': '?',
                     'const': True,
                     'default': False,
-                    'action': ParseBooleanAction})
+                    'action': args.ParseBooleanAction})
     }
   }
   
@@ -132,6 +132,6 @@ class Application(Controller, ByName):
   
   def onCreate(self):
     if set(self['name']) > Application._valid_name:
-      raise ModelError('%r is not a valid application name.' % self['name'],
-                       'Use only letters, numbers, dot (.), dash (-), and underscore (_).')
+      raise ctl.ModelError('%r is not a valid application name.' % self['name'],
+                           'Use only letters, numbers, dot (.), dash (-), and underscore (_).')
 

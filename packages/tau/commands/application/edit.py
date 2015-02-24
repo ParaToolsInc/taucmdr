@@ -65,7 +65,7 @@ PARSER = args.getParserFromModel(Application,
 PARSER.add_argument('--rename',
                     help="Rename the application configuration",
                     metavar='<new_name>', dest='new_name',
-                    default=SUPPRESS)
+                    default=args.SUPPRESS)
 
 
 def getUsage():

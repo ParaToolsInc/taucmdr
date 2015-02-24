@@ -39,11 +39,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import string
 
 # TAU modules
-from controller import Controller, ModelError, ByName
-from arguments import ParseBooleanAction
+import controller as ctl
+import arguments as args
 
 
-class Measurement(Controller, ByName):
+class Measurement(ctl.Controller, ctl.ByName):
   """
   Measurement data model controller
   """
@@ -70,7 +70,7 @@ class Measurement(Controller, ByName):
                     'nargs': '?',
                     'const': True,
                     'default': True,
-                    'action': ParseBooleanAction})
+                    'action': args.ParseBooleanAction})
     },
     'trace': {
       'type': 'boolean',
@@ -81,7 +81,7 @@ class Measurement(Controller, ByName):
                     'nargs': '?',
                     'const': True,
                     'default': False,
-                    'action': ParseBooleanAction})
+                    'action': args.ParseBooleanAction})
     },
     'sample': {
       'type': 'boolean',
@@ -92,7 +92,7 @@ class Measurement(Controller, ByName):
                     'nargs': '?',
                     'const': True,
                     'default': False,
-                    'action': ParseBooleanAction})
+                    'action': args.ParseBooleanAction})
     },
     'source_inst': {
       'type': 'boolean',
@@ -103,7 +103,7 @@ class Measurement(Controller, ByName):
                     'nargs': '?',
                     'const': True,
                     'default': True,
-                    'action': ParseBooleanAction})
+                    'action': args.ParseBooleanAction})
     },
     'compiler_inst': {
       'type': 'string',
@@ -124,7 +124,7 @@ class Measurement(Controller, ByName):
                     'nargs': '?',
                     'const': True,
                     'default': False,
-                    'action': ParseBooleanAction})
+                    'action': args.ParseBooleanAction})
     },
     'openmp': {
       'type': 'string',
@@ -156,7 +156,7 @@ class Measurement(Controller, ByName):
                     'nargs': '?',
                     'const': True,
                     'default': False,
-                    'action': ParseBooleanAction})
+                    'action': args.ParseBooleanAction})
     },
     'memory_alloc': {
       'type': 'boolean',
@@ -167,7 +167,7 @@ class Measurement(Controller, ByName):
                     'nargs': '?',
                     'const': True,
                     'default': False,
-                    'action': ParseBooleanAction})
+                    'action': args.ParseBooleanAction})
     },
   }
   
@@ -175,6 +175,6 @@ class Measurement(Controller, ByName):
   
   def onCreate(self):
     if set(self['name']) > Measurement._valid_name:
-      raise ModelError('%r is not a valid measurement name.' % self['name'],
-                       'Use only letters, numbers, dot (.), dash (-), and underscore (_).')
+      raise ctl.ModelError('%r is not a valid measurement name.' % self['name'],
+                           'Use only letters, numbers, dot (.), dash (-), and underscore (_).')
 
