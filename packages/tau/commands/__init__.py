@@ -110,9 +110,10 @@ def getCommandsHelp(root=__name__):
   parts = []
   commands = getCommands(root)
   for cmd, subcmds in commands.iteritems():
-    descr = subcmds['__module__'].SHORT_DESCRIPTION
-    name = '{:<12}'.format(cmd)
-    parts.append('  %s  %s' % (name, descr))
+    if cmd != '__module__':
+      descr = subcmds['__module__'].SHORT_DESCRIPTION
+      name = '{:<12}'.format(cmd)
+      parts.append('  %s  %s' % (name, descr))
   return '\n'.join(parts)
 
 

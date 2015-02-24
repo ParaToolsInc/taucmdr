@@ -47,10 +47,15 @@ from environment import PATH
 from util import download, extract
 from logger import getLogger, logging_streams
 from error import ConfigurationError
-
+from cf import compiler
 
 LOGGER = getLogger(__name__)
 
+COMPILER_WRAPPERS = {'CC': 'tau_cc.sh',
+                     'CXX': 'tau_cxx.sh',
+                     'F77': 'tau_f77.sh',
+                     'F90': 'tau_f90.sh',
+                     'UPC': 'tau_upc.sh'}
 
 COMMANDS = ['jumpshot',
             'paraprof',
@@ -134,23 +139,18 @@ def detectDefaultDeviceArch():
   return None
 
 
-def verifyInstallation(prefix, **kwargs):
+def verifyInstallation(prefix, arch):
   """
   Returns True if there is a working TAU installation at 'prefix' or raisestau.
   a ConfigurationError describing why that installation is broken.
   """
-  try:
-    arch = kwargs['arch']
-  except KeyError:
-    LOGGER.debug("'arch' not specified; using default")
-    arch = detectDefaultHostArch()
   LOGGER.debug("Checking TAU installation at '%s' targeting arch '%s'" % (prefix, arch))
   
   if not os.path.exists(prefix):
     raise ConfigurationError("'%s' does not exist" % prefix)
   bin = os.path.join(prefix, arch, 'bin')
   lib = os.path.join(prefix, arch, 'lib')
-      
+
   # Check for all commands
   for cmd in COMMANDS:
     path = os.path.join(bin, cmd)
@@ -184,16 +184,22 @@ def verifyInstallation(prefix, **kwargs):
   return True
 
 
-def initialize(prefix, src, **kwargs):
+def initialize(prefix, src, force_reinitialize=False, 
+               arch=None, compiler_cmd=None):
   """
   TODO: Docs
   """
   tau_prefix = os.path.join(prefix, 'tau')
-  try:
-    arch = kwargs['arch']
-  except KeyError:
+  if not arch:
     arch = detectDefaultHostArch()
   LOGGER.debug("Initializing TAU at '%s' from '%s' with arch=%s" % (tau_prefix, src, arch))
+  
+  # Check compilers
+  if compiler_cmd:
+    family = compiler.getFamily(compiler_cmd[0])
+      
+      
+  
 
   # Check if the installation is already initialized
   try:
@@ -202,7 +208,7 @@ def initialize(prefix, src, **kwargs):
     LOGGER.debug("Invalid installation: %s" % err)
     pass
   else:
-    if '_force' not in kwargs:
+    if not force_reinitialize:
       return
   
   # Control build output

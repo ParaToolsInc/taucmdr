@@ -36,23 +36,48 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 # System modules
+import os
 import sys
+import subprocess
+from pkgutil import walk_packages
+from textwrap import dedent
 
 # TAU modules
 from logger import getLogger
-from commands import getCommands, getCommandsHelp, executeCommand
 from arguments import getParser, REMAINDER
+from commands import getCommandsHelp, executeCommand
+from cf import tau
+from cf.compiler import COMPILERS
+from model.experiment import Experiment
+
 
 LOGGER = getLogger(__name__)
 
 _name_parts = __name__.split('.')[1:]
 COMMAND = ' '.join(['tau'] + _name_parts)
 
-SHORT_DESCRIPTION = "Create and manage application configurations."
+
+def _compilersHelp():
+  parts = ['  %s  %s' % ('{:<15}'.format(comp.cmd), comp.short_descr) 
+           for comp in COMPILERS.itervalues()]
+  parts.sort()
+  return '\n'.join(parts)
+
+def isKnownCompiler(cmd):
+  """
+  Returns True if cmd is a known compiler command
+  """
+  known = COMPILERS.keys()
+#   known.extend([n for _, n, _ in 
+#                 walk_packages(sys.modules[__name__].__path__)])
+  return cmd in known
+
+
+SHORT_DESCRIPTION = "Instrument programs during compilation and/or linking."
 
 USAGE = """
-  %(command)s <subcommand> [options]
-  %(command)s -h | --help
+  %(command)s <command> [args ...]
+  %(command)s -h | --help 
 """ % {'command': COMMAND}
 
 HELP = """
@@ -60,22 +85,20 @@ HELP = """
 """ % {'command': COMMAND}
 
 USAGE_EPILOG = """
-subcommands:
+compiler commands:
+%(simple_descr)s
 %(command_descr)s
-
-See '%(command)s <subcommand> --help' for more information on <subcommand>.
-""" % {'command': COMMAND,
+""" % {'simple_descr': _compilersHelp(), 
        'command_descr': getCommandsHelp(__name__)}
 
 
-
-_arguments = [ (('subcommand',), {'help': "See 'subcommands' below",
-                                  'metavar': '<subcommand>'}),
-               (('options',), {'help': "Options to be passed to <subcommand>",
-                               'metavar': '[options]',
-                               'nargs': REMAINDER})]
+_arguments = [ (('cmd',), {'help': "Compiler or linker command, e.g. 'gcc'",
+                           'metavar': '<command>'}),
+               (('cmd_args',), {'help': "Compiler arguments",
+                                'metavar': 'args',
+                                'nargs': REMAINDER})]
 PARSER = getParser(_arguments,
-                   prog=COMMAND, 
+                   prog=COMMAND,
                    usage=USAGE, 
                    description=SHORT_DESCRIPTION,
                    epilog=USAGE_EPILOG)
@@ -95,6 +118,36 @@ def main(argv):
   args = PARSER.parse_args(args=argv)
   LOGGER.debug('Arguments: %s' % args)
   
-  subcommand = args.subcommand
-  options = args.options
-  return executeCommand(_name_parts + [subcommand], options)
+  cmd = args.cmd
+  cmd_args = args.cmd_args
+  
+  selected = Experiment.getSelected()
+  selected.populate()
+  
+  
+  
+  if cmd in COMPILERS:
+   
+    # Compile the project if needed
+    proj.compile()
+   
+    # Set the environment
+    env = proj.getTauCompilerEnvironment()
+   
+    # Get compiler flags
+    flags = proj.getTauCompilerFlags()
+     
+    # Execute the compiler wrapper script
+    if cmd_args:
+        cmd = [SIMPLE_COMPILERS[compiler].tau_cmd] + flags + cmd_args
+    else:
+        cmd = [SIMPLE_COMPILERS[compiler].cmd]
+         
+    LOGGER.debug('Creating subprocess: cmd=%r, env=%r' % (cmd, env))
+    LOGGER.info('\n'.join(['%s=%s' % i for i in env.iteritems() if i[0].startswith('TAU')]))
+    LOGGER.info(' '.join(cmd))
+    proc = subprocess.Popen(cmd, env=env, stdout=sys.stdout, stderr=sys.stderr)
+    return proc.wait()
+
+  # Execute as a tau command
+  return executeCommand(_name_parts + [cmd], cmd_args)

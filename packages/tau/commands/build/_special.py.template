@@ -35,66 +35,70 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-# System modules
+import os
 import sys
+import subprocess
+import taucmd
+from taucmd.Registry import REGISTRY
+from taucmd.commands.build import TAU_CXX
 
-# TAU modules
-from logger import getLogger
-from commands import getCommands, getCommandsHelp, executeCommand
-from arguments import getParser, REMAINDER
+LOGGER = taucmd.getLogger(__name__)
 
-LOGGER = getLogger(__name__)
-
-_name_parts = __name__.split('.')[1:]
-COMMAND = ' '.join(['tau'] + _name_parts)
-
-SHORT_DESCRIPTION = "Create and manage application configurations."
+SHORT_DESCRIPTION = "A special compiler template."
 
 USAGE = """
-  %(command)s <subcommand> [options]
-  %(command)s -h | --help
-""" % {'command': COMMAND}
+Usage:
+  tau build _special [<args>...]
+"""
 
 HELP = """
-'%(command)s' page to be written.
-""" % {'command': COMMAND}
+'tau build _special' help page to be written.
+"""
 
-USAGE_EPILOG = """
-subcommands:
-%(command_descr)s
+COMMAND = '_special'
 
-See '%(command)s <subcommand> --help' for more information on <subcommand>.
-""" % {'command': COMMAND,
-       'command_descr': getCommandsHelp(__name__)}
-
-
-
-_arguments = [ (('subcommand',), {'help': "See 'subcommands' below",
-                                  'metavar': '<subcommand>'}),
-               (('options',), {'help': "Options to be passed to <subcommand>",
-                               'metavar': '[options]',
-                               'nargs': REMAINDER})]
-PARSER = getParser(_arguments,
-                   prog=COMMAND, 
-                   usage=USAGE, 
-                   description=SHORT_DESCRIPTION,
-                   epilog=USAGE_EPILOG)
+# Set appropriately
+TAU_COMPILER = TAU_CXX
 
 def getUsage():
-  return PARSER.format_help() 
-
+    return USAGE
 
 def getHelp():
-  return HELP
-
+    return HELP
 
 def main(argv):
-  """
-  Program entry point
-  """
-  args = PARSER.parse_args(args=argv)
-  LOGGER.debug('Arguments: %s' % args)
-  
-  subcommand = args.subcommand
-  options = args.options
-  return executeCommand(_name_parts + [subcommand], options)
+    """
+    Program entry point
+    """
+    LOGGER.debug('Arguments: %r' % argv)
+    cmd_args = argv[2:]
+    if not cmd_args:
+        print "ERROR: no options specified"
+        return taucmd.EXIT_FAILURE
+    
+    if not len(REGISTRY):
+        print "There are no TAU projects in %r.  See 'tau project create'." % os.getcwd()
+        return taucmd.EXIT_FAILURE
+
+    # Check project compatibility
+    proj = REGISTRY.getSelectedProject()
+    print 'Using TAU project %r' % proj.getName()
+    if not proj.supportsCompiler(COMMAND):
+        print "Warning: %r project may not support the %r compiler command.  Supported compilers: %r" % (proj.getName(), COMMAND, proj.getCompilers())
+    
+    # Compile the project if needed
+    proj.compile()
+
+    # Set the environment
+    env = proj.getTauCompilerEnvironment()
+
+    # Get compiler flags
+    flags = proj.getTauCompilerFlags()
+
+    # Execute the compiler wrapper script
+    cmd = [TAU_COMPILER] + flags + cmd_args
+
+    LOGGER.debug('Creating subprocess: cmd=%r, env=%r' % (cmd, env))
+    proc = subprocess.Popen(cmd, env=env, stdout=sys.stdout, stderr=sys.stderr)
+    return proc.wait()
+    
