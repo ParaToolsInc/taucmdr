@@ -104,4 +104,4 @@ COMPILERS = {'cc': cc,
              'mpif90': mpif90}
 
 def getFamily(roles):
-  
+  pass

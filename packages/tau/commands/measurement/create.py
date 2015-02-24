@@ -35,16 +35,12 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-# System modules
-import sys
-
 # TAU modules
-from tau import EXIT_SUCCESS
-from logger import getLogger
-from arguments import args.getParserFromModel
-from commands import commands.executeCommand
-from controller import UniqueAttributeError
-from error import ConfigurationError
+import logger
+import commands
+import controller
+import error
+import arguments as args
 from model.measurement import Measurement
 
 
@@ -65,9 +61,9 @@ HELP = """
 """ % {'command': COMMAND}
 
 PARSER = args.getParserFromModel(Measurement,
-                            prog=COMMAND,
-                            usage=USAGE, 
-                            description=SHORT_DESCRIPTION) 
+                                 prog=COMMAND,
+                                 usage=USAGE, 
+                                 description=SHORT_DESCRIPTION) 
 
 
 def getUsage():
@@ -87,8 +83,8 @@ def main(argv):
   
   try:
     Measurement.create(args.__dict__)
-  except UniqueAttributeError:
-    raise ConfigurationError('A measurement named %r already exists' % args.name,
+  except controller.UniqueAttributeError:
+    raise error.ConfigurationError('A measurement named %r already exists' % args.name,
                              'Type `tau measurement list` to see all measurement names')
   
   LOGGER.info('Created a new measurement named %r.' % args.name)

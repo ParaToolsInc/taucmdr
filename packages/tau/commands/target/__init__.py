@@ -35,13 +35,11 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-# System modules
-import sys
-
 # TAU modules
-from logger import getLogger
-from commands import getCommands, commands.getCommandsHelp, commands.executeCommand
-from arguments import args.getParser, REMAINDER
+import logger
+import commands
+import arguments as args
+
 
 LOGGER = logger.getLogger(__name__)
 
@@ -71,14 +69,14 @@ See '%(command)s <subcommand> --help' for more information on <subcommand>.
 
 _arguments = [ (('subcommand',), {'help': "See 'subcommands' below",
                                   'metavar': '<subcommand>'}),
-              (('options',), {'help': "Options to be passed to <subcommand>",
-                              'metavar': '[options]',
-                              'nargs': REMAINDER})]
+               (('options',), {'help': "Options to be passed to <subcommand>",
+                               'metavar': '[options]',
+                               'nargs': args.REMAINDER})]
 PARSER = args.getParser(_arguments,
-                   prog=COMMAND, 
-                   usage=USAGE, 
-                   description=SHORT_DESCRIPTION,
-                   epilog=USAGE_EPILOG)
+                        prog=COMMAND, 
+                        usage=USAGE, 
+                        description=SHORT_DESCRIPTION,
+                        epilog=USAGE_EPILOG)
 
 def getUsage():
   return PARSER.format_help() 

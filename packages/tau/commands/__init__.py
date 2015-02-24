@@ -40,17 +40,14 @@ import sys
 from pkgutil import walk_packages
 
 # TAU modules
-from tau import HELP_CONTACT, EXIT_FAILURE
-from logger import getLogger
-from error import ConfigurationError
-from pprint import pprint
+import logger
+import error
+
 
 LOGGER = logger.getLogger(__name__)
 
-_commands = {__name__: {}}
 
-
-class UnknownCommandError(ConfigurationError):
+class UnknownCommandError(error.ConfigurationError):
   """
   Indicates that a specified command is unknown
   """
@@ -64,7 +61,7 @@ class UnknownCommandError(ConfigurationError):
     super(UnknownCommandError, self).__init__(value, hint)
 
 
-class AmbiguousCommandError(ConfigurationError):
+class AmbiguousCommandError(error.ConfigurationError):
   """
   Indicates that a specified partial command is ambiguous
   """
@@ -76,6 +73,7 @@ Command %(value)r is ambiguous: %(matches)r
     super(AmbiguousCommandError, self).__init__('Command %s is ambiguous: %s' % (value, matches), hint)
 
 
+_commands = {__name__: {}}
 def getCommands(root=__name__):
   """
   Returns commands at the specified level
@@ -103,13 +101,12 @@ def getCommands(root=__name__):
   return _lookup(root.split('.'), _commands)
 
 
-def commands.getCommandsHelp(root=__name__):
+def getCommandsHelp(root=__name__):
   """
   Builds listing of command names with short description
   """
   parts = []
-  commands = getCommands(root)
-  for cmd, subcmds in commands.iteritems():
+  for cmd, subcmds in getCommands(root).iteritems():
     if cmd != '__module__':
       descr = subcmds['__module__'].SHORT_DESCRIPTION
       name = '{:<12}'.format(cmd)
@@ -117,7 +114,7 @@ def commands.getCommandsHelp(root=__name__):
   return '\n'.join(parts)
 
 
-def commands.executeCommand(cmd, cmd_args=[]):
+def executeCommand(cmd, cmd_args=[]):
   """
   Import the command module and run its main routine
   """
@@ -149,10 +146,10 @@ def commands.executeCommand(cmd, cmd_args=[]):
           raise # We finally give up
         parent = cmd[:-1]
         LOGGER.debug('Getting help from parent command %r' % parent)
-        return commands.executeCommand(parent, ['--help'])
+        return executeCommand(parent, ['--help'])
       else:
         LOGGER.debug('Resolved ambiguous command %r to %r' % (cmd, resolved))
-        return commands.executeCommand(resolved, cmd_args)
+        return executeCommand(resolved, cmd_args)
     except AttributeError:
       raise InternalError("'main(argv)' undefined in command %r" % cmd)
     else:

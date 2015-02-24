@@ -36,10 +36,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 # TAU modules
-from controller import Controller
+import controller as ctl
 
 
-class Setting(Controller):
+class Setting(ctl.Controller):
   """
   Setting data model controller
   """

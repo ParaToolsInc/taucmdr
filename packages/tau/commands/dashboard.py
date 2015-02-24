@@ -36,13 +36,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 # TAU modules
+import tau
+import logger
 import settings
-from tau import EXIT_SUCCESS
-from logger import getLogger, LINE_WIDTH
-from error import InternalError
-from arguments import args.getParser
-from commands import commands.executeCommand
+import error
+import commands
+import arguments as args
 from model.experiment import Experiment
+
 
 LOGGER = logger.getLogger(__name__)
 
@@ -86,7 +87,7 @@ def main(argv):
   commands.executeCommand(['measurement', 'list'])
   commands.executeCommand(['project', 'list'])
   
-  title = '{:=<{}}'.format('== Selected Experiment ==', LINE_WIDTH)
+  title = '{:=<{}}'.format('== Selected Experiment ==', logger.LINE_WIDTH)
   experiment = Experiment.getSelected()
   LOGGER.debug("Found experiment %r" % experiment)
   if experiment:
@@ -100,4 +101,4 @@ def main(argv):
     msg = "No experiment selected. See `tau project select --help`"
   LOGGER.info('\n'.join([title, '', msg, '']))  
   
-  return EXIT_SUCCESS
+  return tau.EXIT_SUCCESS

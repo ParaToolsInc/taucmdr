@@ -36,20 +36,18 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 # System modules
-import sys
 import json
 
 # TAU modules
-from tau import HELP_CONTACT, EXIT_FAILURE
-from logger import getLogger
-from error import InternalError
+import logger
+import error
 from storage import user_storage
 
 
 LOGGER = logger.getLogger(__name__)
 
 
-class ModelError(InternalError):
+class ModelError(error.InternalError):
   """
   Indicates that invalid model data was given.
   """
@@ -270,7 +268,7 @@ class Controller(object):
     elif keys is not None:
       changing = cls.search(keys)
     else:
-      raise InternalError('Controller.update() requires either keys or eids')
+      raise error.InternalError('Controller.update() requires either keys or eids')
     with user_storage as storage:
       storage.update(cls.model_name, fields, keys=keys, eids=eids)
       for model in changing:
@@ -300,7 +298,7 @@ class Controller(object):
     elif keys is not None:
       changing = cls.search(keys)
     else:
-      raise InternalError('Controller.delete() requires either keys or eids')
+      raise error.InternalError('Controller.delete() requires either keys or eids')
     with user_storage as storage:
       for model in changing:
         model.onDelete()

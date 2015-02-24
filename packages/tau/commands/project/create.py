@@ -39,15 +39,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import sys
 
 # TAU modules
-from tau import EXIT_SUCCESS
-from logger import getLogger
-from arguments import args.getParserFromModel, SUPPRESS
-from commands import commands.executeCommand
+import logger
+import arguments as args
+import commands
+import controller
 from model.project import Project
 from model.target import Target
 from model.application import Application
 from model.measurement import Measurement
-from controller import UniqueAttributeError
+
 
 
 LOGGER = logger.getLogger(__name__)
@@ -73,32 +73,32 @@ PARSER.add_argument('impl_targets',
                     help="Target configurations in this project",
                     metavar='[targets]', 
                     nargs='*',
-                    default=SUPPRESS)
+                    default=args.SUPPRESS)
 PARSER.add_argument('impl_applications', 
                     help="Application configurations in this project",
                     metavar='[applications]', 
                     nargs='*', 
-                    default=SUPPRESS)
+                    default=args.SUPPRESS)
 PARSER.add_argument('impl_measurements', 
                     help="Measurement configurations in this project",
                     metavar='[measurements]',
                     nargs='*',
-                    default=SUPPRESS)  
+                    default=args.SUPPRESS)  
 PARSER.add_argument('--targets',
-                    help = "Target configurations in this project",
-                    metavar = 't',
-                    nargs = '+',
-                    default = SUPPRESS)
+                    help="Target configurations in this project",
+                    metavar='t',
+                    nargs='+',
+                    default=args.SUPPRESS)
 PARSER.add_argument('--applications', 
-                    help = "Application configurations in this project",
-                    metavar = 'a',
-                    nargs = '+',
-                    default = SUPPRESS)
+                    help="Application configurations in this project",
+                    metavar='a',
+                    nargs='+',
+                    default=args.SUPPRESS)
 PARSER.add_argument('--measurements', 
-                    help = "Measurement configurations in this project",
-                    metavar = 'm',
-                    nargs = '+',
-                    default = SUPPRESS)
+                    help="Measurement configurations in this project",
+                    metavar='m',
+                    nargs='+',
+                    default=args.SUPPRESS)
 
 
 def getUsage():
@@ -157,7 +157,7 @@ def main(argv):
   
   try:
     Project.create(args.__dict__)
-  except UniqueAttributeError:
+  except controller.UniqueAttributeError:
     PARSER.error("A project named '%s' already exists." % args.name)
   
   LOGGER.info('Created a new project named %r.' % args.name)

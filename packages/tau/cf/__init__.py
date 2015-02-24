@@ -35,26 +35,4 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-DEFAULT_TAU_URL = 'http://tau.uoregon.edu/tau.tgz'
-
-DEFAULT_PDT_URL = 'http://tau.uoregon.edu/pdt.tgz'
-
-
-
-
-class Package(object):
-    """
-    Base class for software packages
-    """
-    def __init__(self, project):
-        self.project = project
-        self.provides = []
-        self.requires = []
-        self.excludes = []
-    
-    def install(self, stdout, stderr):
-        raise NotImplementedError
-    
-    def uninstall(self, stdout, stderr):
-        raise NotImplementedError
     

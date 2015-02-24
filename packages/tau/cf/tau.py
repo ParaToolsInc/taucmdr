@@ -52,6 +52,8 @@ import environment as env
 
 LOGGER = logger.getLogger(__name__)
 
+DEFAULT_SOURCE = 'http://tau.uoregon.edu/tau.tgz'
+
 COMPILER_WRAPPERS = {'CC': 'tau_cc.sh',
                      'CXX': 'tau_cxx.sh',
                      'F77': 'tau_f77.sh',

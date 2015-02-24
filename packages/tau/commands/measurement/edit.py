@@ -36,10 +36,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 # TAU modules
-from tau import EXIT_SUCCESS
-from logger import getLogger
-from commands import commands.executeCommand
-from arguments import args.getParserFromModel, SUPPRESS
+import logger
+import commands
+import arguments as args
 from model.measurement import Measurement
 
 
@@ -66,7 +65,7 @@ PARSER = args.getParserFromModel(Measurement,
 PARSER.add_argument('--rename',
                     help="Rename the measurement configuration",
                     metavar='<new_name>', dest='new_name',
-                    default=SUPPRESS)
+                    default=args.SUPPRESS)
 
 
 def getUsage():
@@ -86,8 +85,8 @@ def main(argv):
 
   name = args.name
   if not Measurement.exists({'name': name}):
-    PARSER.error("'%s' is not a measurement name. Type `tau measurement list` to see valid names." % name)
-  
+    PARSER.error("'%s' is not an measurement name. Type `tau measurement list` to see valid names." % name)
+
   updates = args.__dict__
   try:
     new_name = args.new_name

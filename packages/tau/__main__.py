@@ -39,16 +39,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import sys
 
 # TAU modules
-from tau import MINIMUM_PYTHON_VERSION, EXIT_FAILURE, PROJECT_URL
-from commands import getCommands, commands.getCommandsHelp, commands.executeCommand, UnknownCommandError
-from commands import build
-from logger import getLogger, setLogLevel, getLogLevel
-from arguments import args.getParser, REMAINDER
+import tau
+import commands
+import logger
+import arguments as args
 
 
 LOGGER = logger.getLogger(__name__)
 
-SHORT_DESCRIPTION = "TAU Commander [ %s ]" % PROJECT_URL
+SHORT_DESCRIPTION = "TAU Commander [ %s ]" % tau.PROJECT_URL
 
 COMMAND = 'tau'
 
@@ -82,7 +81,7 @@ _arguments = [ (('command',), {'help': "See 'commands' below",
                                'metavar': '<command>'}),
               (('options',), {'help': "Options to be passed to <command>",
                                'metavar': '[options]',
-                               'nargs': REMAINDER}),
+                               'nargs': args.REMAINDER}),
               (('-v', '--verbose'), {'help': "Set logging level to DEBUG",
                                      'metavar': '', 
                                      'const': 'DEBUG', 
@@ -108,9 +107,9 @@ def main():
   """
 
   # Check Python version
-  if sys.version_info < MINIMUM_PYTHON_VERSION:
+  if sys.version_info < tau.MINIMUM_PYTHON_VERSION:
     version = '.'.join(map(str, sys.version_info[0:3]))
-    expected = '.'.join(map(str, MINIMUM_PYTHON_VERSION))
+    expected = '.'.join(map(str, tau.MINIMUM_PYTHON_VERSION))
     LOGGER.error("Your Python version is %s but Python %s or later is required. Please update Python." % 
                  (version, sys.argv[0], expected))
 
@@ -120,19 +119,19 @@ def main():
 
   
   # Set verbosity level
-  setLogLevel(args.verbose)
+  logger.setLogLevel(args.verbose)
   LOGGER.debug('Arguments: %s' % args)
-  LOGGER.debug('Verbosity level: %s' % getLogLevel())
+  LOGGER.debug('Verbosity level: %s' % logger.getLogLevel())
   
   # Try to execute as a TAU command
   try:
       return commands.executeCommand([cmd], cmd_args)
-  except UnknownCommandError:
+  except commands.UnknownCommandError:
       pass
 
   # Check shortcuts
   shortcut = None
-  if build.isKnownCompiler(cmd):
+  if commands.build.isKnownCompiler(cmd):
     shortcut = 'build'
 #   elif show.isKnownFileFormat(cmd):
 #     shortcut = 'show'

@@ -36,10 +36,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 # TAU modules
-from tau import EXIT_SUCCESS
-from logger import getLogger
-from error import InternalError
-from arguments import args.getParserFromModel, SUPPRESS
+import tau
+import logger
+import error
+import arguments as args
 from model.project import Project
 from model.target import Target
 from model.application import Application
@@ -70,29 +70,29 @@ PARSER.add_argument('impl_target',
                     help="Target configuration to select",
                     metavar='[target]',
                     nargs='*',
-                    default=SUPPRESS)
+                    default=args.SUPPRESS)
 PARSER.add_argument('impl_application', 
                     help="Application configuration to select",
                     metavar='[application]',
                     nargs='*',
-                    default=SUPPRESS)
+                    default=args.SUPPRESS)
 PARSER.add_argument('impl_measurement', 
                     help="Measurement configuration to select",
                     metavar='[measurements]',
                     nargs='*',
-                    default=SUPPRESS)  
+                    default=args.SUPPRESS)  
 PARSER.add_argument('--target',
-                    help = "Target configuration to select",
+                    help="Target configuration to select",
                     metavar='<name>',
-                    default = SUPPRESS)
+                    default=args.SUPPRESS)
 PARSER.add_argument('--application', 
-                    help = "Application configuration to select",
+                    help="Application configuration to select",
                     metavar='<name>',
-                    default = SUPPRESS)
+                    default=args.SUPPRESS)
 PARSER.add_argument('--measurement', 
-                    help = "Measurement configuration to select",
+                    help="Measurement configuration to select",
                     metavar='<name>',
-                    default = SUPPRESS)
+                    default=args.SUPPRESS)
 
 
 def getUsage():
@@ -180,7 +180,7 @@ def main(argv):
     LOGGER.debug('Creating new experiment')
     found = Experiment.create(data)
   elif len(found) > 1:
-    raise InternalError('More than one experiment with data %r exists!' % data)
+    raise error.InternalError('More than one experiment with data %r exists!' % data)
   else:
     LOGGER.debug('Using existing experiment')
     found = found[0]
@@ -192,4 +192,4 @@ def main(argv):
                found['measurement']['name']))
   found.select()
   
-  return EXIT_SUCCESS
+  return tau.EXIT_SUCCESS

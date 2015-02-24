@@ -36,21 +36,19 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 # System modules
-import os
 import string
 
 # TAU modules
-from cf import tau, DEFAULT_TAU_URL
-from logger import getLogger
-from controller import Controller, ModelError, ByName
-from arguments import SUPPRESS
+import cf.tau
+import logger
+import controller as ctl
+import arguments as args
 
 
 LOGGER = logger.getLogger(__name__)
 
 
-
-class Target(Controller, ByName):
+class Target(ctl.Controller, ctl.ByName):
   """
   Target data model controller
   """
@@ -73,7 +71,7 @@ class Target(Controller, ByName):
       'argparse': (('--host_os',), 
                    {'help': 'Host operating system',
                     'metavar': 'os',
-                    'default': tau.detectDefaultHostOS() or SUPPRESS})
+                    'default': cf.tau.DEFAULT_HOST_OS or args.SUPPRESS})
     },
     'host_arch': {
       'type': 'string',
@@ -81,14 +79,14 @@ class Target(Controller, ByName):
       'argparse': (('--host_arch',), 
                    {'help': 'Host architecture',
                     'metavar': 'arch',
-                    'default': tau.detectDefaultHostArch() or SUPPRESS})
+                    'default': cf.tau.DEFAULT_HOST_ARCH or args.SUPPRESS})
     },
     'device_arch': {
       'type': 'string',
       'argparse': (('--device_arch',), 
                    {'help': 'Coprocessor architecture',
                     'metavar': 'arch',
-                    'default': tau.detectDefaultDeviceArch() or SUPPRESS})
+                    'default': cf.tau.DEFAULT_DEVICE_ARCH or args.SUPPRESS})
     },
     'tau': {
       'type': 'string',
@@ -97,7 +95,7 @@ class Target(Controller, ByName):
                    {'help': 'URL or path to an existing TAU installation or archive file',
                     'metavar': '(<path>|<url>)',
                     'dest': 'tau',
-                    'default': DEFAULT_TAU_URL})
+                    'default': cf.tau.DEFAULT_SOURCE})
     },
   }
   
@@ -105,5 +103,5 @@ class Target(Controller, ByName):
   
   def onCreate(self):
     if set(self['name']) > Target._valid_name:
-      raise ModelError('%r is not a valid target name.' % self['name'],
-                       'Use only letters, numbers, dot (.), dash (-), and underscore (_).')
+      raise ctl.ModelError('%r is not a valid target name.' % self['name'],
+                           'Use only letters, numbers, dot (.), dash (-), and underscore (_).')
