@@ -93,7 +93,7 @@ class Target(ctl.Controller, ctl.ByName):
       'required': True,
       'argparse': (('--with-tau',), 
                    {'help': 'URL or path to an existing TAU installation or archive file',
-                    'metavar': '(<path>|<url>)',
+                    'metavar': '(<path>|<url>|"download")',
                     'dest': 'tau',
                     'default': cf.tau.DEFAULT_SOURCE})
     },

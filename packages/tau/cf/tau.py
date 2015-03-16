@@ -247,6 +247,8 @@ def initialize(prefix, src, force_reinitialize=False,
   with logger.logging_streams():
     
     # Download, unpack, or copy TAU source code
+    if src.lower() == 'download':
+      src = DEFAULT_SOURCE
     src_prefix = os.path.join(prefix, 'src')
     dst = os.path.join(src_prefix, os.path.basename(src))
     try:
