@@ -39,8 +39,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import cf
 import logger
 import error
-from _dbus_bindings import Dictionary
-from matplotlib.fontconfig_pattern import family_escape
 
 LOGGER = logger.getLogger(__name__)
 
