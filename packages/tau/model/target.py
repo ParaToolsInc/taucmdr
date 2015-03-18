@@ -100,14 +100,12 @@ class Target(ctl.Controller, ctl.ByName):
     },
     'pdt': {
       'type': 'string',
-      'required': True,
       'argparse': (('--with-pdt',), 
                    {'help': 'URL or path to an existing PDT installation or archive file',
                     'metavar': '(<path>|<url>|"download")',
                     'dest': 'pdt',
                     'default': cf.pdt.DEFAULT_SOURCE})
     },
-
   }
   
   _valid_name = set(string.digits + string.letters + '-_.')
