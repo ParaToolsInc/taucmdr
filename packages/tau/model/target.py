@@ -40,6 +40,7 @@ import string
 
 # TAU modules
 import cf.tau
+import cf.pdt
 import logger
 import controller as ctl
 import arguments as args
