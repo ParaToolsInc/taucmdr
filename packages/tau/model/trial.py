@@ -63,5 +63,9 @@ class Trial(ctl.Controller):
     },
     'measurement_snapshot': {
       'type': 'json'
-    }
+    },
+#    'compiler_snapshot': {
+#      'type': 'json'
+#    }
   }
+
