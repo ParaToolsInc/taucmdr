@@ -71,6 +71,9 @@ class Experiment(controller.Controller):
       'model': 'Measurement',
       'required': True,
     },
+#    'compiler': {
+#      'collection': 'Compiler',
+#    },
     'trials': {
       'collection': 'Trial',
       'via': 'experiment'
@@ -116,6 +119,17 @@ class Experiment(controller.Controller):
       raise error.ConfigurationError('Cannot create directory %r' % prefix, 
                                      'Check that you have `write` access')
     target = self['target']
+    application = self['application']
+    measurement = self['measurement']
+
+    # compiler_cmd == ['gcc', 'matmul.c', 'matmul_init.c', '-o', 'mm']
+#    compiler = probeCompilerCommand(compiler_cmd)
+#
+#    if measurement['source_inst']:
+#      pdt_src = target['pdt']
+#      cf.pdt.initialize(prefix, pdt_src, compiler_cmd=compiler_cmd)
+#
     tau_src = target['tau']
     arch = target['host_arch']
     cf.tau.initialize(prefix, tau_src, arch=arch, compiler_cmd=compiler_cmd)
+
