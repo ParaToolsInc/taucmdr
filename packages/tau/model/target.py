@@ -41,6 +41,8 @@ import string
 # TAU modules
 import cf.tau
 import cf.pdt
+import cf.bfd
+import cf.libunwind
 import logger
 import controller as ctl
 import arguments as args
@@ -106,6 +108,24 @@ class Target(ctl.Controller, ctl.ByName):
                     'dest': 'pdt',
                     'default': cf.pdt.DEFAULT_SOURCE})
     },
+    'bfd': {
+      'type': 'string',
+      'argparse': (('--with-bfd',), 
+                   {'help': 'URL or path to an existing BfD installation or archive file',
+                    'metavar': '(<path>|<url>|"download")',
+                    'dest': 'bfd',
+                    'default': cf.bfd.DEFAULT_SOURCE})
+    },
+    'libunwind': {
+      'type': 'string',
+      'argparse': (('--with-libunwind',), 
+                   {'help': 'URL or path to an existing LIBUNWIND installation or archive file',
+                    'metavar': '(<path>|<url>|"download")',
+                    'dest': 'libunwind',
+                    'default': cf.libunwind.DEFAULT_SOURCE})
+    },
+
+
   }
   
   _valid_name = set(string.digits + string.letters + '-_.')
