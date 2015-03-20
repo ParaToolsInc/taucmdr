@@ -37,6 +37,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # System modules
 from texttable import Texttable
+from pprint import pformat
 
 # TAU modules
 import tau
@@ -64,7 +65,10 @@ HELP = """
 _arguments = [(('names',), {'help': "If given, show details for this project",
                            'metavar': 'project_name', 
                            'nargs': '*',
-                           'default': args.SUPPRESS})]
+                           'default': args.SUPPRESS}),
+              (('-l','--long'), {'help': "Display all information about the project",
+                                 'action': 'store_true',
+                                 'default': False})]
 PARSER = args.getParser(_arguments,
                    prog=COMMAND, 
                    usage=USAGE, 
@@ -105,15 +109,22 @@ def main(argv):
     table = Texttable(logger.LINE_WIDTH)
     headers = ['Name', 'Targets', 'Applications', 'Measurements', 'Home']
     rows = [headers]
-    for p in found:
-      p.populate()
-      targets = '\n'.join([t['name'] for t in p['targets']]) or ''
-      applications = '\n'.join([t['name'] for t in p['applications']]) or ''
-      measurements = '\n'.join([t['name'] for t in p['measurements']]) or ''
-      row = [p['name'], targets, applications, measurements, p['prefix']]
-      rows.append(row)
-    table.add_rows(rows)
-    listing = table.draw()
+    if args.long:
+      parts = []
+      for p in found:
+        p.populate()
+        parts.append(pformat(p.data))
+      listing = '\n'.join(parts)
+    else:
+      for p in found:
+        p.populate()
+        targets = '\n'.join([t['name'] for t in p['targets']]) or ''
+        applications = '\n'.join([t['name'] for t in p['applications']]) or ''
+        measurements = '\n'.join([t['name'] for t in p['measurements']]) or ''
+        row = [p['name'], targets, applications, measurements, p['prefix']]
+        rows.append(row)
+      table.add_rows(rows)
+      listing = table.draw()
     
   LOGGER.info('\n'.join([title, '', listing, '']))
   return tau.EXIT_SUCCESS
