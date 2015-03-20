@@ -35,29 +35,36 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-# TAU modules
-import controller
+# System modules
+import sys
+from pkgutil import walk_packages
 
-# Model classes
-from target import Target
-from application import Application
-from measurement import Measurement
-from experiment import Experiment
-from project import Project
-from trial import Trial
-from setting import Setting
+# TAU modules
+import logger
+import error
+import controller
 
 ModelError = controller.ModelError
 
 # List model classes
-MODEL_CLASSES = [Target, Application, Measurement, Project, Experiment, Trial,
-                 Setting]
+def _yieldModelClasses():
+  for _, module_name, _ in walk_packages(__path__, __name__+'.'):
+    __import__(module_name)
+    module_dict = sys.modules[module_name].__dict__
+    model_class_name = module_name.split('.')[-1].capitalize()
+    try:
+      model_class = module_dict[model_class_name]
+    except KeyError:
+      raise error.InternalError("module '%s' does not define class '%s'" % 
+                                (module_name, model_class_name))
+    yield model_class
+MODEL_CLASSES = list(_yieldModelClasses())
 
 # Index model classes by name
 MODELS = dict([(cls.__name__, cls) for cls in MODEL_CLASSES])
 
 
-def __getPropsModelName(props):
+def _getPropsModelName(props):
   try:
     return props['model']
   except KeyError:
@@ -77,7 +84,7 @@ for cls_name, cls in MODELS.iteritems():
   for attr, props in cls.attributes.iteritems():
     via = props.get('via', None)
     try:
-      foreign_name = __getPropsModelName(props)
+      foreign_name = _getPropsModelName(props)
     except KeyError:
       if via:
         raise ModelError(cls, "Attribute '%s' defines 'via' property "
@@ -106,7 +113,7 @@ for cls_name, cls in MODELS.iteritems():
         raise ModelError(cls, "Found 'via' on undefined attribute '%s.%s'" % 
                                (foreign_name, via))
       try:
-        via_attr_model_name = __getPropsModelName(via_props)
+        via_attr_model_name = _getPropsModelName(via_props)
       except KeyError:
         raise ModelError(cls, "Found 'via' on non-model attribute '%s.%s'" % 
                                (foreign_name, via))
@@ -125,4 +132,6 @@ for cls_name, cls in MODELS.iteritems():
                                  "%r vs. %r" % (attr, existing, forward))
       
 # Clean up
-del __getPropsModelName
+del _yieldModelClasses
+del _getPropsModelName 
+

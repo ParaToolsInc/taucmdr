@@ -36,36 +36,37 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 # TAU modules
-import controller as ctl
+import cf.tau
+import logger
+import settings
+import error
+import controller
+import util
+from model.project import Project
+from model.target import Target
 
 
-class Trial(ctl.Controller):
+LOGGER = logger.getLogger(__name__)
+
+
+class Compiler(controller.Controller):
   """
-  Trial data model controller
+  Compiler data model controller
   """
   
-  attributes = {      
-    'experiment': {
-      'model': 'Experiment'
-    },
+  attributes = {
     'name': {
-      'type': 'string' # not unique
-    },
-    'timestamp': {
-      'type': 'datetime',
+      'type': 'string',
       'required': True
     },
-    'target_snapshot': {
-      'type': 'json'
+    'version': {
+      'type': 'string'
     },
-    'application_snapshot': {
-      'type': 'json'
+    'path': {
+      'type': 'string',
     },
-    'measurement_snapshot': {
-      'type': 'json'
+    'md5': {
+      'type': 'string',
     },
-    'compiler_snapshot': {
-      'type': 'json'
-    }
   }
 

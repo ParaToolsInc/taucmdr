@@ -55,6 +55,10 @@ class Experiment(controller.Controller):
   """
   
   attributes = {
+    'trials': {
+      'collection': 'Trial',
+      'via': 'experiment'
+    },
     'project': {
       'model': 'Project',
       'required': True,
@@ -71,12 +75,8 @@ class Experiment(controller.Controller):
       'model': 'Measurement',
       'required': True,
     },
-#    'compiler': {
-#      'collection': 'Compiler',
-#    },
-    'trials': {
-      'collection': 'Trial',
-      'via': 'experiment'
+    'compilers': {
+      'collection': 'Compiler',
     },
   }
   
