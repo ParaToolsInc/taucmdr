@@ -153,8 +153,8 @@ def _getFortranConfigureFlag(compiler):
 
 def verifyInstallation(prefix, arch, cc=None, cxx=None, fortran=None):
   """
-  Returns True if there is a working TAU installation at 'prefix' or raisestau.
-  a error.ConfigurationError describing why that installation is broken.
+  Returns True if there is a working TAU installation at 'prefix' or raises
+  a ConfigurationError describing why that installation is broken.
   """
   LOGGER.debug("Checking TAU installation at '%s' targeting arch '%s'" % (prefix, arch))
   
