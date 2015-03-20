@@ -61,10 +61,14 @@ HELP = """
 Help page to be written.
 """
 
-PARSER = args.getParser([],
-                   prog=COMMAND, 
-                   usage=USAGE, 
-                   description=SHORT_DESCRIPTION)
+
+_arguments = [(('-l','--long'), {'help': "Display all information",
+                                 'action': 'store_true',
+                                 'default': False})]
+PARSER = args.getParser(_arguments,
+                        prog=COMMAND, 
+                        usage=USAGE, 
+                        description=SHORT_DESCRIPTION)
 
 
 def getUsage():
@@ -82,12 +86,16 @@ def main(argv):
   args = PARSER.parse_args(args=argv)
   LOGGER.debug('Arguments: %s' % args)
   
-  commands.executeCommand(['target', 'list'])
-  commands.executeCommand(['application', 'list'])
-  commands.executeCommand(['measurement', 'list'])
-  commands.executeCommand(['project', 'list'])
+  subargs = []
+  if args.long:
+    subargs.append('-l')
   
-  title = '{:=<{}}'.format('== Selected Experiment ==', logger.LINE_WIDTH)
+  commands.executeCommand(['target', 'list'], subargs)
+  commands.executeCommand(['application', 'list'], subargs)
+  commands.executeCommand(['measurement', 'list'], subargs)
+  commands.executeCommand(['project', 'list'], subargs)
+  
+  title = '{:=<{}}'.format('== Current Selection ==', logger.LINE_WIDTH)
   experiment = Experiment.getSelected()
   LOGGER.debug("Found experiment %r" % experiment)
   if experiment:

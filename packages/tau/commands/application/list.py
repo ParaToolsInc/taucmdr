@@ -37,6 +37,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # System modules
 from texttable import Texttable
+from pprint import pformat
 
 # TAU modules
 import tau
@@ -65,7 +66,10 @@ HELP = """
 _arguments = [(('names',), {'help': "If given, show details for the application with this name",
                            'metavar': 'application_name', 
                            'nargs': '*',
-                           'default': args.SUPPRESS})]
+                           'default': args.SUPPRESS}),
+              (('-l','--long'), {'help': "Display all information about the application",
+                                 'action': 'store_true',
+                                 'default': False})]
 PARSER = args.getParser(_arguments,
                         prog=COMMAND, 
                         usage=USAGE, 
@@ -114,15 +118,22 @@ def main(argv):
             ('In Projects', 'l', None)]
     headers = [header for header, _, _ in cols]
     rows = [headers]
-    for t in found:
-      t.populate()
-      name = t['name']
-      projects = ', '.join([p['name'] for p in t['projects']])
-      row = [name] + ['Yes' if t.get(attr, None) else '' for _, _, attr in cols if attr] + [projects]
-      rows.append(row)
-    table.set_cols_align([align for _, align, _ in cols])
-    table.add_rows(rows)
-    listing = table.draw()
+    if args.long:
+      parts = []
+      for t in found:
+        t.populate()
+        parts.append(pformat(t.data))
+      listing = '\n'.join(parts)
+    else:
+      for t in found:
+        t.populate()
+        name = t['name']
+        projects = ', '.join([p['name'] for p in t['projects']])
+        row = [name] + ['Yes' if t.get(attr, None) else '' for _, _, attr in cols if attr] + [projects]
+        rows.append(row)
+      table.set_cols_align([align for _, align, _ in cols])
+      table.add_rows(rows)
+      listing = table.draw()
     
   LOGGER.info('\n'.join([title, '', listing, '']))
   return tau.EXIT_SUCCESS
