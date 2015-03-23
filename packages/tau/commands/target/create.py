@@ -84,8 +84,7 @@ def main(argv):
   try:
     Target.create(args.__dict__)
   except controller.UniqueAttributeError:
-    raise error.ConfigurationError('A target named %r already exists' % args.name,
-                             'Type `tau target list` to see all target names')
+    PARSER.error('A target named %r already exists' % args.name)
   
   LOGGER.info('Created a new target named %r.' % args.name)
   return commands.executeCommand(['target', 'list'], [args.name])

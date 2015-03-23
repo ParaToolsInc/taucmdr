@@ -84,8 +84,7 @@ def main(argv):
   try:
     Measurement.create(args.__dict__)
   except controller.UniqueAttributeError:
-    raise error.ConfigurationError('A measurement named %r already exists' % args.name,
-                             'Type `tau measurement list` to see all measurement names')
+    PARSER.error('A measurement named %r already exists' % args.name)
   
   LOGGER.info('Created a new measurement named %r.' % args.name)
   return commands.executeCommand(['measurement', 'list'], [args.name])
