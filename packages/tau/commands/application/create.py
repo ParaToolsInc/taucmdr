@@ -84,8 +84,7 @@ def main(argv):
   try:
     Application.create(args.__dict__)
   except controller.UniqueAttributeError:
-    raise error.ConfigurationError('A application named %r already exists' % args.name,
-                             'Type `tau application list` to see all application names')
+    PARSER.error('A application named %r already exists' % args.name)
   
   LOGGER.info('Created a new application named %r.' % args.name)
   return commands.executeCommand(['application', 'list'], [args.name])

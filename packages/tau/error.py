@@ -52,6 +52,8 @@ class Error(Exception):
   Base class for errors in Tau
   """
   
+  show_backtrace = False
+  
   message_fmt = """
 An unexpected %(typename)s exception was raised:
 
@@ -60,7 +62,7 @@ An unexpected %(typename)s exception was raised:
 Please contact %(contact)s for assistance and 
 include the output of this command:
 
-tau --log=DEBUG %(cmd)s"""
+tau -v %(cmd)s"""
   
   def __init__(self, value, hint="Contact %s" % tau.HELP_CONTACT):
     self.value = value
@@ -75,7 +77,8 @@ tau --log=DEBUG %(cmd)s"""
                                   'typename': etype.__name__, 
                                   'cmd': ' '.join([arg for arg in sys.argv[1:]]), 
                                   'contact': tau.HELP_CONTACT}
-    traceback.print_exception(etype, e, tb)
+    if self.show_backtrace or logger.LOG_LEVEL == 'DEBUG':
+      traceback.print_exception(etype, e, tb)
     LOGGER.critical(message)
     sys.exit(tau.EXIT_FAILURE)
 
@@ -85,6 +88,8 @@ class InternalError(Error):
   Indicates that an internal error has occurred
   These are bad and really shouldn't happen
   """
+  show_backtrace = True
+  
   def __init__(self, value):
     super(InternalError, self).__init__(value)
 
@@ -130,7 +135,7 @@ This is a bug in TAU.
 Please contact %(contact)s for assistance and 
 include the output of this command:
 
-tau --log=DEBUG %(cmd)s""" % {'value': e,
+tau -v %(cmd)s""" % {'value': e,
                               'typename': etype.__name__, 
                               'cmd': ' '.join([arg for arg in sys.argv[1:]]), 
                               'contact': tau.HELP_CONTACT})
