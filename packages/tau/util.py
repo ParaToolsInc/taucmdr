@@ -143,6 +143,15 @@ def extract(archive, dest):
   return full_dest
 
 
+def file_accessible(filepath, mode='r'):
+   """
+   Check if a file exists and is accessible.
+   """
+   with open(filepath, mode) as _:
+     return True
+   return False
+
+  
 def pformatDict(d, title=None, empty_msg='No items.', indent=0):
   """
   Pretty formater for dictionaries
