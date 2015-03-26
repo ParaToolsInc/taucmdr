@@ -135,8 +135,8 @@ def main():
     shortcut = 'build'
 #   elif show.isKnownFileFormat(cmd):
 #     shortcut = 'show'
-#   elif run.isExecutable(cmd):
-#     shortcut = 'run'
+  elif commands.run.isExecutable(cmd):
+    shortcut = 'run'
   if shortcut:
     LOGGER.debug('Trying shortcut %r' % shortcut)
     return commands.executeCommand([shortcut], [cmd] + cmd_args)

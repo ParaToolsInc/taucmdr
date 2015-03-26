@@ -97,7 +97,7 @@ class Measurement(ctl.Controller, ctl.ByName):
     'source_inst': {
       'type': 'boolean',
       'defaultsTo': True,
-      'argparse': (('--source_inst',), 
+      'argparse': (('--source-inst',), 
                    {'help': 'Use source code parsing to instrument the application',
                     'metavar': 'T/F',
                     'nargs': '?',
@@ -107,7 +107,7 @@ class Measurement(ctl.Controller, ctl.ByName):
     },
     'compiler_inst': {
       'type': 'string',
-      'argparse': (('--compiler_inst',), 
+      'argparse': (('--compiler-inst',), 
                    {'help': 'Use compiler callbacks to instrument the application',
                     'metavar': 'mode',
                     'nargs': '?',
@@ -150,7 +150,7 @@ class Measurement(ctl.Controller, ctl.ByName):
     'memory_usage': {
       'type': 'boolean',
       'defaultsTo': False,
-      'argparse': (('--memory_usage',), 
+      'argparse': (('--memory-usage',), 
                    {'help': 'Measure memory consumption',
                     'metavar': 'T/F',
                     'nargs': '?',
@@ -161,7 +161,7 @@ class Measurement(ctl.Controller, ctl.ByName):
     'memory_alloc': {
       'type': 'boolean',
       'defaultsTo': False,
-      'argparse': (('--memory_alloc',), 
+      'argparse': (('--memory-alloc',), 
                    {'help': 'Record memory allocation and deallocation events',
                     'metavar': 'T/F',
                     'nargs': '?',

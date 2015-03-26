@@ -68,8 +68,8 @@ class Project(ctl.Controller, ctl.ByName):
       'collection': 'Measurement',
       'via': 'projects',
     },
-    'experiments': {
-      'collection': 'Experiment',
+    'selections': {
+      'collection': 'Selection',
       'via': 'project'
     },
     'prefix': {
