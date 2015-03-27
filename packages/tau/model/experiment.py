@@ -37,6 +37,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # System modules
 import os
+import sys
+import subprocess
+
 
 # TAU modules
 import cf
@@ -150,44 +153,52 @@ class Experiment(controller.Controller):
                                      'Check that you have `write` access')
 
     # Configure/build/install TAU if not already done
-    tau_config = cf.tau.initialize(prefix, target['tau'], arch=target['host_arch'], 
+    tau_config = cf.tau.initialize(prefix, 
+                                   src=target['tau'], 
+                                   arch=target['host_arch'], 
                                    cc=cc, cxx=cxx, fc=fc)
     tau_path, tau_makefile = tau_config
     fields['tau_path'] = tau_path
     fields['tau_makefile'] = tau_makefile
     
     # Configure TAU compiler options
-    tau_options = ['-optRevert']
-    if logger.LOG_LEVEL == 'DEBUG':
-        tau_options.append('-optVerbose')
-    else:
-        tau_options.append('-optQuiet')
-    if measurement['source_inst']:
-      tau_options.append('-optPDTInst')
-    comp_inst_options = {'always': '-optCompInst',
-                         'fallback': '-optRevert',
-                         'never': '-optNoCompInst'}
-    tau_options.append(comp_inst_options[measurement['compiler_inst']])
- 
+    TAU_COMPILER_OPTIONS = cf.tau.TAU_COMPILER_OPTIONS
+    tau_options = TAU_COMPILER_OPTIONS['halt_on_error'][False]
+    tau_options += TAU_COMPILER_OPTIONS['verbose'][logger.LOG_LEVEL == 'DEBUG']
+    tau_options += TAU_COMPILER_OPTIONS['compiler_inst'][measurement['compiler_inst']]
+    tau_options = list(set(tau_options))
+
     # Configure TAU build environment
+    build_env = cf.tau.getBuildEnvironment(tau_path, tau_makefile,
+                                           halt_on_error=False,
+                                           verbose=(logger.LOG_LEVEL == 'DEBUG'),
+                                           compiler_inst=measurement['compiler_inst']
+                                           )
+    
     tau_build_env = {}
     tau_build_env['TAU_OPTIONS'] = ' '.join(tau_options)
     tau_build_env['TAU_MAKEFILE'] = tau_makefile
     fields['tau_build_env'] = tau_build_env
     
     # Configure TAU runtime environment
+    TAU_ENVIRONMENT_OPTIONS = cf.tau.TAU_ENVIRONMENT_OPTIONS
     tau_run_env = {}
-    if measurement['profile']:
-      tau_run_env['TAU_PROFILE'] = '1'
-    if measurement['trace']:
-      tau_run_env['TAU_TRACE'] = '1'
-    if measurement['sample']:
-      tau_run_env['TAU_SAMPLE'] = '1'
-    if measurement['callpath'] > 0:
-      tau_run_env['TAU_CALLPATH'] = '1'
-      tau_run_env['TAU_CALLPATH_DEPTH'] = str(measurement['callpath'])
-    if measurement['memory_usage']:
-      tau_run_env['TAU_TRACK_HEAP'] = '1'
+    for field in 'profile', 'trace', 'sample', 'memory_usage':
+      tau_run_env.update(TAU_ENVIRONMENT_OPTIONS[field][measurement[field]])
+    tau_run_env['TAU_CALLPATH_DEPTH'] = measurement['callpath']
     fields['tau_run_env'] = tau_run_env
     
     return Experiment.create(fields)
+
+  def build(self, compiler_cmd, compiler_args):
+    pass
+    #   cmd = [selected.compilers[compiler_cmd]] + compiler_args
+#   env = selected.tau_build_env
+#   LOGGER.debug('Creating subprocess: cmd=%r, env=%r' % (cmd, env))
+#   LOGGER.info('\n'.join(['%s=%s' % i for i in env.iteritems() if i[0].startswith('TAU')]))
+#   LOGGER.info(' '.join(cmd))
+# 
+#   # Control build output
+#   with logger.logging_streams():
+#     proc = subprocess.Popen(cmd, env=env, stdout=sys.stdout, stderr=sys.stderr)
+#     return proc.wait()

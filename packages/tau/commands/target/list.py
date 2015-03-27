@@ -110,7 +110,7 @@ def main(argv):
             ('Host OS', 'c', 'host_os'), 
             ('Host Arch.', 'c', 'host_arch'), 
             ('Device Arch.', 'c', 'device_arch'),
-            ('Compilers', 'l', 'compilers'),
+            ('Compilers', 'l', None),
             ('In Projects', 'l', None)]
     headers = [header for header, _, _ in cols]
     rows = [headers]
@@ -124,7 +124,8 @@ def main(argv):
       for t in found:
         t.populate()
         projects = ', '.join([p['name'] for p in t['projects']])
-        row = [t.get(attr, '') for _, _, attr in cols if attr] + [projects]
+        compilers = ', '.join([c['command'] for c in t['compilers']])
+        row = [t.get(attr, '') for _, _, attr in cols if attr] + [compilers, projects]
         rows.append(row)
       table.set_cols_align([align for _, align, _ in cols])
       table.add_rows(rows)
