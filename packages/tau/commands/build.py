@@ -35,10 +35,6 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-# System modules
-import sys
-import subprocess
-
 # TAU modules
 import logger
 import error
@@ -116,8 +112,9 @@ def main(argv):
   selected = Selection.getSelected()
   if not selected:
     raise error.ConfigurationError("Nothing selected.", "See `tau project select`") 
+  
   experiment = Experiment.configure(selected, compiler_cmd)
- 
+  experiment.build(compiler_cmd, compiler_args)
 #   cmd = [selected.compilers[compiler_cmd]] + compiler_args
 #   env = selected.tau_build_env
 #   LOGGER.debug('Creating subprocess: cmd=%r, env=%r' % (cmd, env))
