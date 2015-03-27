@@ -110,6 +110,7 @@ def main(argv):
             ('Host OS', 'c', 'host_os'), 
             ('Host Arch.', 'c', 'host_arch'), 
             ('Device Arch.', 'c', 'device_arch'),
+            ('Compilers', 'l', 'compilers'),
             ('In Projects', 'l', None)]
     headers = [header for header, _, _ in cols]
     rows = [headers]
