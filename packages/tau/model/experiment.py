@@ -35,16 +35,20 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+# System modules
+import os
+
 # TAU modules
-import cf.tau
+import cf
 import logger
 import settings
 import error
 import controller
 import util
+import environment
 from model.project import Project
 from model.target import Target
-
+from model.compiler import Compiler
 
 LOGGER = logger.getLogger(__name__)
 
@@ -55,81 +59,135 @@ class Experiment(controller.Controller):
   """
   
   attributes = {
+    'selection': {
+      'model': 'Selection',
+      'required': True
+    },
+    'CC': {
+      'model': 'Compiler',
+      'required': True
+    },
+    'CXX': {
+      'model': 'Compiler',
+      'required': True
+    },
+    'FC': {
+      'model': 'Compiler',
+      'required': True
+    },
+    'tau_path': {
+      'type': 'string',
+    },
+    'tau_makefile': {
+      'type': 'string',
+    },
+    'tau_build_env': {
+      'type': 'string',
+    },
+    'tau_run_env': {
+      'type': 'string',
+    },
     'trials': {
       'collection': 'Trial',
       'via': 'experiment'
     },
-    'project': {
-      'model': 'Project',
-      'required': True,
-    },
-    'target': {
-      'model': 'Target',
-      'required': True,
-    },
-    'application': {
-      'model': 'Application',
-      'required': True,
-    },
-    'measurement': {
-      'model': 'Measurement',
-      'required': True,
-    },
-    'compilers': {
-      'collection': 'Compiler',
-    },
   }
-  
-  def onCreate(self):
-    pass
-  
-  def onDelete(self):
-    if self.isSelected():
-      settings.unset('experiment_id')
-  
-  def select(self):
-    if not self.eid:
-      raise error.InternalError('Tried to select an experiment without an eid')
-    settings.set('experiment_id', self.eid)
-  
-  def isSelected(self):
-    if self.eid:
-      return settings.get('experiment_id') == self.eid
-    return False
-  
+
   @classmethod
-  def getSelected(cls):
-    experiment_id = settings.get('experiment_id')
-    if experiment_id:
-      experiment = cls.one(eid=experiment_id)
-      if not experiment:
-        raise error.InternalError('Invalid experiment ID: %r' % experiment_id)
-      return experiment
-    return None
-  
-  def bootstrap(self, compiler_cmd):
+  def configure(cls, selected, compiler_cmd):
     """
-    Installs all software required to perform the experiment
+    Installs all software required to perform the experiment and configures
+    environment variables
     """
-    self.populate()
-    prefix = self['project']['prefix']
+    selected.populate()
+    target = selected['target']
+    application = selected['application']
+    measurement = selected['measurement']
+    compiler = Compiler.identify(target, compiler_cmd)
+    
+    # See if we've already configured this experiment
+    found = cls.one(keys={'selection': selected.eid, compiler['role']: compiler.eid})
+    if found:
+      LOGGER.debug("Found experiment: %s" % found)
+      return found
+    
+    LOGGER.debug("Experiment not found, creating new experiment")
+    fields = {'selection': selected.eid}
+    
+    # Discover and configure compilers
+    compilers = {compiler['role']: compiler}
+    for info in cf.compiler.getCompilerFamily(compiler['command']):
+      if info.role != compiler['role']:
+        try:
+          other = Compiler.identify(target, info.command)
+        except error.ConfigurationError:
+          continue
+        if os.path.dirname(other['path']) == os.path.dirname(compiler['path']):
+          compilers[other['role']] = other
+    try:
+      cc = compilers['CC']
+    except KeyError:
+      raise error.ConfigurationError("C compiler matching '%s' not found" % compiler_cmd)
+    try:
+      cxx = compilers['CXX']
+    except KeyError:
+      raise error.ConfigurationError("C++ compiler matching '%s' not found" % compiler_cmd)
+    try:
+      fc = compilers['FC']
+    except KeyError:
+      raise error.ConfigurationError("Fortran compiler matching '%s' not found" % compiler_cmd)
+    
+    fields['CC'] = cc.eid
+    fields['CXX'] = cxx.eid
+    fields['FC'] = fc.eid
+
+    # Create a place to store project files and settings
+    prefix = selected['project']['prefix']
     try:
       util.mkdirp(prefix)
     except:
       raise error.ConfigurationError('Cannot create directory %r' % prefix, 
                                      'Check that you have `write` access')
-    target = self['target']
-    application = self['application']
-    measurement = self['measurement']
 
-    # compiler_cmd == ['gcc', 'matmul.c', 'matmul_init.c', '-o', 'mm']
-#    compiler = probeCompilerCommand(compiler_cmd)
-#
-#    if measurement['source_inst']:
-#      pdt_src = target['pdt']
-#      cf.pdt.initialize(prefix, pdt_src, compiler_cmd=compiler_cmd)
-#
-    tau_src = target['tau']
-    arch = target['host_arch']
-    cf.tau.initialize(prefix, tau_src, arch=arch, compiler_cmd=compiler_cmd)
-
+    # Configure/build/install TAU if not already done
+    tau_config = cf.tau.initialize(prefix, target['tau'], arch=target['host_arch'], 
+                                   cc=cc, cxx=cxx, fc=fc)
+    tau_path, tau_makefile = tau_config
+    fields['tau_path'] = tau_path
+    fields['tau_makefile'] = tau_makefile
+    
+    # Configure TAU compiler options
+    tau_options = ['-optRevert']
+    if logger.LOG_LEVEL == 'DEBUG':
+        tau_options.append('-optVerbose')
+    else:
+        tau_options.append('-optQuiet')
+    if measurement['source_inst']:
+      tau_options.append('-optPDTInst')
+    comp_inst_options = {'always': '-optCompInst',
+                         'fallback': '-optRevert',
+                         'never': '-optNoCompInst'}
+    tau_options.append(comp_inst_options[measurement['compiler_inst']])
+ 
+    # Configure TAU build environment
+    tau_build_env = {}
+    tau_build_env['TAU_OPTIONS'] = ' '.join(tau_options)
+    tau_build_env['TAU_MAKEFILE'] = tau_makefile
+    fields['tau_build_env'] = tau_build_env
+    
+    # Configure TAU runtime environment
+    tau_run_env = {}
+    if measurement['profile']:
+      tau_run_env['TAU_PROFILE'] = '1'
+    if measurement['trace']:
+      tau_run_env['TAU_TRACE'] = '1'
+    if measurement['sample']:
+      tau_run_env['TAU_SAMPLE'] = '1'
+    if measurement['callpath'] > 0:
+      tau_run_env['TAU_CALLPATH'] = '1'
+      tau_run_env['TAU_CALLPATH_DEPTH'] = str(measurement['callpath'])
+    if measurement['memory_usage']:
+      tau_run_env['TAU_TRACK_HEAP'] = '1'
+    fields['tau_run_env'] = tau_run_env
+    
+    return Experiment.create(fields)

@@ -61,6 +61,10 @@ class Target(ctl.Controller, ctl.ByName):
       'collection': 'Project',
       'via': 'targets'
     },
+    'compilers': {
+      'collection': 'Compiler',
+      'via': 'target'
+    },
     'name': {
       'type': 'string',
       'unique': True,
@@ -71,7 +75,7 @@ class Target(ctl.Controller, ctl.ByName):
     'host_os': {
       'type': 'string',
       'required': True,
-      'argparse': (('--host_os',), 
+      'argparse': (('--host-os',), 
                    {'help': 'Host operating system',
                     'metavar': 'os',
                     'default': cf.tau.DEFAULT_HOST_OS or args.SUPPRESS})
@@ -79,14 +83,14 @@ class Target(ctl.Controller, ctl.ByName):
     'host_arch': {
       'type': 'string',
       'required': True,
-      'argparse': (('--host_arch',), 
+      'argparse': (('--host-arch',), 
                    {'help': 'Host architecture',
                     'metavar': 'arch',
                     'default': cf.tau.DEFAULT_HOST_ARCH or args.SUPPRESS})
     },
     'device_arch': {
       'type': 'string',
-      'argparse': (('--device_arch',), 
+      'argparse': (('--device-arch',), 
                    {'help': 'Coprocessor architecture',
                     'metavar': 'arch',
                     'default': cf.tau.DEFAULT_DEVICE_ARCH or args.SUPPRESS})

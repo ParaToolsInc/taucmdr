@@ -55,17 +55,7 @@ class Trial(ctl.Controller):
       'type': 'datetime',
       'required': True
     },
-    'target_snapshot': {
-      'type': 'json'
-    },
-    'application_snapshot': {
-      'type': 'json'
-    },
-    'measurement_snapshot': {
-      'type': 'json'
-    },
-    'compiler_snapshot': {
+    'experiment_snapshot': {
       'type': 'json'
     }
   }
-

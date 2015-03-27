@@ -44,12 +44,12 @@ from model.project import Project
 from model.target import Target
 from model.application import Application
 from model.measurement import Measurement
-from model.experiment import Experiment
+from model.selection import Selection
 
 
 LOGGER = logger.getLogger(__name__)
 
-SHORT_DESCRIPTION = "Select project components to form a new experiment."
+SHORT_DESCRIPTION = "Select project components for the next experiment."
 
 COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
 
@@ -175,14 +175,14 @@ def main(argv):
           'target': target_eid,
           'application': application_eid,
           'measurement': measurement_eid}
-  found = Experiment.search(data)
+  found = Selection.search(data)
   if not found:
-    LOGGER.debug('Creating new experiment')
-    found = Experiment.create(data)
+    LOGGER.debug('Creating new selection')
+    found = Selection.create(data)
   elif len(found) > 1:
-    raise error.InternalError('More than one experiment with data %r exists!' % data)
+    raise error.InternalError('More than one selection with data %r exists!' % data)
   else:
-    LOGGER.debug('Using existing experiment')
+    LOGGER.debug('Using existing selection')
     found = found[0]
 
   found.populate()
