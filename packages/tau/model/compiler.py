@@ -34,9 +34,12 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
+# System modules
+import os
+import hashlib
 
 # TAU modules
-import cf.tau
+import cf
 import logger
 import settings
 import error
@@ -55,18 +58,83 @@ class Compiler(controller.Controller):
   """
   
   attributes = {
-    'name': {
-      'type': 'string',
-      'required': True
+    'target': {
+      'model': 'Target',
+      'required': True,
     },
-    'version': {
-      'type': 'string'
+    'command': {
+      'type': 'string',
+      'required': True,
     },
     'path': {
       'type': 'string',
+      'required': True,
     },
     'md5': {
       'type': 'string',
+      'required': True,
     },
+    'version': {
+      'type': 'string',
+      'required': True
+    },
+    'role': {
+      'type': 'string',
+      'required': True
+    },
+    'family': {
+      'type': 'string',
+      'required': True
+    },
+    'language': {
+      'type': 'string',
+      'required': True
+    },
+    'tau_wrapper': {
+      'type': 'string',
+      'required': True
+    }
   }
 
+  @classmethod
+  def identify(cls, target, cmd):
+    """
+    Identifies a compiler executable from `cmd`
+    """
+    LOGGER.debug("Identifying compiler: %s" % cmd)
+    command = os.path.basename(cmd)
+    path = util.which(cmd)
+    if not path:
+      raise error.ConfigurationError("'%s' missing or not executable", 
+                                     "Check the command spelling, PATH environment variable, and file permissions")
+
+    md5sum = hashlib.md5()
+    with open(path, 'r') as compiler_file:
+      md5sum.update(compiler_file.read())
+    md5 = md5sum.hexdigest()
+
+    # TODO: Compiler version
+    version = 'FIXME'
+    
+    info = cf.compiler.getCompilerInfo(command)
+    fields = {'target': target.eid,
+              'command': command,
+              'path': path,
+              'md5': md5,
+              'version': version,
+              'role': info.role,
+              'family': info.family,
+              'language': info.language,
+              'tau_wrapper': info.tau_wrapper}
+    
+    found = cls.one(keys=fields)
+    if found:
+      LOGGER.debug("Found compiler record: %s" % found)
+    else:
+      LOGGER.debug("No compiler record found. Creating new record: %s" % fields)
+      found = cls.create(fields)
+
+    if not util.file_accessible(found['path']):
+      raise error.ConfigurationError("Compiler '%s' at '%s' not readable." % (found['command'], found['path']))
+    
+    return found

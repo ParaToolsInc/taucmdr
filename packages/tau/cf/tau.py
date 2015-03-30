@@ -47,7 +47,7 @@ import cf
 import logger
 import util
 import error
-import environment as env
+import environment
 
 
 LOGGER = logger.getLogger(__name__)
@@ -59,59 +59,84 @@ COMPILER_WRAPPERS = {'CC': 'tau_cc.sh',
                      'FC': 'tau_f90.sh',
                      'UPC': 'tau_upc.sh'}
 
-COMMANDS = ['jumpshot',
-            'paraprof',
-            'perfdmf_configure',
-            'perfdmf_createapp',
-            'perfdmf_createexp',
-            'perfdmfdb.py',
-            'perfdmf_loadtrial',
-            'perfexplorer',
-            'perfexplorer_configure',
-            'phaseconvert',
-            'pprof',
-            'ppscript',
-            'slog2print',
-            'tau2slog2',
-            'tau_analyze',
-            'taucc',
-            'tau_cc.sh',
-            'tau_compiler.sh',
-            'tau-config',
-            'tau_convert',
-            'taucxx',
-            'tau_cxx.sh',
-            'taudb_configure',
-            'taudb_install_cert',
-            'taudb_keygen',
-            'taudb_loadtrial',
-            'tau_ebs2otf.pl',
-            'tau_ebs_process.pl',
-            'tauex',
-            'tau_exec',
-            'tau_f77.sh',
-            'tauf90',
-            'tau_f90.sh',
-            'tau_gen_wrapper',
-            'tau_header_replace.pl',
-            'tauinc.pl',
-            'tau_java',
-            'tau_javamax.sh',
-            'tau_macro.sh',
-            'tau_merge',
-            'tau_multimerge',
-            'tau_pebil_rewrite',
-            'tau_reduce',
-            'tau_resolve_addresses.py',
-            'tau_rewrite',
-            'tau_selectfile',
-            'tau_show_libs',
-            'tau_throttle.sh',
-            'tau_treemerge.pl',
-            'tauupc',
-            'tau_upc.sh',
-            'tau_user_setup.sh',
-            'trace2profile']
+COMMANDS = [
+    'jumpshot',
+    'paraprof',
+    'perfdmf_configure',
+    'perfdmf_createapp',
+    'perfdmf_createexp',
+    'perfdmfdb.py',
+    'perfdmf_loadtrial',
+    'perfexplorer',
+    'perfexplorer_configure',
+    'phaseconvert',
+    'pprof',
+    'ppscript',
+    'slog2print',
+    'tau2slog2',
+    'tau_analyze',
+    'taucc',
+    'tau_cc.sh',
+    'tau_compiler.sh',
+    'tau-config',
+    'tau_convert',
+    'taucxx',
+    'tau_cxx.sh',
+    'taudb_configure',
+    'taudb_install_cert',
+    'taudb_keygen',
+    'taudb_loadtrial',
+    'tau_ebs2otf.pl',
+    'tau_ebs_process.pl',
+    'tauex',
+    'tau_exec',
+    'tau_f77.sh',
+    'tauf90',
+    'tau_f90.sh',
+    'tau_gen_wrapper',
+    'tau_header_replace.pl',
+    'tauinc.pl',
+    'tau_java',
+    'tau_javamax.sh',
+    'tau_macro.sh',
+    'tau_merge',
+    'tau_multimerge',
+    'tau_pebil_rewrite',
+    'tau_reduce',
+    'tau_resolve_addresses.py',
+    'tau_rewrite',
+    'tau_selectfile',
+    'tau_show_libs',
+    'tau_throttle.sh',
+    'tau_treemerge.pl',
+    'tauupc',
+    'tau_upc.sh',
+    'tau_user_setup.sh',
+    'trace2profile'
+]
+
+TAU_COMPILER_OPTIONS = {
+    'verbose': {True: ['-optVerbose'], 
+                False: ['-optQuiet']},
+    'halt_on_error': {True: ['-optNoRevert'], 
+                      False: ['-optRevert']},
+    'compiler_inst': {'always': ['-optCompInst'], 
+                      'never': ['-optNoCompInst'],
+                      'fallback': ['-optRevert', '-optNoCompInst']},
+}
+
+TAU_ENVIRONMENT_OPTIONS = {
+    'profile': {True: [('TAU_PROFILE', 1)], 
+                False: [('TAU_PROFILE', 0)]},
+    'trace': {True: [('TAU_TRACE', 1)],
+              False: [('TAU_TRACE', 0)]},
+    'sample': {True: [('TAU_SAMPLE', 1)],
+               False: [('TAU_SAMPLE', 0)]},
+    'callpath': {True: [('TAU_CALLPATH', 1), ('TAU_CALLPATH_DEPTH', None)],
+                 False: [('TAU_CALLPATH', 0), ('TAU_CALLPATH_DEPTH', 0)]},
+    'memory_usage': {True: [('TAU_TRACK_HEAP', 1)],
+                     False: [('TAU_TRACK_HEAP', 0)]}
+}
 
 
 def _detectDefaultHostOS():
@@ -139,29 +164,21 @@ def _detectDefaultDeviceArch():
   return None
 DEFAULT_DEVICE_ARCH = _detectDefaultDeviceArch()
 
-def _getFortranConfigureFlag(compiler):
-  if compiler.family != 'MPI':
-     family_map = {'GNU': 'gfortran',
-                   'Intel': 'intel'}
-     try:
-       return family_map[compiler.family]
-     except KeyError:
-       raise InternalError("Unknown compiler family for Fortran: '%s'" % compiler.family)
-  else:
-    # TODO:  Recognize family from MPI compiler
-    raise InternalError("Unknown compiler family for Fortran: '%s'" % compiler.family)
 
-def verifyInstallation(prefix, arch, cc=None, cxx=None, fortran=None):
+
+def verifyInstallation(prefix, arch, cc=None, cxx=None, fc=None):
   """
-  Returns True if there is a working TAU installation at 'prefix' or raises
-  a ConfigurationError describing why that installation is broken.
+  Returns a path to a directory containing 'bin' and 'lib' directories for
+  architecture `arch` if there is a working TAU installation at `prefix` or 
+  raises a ConfigurationError describing why that installation is broken.
   """
   LOGGER.debug("Checking TAU installation at '%s' targeting arch '%s'" % (prefix, arch))
   
   if not os.path.exists(prefix):
     raise error.ConfigurationError("'%s' does not exist" % prefix)
-  bin = os.path.join(prefix, arch, 'bin')
-  lib = os.path.join(prefix, arch, 'lib')
+  arch_path = os.path.join(prefix, arch)
+  bin = os.path.join(arch_path, 'bin')
+  lib = os.path.join(arch_path, 'lib')
 
   # Check for all commands
   for cmd in COMMANDS:
@@ -181,6 +198,10 @@ def verifyInstallation(prefix, arch, cc=None, cxx=None, fortran=None):
   if not os.path.exists(makefile):
     LOGGER.warning("TAU installation at '%s' does not have a minimal Makefile.tau." % prefix)
 
+  # Check for a makefile that matches requirements
+  # TODO: Pick the right one
+  # makefile = makefile
+
   taudb_prefix = os.path.join(os.path.expanduser('~'), '.ParaProf')
   LOGGER.debug("Checking tauDB installation at '%s'" % taudb_prefix)
   
@@ -193,12 +214,12 @@ def verifyInstallation(prefix, arch, cc=None, cxx=None, fortran=None):
 
   LOGGER.debug("tauDB installation at '%s' is valid" % taudb_prefix)
   LOGGER.debug("TAU installation at '%s' is valid" % prefix)
-  return True
+  
+  return arch_path, makefile
 
 
 def initialize(prefix, src, force_reinitialize=False, 
-               arch=None, 
-               compiler_cmd=None):
+               arch=None, cc=None, cxx=None, fc=None):
   """
   TODO: Docs
   """
@@ -206,46 +227,18 @@ def initialize(prefix, src, force_reinitialize=False,
   if not arch:
     arch = detectDefaultHostArch()
   LOGGER.debug("Initializing TAU at '%s' from '%s' with arch=%s" % (tau_prefix, src, arch))
-
-  # Check compilers
-  cc = None
-  cxx = None
-  fortran = None
-  if compiler_cmd:
-    family = cf.compiler.getFamily(compiler_cmd[0])
-    for comp in family['CC']:
-      if util.which(comp.command):
-        cc = comp.command
-        break
-    if not cc:
-      raise error.ConfigurationError("Cannot find C compiler command!")
-    LOGGER.debug('Found CC=%s' % cc)
-    for comp in family['CXX']:
-      if util.which(comp.command):
-        cxx = comp.command
-        break
-    if not cxx:
-      raise error.ConfigurationError("Cannot find C++ compiler command!")
-    LOGGER.debug('Found CXX=%s' % cxx)
-    for comp in family['FC']:
-      if util.which(comp.command):
-        # TAU's configure script has a goofy way of specifying the fortran compiler
-        fortran = _getFortranConfigureFlag(comp)
-    LOGGER.debug('Found FC=%s' % fortran)
   
   # Check if the installation is already initialized
-  try:
-    verifyInstallation(tau_prefix, arch=arch, cc=cc, cxx=cxx, fortran=fortran)
-  except error.ConfigurationError, err:
-    LOGGER.debug("Invalid installation: %s" % err)
-    pass
-  else:
-    if not force_reinitialize:
-      return
+  if not force_reinitialize:
+    try:
+      return verifyInstallation(tau_prefix, arch=arch, 
+                                cc=cc, cxx=cxx, fc=fc)
+    except error.ConfigurationError, err:
+      LOGGER.debug("Invalid installation: %s" % err)
   
   # Control build output
   with logger.logging_streams():
-    
+
     # Download, unpack, or copy TAU source code
     if src.lower() == 'download':
       src = DEFAULT_SOURCE
@@ -260,11 +253,30 @@ def initialize(prefix, src, force_reinitialize=False,
     finally:
       try: os.remove(dst)
       except: pass
+      
+    # TAU's configure script has a goofy way of specifying the fortran compiler
+    if fc:
+      if fc['family'] != 'MPI':
+         family_map = {'GNU': 'gfortran', 
+                       'Intel': 'intel'}
+         fc_family = fc['family']
+         try:
+           fortran_flag = '-fortran=%s' % family_map[fc_family]
+         except KeyError:
+           raise InternalError("Unknown compiler family for Fortran: '%s'" % fc_family)
+      else:
+        # TODO:  Recognize family from MPI compiler
+        raise InternalError("Unknown compiler family for Fortran: '%s'" % fc_family)
+    else:
+      fortran_flag = ''
   
     # Initialize installation with a minimal configuration
     prefix_flag = '-prefix=%s' % tau_prefix
-    arch_flag = '-arch=%s' % arch if arch else ''
-    cmd = ['./configure', prefix_flag, arch_flag]
+    arch_flag = '-arch=%s' % arch
+    cc_flag = '-cc=%s' % cc['command'] if cc else ''
+    cxx_flag = '-c++=%s' % cxx['command'] if cxx else ''
+    cmd = ['./configure', prefix_flag, arch_flag, 
+           cc_flag, cxx_flag, fortran_flag]
     LOGGER.debug('Creating configure subprocess in %r: %r' % (srcdir, cmd))
     LOGGER.info('Configuring TAU...\n    %s' % ' '.join(cmd))
     proc = subprocess.Popen(cmd, cwd=srcdir, stdout=sys.stdout, stderr=sys.stderr)
@@ -292,173 +304,12 @@ def initialize(prefix, src, force_reinitialize=False,
       raise error.ConfigurationError('tauDB configure failed.')
 
     # Add TAU to PATH
-    env.PATH.append(os.path.join(tau_prefix, arch, 'bin'))
+    environment.PATH.append(os.path.join(tau_prefix, arch, 'bin'))
     LOGGER.info('TAU configured successfully')
-
   
+  # Verify the new installation and return
+  return verifyInstallation(tau_prefix, arch=arch, 
+                            cc=cc, cxx=cxx, fc=fc)
 
-# class TauPackage(Package):
-#     """
-#     TAU package
-#     """
-#     
-#     SOURCES = ['http://tau.uoregon.edu/tau.tgz']
-#     
-#     def __init__(self, project):
-#         super(TauPackage, self).__init__(project)
-#         keys = ['bfd', 'cuda', 'dyninst', 'mpi', 'openmp', 'papi', 'pdt', 'pthreads']
-#         name = '_'.join(sorted([k.lower() for k in keys if self.project.config.get(k)]))
-#         self.system_prefix = os.path.join(getRegistry().system.prefix, 
-#                                   self.project.target_prefix, 'tau')
-#         self.user_prefix =  os.path.join(getRegistry().user.prefix, 
-#                                          self.project.target_prefix, 'tau')
-#         self.bfd = BfdPackage(self.project)
-#         self.pdt = PdtPackage(self.project)
-#         self.unwind = None # FIXME: UnwindPackage
-#         self.papi = None
-#         self.dyninst = None
-#         self.cuda = None
-# 
-#     def install(self, stdout=sys.stdout, stderr=sys.stderr):
-#         config = self.project.config
-#         tau_opt = config['tau']
-# 
-#         # Install dependencies
-#         if self.bfd:
-#             self.bfd.install(stdout, stderr)
-#         if self.pdt:
-#             self.pdt.install(stdout, stderr)
-#         
-#         for loc in [self.system_prefix, self.user_prefix]:
-#             if os.path.isdir(loc):
-#                 LOGGER.info("Using TAU installation found at %s" % loc)
-#                 self.prefix = loc
-#                 return
-# 
-#         # Try to install systemwide
-#         if getRegistry().system.isWritable():
-#             self.prefix = self.system_prefix
-#         elif getRegistry().user.isWritable():
-#             self.prefix = self.user_prefix
-#         else:
-#             raise error.ConfigurationError("User-level TAU installation at %r is not writable" % self.user_prefix,
-#                                      "Check the file permissions and try again") 
-#         LOGGER.info('Installing TAU at %r' % self.prefix)
-# 
-#         if tau_opt.lower() == 'download':
-#             src = self.SOURCES
-#         elif os.path.isdir(tau_opt):
-#             LOGGER.debug('Assuming user-supplied TAU at %r is properly installed' % tau_opt)
-#             return
-#         elif os.path.isfile(tau_opt):
-#             src = ['file://'+tau_opt]
-#             LOGGER.debug('Will build TAU from user-specified file %r' % tau_opt)
-#         else:
-#             raise PackageError('Invalid TAU directory %r' % tau_opt, 
-#                                'Verify that the directory exists and that you have correct permissions to access it.')
-# 
-#         # Configure the source code for this configuration
-#         srcdir = self._getSource(src, stdout, stderr)
-#         cmd = self._getConfigureCommand()
-#         LOGGER.debug('Creating configure subprocess in %r: %r' % (srcdir, cmd))
-#         LOGGER.info('Configuring TAU...\n%s' % ' '.join(cmd))
-#         proc = subprocess.Popen(cmd, cwd=srcdir, stdout=stdout, stderr=stderr)
-#         if proc.wait():
-#             shutil.rmtree(self.prefix, ignore_errors=True)
-#             raise PackageError('TAU configure failed.')
-#         
-#         # Execute make
-#         cmd = ['make', '-j', 'install']
-#         LOGGER.debug('Creating make subprocess in %r: %r' % (srcdir, cmd))
-#         LOGGER.info('Compiling TAU...\n%s' % ' '.join(cmd))
-#         proc = subprocess.Popen(cmd, cwd=srcdir, stdout=stdout, stderr=stderr)
-#         if proc.wait():
-#             shutil.rmtree(self.prefix, ignore_errors=True)
-#             raise PackageError('TAU compilation failed.')
-#         
-#         # Leave source, we'll probably need it again soon
-#         LOGGER.debug('Preserving %r for future use' % srcdir)
-#         LOGGER.info('TAU installation complete.')
-#         
-#     def uninstall(self, stdout=sys.stdout, stderr=sys.stderr):
-#         LOGGER.debug('Recursively deleting %r' % self.prefix)
-#         shutil.rmtree(self.prefix)
-#         LOGGER.info('TAU uninstalled.')
-# 
-#     def _getSource(self, sources, stdout, stderr):
-#         """
-#         Downloads or copies TAU source code
-#         """
-#         source_prefix = os.path.join(self.project.registry.prefix, 'src')
-#         for src in sources:
-#             dst = os.path.join(source_prefix, os.path.basename(src))
-#             if src.startswith('http://') or src.startswith('ftp://'):
-#                 try:
-#                     util.download(src, dst, stdout, stderr)
-#                 except:
-#                     continue
-#             elif src.startswith('file://'):
-#                 try:
-#                     shutil.copy(src, dst)
-#                 except:
-#                     continue
-#             else:
-#                 raise InternalError("Don't know how to acquire source file %r" % src)
-#             src_path = util.extract(dst, source_prefix)
-#             os.remove(dst)
-#             return src_path
-#         raise PackageError('Failed to get source code')
-# 
-#     def _translateConfigureArg(self, key, val):
-#         """
-#         Gets the configure script argument(s) corresponding to a Tau Commander argument
-#         """
-# 
-#     def _getConfigureCommand(self):
-#         """
-#         Returns the command that will configure TAU for this project
-#         """
-#         config = self.project.config
-#         pdt_prefix = self.pdt.prefix if config['pdt'] == 'download' else config['pdt']
-#         bfd_prefix = self.bfd.prefix if config['bfd'] == 'download' else config['bfd']
-#         
-#         # Excluded (e.g. runtime) flags
-#         excluded = ['name', 'cuda', 'profile', 'trace', 'sample', 'callpath', 
-#                     'memory', 'memory-debug', 'comm-matrix']
-#         # No parameter flags
-#         noparam = {'mpi': '-mpi',
-#                    'openmp': '-opari',
-#                    'pthreads': '-pthread',
-#                    'io': '-iowrapper',
-#                    'pdt': '-pdt=%s' % pdt_prefix,
-#                    'bfd': '-bfd=%s' % bfd_prefix,
-#                    'unwind': '-unwind=%s' % config['unwind'],
-#                    'cuda-sdk': '-cuda=%s' % 'FIXME'}
-#         # One parameter flags
-#         oneparam = {'dyninst': '-dyninst=%s',
-#                     'mpi-include': '-mpiinc=%s',
-#                     'mpi-lib': '-mpilib=%s',
-#                     'papi': '-papi=%s',
-#                     'target-arch': '-arch=%s',
-#                     'upc': '-upc=%s',
-#                     'upc-gasnet': '-gasnet=%s',
-#                     'upc-network': '-upcnetwork=%s',
-#                     #TODO: Translate compiler command correctly
-#                     'cc': '-cc=%s',
-#                     'c++': '-c++=%s',
-#                     'fortran': '-fortran=%s',
-#                     'pdt_c++': '-pdt_c++=%s'}
-# 
-#         cmd = ['./configure', '-prefix=%s' % self.prefix]
-#         for key, val in config.iteritems():
-#             if val and key not in excluded:
-#                 try:
-#                     arg = [noparam[key]]
-#                 except KeyError:
-#                     try:
-#                         arg = [oneparam[key] % val]
-#                     except KeyError:
-#                         raise PackageError("Couldn't find an appropriate configure argument for %r" % key)
-#                 cmd.extend(arg)
-#         return cmd
-        
+
+def getBuildEnvironment():

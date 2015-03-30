@@ -35,70 +35,65 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+# System modules
 import os
-import sys
-import subprocess
-import taucmd
-from taucmd.Registry import REGISTRY
-from taucmd.commands.build import TAU_CXX
 
-LOGGER = taucmd.getLogger(__name__)
+# TAU modules
+import cf
+import logger
+import settings
+import error
+import controller
+import util
+import environment
 
-SHORT_DESCRIPTION = "A special compiler template."
+LOGGER = logger.getLogger(__name__)
 
-USAGE = """
-Usage:
-  tau build _special [<args>...]
-"""
 
-HELP = """
-'tau build _special' help page to be written.
-"""
+class Selection(controller.Controller):
+  """
+  Selection data model controller
+  """
+  
+  attributes = {
+    'project': {
+      'model': 'Project',
+      'required': True,
+    },
+    'target': {
+      'model': 'Target',
+      'required': True,
+    },
+    'application': {
+      'model': 'Application',
+      'required': True,
+    },
+    'measurement': {
+      'model': 'Measurement',
+      'required': True,
+    },
+  }
 
-COMMAND = '_special'
+  def onDelete(self):
+    if self.isSelected():
+      settings.unset('selection_id')
 
-# Set appropriately
-TAU_COMPILER = TAU_CXX
+  def select(self):
+    if not self.eid:
+      raise error.InternalError('Tried to select an experiment without an eid')
+    settings.set('selection_id', self.eid)
+  
+  def isSelected(self):
+    if self.eid:
+      return settings.get('selection_id') == self.eid
+    return False
 
-def getUsage():
-    return USAGE
-
-def getHelp():
-    return HELP
-
-def main(argv):
-    """
-    Program entry point
-    """
-    LOGGER.debug('Arguments: %r' % argv)
-    cmd_args = argv[2:]
-    if not cmd_args:
-        print "ERROR: no options specified"
-        return taucmd.EXIT_FAILURE
-    
-    if not len(REGISTRY):
-        print "There are no TAU projects in %r.  See 'tau project create'." % os.getcwd()
-        return taucmd.EXIT_FAILURE
-
-    # Check project compatibility
-    proj = REGISTRY.getSelectedProject()
-    print 'Using TAU project %r' % proj.getName()
-    if not proj.supportsCompiler(COMMAND):
-        print "Warning: %r project may not support the %r compiler command.  Supported compilers: %r" % (proj.getName(), COMMAND, proj.getCompilers())
-    
-    # Compile the project if needed
-    proj.compile()
-
-    # Set the environment
-    env = proj.getTauCompilerEnvironment()
-
-    # Get compiler flags
-    flags = proj.getTauCompilerFlags()
-
-    # Execute the compiler wrapper script
-    cmd = [TAU_COMPILER] + flags + cmd_args
-
-    LOGGER.debug('Creating subprocess: cmd=%r, env=%r' % (cmd, env))
-    proc = subprocess.Popen(cmd, env=env, stdout=sys.stdout, stderr=sys.stderr)
-    return proc.wait()
-    
+  @classmethod
+  def getSelected(cls):
+    selection_id = settings.get('selection_id')
+    if selection_id:
+      found = cls.one(eid=selection_id)
+      if not found:
+        raise error.InternalError('Invalid experiment ID: %r' % selection_id)
+      return found
+    return None

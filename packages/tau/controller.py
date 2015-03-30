@@ -107,7 +107,7 @@ class Controller(object):
     self.eid = getattr(fields, 'eid', None)
     self.data = self._validate(fields)
     self.populated = False
-    
+
   def __getitem__(self, key):
     return self.data[key]
   
@@ -127,7 +127,7 @@ class Controller(object):
     if enforce_schema:
       for key in data:
         if not key in cls.attributes:
-          raise ModelError(cls, 'Data field %r not described in %s schema' % (key, cls.model_name))
+          raise ModelError(cls, "Model '%s' has no attribute named '%s'" % (cls.model_name, key))
     validated = {}
     for attr, props in cls.attributes.iteritems():
       #
