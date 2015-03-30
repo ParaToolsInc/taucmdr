@@ -83,57 +83,31 @@ class Experiment(controller.Controller):
       'via': 'experiment'
     },
   }
+  
+  def getCompiletimeConfig(self):
+    """
+    TODO: Docs
+    """
+    # Will include ScoreP settings and possibly others in future
+    return self.tau.getCompiletimeConfig()
 
   @classmethod
-  def configure(cls, selected, compiler_cmd):
+  def configure(cls, selection, cc, cxx, fc):
     """
     Installs all software required to perform the experiment and configures
     environment variables
-    """
-    selected.populate()
-    target = selected['target']
-    application = selected['application']
-    measurement = selected['measurement']
-    compiler = Compiler.identify(target, compiler_cmd)
-    
+    """   
+    selection.populate()
+    target = selection['target']
+    application = selection['application']
+    measurement = selection['measurement']
+
     # See if we've already configured this experiment
-    found = cls.one(keys={'selection': selected.eid, compiler['role']: compiler.eid})
-    if found:
-      LOGGER.debug("Found experiment: %s" % found)
-      return found
-    
-    LOGGER.debug("Experiment not found, creating new experiment")
-    fields = {'selection': selected.eid}
-    
-    # Discover and configure compilers
-    compilers = {compiler['role']: compiler}
-    for info in cf.compiler.getCompilerFamily(compiler['command']):
-      if info.role != compiler['role']:
-        try:
-          other = Compiler.identify(target, info.command)
-        except error.ConfigurationError:
-          continue
-        if os.path.dirname(other['path']) == os.path.dirname(compiler['path']):
-          compilers[other['role']] = other
-    try:
-      cc = compilers['CC']
-    except KeyError:
-      raise error.ConfigurationError("C compiler matching '%s' not found" % compiler_cmd)
-    try:
-      cxx = compilers['CXX']
-    except KeyError:
-      raise error.ConfigurationError("C++ compiler matching '%s' not found" % compiler_cmd)
-    try:
-      fc = compilers['FC']
-    except KeyError:
-      raise error.ConfigurationError("Fortran compiler matching '%s' not found" % compiler_cmd)
+    fields = {'selection': selection.eid, 'CC': cc.eid, 'CXX': cxx.eid, 'FC': fc.eid}
+    found = cls.one(keys=fields)
 
-    fields['CC'] = cc.eid
-    fields['CXX'] = cxx.eid
-    fields['FC'] = fc.eid
-
-    # Create a place to store project files and settings
-    prefix = selected['project']['prefix']
+    # Make sure project prefix exists
+    prefix = selection['project']['prefix']
     try: 
       util.mkdirp(prefix)
     except:
@@ -165,30 +139,40 @@ class Experiment(controller.Controller):
                      memory_measurements=None, # TODO
                      callpath=measurement['callpath'])
     tau.install()
-    
-    # Create a new experiment record to mark configuration success 
-    exp = Experiment.create(fields)
-    exp.tau = tau
-    return exp
 
-  def build(self, compiler_cmd, compiler_args):
+    if found:
+      LOGGER.debug("Found experiment: %s" % found)
+    else:
+      LOGGER.debug("Experiment not found, creating new experiment")
+      found = Experiment.create(fields)
+
+    found.tau = tau
+    return found
+
+  @classmethod
+  def managedBuild(cls, selection, compiler_cmd, compiler_args):
     """
     TODO: Docs
     """
-    compiler = self.tau.getCompiler(compiler_cmd)
-    tauOpts, tauEnv = tau.getCompiletimeConfig()
-    
-    cmd = [compiler] + tauOpts + compiler_args
-    env = environment.buildEnvironment(tauEnv)
-    
-    # Make sure TAU's bin is always in PATH
-    env['PATH'] = os.pathsep.join(tau.bin_path, env['PATH'])
-    
+    selection.populate()
+    target = selection['target']
+    application = selection['application']
+    measurement = selection['measurement']
+    key_compiler = Compiler.identify(target, compiler_cmd) 
+    cc, cxx, fc = Compiler.getCompilers(target, key_compiler)
+
+    expr = cls.configure(selection, cc, cxx, fc)
+    opts, env = expr.getCompiletimeConfig()
+
+    use_wrapper = measurement['source_inst'] or measurement['comp_inst']
+    if use_wrapper:
+      compiler_cmd = key_compiler['tau_wrapper']
+
+    cmd = [compiler_cmd] + opts + compiler_args
+
     LOGGER.debug('Creating subprocess: cmd=%r, env=%r' % (cmd, env))
     LOGGER.info('\n'.join(['%s=%s' % i for i in env.iteritems() if i[0].startswith('TAU')]))
     LOGGER.info(' '.join(cmd))
- 
-    # Control build output
     with logger.logging_streams():
       proc = subprocess.Popen(cmd, env=env, stdout=sys.stdout, stderr=sys.stderr)
       return proc.wait()

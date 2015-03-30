@@ -147,8 +147,8 @@ def _parseConfig(config, commandline_opts, environment_vars):
   TODO: Docs
   """
   opts = set()
-  envs = dict()
-  for key, val in config:
+  envs = dict(os.environ)
+  for key, val in config.iteritems():
     try:
       option = commandline_opts[key]
     except KeyError:
@@ -167,10 +167,10 @@ def _parseConfig(config, commandline_opts, environment_vars):
       pass
     else:
       try:
-        envs.extend(option(val))
+        envs.update(option(val))
       except TypeError:
         try:
-          envs.extend(option[val])
+          envs.update(option[val])
         except KeyError:
           raise error.InternalError('Invalid TAU configuration parameter: %s=%s' % (key, val))
   return list(opts), envs
@@ -192,8 +192,9 @@ class Tau(object):
     self.cc = cc
     self.cxx = cxx
     self.fc = fc
+    compiler_prefix = '.'.join([str(c.eid) for c in cc, cxx, fc if c])
     self.src_prefix = os.path.join(prefix, 'src')
-    self.tau_prefix = os.path.join(prefix, 'tau')
+    self.tau_prefix = os.path.join(prefix, 'tau', compiler_prefix)
     self.include_path = os.path.join(self.tau_prefix, 'include')
     self.arch_path = os.path.join(self.tau_prefix, arch)
     self.bin_path = os.path.join(self.arch_path, 'bin')
@@ -254,7 +255,7 @@ class Tau(object):
       try:
         return self.verify()
       except error.ConfigurationError, err:
-        LOGGER.debug("Invalid installation: %s" % err)
+        LOGGER.debug(err)
     
     # Control build output
     LOGGER.info('Starting TAU installation')
@@ -331,24 +332,6 @@ class Tau(object):
     # TODO: Pick the right one
     makefile = 'Makefile.tau'
     return os.path.join(self.lib_path, makefile)
-  
-  def getCompiler(self, compiler_cmd):
-    """
-    Returns a compiler command, either a compiler or a TAU wrapper script
-    """
-    source_inst = self.config.get('source_inst', False)
-    comp_inst = self.config.get('comp_inst', False)
-    use_wrapper = source_inst or comp_inst
-    
-    #
-    # TODO: Check compiler_cmd compatible with this TAU installation
-    #
-    
-    compiler_info = cf.compiler.getCompilerInfo(compiler_cmd)
-    if use_wrapper:
-      return compiler_info.tau_wrapper
-    else:
-      return compiler_cmd
 
   def getCompiletimeConfig(self):
     """
@@ -363,9 +346,10 @@ class Tau(object):
                            }
     environment_variables = {}
     opts, env = _parseConfig(self.config, commandline_options, environment_variables)
+    env['PATH'] = os.pathsep.join([self.bin_path, env['PATH']])
     env['TAU_MAKEFILE'] = self.getMakefile()
     return opts, env
-    
+
   def getRuntimeConfig(self):
     """
     TODO: Docs

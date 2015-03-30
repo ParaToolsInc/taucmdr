@@ -57,21 +57,8 @@ def getEnv(name):
          'name': name})
     sys.exit(EXIT_FAILURE)
 
-def buildEnvironment(vars=None):
-  """
-  Returns a dictionary of environment variables suitable for subprocess.Popen
-  """
-  env = dict(os.environ)
-  env['PATH'] = os.pathsep.join(PATH)
-  if vars:
-    env.extend(vars)
-  return env
-
 # TAU Commander home path
 __TAU_HOME__ = getEnv('__TAU_HOME__')
-
-# System path
-PATH = getEnv('PATH').split(os.pathsep)
 
 # User-level TAU files
 USER_PREFIX = os.path.join(os.path.expanduser('~'), '.tau')
