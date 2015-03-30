@@ -43,9 +43,9 @@ import error
 LOGGER = logger.getLogger(__name__)
 
 
-class Compiler(object):
+class CompilerInfo(object):
   """
-  A compiler command
+  Information about a compiler command
   """
   def __init__(self, cmd, role, family, language):
     self.command = cmd
@@ -54,76 +54,59 @@ class Compiler(object):
     self.language = language
     self.tau_wrapper = cf.tau.COMPILER_WRAPPERS[role]
     self.short_descr = "%s Compiler." % language
-    self.usage = "tau build %s [args ...]" % cmd
-    self.help = "Invokes the TAU compiler wrapper script '%s' for %s." % (self.tau_wrapper, self.command)
   
   def __repr__(self):
     return repr(self.__dict__)
 
 
-cc = Compiler('cc', 'CC', 'system', 'C')
-c_plus_plus = Compiler('c++', 'CXX', 'system', 'C++')
-f77 = Compiler('f77', 'FC', 'system', 'FORTRAN77')
-f90 = Compiler('f90', 'FC', 'system', 'Fortran90')
-ftn = Compiler('ftn', 'FC', 'system', 'Fortran90')
+COMPILERS = {
+    'cc': CompilerInfo('cc', 'CC', 'system', 'C'),
+    'c++': CompilerInfo('c++', 'CXX', 'system', 'C++'),
+    'f77': CompilerInfo('f77', 'FC', 'system', 'FORTRAN77'),
+    'f90': CompilerInfo('f90', 'FC', 'system', 'Fortran90'),
+    'ftn': CompilerInfo('ftn', 'FC', 'system', 'Fortran90'),
+    'gcc': CompilerInfo('gcc', 'CC', 'GNU', 'C'),
+    'g++': CompilerInfo('g++', 'CXX', 'GNU', 'C++'),
+    'gfortran': CompilerInfo('gfortran', 'FC', 'GNU', 'Fortran90'),
+    'icc': CompilerInfo('icc', 'CC', 'Intel', 'C'),
+    'icpc': CompilerInfo('icpc', 'CXX', 'Intel', 'C++'),
+    'ifort': CompilerInfo('ifort', 'FC', 'Intel', 'Fortran90'),
+    'pgcc': CompilerInfo('pgcc', 'CC', 'Portland Group', 'C'),
+    'pgCC': CompilerInfo('pgCC', 'CXX', 'Portland Group', 'C++'),
+    'pgf77': CompilerInfo('pgf77', 'FC', 'Portland Group', 'FORTRAN77'),
+    'pgf90': CompilerInfo('ptf90', 'FC', 'Portland Group', 'Fortran90'),
+    'mpicc': CompilerInfo('mpicc', 'CC', 'MPI', 'C'),
+    'mpicxx': CompilerInfo('mpicxx', 'CXX', 'MPI', 'C++'),
+    'mpic++': CompilerInfo('mpic++', 'CXX', 'MPI', 'C++'),
+    'mpiCC': CompilerInfo('mpiCC', 'CXX', 'MPI', 'C++'),
+    'mpif77': CompilerInfo('mpif77', 'FC', 'MPI', 'FORTRAN77'),
+    'mpif90': CompilerInfo('mpif90', 'FC', 'MPI', 'Fortran90')
+    }
 
-gcc = Compiler('gcc', 'CC', 'GNU', 'C')
-g_plus_plus = Compiler('g++', 'CXX', 'GNU', 'C++')
-gfortran = Compiler('gfortran', 'FC', 'GNU', 'Fortran90')
-
-icc = Compiler('icc', 'CC', 'Intel', 'C')
-icpc = Compiler('icpc', 'CXX', 'Intel', 'C++')
-ifort = Compiler('ifort', 'FC', 'Intel', 'Fortran90')
-
-pgcc = Compiler('pgcc', 'CC', 'Portland Group', 'C')
-pgCC = Compiler('pgCC', 'CXX', 'Portland Group', 'C++')
-pgf77 = Compiler('pgf77', 'FC', 'Portland Group', 'FORTRAN77')
-pgf90 = Compiler('ptf90', 'FC', 'Portland Group', 'Fortran90')
-
-mpicc = Compiler('mpicc', 'CC', 'MPI', 'C')
-mpicxx = Compiler('mpicxx', 'CXX', 'MPI', 'C++')
-mpic_plus_plus = Compiler('mpic++', 'CXX', 'MPI', 'C++')
-mpiCC = Compiler('mpiCC', 'CXX', 'MPI', 'C++')
-mpif77 = Compiler('mpif77', 'FC', 'MPI', 'FORTRAN77')
-mpif90 = Compiler('mpif90', 'FC', 'MPI', 'Fortran90')
-
-COMPILERS = {'cc': cc,
-             'c++': c_plus_plus,
-             'f77': f77,
-             'f90': f90,
-             'ftn': ftn,
-             'gcc': gcc,
-             'g++': g_plus_plus,
-             'gfortran': gfortran,
-             'icc': icc,
-             'icpc': icpc,
-             'ifort': ifort,
-             'pgcc': pgcc,
-             'pgCC': pgCC,
-             'pgf77': pgf77,
-             'pgf90': pgf90,
-             'mpicc': mpicc,
-             'mpicxx': mpicxx,
-             'mpic++': mpic_plus_plus,
-             'mpiCC': mpiCC,
-             'mpif77': mpif77,
-             'mpif90': mpif90}
-
-
-def getFamily(cmd):
-  LOGGER.debug("Getting compiler family for '%s'" % cmd)
+FAMILIES = {}
+for comp in COMPILERS.itervalues():
   try:
-    compiler = COMPILERS[cmd]
+    FAMILIES[comp.family].append(comp)
   except KeyError:
-    raise error.InternalError("Invalid compiler command: '%s'" % cmd)
-  family = compiler.family
-  found = {}
-  for comp in COMPILERS.itervalues():
-    if comp.family == family:
-      try:
-        found[comp.role].append(comp)
-      except KeyError:
-        found[comp.role] = [comp]
-  LOGGER.debug('Found compiler family %r' % found)
-  return found
-      
+    FAMILIES[comp.family] = [comp]
+del comp
+
+
+def getCompilerInfo(cmd):
+  """
+  Returns compiler information for `cmd`
+  """
+  try:
+    return COMPILERS[cmd]
+  except KeyError:
+    raise error.ConfigurationError("Unknown compiler command: '%s'", cmd)
+
+
+def getCompilerFamily(cmd):
+  """
+  Returns a list of compilers in the same family as `cmd`
+  """
+  family = FAMILIES[getCompilerInfo(cmd).family]
+  LOGGER.debug("Found compiler family for '%s': %s" % (cmd, family))
+  return family
+

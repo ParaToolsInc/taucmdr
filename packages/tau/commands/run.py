@@ -40,12 +40,13 @@ import sys
 import subprocess
 
 # TAU modules
-import cf.compiler
 import logger
+import error
 import commands
+import util
 import arguments as args
 from model.experiment import Experiment
-from cf.compiler import COMPILERS as SIMPLE_COMPILERS
+from cf.compiler import COMPILERS
 
 
 LOGGER = logger.getLogger(__name__)
@@ -56,21 +57,12 @@ COMMAND = ' '.join(['tau'] + _name_parts)
 
 def _compilersHelp():
   parts = ['  %s  %s' % ('{:<15}'.format(comp.command), comp.short_descr) 
-           for comp in SIMPLE_COMPILERS.itervalues()]
+           for comp in COMPILERS.itervalues()]
   parts.sort()
   return '\n'.join(parts)
 
-def isKnownCompiler(cmd):
-  """
-  Returns True if cmd is a known compiler command
-  """
-  known = SIMPLE_COMPILERS.keys()
-#   known.extend([n for _, n, _ in 
-#                 walk_packages(sys.modules[__name__].__path__)])
-  return cmd in known
 
-
-SHORT_DESCRIPTION = "Instrument programs during compilation and/or linking."
+SHORT_DESCRIPTION = "Gather data from an application into an experiment trial."
 
 USAGE = """
   %(command)s <command> [args ...]
@@ -89,7 +81,7 @@ compiler commands:
        'command_descr': commands.getCommandsHelp(__name__)}
 
 
-_arguments = [ (('cmd',), {'help': "Compiler or linker command, e.g. 'gcc'",
+_arguments = [ (('cmd',), {'help': "Any application command, e.g. './a.out'",
                            'metavar': '<command>'}),
                (('cmd_args',), {'help': "Compiler arguments",
                                 'metavar': 'args',
@@ -103,11 +95,12 @@ PARSER = args.getParser(_arguments,
 def getUsage():
   return PARSER.format_help() 
 
-
 def getHelp():
   return HELP
 
-
+def isExecutable(cmd):
+    return util.which(cmd) != None
+  
 def main(argv):
   """
   Program entry point
@@ -119,30 +112,17 @@ def main(argv):
   cmd_args = args.cmd_args
   
   selected = Experiment.getSelected()
-  selected.bootstrap([cmd] + cmd_args)
+  if not selected:
+    raise error.ConfigurationError("No configuration selected.", "See `tau project select`")
+  selected.bootstrap(compiler_cmd, compiler_args)
 
-  if cmd in SIMPLE_COMPILERS:
-   pass
-#     # Compile the project if needed
-#     proj.compile()
-#    
-#     # Set the environment
-#     env = proj.getTauCompilerEnvironment()
-#    
-#     # Get compiler flags
-#     flags = proj.getTauCompilerFlags()
-#      
-#     # Execute the compiler wrapper script
-#     if cmd_args:
-#         cmd = [SIMPLE_COMPILERS[compiler].tau_cmd] + flags + cmd_args
-#     else:
-#         cmd = [SIMPLE_COMPILERS[compiler].cmd]
-#          
-#     LOGGER.debug('Creating subprocess: cmd=%r, env=%r' % (cmd, env))
-#     LOGGER.info('\n'.join(['%s=%s' % i for i in env.iteritems() if i[0].startswith('TAU')]))
-#     LOGGER.info(' '.join(cmd))
-#     proc = subprocess.Popen(cmd, env=env, stdout=sys.stdout, stderr=sys.stderr)
-#     return proc.wait()
+  cmd = [selected.compilers[compiler_cmd]] + compiler_args
+  env = selected.tau_build_env
+  LOGGER.debug('Creating subprocess: cmd=%r, env=%r' % (cmd, env))
+  LOGGER.info('\n'.join(['%s=%s' % i for i in env.iteritems() if i[0].startswith('TAU')]))
+  LOGGER.info(' '.join(cmd))
 
-  # Execute as a tau command
-  return commands.executeCommand(_name_parts + [cmd], cmd_args)
+  # Control build output
+  with logger.logging_streams():
+    proc = subprocess.Popen(cmd, env=env, stdout=sys.stdout, stderr=sys.stderr)
+    return proc.wait()

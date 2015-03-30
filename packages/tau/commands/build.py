@@ -36,40 +36,58 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 # TAU modules
-import tau
 import logger
-import settings
 import error
 import commands
 import arguments as args
+import cf.compiler
 from model.selection import Selection
+from model.experiment import Experiment
+from model.compiler import Compiler
 
 
 LOGGER = logger.getLogger(__name__)
 
-_name_parts = __name__.split('.')[2:]
+_name_parts = __name__.split('.')[1:]
 COMMAND = ' '.join(['tau'] + _name_parts)
 
-SHORT_DESCRIPTION = "Show all projects and their components."
+
+def _compilersHelp():
+  parts = ['  %s  %s' % ('{:<15}'.format(comp.command), comp.short_descr) 
+           for comp in cf.compiler.COMPILERS.itervalues()]
+  parts.sort()
+  return '\n'.join(parts)
+
+
+SHORT_DESCRIPTION = "Instrument programs during compilation and/or linking."
 
 USAGE = """
-  %(command)s {<command>|<file_name>}
-  %(command)s -h | --help
+  %(command)s <command> [args ...]
+  %(command)s -h | --help 
 """ % {'command': COMMAND}
 
 HELP = """
-Help page to be written.
-"""
+'%(command)s' page to be written.
+""" % {'command': COMMAND}
+
+USAGE_EPILOG = """
+compiler commands:
+%(simple_descr)s
+%(command_descr)s
+""" % {'simple_descr': _compilersHelp(), 
+       'command_descr': commands.getCommandsHelp(__name__)}
 
 
-_arguments = [(('-l','--long'), {'help': "Display all information",
-                                 'action': 'store_true',
-                                 'default': False})]
+_arguments = [ (('cmd',), {'help': "Compiler or linker command, e.g. 'gcc'",
+                           'metavar': '<command>'}),
+               (('cmd_args',), {'help': "Compiler arguments",
+                                'metavar': 'args',
+                                'nargs': args.REMAINDER})]
 PARSER = args.getParser(_arguments,
-                        prog=COMMAND, 
+                        prog=COMMAND,
                         usage=USAGE, 
-                        description=SHORT_DESCRIPTION)
-
+                        description=SHORT_DESCRIPTION,
+                        epilog=USAGE_EPILOG)
 
 def getUsage():
   return PARSER.format_help() 
@@ -78,6 +96,8 @@ def getUsage():
 def getHelp():
   return HELP
 
+def isKnownCompiler(cmd):
+  return cmd in cf.compiler.COMPILERS
 
 def main(argv):
   """
@@ -86,27 +106,22 @@ def main(argv):
   args = PARSER.parse_args(args=argv)
   LOGGER.debug('Arguments: %s' % args)
   
-  subargs = []
-  if args.long:
-    subargs.append('-l')
+  compiler_cmd = args.cmd
+  compiler_args = args.cmd_args
   
-  commands.executeCommand(['target', 'list'], subargs)
-  commands.executeCommand(['application', 'list'], subargs)
-  commands.executeCommand(['measurement', 'list'], subargs)
-  commands.executeCommand(['project', 'list'], subargs)
-  
-  title = '{:=<{}}'.format('== Current Selection ==', logger.LINE_WIDTH)
   selected = Selection.getSelected()
-  LOGGER.debug("Found selection %r" % selected)
-  if selected:
-    selected.populate()
-    target = selected['target']
-    application = selected['application']
-    measurement = selected['measurement']
-    msg = "Application '%s' on target '%s' measured by '%s'" % \
-          (application['name'], target['name'], measurement['name'])
-  else:
-    msg = "No selections. See `tau project select --help`"
-  LOGGER.info('\n'.join([title, '', msg, '']))  
+  if not selected:
+    raise error.ConfigurationError("Nothing selected.", "See `tau project select`") 
   
-  return tau.EXIT_SUCCESS
+  experiment = Experiment.configure(selected, compiler_cmd)
+  experiment.build(compiler_cmd, compiler_args)
+#   cmd = [selected.compilers[compiler_cmd]] + compiler_args
+#   env = selected.tau_build_env
+#   LOGGER.debug('Creating subprocess: cmd=%r, env=%r' % (cmd, env))
+#   LOGGER.info('\n'.join(['%s=%s' % i for i in env.iteritems() if i[0].startswith('TAU')]))
+#   LOGGER.info(' '.join(cmd))
+# 
+#   # Control build output
+#   with logger.logging_streams():
+#     proc = subprocess.Popen(cmd, env=env, stdout=sys.stdout, stderr=sys.stderr)
+#     return proc.wait()
