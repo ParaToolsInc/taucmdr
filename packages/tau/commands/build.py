@@ -113,8 +113,8 @@ def main(argv):
   if not selected:
     raise error.ConfigurationError("Nothing selected.", "See `tau project select`") 
   
-  experiment = Experiment.configure(selected, compiler_cmd)
-  experiment.build(compiler_cmd, compiler_args)
+  expr = Experiment.configure(selected, compiler_cmd)
+  exper.build(compiler_cmd, compiler_args)
 #   cmd = [selected.compilers[compiler_cmd]] + compiler_args
 #   env = selected.tau_build_env
 #   LOGGER.debug('Creating subprocess: cmd=%r, env=%r' % (cmd, env))

@@ -95,6 +95,15 @@ class Target(ctl.Controller, ctl.ByName):
                     'metavar': 'arch',
                     'default': cf.tau.DEFAULT_DEVICE_ARCH or args.SUPPRESS})
     },
+    'cuda': {
+      'type': 'string',
+      'required': True,
+      'argparse': (('--with-cuda',), 
+                   {'help': 'Path to NVIDIA CUDA installation',
+                    'metavar': '<path>',
+                    'dest': 'cuda',
+                    'default': '/usr/local/cuda'})
+    },
     'tau': {
       'type': 'string',
       'required': True,

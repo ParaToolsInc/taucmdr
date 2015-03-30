@@ -78,18 +78,6 @@ class Experiment(controller.Controller):
       'model': 'Compiler',
       'required': True
     },
-    'tau_path': {
-      'type': 'string',
-    },
-    'tau_makefile': {
-      'type': 'string',
-    },
-    'tau_build_env': {
-      'type': 'string',
-    },
-    'tau_run_env': {
-      'type': 'string',
-    },
     'trials': {
       'collection': 'Trial',
       'via': 'experiment'
@@ -139,66 +127,68 @@ class Experiment(controller.Controller):
       fc = compilers['FC']
     except KeyError:
       raise error.ConfigurationError("Fortran compiler matching '%s' not found" % compiler_cmd)
-    
+
     fields['CC'] = cc.eid
     fields['CXX'] = cxx.eid
     fields['FC'] = fc.eid
 
     # Create a place to store project files and settings
     prefix = selected['project']['prefix']
-    try:
+    try: 
       util.mkdirp(prefix)
     except:
       raise error.ConfigurationError('Cannot create directory %r' % prefix, 
                                      'Check that you have `write` access')
 
-    # Configure/build/install TAU if not already done
-    tau_config = cf.tau.initialize(prefix, 
-                                   src=target['tau'], 
-                                   arch=target['host_arch'], 
-                                   cc=cc, cxx=cxx, fc=fc)
-    tau_path, tau_makefile = tau_config
-    fields['tau_path'] = tau_path
-    fields['tau_makefile'] = tau_makefile
+    # Configure/build/install TAU if needed
+    tau = cf.tau.Tau(prefix, cc, cxx, fc, target['tau'], target['host_arch'],
+                     verbose=(logger.LOG_LEVEL == 'DEBUG'),
+                     profile=measurement['profile'],
+                     trace=measurement['trace'],
+                     sample=measurement['sample'],
+                     source_inst=measurement['source_inst'],
+                     compiler_inst=measurement['compiler_inst'],
+                     # TODO: Library wrapping inst
+                     openmp_support=application['openmp'], 
+                     openmp_measurements=measurement['openmp'],
+                     pthreads_support=application['pthreads'], 
+                     pthreads_measurements=None, # TODO
+                     mpi_support=application['mpi'], 
+                     mpi_measurements=measurement['mpi'],
+                     cuda_support=application['cuda'],
+                     cuda_measurements=None, # Todo
+                     shmem_support=application['shmem'],
+                     shmem_measurements=None, # TODO
+                     mpc_support=application['mpc'],
+                     mpc_measurements=None, # TODO
+                     memory_support=None, # TODO
+                     memory_measurements=None, # TODO
+                     callpath=measurement['callpath'])
+    tau.install()
     
-    # Configure TAU compiler options
-    TAU_COMPILER_OPTIONS = cf.tau.TAU_COMPILER_OPTIONS
-    tau_options = TAU_COMPILER_OPTIONS['halt_on_error'][False]
-    tau_options += TAU_COMPILER_OPTIONS['verbose'][logger.LOG_LEVEL == 'DEBUG']
-    tau_options += TAU_COMPILER_OPTIONS['compiler_inst'][measurement['compiler_inst']]
-    tau_options = list(set(tau_options))
-
-    # Configure TAU build environment
-    build_env = cf.tau.getBuildEnvironment(tau_path, tau_makefile,
-                                           halt_on_error=False,
-                                           verbose=(logger.LOG_LEVEL == 'DEBUG'),
-                                           compiler_inst=measurement['compiler_inst']
-                                           )
-    
-    tau_build_env = {}
-    tau_build_env['TAU_OPTIONS'] = ' '.join(tau_options)
-    tau_build_env['TAU_MAKEFILE'] = tau_makefile
-    fields['tau_build_env'] = tau_build_env
-    
-    # Configure TAU runtime environment
-    TAU_ENVIRONMENT_OPTIONS = cf.tau.TAU_ENVIRONMENT_OPTIONS
-    tau_run_env = {}
-    for field in 'profile', 'trace', 'sample', 'memory_usage':
-      tau_run_env.update(TAU_ENVIRONMENT_OPTIONS[field][measurement[field]])
-    tau_run_env['TAU_CALLPATH_DEPTH'] = measurement['callpath']
-    fields['tau_run_env'] = tau_run_env
-    
-    return Experiment.create(fields)
+    # Create a new experiment record to mark configuration success 
+    exp = Experiment.create(fields)
+    exp.tau = tau
+    return exp
 
   def build(self, compiler_cmd, compiler_args):
-    pass
-    #   cmd = [selected.compilers[compiler_cmd]] + compiler_args
-#   env = selected.tau_build_env
-#   LOGGER.debug('Creating subprocess: cmd=%r, env=%r' % (cmd, env))
-#   LOGGER.info('\n'.join(['%s=%s' % i for i in env.iteritems() if i[0].startswith('TAU')]))
-#   LOGGER.info(' '.join(cmd))
-# 
-#   # Control build output
-#   with logger.logging_streams():
-#     proc = subprocess.Popen(cmd, env=env, stdout=sys.stdout, stderr=sys.stderr)
-#     return proc.wait()
+    """
+    TODO: Docs
+    """
+    compiler = self.tau.getCompiler(compiler_cmd)
+    tauOpts, tauEnv = tau.getCompiletimeConfig()
+    
+    cmd = [compiler] + tauOpts + compiler_args
+    env = environment.buildEnvironment(tauEnv)
+    
+    # Make sure TAU's bin is always in PATH
+    env['PATH'] = os.pathsep.join(tau.bin_path, env['PATH'])
+    
+    LOGGER.debug('Creating subprocess: cmd=%r, env=%r' % (cmd, env))
+    LOGGER.info('\n'.join(['%s=%s' % i for i in env.iteritems() if i[0].startswith('TAU')]))
+    LOGGER.info(' '.join(cmd))
+ 
+    # Control build output
+    with logger.logging_streams():
+      proc = subprocess.Popen(cmd, env=env, stdout=sys.stdout, stderr=sys.stderr)
+      return proc.wait()
