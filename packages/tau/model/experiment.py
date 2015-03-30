@@ -42,13 +42,14 @@ import subprocess
 
 
 # TAU modules
-import cf
 import logger
 import settings
 import error
 import controller
 import util
 import environment
+import cf.tau
+import cf.pdt
 from model.project import Project
 from model.target import Target
 from model.compiler import Compiler
@@ -83,13 +84,14 @@ class Experiment(controller.Controller):
       'via': 'experiment'
     },
   }
-  
+
   def getCompiletimeConfig(self):
     """
     TODO: Docs
     """
-    # Will include ScoreP settings and possibly others in future
-    return self.tau.getCompiletimeConfig()
+    opts, env = self.pdt.getCompiletimeConfig([], os.environ)
+    opts, env = self.tau.getCompiletimeConfig(opts, env)
+    return opts, env
 
   @classmethod
   def configure(cls, selection, cc, cxx, fc):
@@ -104,7 +106,13 @@ class Experiment(controller.Controller):
 
     # See if we've already configured this experiment
     fields = {'selection': selection.eid, 'CC': cc.eid, 'CXX': cxx.eid, 'FC': fc.eid}
-    found = cls.one(keys=fields)
+    expr = cls.one(keys=fields)
+    if expr:
+      LOGGER.debug("Found experiment: %s" % expr)
+    else:
+      LOGGER.debug("Experiment not found, creating new experiment")
+      expr = Experiment.create(fields)
+
 
     # Make sure project prefix exists
     prefix = selection['project']['prefix']
@@ -113,10 +121,23 @@ class Experiment(controller.Controller):
     except:
       raise error.ConfigurationError('Cannot create directory %r' % prefix, 
                                      'Check that you have `write` access')
+    
+    verbose = (logger.LOG_LEVEL == 'DEBUG')
+    
+    # Configure/build/install PDT if needed
+    if measurement['source_inst']:
+      pdt = cf.pdt.Pdt(prefix, cxx, target['pdt_source'], target['host_arch'])
+      pdt.install()
+      expr.pdt = pdt
+    else:
+      expr.pdt = None
 
     # Configure/build/install TAU if needed
-    tau = cf.tau.Tau(prefix, cc, cxx, fc, target['tau'], target['host_arch'],
-                     verbose=(logger.LOG_LEVEL == 'DEBUG'),
+    tau = cf.tau.Tau(prefix, cc, cxx, fc, target['tau_source'], target['host_arch'],
+                     verbose=verbose,
+                     pdt=pdt,
+                     bfd=None, # TODO
+                     libunwind=None, # TODO
                      profile=measurement['profile'],
                      trace=measurement['trace'],
                      sample=measurement['sample'],
@@ -139,15 +160,9 @@ class Experiment(controller.Controller):
                      memory_measurements=None, # TODO
                      callpath=measurement['callpath'])
     tau.install()
-
-    if found:
-      LOGGER.debug("Found experiment: %s" % found)
-    else:
-      LOGGER.debug("Experiment not found, creating new experiment")
-      found = Experiment.create(fields)
-
-    found.tau = tau
-    return found
+    expr.tau = tau
+    
+    return expr
 
   @classmethod
   def managedBuild(cls, selection, compiler_cmd, compiler_args):
