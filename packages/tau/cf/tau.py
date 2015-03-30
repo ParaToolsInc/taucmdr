@@ -312,4 +312,4 @@ def initialize(prefix, src, force_reinitialize=False,
                             cc=cc, cxx=cxx, fc=fc)
 
 
-def getBuildEnvironment():
+#def getBuildEnvironment():
