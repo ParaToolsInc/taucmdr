@@ -38,6 +38,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # System modules
 import os
 import sys
+import glob
+import errno
 import shutil
 import platform
 import subprocess
@@ -52,7 +54,7 @@ import environment
 
 LOGGER = logger.getLogger(__name__)
 
-DEFAULT_SOURCE = 'http://tau.uoregon.edu/tau.tgz'
+DEFAULT_SOURCE = {None: 'http://tau.uoregon.edu/tau.tgz'}
 
 COMPILER_WRAPPERS = {'CC': 'tau_cc.sh',
                      'CXX': 'tau_cxx.sh',
@@ -147,7 +149,7 @@ def _parseConfig(config, commandline_opts, environment_vars):
   TODO: Docs
   """
   opts = set()
-  envs = dict(os.environ)
+  envs = dict()
   for key, val in config.iteritems():
     try:
       option = commandline_opts[key]
@@ -175,23 +177,28 @@ def _parseConfig(config, commandline_opts, environment_vars):
           raise error.InternalError('Invalid TAU configuration parameter: %s=%s' % (key, val))
   return list(opts), envs
 
-
-
 class Tau(object):
   """
   Encapsulates a TAU installation
   """
-  def __init__(self, prefix, cc, cxx, fc, src, arch, **config):
-    if src.lower() == 'download':
-      src = DEFAULT_SOURCE
+  def __init__(self, prefix, cc, cxx, fc, src, arch, 
+               pdt, bfd, libunwind, **config):
     if not arch:
       arch = _detectDefaultHostArch()
+    if src.lower() == 'download':
+      try:
+        src = DEFAULT_SOURCE[arch]
+      except KeyError:
+        src = DEFAULT_SOURCE[None]
     self.prefix = prefix
-    self.src = src
-    self.arch = arch
     self.cc = cc
     self.cxx = cxx
     self.fc = fc
+    self.src = src
+    self.arch = arch
+    self.pdt = pdt
+    self.bfd = bfd
+    self.libunwind = libunwind
     compiler_prefix = '.'.join([str(c.eid) for c in cc, cxx, fc if c])
     self.src_prefix = os.path.join(prefix, 'src')
     self.tau_prefix = os.path.join(prefix, 'tau', compiler_prefix)
@@ -203,10 +210,46 @@ class Tau(object):
     self.config = config
     self.config['halt_build_on_error'] = False
 
+  def getTags(self):
+    """
+    TODO: Docs
+    """
+    tags = []
+    config = self.config
+    
+    family = self.cc['family']
+    if family != 'GNU':
+      compiler_tags = {'Intel': 'icpc', 'PGI': 'pgi'}
+      try:
+        tags.append(compiler_tags[family])
+      except KeyError:
+        raise error.InternalError("No makefile tag specified to compiler family '%s'" % family)
+      
+    if config['source_inst']:
+      tags.append('pdt')
+    if config['openmp_support']:
+      openmp_tags = {'ignore': 'openmp',
+                     'ompt': 'ompt',
+                     'opari': 'opari'}
+      tags.append(openmp_tags[config['openmp_measurements']])
+    if config['pthreads_support']:
+      tags.append('pthread')
+    if config['mpi_support']:
+      tags.append('mpi')
+    if config['cuda_support']:
+      tags.append('cuda')    
+    if config['shmem_support']:
+      tags.append('shmem')
+    if config['mpc_support']:
+      tags.append('mpc')
+    
+    LOGGER.debug("TAU tags: %s" % tags)
+    return tags
+
   def verify(self):
     """
-    Returns a path to a directory containing 'bin' and 'lib' directories for
-    architecture `arch` if there is a working TAU installation at `prefix` or 
+    Returns true if if there is a working TAU installation at `prefix` with a
+    directory named `arch` containing `bin` and `lib` directories or 
     raises a ConfigurationError describing why that installation is broken.
     """
     LOGGER.debug("Checking TAU installation at '%s' targeting arch '%s'" % (self.tau_prefix, self.arch))    
@@ -226,10 +269,10 @@ class Tau(object):
     if not os.path.exists(makefile):
       raise error.ConfigurationError("'%s' does not exist" % makefile)
     
-    # Check for the minimal config 'vanilla' makefile
-    makefile = os.path.join(self.lib_path, 'Makefile.tau')
-    if not os.path.exists(makefile):
-      LOGGER.warning("TAU installation at '%s' does not have a minimal Makefile.tau." % self.tau_prefix)
+    # Check for Makefile.tau matching this configuration
+    makefile = self.getMakefile()
+    if not makefile:
+      raise error.ConfigurationError("TAU Makefile not found: %s" % makefile)
     
     # Check tauDB
     LOGGER.debug("Checking tauDB installation at '%s'" % self.taudb_prefix)
@@ -262,15 +305,22 @@ class Tau(object):
     with logger.logging_streams():
       # Download, unpack, or copy TAU source code
       dst = os.path.join(self.src_prefix, os.path.basename(self.src))
-      try:
-        util.download(self.src, dst)
-        srcdir = util.extract(dst, self.src_prefix)
-      except IOError:
-        raise error.ConfigurationError("Cannot acquire source file '%s'" % self.src,
-                                       "Check that the file or directory is accessable")
-      finally:
-        try: os.remove(dst)
-        except: pass
+      src = os.path.join(self.tau_prefix, 'src')
+      LOGGER.debug("Checking for TAU source at '%s'" % src)
+      if os.path.exists(src):
+        LOGGER.debug("Found source at '%s'" % src)
+        srcdir = src
+      else:
+        LOGGER.debug("Source not found, aquiring from '%s'" % self.src)
+        try:
+          util.download(self.src, dst)
+          srcdir = util.extract(dst, self.src_prefix)
+        except IOError:
+          raise error.ConfigurationError("Cannot acquire source file '%s'" % self.src,
+                                         "Check that the file or directory is accessable")
+        finally:
+          try: os.remove(dst)
+          except: pass
 
       # TAU's configure script has a goofy way of specifying the fortran compiler
       if self.fc:
@@ -287,14 +337,53 @@ class Tau(object):
           raise InternalError("Unknown compiler family for Fortran: '%s'" % fc_family)
       else:
         fortran_flag = ''
-    
-      # Initialize installation with a minimal configuration
-      prefix_flag = '-prefix=%s' % self.tau_prefix
-      arch_flag = '-arch=%s' % self.arch
-      cc_flag = '-cc=%s' % self.cc['command'] if self.cc else ''
-      cxx_flag = '-c++=%s' % self.cxx['command'] if self.cxx else ''
-      cmd = ['./configure', prefix_flag, arch_flag, 
-             cc_flag, cxx_flag, fortran_flag]
+        
+      # Check PDT
+      if bool(self.config['source_inst']) != bool(self.pdt):
+        raise error.InternalError("pdt=%s but config['source_inst']=%s" % (self.pdt, self.config['source_inst']))
+
+      # Check BFD
+      if (self.config['sample'] or self.config['compiler_inst'] != 'never') and (not self.bfd):
+        LOGGER.warning("BFD is recommended when using sampling or compiler-based instrumentation")
+
+      # Check libunwind
+      if (bool(self.config['sample']) or bool(self.config['openmp_support'])) != bool(self.libunwind):
+        LOGGER.warning("libunwind is recommended when using sampling or OpenMP")
+
+      # Gather TAU configuration flags
+      base_flags = ['-prefix=%s' % self.tau_prefix, 
+                    '-arch=%s' % self.arch, 
+                    '-cc=%s' % self.cc['command'] if self.cc else '', 
+                    '-c++=%s' % self.cxx['command'] if self.cxx else '', 
+                    fortran_flag,
+                    '-pdt=%s' % self.pdt.pdt_prefix if self.pdt else '',
+                    '-bfd=%s' % self.bfd.bfd_prefix if self.bfd else '',
+                    '-unwind=%s' % self.libunwind.libunwind_prefix if self.libunwind else '']
+      if self.config['mpi_support']:
+        mpi_flags = ['-mpi'
+                     # TODO: -mpiinc, -mpilib, -mpilibrary
+                     ]
+      else:
+        mpi_flags = []
+      if self.config['openmp_support']:
+        openmp_flags = ['-openmp']
+        measurements = self.config['openmp_measurements'] 
+        if measurements == 'ompt':
+          if self.cc['family'] == 'Intel':
+            openmp_flags.append('-ompt')
+          else:
+            raise error.ConfigurationError('OMPT for OpenMP measurement only works with Intel compilers')
+        elif measurements == 'opari':
+          openmp_flags.append('-opari')
+      else:
+        openmp_flags = []
+      if self.config['pthreads_support']:
+        pthreads_flags = ['-pthread']
+      else:
+        pthreads_flags = []
+
+      # Execute configure
+      cmd = ['./configure'] + base_flags + mpi_flags + openmp_flags + pthreads_flags
       LOGGER.debug('Creating configure subprocess in %r: %r' % (srcdir, cmd))
       LOGGER.info('Configuring TAU...\n    %s' % ' '.join(cmd))
       proc = subprocess.Popen(cmd, cwd=srcdir, stdout=sys.stdout, stderr=sys.stderr)
@@ -310,7 +399,14 @@ class Tau(object):
           raise error.ConfigurationError('TAU compilation failed.')
   
       # Leave source, we'll probably need it again soon
+      # Create a link to the source for reuse
       LOGGER.debug('Preserving %r for future use' % srcdir)
+      try:
+        os.symlink(srcdir, src)
+      except OSError as err:
+        if not (err.errno == errno.EEXIST and os.path.islink(src)):
+          LOGGER.warning("Can't create symlink '%s'. TAU source code won't be reused across configurations." % src)
+          
       
       # Initialize tauDB with a minimal configuration
       taudb_configure = os.path.join(self.bin_path, 'taudb_configure')
@@ -329,11 +425,19 @@ class Tau(object):
     """
     Returns an absolute path to a TAU_MAKEFILE
     """
-    # TODO: Pick the right one
-    makefile = 'Makefile.tau'
-    return os.path.join(self.lib_path, makefile)
+    config_tags = set(self.getTags())
+    if not len(config_tags):
+      return 'Makefile.tau'
+    tau_makefiles = glob.glob(os.path.join(self.lib_path, 'Makefile.tau*'))
+    for makefile in tau_makefiles:
+      tags = set(os.path.basename(makefile).split('.')[1].split('-')[1:])
+      if tags <= config_tags and config_tags <= tags:
+        return os.path.join(self.lib_path, makefile)
+    LOGGER.debug("No TAU makefile matches tags '%s'. Available: %s" % (config_tags, tau_makefiles))
+    return None
+    
 
-  def getCompiletimeConfig(self):
+  def getCompiletimeConfig(self, initial_opts, initial_env):
     """
     TODO: Docs
     """
@@ -344,13 +448,18 @@ class Tau(object):
                           'never': ['-optNoCompInst'],
                           'fallback': ['-optRevert', '-optNoCompInst']}
                            }
-    environment_variables = {}
-    opts, env = _parseConfig(self.config, commandline_options, environment_variables)
-    env['PATH'] = os.pathsep.join([self.bin_path, env['PATH']])
+    environment_variables = {}    
+    
+    opts = list(initial_opts)
+    env = dict(initial_env)
+    tauOpts, tauEnv = _parseConfig(self.config, commandline_options, environment_variables)
+    opts.extend(tauOpts)
+    env.update(tauEnv)
+    env['PATH'] = os.pathsep.join([self.bin_path, initial_env.get('PATH', '')])
     env['TAU_MAKEFILE'] = self.getMakefile()
     return opts, env
 
-  def getRuntimeConfig(self):
+  def getRuntimeConfig(self, initial_opts, initial_env):
     """
     TODO: Docs
     """
@@ -370,7 +479,11 @@ class Tau(object):
         'callpath': lambda depth: ({'TAU_CALLPATH': 1, 'TAU_CALLPATH_DEPTH': depth} 
                                    if depth > 0 else {'TAU_CALLPATH': 0})
         }
-    return _parseConfig(self.config, commandline_opts, environment_vars)
-
-
+    opts = list(initial_opts)
+    env = dict(initial_env)
+    tauOpts, tauEnv = _parseConfig(self.config, commandline_opts, environment_vars)
+    opts.extend(tauOpts)
+    env.update(tauEnv)
+    env['PATH'] = os.pathsep.join([self.bin_path, initial_env.get('PATH', '')])
+    return opts, env
     

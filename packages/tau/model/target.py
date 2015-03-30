@@ -40,9 +40,6 @@ import string
 
 # TAU modules
 import cf.tau
-import cf.pdt
-import cf.bfd
-import cf.libunwind
 import logger
 import controller as ctl
 import arguments as args
@@ -104,38 +101,38 @@ class Target(ctl.Controller, ctl.ByName):
                     'dest': 'cuda',
                     'default': '/usr/local/cuda'})
     },
-    'tau': {
+    'tau_source': {
       'type': 'string',
       'required': True,
       'argparse': (('--with-tau',), 
                    {'help': 'URL or path to an existing TAU installation or archive file',
                     'metavar': '(<path>|<url>|"download")',
-                    'dest': 'tau',
-                    'default': cf.tau.DEFAULT_SOURCE})
+                    'dest': 'tau_source',
+                    'default': 'download'})
     },
-    'pdt': {
+    'pdt_source': {
       'type': 'string',
       'argparse': (('--with-pdt',), 
                    {'help': 'URL or path to an existing PDT installation or archive file',
                     'metavar': '(<path>|<url>|"download")',
-                    'dest': 'pdt',
-                    'default': cf.pdt.DEFAULT_SOURCE})
+                    'dest': 'pdt_source',
+                    'default': 'download'})
     },
-    'bfd': {
+    'bfd_source': {
       'type': 'string',
       'argparse': (('--with-bfd',), 
                    {'help': 'URL or path to an existing BfD installation or archive file',
                     'metavar': '(<path>|<url>|"download")',
-                    'dest': 'bfd',
-                    'default': cf.bfd.DEFAULT_SOURCE})
+                    'dest': 'bfd_source',
+                    'default': 'download'})
     },
-    'libunwind': {
+    'libunwind_source': {
       'type': 'string',
       'argparse': (('--with-libunwind',), 
                    {'help': 'URL or path to an existing LIBUNWIND installation or archive file',
                     'metavar': '(<path>|<url>|"download")',
-                    'dest': 'libunwind',
-                    'default': cf.libunwind.DEFAULT_SOURCE})
+                    'dest': 'libunwind_source',
+                    'default': 'download'})
     },
 
 
