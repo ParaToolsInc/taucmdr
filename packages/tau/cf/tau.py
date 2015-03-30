@@ -115,29 +115,6 @@ COMMANDS = [
     'trace2profile'
 ]
 
-TAU_COMPILER_OPTIONS = {
-    'verbose': {True: ['-optVerbose'], 
-                False: ['-optQuiet']},
-    'halt_on_error': {True: ['-optNoRevert'], 
-                      False: ['-optRevert']},
-    'compiler_inst': {'always': ['-optCompInst'], 
-                      'never': ['-optNoCompInst'],
-                      'fallback': ['-optRevert', '-optNoCompInst']},
-}
-
-TAU_ENVIRONMENT_OPTIONS = {
-    'profile': {True: [('TAU_PROFILE', 1)], 
-                False: [('TAU_PROFILE', 0)]},
-    'trace': {True: [('TAU_TRACE', 1)],
-              False: [('TAU_TRACE', 0)]},
-    'sample': {True: [('TAU_SAMPLE', 1)],
-               False: [('TAU_SAMPLE', 0)]},
-    'callpath': {True: [('TAU_CALLPATH', 1), ('TAU_CALLPATH_DEPTH', None)],
-                 False: [('TAU_CALLPATH', 0), ('TAU_CALLPATH_DEPTH', 0)]},
-    'memory_usage': {True: [('TAU_TRACK_HEAP', 1)],
-                     False: [('TAU_TRACK_HEAP', 0)]}
-}
-
 
 def _detectDefaultHostOS():
   """
@@ -165,151 +142,251 @@ def _detectDefaultDeviceArch():
 DEFAULT_DEVICE_ARCH = _detectDefaultDeviceArch()
 
 
-
-def verifyInstallation(prefix, arch, cc=None, cxx=None, fc=None):
-  """
-  Returns a path to a directory containing 'bin' and 'lib' directories for
-  architecture `arch` if there is a working TAU installation at `prefix` or 
-  raises a ConfigurationError describing why that installation is broken.
-  """
-  LOGGER.debug("Checking TAU installation at '%s' targeting arch '%s'" % (prefix, arch))
-  
-  if not os.path.exists(prefix):
-    raise error.ConfigurationError("'%s' does not exist" % prefix)
-  arch_path = os.path.join(prefix, arch)
-  bin = os.path.join(arch_path, 'bin')
-  lib = os.path.join(arch_path, 'lib')
-
-  # Check for all commands
-  for cmd in COMMANDS:
-    path = os.path.join(bin, cmd)
-    if not os.path.exists(path):
-      raise error.ConfigurationError("'%s' is missing" % path)
-    if not os.access(path, os.X_OK):
-      raise error.ConfigurationError("'%s' exists but is not executable" % path)
-  
-  # Check that there is at least one makefile
-  makefile = os.path.join(prefix, 'include', 'Makefile')
-  if not os.path.exists(makefile):
-    raise error.ConfigurationError("'%s' does not exist" % makefile)
-  
-  # Check for the minimal config 'vanilla' makefile
-  makefile = os.path.join(lib, 'Makefile.tau')
-  if not os.path.exists(makefile):
-    LOGGER.warning("TAU installation at '%s' does not have a minimal Makefile.tau." % prefix)
-
-  # Check for a makefile that matches requirements
-  # TODO: Pick the right one
-  # makefile = makefile
-
-  taudb_prefix = os.path.join(os.path.expanduser('~'), '.ParaProf')
-  LOGGER.debug("Checking tauDB installation at '%s'" % taudb_prefix)
-  
-  if not os.path.exists(taudb_prefix):
-    raise error.ConfigurationError("'%s' does not exist" % taudb_prefix)
-
-  path = os.path.join(taudb_prefix, 'perfdmf.cfg')
-  if not os.path.exists(path):
-    raise error.ConfigurationError("'%s' does not exist" % path)
-
-  LOGGER.debug("tauDB installation at '%s' is valid" % taudb_prefix)
-  LOGGER.debug("TAU installation at '%s' is valid" % prefix)
-  
-  return arch_path, makefile
-
-
-def initialize(prefix, src, force_reinitialize=False, 
-               arch=None, cc=None, cxx=None, fc=None):
+def _parseConfig(config, commandline_opts, environment_vars):
   """
   TODO: Docs
   """
-  tau_prefix = os.path.join(prefix, 'tau')
-  if not arch:
-    arch = detectDefaultHostArch()
-  LOGGER.debug("Initializing TAU at '%s' from '%s' with arch=%s" % (tau_prefix, src, arch))
-  
-  # Check if the installation is already initialized
-  if not force_reinitialize:
+  opts = set()
+  envs = dict()
+  for key, val in config:
     try:
-      return verifyInstallation(tau_prefix, arch=arch, 
-                                cc=cc, cxx=cxx, fc=fc)
-    except error.ConfigurationError, err:
-      LOGGER.debug("Invalid installation: %s" % err)
-  
-  # Control build output
-  with logger.logging_streams():
+      option = commandline_opts[key]
+    except KeyError:
+      pass
+    else:
+      try:
+        opts |= set(option(val))
+      except TypeError:
+        try:
+          opts |= set(option[val])
+        except KeyError:
+          raise error.InternalError('Invalid TAU configuration parameter: %s=%s' % (key, val))
+    try:
+      option = environment_vars[key]
+    except KeyError:
+      pass
+    else:
+      try:
+        envs.extend(option(val))
+      except TypeError:
+        try:
+          envs.extend(option[val])
+        except KeyError:
+          raise error.InternalError('Invalid TAU configuration parameter: %s=%s' % (key, val))
+  return list(opts), envs
 
-    # Download, unpack, or copy TAU source code
+
+
+class Tau(object):
+  """
+  Encapsulates a TAU installation
+  """
+  def __init__(self, prefix, cc, cxx, fc, src, arch, **config):
     if src.lower() == 'download':
       src = DEFAULT_SOURCE
-    src_prefix = os.path.join(prefix, 'src')
-    dst = os.path.join(src_prefix, os.path.basename(src))
-    try:
-      util.download(src, dst)
-      srcdir = util.extract(dst, src_prefix)
-    except IOError:
-      raise error.ConfigurationError("Cannot acquire source file '%s'" % src,
-                               "Check that the file or directory is accessable")
-    finally:
-      try: os.remove(dst)
-      except: pass
-      
-    # TAU's configure script has a goofy way of specifying the fortran compiler
-    if fc:
-      if fc['family'] != 'MPI':
-         family_map = {'GNU': 'gfortran', 
-                       'Intel': 'intel'}
-         fc_family = fc['family']
-         try:
-           fortran_flag = '-fortran=%s' % family_map[fc_family]
-         except KeyError:
-           raise InternalError("Unknown compiler family for Fortran: '%s'" % fc_family)
-      else:
-        # TODO:  Recognize family from MPI compiler
-        raise InternalError("Unknown compiler family for Fortran: '%s'" % fc_family)
-    else:
-      fortran_flag = ''
-  
-    # Initialize installation with a minimal configuration
-    prefix_flag = '-prefix=%s' % tau_prefix
-    arch_flag = '-arch=%s' % arch
-    cc_flag = '-cc=%s' % cc['command'] if cc else ''
-    cxx_flag = '-c++=%s' % cxx['command'] if cxx else ''
-    cmd = ['./configure', prefix_flag, arch_flag, 
-           cc_flag, cxx_flag, fortran_flag]
-    LOGGER.debug('Creating configure subprocess in %r: %r' % (srcdir, cmd))
-    LOGGER.info('Configuring TAU...\n    %s' % ' '.join(cmd))
-    proc = subprocess.Popen(cmd, cwd=srcdir, stdout=sys.stdout, stderr=sys.stderr)
-    if proc.wait():
-      raise error.ConfigurationError('TAU configure failed')
-  
-    # Execute make
-    cmd = ['make', '-j4', 'install']
-    LOGGER.debug('Creating make subprocess in %r: %r' % (srcdir, cmd))
-    LOGGER.info('Compiling TAU...\n    %s' % ' '.join(cmd))
-    proc = subprocess.Popen(cmd, cwd=srcdir, stdout=sys.stdout, stderr=sys.stderr)
-    if proc.wait():
-        raise error.ConfigurationError('TAU compilation failed.')
+    if not arch:
+      arch = _detectDefaultHostArch()
+    self.prefix = prefix
+    self.src = src
+    self.arch = arch
+    self.cc = cc
+    self.cxx = cxx
+    self.fc = fc
+    self.src_prefix = os.path.join(prefix, 'src')
+    self.tau_prefix = os.path.join(prefix, 'tau')
+    self.include_path = os.path.join(self.tau_prefix, 'include')
+    self.arch_path = os.path.join(self.tau_prefix, arch)
+    self.bin_path = os.path.join(self.arch_path, 'bin')
+    self.lib_path = os.path.join(self.arch_path, 'lib')
+    self.taudb_prefix = os.path.join(os.path.expanduser('~'), '.ParaProf')
+    self.config = config
+    self.config['halt_build_on_error'] = False
 
-    # Leave source, we'll probably need it again soon
-    LOGGER.debug('Preserving %r for future use' % srcdir)
+  def verify(self):
+    """
+    Returns a path to a directory containing 'bin' and 'lib' directories for
+    architecture `arch` if there is a working TAU installation at `prefix` or 
+    raises a ConfigurationError describing why that installation is broken.
+    """
+    LOGGER.debug("Checking TAU installation at '%s' targeting arch '%s'" % (self.tau_prefix, self.arch))    
+    if not os.path.exists(self.tau_prefix):
+      raise error.ConfigurationError("'%s' does not exist" % self.tau_prefix)
+  
+    # Check for all commands
+    for cmd in COMMANDS:
+      path = os.path.join(self.bin_path, cmd)
+      if not os.path.exists(path):
+        raise error.ConfigurationError("'%s' is missing" % path)
+      if not os.access(path, os.X_OK):
+        raise error.ConfigurationError("'%s' exists but is not executable" % path)
     
-    # Initialize tauDB with a minimal configuration
-    taudb_configure = os.path.join(tau_prefix, arch, 'bin', 'taudb_configure')
-    cmd = [taudb_configure, '--create-default']
-    LOGGER.debug('Creating subprocess: %r' % cmd)
-    LOGGER.info('Configuring tauDB...\n    %s' % ' '.join(cmd))
-    proc = subprocess.Popen(cmd, stdout=sys.stdout, stderr=sys.stderr)
-    if proc.wait():
-      raise error.ConfigurationError('tauDB configure failed.')
-
-    # Add TAU to PATH
-    environment.PATH.append(os.path.join(tau_prefix, arch, 'bin'))
-    LOGGER.info('TAU configured successfully')
+    # Check that there is at least one makefile
+    makefile = os.path.join(self.include_path, 'Makefile')
+    if not os.path.exists(makefile):
+      raise error.ConfigurationError("'%s' does not exist" % makefile)
+    
+    # Check for the minimal config 'vanilla' makefile
+    makefile = os.path.join(self.lib_path, 'Makefile.tau')
+    if not os.path.exists(makefile):
+      LOGGER.warning("TAU installation at '%s' does not have a minimal Makefile.tau." % self.tau_prefix)
+    
+    # Check tauDB
+    LOGGER.debug("Checking tauDB installation at '%s'" % self.taudb_prefix)
+    if not os.path.exists(self.taudb_prefix):
+      raise error.ConfigurationError("'%s' does not exist" % self.taudb_prefix)
+    path = os.path.join(self.taudb_prefix, 'perfdmf.cfg')
+    if not os.path.exists(path):
+      raise error.ConfigurationError("'%s' does not exist" % path)
   
-  # Verify the new installation and return
-  return verifyInstallation(tau_prefix, arch=arch, 
-                            cc=cc, cxx=cxx, fc=fc)
+    LOGGER.debug("tauDB installation at '%s' is valid" % self.taudb_prefix)
+    LOGGER.debug("TAU installation at '%s' is valid" % self.tau_prefix)
+    return True
+
+  def install(self, force_reinstall=False):
+    """
+    TODO: Docs
+    """
+    LOGGER.debug("Initializing TAU at '%s' from '%s' with arch=%s" % 
+                 (self.tau_prefix, self.src, self.arch))
+    
+    # Check if the installation is already initialized
+    if not force_reinstall:
+      try:
+        return self.verify()
+      except error.ConfigurationError, err:
+        LOGGER.debug("Invalid installation: %s" % err)
+    
+    # Control build output
+    LOGGER.info('Starting TAU installation')
+    with logger.logging_streams():
+      # Download, unpack, or copy TAU source code
+      dst = os.path.join(self.src_prefix, os.path.basename(self.src))
+      try:
+        util.download(self.src, dst)
+        srcdir = util.extract(dst, self.src_prefix)
+      except IOError:
+        raise error.ConfigurationError("Cannot acquire source file '%s'" % self.src,
+                                       "Check that the file or directory is accessable")
+      finally:
+        try: os.remove(dst)
+        except: pass
+
+      # TAU's configure script has a goofy way of specifying the fortran compiler
+      if self.fc:
+        if self.fc['family'] != 'MPI':
+           family_map = {'GNU': 'gfortran', 
+                         'Intel': 'intel'}
+           fc_family = self.fc['family']
+           try:
+             fortran_flag = '-fortran=%s' % family_map[fc_family]
+           except KeyError:
+             raise InternalError("Unknown compiler family for Fortran: '%s'" % fc_family)
+        else:
+          # TODO:  Recognize family from MPI compiler
+          raise InternalError("Unknown compiler family for Fortran: '%s'" % fc_family)
+      else:
+        fortran_flag = ''
+    
+      # Initialize installation with a minimal configuration
+      prefix_flag = '-prefix=%s' % self.tau_prefix
+      arch_flag = '-arch=%s' % self.arch
+      cc_flag = '-cc=%s' % self.cc['command'] if self.cc else ''
+      cxx_flag = '-c++=%s' % self.cxx['command'] if self.cxx else ''
+      cmd = ['./configure', prefix_flag, arch_flag, 
+             cc_flag, cxx_flag, fortran_flag]
+      LOGGER.debug('Creating configure subprocess in %r: %r' % (srcdir, cmd))
+      LOGGER.info('Configuring TAU...\n    %s' % ' '.join(cmd))
+      proc = subprocess.Popen(cmd, cwd=srcdir, stdout=sys.stdout, stderr=sys.stderr)
+      if proc.wait():
+        raise error.ConfigurationError('TAU configure failed')
+    
+      # Execute make
+      cmd = ['make', '-j4', 'install']
+      LOGGER.debug('Creating make subprocess in %r: %r' % (srcdir, cmd))
+      LOGGER.info('Compiling TAU...\n    %s' % ' '.join(cmd))
+      proc = subprocess.Popen(cmd, cwd=srcdir, stdout=sys.stdout, stderr=sys.stderr)
+      if proc.wait():
+          raise error.ConfigurationError('TAU compilation failed.')
+  
+      # Leave source, we'll probably need it again soon
+      LOGGER.debug('Preserving %r for future use' % srcdir)
+      
+      # Initialize tauDB with a minimal configuration
+      taudb_configure = os.path.join(self.bin_path, 'taudb_configure')
+      cmd = [taudb_configure, '--create-default']
+      LOGGER.debug('Creating subprocess: %r' % cmd)
+      LOGGER.info('Configuring tauDB...\n    %s' % ' '.join(cmd))
+      proc = subprocess.Popen(cmd, stdout=sys.stdout, stderr=sys.stderr)
+      if proc.wait():
+        raise error.ConfigurationError('tauDB configure failed.')
+    
+    # Verify the new installation and return
+    LOGGER.info('TAU installation complete')
+    return self.verify()
+
+  def getMakefile(self):
+    """
+    Returns an absolute path to a TAU_MAKEFILE
+    """
+    # TODO: Pick the right one
+    makefile = 'Makefile.tau'
+    return os.path.join(self.lib_path, makefile)
+  
+  def getCompiler(self, compiler_cmd):
+    """
+    Returns a compiler command, either a compiler or a TAU wrapper script
+    """
+    source_inst = self.config.get('source_inst', False)
+    comp_inst = self.config.get('comp_inst', False)
+    use_wrapper = source_inst or comp_inst
+    
+    #
+    # TODO: Check compiler_cmd compatible with this TAU installation
+    #
+    
+    compiler_info = cf.compiler.getCompilerInfo(compiler_cmd)
+    if use_wrapper:
+      return compiler_info.tau_wrapper
+    else:
+      return compiler_cmd
+
+  def getCompiletimeConfig(self):
+    """
+    TODO: Docs
+    """
+    commandline_options = {
+        'halt_build_on_error': {True: [], False: ['-optRevert']},
+        'verbose': {True: ['-optVerbose'], False: ['-optQuiet']},
+        'compiler_inst': {'always': ['-optCompInst'], 
+                          'never': ['-optNoCompInst'],
+                          'fallback': ['-optRevert', '-optNoCompInst']}
+                           }
+    environment_variables = {}
+    opts, env = _parseConfig(self.config, commandline_options, environment_variables)
+    env['TAU_MAKEFILE'] = self.getMakefile()
+    return opts, env
+    
+  def getRuntimeConfig(self):
+    """
+    TODO: Docs
+    """
+    commandline_options = {
+        'verbose': {True: ['-v'], False: []},
+        'sample': {True: ['-ebs'], False: []}
+        }
+    environment_variables = {
+        'verbose': {True: {'TAU_VERBOSE': 1}, 
+                    False: {'TAU_VERBOSE': 0}},
+        'profile': {True: {'TAU_PROFILE': 1}, 
+                    False: {'TAU_PROFILE': 0}},
+        'trace': {True: {'TAU_TRACE': 1}, 
+                  False: {'TAU_TRACE': 0}},
+        'sample': {True: {'TAU_SAMPLE': 1}, 
+                   False: {'TAU_SAMPLE': 0}},
+        'callpath': lambda depth: ({'TAU_CALLPATH': 1, 'TAU_CALLPATH_DEPTH': depth} 
+                                   if depth > 0 else {'TAU_CALLPATH': 0})
+        }
+    return _parseConfig(self.config, commandline_opts, environment_vars)
 
 
-def getBuildEnvironment():
+    

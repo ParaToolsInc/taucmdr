@@ -34,6 +34,8 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
+# System modules
+import os
 
 # TAU modules
 import cf
@@ -96,6 +98,7 @@ def getCompilerInfo(cmd):
   """
   Returns compiler information for `cmd`
   """
+  cmd = os.path.basename(cmd)
   try:
     return COMPILERS[cmd]
   except KeyError:
