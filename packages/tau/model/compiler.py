@@ -52,6 +52,45 @@ from model.target import Target
 LOGGER = logger.getLogger(__name__)
 
 
+class CompilerInfo(object):
+  """
+  Information about a compiler command
+  """
+  def __init__(self, cmd, role, family, language):
+    self.command = cmd
+    self.role = role
+    self.family = family
+    self.language = language
+    self.tau_wrapper = cf.tau.COMPILER_WRAPPERS[role]
+    self.short_descr = "%s Compiler." % language
+  def __repr__(self):
+    return repr(self.__dict__)
+
+KNOWN_COMPILERS = {
+    'cc': CompilerInfo('cc', 'CC', 'system', 'C'),
+    'c++': CompilerInfo('c++', 'CXX', 'system', 'C++'),
+    'f77': CompilerInfo('f77', 'FC', 'system', 'FORTRAN77'),
+    'f90': CompilerInfo('f90', 'FC', 'system', 'Fortran90'),
+    'ftn': CompilerInfo('ftn', 'FC', 'system', 'Fortran90'),
+    'gcc': CompilerInfo('gcc', 'CC', 'GNU', 'C'),
+    'g++': CompilerInfo('g++', 'CXX', 'GNU', 'C++'),
+    'gfortran': CompilerInfo('gfortran', 'FC', 'GNU', 'Fortran90'),
+    'icc': CompilerInfo('icc', 'CC', 'Intel', 'C'),
+    'icpc': CompilerInfo('icpc', 'CXX', 'Intel', 'C++'),
+    'ifort': CompilerInfo('ifort', 'FC', 'Intel', 'Fortran90'),
+    'pgcc': CompilerInfo('pgcc', 'CC', 'Portland Group', 'C'),
+    'pgCC': CompilerInfo('pgCC', 'CXX', 'Portland Group', 'C++'),
+    'pgf77': CompilerInfo('pgf77', 'FC', 'Portland Group', 'FORTRAN77'),
+    'pgf90': CompilerInfo('ptf90', 'FC', 'Portland Group', 'Fortran90'),
+    'mpicc': CompilerInfo('mpicc', 'CC', 'MPI', 'C'),
+    'mpicxx': CompilerInfo('mpicxx', 'CXX', 'MPI', 'C++'),
+    'mpic++': CompilerInfo('mpic++', 'CXX', 'MPI', 'C++'),
+    'mpiCC': CompilerInfo('mpiCC', 'CXX', 'MPI', 'C++'),
+    'mpif77': CompilerInfo('mpif77', 'FC', 'MPI', 'FORTRAN77'),
+    'mpif90': CompilerInfo('mpif90', 'FC', 'MPI', 'Fortran90')
+    }
+
+
 class Compiler(controller.Controller):
   """
   Compiler data model controller
@@ -97,16 +136,23 @@ class Compiler(controller.Controller):
   }
 
   @classmethod
-  def identify(cls, target, cmd):
+  def identify(cls, target, compiler_cmd):
     """
-    Identifies a compiler executable from `cmd`
+    Identifies a compiler executable from `compiler_cmd`
     """
-    LOGGER.debug("Identifying compiler: %s" % cmd)
-    command = os.path.basename(cmd)
-    path = util.which(cmd)
+    LOGGER.debug("Identifying compiler: %s" % compiler_cmd)
+    if not compiler_cmd:
+      compiler_cmd = 'cc'
+      LOGGER.debug("Assuming system default compiler C is '%s'" % compiler_cmd)
+    command = os.path.basename(compiler_cmd)
+    path = util.which(compiler_cmd)
     if not path:
       raise error.ConfigurationError("'%s' missing or not executable", 
                                      "Check the command spelling, PATH environment variable, and file permissions")
+    try:
+      info = KNOWN_COMPILERS[command]
+    except KeyError:
+      raise error.ConfigurationError("Unknown compiler command: '%s'", compiler_cmd)
 
     md5sum = hashlib.md5()
     with open(path, 'r') as compiler_file:
@@ -116,7 +162,6 @@ class Compiler(controller.Controller):
     # TODO: Compiler version
     version = 'FIXME'
     
-    info = cf.compiler.getCompilerInfo(command)
     fields = {'target': target.eid,
               'command': command,
               'path': path,
@@ -138,3 +183,38 @@ class Compiler(controller.Controller):
       raise error.ConfigurationError("Compiler '%s' at '%s' not readable." % (found['command'], found['path']))
     
     return found
+
+  @classmethod
+  def getCompilers(cls, target, compiler):
+    """
+    TODO: Docs
+    """
+    LOGGER.debug("Getting compilers for '%s'" % compiler)
+
+    compilers = {compiler['role']: compiler}
+    for known in KNOWN_COMPILERS.itervalues():
+      LOGGER.debug("Checking %s" % known)
+      if (known.family == compiler['family']) and (known.role != compiler['role']):
+        try:
+          other = cls.identify(target, known.command)
+        except error.ConfigurationError, e:
+          LOGGER.debug(e)
+          continue
+        if os.path.dirname(other['path']) == os.path.dirname(compiler['path']):
+          LOGGER.debug("Found %s compiler '%s' matching '%s'" % (other['role'], other['command'], compiler['command']))
+          compilers[other['role']] = other
+
+    try:
+      cc = compilers['CC']
+    except KeyError:
+      raise error.ConfigurationError("Cannot find C compiler for %s" % compiler)
+    try:
+      cxx = compilers['CXX']
+    except KeyError:
+      raise error.ConfigurationError("Cannot find C++ compiler for %s" % compiler)
+    try:
+      fc = compilers['FC']
+    except KeyError:
+      raise error.ConfigurationError("Cannot find Fortran compiler for %s" % compiler)
+
+    return cc, cxx, fc
