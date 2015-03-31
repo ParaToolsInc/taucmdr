@@ -63,75 +63,82 @@ class Experiment(controller.Controller):
   """
   
   attributes = {
-    'selection': {
-      'model': 'Selection',
-      'required': True
+    'project': {
+      'model': 'Project',
+      'required': True,
     },
-    'CC': {
-      'model': 'Compiler',
-      'required': True
+    'target': {
+      'model': 'Target',
+      'required': True,
     },
-    'CXX': {
-      'model': 'Compiler',
-      'required': True
+    'application': {
+      'model': 'Application',
+      'required': True,
     },
-    'FC': {
-      'model': 'Compiler',
-      'required': True
+    'measurement': {
+      'model': 'Measurement',
+      'required': True,
     },
     'trials': {
       'collection': 'Trial',
       'via': 'experiment'
     },
   }
+  
+  def onDelete(self):
+    if self.isSelected():
+      settings.unset('experiment_id')
 
-  def getCompiletimeConfig(self):
-    """
-    TODO: Docs
-    """
-    opts, env = self.pdt.getCompiletimeConfig([], os.environ)
-    opts, env = self.tau.getCompiletimeConfig(opts, env)
-    return opts, env
+  def select(self):
+    if not self.eid:
+      raise error.InternalError('Tried to select an experiment without an eid')
+    settings.set('experiment_id', self.eid)
+  
+  def isSelected(self):
+    if self.eid:
+      return settings.get('experiment_id') == self.eid
+    return False
 
   @classmethod
-  def configure(cls, selection, cc, cxx, fc):
+  def getSelected(cls):
+    experiment_id = settings.get('experiment_id')
+    if experiment_id:
+      found = cls.one(eid=experiment_id)
+      if not found:
+        raise error.InternalError('Invalid experiment ID: %r' % experiment_id)
+      return found
+    return None
+
+  def configure(self):
     """
-    Installs all software required to perform the experiment and configures
-    environment variables
-    """   
-    selection.populate()
-    target = selection['target']
-    application = selection['application']
-    measurement = selection['measurement']
-
-    # See if we've already configured this experiment
-    fields = {'selection': selection.eid, 'CC': cc.eid, 'CXX': cxx.eid, 'FC': fc.eid}
-    expr = cls.one(keys=fields)
-    if expr:
-      LOGGER.debug("Found experiment: %s" % expr)
-    else:
-      LOGGER.debug("Experiment not found, creating new experiment")
-      expr = Experiment.create(fields)
-
+    Installs all software required to perform the experiment
+    """
+    self.populate()
+    target = self['target']
+    application = self['application']
+    measurement = self['measurement']
+    target.populate()
+    cc = target['CC']
+    cxx = target['CXX']
+    fc = target['FC']
+    verbose = (logger.LOG_LEVEL == 'DEBUG')
 
     # Make sure project prefix exists
-    prefix = selection['project']['prefix']
-    try: 
+    prefix = self['project']['prefix']
+    try:
       util.mkdirp(prefix)
     except:
       raise error.ConfigurationError('Cannot create directory %r' % prefix, 
                                      'Check that you have `write` access')
-    
-    verbose = (logger.LOG_LEVEL == 'DEBUG')
-    
+
     # Configure/build/install PDT if needed
-    if measurement['source_inst']:
+    if not measurement['source_inst']:
+      self.pdt = None
+    else:
       pdt = cf.pdt.Pdt(prefix, cxx, target['pdt_source'], target['host_arch'])
       pdt.install()
-      expr.pdt = pdt
-    else:
-      expr.pdt = None
-
+      self.pdt = pdt
+      
     # Configure/build/install TAU if needed
     tau = cf.tau.Tau(prefix, cc, cxx, fc, target['tau_source'], target['host_arch'],
                      verbose=verbose,
@@ -160,12 +167,48 @@ class Experiment(controller.Controller):
                      memory_measurements=None, # TODO
                      callpath=measurement['callpath'])
     tau.install()
-    expr.tau = tau
+    self.tau = tau
+
+  def managedBuild(self, compiler_cmd, compiler_args):
+    """
+    TODO: Docs
+    """
+    self.configure()
+    target = self['target']
+    measurement = self['measurement']
+    given_compiler = Compiler.identify(compiler_cmd)
+    target_compiler = target[given_compiler['role']]
     
-    return expr
+    # Confirm target supports compiler
+    if given_compiler.eid != target_compiler.eid:
+      raise error.ConfigurationError("Target '%s' is configured with %s compiler '%s', not '%s'",
+                                     (self['name'], given_compiler['language'], 
+                                      given_compiler.absolutePath(),
+                                      target_compiler.absolutePath()),
+                                     "Use a different target or use compiler '%s'" %
+                                     target_compiler.absolutePath())
+
+    # Build compile-time environment from component packages
+    opts, env = [], os.environ
+    if measurement['source_inst']:
+      self.pdt.applyCompiletimeConfig(opts, env)
+    self.tau.applyCompiletimeConfig(opts, env)
+
+    use_wrapper = measurement['source_inst'] or measurement['comp_inst']
+    if use_wrapper:
+      compiler_cmd = given_compiler['tau_wrapper']
+
+    cmd = [compiler_cmd] + opts + compiler_args
+
+    LOGGER.debug('Creating subprocess: cmd=%r, env=%r' % (cmd, env))
+    LOGGER.info('\n'.join(['%s=%s' % i for i in env.iteritems() if i[0].startswith('TAU')]))
+    LOGGER.info(' '.join(cmd))
+    with logger.logging_streams():
+      proc = subprocess.Popen(cmd, env=env, stdout=sys.stdout, stderr=sys.stderr)
+      return proc.wait()
 
   @classmethod
-  def managedBuild(cls, selection, compiler_cmd, compiler_args):
+  def managedRun(cls, selection, application_cmd, application_args):
     """
     TODO: Docs
     """
@@ -173,8 +216,6 @@ class Experiment(controller.Controller):
     target = selection['target']
     application = selection['application']
     measurement = selection['measurement']
-    key_compiler = Compiler.identify(target, compiler_cmd) 
-    cc, cxx, fc = Compiler.getCompilers(target, key_compiler)
 
     expr = cls.configure(selection, cc, cxx, fc)
     opts, env = expr.getCompiletimeConfig()

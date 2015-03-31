@@ -40,7 +40,6 @@ import logger
 import error
 import commands
 import arguments as args
-from model.selection import Selection
 from model.experiment import Experiment
 from model.compiler import Compiler, KNOWN_COMPILERS
 
@@ -109,18 +108,7 @@ def main(argv):
   compiler_cmd = args.cmd
   compiler_args = args.cmd_args
   
-  selection = Selection.getSelected()
+  selection = Experiment.getSelected()
   if not selection:
     raise error.ConfigurationError("Nothing selected.", "See `tau project select`") 
-  
-  Experiment.managedBuild(selection, compiler_cmd, compiler_args)
-#   cmd = [selected.compilers[compiler_cmd]] + compiler_args
-#   env = selected.tau_build_env
-#   LOGGER.debug('Creating subprocess: cmd=%r, env=%r' % (cmd, env))
-#   LOGGER.info('\n'.join(['%s=%s' % i for i in env.iteritems() if i[0].startswith('TAU')]))
-#   LOGGER.info(' '.join(cmd))
-# 
-#   # Control build output
-#   with logger.logging_streams():
-#     proc = subprocess.Popen(cmd, env=env, stdout=sys.stdout, stderr=sys.stderr)
-#     return proc.wait()
+  return selection.managedBuild(compiler_cmd, compiler_args)
