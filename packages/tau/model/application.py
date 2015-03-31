@@ -56,75 +56,68 @@ class Application(ctl.Controller, ctl.ByName):
     'name': {
       'type': 'string',
       'unique': True,
-      'argparse': (('name',), 
-                   {'help': 'Application configuration name',
-                    'metavar': '<application_name>'})
+      'argparse': {'help': 'Application configuration name',
+                   'metavar': '<application_name>'}
     },
     'openmp': {
       'type': 'boolean',
       'defaultsTo': False,
-      'argparse': (('--openmp',), 
-                   {'help': 'The application uses OpenMP',
-                    'metavar': 'yes/no',
-                    'nargs': '?',
-                    'const': True,
-                    'default': False,
-                    'action': args.ParseBooleanAction})
+      'argparse': {'flags': ('--openmp',),
+                   'help': 'The application uses OpenMP',
+                   'metavar': 'yes/no',
+                   'nargs': '?',
+                   'const': True,
+                   'action': args.ParseBooleanAction}
     },
     'pthreads': {
       'type': 'boolean',
       'defaultsTo': False,
-      'argparse': (('--pthreads',), 
-                   {'help': 'The application uses pthreads',
-                    'metavar': 'yes/no',
-                    'nargs': '?',
-                    'const': True,
-                    'default': False,
-                    'action': args.ParseBooleanAction})
+      'argparse': {'flags': ('--pthreads',),
+                   'help': 'The application uses pthreads',
+                   'metavar': 'yes/no',
+                   'nargs': '?',
+                   'const': True,
+                   'action': args.ParseBooleanAction}
     },
     'mpi': {
       'type': 'boolean',
       'defaultsTo': False,
-      'argparse': (('--mpi',), 
-                   {'help': 'The application uses MPI',
-                    'metavar': 'yes/no',
-                    'nargs': '?',
-                    'const': True,
-                    'default': False,
-                    'action': args.ParseBooleanAction})
+      'argparse': {'flags': ('--mpi',),
+                   'help': 'The application uses MPI',
+                   'metavar': 'yes/no',
+                   'nargs': '?',
+                   'const': True,
+                   'action': args.ParseBooleanAction}
     },
     'cuda': {
       'type': 'boolean',
       'defaultsTo': False,
-      'argparse': (('--cuda',), 
-                   {'help': 'The application uses NVIDIA CUDA',
-                    'metavar': 'yes/no',
-                    'nargs': '?',
-                    'const': True,
-                    'default': False,
-                    'action': args.ParseBooleanAction})
+      'argparse': {'flags': ('--cuda',),
+                   'help': 'The application uses NVIDIA CUDA',
+                   'metavar': 'yes/no',
+                   'nargs': '?',
+                   'const': True,
+                   'action': args.ParseBooleanAction}
     },
     'shmem': {
       'type': 'boolean',
       'defaultsTo': False,
-      'argparse': (('--shmem',), 
-                   {'help': 'The application uses SHMEM',
-                    'metavar': 'yes/no',
-                    'nargs': '?',
-                    'const': True,
-                    'default': False,
-                    'action': args.ParseBooleanAction})
+      'argparse': {'flags': ('--shmem',),
+                   'help': 'The application uses SHMEM',
+                   'metavar': 'yes/no',
+                   'nargs': '?',
+                   'const': True,
+                   'action': args.ParseBooleanAction}
     },
     'mpc': {
       'type': 'boolean',
       'defaultsTo': False,
-      'argparse': (('--mpc',), 
-                   {'help': 'The application uses MPC',
-                    'metavar': 'yes/no',
-                    'nargs': '?',
-                    'const': True,
-                    'default': False,
-                    'action': args.ParseBooleanAction})
+      'argparse': {'flags': ('--mpc',),
+                   'help': 'The application uses MPC',
+                   'metavar': 'yes/no',
+                   'nargs': '?',
+                   'const': True,
+                   'action': args.ParseBooleanAction}
     }
   }
   

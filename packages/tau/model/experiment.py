@@ -42,13 +42,14 @@ import subprocess
 
 
 # TAU modules
-import cf
 import logger
 import settings
 import error
 import controller
 import util
 import environment
+import cf.tau
+import cf.pdt
 from model.project import Project
 from model.target import Target
 from model.compiler import Compiler
@@ -62,143 +63,172 @@ class Experiment(controller.Controller):
   """
   
   attributes = {
-    'selection': {
-      'model': 'Selection',
-      'required': True
+    'project': {
+      'model': 'Project',
+      'required': True,
     },
-    'CC': {
-      'model': 'Compiler',
-      'required': True
+    'target': {
+      'model': 'Target',
+      'required': True,
     },
-    'CXX': {
-      'model': 'Compiler',
-      'required': True
+    'application': {
+      'model': 'Application',
+      'required': True,
     },
-    'FC': {
-      'model': 'Compiler',
-      'required': True
-    },
-    'tau_path': {
-      'type': 'string',
-    },
-    'tau_makefile': {
-      'type': 'string',
-    },
-    'tau_build_env': {
-      'type': 'string',
-    },
-    'tau_run_env': {
-      'type': 'string',
+    'measurement': {
+      'model': 'Measurement',
+      'required': True,
     },
     'trials': {
       'collection': 'Trial',
       'via': 'experiment'
     },
   }
+  
+  def onDelete(self):
+    if self.isSelected():
+      settings.unset('experiment_id')
+
+  def select(self):
+    if not self.eid:
+      raise error.InternalError('Tried to select an experiment without an eid')
+    settings.set('experiment_id', self.eid)
+  
+  def isSelected(self):
+    if self.eid:
+      return settings.get('experiment_id') == self.eid
+    return False
 
   @classmethod
-  def configure(cls, selected, compiler_cmd):
-    """
-    Installs all software required to perform the experiment and configures
-    environment variables
-    """
-    selected.populate()
-    target = selected['target']
-    application = selected['application']
-    measurement = selected['measurement']
-    compiler = Compiler.identify(target, compiler_cmd)
-    
-    # See if we've already configured this experiment
-    found = cls.one(keys={'selection': selected.eid, compiler['role']: compiler.eid})
-    if found:
-      LOGGER.debug("Found experiment: %s" % found)
+  def getSelected(cls):
+    experiment_id = settings.get('experiment_id')
+    if experiment_id:
+      found = cls.one(eid=experiment_id)
+      if not found:
+        raise error.InternalError('Invalid experiment ID: %r' % experiment_id)
       return found
-    
-    LOGGER.debug("Experiment not found, creating new experiment")
-    fields = {'selection': selected.eid}
-    
-    # Discover and configure compilers
-    compilers = {compiler['role']: compiler}
-    for info in cf.compiler.getCompilerFamily(compiler['command']):
-      if info.role != compiler['role']:
-        try:
-          other = Compiler.identify(target, info.command)
-        except error.ConfigurationError:
-          continue
-        if os.path.dirname(other['path']) == os.path.dirname(compiler['path']):
-          compilers[other['role']] = other
-    try:
-      cc = compilers['CC']
-    except KeyError:
-      raise error.ConfigurationError("C compiler matching '%s' not found" % compiler_cmd)
-    try:
-      cxx = compilers['CXX']
-    except KeyError:
-      raise error.ConfigurationError("C++ compiler matching '%s' not found" % compiler_cmd)
-    try:
-      fc = compilers['FC']
-    except KeyError:
-      raise error.ConfigurationError("Fortran compiler matching '%s' not found" % compiler_cmd)
-    
-    fields['CC'] = cc.eid
-    fields['CXX'] = cxx.eid
-    fields['FC'] = fc.eid
+    return None
 
-    # Create a place to store project files and settings
-    prefix = selected['project']['prefix']
+  def configure(self):
+    """
+    Installs all software required to perform the experiment
+    """
+    self.populate()
+    target = self['target']
+    application = self['application']
+    measurement = self['measurement']
+    target.populate()
+    cc = target['CC']
+    cxx = target['CXX']
+    fc = target['FC']
+    verbose = (logger.LOG_LEVEL == 'DEBUG')
+
+    # Make sure project prefix exists
+    prefix = self['project']['prefix']
     try:
       util.mkdirp(prefix)
     except:
       raise error.ConfigurationError('Cannot create directory %r' % prefix, 
                                      'Check that you have `write` access')
 
-    # Configure/build/install TAU if not already done
-    tau_config = cf.tau.initialize(prefix, 
-                                   src=target['tau'], 
-                                   arch=target['host_arch'], 
-                                   cc=cc, cxx=cxx, fc=fc)
-    tau_path, tau_makefile = tau_config
-    fields['tau_path'] = tau_path
-    fields['tau_makefile'] = tau_makefile
-    
-    # Configure TAU compiler options
-    TAU_COMPILER_OPTIONS = cf.tau.TAU_COMPILER_OPTIONS
-    tau_options = TAU_COMPILER_OPTIONS['halt_on_error'][False]
-    tau_options += TAU_COMPILER_OPTIONS['verbose'][logger.LOG_LEVEL == 'DEBUG']
-    tau_options += TAU_COMPILER_OPTIONS['compiler_inst'][measurement['compiler_inst']]
-    tau_options = list(set(tau_options))
+    # Configure/build/install PDT if needed
+    if not measurement['source_inst']:
+      self.pdt = None
+    else:
+      pdt = cf.pdt.Pdt(prefix, cxx, target['pdt_source'], target['host_arch'])
+      pdt.install()
+      self.pdt = pdt
+      
+    # Configure/build/install TAU if needed
+    tau = cf.tau.Tau(prefix, cc, cxx, fc, target['tau_source'], target['host_arch'],
+                     verbose=verbose,
+                     pdt=pdt,
+                     bfd=None, # TODO
+                     libunwind=None, # TODO
+                     profile=measurement['profile'],
+                     trace=measurement['trace'],
+                     sample=measurement['sample'],
+                     source_inst=measurement['source_inst'],
+                     compiler_inst=measurement['compiler_inst'],
+                     # TODO: Library wrapping inst
+                     openmp_support=application['openmp'], 
+                     openmp_measurements=measurement['openmp'],
+                     pthreads_support=application['pthreads'], 
+                     pthreads_measurements=None, # TODO
+                     mpi_support=application['mpi'], 
+                     mpi_measurements=measurement['mpi'],
+                     cuda_support=application['cuda'],
+                     cuda_measurements=None, # Todo
+                     shmem_support=application['shmem'],
+                     shmem_measurements=None, # TODO
+                     mpc_support=application['mpc'],
+                     mpc_measurements=None, # TODO
+                     memory_support=None, # TODO
+                     memory_measurements=None, # TODO
+                     callpath=measurement['callpath'])
+    tau.install()
+    self.tau = tau
 
-    # Configure TAU build environment
-    build_env = cf.tau.getBuildEnvironment(tau_path, tau_makefile,
-                                           halt_on_error=False,
-                                           verbose=(logger.LOG_LEVEL == 'DEBUG'),
-                                           compiler_inst=measurement['compiler_inst']
-                                           )
+  def managedBuild(self, compiler_cmd, compiler_args):
+    """
+    TODO: Docs
+    """
+    self.configure()
+    target = self['target']
+    measurement = self['measurement']
+    given_compiler = Compiler.identify(compiler_cmd)
+    target_compiler = target[given_compiler['role']]
     
-    tau_build_env = {}
-    tau_build_env['TAU_OPTIONS'] = ' '.join(tau_options)
-    tau_build_env['TAU_MAKEFILE'] = tau_makefile
-    fields['tau_build_env'] = tau_build_env
-    
-    # Configure TAU runtime environment
-    TAU_ENVIRONMENT_OPTIONS = cf.tau.TAU_ENVIRONMENT_OPTIONS
-    tau_run_env = {}
-    for field in 'profile', 'trace', 'sample', 'memory_usage':
-      tau_run_env.update(TAU_ENVIRONMENT_OPTIONS[field][measurement[field]])
-    tau_run_env['TAU_CALLPATH_DEPTH'] = measurement['callpath']
-    fields['tau_run_env'] = tau_run_env
-    
-    return Experiment.create(fields)
+    # Confirm target supports compiler
+    if given_compiler.eid != target_compiler.eid:
+      raise error.ConfigurationError("Target '%s' is configured with %s compiler '%s', not '%s'",
+                                     (self['name'], given_compiler['language'], 
+                                      given_compiler.absolutePath(),
+                                      target_compiler.absolutePath()),
+                                     "Use a different target or use compiler '%s'" %
+                                     target_compiler.absolutePath())
 
-  def build(self, compiler_cmd, compiler_args):
-    pass
-    #   cmd = [selected.compilers[compiler_cmd]] + compiler_args
-#   env = selected.tau_build_env
-#   LOGGER.debug('Creating subprocess: cmd=%r, env=%r' % (cmd, env))
-#   LOGGER.info('\n'.join(['%s=%s' % i for i in env.iteritems() if i[0].startswith('TAU')]))
-#   LOGGER.info(' '.join(cmd))
-# 
-#   # Control build output
-#   with logger.logging_streams():
-#     proc = subprocess.Popen(cmd, env=env, stdout=sys.stdout, stderr=sys.stderr)
-#     return proc.wait()
+    # Build compile-time environment from component packages
+    opts, env = [], os.environ
+    if measurement['source_inst']:
+      self.pdt.applyCompiletimeConfig(opts, env)
+    self.tau.applyCompiletimeConfig(opts, env)
+
+    use_wrapper = measurement['source_inst'] or measurement['comp_inst']
+    if use_wrapper:
+      compiler_cmd = given_compiler['tau_wrapper']
+
+    cmd = [compiler_cmd] + opts + compiler_args
+
+    LOGGER.debug('Creating subprocess: cmd=%r, env=%r' % (cmd, env))
+    LOGGER.info('\n'.join(['%s=%s' % i for i in env.iteritems() if i[0].startswith('TAU')]))
+    LOGGER.info(' '.join(cmd))
+    with logger.logging_streams():
+      proc = subprocess.Popen(cmd, env=env, stdout=sys.stdout, stderr=sys.stderr)
+      return proc.wait()
+
+  @classmethod
+  def managedRun(cls, selection, application_cmd, application_args):
+    """
+    TODO: Docs
+    """
+    selection.populate()
+    target = selection['target']
+    application = selection['application']
+    measurement = selection['measurement']
+
+    expr = cls.configure(selection, cc, cxx, fc)
+    opts, env = expr.getCompiletimeConfig()
+
+    use_wrapper = measurement['source_inst'] or measurement['comp_inst']
+    if use_wrapper:
+      compiler_cmd = key_compiler['tau_wrapper']
+
+    cmd = [compiler_cmd] + opts + compiler_args
+
+    LOGGER.debug('Creating subprocess: cmd=%r, env=%r' % (cmd, env))
+    LOGGER.info('\n'.join(['%s=%s' % i for i in env.iteritems() if i[0].startswith('TAU')]))
+    LOGGER.info(' '.join(cmd))
+    with logger.logging_streams():
+      proc = subprocess.Popen(cmd, env=env, stdout=sys.stdout, stderr=sys.stderr)
+      return proc.wait()

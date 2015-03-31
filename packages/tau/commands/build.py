@@ -40,10 +40,8 @@ import logger
 import error
 import commands
 import arguments as args
-import cf.compiler
-from model.selection import Selection
 from model.experiment import Experiment
-from model.compiler import Compiler
+from model.compiler import Compiler, KNOWN_COMPILERS
 
 
 LOGGER = logger.getLogger(__name__)
@@ -54,7 +52,7 @@ COMMAND = ' '.join(['tau'] + _name_parts)
 
 def _compilersHelp():
   parts = ['  %s  %s' % ('{:<15}'.format(comp.command), comp.short_descr) 
-           for comp in cf.compiler.COMPILERS.itervalues()]
+           for comp in KNOWN_COMPILERS.itervalues()]
   parts.sort()
   return '\n'.join(parts)
 
@@ -97,7 +95,8 @@ def getHelp():
   return HELP
 
 def isKnownCompiler(cmd):
-  return cmd in cf.compiler.COMPILERS
+  return cmd in KNOWN_COMPILERS
+
 
 def main(argv):
   """
@@ -109,19 +108,7 @@ def main(argv):
   compiler_cmd = args.cmd
   compiler_args = args.cmd_args
   
-  selected = Selection.getSelected()
-  if not selected:
+  selection = Experiment.getSelected()
+  if not selection:
     raise error.ConfigurationError("Nothing selected.", "See `tau project select`") 
-  
-  experiment = Experiment.configure(selected, compiler_cmd)
-  experiment.build(compiler_cmd, compiler_args)
-#   cmd = [selected.compilers[compiler_cmd]] + compiler_args
-#   env = selected.tau_build_env
-#   LOGGER.debug('Creating subprocess: cmd=%r, env=%r' % (cmd, env))
-#   LOGGER.info('\n'.join(['%s=%s' % i for i in env.iteritems() if i[0].startswith('TAU')]))
-#   LOGGER.info(' '.join(cmd))
-# 
-#   # Control build output
-#   with logger.logging_streams():
-#     proc = subprocess.Popen(cmd, env=env, stdout=sys.stdout, stderr=sys.stderr)
-#     return proc.wait()
+  return selection.managedBuild(compiler_cmd, compiler_args)

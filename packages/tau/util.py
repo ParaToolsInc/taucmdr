@@ -68,7 +68,7 @@ def mkdirp(*args):
 def which(program):
   """
   Returns the full path to 'program'
-  Searches environment.PATH and the current directory
+  Searches the system PATH and the current directory
   """
   def is_exec(fpath):
     return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
@@ -78,7 +78,8 @@ def which(program):
       LOGGER.debug("which(%s) = '%s'" % (program, program))
       return program
   else:
-    for path in environment.PATH:
+    # System path
+    for path in environment.getEnv('PATH').split(os.pathsep):
       path = path.strip('"')
       exe_file = os.path.join(path, program)
       if is_exec(exe_file):

@@ -44,7 +44,7 @@ from model.project import Project
 from model.target import Target
 from model.application import Application
 from model.measurement import Measurement
-from model.selection import Selection
+from model.experiment import Experiment
 
 
 LOGGER = logger.getLogger(__name__)
@@ -175,14 +175,14 @@ def main(argv):
           'target': target_eid,
           'application': application_eid,
           'measurement': measurement_eid}
-  found = Selection.search(data)
+  found = Experiment.search(data)
   if not found:
-    LOGGER.debug('Creating new selection')
-    found = Selection.create(data)
+    LOGGER.debug('Creating new experiment')
+    found = Experiment.create(data)
   elif len(found) > 1:
-    raise error.InternalError('More than one selection with data %r exists!' % data)
+    raise error.InternalError('More than one experiment with data %r exists!' % data)
   else:
-    LOGGER.debug('Using existing selection')
+    LOGGER.debug('Using existing experiment')
     found = found[0]
 
   found.populate()

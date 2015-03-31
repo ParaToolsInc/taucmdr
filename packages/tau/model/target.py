@@ -36,19 +36,61 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 # System modules
+import os
 import string
+import platform
+import subprocess
 
 # TAU modules
-import cf.tau
-import cf.pdt
-import cf.bfd
-import cf.libunwind
 import logger
 import controller as ctl
 import arguments as args
 
 
 LOGGER = logger.getLogger(__name__)
+
+
+def defaultHostOS():
+  """
+  Detect the default host operating system
+  """
+  return platform.system()
+
+def defaultHostArch():
+    """
+    Use TAU's archfind script to detect the host target architecture
+    """
+    here = os.path.dirname(os.path.realpath(__file__))
+    cmd = os.path.join(os.path.dirname(here), 'util', 'archfind', 'archfind')
+    return subprocess.check_output(cmd).strip()
+
+def defaultDeviceArch():
+  """
+  Detect coprocessors
+  """
+  # TODO
+  return None
+
+def defaultCC():
+  """
+  Detect target's default C compiler
+  """
+  # TODO
+  return 'gcc'
+
+def defaultCXX():
+  """
+  Detect target's default C compiler
+  """
+  # TODO
+  return 'g++'
+
+def defaultFC():
+  """
+  Detect target's default C compiler
+  """
+  # TODO
+  return 'gfortran'
 
 
 class Target(ctl.Controller, ctl.ByName):
@@ -61,75 +103,103 @@ class Target(ctl.Controller, ctl.ByName):
       'collection': 'Project',
       'via': 'targets'
     },
-    'compilers': {
-      'collection': 'Compiler',
-      'via': 'target'
-    },
     'name': {
       'type': 'string',
       'unique': True,
-      'argparse': (('name',), 
-                   {'help': 'Target configuration name',
-                    'metavar': '<target_name>'})
+      'argparse': {'help': 'Target configuration name',
+                   'metavar': '<target_name>'}
     },
     'host_os': {
       'type': 'string',
       'required': True,
-      'argparse': (('--host-os',), 
-                   {'help': 'Host operating system',
-                    'metavar': 'os',
-                    'default': cf.tau.DEFAULT_HOST_OS or args.SUPPRESS})
+      'defaultsTo': defaultHostOS(),
+      'argparse': {'flags': ('--host-os',),
+                   'group': 'target system arguments',
+                   'help': 'Host operating system',
+                   'metavar': 'os'}
     },
     'host_arch': {
       'type': 'string',
       'required': True,
-      'argparse': (('--host-arch',), 
-                   {'help': 'Host architecture',
-                    'metavar': 'arch',
-                    'default': cf.tau.DEFAULT_HOST_ARCH or args.SUPPRESS})
+      'defaultsTo': defaultHostArch(),
+      'argparse': {'flags': ('--host-arch',),
+                   'group': 'target system arguments',
+                   'help': 'Host architecture',
+                   'metavar': 'arch'}
     },
     'device_arch': {
       'type': 'string',
-      'argparse': (('--device-arch',), 
-                   {'help': 'Coprocessor architecture',
-                    'metavar': 'arch',
-                    'default': cf.tau.DEFAULT_DEVICE_ARCH or args.SUPPRESS})
+      'defaultsTo': defaultDeviceArch(),
+      'argparse': {'flags': ('--device-arch',),
+                   'group': 'target system arguments',
+                   'help': 'Coprocessor architecture',
+                   'metavar': 'arch'}
     },
-    'tau': {
-      'type': 'string',
+    'CC': {
+      'model': 'Compiler',
       'required': True,
-      'argparse': (('--with-tau',), 
-                   {'help': 'URL or path to an existing TAU installation or archive file',
-                    'metavar': '(<path>|<url>|"download")',
-                    'dest': 'tau',
-                    'default': cf.tau.DEFAULT_SOURCE})
+      'defaultsTo': defaultCC(),
+      'argparse': {'flags': ('--cc',),
+                   'group': 'compiler arguments',
+                   'help': 'C Compiler',
+                   'metavar': '<command>'}
     },
-    'pdt': {
+    'CXX': {
+      'model': 'Compiler',
+      'required': True,
+      'defaultsTo': defaultCXX(),
+      'argparse': {'flags': ('--cxx','--c++'),
+                   'group': 'compiler arguments',
+                   'help': 'C++ Compiler',
+                   'metavar': '<command>'}
+    },
+    'FC': {
+      'model': 'Compiler',
+      'required': True,
+      'defaultsTo': defaultFC(),
+      'argparse': {'flags': ('--fc','--fortran'),
+                   'group': 'compiler arguments',
+                   'help': 'Fortran Compiler',
+                   'metavar': '<command>'}
+    },
+    'cuda': {
       'type': 'string',
-      'argparse': (('--with-pdt',), 
-                   {'help': 'URL or path to an existing PDT installation or archive file',
-                    'metavar': '(<path>|<url>|"download")',
-                    'dest': 'pdt',
-                    'default': cf.pdt.DEFAULT_SOURCE})
+      'argparse': {'flags': ('--with-cuda',),
+                   'group': 'software pacakge arguments',
+                   'help': 'Path to NVIDIA CUDA installation',
+                   'metavar': '<path>'}
     },
-    'bfd': {
+    'tau_source': {
       'type': 'string',
-      'argparse': (('--with-bfd',), 
-                   {'help': 'URL or path to an existing BfD installation or archive file',
-                    'metavar': '(<path>|<url>|"download")',
-                    'dest': 'bfd',
-                    'default': cf.bfd.DEFAULT_SOURCE})
+      'defaultsTo': 'download',
+      'argparse': {'flags': ('--with-tau',),
+                   'group': 'software pacakge arguments',
+                   'help': 'URL or path to a TAU installation or archive file',
+                   'metavar': '(<path>|<url>|"download")'}
     },
-    'libunwind': {
+    'pdt_source': {
       'type': 'string',
-      'argparse': (('--with-libunwind',), 
-                   {'help': 'URL or path to an existing LIBUNWIND installation or archive file',
-                    'metavar': '(<path>|<url>|"download")',
-                    'dest': 'libunwind',
-                    'default': cf.libunwind.DEFAULT_SOURCE})
+      'defaultsTo': 'download',
+      'argparse': {'flags': ('--with-pdt',),
+                   'group': 'software pacakge arguments',
+                   'help': 'URL or path to a PDT installation or archive file',
+                   'metavar': '(<path>|<url>|"download")'}
     },
-
-
+    'bfd_source': {
+      'type': 'string',
+      'defaultsTo': 'download',
+      'argparse': {'flags': ('--with-bfd',),
+                   'group': 'software pacakge arguments',
+                   'help': 'URL or path to a BFD installation or archive file',
+                   'metavar': '(<path>|<url>|"download")'}
+    },
+    'libunwind_source': {
+      'type': 'string',
+      'argparse': {'flags': ('--with-libunwind',),
+                   'group': 'software pacakge arguments',
+                   'help': 'URL or path to a libunwind installation or archive file',
+                   'metavar': '(<path>|<url>|"download")'}
+    }
   }
   
   _valid_name = set(string.digits + string.letters + '-_.')
