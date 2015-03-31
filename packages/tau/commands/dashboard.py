@@ -42,7 +42,7 @@ import settings
 import error
 import commands
 import arguments as args
-from model.selection import Selection
+from model.experiment import Experiment
 
 
 LOGGER = logger.getLogger(__name__)
@@ -96,13 +96,13 @@ def main(argv):
   commands.executeCommand(['project', 'list'], subargs)
   
   title = '{:=<{}}'.format('== Current Selection ==', logger.LINE_WIDTH)
-  selected = Selection.getSelected()
-  LOGGER.debug("Found selection %r" % selected)
-  if selected:
-    selected.populate()
-    target = selected['target']
-    application = selected['application']
-    measurement = selected['measurement']
+  selection = Experiment.getSelected()
+  if selection:
+    LOGGER.debug("Found selection %r" % selection)
+    selection.populate()
+    target = selection['target']
+    application = selection['application']
+    measurement = selection['measurement']
     msg = "Application '%s' on target '%s' measured by '%s'" % \
           (application['name'], target['name'], measurement['name'])
   else:

@@ -52,9 +52,8 @@ class Project(ctl.Controller, ctl.ByName):
     'name': {
       'type': 'string',
       'unique': True,
-      'argparse': (('name',), 
-                   {'help': 'Project name',
-                    'metavar': '<project_name>'})
+      'argparse': {'help': 'Project name',
+                   'metavar': '<project_name>'}
     },
     'targets': {
       'collection': 'Target',
@@ -68,18 +67,17 @@ class Project(ctl.Controller, ctl.ByName):
       'collection': 'Measurement',
       'via': 'projects',
     },
-    'selections': {
-      'collection': 'Selection',
+    'experiments': {
+      'collection': 'Experiment',
       'via': 'project'
     },
     'prefix': {
       'type': 'string',
       'required': True,
-      'argparse': (('--home',), 
-                   {'help': 'Location for all files and experiment data related to this project',
-                    'metavar': 'path',
-                    'dest': 'prefix',
-                    'default': env.USER_PREFIX})
+      'defaultsTo': env.USER_PREFIX,
+      'argparse': {'flags': ('--home',),
+                   'help': 'Location for all files and experiment data related to this project',
+                   'metavar': 'path'}
     },
   }
 
