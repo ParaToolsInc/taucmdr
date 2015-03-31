@@ -46,6 +46,16 @@ SUPPRESS = argparse.SUPPRESS
 REMAINDER = argparse.REMAINDER
 
 
+class MutableGroupArgumentParser(argparse.ArgumentParser):
+  """
+  Argument parser that permits groups to be updated
+  """
+  def getGroup(self, title):
+    for group in self._action_groups:
+      if group.title == title:
+        return group
+    return None
+
 class ArgparseHelpFormatter(argparse.RawDescriptionHelpFormatter):
   """
   Custom formatter for argparse
@@ -87,7 +97,7 @@ class ParseBooleanAction(argparse.Action):
     else:
       raise argparse.ArgumentError(self, 'Boolean value required')
     setattr(namespace, self.dest, bool_value)
-
+    
 
 def getParser(arguments, prog=None, usage=None, description=None, epilog=None):
   """
@@ -109,18 +119,40 @@ def getParserFromModel(model, use_defaults=True,
   """
   Builds an argparse.ArgumentParser from a model's attributes
   """
-  parser = argparse.ArgumentParser(prog=prog, 
-                                   usage=usage, 
-                                   description=description,
-                                   epilog=epilog,
-                                   formatter_class=ArgparseHelpFormatter)
+  parser = MutableGroupArgumentParser(prog=prog, 
+                                      usage=usage, 
+                                      description=description,
+                                      epilog=epilog,
+                                      formatter_class=ArgparseHelpFormatter)
+  groups = {}
   for attr, props in model.attributes.iteritems():
     try:
-      flags, options = props['argparse']
+      options = dict(props['argparse'])
     except KeyError:
       continue
-    all_options = dict(options)
-    if not use_defaults or 'default' not in options:
-      all_options['default'] = argparse.SUPPRESS
-    parser.add_argument(*flags, **all_options)
+    try:
+      default = props['defaultsTo']
+    except KeyError:
+      options['default'] = argparse.SUPPRESS
+    else:
+      if use_defaults and default:
+        options['default'] = default
+      else:
+        options['default'] = argparse.SUPPRESS 
+    try:
+      group_name = options['group']
+    except KeyError:
+      group = parser
+    else:
+      del options['group']
+      groups.setdefault(group_name, parser.add_argument_group(group_name))
+      group = groups[group_name]
+    try:
+      flags = options['flags']
+    except KeyError:
+      flags = (attr,)
+    else:
+      del options['flags']
+      options['dest'] = attr
+    group.add_argument(*flags, **options)
   return parser

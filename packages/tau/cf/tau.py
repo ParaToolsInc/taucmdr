@@ -40,16 +40,12 @@ import os
 import sys
 import glob
 import errno
-import shutil
-import platform
 import subprocess
 
 # TAU modules
-import cf
 import logger
 import util
 import error
-import environment
 
 
 LOGGER = logger.getLogger(__name__)
@@ -117,31 +113,6 @@ COMMANDS = [
     'trace2profile'
 ]
 
-
-def _detectDefaultHostOS():
-  """
-  Detect the default host operating system
-  """
-  return platform.system()
-DEFAULT_HOST_OS = _detectDefaultHostOS()
-
-
-def _detectDefaultHostArch():
-    """
-    Use TAU's archfind script to detect the host target architecture
-    """
-    here = os.path.dirname(os.path.realpath(__file__))
-    cmd = os.path.join(os.path.dirname(here), 'util', 'archfind', 'archfind')
-    return subprocess.check_output(cmd).strip()
-DEFAULT_HOST_ARCH = _detectDefaultHostArch()
-
-
-def _detectDefaultDeviceArch():
-  """
-  Detect coprocessors
-  """
-  return None
-DEFAULT_DEVICE_ARCH = _detectDefaultDeviceArch()
 
 
 def _parseConfig(config, commandline_opts, environment_vars):
@@ -437,7 +408,7 @@ class Tau(object):
     return None
     
 
-  def getCompiletimeConfig(self, initial_opts, initial_env):
+  def applyCompiletimeConfig(self, opts, env):
     """
     TODO: Docs
     """
@@ -449,17 +420,13 @@ class Tau(object):
                           'fallback': ['-optRevert', '-optNoCompInst']}
                            }
     environment_variables = {}    
-    
-    opts = list(initial_opts)
-    env = dict(initial_env)
     tauOpts, tauEnv = _parseConfig(self.config, commandline_options, environment_variables)
     opts.extend(tauOpts)
     env.update(tauEnv)
-    env['PATH'] = os.pathsep.join([self.bin_path, initial_env.get('PATH', '')])
+    env['PATH'] = os.pathsep.join([self.bin_path, env.get('PATH')])
     env['TAU_MAKEFILE'] = self.getMakefile()
-    return opts, env
 
-  def getRuntimeConfig(self, initial_opts, initial_env):
+  def applyRuntimeConfig(self, opts, env):
     """
     TODO: Docs
     """
@@ -479,11 +446,8 @@ class Tau(object):
         'callpath': lambda depth: ({'TAU_CALLPATH': 1, 'TAU_CALLPATH_DEPTH': depth} 
                                    if depth > 0 else {'TAU_CALLPATH': 0})
         }
-    opts = list(initial_opts)
-    env = dict(initial_env)
     tauOpts, tauEnv = _parseConfig(self.config, commandline_opts, environment_vars)
     opts.extend(tauOpts)
     env.update(tauEnv)
-    env['PATH'] = os.pathsep.join([self.bin_path, initial_env.get('PATH', '')])
-    return opts, env
+    env['PATH'] = os.pathsep.join([self.bin_path, initial_env.get('PATH')])
     

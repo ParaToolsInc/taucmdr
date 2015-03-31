@@ -56,118 +56,109 @@ class Measurement(ctl.Controller, ctl.ByName):
     'name': {
       'type': 'string',
       'unique': True,
-      'argparse': (('name',), 
-                   {'help': 'Measurement configuration name',
-                    'metavar': '<measurement_name>'})
+      'argparse': {'help': 'Measurement configuration name',
+                   'metavar': '<measurement_name>'}
 
     },
     'profile': {
       'type': 'boolean',
       'defaultsTo': True,
-      'argparse': (('--profile',), 
-                   {'help': 'Gather application profiles',
-                    'metavar': 'T/F',
-                    'nargs': '?',
-                    'const': True,
-                    'default': True,
-                    'action': args.ParseBooleanAction})
+      'argparse': {'flags': ('--profile',),
+                   'help': 'Gather application profiles',
+                   'metavar': 'T/F',
+                   'nargs': '?',
+                   'const': True,
+                   'action': args.ParseBooleanAction}
     },
     'trace': {
       'type': 'boolean',
-      'defaultsTo': True,
-      'argparse': (('--trace',), 
-                   {'help': 'Gather application traces',
-                    'metavar': 'T/F',
-                    'nargs': '?',
-                    'const': True,
-                    'default': False,
-                    'action': args.ParseBooleanAction})
+      'defaultsTo': False,
+      'argparse': {'flags': ('--trace',),
+                   'help': 'Gather application traces',
+                   'metavar': 'T/F',
+                   'nargs': '?',
+                   'const': True,
+                   'action': args.ParseBooleanAction}
     },
     'sample': {
       'type': 'boolean',
-      'defaultsTo': True,
-      'argparse': (('--sample',), 
-                   {'help': 'Gather application program counter samples',
-                    'metavar': 'T/F',
-                    'nargs': '?',
-                    'const': True,
-                    'default': False,
-                    'action': args.ParseBooleanAction})
+      'defaultsTo': False,
+      'argparse': {'flags': ('--sample',),
+                   'help': 'Gather application program counter samples',
+                   'metavar': 'T/F',
+                   'nargs': '?',
+                   'const': True,
+                   'action': args.ParseBooleanAction}
     },
     'source_inst': {
       'type': 'boolean',
       'defaultsTo': True,
-      'argparse': (('--source-inst',), 
-                   {'help': 'Use source code parsing to instrument the application',
-                    'metavar': 'T/F',
-                    'nargs': '?',
-                    'const': True,
-                    'default': True,
-                    'action': args.ParseBooleanAction})
+      'argparse': {'flags': ('--source-inst',),
+                   'help': 'Use source code parsing to instrument the application',
+                   'metavar': 'T/F',
+                   'nargs': '?',
+                   'const': True,
+                   'action': args.ParseBooleanAction}
     },
     'compiler_inst': {
       'type': 'string',
-      'argparse': (('--compiler-inst',), 
-                   {'help': 'Use compiler callbacks to instrument the application',
-                    'metavar': 'mode',
-                    'nargs': '?',
-                    'const': 'always',
-                    'default': 'fallback',
-                    'choices': ['always', 'fallback', 'never']})
+      'defaultsTo': 'fallback',
+      'argparse': {'flags': ('--compiler-inst',),
+                   'help': 'Use compiler callbacks to instrument the application',
+                   'metavar': 'mode',
+                   'nargs': '?',
+                   'const': 'always',
+                   'choices': ['always', 'fallback', 'never']}
     },
     'mpi': {
       'type': 'boolean',
       'defaultsTo': False,
-      'argparse': (('--mpi',), 
-                   {'help': 'Measure time spent in MPI methods',
-                    'metavar': 'T/F',
-                    'nargs': '?',
-                    'const': True,
-                    'default': False,
-                    'action': args.ParseBooleanAction})
+      'argparse': {'flags': ('--mpi',),
+                   'help': 'Measure time spent in MPI methods',
+                   'metavar': 'T/F',
+                   'nargs': '?',
+                   'const': True,
+                   'action': args.ParseBooleanAction}
     },
     'openmp': {
       'type': 'string',
-      'argparse': (('--openmp',), 
-                   {'help': 'Method used to measure time spent in OpenMP directives',
-                    'metavar': 'method',
-                    'nargs': '?',
-                    'const': 'opari',
-                    'default': 'ignore',
-                    'choices': ['ignore', 'opari', 'ompt']})
+      'defaultsTo': 'ignore',
+      'argparse': {'flags': ('--openmp',),
+                   'help': 'Method used to measure time spent in OpenMP directives',
+                   'metavar': 'method',
+                   'nargs': '?',
+                   'const': 'opari',
+                   'choices': ['ignore', 'opari', 'ompt']}
     },
     'callpath': {
       'type': 'integer',
       'defaultsTo': 2,
-      'argparse': (('--callpath',), 
-                   {'help': 'Set maximum depth of callpath recording',
-                    'metavar': 'depth',
-                    'nargs': '?',
-                    'const': 2,
-                    'default': 2,
-                    'type': int})
+      'argparse': {'flags': ('--callpath',),
+                   'help': 'Set maximum depth of callpath recording',
+                   'metavar': 'depth',
+                   'nargs': '?',
+                   'const': 2,
+                   'type': int}
     },
     'memory_usage': {
       'type': 'boolean',
       'defaultsTo': False,
-      'argparse': (('--memory-usage',), 
-                   {'help': 'Measure memory consumption',
-                    'metavar': 'T/F',
-                    'nargs': '?',
-                    'const': True,
-                    'default': False,
-                    'action': args.ParseBooleanAction})
+      'argparse': {'flags': ('--memory-usage',),
+                   'help': 'Measure memory consumption',
+                   'metavar': 'T/F',
+                   'nargs': '?',
+                   'const': True,
+                   'action': args.ParseBooleanAction}
     },
     'memory_alloc': {
       'type': 'boolean',
       'defaultsTo': False,
-      'argparse': (('--memory-alloc',), 
-                   {'help': 'Record memory allocation and deallocation events',
-                    'metavar': 'T/F',
-                    'nargs': '?',
-                    'const': True,
-                    'default': False,
-                    'action': args.ParseBooleanAction})
+      'argparse': {'flags': ('--memory-alloc',),
+                   'help': 'Record memory allocation and deallocation events',
+                   'metavar': 'T/F',
+                   'nargs': '?',
+                   'const': True,
+                   'action': args.ParseBooleanAction}
     },
   }
   

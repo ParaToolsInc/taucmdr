@@ -39,12 +39,12 @@ import os
 import hashlib
 
 # TAU modules
-import cf
 import logger
 import settings
 import error
 import controller
 import util
+import cf.tau
 from model.project import Project
 from model.target import Target
 
@@ -81,7 +81,7 @@ KNOWN_COMPILERS = {
     'pgcc': CompilerInfo('pgcc', 'CC', 'PGI', 'C'),
     'pgCC': CompilerInfo('pgCC', 'CXX', 'PGI', 'C++'),
     'pgf77': CompilerInfo('pgf77', 'FC', 'PGI', 'FORTRAN77'),
-    'pgf90': CompilerInfo('ptf90', 'FC', 'PGI', 'Fortran90'),
+    'pgf90': CompilerInfo('pgf90', 'FC', 'PGI', 'Fortran90'),
     'mpicc': CompilerInfo('mpicc', 'CC', 'MPI', 'C'),
     'mpicxx': CompilerInfo('mpicxx', 'CXX', 'MPI', 'C++'),
     'mpic++': CompilerInfo('mpic++', 'CXX', 'MPI', 'C++'),
@@ -90,6 +90,12 @@ KNOWN_COMPILERS = {
     'mpif90': CompilerInfo('mpif90', 'FC', 'MPI', 'Fortran90')
     }
 
+KNOWN_FAMILIES = {}
+for comp in KNOWN_COMPILERS.itervalues():
+  family = comp.family
+  KNOWN_FAMILIES.setdefault(family, [])
+  KNOWN_FAMILIES[family].append(comp)
+del comp
 
 class Compiler(controller.Controller):
   """
@@ -97,10 +103,6 @@ class Compiler(controller.Controller):
   """
   
   attributes = {
-    'target': {
-      'model': 'Target',
-      'required': True,
-    },
     'command': {
       'type': 'string',
       'required': True,
@@ -134,25 +136,31 @@ class Compiler(controller.Controller):
       'required': True
     }
   }
+  
+  def __str__(self):
+    return self['command']
+  
+  def absolutePath(self):
+    return os.path.join(self['path'], self['command'])
 
   @classmethod
-  def identify(cls, target, compiler_cmd):
+  def identify(cls, compiler_cmd):
     """
     Identifies a compiler executable from `compiler_cmd`
     """
     LOGGER.debug("Identifying compiler: %s" % compiler_cmd)
-    if not compiler_cmd:
-      compiler_cmd = 'cc'
-      LOGGER.debug("Assuming system default compiler C is '%s'" % compiler_cmd)
     command = os.path.basename(compiler_cmd)
     path = util.which(compiler_cmd)
-    if not path:
-      raise error.ConfigurationError("'%s' missing or not executable", 
-                                     "Check the command spelling, PATH environment variable, and file permissions")
     try:
       info = KNOWN_COMPILERS[command]
     except KeyError:
       raise error.ConfigurationError("Unknown compiler command: '%s'", compiler_cmd)
+    if not path:
+      raise error.ConfigurationError("%s %s compiler '%s' missing or not executable." % 
+                                     (info.family, info.language, compiler_cmd), 
+                                     "Check spelling, loaded modules, PATH environment variable, and file permissions")
+    if not util.file_accessible(path):
+      raise error.ConfigurationError("Compiler '%s' not readable." % (os.path.join(path, command)))
 
     md5sum = hashlib.md5()
     with open(path, 'r') as compiler_file:
@@ -162,8 +170,7 @@ class Compiler(controller.Controller):
     # TODO: Compiler version
     version = 'FIXME'
     
-    fields = {'target': target.eid,
-              'command': command,
+    fields = {'command': command,
               'path': path,
               'md5': md5,
               'version': version,
@@ -178,14 +185,10 @@ class Compiler(controller.Controller):
     else:
       LOGGER.debug("No compiler record found. Creating new record: %s" % fields)
       found = cls.create(fields)
-
-    if not util.file_accessible(found['path']):
-      raise error.ConfigurationError("Compiler '%s' at '%s' not readable." % (found['command'], found['path']))
-    
     return found
 
   @classmethod
-  def getCompilers(cls, target, compiler):
+  def getSiblings(cls, compiler):
     """
     TODO: Docs
     """
@@ -196,7 +199,7 @@ class Compiler(controller.Controller):
       LOGGER.debug("Checking %s" % known)
       if (known.family == compiler['family']) and (known.role != compiler['role']):
         try:
-          other = cls.identify(target, known.command)
+          other = cls.identify(known.command)
         except error.ConfigurationError, e:
           LOGGER.debug(e)
           continue

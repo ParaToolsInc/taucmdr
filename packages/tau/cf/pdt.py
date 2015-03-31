@@ -195,18 +195,16 @@ class Pdt(object):
     LOGGER.info('PDT installation complete')
     return self.verify()
 
-  def getCompiletimeConfig(self, initial_opts, initial_env):
+  def applyCompiletimeConfig(self, opts, env):
     """
     TODO: Docs
     """
-    env = dict(initial_env)
-    env['PATH'] = os.pathsep.join([self.bin_path, env.get('PATH', '')])
-    return initial_opts, env
+    env['PATH'] = os.pathsep.join([self.bin_path, env.get('PATH')])
 
-  def getRuntimeConfig(self, initial_opts, initial_env):
+  def getRuntimeConfig(self, opts, env):
     """
     TODO: Docs
     """
-    return initial_opts, initial_env
+    pass
 
     

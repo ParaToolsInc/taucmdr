@@ -42,8 +42,7 @@ import controller
 import error
 import arguments as args
 from model.target import Target
-
-
+from model.compiler import Compiler, KNOWN_FAMILIES
 
 LOGGER = logger.getLogger(__name__)
 
@@ -63,7 +62,14 @@ HELP = """
 PARSER = args.getParserFromModel(Target,
                                  prog=COMMAND,
                                  usage=USAGE, 
-                                 description=SHORT_DESCRIPTION) 
+                                 description=SHORT_DESCRIPTION)
+group = PARSER.getGroup('compiler arguments')
+group.add_argument('--compilers',
+                   help="Select all compilers automatically from the given family",
+                   metavar='<family>', 
+                   dest='family',
+                   default=args.SUPPRESS,
+                   choices=KNOWN_FAMILIES.keys())
 
 
 def getUsage():
@@ -82,9 +88,87 @@ def main(argv):
   LOGGER.debug('Arguments: %s' % args)
   
   try:
-    Target.create(args.__dict__)
-  except controller.UniqueAttributeError:
-    PARSER.error('A target named %r already exists' % args.name)
+    family = KNOWN_FAMILIES[args.family]
+  except AttributeError:
+    # --compilers not specified but that's OK
+    pass
+  except KeyError:
+    raise error.ConfigurationError("Invalid compiler family: %s" % args.family,
+                                   "See 'compiler arguments' under `tau target create --help`")
+  else:
+    LOGGER.debug("Using %s compilers by default" % args.family)
+    for comp_info in family:
+      setattr(args, comp_info.role, comp_info.command)
+    del args.family
+  LOGGER.debug('Arguments: %s' % args)
+
+  languages = {'CC': 'C', 'CXX': 'C++', 'FC': 'Fortran'}
+  compiler_keys = set(languages.keys())
+  all_keys = set(args.__dict__.keys())
+  given_keys = compiler_keys & all_keys
+  missing_keys = compiler_keys - given_keys
+  compilers = {}
   
+  LOGGER.debug("Given keys: %s" % given_keys)
+  LOGGER.debug("Missing keys: %s" % missing_keys) 
+  
+  if not missing_keys:
+    LOGGER.debug("All compilers specified by user")
+    for key in compiler_keys:
+      compilers[key] = Compiler.identify(getattr(args, key))
+  elif not given_keys:
+    LOGGER.debug("No compilers specified by user, using defaults")
+    for key in compiler_keys:
+      comp = Compiler.identify(getattr(args, key))
+      LOGGER.info("%s compiler not specified, using default: %s" % 
+                  (comp['language'], comp.absolutePath()))
+      compilers[key] = comp
+  else:
+    LOGGER.debug("Some compilers specified by user, using compiler family defaults")
+    siblings = set()
+    for key in given_keys:
+      comp = Compiler.identify(getattr(args, key))
+      siblings |= set(Compiler.getSiblings(comp))
+      compilers[key] = comp
+    for key in missing_keys:
+      for comp in siblings:
+        if comp['role'] == key:
+          LOGGER.info("%s compiler not specified, using default: %s" % 
+                      (comp['language'], comp.absolutePath()))
+          compilers[key] = comp
+
+  # Check that all compilers were found
+  for key in compiler_keys:
+    if key not in compilers:
+      raise error.ConfigurationError("%s compiler could not be found" % languages[key], 
+                                     "See 'compiler arguments' under `tau target create --help`")
+     
+  # Check that all compilers are from the same compiler family 
+  # This is a TAU requirement.  When this is fixed in TAU we can remove this check
+  families = list(set([comp['family'] for comp in compilers.itervalues()]))
+  if len(families) != 1:
+    raise error.ConfigurationError("Compilers from different families specified",
+                                   "TAU requires all compilers to be from the same family, e.g. GNU or Intel")
+  LOGGER.info("Using %s compilers" % families[0])
+  
+  # Check that each compiler is in the right role
+  for role, comp in compilers.iteritems():
+    if comp['role'] != role:
+      raise error.ConfigurationError("'%s' specified as %s compiler but it is a %s compiler" % 
+                                     (comp.absolutePath(), languages[role], comp['language']),
+                                     "See 'compiler arguments' under `tau target create --help`")
+  
+  # Show compilers to user
+  for comp in compilers.itervalues():
+    LOGGER.info("  %s compiler: '%s'" % (comp['language'], comp.absolutePath()))
+    
+  flags = dict(args.__dict__)
+  for key, comp in compilers.iteritems():
+    flags[key] = comp.eid
+  try:
+    Target.create(flags)
+  except controller.UniqueAttributeError:
+    PARSER.error('A target named %r already exists' % args.name) 
+
   LOGGER.info('Created a new target named %r.' % args.name)
   return commands.executeCommand(['target', 'list'], [args.name])
