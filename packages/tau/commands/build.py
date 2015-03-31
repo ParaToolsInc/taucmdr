@@ -94,7 +94,11 @@ def getUsage():
 def getHelp():
   return HELP
 
-def isKnownCompiler(cmd):
+def isCompatible(cmd):
+  """
+  TODO: DOCS
+  """
+  # TODO: Likely needs more logic here
   return cmd in KNOWN_COMPILERS
 
 
@@ -105,10 +109,7 @@ def main(argv):
   args = PARSER.parse_args(args=argv)
   LOGGER.debug('Arguments: %s' % args)
   
-  compiler_cmd = args.cmd
-  compiler_args = args.cmd_args
-  
   selection = Experiment.getSelected()
   if not selection:
     raise error.ConfigurationError("Nothing selected.", "See `tau project select`") 
-  return selection.managedBuild(compiler_cmd, compiler_args)
+  return selection.managedBuild(args.cmd, args.cmd_args)

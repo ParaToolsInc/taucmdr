@@ -131,11 +131,11 @@ def main():
 
   # Check shortcuts
   shortcut = None
-  if commands.build.isKnownCompiler(cmd):
+  if commands.build.isCompatible(cmd):
     shortcut = 'build'
 #   elif show.isKnownFileFormat(cmd):
 #     shortcut = 'show'
-  elif commands.run.isExecutable(cmd):
+  elif commands.run.isCompatible(cmd):
     shortcut = 'run'
   if shortcut:
     LOGGER.debug('Trying shortcut %r' % shortcut)

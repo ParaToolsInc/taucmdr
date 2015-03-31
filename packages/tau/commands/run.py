@@ -36,23 +36,71 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 # TAU modules
-import controller as ctl
+import logger
+import error
+import util
+import commands
+import arguments as args
+from model.experiment import Experiment
 
 
-class Trial(ctl.Controller):
+LOGGER = logger.getLogger(__name__)
+
+_name_parts = __name__.split('.')[1:]
+COMMAND = ' '.join(['tau'] + _name_parts)
+
+
+def _compilersHelp():
+  parts = ['  %s  %s' % ('{:<15}'.format(comp.command), comp.short_descr) 
+           for comp in KNOWN_COMPILERS.itervalues()]
+  parts.sort()
+  return '\n'.join(parts)
+
+
+SHORT_DESCRIPTION = "Gather performance data from an application."
+
+USAGE = """
+  %(command)s <command> [args ...]
+  %(command)s -h | --help 
+""" % {'command': COMMAND}
+
+HELP = """
+'%(command)s' page to be written.
+""" % {'command': COMMAND}
+
+_arguments = [ (('cmd',), {'help': "Application command, e.g. './a.out' or 'mpirun ./a.out'",
+                           'metavar': '<command>'}),
+               (('cmd_args',), {'help': "Command arguments",
+                                'metavar': 'args',
+                                'nargs': args.REMAINDER})]
+PARSER = args.getParser(_arguments,
+                        prog=COMMAND,
+                        usage=USAGE, 
+                        description=SHORT_DESCRIPTION)
+
+def getUsage():
+  return PARSER.format_help() 
+
+
+def getHelp():
+  return HELP
+
+
+def isCompatible(cmd):
   """
-  Trial data model controller
+  TODO: Docs
   """
+  # For now, just see if we can execute the command
+  return bool(util.which(cmd))
+
+def main(argv):
+  """
+  Program entry point
+  """
+  args = PARSER.parse_args(args=argv)
+  LOGGER.debug('Arguments: %s' % args)
   
-  attributes = {      
-    'experiment': {
-      'model': 'Experiment'
-    },
-    'timestamp': {
-      'type': 'datetime',
-      'required': True
-    },
-    'experiment_snapshot': {
-      'type': 'json'
-    }
-  }
+  selection = Experiment.getSelected()
+  if not selection:
+    raise error.ConfigurationError("Nothing selected.", "See `tau project select`") 
+  return selection.managedRun(args.cmd, args.cmd_args)
