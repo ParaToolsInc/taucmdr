@@ -435,19 +435,19 @@ class Tau(object):
         'sample': {True: ['-ebs'], False: []}
         }
     environment_variables = {
-        'verbose': {True: {'TAU_VERBOSE': 1}, 
-                    False: {'TAU_VERBOSE': 0}},
-        'profile': {True: {'TAU_PROFILE': 1}, 
-                    False: {'TAU_PROFILE': 0}},
-        'trace': {True: {'TAU_TRACE': 1}, 
-                  False: {'TAU_TRACE': 0}},
-        'sample': {True: {'TAU_SAMPLE': 1}, 
-                   False: {'TAU_SAMPLE': 0}},
-        'callpath': lambda depth: ({'TAU_CALLPATH': 1, 'TAU_CALLPATH_DEPTH': depth} 
-                                   if depth > 0 else {'TAU_CALLPATH': 0})
+        'verbose': {True: {'TAU_VERBOSE': '1'}, 
+                    False: {'TAU_VERBOSE': '0'}},
+        'profile': {True: {'TAU_PROFILE': '1'}, 
+                    False: {'TAU_PROFILE': '0'}},
+        'trace': {True: {'TAU_TRACE': '1'}, 
+                  False: {'TAU_TRACE': '0'}},
+        'sample': {True: {'TAU_SAMPLING': '1'}, 
+                   False: {'TAU_SAMPLING': '0'}},
+        'callpath': lambda depth: ({'TAU_CALLPATH': '1', 'TAU_CALLPATH_DEPTH': str(depth)} 
+                                   if depth > 0 else {'TAU_CALLPATH': '0'})
         }
-    tauOpts, tauEnv = _parseConfig(self.config, commandline_opts, environment_vars)
+    tauOpts, tauEnv = _parseConfig(self.config, commandline_options, environment_variables)
     opts.extend(tauOpts)
     env.update(tauEnv)
-    env['PATH'] = os.pathsep.join([self.bin_path, initial_env.get('PATH')])
+    env['PATH'] = os.pathsep.join([self.bin_path, env.get('PATH')])
     

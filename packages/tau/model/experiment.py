@@ -138,7 +138,7 @@ class Experiment(controller.Controller):
       pdt = cf.pdt.Pdt(prefix, cxx, target['pdt_source'], target['host_arch'])
       pdt.install()
       self.pdt = pdt
-      
+
     # Configure/build/install TAU if needed
     tau = cf.tau.Tau(prefix, cc, cxx, fc, target['tau_source'], target['host_arch'],
                      verbose=verbose,
@@ -207,24 +207,27 @@ class Experiment(controller.Controller):
       proc = subprocess.Popen(cmd, env=env, stdout=sys.stdout, stderr=sys.stderr)
       return proc.wait()
 
-  @classmethod
-  def managedRun(cls, selection, application_cmd, application_args):
+  def managedRun(self, application_cmd, application_args):
     """
     TODO: Docs
     """
-    selection.populate()
-    target = selection['target']
-    application = selection['application']
-    measurement = selection['measurement']
+    self.configure()
+    target = self['target']
+    measurement = self['measurement']
+    
+    # Build environment from component packages
+    opts, env = [], os.environ
+    self.tau.applyRuntimeConfig(opts, env)
 
-    expr = cls.configure(selection, cc, cxx, fc)
-    opts, env = expr.getCompiletimeConfig()
+    # TODO : Select tau_exec as needed
+    use_tau_exec = False
+    if use_tau_exec:
+      # TODO: tau_exec flags and command line args
+      cmd = ['tau_exec'] + opts + [application_cmd] 
+    else:
+      cmd = [application_cmd]
 
-    use_wrapper = measurement['source_inst'] or measurement['comp_inst']
-    if use_wrapper:
-      compiler_cmd = key_compiler['tau_wrapper']
-
-    cmd = [compiler_cmd] + opts + compiler_args
+    cmd += application_args
 
     LOGGER.debug('Creating subprocess: cmd=%r, env=%r' % (cmd, env))
     LOGGER.info('\n'.join(['%s=%s' % i for i in env.iteritems() if i[0].startswith('TAU')]))
