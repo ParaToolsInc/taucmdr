@@ -39,6 +39,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import string
 
 # TAU modules
+import util
+import error
 import environment as env
 import controller as ctl
 
@@ -87,4 +89,10 @@ class Project(ctl.Controller, ctl.ByName):
     if set(self['name']) > Project._valid_name:
       raise ctl.ModelError('%r is not a valid project name.' % self['name'],
                            'Use only letters, numbers, dot (.), dash (-), and underscore (_).')
-  
+    prefix = self['prefix']
+    try:
+      util.mkdirp(prefix)
+    except Exception as err:
+      raise error.ConfigurationError('Cannot create directory %r: %s' % (prefix, err), 
+                                     'Check that you have `write` access')
+

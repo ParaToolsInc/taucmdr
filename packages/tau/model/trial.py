@@ -38,14 +38,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import os
 import sys
 import glob
-import zlib
-import json
-import base64
+import shutil
 from datetime import datetime
 
 # TAU modules
 import logger
 import util
+import storage
 import controller as ctl
 
 LOGGER = logger.getLogger(__name__)
@@ -57,27 +56,36 @@ class Trial(ctl.Controller):
   """
   
   attributes = {      
+    'number': {
+      'type': 'integer',
+      'required': True
+    },
     'experiment': {
       'model': 'Experiment',
       'required': True
     },
-    'experiment_snapshot': {
+    'command': {
       'type': 'string',
       'required': True
     },
+    'cwd': {
+      'type': 'string',
+      'required': True
+    },
+#     'env': {
+#       'type': 'string',
+#       'required': True
+#     },
     'begin_time': {
       'type': 'datetime'
     },
     'end_time': {
       'type': 'datetime'
     },
-    'outcome': {
-      'type': 'string'
+    'return_code': {
+      'type': 'integer'
     },
   }
-  
-  def name(self):
-    return "Trial%04d" % self.eid
   
   @classmethod
   def performTrial(cls, experiment, cmd, cwd, env):
@@ -93,55 +101,64 @@ class Trial(ctl.Controller):
     application = experiment['application']
     measurement = experiment['measurement']
     begin_time = str(datetime.utcnow())
-    
-    # Snapshot the experiment, compress, and store as base64
-    snapshot_data = {}
-    for obj in target, application, measurement:
-      obj.populate()
-      obj_data = dict(obj.data)
-      for excluded in 'project', 'projects':
-        try: del obj_data[excluded]
-        except: pass
-      snapshot_data[obj.model_name] = obj_data
-    LOGGER.debug("Snapshot data: %s" % snapshot_data)
-    snapshot_json = json.dumps(repr(snapshot_data))
-    snapshot = base64.b64encode(zlib.compress(snapshot_json))
-    LOGGER.debug("Compressed %d bytes to %d bytes" % (len(snapshot_json), len(snapshot)))
-
-    fields = {'experiment': experiment.eid,
-              'experiment_snapshot': snapshot,
-              'begin_time': begin_time}   
-
-    banner('BEGIN', experiment.name(), begin_time)    
-    trial = cls.create(fields)
-
+    trial_number = str(len(experiment['trials']))
+    prefix = os.path.join(experiment['project']['prefix'],
+                          experiment['project']['name'],
+                          target['name'], 
+                          application['name'], 
+                          measurement['name'], 
+                          trial_number)
     cmd_str = ' '.join(cmd)
-    retval = util.createSubprocess(cmd, cwd=cwd, env=env)
-    if retval != 0:
-      LOGGER.warning("Nonzero return code '%d' from '%s'" % (retval, cmd_str))
-    else:
-      LOGGER.info("'%s' returned 0" % cmd_str)
-    outcome = 'Return code %d' % retval
+    
+    # Create trial prefix
+    try:
+      util.mkdirp(prefix)
+    except Exception as err:
+      raise error.ConfigurationError('Cannot create directory %r: %s' % (prefix, err), 
+                                     'Check that you have `write` access')
+    
+    fields = {'number': trial_number,
+              'experiment': experiment.eid,
+              'command': cmd_str,
+              'cwd': cwd,
+#               'env': repr(env),
+              'begin_time': begin_time}
 
-    # Add profile data to tauDB
-    if measurement['profile']:
-      profiles = glob.glob(os.path.join(cwd, 'profile.*.*.*'))
-      if not profiles:
-        LOGGER.error("%s did not generate any profile files!" % cmd_str)
-        outcome = 'No profile files'
+    banner('BEGIN', experiment.name(), begin_time)
+    trial = cls.create(fields)
+    try:
+      retval = util.createSubprocess(cmd, cwd=cwd, env=env)
+      if retval:
+        LOGGER.warning("Nonzero return code '%d' from '%s'" % (retval, cmd_str))
       else:
-        LOGGER.info("Found %d profile files. Adding to local database..." % len(profiles))     
-        cmd = ['taudb_loadtrial', '-n', trial.name(), 
-               '-a', application['name'], '-x', experiment.name()]
-        taudb_retval = util.createSubprocess(cmd, cwd=cwd, env=env)
-        if taudb_retval != 0:
-          LOGGER.warning("Failed to add profiles to local database! Make a copy of %s/profile.* if you want to preserve this data" % cwd)
-          outcome = 'Upload failed'
-
-    # TODO: Handle traces
-
-    # Mark experiment end time and return
-    end_time = str(datetime.utcnow())
-    cls.update({'end_time': end_time, 'outcome': outcome}, eids=[trial.eid])
-    banner('END', experiment.name(), end_time)
+        LOGGER.info("'%s' returned 0" % cmd_str)
+  
+      # Copy profile files to trial prefix
+      if measurement['profile']:
+        profiles = glob.glob(os.path.join(cwd, 'profile.*.*.*'))
+        if not profiles:
+          LOGGER.error("%s did not generate any profile files!" % cmd_str)
+        else:
+          LOGGER.info("Found %d profile files. Adding to trial..." % len(profiles))
+          for file in profiles:
+            shutil.move(file, prefix)
+            LOGGER.debug("'%s' => '%s'" % (file, prefix))
+  
+      # TODO: Handle traces
+      
+      end_time = str(datetime.utcnow())
+    except:
+      # Something went wrong so revert the trial
+      LOGGER.error("Exception raised, reverting trial...")
+      cls.delete(eids=[trial.eid])
+      shutil.rmtree(prefix, ignore_errors=True)
+      raise
+    else:
+      # Trial successful, mark experiment end time
+      cls.update({'end_time': end_time, 'return_code': retval}, eids=[trial.eid])
+      # Record configuration state for provenance
+      shutil.copy(storage.user_storage.dbfile, prefix)
+      banner('END', experiment.name(), end_time)
+    
     return retval
+  
