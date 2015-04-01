@@ -51,11 +51,12 @@ LOGGER = logger.getLogger(__name__)
 _name_parts = __name__.split('.')[2:]
 COMMAND = ' '.join(['tau'] + _name_parts)
 
-SHORT_DESCRIPTION = "Show help for a command."
+SHORT_DESCRIPTION = "Show help for a command or suggest actions for a file."
+
+GROUP = "information"
 
 USAGE = """
-  %(command)s {<command>|<file_name>}
-  %(command)s -h | --help
+  %(command)s (<command>|<file>) [arguments]
 """ % {'command': COMMAND}
 
 HELP = """
@@ -63,7 +64,7 @@ Show help for a command line or file.
 """
 
 _arguments = [ (('command',), {'help': "A TAU command, system command, or file",
-                               'metavar': '{<command>|<file_name>}',
+                               'metavar': '(<command>|<file>)',
                                'nargs': args.REMAINDER})]
 PARSER = args.getParser(_arguments,
                         prog=COMMAND, 

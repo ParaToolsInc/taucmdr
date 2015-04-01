@@ -52,8 +52,7 @@ SHORT_DESCRIPTION = "Modify a project configuration."
 COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
 
 USAGE = """
-  %(command)s <project_name> [options]
-  %(command)s -h | --help
+  %(command)s <project_name> [arguments]
 """ % {'command': COMMAND}
 
 HELP = """

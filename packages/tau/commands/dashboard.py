@@ -49,14 +49,15 @@ from model.experiment import Experiment
 
 LOGGER = logger.getLogger(__name__)
 
-_name_parts = __name__.split('.')[2:]
+_name_parts = __name__.split('.')[1:]
 COMMAND = ' '.join(['tau'] + _name_parts)
 
 SHORT_DESCRIPTION = "Show all projects and their components."
 
+GROUP = "information"
+
 USAGE = """
-  %(command)s {<command>|<file_name>}
-  %(command)s -h | --help
+  %(command)s [arguments]
 """ % {'command': COMMAND}
 
 HELP = """
@@ -105,7 +106,7 @@ def main(argv):
     trials = selection['trials']
     parts = [selection.name()]
     if not len(trials):
-      parts.append("  No trials, see `tau run --help`")
+      parts.append("  No trials, see `tau --help`")
     else:
       trials_by_cmd = {}
       for trial in trials:

@@ -54,8 +54,7 @@ SHORT_DESCRIPTION = "List target configurations or show configuration details."
 COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
 
 USAGE = """
-  %(command)s [target_name] [target_name] ...
-  %(command)s -h | --help
+  %(command)s [target_name] [target_name] ... [arguments]
 """ % {'command': COMMAND}
 
 HELP = """
@@ -99,6 +98,8 @@ def main(argv):
       t = Target.withName(name)
       if t:
         found.append(t)
+      else:
+        PARSER.error("No target configuration named '%s'" % name)
 
   title = '{:=<{}}'.format('== Targets (%s) ==' % env.USER_PREFIX, 
                            logger.LINE_WIDTH)

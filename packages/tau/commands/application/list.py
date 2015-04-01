@@ -55,8 +55,7 @@ SHORT_DESCRIPTION = "List application configurations or show configuration detai
 COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
 
 USAGE = """
-  %(command)s [application_name] [application_name] ...
-  %(command)s -h | --help
+  %(command)s [application_name] [application_name] ... [arguments]
 """ % {'command': COMMAND}
 
 HELP = """
@@ -64,10 +63,10 @@ HELP = """
 """ % {'command': COMMAND}
 
 _arguments = [(('names',), {'help': "If given, show details for the application with this name",
-                           'metavar': 'application_name', 
-                           'nargs': '*',
-                           'default': args.SUPPRESS}),
-              (('-l','--long'), {'help': "Display all information about the application",
+                            'metavar': 'application_name', 
+                            'nargs': '*',
+                            'default': args.SUPPRESS}),
+              (('-l','--long'), {'help': "display all information about the application",
                                  'action': 'store_true',
                                  'default': False})]
 PARSER = args.getParser(_arguments,
@@ -101,6 +100,8 @@ def main(argv):
       t = Application.withName(name)
       if t:
         found.append(t)
+      else:
+        PARSER.error("No application configuration named '%s'" % name)
 
   title = '{:=<{}}'.format('== Applications (%s) ==' % env.USER_PREFIX, 
                            logger.LINE_WIDTH)

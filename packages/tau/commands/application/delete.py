@@ -49,20 +49,24 @@ SHORT_DESCRIPTION = "Delete application configurations."
 COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
 
 USAGE = """
-  %(command)s <application_name>
-  %(command)s -h | --help
+  %(command)s <application_name> [arguments]
 """ % {'command': COMMAND}
 
 HELP = """
 '%(command)s' page to be written.
 """ % {'command': COMMAND}
 
+HELP_EPILOG = """
+WARNING: Deleting an application configuration will remove it from all projects
+"""
+
 _arguments = [ (('name',), {'help': "Name of application configuration to delete",
                             'metavar': '<application_name>'}) ]  
 PARSER = args.getParser(_arguments,
                    prog=COMMAND, 
                    usage=USAGE % {'command': COMMAND}, 
-                   description=SHORT_DESCRIPTION)
+                   description=SHORT_DESCRIPTION,
+                   epilog=HELP_EPILOG)
 
 def getUsage():
   return PARSER.format_help() 

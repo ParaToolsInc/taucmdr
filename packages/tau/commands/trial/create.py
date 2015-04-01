@@ -35,56 +35,47 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+
 # TAU modules
 import logger
+import commands
+import controller
 import error
 import util
-import commands
 import arguments as args
 from model.experiment import Experiment
 
 
 LOGGER = logger.getLogger(__name__)
 
-_name_parts = __name__.split('.')[1:]
-COMMAND = ' '.join(['tau'] + _name_parts)
+COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
 
-
-def _compilersHelp():
-  parts = ['  %s  %s' % ('{:<15}'.format(comp.command), comp.short_descr) 
-           for comp in KNOWN_COMPILERS.itervalues()]
-  parts.sort()
-  return '\n'.join(parts)
-
-
-SHORT_DESCRIPTION = "Gather performance data from an application."
+SHORT_DESCRIPTION = "Run an application under a new experiment trial."
 
 USAGE = """
-  %(command)s <command> [args ...]
-  %(command)s -h | --help 
+  %(command)s <command> [arguments]
 """ % {'command': COMMAND}
 
 HELP = """
 '%(command)s' page to be written.
 """ % {'command': COMMAND}
 
-_arguments = [ (('cmd',), {'help': "Application command, e.g. './a.out' or 'mpirun ./a.out'",
+_arguments = [ (('cmd',), {'help': "Command, e.g. './a.out' or 'mpirun ./a.out'",
                            'metavar': '<command>'}),
                (('cmd_args',), {'help': "Command arguments",
-                                'metavar': 'args',
+                                'metavar': '[arguments]',
                                 'nargs': args.REMAINDER})]
 PARSER = args.getParser(_arguments,
                         prog=COMMAND,
                         usage=USAGE, 
                         description=SHORT_DESCRIPTION)
 
+
 def getUsage():
   return PARSER.format_help() 
 
-
 def getHelp():
   return HELP
-
 
 def isCompatible(cmd):
   """
@@ -102,5 +93,5 @@ def main(argv):
   
   selection = Experiment.getSelected()
   if not selection:
-    raise error.ConfigurationError("Nothing selected.", "See `tau project select`") 
+    raise error.ConfigurationError("No experiment configured.", "See `tau project select`")
   return selection.managedRun(args.cmd, args.cmd_args)
