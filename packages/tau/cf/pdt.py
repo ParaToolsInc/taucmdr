@@ -152,7 +152,7 @@ class Pdt(object):
         srcdir = util.extract(dst, self.src_prefix)
       except IOError:
         raise error.ConfigurationError("Cannot acquire source file '%s'" % self.src,
-                                       "Check that the file or directory is accessable")
+                                       "Check that the file is accessable")
       finally:
         try: os.remove(dst)
         except: pass
@@ -169,22 +169,32 @@ class Pdt(object):
         except KeyError:
           LOGGER.warning("PDT has no compiler flag for '%s'.  Using defaults." % self.cxx['family'])
 
-      # Configure
-      prefix_flag = '-prefix=%s' % self.pdt_prefix
-      cmd = ['./configure', prefix_flag, compiler_flag]
-      LOGGER.info("Configuring PDT...")
-      if not util.createSubprocess(cmd, cwd=srcdir):
-        raise error.ConfigurationError('PDT configure failed')
-    
-      # Execute make
-      cmd = ['make', '-j4', 'install']
-      LOGGER.info("Compiling PDT...")
-      if not util.createSubprocess(cmd, cwd=srcdir):
-        raise error.ConfigurationError('PDT compilation failed.')
+      try:
+        # Configure
+        prefix_flag = '-prefix=%s' % self.pdt_prefix
+        cmd = ['./configure', prefix_flag, compiler_flag]
+        LOGGER.info("Configuring PDT...")
+        if util.createSubprocess(cmd, cwd=srcdir):
+          raise error.SoftwarePackageError('PDT configure failed')
   
-      # Clean up PDT source, we probably won't need it again
-      LOGGER.debug('Deleting %r' % srcdir)
-      shutil.rmtree(srcdir, ignore_errors=True)
+        # Build
+        cmd = ['make', '-j4']
+        LOGGER.info("Compiling PDT...")
+        if util.createSubprocess(cmd, cwd=srcdir):
+          raise error.SoftwarePackageError('PDT compilation failed.')
+
+        # Install
+        cmd = ['make', 'install']
+        LOGGER.info("Installing PDT...")
+        if util.createSubprocess(cmd, cwd=srcdir):
+          raise error.SoftwarePackageError('PDT installation failed.')
+      except:
+        LOGGER.info("PDT installation failed, cleaning up")
+        shutil.rmtree(self.pdt_prefix, ignore_errors=True)
+      finally:
+        # Always clean up PDT source
+        LOGGER.debug('Deleting %r' % srcdir)
+        shutil.rmtree(srcdir, ignore_errors=True)
          
     # Verify the new installation and return
     LOGGER.info('PDT installation complete')

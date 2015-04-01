@@ -34,6 +34,8 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
+# System modules
+import os
 
 # TAU modules
 import tau
@@ -101,19 +103,19 @@ def main(argv):
     LOGGER.debug("Found selection %r" % selection)
     selection.populate()
     trials = selection['trials']
-    trials_by_outcome = {}
     parts = [selection.name()]
     if not len(trials):
       parts.append("  No trials, see `tau run --help`")
     else:
+      trials_by_cmd = {}
       for trial in trials:
-        trials_by_outcome.setdefault(trial['outcome'], []).append(trial)
-      for key, val in trials_by_outcome.iteritems():
+        trials_by_cmd.setdefault(trial['command'], []).append(trial)
+      for key, val in trials_by_cmd.iteritems():
         count = len(val)
         if count == 1:
-          parts.append("  1 trial with outcome '%s'" % key)
+          parts.append("  1 trial of '%s'" % os.path.basename(key))
         else:
-          parts.append("  %d trials with outcome '%s'" % (len(val), key))
+          parts.append("  %d trials of '%s'" % (len(val), os.path.basename(key)))
     msg = '\n'.join(parts) 
   else:
     msg = "No selections. See `tau project select --help`"

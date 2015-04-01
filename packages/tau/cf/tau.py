@@ -244,15 +244,6 @@ class Tau(object):
     if not makefile:
       raise error.ConfigurationError("TAU Makefile not found: %s" % makefile)
     
-    # Check tauDB
-    LOGGER.debug("Checking tauDB installation at '%s'" % self.taudb_prefix)
-    if not os.path.exists(self.taudb_prefix):
-      raise error.ConfigurationError("'%s' does not exist" % self.taudb_prefix)
-    path = os.path.join(self.taudb_prefix, 'perfdmf.cfg')
-    if not os.path.exists(path):
-      raise error.ConfigurationError("'%s' does not exist" % path)
-  
-    LOGGER.debug("tauDB installation at '%s' is valid" % self.taudb_prefix)
     LOGGER.debug("TAU installation at '%s' is valid" % self.tau_prefix)
     return True
 
@@ -355,13 +346,13 @@ class Tau(object):
       # Execute configure
       cmd = ['./configure'] + base_flags + mpi_flags + openmp_flags + pthreads_flags
       LOGGER.info("Configuring TAU...")
-      if not util.createSubprocess(cmd, cwd=srcdir):
+      if util.createSubprocess(cmd, cwd=srcdir):
         raise error.ConfigurationError('TAU configure failed')
     
       # Execute make
       cmd = ['make', '-j4', 'install']
       LOGGER.info('Compiling TAU...')
-      if not util.createSubprocess(cmd, cwd=srcdir):
+      if util.createSubprocess(cmd, cwd=srcdir):
           raise error.ConfigurationError('TAU compilation failed.')
   
       # Leave source, we'll probably need it again soon
@@ -373,14 +364,6 @@ class Tau(object):
         if not (err.errno == errno.EEXIST and os.path.islink(src)):
           LOGGER.warning("Can't create symlink '%s'. TAU source code won't be reused across configurations." % src)
       
-      # Initialize tauDB
-      env = dict(os.environ)
-      env['PATH'] = os.pathsep.join([self.bin_path, env.get('PATH')])
-      cmd = ['taudb_configure', '--create-default']
-      LOGGER.info('Configuring tauDB...')
-      if not util.createSubprocess(cmd, env=env):
-        raise error.ConfigurationError('tauDB configure failed.')
-
     # Verify the new installation and return
     LOGGER.info('TAU installation complete')
     return self.verify()
@@ -399,7 +382,6 @@ class Tau(object):
         return os.path.join(self.lib_path, makefile)
     LOGGER.debug("No TAU makefile matches tags '%s'. Available: %s" % (config_tags, tau_makefiles))
     return None
-    
 
   def applyCompiletimeConfig(self, opts, env):
     """

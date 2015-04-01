@@ -88,10 +88,10 @@ class Experiment(controller.Controller):
   
   def name(self):
     self.populate()
-    return '%s/%s__%s__%s' % (self['project']['name'],
-                              self['target']['name'],
-                              self['application']['name'],
-                              self['measurement']['name'])
+    return '%s (%s, %s, %s)' % (self['project']['name'],
+                                self['target']['name'],
+                                self['application']['name'],
+                                self['measurement']['name'])
   
   def onDelete(self):
     if self.isSelected():
@@ -197,7 +197,7 @@ class Experiment(controller.Controller):
                                      target_compiler.absolutePath())
 
     # Build compile-time environment from component packages
-    opts, env = [], os.environ
+    opts, env = environment.base()
     if measurement['source_inst']:
       self.pdt.applyCompiletimeConfig(opts, env)
     self.tau.applyCompiletimeConfig(opts, env)
@@ -233,7 +233,7 @@ class Experiment(controller.Controller):
     # TODO
 
     # Build environment from component packages
-    opts, env = [], os.environ
+    opts, env = environment.base()
     self.tau.applyRuntimeConfig(opts, env)
     
     # TODO : Select tau_exec as needed

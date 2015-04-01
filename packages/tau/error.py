@@ -104,9 +104,25 @@ class ConfigurationError(Error):
 %(hint)s
 
 TAU cannot proceed with the given inputs. 
-Please review the input files and command line parameters
+Please check the selected configuration for errors
 or contact %(contact)s for assistance."""
   
+  def __init__(self, value, hint="Try `tau --help`"):
+    super(ConfigurationError, self).__init__(value, hint)
+
+
+class SoftwarePackageError(Error):
+  """
+  Indicates there was an error in an external software package  
+  """
+  
+  message_fmt = """
+%(value)s
+%(hint)s
+
+Please check the selected configuration for errors
+or contact %(contact)s for assistance."""
+
   def __init__(self, value, hint="Try `tau --help`"):
     super(ConfigurationError, self).__init__(value, hint)
 

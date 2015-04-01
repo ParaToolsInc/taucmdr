@@ -206,9 +206,10 @@ def logging_streams():
   
 
 TERM_SIZE = getTerminalSize()
-LINE_WIDTH = TERM_SIZE[0]
 LINE_MARKER = TAU_LINE_MARKER
-TEXT_WRAPPER = textwrap.TextWrapper(width=(LINE_WIDTH-len(LINE_MARKER)), 
+LINE_WIDTH = TERM_SIZE[0] - len(LINE_MARKER)
+
+TEXT_WRAPPER = textwrap.TextWrapper(width=LINE_WIDTH, 
                                     subsequent_indent=LINE_MARKER+'  ',
                                     break_long_words=False,
                                     break_on_hyphens=False,
