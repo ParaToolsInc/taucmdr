@@ -99,7 +99,22 @@ def main(argv):
   selection = Experiment.getSelected()
   if selection:
     LOGGER.debug("Found selection %r" % selection)
-    msg = selection.name()
+    selection.populate()
+    trials = selection['trials']
+    trials_by_outcome = {}
+    parts = [selection.name()]
+    if not len(trials):
+      parts.append("  No trials, see `tau run --help`")
+    else:
+      for trial in trials:
+        trials_by_outcome.setdefault(trial['outcome'], []).append(trial)
+      for key, val in trials_by_outcome.iteritems():
+        count = len(val)
+        if count == 1:
+          parts.append("  1 trial with outcome '%s'" % key)
+        else:
+          parts.append("  %d trials with outcome '%s'" % (len(val), key))
+    msg = '\n'.join(parts) 
   else:
     msg = "No selections. See `tau project select --help`"
   LOGGER.info('\n'.join([title, '', msg, '']))  

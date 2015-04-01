@@ -37,8 +37,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # System modules
 import json
-import zlib
-import base64
 
 # TAU modules
 import logger
@@ -117,7 +115,7 @@ class Controller(object):
     return self.data.get(key, default)
 
   def __repr__(self):
-    return json.dumps(self.data)
+    return json.dumps(repr(self.data))
 
   @classmethod
   def _validate(cls, data, enforce_schema=True):
@@ -191,13 +189,6 @@ class Controller(object):
       self.populated = True
     return self
   
-#   def snapshot(self):
-#     """
-#     Returns gzip'ed model data as a base64 string
-#     """
-#     self.populate()
-#     return base64.b64encode(zlib.compress(repr(self)))
-
   @classmethod
   def one(cls, keys=None, eid=None):
     """

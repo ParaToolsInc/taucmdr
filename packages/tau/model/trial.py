@@ -38,6 +38,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import os
 import sys
 import glob
+import zlib
+import json
+import base64
 from datetime import datetime
 
 # TAU modules
@@ -58,15 +61,7 @@ class Trial(ctl.Controller):
       'model': 'Experiment',
       'required': True
     },
-    'target_snapshot': {
-      'type': 'string',
-      'required': True
-    },
-    'application_snapshot': {
-      'type': 'string',
-      'required': True
-    },
-    'measurement_snapshot': {
+    'experiment_snapshot': {
       'type': 'string',
       'required': True
     },
@@ -99,18 +94,27 @@ class Trial(ctl.Controller):
     measurement = experiment['measurement']
     begin_time = str(datetime.utcnow())
     
-    # Snapshot the experiment, compress, and store as string 
-    
-    
+    # Snapshot the experiment, compress, and store as base64
+    snapshot_data = {}
+    for obj in target, application, measurement:
+      obj.populate()
+      obj_data = dict(obj.data)
+      for excluded in 'project', 'projects':
+        try: del obj_data[excluded]
+        except: pass
+      snapshot_data[obj.model_name] = obj_data
+    LOGGER.debug("Snapshot data: %s" % snapshot_data)
+    snapshot_json = json.dumps(repr(snapshot_data))
+    snapshot = base64.b64encode(zlib.compress(snapshot_json))
+    LOGGER.debug("Compressed %d bytes to %d bytes" % (len(snapshot_json), len(snapshot)))
+
     fields = {'experiment': experiment.eid,
-              'target_snapshot': 'FIXME',#target.snapshot(),
-              'application_snapshot': 'FIXME',#application.snapshot(),
-              'measurement_snapshot': 'FIXME',#measurement.snapshot(),
+              'experiment_snapshot': snapshot,
               'begin_time': begin_time}   
 
     banner('BEGIN', experiment.name(), begin_time)    
     trial = cls.create(fields)
-    
+
     cmd_str = ' '.join(cmd)
     retval = util.createSubprocess(cmd, cwd=cwd, env=env)
     if retval != 0:
