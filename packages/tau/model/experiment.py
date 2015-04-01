@@ -39,6 +39,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import os
 import sys
 import glob
+import shutil
 
 
 # TAU modules
@@ -87,15 +88,45 @@ class Experiment(controller.Controller):
   }
   
   def name(self):
-    self.populate()
-    return '%s (%s, %s, %s)' % (self['project']['name'],
-                                self['target']['name'],
-                                self['application']['name'],
-                                self['measurement']['name'])
-  
+    populated = self.populate()
+    return '%s (%s, %s, %s)' % (populated['project']['name'],
+                                populated['target']['name'],
+                                populated['application']['name'],
+                                populated['measurement']['name'])
+
+  def prefix(self):
+    """
+    Storage location for all experiment data
+    """
+    populated = self.populate()
+    return os.path.join(populated['project'].prefix(),
+                        populated['target']['name'], 
+                        populated['application']['name'], 
+                        populated['measurement']['name'])
+
+  def onCreate(self):
+    """
+    Initialize experiment storage
+    """
+    prefix = self.prefix()
+    try:
+      util.mkdirp(prefix)
+    except:
+      raise error.ConfigurationError('Cannot create directory %r' % prefix, 
+                                     'Check that you have `write` access')
+
   def onDelete(self):
+    """
+    Clean up experiment storage
+    """
     if self.isSelected():
       settings.unset('experiment_id')
+    prefix = self.prefix()
+    try:
+      shutil.rmtree(prefix)
+    except Exception as err:
+      if os.path.exists(prefix):
+        LOGGER.error("Could not remove experiment data at '%s': %s" % (prefix, err))
 
   def select(self):
     if not self.eid:
@@ -121,23 +152,16 @@ class Experiment(controller.Controller):
     """
     Installs all software required to perform the experiment
     """
-    self.populate()
-    target = self['target']
-    application = self['application']
-    measurement = self['measurement']
-    target.populate()
+    populated = self.populate()
+    # TODO: Should install packages in a location where all projects can use
+    prefix = populated['project']['prefix']
+    target = populated['target'].populate()
+    application = populated['application']
+    measurement = populated['measurement']
     cc = target['CC']
     cxx = target['CXX']
     fc = target['FC']
     verbose = (logger.LOG_LEVEL == 'DEBUG')
-
-    # Make sure project prefix exists
-    prefix = self['project']['prefix']
-    try:
-      util.mkdirp(prefix)
-    except:
-      raise error.ConfigurationError('Cannot create directory %r' % prefix, 
-                                     'Check that you have `write` access')
 
     # Configure/build/install PDT if needed
     if not measurement['source_inst']:
@@ -182,13 +206,13 @@ class Experiment(controller.Controller):
     TODO: Docs
     """
     self.configure()
-    target = self['target']
-    measurement = self['measurement']
+    target = self.populate('target')
+    measurement = self.populate('measurement')
     given_compiler = Compiler.identify(compiler_cmd)
     target_compiler = target[given_compiler['role']]
     
     # Confirm target supports compiler
-    if given_compiler.eid != target_compiler.eid:
+    if given_compiler.eid != target_compiler:
       raise error.ConfigurationError("Target '%s' is configured with %s compiler '%s', not '%s'",
                                      (self['name'], given_compiler['language'], 
                                       given_compiler.absolutePath(),
@@ -214,7 +238,7 @@ class Experiment(controller.Controller):
     TODO: Docs
     """
     self.configure()
-    measurement = self['measurement']
+    measurement = self.populate('measurement')
     
     command = util.which(application_cmd)
     if not command:

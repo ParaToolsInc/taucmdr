@@ -94,23 +94,16 @@ class Trial(ctl.Controller):
     """
     Path to trial data
     """
-    self.populate()
-    experiment = self['experiment']
-    experiment.populate()
-    return os.path.join(experiment['project']['prefix'],
-                        experiment['project']['name'],
-                        experiment['target']['name'], 
-                        experiment['application']['name'], 
-                        experiment['measurement']['name'], 
-                        self['number'])
+    experiment = self.populate('experiment')
+    return os.path.join(experiment.prefix(), str(self['number']))
   
   def onCreate(self):
     """
     Initialize trial data
     """
-    # Create trial prefix
+    prefix = self.prefix()
     try:
-      util.mkdirp(self.prefix())
+      util.mkdirp(prefix)
     except Exception as err:
       raise error.ConfigurationError('Cannot create directory %r: %s' % (prefix, err), 
                                      'Check that you have `write` access')
@@ -123,7 +116,8 @@ class Trial(ctl.Controller):
     try:
       shutil.rmtree(prefix)
     except Exception as err:
-      LOGGER.error("Could not remove trial data at '%s': %s" % (prefix, err))
+      if os.path.exists(prefix):
+        LOGGER.error("Could not remove trial data at '%s': %s" % (prefix, err))
   
   @classmethod
   def performTrial(cls, experiment, cmd, cwd, env):
@@ -133,11 +127,22 @@ class Trial(ctl.Controller):
     def banner(mark, name, time):
       LOGGER.info('{:=<{}}'.format('== %s %s (%s) ==' %
                                    (mark, name, time), logger.LINE_WIDTH))    
-    experiment.populate()
-    measurement = experiment['measurement']
-    begin_time = str(datetime.utcnow())
-    trial_number = str(len(experiment['trials']))
+    measurement = experiment.populate('measurement')
     cmd_str = ' '.join(cmd)
+    begin_time = str(datetime.utcnow())
+    
+    trials = experiment.populate('trials')
+    trial_number = None
+    all_trial_numbers = sorted([trial['number'] for trial in trials])
+    LOGGER.debug("Trial numbers: %s" % all_trial_numbers)
+    for i, ii in enumerate(all_trial_numbers):
+      if i != ii:
+        trial_number = i
+        break
+    if trial_number == None:
+      trial_number = len(all_trial_numbers)
+    LOGGER.debug("New trial number is %d" % trial_number)
+    
     fields = {'number': trial_number,
               'experiment': experiment.eid,
               'command': cmd_str,
@@ -176,8 +181,8 @@ class Trial(ctl.Controller):
       raise
     else:
       # Trial successful, update record and record state for provenance
-      shutil.copy(storage.user_storage.dbfile, prefix)
       data_size = sum(os.path.getsize(os.path.join(prefix, f)) for f in os.listdir(prefix))
+      shutil.copy(storage.user_storage.dbfile, prefix)
       cls.update({'end_time': end_time, 
                   'return_code': retval,
                   'data_size': data_size}, eids=[trial.eid])

@@ -220,3 +220,13 @@ def createSubprocess(cmd, cwd=None, env=None):
     retval = proc.wait()
     LOGGER.debug("%s returned %d" % (cmd, retval))
     return retval
+  
+def humanReadableSize(num, suffix='B'):
+  """
+  Returns `num` bytes in human readable format
+  """
+  for unit in ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
+    if abs(num) < 1024.0:
+      return "%3.1f%s%s" % (num, unit, suffix)
+    num /= 1024.0
+  return "%.1f%s%s" % (num, 'Yi', suffix)

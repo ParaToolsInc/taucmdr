@@ -122,15 +122,15 @@ def main(argv):
     if args.long:
       parts = []
       for t in found:
-        t.populate()
-        parts.append(pformat(t.data))
+        populated = t.populate()
+        parts.append(pformat(populated))
       listing = '\n'.join(parts)
     else:
       for t in found:
-        t.populate()
-        name = t['name']
-        projects = ', '.join([p['name'] for p in t['projects']])
-        row = [name] + ['Yes' if t.get(attr, None) else '' for _, _, attr in cols if attr] + [projects]
+        populated = t.populate()
+        name = populated['name']
+        projects = ', '.join([p['name'] for p in populated['projects']])
+        row = [name] + ['Yes' if populated.get(attr, None) else '' for _, _, attr in cols if attr] + [projects]
         rows.append(row)
       table.set_cols_align([align for _, align, _ in cols])
       table.add_rows(rows)

@@ -113,16 +113,16 @@ def main(argv):
     if args.long:
       parts = []
       for p in found:
-        p.populate()
-        parts.append(pformat(p.data))
+        populated = p.populate()
+        parts.append(pformat(populated))
       listing = '\n'.join(parts)
     else:
       for p in found:
-        p.populate()
-        targets = '\n'.join([t['name'] for t in p['targets']]) or ''
-        applications = '\n'.join([t['name'] for t in p['applications']]) or ''
-        measurements = '\n'.join([t['name'] for t in p['measurements']]) or ''
-        row = [p['name'], targets, applications, measurements, p['prefix']]
+        populated = p.populate()
+        targets = '\n'.join([t['name'] for t in populated['targets']]) or ''
+        applications = '\n'.join([t['name'] for t in populated['applications']]) or ''
+        measurements = '\n'.join([t['name'] for t in populated['measurements']]) or ''
+        row = [populated['name'], targets, applications, measurements, populated['prefix']]
         rows.append(row)
       table.add_rows(rows)
       listing = table.draw()
