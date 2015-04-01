@@ -40,7 +40,6 @@ import os
 import sys
 import glob
 import errno
-import subprocess
 
 # TAU modules
 import logger
@@ -355,18 +354,14 @@ class Tau(object):
 
       # Execute configure
       cmd = ['./configure'] + base_flags + mpi_flags + openmp_flags + pthreads_flags
-      LOGGER.debug('Creating configure subprocess in %r: %r' % (srcdir, cmd))
-      LOGGER.info('Configuring TAU...\n    %s' % ' '.join(cmd))
-      proc = subprocess.Popen(cmd, cwd=srcdir, stdout=sys.stdout, stderr=sys.stderr)
-      if proc.wait():
+      LOGGER.info("Configuring TAU...")
+      if not util.createSubprocess(cmd, cwd=srcdir):
         raise error.ConfigurationError('TAU configure failed')
     
       # Execute make
       cmd = ['make', '-j4', 'install']
-      LOGGER.debug('Creating make subprocess in %r: %r' % (srcdir, cmd))
-      LOGGER.info('Compiling TAU...\n    %s' % ' '.join(cmd))
-      proc = subprocess.Popen(cmd, cwd=srcdir, stdout=sys.stdout, stderr=sys.stderr)
-      if proc.wait():
+      LOGGER.info('Compiling TAU...')
+      if not util.createSubprocess(cmd, cwd=srcdir):
           raise error.ConfigurationError('TAU compilation failed.')
   
       # Leave source, we'll probably need it again soon
@@ -377,17 +372,15 @@ class Tau(object):
       except OSError as err:
         if not (err.errno == errno.EEXIST and os.path.islink(src)):
           LOGGER.warning("Can't create symlink '%s'. TAU source code won't be reused across configurations." % src)
-          
       
-      # Initialize tauDB with a minimal configuration
-      taudb_configure = os.path.join(self.bin_path, 'taudb_configure')
-      cmd = [taudb_configure, '--create-default']
-      LOGGER.debug('Creating subprocess: %r' % cmd)
-      LOGGER.info('Configuring tauDB...\n    %s' % ' '.join(cmd))
-      proc = subprocess.Popen(cmd, stdout=sys.stdout, stderr=sys.stderr)
-      if proc.wait():
+      # Initialize tauDB
+      env = dict(os.environ)
+      env['PATH'] = os.pathsep.join([self.bin_path, env.get('PATH')])
+      cmd = ['taudb_configure', '--create-default']
+      LOGGER.info('Configuring tauDB...')
+      if not util.createSubprocess(cmd, env=env):
         raise error.ConfigurationError('tauDB configure failed.')
-    
+
     # Verify the new installation and return
     LOGGER.info('TAU installation complete')
     return self.verify()
