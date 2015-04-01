@@ -54,8 +54,7 @@ SHORT_DESCRIPTION = "List project configurations or show configuration details."
 COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
 
 USAGE = """
-  %(command)s [project_name] [project_name] ...
-  %(command)s -h | --help
+  %(command)s [project_name] [project_name] ... [arguments]
 """ % {'command': COMMAND}
 
 HELP = """
@@ -100,6 +99,8 @@ def main(argv):
       t = Project.withName(name)
       if t:
         found.append(t)
+      else:
+        PARSER.error("No project configuration named '%s'" % name)
 
   title = '{:=<{}}'.format('== Projects (%s) ==' % env.USER_PREFIX, 
                            logger.LINE_WIDTH)

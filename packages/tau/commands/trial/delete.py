@@ -38,35 +38,35 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # TAU modules
 import logger
 import commands
-import controller
 import error
 import arguments as args
-from model.application import Application
+from model.experiment import Experiment
+from model.trial import Trial
 
 
 LOGGER = logger.getLogger(__name__)
 
-SHORT_DESCRIPTION = "Create a new application configuration."
+SHORT_DESCRIPTION = "Delete experiment trials."
 
 COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
 
 USAGE = """
-  %(command)s <application_name> [arguments]
+  %(command)s <trial_number> [arguments]
 """ % {'command': COMMAND}
 
 HELP = """
 '%(command)s' page to be written.
 """ % {'command': COMMAND}
 
-PARSER = args.getParserFromModel(Application,
-                                 prog=COMMAND,
-                                 usage=USAGE, 
-                                 description=SHORT_DESCRIPTION) 
-
+_arguments = [ (('number',), {'help': "Number of the trial to delete",
+                              'metavar': '<trial_number>'}) ]
+PARSER = args.getParser(_arguments,
+                   prog=COMMAND, 
+                   usage=USAGE % {'command': COMMAND}, 
+                   description=SHORT_DESCRIPTION)
 
 def getUsage():
   return PARSER.format_help() 
-
 
 def getHelp():
   return HELP
@@ -79,10 +79,15 @@ def main(argv):
   args = PARSER.parse_args(args=argv)
   LOGGER.debug('Arguments: %s' % args)
   
-  try:
-    Application.create(args.__dict__)
-  except controller.UniqueAttributeError:
-    PARSER.error('A application named %r already exists' % args.name)
+  selection = Experiment.getSelected()
+  if not selection:
+    raise error.ConfigurationError("No experiment configured.", "See `tau project select`")
   
-  LOGGER.info('Created a new application named %r.' % args.name)
-  return commands.executeCommand(['application', 'list'], [args.name])
+  number = args.number
+  fields = {'experiment': selection.eid, 'number': number}
+  if not Trial.exists(fields):
+    PARSER.error("No trial number %s in the current experiment.  See `tau trial list` to see all trial numbers." % number)
+  Trial.delete(fields)
+  LOGGER.info('Deleted trial %s' % number)
+  
+  return commands.executeCommand(['trial', 'list'], [])

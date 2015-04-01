@@ -72,10 +72,10 @@ class Trial(ctl.Controller):
       'type': 'string',
       'required': True
     },
-#     'env': {
-#       'type': 'string',
-#       'required': True
-#     },
+    'environment': {
+      'type': 'string',
+      'required': True
+    },
     'begin_time': {
       'type': 'datetime'
     },
@@ -85,7 +85,45 @@ class Trial(ctl.Controller):
     'return_code': {
       'type': 'integer'
     },
+    'data_size': {
+      'type': 'integer'
+    },                
   }
+  
+  def prefix(self):
+    """
+    Path to trial data
+    """
+    self.populate()
+    experiment = self['experiment']
+    experiment.populate()
+    return os.path.join(experiment['project']['prefix'],
+                        experiment['project']['name'],
+                        experiment['target']['name'], 
+                        experiment['application']['name'], 
+                        experiment['measurement']['name'], 
+                        self['number'])
+  
+  def onCreate(self):
+    """
+    Initialize trial data
+    """
+    # Create trial prefix
+    try:
+      util.mkdirp(self.prefix())
+    except Exception as err:
+      raise error.ConfigurationError('Cannot create directory %r: %s' % (prefix, err), 
+                                     'Check that you have `write` access')
+  
+  def onDelete(self):
+    """
+    Clean up trial data
+    """
+    prefix = self.prefix()
+    try:
+      shutil.rmtree(prefix)
+    except Exception as err:
+      LOGGER.error("Could not remove trial data at '%s': %s" % (prefix, err))
   
   @classmethod
   def performTrial(cls, experiment, cmd, cwd, env):
@@ -95,37 +133,21 @@ class Trial(ctl.Controller):
     def banner(mark, name, time):
       LOGGER.info('{:=<{}}'.format('== %s %s (%s) ==' %
                                    (mark, name, time), logger.LINE_WIDTH))    
-
     experiment.populate()
-    target = experiment['target']
-    application = experiment['application']
     measurement = experiment['measurement']
     begin_time = str(datetime.utcnow())
     trial_number = str(len(experiment['trials']))
-    prefix = os.path.join(experiment['project']['prefix'],
-                          experiment['project']['name'],
-                          target['name'], 
-                          application['name'], 
-                          measurement['name'], 
-                          trial_number)
     cmd_str = ' '.join(cmd)
-    
-    # Create trial prefix
-    try:
-      util.mkdirp(prefix)
-    except Exception as err:
-      raise error.ConfigurationError('Cannot create directory %r: %s' % (prefix, err), 
-                                     'Check that you have `write` access')
-    
     fields = {'number': trial_number,
               'experiment': experiment.eid,
               'command': cmd_str,
               'cwd': cwd,
-#               'env': repr(env),
+              'environment': 'FIXME',
               'begin_time': begin_time}
 
     banner('BEGIN', experiment.name(), begin_time)
     trial = cls.create(fields)
+    prefix = trial.prefix()
     try:
       retval = util.createSubprocess(cmd, cwd=cwd, env=env)
       if retval:
@@ -151,13 +173,14 @@ class Trial(ctl.Controller):
       # Something went wrong so revert the trial
       LOGGER.error("Exception raised, reverting trial...")
       cls.delete(eids=[trial.eid])
-      shutil.rmtree(prefix, ignore_errors=True)
       raise
     else:
-      # Trial successful, mark experiment end time
-      cls.update({'end_time': end_time, 'return_code': retval}, eids=[trial.eid])
-      # Record configuration state for provenance
+      # Trial successful, update record and record state for provenance
       shutil.copy(storage.user_storage.dbfile, prefix)
+      data_size = sum(os.path.getsize(os.path.join(prefix, f)) for f in os.listdir(prefix))
+      cls.update({'end_time': end_time, 
+                  'return_code': retval,
+                  'data_size': data_size}, eids=[trial.eid])
       banner('END', experiment.name(), end_time)
     
     return retval

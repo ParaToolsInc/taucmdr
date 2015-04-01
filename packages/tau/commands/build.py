@@ -60,8 +60,7 @@ def _compilersHelp():
 SHORT_DESCRIPTION = "Instrument programs during compilation and/or linking."
 
 USAGE = """
-  %(command)s <command> [args ...]
-  %(command)s -h | --help 
+  %(command)s <command> [arguments]
 """ % {'command': COMMAND}
 
 HELP = """
@@ -79,7 +78,7 @@ compiler commands:
 _arguments = [ (('cmd',), {'help': "Compiler or linker command, e.g. 'gcc'",
                            'metavar': '<command>'}),
                (('cmd_args',), {'help': "Compiler arguments",
-                                'metavar': 'args',
+                                'metavar': '[arguments]',
                                 'nargs': args.REMAINDER})]
 PARSER = args.getParser(_arguments,
                         prog=COMMAND,

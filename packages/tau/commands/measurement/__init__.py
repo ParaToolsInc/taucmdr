@@ -48,9 +48,10 @@ COMMAND = ' '.join(['tau'] + _name_parts)
 
 SHORT_DESCRIPTION = "Create and manage measurement configurations."
 
+GROUP = "configuration"
+
 USAGE = """
-  %(command)s <subcommand> [options]
-  %(command)s -h | --help
+  %(command)s <subcommand> [arguments]
 """ % {'command': COMMAND}
 
 HELP = """
@@ -58,7 +59,6 @@ HELP = """
 """ % {'command': COMMAND}
 
 USAGE_EPILOG = """
-subcommands:
 %(command_descr)s
 
 See '%(command)s <subcommand> --help' for more information on <subcommand>.
@@ -69,8 +69,8 @@ See '%(command)s <subcommand> --help' for more information on <subcommand>.
 
 _arguments = [ (('subcommand',), {'help': "See 'subcommands' below",
                                   'metavar': '<subcommand>'}),
-               (('options',), {'help': "Options to be passed to <subcommand>",
-                               'metavar': '[options]',
+               (('options',), {'help': "Arguments to be passed to <subcommand>",
+                               'metavar': '[arguments]',
                                'nargs': args.REMAINDER})]
 PARSER = args.getParser(_arguments,
                         prog=COMMAND, 

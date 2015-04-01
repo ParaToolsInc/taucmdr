@@ -54,8 +54,7 @@ SHORT_DESCRIPTION = "Select project components for the next experiment."
 COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
 
 USAGE = """
-  %(command)s project_name [options] [target] [application] [measurement]
-  %(command)s -h | --help
+  %(command)s project_name [target] [application] [measurement] [arguments]
 """ % {'command': COMMAND}
 
 HELP = """

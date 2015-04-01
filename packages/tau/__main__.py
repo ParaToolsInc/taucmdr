@@ -52,8 +52,7 @@ SHORT_DESCRIPTION = "TAU Commander [ %s ]" % tau.PROJECT_URL
 COMMAND = 'tau'
 
 USAGE = """
-  %(command)s <command> [options]
-  %(command)s -h | --help
+  %(command)s [arguments] <subcommand> [options]
 """  % {'command': COMMAND}
 
 HELP = """
@@ -67,19 +66,20 @@ Hints:
 """ % {'command': COMMAND}
 
 USAGE_EPILOG = """
-commands:
 %(command_descr)s
-  <compiler>    A compiler command, e.g. gcc, mpif90, upcc, nvcc, etc. 
-                An alias for 'tau build <compiler>'
-  <executable>  A program executable, e.g. ./a.out
-                An alias for 'tau execute <executable>'
 
-See 'tau help <command>' for more information on <command>.
+shortcuts:
+  tau <compiler>    A compiler command, e.g. gcc, mpif90, upcc, nvcc, etc. 
+                    An alias for 'tau build <compiler>'
+  tau <executable>  A program executable, e.g. ./a.out
+                    An alias for 'tau trial create <executable>'
+
+See 'tau help <subcommand>' for more information on <subcommand>.
 """  % {'command_descr': commands.getCommandsHelp()}
 
-_arguments = [ (('command',), {'help': "See 'commands' below",
-                               'metavar': '<command>'}),
-              (('options',), {'help': "Options to be passed to <command>",
+_arguments = [ (('command',), {'help': "See subcommand descriptions below",
+                               'metavar': '<subcommand>'}),
+              (('options',), {'help': "Options to be passed to <subcommand>",
                                'metavar': '[options]',
                                'nargs': args.REMAINDER}),
               (('-v', '--verbose'), {'help': "Set logging level to DEBUG",
@@ -132,14 +132,12 @@ def main():
   # Check shortcuts
   shortcut = None
   if commands.build.isCompatible(cmd):
-    shortcut = 'build'
-#   elif show.isKnownFileFormat(cmd):
-#     shortcut = 'show'
-  elif commands.run.isCompatible(cmd):
-    shortcut = 'run'
+    shortcut = ['build']
+  elif commands.trial.create.isCompatible(cmd):
+    shortcut = ['trial', 'create']
   if shortcut:
-    LOGGER.debug('Trying shortcut %r' % shortcut)
-    return commands.executeCommand([shortcut], [cmd] + cmd_args)
+    LOGGER.debug('Trying shortcut: %s' % shortcut)
+    return commands.executeCommand(shortcut, [cmd] + cmd_args)
   else:
     LOGGER.debug('No shortcut found for %r' % cmd)
 

@@ -42,30 +42,34 @@ from pprint import pformat
 # TAU modules
 import tau
 import logger
+import commands
+import error
 import arguments as args
 import environment as env
-from model.measurement import Measurement
+from model.experiment import Experiment
+from model.trial import Trial
 
 
 LOGGER = logger.getLogger(__name__)
 
-SHORT_DESCRIPTION = "List measurement configurations or show configuration details."
+SHORT_DESCRIPTION = "List experiment trials."
 
 COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
 
 USAGE = """
-  %(command)s [measurement_name] [measurement_name] ... [arguments]
+  %(command)s [trial_number] [trial_number] ... [arguments]
+  %(command)s -h | --help
 """ % {'command': COMMAND}
 
 HELP = """
 '%(command)s' page to be written.
 """ % {'command': COMMAND}
 
-_arguments = [(('names',), {'help': "If given, show details for the measurement with this name",
-                           'metavar': 'measurement_name', 
-                           'nargs': '*',
-                           'default': args.SUPPRESS}),
-              (('-l','--long'), {'help': "Display all information about the measurement",
+_arguments = [(('numbers',), {'help': "If given, show details for trial with this number",
+                              'metavar': 'trial_number', 
+                              'nargs': '*',
+                              'default': args.SUPPRESS}),
+              (('-l','--long'), {'help': "Display all information about the trial",
                                  'action': 'store_true',
                                  'default': False})]
 PARSER = args.getParser(_arguments,
@@ -89,51 +93,46 @@ def main(argv):
   args = PARSER.parse_args(args=argv)
   LOGGER.debug('Arguments: %s' % args)
   
+  selection = Experiment.getSelected()
+  if not selection:
+    raise error.ConfigurationError("No experiment configured.", "See `tau project select`") 
+  
   try:
-    names = args.names
+    numbers = args.numbers
   except AttributeError:
-    found = Measurement.all()
+    found = Trial.search({'experiment': selection.eid})
   else:
     found = []
-    for name in names:
-      t = Measurement.withName(name)
+    for num in number:
+      t = Trial.search({'number': num})
       if t:
         found.append(t)
       else:
-        PARSER.error("No measurement configuration named '%s'" % name)
+        PARSER.error("No trial number %d in the current experiment" % num)
 
-  title = '{:=<{}}'.format('== Measurements (%s) ==' % env.USER_PREFIX, 
+  title = '{:=<{}}'.format('== Trials of %s ==' % selection.name(), 
                            logger.LINE_WIDTH)
   if not found:
-    listing = "No measurements. See 'tau measurement create --help'"
+    listing = "No trials. Use 'tau <command>' or 'tau trial create <command>' to create a new trial"
   else:
-    yesno = lambda x: 'Yes' if x else 'No'
     table = Texttable(logger.LINE_WIDTH)
-    cols = [('Name', 'r', lambda t: t['name']), 
-            ('Profile', 'c', lambda t: yesno(t['profile'])), 
-            ('Trace', 'c', lambda t: yesno(t['trace'])), 
-            ('Sample', 'c', lambda t: yesno(t['sample'])),
-            ('Source Inst.', 'c', lambda t: yesno(t['source_inst'])),
-            ('Compiler Inst.', 'c', lambda t: t['compiler_inst']),
-            ('MPI', 'c', lambda t: yesno(t['mpi'])),
-            ('OpenMP', 'c', lambda t: t['openmp']),
-            ('Callpath Depth', 'c', lambda t: t['callpath']),
-            ('Mem. Usage', 'c', lambda t: yesno(t['memory_usage'])),
-            ('Mem. Alloc', 'c', lambda t: yesno(t['memory_alloc'])),
-            ('In Projects', 'l', None)]
+    cols = [('Number', 'c', 'number'),
+            ('Data Size', 'c', 'data_size'), 
+            ('Command', 'l', 'command'), 
+            ('In Directory', 'l', 'cwd'),
+            ('Began at', 'c', 'begin_time'),
+            ('Ended at', 'c', 'end_time'),
+            ('Return Code', 'c', 'return_code')]
     headers = [header for header, _, _ in cols]
     rows = [headers]
     if args.long:
       parts = []
       for t in found:
-        t.populate()
         parts.append(pformat(t.data))
       listing = '\n'.join(parts)
     else:
       for t in found:
-        t.populate()
-        projects = ', '.join([p['name'] for p in t['projects']])
-        row = [fnc(t) for _, _, fnc in cols if fnc] + [projects]
+        row = [t.get(attr, '') for _, _, attr in cols if attr]
         rows.append(row)
       table.set_cols_align([align for _, align, _ in cols])
       table.add_rows(rows)
@@ -141,3 +140,4 @@ def main(argv):
     
   LOGGER.info('\n'.join([title, '', listing, '']))
   return tau.EXIT_SUCCESS
+
