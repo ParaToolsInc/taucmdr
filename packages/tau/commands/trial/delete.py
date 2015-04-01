@@ -82,8 +82,11 @@ def main(argv):
   selection = Experiment.getSelected()
   if not selection:
     raise error.ConfigurationError("No experiment configured.", "See `tau project select`")
-  
-  number = args.number
+
+  try:  
+    number = int(args.number)
+  except ValueError:
+    PARSER.error("Invalid trial number: %s" % args.number)
   fields = {'experiment': selection.eid, 'number': number}
   if not Trial.exists(fields):
     PARSER.error("No trial number %s in the current experiment.  See `tau trial list` to see all trial numbers." % number)

@@ -184,11 +184,11 @@ def main(argv):
     LOGGER.debug('Using existing experiment')
     found = found[0]
 
-  found.populate()
+  populated = found.populate()
   LOGGER.info("'%s' on '%s' measured by '%s'" % 
-              (found['application']['name'],
-               found['target']['name'],
-               found['measurement']['name']))
+              (populated['application']['name'],
+               populated['target']['name'],
+               populated['measurement']['name']))
   found.select()
   
   return tau.EXIT_SUCCESS

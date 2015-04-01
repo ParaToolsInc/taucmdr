@@ -44,6 +44,7 @@ import tau
 import logger
 import commands
 import error
+import util
 import arguments as args
 import environment as env
 from model.experiment import Experiment
@@ -133,6 +134,7 @@ def main(argv):
     else:
       for t in found:
         row = [t.get(attr, '') for _, _, attr in cols if attr]
+        row[1] = util.humanReadableSize(row[1])
         rows.append(row)
       table.set_cols_align([align for _, align, _ in cols])
       table.add_rows(rows)

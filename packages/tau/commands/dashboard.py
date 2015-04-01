@@ -102,8 +102,8 @@ def main(argv):
   selection = Experiment.getSelected()
   if selection:
     LOGGER.debug("Found selection %r" % selection)
-    selection.populate()
-    trials = selection['trials']
+    populated = selection.populate()
+    trials = populated['trials']
     parts = [selection.name()]
     if not len(trials):
       parts.append("  No trials, see `tau --help`")
@@ -114,9 +114,10 @@ def main(argv):
       for key, val in trials_by_cmd.iteritems():
         count = len(val)
         if count == 1:
-          parts.append("  1 trial of '%s'" % os.path.basename(key))
+          msg = "  1 trial of '%s'." % os.path.basename(key)
         else:
-          parts.append("  %d trials of '%s'" % (len(val), os.path.basename(key)))
+          msg = "  %d trials of '%s'." % (len(val), os.path.basename(key))
+        parts.append(msg + '  Use `tau trial list` to see details.')
     msg = '\n'.join(parts) 
   else:
     msg = "No selections. See `tau project select --help`"

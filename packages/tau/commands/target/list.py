@@ -120,14 +120,14 @@ def main(argv):
     if args.long:
       parts = []
       for t in found:
-        t.populate()
-        parts.append(pformat(t.data))
+        populated = t.populate()
+        parts.append(pformat(populated))
       listing = '\n'.join(parts)
     else:
       for t in found:
-        t.populate()
-        projects = ', '.join([p['name'] for p in t['projects']])
-        row = [t.get(attr, '') for _, _, attr in cols if attr] + [projects]
+        populated = t.populate()
+        projects = ', '.join([p['name'] for p in populated['projects']])
+        row = [populated.get(attr, '') for _, _, attr in cols if attr] + [projects]
         rows.append(row)
       table.set_cols_align([align for _, align, _ in cols])
       table.add_rows(rows)
