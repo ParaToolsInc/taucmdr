@@ -95,16 +95,11 @@ def main(argv):
   commands.executeCommand(['measurement', 'list'], subargs)
   commands.executeCommand(['project', 'list'], subargs)
   
-  title = '{:=<{}}'.format('== Current Selection ==', logger.LINE_WIDTH)
+  title = '{:=<{}}'.format('== Current Experiment ==', logger.LINE_WIDTH)
   selection = Experiment.getSelected()
   if selection:
     LOGGER.debug("Found selection %r" % selection)
-    selection.populate()
-    target = selection['target']
-    application = selection['application']
-    measurement = selection['measurement']
-    msg = "Application '%s' on target '%s' measured by '%s'" % \
-          (application['name'], target['name'], measurement['name'])
+    msg = selection.name()
   else:
     msg = "No selections. See `tau project select --help`"
   LOGGER.info('\n'.join([title, '', msg, '']))  

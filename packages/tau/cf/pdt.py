@@ -40,7 +40,6 @@ import os
 import sys
 import shutil
 import platform
-import subprocess
 
 # TAU modules
 import cf
@@ -173,21 +172,17 @@ class Pdt(object):
       # Configure
       prefix_flag = '-prefix=%s' % self.pdt_prefix
       cmd = ['./configure', prefix_flag, compiler_flag]
-      LOGGER.debug('Creating configure subprocess in %r: %r' % (srcdir, cmd))
-      LOGGER.info('Configuring PDT...\n    %s' % ' '.join(cmd))
-      proc = subprocess.Popen(cmd, cwd=srcdir, stdout=sys.stdout, stderr=sys.stderr)
-      if proc.wait():
+      LOGGER.info("Configuring PDT...")
+      if not util.createSubprocess(cmd, cwd=srcdir):
         raise error.ConfigurationError('PDT configure failed')
     
       # Execute make
       cmd = ['make', '-j4', 'install']
-      LOGGER.debug('Creating make subprocess in %r: %r' % (srcdir, cmd))
-      LOGGER.info('Compiling PDT...\n    %s' % ' '.join(cmd))
-      proc = subprocess.Popen(cmd, cwd=srcdir, stdout=sys.stdout, stderr=sys.stderr)
-      if proc.wait():
-          raise error.ConfigurationError('PDT compilation failed.')
+      LOGGER.info("Compiling PDT...")
+      if not util.createSubprocess(cmd, cwd=srcdir):
+        raise error.ConfigurationError('PDT compilation failed.')
   
-      # Clean up PDT source
+      # Clean up PDT source, we probably won't need it again
       LOGGER.debug('Deleting %r' % srcdir)
       shutil.rmtree(srcdir, ignore_errors=True)
          

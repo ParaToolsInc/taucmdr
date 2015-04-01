@@ -37,6 +37,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # System modules
 import json
+import zlib
+import base64
 
 # TAU modules
 import logger
@@ -188,6 +190,13 @@ class Controller(object):
           self.data[attr] = foreign_model.one(eid=self[attr])
       self.populated = True
     return self
+  
+#   def snapshot(self):
+#     """
+#     Returns gzip'ed model data as a base64 string
+#     """
+#     self.populate()
+#     return base64.b64encode(zlib.compress(repr(self)))
 
   @classmethod
   def one(cls, keys=None, eid=None):

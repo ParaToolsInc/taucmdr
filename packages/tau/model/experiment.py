@@ -38,7 +38,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # System modules
 import os
 import sys
-import subprocess
+import glob
 
 
 # TAU modules
@@ -53,6 +53,7 @@ import cf.pdt
 from model.project import Project
 from model.target import Target
 from model.compiler import Compiler
+from model.trial import Trial
 
 LOGGER = logger.getLogger(__name__)
 
@@ -84,6 +85,13 @@ class Experiment(controller.Controller):
       'via': 'experiment'
     },
   }
+  
+  def name(self):
+    self.populate()
+    return '%s/%s__%s__%s' % (self['project']['name'],
+                              self['target']['name'],
+                              self['application']['name'],
+                              self['measurement']['name'])
   
   def onDelete(self):
     if self.isSelected():
@@ -199,39 +207,42 @@ class Experiment(controller.Controller):
       compiler_cmd = given_compiler['tau_wrapper']
 
     cmd = [compiler_cmd] + opts + compiler_args
-
-    LOGGER.debug('Creating subprocess: cmd=%r, env=%r' % (cmd, env))
-    LOGGER.info('\n'.join(['%s=%s' % i for i in env.iteritems() if i[0].startswith('TAU')]))
-    LOGGER.info(' '.join(cmd))
-    with logger.logging_streams():
-      proc = subprocess.Popen(cmd, env=env, stdout=sys.stdout, stderr=sys.stderr)
-      return proc.wait()
+    return util.createSubprocess(cmd, env=env)
 
   def managedRun(self, application_cmd, application_args):
     """
     TODO: Docs
     """
     self.configure()
-    target = self['target']
     measurement = self['measurement']
     
+    command = util.which(application_cmd)
+    if not command:
+      raise error.ConfigurationError("Cannot find executable: %s" % application_cmd)
+    path = os.path.dirname(command)
+    
+    # Check for existing profile files
+    if measurement['profile']:
+      profiles = glob.glob(os.path.join(path, 'profile.*.*.*'))
+      if len(profiles):
+        LOGGER.warning("Profile files found in '%s'! They will be deleted." % path)
+        for file in profiles:
+          try: os.remove(file)
+          except: continue
+    # Check for existing trace files
+    # TODO
+
     # Build environment from component packages
     opts, env = [], os.environ
     self.tau.applyRuntimeConfig(opts, env)
-
+    
     # TODO : Select tau_exec as needed
     use_tau_exec = False
     if use_tau_exec:
       # TODO: tau_exec flags and command line args
-      cmd = ['tau_exec'] + opts + [application_cmd] 
+      cmd = ['tau_exec'] + opts + [application_cmd]
     else:
       cmd = [application_cmd]
-
     cmd += application_args
-
-    LOGGER.debug('Creating subprocess: cmd=%r, env=%r' % (cmd, env))
-    LOGGER.info('\n'.join(['%s=%s' % i for i in env.iteritems() if i[0].startswith('TAU')]))
-    LOGGER.info(' '.join(cmd))
-    with logger.logging_streams():
-      proc = subprocess.Popen(cmd, env=env, stdout=sys.stdout, stderr=sys.stderr)
-      return proc.wait()
+    
+    return Trial.performTrial(self, cmd, path, env)

@@ -185,4 +185,26 @@ def pformatList(d, title=None, empty_msg='No items.', indent=0):
   else:
     items = empty_msg
   return '%(line)s%(items)s' % {'line': line, 'items': items}
-    
+
+def createSubprocess(cmd, cwd=None, env={}):
+  """
+  """
+  if not cwd:
+    cwd = os.getcwd()
+  LOGGER.debug("Creating subprocess: cmd=%s, cwd='%s'\n%s" % 
+               (cmd, cwd, pformatDict(env, empty_msg='None')))
+  # Show what's different in this environment
+  for key, val in env.iteritems():
+    try:
+      orig = os.environ[key]
+    except KeyError:
+      LOGGER.info("%s=%s" % (key, val))
+    else:
+      if val != orig:
+        LOGGER.info("%s=%s" % (key, val))
+  LOGGER.info(' '.join(cmd))
+  with logger.logging_streams():
+    proc = subprocess.Popen(cmd, cwd=cwd, env=env, stdout=sys.stdout, stderr=sys.stderr)
+    retval = proc.wait()
+    LOGGER.debug("%s returned %d" % (cmd, retval))
+    return retval

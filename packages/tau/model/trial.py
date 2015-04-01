@@ -34,9 +34,18 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
+# System modules
+import os
+import sys
+import glob
+from datetime import datetime
 
 # TAU modules
+import logger
+import util
 import controller as ctl
+
+LOGGER = logger.getLogger(__name__)
 
 
 class Trial(ctl.Controller):
@@ -46,13 +55,89 @@ class Trial(ctl.Controller):
   
   attributes = {      
     'experiment': {
-      'model': 'Experiment'
-    },
-    'timestamp': {
-      'type': 'datetime',
+      'model': 'Experiment',
       'required': True
     },
-    'experiment_snapshot': {
-      'type': 'json'
-    }
+    'target_snapshot': {
+      'type': 'string',
+      'required': True
+    },
+    'application_snapshot': {
+      'type': 'string',
+      'required': True
+    },
+    'measurement_snapshot': {
+      'type': 'string',
+      'required': True
+    },
+    'begin_time': {
+      'type': 'datetime'
+    },
+    'end_time': {
+      'type': 'datetime'
+    },
+    'outcome': {
+      'type': 'string'
+    },
   }
+  
+  def name(self):
+    return "Trial%04d" % self.eid
+  
+  @classmethod
+  def performTrial(cls, experiment, cmd, cwd, env):
+    """
+    TODO: Docs
+    """
+    def banner(mark, name, time):
+      LOGGER.info('{:=<{}}'.format('== %s %s (%s) ==' %
+                                   (mark, name, time), logger.LINE_WIDTH))    
+
+    experiment.populate()
+    target = experiment['target']
+    application = experiment['application']
+    measurement = experiment['measurement']
+    begin_time = str(datetime.utcnow())
+    
+    # Snapshot the experiment, compress, and store as string 
+    
+    
+    fields = {'experiment': experiment.eid,
+              'target_snapshot': 'FIXME',#target.snapshot(),
+              'application_snapshot': 'FIXME',#application.snapshot(),
+              'measurement_snapshot': 'FIXME',#measurement.snapshot(),
+              'begin_time': begin_time}   
+
+    banner('BEGIN', experiment.name(), begin_time)    
+    trial = cls.create(fields)
+    
+    cmd_str = ' '.join(cmd)
+    retval = util.createSubprocess(cmd, cwd=cwd, env=env)
+    if retval != 0:
+      LOGGER.warning("Nonzero return code '%d' from '%s'" % (retval, cmd_str))
+    else:
+      LOGGER.info("'%s' returned 0" % cmd_str)
+    outcome = 'Return code %d' % retval
+
+    # Add profile data to tauDB
+    if measurement['profile']:
+      profiles = glob.glob(os.path.join(cwd, 'profile.*.*.*'))
+      if not profiles:
+        LOGGER.error("%s did not generate any profile files!" % cmd_str)
+        outcome = 'No profile files'
+      else:
+        LOGGER.info("Found %d profile files. Adding to local database..." % len(profiles))     
+        cmd = ['taudb_loadtrial', '-n', trial.name(), 
+               '-a', application['name'], '-x', experiment.name()]
+        taudb_retval = util.createSubprocess(cmd, cwd=cwd, env=env)
+        if taudb_retval != 0:
+          LOGGER.warning("Failed to add profiles to local database! Make a copy of %s/profile.* if you want to preserve this data" % cwd)
+          outcome = 'Upload failed'
+
+    # TODO: Handle traces
+
+    # Mark experiment end time and return
+    end_time = str(datetime.utcnow())
+    cls.update({'end_time': end_time, 'outcome': outcome}, eids=[trial.eid])
+    banner('END', experiment.name(), end_time)
+    return retval
