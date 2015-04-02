@@ -36,6 +36,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 # System modules
+import os
 from texttable import Texttable
 from pprint import pformat
 
@@ -72,6 +73,9 @@ _arguments = [(('numbers',), {'help': "If given, show details for trial with thi
                               'default': args.SUPPRESS}),
               (('-l','--long'), {'help': "Display all information about the trial",
                                  'action': 'store_true',
+                                 'default': False}),
+              (('-s','--short'), {'help': "Summarize trial information",
+                                 'action': 'store_true',
                                  'default': False})]
 PARSER = args.getParser(_arguments,
                         prog=COMMAND, 
@@ -96,7 +100,13 @@ def main(argv):
   
   selection = Experiment.getSelected()
   if not selection:
-    raise error.ConfigurationError("No experiment configured.", "See `tau project select`") 
+    LOGGER.info("No experiment configured. See `tau project select`\n")
+    return tau.EXIT_FAILURE
+  
+  long = args.long
+  short = args.short
+  if long and short:
+    PARSER.error("Please specify either '--long' or '--short', not both")
   
   try:
     numbers = args.numbers
@@ -111,35 +121,49 @@ def main(argv):
       else:
         PARSER.error("No trial number %d in the current experiment" % num)
 
-  title = '{:=<{}}'.format('== Trials of %s ==' % selection.name(), 
-                           logger.LINE_WIDTH)
+  LOGGER.info('{:=<{}}'.format('== %s Trials ==' % selection.name(), logger.LINE_WIDTH) + '\n')
   if not found:
-    listing = "No trials. Use 'tau <command>' or 'tau trial create <command>' to create a new trial"
+    LOGGER.info("No trials. Use 'tau <command>' or 'tau trial create <command>' to create a new trial\n")
+    return tau.EXIT_FAILURE
+  
+  table = Texttable(logger.LINE_WIDTH)
+  cols = [('Number', 'c', 'number'),
+          ('Data Size', 'c', 'data_size'), 
+          ('Command', 'l', 'command'), 
+          ('In Directory', 'l', 'cwd'),
+          ('Began at', 'c', 'begin_time'),
+          ('Ended at', 'c', 'end_time'),
+          ('Return Code', 'c', 'return_code')]
+  headers = [header for header, _, _ in cols]
+  rows = [headers]
+  if long:
+    parts = []
+    for t in found:
+      parts.append(pformat(t.data))
+    listing = '\n'.join(parts)
+  elif short:
+    parts = []
+    trials_by_cmd = {}
+    for trial in found:
+      trials_by_cmd.setdefault(trial['command'], []).append(trial)
+    for key, val in trials_by_cmd.iteritems():
+      count = len(val)
+      data_size = util.humanReadableSize(sum([trial['data_size'] for trial in val]))
+      if count == 1:
+        msg = "  1 trial of '%s' (%s)." % (os.path.basename(key), data_size)
+      else:
+        msg = "  %d trials of '%s' (%s)." % (len(val), os.path.basename(key), data_size)
+      parts.append(msg + '  Use `tau trial list` to see details.')
+    listing = '\n'.join(parts) 
   else:
-    table = Texttable(logger.LINE_WIDTH)
-    cols = [('Number', 'c', 'number'),
-            ('Data Size', 'c', 'data_size'), 
-            ('Command', 'l', 'command'), 
-            ('In Directory', 'l', 'cwd'),
-            ('Began at', 'c', 'begin_time'),
-            ('Ended at', 'c', 'end_time'),
-            ('Return Code', 'c', 'return_code')]
-    headers = [header for header, _, _ in cols]
-    rows = [headers]
-    if args.long:
-      parts = []
-      for t in found:
-        parts.append(pformat(t.data))
-      listing = '\n'.join(parts)
-    else:
-      for t in found:
-        row = [t.get(attr, '') for _, _, attr in cols if attr]
-        row[1] = util.humanReadableSize(row[1])
-        rows.append(row)
-      table.set_cols_align([align for _, align, _ in cols])
-      table.add_rows(rows)
-      listing = table.draw()
+    for t in found:
+      row = [t.get(attr, '') for _, _, attr in cols if attr]
+      row[1] = util.humanReadableSize(row[1])
+      rows.append(row)
+    table.set_cols_align([align for _, align, _ in cols])
+    table.add_rows(rows)
+    listing = table.draw()
     
-  LOGGER.info('\n'.join([title, '', listing, '']))
+  LOGGER.info('\n'.join([listing, '']))
   return tau.EXIT_SUCCESS
 
