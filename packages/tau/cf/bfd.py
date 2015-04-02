@@ -133,9 +133,9 @@ class Bfd(object):
       compiler_flag = ''
     else:
       family_flags = {'system': '',
-                      'GNU': '-GNU',
-                      'Intel': '-icpc',
-                      'PGI': '-pgCC'}
+                      'GNU': 'CC=gcc CXX=g++',
+                      'Intel': 'CC=icc CXX=icpc'}
+#                      'PGI': '-pgCC'}
       try:
         compiler_flag = family_flags[self.cxx['family']]
       except KeyError:
