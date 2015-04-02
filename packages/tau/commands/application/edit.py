@@ -44,13 +44,12 @@ from model.application import Application
 
 LOGGER = logger.getLogger(__name__)
 
-SHORT_DESCRIPTION = "Modify an existing application configuration."
+SHORT_DESCRIPTION = "Modify an application configuration."
 
 COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
 
 USAGE = """
-  %(command)s <application_name> [options]
-  %(command)s -h | --help
+  %(command)s <application_name> [arguments]
 """ % {'command': COMMAND}
 
 HELP = """
@@ -63,7 +62,7 @@ PARSER = args.getParserFromModel(Application,
                             usage=USAGE,
                             description=SHORT_DESCRIPTION)
 PARSER.add_argument('--rename',
-                    help="Rename the application configuration",
+                    help="rename the application configuration",
                     metavar='<new_name>', dest='new_name',
                     default=args.SUPPRESS)
 

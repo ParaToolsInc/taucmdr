@@ -38,31 +38,44 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # TAU modules
 import logger
 import commands
-import controller
-import error
 import arguments as args
-from model.application import Application
 
 
 LOGGER = logger.getLogger(__name__)
 
-SHORT_DESCRIPTION = "Create a new application configuration."
+_name_parts = __name__.split('.')[1:]
+COMMAND = ' '.join(['tau'] + _name_parts)
 
-COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
+SHORT_DESCRIPTION = "Create and manage experiment trials."
 
 USAGE = """
-  %(command)s <application_name> [arguments]
+  %(command)s <subcommand> [arguments]
+  %(command)s -h | --help
 """ % {'command': COMMAND}
 
 HELP = """
 '%(command)s' page to be written.
 """ % {'command': COMMAND}
 
-PARSER = args.getParserFromModel(Application,
-                                 prog=COMMAND,
-                                 usage=USAGE, 
-                                 description=SHORT_DESCRIPTION) 
+USAGE_EPILOG = """
+%(command_descr)s
 
+See '%(command)s <subcommand> --help' for more information on <subcommand>.
+""" % {'command': COMMAND,
+       'command_descr': commands.getCommandsHelp(__name__)}
+
+
+
+_arguments = [ (('subcommand',), {'help': "See 'subcommands' below",
+                                  'metavar': '<subcommand>'}),
+               (('options',), {'help': "Arguments to be passed to <subcommand>",
+                               'metavar': '[arguments]',
+                               'nargs': args.REMAINDER})]
+PARSER = args.getParser(_arguments,
+                        prog=COMMAND, 
+                        usage=USAGE, 
+                        description=SHORT_DESCRIPTION,
+                        epilog=USAGE_EPILOG)
 
 def getUsage():
   return PARSER.format_help() 
@@ -79,10 +92,6 @@ def main(argv):
   args = PARSER.parse_args(args=argv)
   LOGGER.debug('Arguments: %s' % args)
   
-  try:
-    Application.create(args.__dict__)
-  except controller.UniqueAttributeError:
-    PARSER.error('A application named %r already exists' % args.name)
-  
-  LOGGER.info('Created a new application named %r.' % args.name)
-  return commands.executeCommand(['application', 'list'], [args.name])
+  subcommand = args.subcommand
+  options = args.options
+  return commands.executeCommand(_name_parts + [subcommand], options)

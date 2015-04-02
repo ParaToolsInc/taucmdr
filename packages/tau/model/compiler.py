@@ -62,7 +62,7 @@ class CompilerInfo(object):
     self.family = family
     self.language = language
     self.tau_wrapper = cf.tau.COMPILER_WRAPPERS[role]
-    self.short_descr = "%s Compiler." % language
+    self.short_descr = "%s %s compiler." % (family, language)
   def __repr__(self):
     return repr(self.__dict__)
 

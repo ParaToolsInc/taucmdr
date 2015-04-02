@@ -54,8 +54,7 @@ SHORT_DESCRIPTION = "List project configurations or show configuration details."
 COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
 
 USAGE = """
-  %(command)s [project_name] [project_name] ...
-  %(command)s -h | --help
+  %(command)s [project_name] [project_name] ... [arguments]
 """ % {'command': COMMAND}
 
 HELP = """
@@ -100,6 +99,8 @@ def main(argv):
       t = Project.withName(name)
       if t:
         found.append(t)
+      else:
+        PARSER.error("No project configuration named '%s'" % name)
 
   title = '{:=<{}}'.format('== Projects (%s) ==' % env.USER_PREFIX, 
                            logger.LINE_WIDTH)
@@ -112,16 +113,16 @@ def main(argv):
     if args.long:
       parts = []
       for p in found:
-        p.populate()
-        parts.append(pformat(p.data))
+        populated = p.populate()
+        parts.append(pformat(populated))
       listing = '\n'.join(parts)
     else:
       for p in found:
-        p.populate()
-        targets = '\n'.join([t['name'] for t in p['targets']]) or ''
-        applications = '\n'.join([t['name'] for t in p['applications']]) or ''
-        measurements = '\n'.join([t['name'] for t in p['measurements']]) or ''
-        row = [p['name'], targets, applications, measurements, p['prefix']]
+        populated = p.populate()
+        targets = '\n'.join([t['name'] for t in populated['targets']]) or ''
+        applications = '\n'.join([t['name'] for t in populated['applications']]) or ''
+        measurements = '\n'.join([t['name'] for t in populated['measurements']]) or ''
+        row = [populated['name'], targets, applications, measurements, populated['prefix']]
         rows.append(row)
       table.add_rows(rows)
       listing = table.draw()

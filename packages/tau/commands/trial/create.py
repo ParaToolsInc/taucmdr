@@ -35,42 +35,54 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+
 # TAU modules
 import logger
 import commands
 import controller
 import error
+import util
 import arguments as args
-from model.application import Application
+from model.experiment import Experiment
 
 
 LOGGER = logger.getLogger(__name__)
 
-SHORT_DESCRIPTION = "Create a new application configuration."
-
 COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
 
+SHORT_DESCRIPTION = "Run an application under a new experiment trial."
+
 USAGE = """
-  %(command)s <application_name> [arguments]
+  %(command)s <command> [arguments]
 """ % {'command': COMMAND}
 
 HELP = """
 '%(command)s' page to be written.
 """ % {'command': COMMAND}
 
-PARSER = args.getParserFromModel(Application,
-                                 prog=COMMAND,
-                                 usage=USAGE, 
-                                 description=SHORT_DESCRIPTION) 
+_arguments = [ (('cmd',), {'help': "Command, e.g. './a.out' or 'mpirun ./a.out'",
+                           'metavar': '<command>'}),
+               (('cmd_args',), {'help': "Command arguments",
+                                'metavar': '[arguments]',
+                                'nargs': args.REMAINDER})]
+PARSER = args.getParser(_arguments,
+                        prog=COMMAND,
+                        usage=USAGE, 
+                        description=SHORT_DESCRIPTION)
 
 
 def getUsage():
   return PARSER.format_help() 
 
-
 def getHelp():
   return HELP
 
+def isCompatible(cmd):
+  """
+  TODO: Docs
+  """
+  # For now, just see if we can execute the command
+  return bool(util.which(cmd))
 
 def main(argv):
   """
@@ -79,10 +91,7 @@ def main(argv):
   args = PARSER.parse_args(args=argv)
   LOGGER.debug('Arguments: %s' % args)
   
-  try:
-    Application.create(args.__dict__)
-  except controller.UniqueAttributeError:
-    PARSER.error('A application named %r already exists' % args.name)
-  
-  LOGGER.info('Created a new application named %r.' % args.name)
-  return commands.executeCommand(['application', 'list'], [args.name])
+  selection = Experiment.getSelected()
+  if not selection:
+    raise error.ConfigurationError("No experiment configured.", "See `tau project select`")
+  return selection.managedRun(args.cmd, args.cmd_args)

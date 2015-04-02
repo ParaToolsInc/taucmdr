@@ -140,7 +140,7 @@ def getParserFromModel(model, use_defaults=True,
       else:
         options['default'] = argparse.SUPPRESS 
     try:
-      group_name = options['group']
+      group_name = options['group'] + ' arguments'
     except KeyError:
       group = parser
     else:

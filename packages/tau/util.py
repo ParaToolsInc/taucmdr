@@ -43,10 +43,12 @@ import subprocess
 import errno
 import urllib
 import tarfile
+import pprint
 
 # TAU modules
 import logger
 import environment
+from tau.logger import LINE_WIDTH
 
 
 LOGGER = logger.getLogger(__name__)
@@ -74,9 +76,10 @@ def which(program):
     return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
   fpath, _ = os.path.split(program)
   if fpath:
-    if is_exec(program):
-      LOGGER.debug("which(%s) = '%s'" % (program, program))
-      return program
+    abs_program = os.path.abspath(program)
+    if is_exec(abs_program):
+      LOGGER.debug("which(%s) = '%s'" % (program, abs_program))
+      return abs_program
   else:
     # System path
     for path in environment.getEnv('PATH').split(os.pathsep):
@@ -153,7 +156,7 @@ def file_accessible(filepath, mode='r'):
    return False
 
   
-def pformatDict(d, title=None, empty_msg='No items.', indent=0):
+def pformatDict(d, title=None, empty_msg='No items.', indent=0, truncate=False):
   """
   Pretty formater for dictionaries
   """
@@ -161,10 +164,16 @@ def pformatDict(d, title=None, empty_msg='No items.', indent=0):
     line = '{:=<75}\n'.format('== %s ==' % title)
   else:
     line = '' 
-  if len(d):
+  if d and len(d):
     longest = max(map(len, d.keys()))
+    line_width = logger.LINE_WIDTH - longest - 15
     space = ' '*indent
-    items = '\n'.join(['{}{:<{width}} : {}'.format(space, key, repr(val), width=longest)
+    def pf(x):
+      if truncate and (len(x) > line_width):
+        return x[0:line_width] + ' [...]'
+      else:
+        return str(x)
+    items = '\n'.join(['{}{:<{width}} : {}'.format(space, key, pf(val), width=longest)
                        for key, val in sorted(d.iteritems())])
   else:
     items = empty_msg
@@ -179,10 +188,45 @@ def pformatList(d, title=None, empty_msg='No items.', indent=0):
     line = '{:=<75}\n'.format('== %s ==' % title)
   else:
     line = ''
-  if len(d):
+  if d and len(d):
     space = ' '*indent
     items = '\n'.join(['%s%s' % (space, val) for val in sorted(d)])
   else:
     items = empty_msg
   return '%(line)s%(items)s' % {'line': line, 'items': items}
-    
+
+def createSubprocess(cmd, cwd=None, env=None):
+  """
+  """
+  if not cwd:
+    cwd = os.getcwd()
+  LOGGER.debug("Creating subprocess: cmd=%s, cwd='%s'\n%s" % 
+               (cmd, cwd, pformatDict(env, empty_msg='None')))
+  # Show what's different in this environment
+  if env:
+    changed = {}
+    for key, val in env.iteritems():
+      try:
+        orig = os.environ[key]
+      except KeyError:
+        changed[key] = val
+      else:
+        if val != orig:
+          changed[key] = val
+    LOGGER.info(pformatDict(changed, truncate=True))
+  LOGGER.info(' '.join(cmd))
+  with logger.logging_streams():
+    proc = subprocess.Popen(cmd, cwd=cwd, env=env, stdout=sys.stdout, stderr=sys.stderr)
+    retval = proc.wait()
+    LOGGER.debug("%s returned %d" % (cmd, retval))
+    return retval
+  
+def humanReadableSize(num, suffix='B'):
+  """
+  Returns `num` bytes in human readable format
+  """
+  for unit in ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
+    if abs(num) < 1024.0:
+      return "%3.1f%s%s" % (num, unit, suffix)
+    num /= 1024.0
+  return "%.1f%s%s" % (num, 'Yi', suffix)

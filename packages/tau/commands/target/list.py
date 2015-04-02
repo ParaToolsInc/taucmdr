@@ -54,8 +54,7 @@ SHORT_DESCRIPTION = "List target configurations or show configuration details."
 COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
 
 USAGE = """
-  %(command)s [target_name] [target_name] ...
-  %(command)s -h | --help
+  %(command)s [target_name] [target_name] ... [arguments]
 """ % {'command': COMMAND}
 
 HELP = """
@@ -99,6 +98,8 @@ def main(argv):
       t = Target.withName(name)
       if t:
         found.append(t)
+      else:
+        PARSER.error("No target configuration named '%s'" % name)
 
   title = '{:=<{}}'.format('== Targets (%s) ==' % env.USER_PREFIX, 
                            logger.LINE_WIDTH)
@@ -119,14 +120,14 @@ def main(argv):
     if args.long:
       parts = []
       for t in found:
-        t.populate()
-        parts.append(pformat(t.data))
+        populated = t.populate()
+        parts.append(pformat(populated))
       listing = '\n'.join(parts)
     else:
       for t in found:
-        t.populate()
-        projects = ', '.join([p['name'] for p in t['projects']])
-        row = [t.get(attr, '') for _, _, attr in cols if attr] + [projects]
+        populated = t.populate()
+        projects = ', '.join([p['name'] for p in populated['projects']])
+        row = [populated.get(attr, '') for _, _, attr in cols if attr] + [projects]
         rows.append(row)
       table.set_cols_align([align for _, align, _ in cols])
       table.add_rows(rows)

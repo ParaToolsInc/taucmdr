@@ -56,6 +56,12 @@ def getEnv(name):
   """ % {'bar': '!'*80,
          'name': name})
     sys.exit(EXIT_FAILURE)
+    
+def base():
+  """
+  The starting point for all subprocess command line arguments and environment
+  """
+  return [], dict(os.environ)
 
 # TAU Commander home path
 __TAU_HOME__ = getEnv('__TAU_HOME__')

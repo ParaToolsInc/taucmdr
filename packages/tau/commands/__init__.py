@@ -105,12 +105,23 @@ def getCommandsHelp(root=__name__):
   """
   Builds listing of command names with short description
   """
+  groups = {}
+  commands = sorted([i for i in getCommands(root).iteritems() if i[0] != '__module__'])
+  for cmd, topcmd in commands:
+    module = topcmd['__module__']
+    descr = getattr(module, 'SHORT_DESCRIPTION', "FIXME: No description")
+    group = getattr(module, 'GROUP', None)
+    name = '{:<12}'.format(cmd)
+    groups.setdefault(group, []).append('  %s  %s' % (name, descr))
+  
   parts = []
-  for cmd, subcmds in getCommands(root).iteritems():
-    if cmd != '__module__':
-      descr = subcmds['__module__'].SHORT_DESCRIPTION
-      name = '{:<12}'.format(cmd)
-      parts.append('  %s  %s' % (name, descr))
+  for group, members in groups.iteritems():
+    if group:
+      parts.append(group+' subcommands:')
+    else:
+      parts.append('subcommands:')
+    parts.extend(members)
+    parts.append('')
   return '\n'.join(parts)
 
 

@@ -106,7 +106,7 @@ class Controller(object):
   def __init__(self, fields):
     self.eid = getattr(fields, 'eid', None)
     self.data = self._validate(fields)
-    self.populated = False
+    self.populated = None
 
   def __getitem__(self, key):
     return self.data[key]
@@ -115,7 +115,7 @@ class Controller(object):
     return self.data.get(key, default)
 
   def __repr__(self):
-    return json.dumps(self.data)
+    return json.dumps(repr(self.data))
 
   @classmethod
   def _validate(cls, data, enforce_schema=True):
@@ -167,13 +167,15 @@ class Controller(object):
           validated[attr] = value
     return validated
   
-  def populate(self):
+  def populate(self, attribute=None):
     """
-    Populates associated attributes
+    Transltes model id numbers in `self` to model controllers and 
+    returns all data as a dictionary
     """
     from tau.model import MODELS
+    LOGGER.debug('Populating %r' % self)
     if not self.populated:
-      LOGGER.debug('Populating %r' % self)
+      self.populated = dict(self.data)
       for attr, props in self.attributes.iteritems():
         try:
           foreign_model = MODELS[props['model']]
@@ -183,12 +185,14 @@ class Controller(object):
           except KeyError:
             continue
           else:
-            self.data[attr] = foreign_model.search(eids=self[attr])
+            self.populated[attr] = foreign_model.search(eids=self.data[attr])
         else:
-          self.data[attr] = foreign_model.one(eid=self[attr])
-      self.populated = True
-    return self
-
+          self.populated[attr] = foreign_model.one(eid=self.data[attr])
+    if attribute:
+      return self.populated[attribute]
+    else:
+      return self.populated
+  
   @classmethod
   def one(cls, keys=None, eid=None):
     """
