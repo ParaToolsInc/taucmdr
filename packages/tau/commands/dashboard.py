@@ -53,8 +53,6 @@ COMMAND = ' '.join(['tau'] + _name_parts)
 
 SHORT_DESCRIPTION = "Show all projects and their components."
 
-GROUP = "information"
-
 USAGE = """
   %(command)s [arguments]
 """ % {'command': COMMAND}

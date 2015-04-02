@@ -172,19 +172,19 @@ class Pdt(object):
       prefix_flag = '-prefix=%s' % self.pdt_prefix
       cmd = ['./configure', prefix_flag, compiler_flag]
       LOGGER.info("Configuring PDT...")
-      if util.createSubprocess(cmd, cwd=srcdir):
+      if util.createSubprocess(cmd, cwd=srcdir, quiet=True):
         raise error.SoftwarePackageError('PDT configure failed')
 
       # Build
       cmd = ['make', '-j4']
       LOGGER.info("Compiling PDT...")
-      if util.createSubprocess(cmd, cwd=srcdir):
+      if util.createSubprocess(cmd, cwd=srcdir, quiet=True):
         raise error.SoftwarePackageError('PDT compilation failed.')
 
       # Install
       cmd = ['make', 'install']
       LOGGER.info("Installing PDT...")
-      if util.createSubprocess(cmd, cwd=srcdir):
+      if util.createSubprocess(cmd, cwd=srcdir, quiet=True):
         raise error.SoftwarePackageError('PDT installation failed.')
     except:
       LOGGER.info("PDT installation failed, cleaning up")

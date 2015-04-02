@@ -59,10 +59,10 @@ An unexpected %(typename)s exception was raised:
 
 %(value)s
 
-Please contact %(contact)s for assistance and 
-include the output of this command:
+%(backtrace)s
 
-tau -v %(cmd)s"""
+Please e-mail '%(logfile)s' to %(contact)s for assistance.
+"""
   
   def __init__(self, value, hint="Contact %s" % tau.HELP_CONTACT):
     self.value = value
@@ -72,13 +72,17 @@ tau -v %(cmd)s"""
     return self.value
   
   def handle(self, etype, e, tb):
+    if self.show_backtrace:
+      backtrace = ''.join(traceback.format_exception(etype, e, tb))
+    else:
+      backtrace = ''
     message = self.message_fmt % {'value': self.value,
                                   'hint': 'Hint: %s' % self.hint,
                                   'typename': etype.__name__, 
                                   'cmd': ' '.join([arg for arg in sys.argv[1:]]), 
-                                  'contact': tau.HELP_CONTACT}
-    if self.show_backtrace or logger.LOG_LEVEL == 'DEBUG':
-      traceback.print_exception(etype, e, tb)
+                                  'contact': tau.HELP_CONTACT,
+                                  'logfile': logger.LOG_FILE,
+                                  'backtrace': backtrace}
     LOGGER.critical(message)
     sys.exit(tau.EXIT_FAILURE)
 
@@ -104,8 +108,8 @@ class ConfigurationError(Error):
 %(hint)s
 
 TAU cannot proceed with the given inputs. 
-Please check the selected configuration for errors
-or contact %(contact)s for assistance."""
+Please check the selected configuration for errors or contact %(contact)s for assistance.
+"""
   
   def __init__(self, value, hint="Try `tau --help`"):
     super(ConfigurationError, self).__init__(value, hint)
@@ -120,12 +124,11 @@ class SoftwarePackageError(Error):
 %(value)s
 %(hint)s
 
-Please check the selected configuration for errors
-or contact %(contact)s for assistance."""
+Please check the selected configuration for errors or email '%(logfile)s' to  %(contact)s for assistance.
+"""
 
   def __init__(self, value, hint="Try `tau --help`"):
     super(ConfigurationError, self).__init__(value, hint)
-
 
 
 def excepthook(etype, e, tb):
@@ -136,25 +139,24 @@ def excepthook(etype, e, tb):
     LOGGER.info('Received keyboard interrupt.  Exiting.')
     sys.exit(tau.EXIT_WARNING)
   else:
-    if logger.LOG_LEVEL == 'DEBUG':
-      traceback.print_exception(etype, e, tb)
     try:
       sys.exit(e.handle(etype, e, tb))
     except AttributeError, err:
-      traceback.print_exception(etype, e, tb)
       LOGGER.critical("""
 An unexpected %(typename)s exception was raised:
 
 %(value)s
 
-This is a bug in TAU.
-Please contact %(contact)s for assistance and 
-include the output of this command:
+%(backtrace)s
 
-tau -v %(cmd)s""" % {'value': e,
-                              'typename': etype.__name__, 
-                              'cmd': ' '.join([arg for arg in sys.argv[1:]]), 
-                              'contact': tau.HELP_CONTACT})
+This is a bug in TAU.
+Please email '%(logfile)s' to %(contact)s for assistance
+""" % {'value': e,
+       'typename': etype.__name__, 
+       'cmd': ' '.join([arg for arg in sys.argv[1:]]), 
+       'contact': tau.HELP_CONTACT,
+       'logfile': logger.LOG_FILE,
+       'backtrace': ''.join(traceback.format_exception(etype, e, tb))})
       sys.exit(tau.EXIT_FAILURE)
 
 # Set the default exception handler

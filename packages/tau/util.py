@@ -115,8 +115,7 @@ def download(src, dest):
     wget_cmd = [wget, src, '-O', dest] if wget else None
     for cmd in [curl_cmd, wget_cmd]:
       if cmd:
-        #subprocess.call(cmd, stdout=sys.stdout, stderr=sys.stderr)
-        ret = createSubprocess(cmd)
+        ret = createSubprocess(cmd, quiet=True)
         if ret != 0:
           LOGGER.warning("%s failed to download '%s'.  Retrying with a different method..." % (cmd[0], src))
         else:
@@ -199,17 +198,17 @@ def pformatList(d, title=None, empty_msg='No items.', indent=0):
   return '%(line)s%(items)s' % {'line': line, 'items': items}
 
 
-def createSubprocess(cmd, cwd=None, env=None, fork=False):
+def createSubprocess(cmd, cwd=None, env=None, fork=False, quiet=False):
   """
   """
   if not cwd:
     cwd = os.getcwd()
-  LOGGER.debug("Creating subprocess: cmd=%s, cwd='%s'\n%s" % 
-               (cmd, cwd, pformatDict(env, empty_msg='')))
+  LOGGER.debug("Creating subprocess: cmd=%s, cwd='%s'\n" % (cmd, cwd))
   # Show what's different in the environment
   if env:
     changed = {}
     for key, val in env.iteritems():
+      LOGGER.debug("%s=%s" % (key, ''.join([c for c in val if ord(c) < 128 and ord(c) > 31])))
       try:
         orig = os.environ[key]
       except KeyError:
@@ -222,11 +221,13 @@ def createSubprocess(cmd, cwd=None, env=None, fork=False):
   LOGGER.info(' '.join(cmd))
   pid = os.fork() if fork else 0
   if pid == 0:
-    
     proc = subprocess.Popen(cmd, cwd=cwd, env=env,
                             stdout=subprocess.PIPE, 
                             stderr=subprocess.STDOUT)
-    stdout, _ = proc.communicate()
+    stdout, stderr = proc.communicate()
+    LOGGER.debug(stdout)
+    if (not quiet) and (logger.LOG_LEVEL != 'DEBUG'):
+      sys.stdout.write(stdout)
     retval = proc.returncode
     LOGGER.debug("%s returned %d" % (cmd, retval))
     return retval
