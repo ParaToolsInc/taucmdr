@@ -38,19 +38,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # System modules
 import os
 import sys
+import errno
 import logging
 import textwrap
 import contextlib
+import socket
+import platform
+from datetime import datetime
+from logging import handlers
 
-   
-# Check for custom line marker
-try:
-    TAU_LINE_MARKER = os.environ['TAU_LINE_MARKER']
-except KeyError:
-    TAU_LINE_MARKER = ''
-
-# Logging level
-LOG_LEVEL = 'INFO'
+# TAU modules
+import environment
 
 def getTerminalSize():
   import platform
@@ -87,7 +85,6 @@ def _getTerminalSize_windows():
   else:
     return None
 
-
 def _getTerminalSize_tput():
   # get terminal width
   # src: http://stackoverflow.com/questions/263890/how-do-i-find-the-width-height-of-a-terminal-window
@@ -102,7 +99,6 @@ def _getTerminalSize_tput():
     return (cols,rows)
   except:
     return None
-
 
 def _getTerminalSize_linux():
   def ioctl_GWINSZ(fd):
@@ -127,10 +123,10 @@ def _getTerminalSize_linux():
       return None
   return int(cr[1]), int(cr[0])
 
-
 def _textwrap_message(record):
-  return ['%s%s' % (LINE_MARKER, TEXT_WRAPPER.fill(line))
+  return ['%s%s' % (LINE_MARKER, _text_wrapper.fill(line))
           for line in record.getMessage().split('\n')]
+
 
 def _msgbox(record, marker):
     width = LINE_WIDTH - len(LINE_MARKER)
@@ -160,61 +156,76 @@ class LogFormatter(logging.Formatter, object):
         return '\n'.join(_textwrap_message(record))
       elif record.levelno == logging.DEBUG:
         return '%s%s:%s: %s' % (LINE_MARKER, record.levelname, 
-                                record.module, record.getMessage()) 
+                                record.name, record.getMessage()) 
       else:
         raise RuntimeError('Unknown record level (name: %s)' % record.levelname)
 
 def getLogger(name):
-    """
-    Returns a customized logging object by name
-    """
-    logger = logging.getLogger(name)
-    logger.setLevel(LOG_LEVEL)
-    logger.addHandler(_handler)
-    logger.propagate = False
-    _loggers.add(logger)
-    return logger
+  """
+  Returns a customized logging object by name
+  """
+  return logging.getLogger('tau.' + name)
 
 def setLogLevel(level):
-    """
-    Sets the output level for all logging objects
-    """
-    global LOG_LEVEL
-    LOG_LEVEL = level.upper()
-    _handler.setLevel(LOG_LEVEL)
-    for logger in _loggers:
-        logger.setLevel(LOG_LEVEL)
-
-def getLogLevel():
-  return LOG_LEVEL
-
-
-@contextlib.contextmanager
-def logging_streams():
   """
-  Provide stdout, stderr handles that are muted for LOG_LEVEL != 'DEBUG'
+  Sets the output level for all logging objects
   """
-  save_stdout = sys.stdout
-  save_stderr = sys.stderr
-  if LOG_LEVEL != 'DEBUG':
-    null = open(os.devnull, 'w')
-    sys.stdout = null
-    sys.stderr = null
-  yield
-  sys.stdout = save_stdout
-  sys.stderr = save_stderr
-  
+  global LOG_LEVEL
+  LOG_LEVEL = level.upper()
+  stdout_handler.setLevel(LOG_LEVEL)
 
+LOG_LEVEL = 'INFO'
+
+LOG_FILE = os.path.join(environment.USER_PREFIX, 'debug_log')
+
+# Marker for each line of output
+LINE_MARKER = os.environ.get('TAU_LINE_MARKER', '')
+
+# Terminal dimensions
 TERM_SIZE = getTerminalSize()
-LINE_MARKER = TAU_LINE_MARKER
 LINE_WIDTH = TERM_SIZE[0] - len(LINE_MARKER)
 
-TEXT_WRAPPER = textwrap.TextWrapper(width=LINE_WIDTH, 
-                                    subsequent_indent=LINE_MARKER+'  ',
-                                    break_long_words=False,
-                                    break_on_hyphens=False,
-                                    drop_whitespace=False)
+_text_wrapper = textwrap.TextWrapper(width=LINE_WIDTH, 
+                                     subsequent_indent=LINE_MARKER+'  ',
+                                     break_long_words=False,
+                                     break_on_hyphens=False,
+                                     drop_whitespace=False)
 
-_loggers = set()
-_handler = logging.StreamHandler(sys.stdout)
-_handler.setFormatter(LogFormatter())
+_root_logger = logging.getLogger('tau')
+if not len(_root_logger.handlers):
+  prefix = os.path.dirname(LOG_FILE)
+  try:
+    os.makedirs(prefix)
+  except OSError as exc:
+    if exc.errno == errno.EEXIST and os.path.isdir(prefix): pass
+    else: raise
+  file_handler = handlers.TimedRotatingFileHandler(LOG_FILE, when='D', interval=1, backupCount=5)
+  file_handler.setFormatter(LogFormatter())
+  file_handler.setLevel(logging.DEBUG)
+
+  stdout_handler = logging.StreamHandler(sys.stdout)
+  stdout_handler.setFormatter(LogFormatter())
+  stdout_handler.setLevel(LOG_LEVEL)
+  
+  _root_logger.addHandler(file_handler)
+  _root_logger.addHandler(stdout_handler)
+  _root_logger.setLevel(logging.DEBUG)  
+
+  _root_logger.debug("""
+%(bar)s
+TAU COMMANDER LOGGING INITIALIZED
+
+Timestamp         : %(timestamp)s
+Hostname          : %(hostname)s
+Platform          : %(platform)s
+Python Version    : %(pyversion)s
+Working Directory : %(cwd)s
+Terminal Size     : %(termsize)s
+%(bar)s
+""" % {'bar': '#'*LINE_WIDTH,
+       'timestamp': str(datetime.now()),
+       'hostname': socket.gethostname(),                
+       'platform': platform.platform(),                 
+       'pyversion': platform.python_version(),          
+       'cwd': os.getcwd(),                              
+       'termsize': 'x'.join(map(str, TERM_SIZE))})

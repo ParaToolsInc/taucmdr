@@ -109,15 +109,17 @@ def main(argv):
     PARSER.error("Please specify either '--long' or '--short', not both")
   
   try:
-    numbers = args.numbers
+    numbers = [int(n) for n in args.numbers]
   except AttributeError:
     found = Trial.search({'experiment': selection.eid})
+  except ValueError:
+    PARSER.error("Invalid trial number")
   else:
     found = []
-    for num in number:
+    for num in numbers:
       t = Trial.search({'number': num})
       if t:
-        found.append(t)
+        found.extend(t)
       else:
         PARSER.error("No trial number %d in the current experiment" % num)
 

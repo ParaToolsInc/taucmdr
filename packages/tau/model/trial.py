@@ -120,7 +120,7 @@ class Trial(ctl.Controller):
         LOGGER.error("Could not remove trial data at '%s': %s" % (prefix, err))
   
   @classmethod
-  def performTrial(cls, experiment, cmd, cwd, env):
+  def perform(cls, experiment, cmd, cwd, env):
     """
     TODO: Docs
     """
@@ -189,4 +189,3 @@ class Trial(ctl.Controller):
       banner('END', experiment.name(), end_time)
     
     return retval
-  

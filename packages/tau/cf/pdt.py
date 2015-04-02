@@ -141,64 +141,69 @@ class Pdt(object):
         return self.verify()
       except error.ConfigurationError, err:
         LOGGER.debug(err)
-    
-    # Control build output
     LOGGER.info('Starting PDT installation')
-    with logger.logging_streams():
-      # Download, unpack, or copy PDT source code
-      dst = os.path.join(self.src_prefix, os.path.basename(self.src))
+
+    # Download, unpack, or copy PDT source code
+    dst = os.path.join(self.src_prefix, os.path.basename(self.src))
+    try:
+      util.download(self.src, dst)
+      srcdir = util.extract(dst, self.src_prefix)
+    except IOError:
+      raise error.ConfigurationError("Cannot acquire source file '%s'" % self.src,
+                                     "Check that the file is accessable")
+    finally:
+      try: os.remove(dst)
+      except: pass
+
+    if not self.cxx:
+      compiler_flag = ''
+    else:
+      family_flags = {'system': '',
+                      'GNU': '-GNU',
+                      'Intel': '-icpc',
+                      'PGI': '-pgCC'}
       try:
-        util.download(self.src, dst)
-        srcdir = util.extract(dst, self.src_prefix)
-      except IOError:
-        raise error.ConfigurationError("Cannot acquire source file '%s'" % self.src,
-                                       "Check that the file is accessable")
-      finally:
-        try: os.remove(dst)
-        except: pass
+        compiler_flag = family_flags[self.cxx['family']]
+      except KeyError:
+        LOGGER.warning("PDT has no compiler flag for '%s'.  Using defaults." % self.cxx['family'])
 
-      if not self.cxx:
-        compiler_flag = ''
-      else:
-        family_flags = {'system': '',
-                        'GNU': '-GNU',
-                        'Intel': '-icpc',
-                        'PGI': '-pgCC'}
-        try:
-          compiler_flag = family_flags[self.cxx['family']]
-        except KeyError:
-          LOGGER.warning("PDT has no compiler flag for '%s'.  Using defaults." % self.cxx['family'])
+    try:
+      # Configure
+      prefix_flag = '-prefix=%s' % self.pdt_prefix
+      cmd = ['./configure', prefix_flag, compiler_flag]
+      LOGGER.info("Configuring PDT...")
+      if util.createSubprocess(cmd, cwd=srcdir, stdout=False):
+        raise error.SoftwarePackageError('PDT configure failed')
 
-      try:
-        # Configure
-        prefix_flag = '-prefix=%s' % self.pdt_prefix
-        cmd = ['./configure', prefix_flag, compiler_flag]
-        LOGGER.info("Configuring PDT...")
-        if util.createSubprocess(cmd, cwd=srcdir):
-          raise error.SoftwarePackageError('PDT configure failed')
-  
-        # Build
-        cmd = ['make', '-j4']
-        LOGGER.info("Compiling PDT...")
-        if util.createSubprocess(cmd, cwd=srcdir):
-          raise error.SoftwarePackageError('PDT compilation failed.')
+      # Build
+      cmd = ['make', '-j4']
+      LOGGER.info("Compiling PDT...")
+      if util.createSubprocess(cmd, cwd=srcdir, stdout=False):
+        raise error.SoftwarePackageError('PDT compilation failed.')
 
-        # Install
-        cmd = ['make', 'install']
-        LOGGER.info("Installing PDT...")
-        if util.createSubprocess(cmd, cwd=srcdir):
-          raise error.SoftwarePackageError('PDT installation failed.')
-      except:
-        LOGGER.info("PDT installation failed, cleaning up")
-        shutil.rmtree(self.pdt_prefix, ignore_errors=True)
-      finally:
-        # Always clean up PDT source
-        LOGGER.debug('Deleting %r' % srcdir)
-        shutil.rmtree(srcdir, ignore_errors=True)
+      # Install
+      cmd = ['make', 'install']
+      LOGGER.info("Installing PDT...")
+      if util.createSubprocess(cmd, cwd=srcdir, stdout=False):
+        raise error.SoftwarePackageError('PDT installation failed.')
+    except:
+      LOGGER.info("PDT installation failed, cleaning up")
+      shutil.rmtree(self.pdt_prefix, ignore_errors=True)
+    finally:
+      # Always clean up PDT source
+      LOGGER.debug('Deleting %r' % srcdir)
+      shutil.rmtree(srcdir, ignore_errors=True)
          
-    # Verify the new installation and return
-    LOGGER.info('PDT installation complete')
-    return self.verify()
+    # Verify the new installation
+    try:
+      retval = self.verify()
+      LOGGER.info('PDT installation complete')
+    except:
+      # Installation failed, clean up any failed install files
+      shutil.rmtree(self.pdt_prefix, ignore_errors=True)
+      raise error.SoftwarePackageError('PDT installation failed.')
+    else:
+      return retval
 
   def applyCompiletimeConfig(self, opts, env):
     """
