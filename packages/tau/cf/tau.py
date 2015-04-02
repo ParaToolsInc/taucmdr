@@ -344,13 +344,13 @@ class Tau(object):
     # Execute configure
     cmd = ['./configure'] + base_flags + mpi_flags + openmp_flags + pthreads_flags
     LOGGER.info("Configuring TAU...")
-    if util.createSubprocess(cmd, cwd=srcdir, quiet=True):
+    if util.createSubprocess(cmd, cwd=srcdir, stdout=False):
       raise error.ConfigurationError('TAU configure failed')
   
     # Execute make
     cmd = ['make', '-j4', 'install']
     LOGGER.info('Compiling TAU...')
-    if util.createSubprocess(cmd, cwd=srcdir, quiet=True):
+    if util.createSubprocess(cmd, cwd=srcdir, stdout=False):
         raise error.ConfigurationError('TAU compilation failed.')
 
     # Leave source, we'll probably need it again soon
@@ -436,7 +436,7 @@ class Tau(object):
       else:
         cmd = [viewer]
       LOGGER.info("Opening %s in %s" % (path, viewer))
-      retval = util.createSubprocess(cmd, cwd=path, env=env)
+      retval = util.createSubprocess(cmd, cwd=path, env=env, log=False)
       if retval != 0:
         LOGGER.warning("%s failed")
     if retval != 0:
