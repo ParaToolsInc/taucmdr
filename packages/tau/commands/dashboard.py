@@ -44,7 +44,6 @@ import settings
 import error
 import commands
 import arguments as args
-from model.experiment import Experiment
 
 
 LOGGER = logger.getLogger(__name__)
@@ -97,30 +96,6 @@ def main(argv):
   commands.executeCommand(['application', 'list'], subargs)
   commands.executeCommand(['measurement', 'list'], subargs)
   commands.executeCommand(['project', 'list'], subargs)
-  
-  title = '{:=<{}}'.format('== Current Experiment ==', logger.LINE_WIDTH)
-  selection = Experiment.getSelected()
-  if selection:
-    LOGGER.debug("Found selection %r" % selection)
-    populated = selection.populate()
-    trials = populated['trials']
-    parts = [selection.name()]
-    if not len(trials):
-      parts.append("  No trials, see `tau --help`")
-    else:
-      trials_by_cmd = {}
-      for trial in trials:
-        trials_by_cmd.setdefault(trial['command'], []).append(trial)
-      for key, val in trials_by_cmd.iteritems():
-        count = len(val)
-        if count == 1:
-          msg = "  1 trial of '%s'." % os.path.basename(key)
-        else:
-          msg = "  %d trials of '%s'." % (len(val), os.path.basename(key))
-        parts.append(msg + '  Use `tau trial list` to see details.')
-    msg = '\n'.join(parts) 
-  else:
-    msg = "No selections. See `tau project select --help`"
-  LOGGER.info('\n'.join([title, '', msg, '']))  
+  commands.executeCommand(['trial', 'list'], ['-s'])
   
   return tau.EXIT_SUCCESS
