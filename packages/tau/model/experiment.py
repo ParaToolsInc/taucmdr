@@ -41,7 +41,6 @@ import sys
 import glob
 import shutil
 
-
 # TAU modules
 import logger
 import settings
@@ -210,7 +209,7 @@ class Experiment(controller.Controller):
     measurement = self.populate('measurement')
     given_compiler = Compiler.identify(compiler_cmd)
     target_compiler = target[given_compiler['role']]
-    
+
     # Confirm target supports compiler
     if given_compiler.eid != target_compiler:
       raise error.ConfigurationError("Target '%s' is configured with %s compiler '%s', not '%s'",
@@ -231,7 +230,13 @@ class Experiment(controller.Controller):
       compiler_cmd = given_compiler['tau_wrapper']
 
     cmd = [compiler_cmd] + opts + compiler_args
-    return util.createSubprocess(cmd, env=env)
+    retval = util.createSubprocess(cmd, env=env)
+    # This would work if TAU's wrapper scripts returned nonzero on error...
+#     if retval == 0:
+#       LOGGER.info("TAU has finished building the application.  Now use `tau <command>` to gather data from <command>.")
+#     else:
+#       LOGGER.warning("TAU was unable to build the application.  You can see detailed output in '%s'" % logger.LOG_FILE)
+    return retval
 
   def managedRun(self, application_cmd, application_args):
     """
@@ -269,4 +274,44 @@ class Experiment(controller.Controller):
       cmd = [application_cmd]
     cmd += application_args
     
-    return Trial.performTrial(self, cmd, path, env)
+    return Trial.perform(self, cmd, path, env)
+  
+  def show(self, trial_numbers=None):
+    """
+    Show most recent trial or all trials with given numbers
+    """
+    self.configure()
+    if trial_numbers:
+      trials = []
+      for n in trial_numbers:
+        t = Trial.one({'experiment': self.eid, 'number': n})
+        if not t:
+          raise error.ConfigurationError("No trial number %d in experiment %s" % (n, self.name()))
+        trials.append(t)
+    else:
+      all_trials = self.populate('trials')
+      if not all_trials:
+        trials = None
+      else:
+        latest_date = all_trials[0]['begin_time']
+        latest_trial = None
+        for trial in all_trials:
+          if trial['begin_time'] > latest_date:
+            latest_date = trial['begin_time']
+            latest_trial = trial
+        trials = [trial]
+      
+    if not trials:
+      raise error.ConfigurationError("No trials in experiment %s" % self.name(),
+                                     "See `tau trial create --help`")
+      
+    opts, env = environment.base()
+    self.tau.applyRuntimeConfig(opts, env)
+
+    for trial in trials:
+      prefix = trial.prefix()
+      profiles = glob.glob(os.path.join(prefix, 'profile.*.*.*'))
+      if not profiles:
+        profiles = glob.glob(os.path.join(prefix, 'MULTI__*'))
+      if profiles:
+        self.tau.showProfile(prefix)

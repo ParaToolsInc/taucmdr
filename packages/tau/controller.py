@@ -227,7 +227,7 @@ class Controller(object):
   @classmethod
   def match(cls, field, regex=None, test=None):
     """
-    Return a list of records with 'field' matching 'regex'
+    Return a list of records with 'field' matching 'regex' or 'test'
     """
     return [cls(record) for record in user_storage.match(cls.model_name, field, regex, test)]
    

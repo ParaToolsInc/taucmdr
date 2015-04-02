@@ -44,6 +44,8 @@ import errno
 import urllib
 import tarfile
 import pprint
+import tempfile
+from StringIO import StringIO
 
 # TAU modules
 import logger
@@ -113,7 +115,7 @@ def download(src, dest):
     wget_cmd = [wget, src, '-O', dest] if wget else None
     for cmd in [curl_cmd, wget_cmd]:
       if cmd:
-        ret = subprocess.call(cmd, stdout=sys.stdout, stderr=sys.stderr)
+        ret = createSubprocess(cmd, stdout=False)
         if ret != 0:
           LOGGER.warning("%s failed to download '%s'.  Retrying with a different method..." % (cmd[0], src))
         else:
@@ -195,17 +197,18 @@ def pformatList(d, title=None, empty_msg='No items.', indent=0):
     items = empty_msg
   return '%(line)s%(items)s' % {'line': line, 'items': items}
 
-def createSubprocess(cmd, cwd=None, env=None):
+
+def createSubprocess(cmd, cwd=None, env=None, fork=False, stdout=True, log=True):
   """
   """
   if not cwd:
     cwd = os.getcwd()
-  LOGGER.debug("Creating subprocess: cmd=%s, cwd='%s'\n%s" % 
-               (cmd, cwd, pformatDict(env, empty_msg='None')))
-  # Show what's different in this environment
+  LOGGER.debug("Creating subprocess: cmd=%s, cwd='%s'\n" % (cmd, cwd))
+  # Show what's different in the environment
   if env:
     changed = {}
     for key, val in env.iteritems():
+      LOGGER.debug("%s=%s" % (key, ''.join([c for c in val if ord(c) < 128 and ord(c) > 31])))
       try:
         orig = os.environ[key]
       except KeyError:
@@ -214,12 +217,23 @@ def createSubprocess(cmd, cwd=None, env=None):
         if val != orig:
           changed[key] = val
     LOGGER.info(pformatDict(changed, truncate=True))
+  # Show what will be executed
   LOGGER.info(' '.join(cmd))
-  with logger.logging_streams():
-    proc = subprocess.Popen(cmd, cwd=cwd, env=env, stdout=sys.stdout, stderr=sys.stderr)
-    retval = proc.wait()
+  pid = os.fork() if fork else 0
+  if pid == 0:
+    proc = subprocess.Popen(cmd, cwd=cwd, env=env,
+                            stdout=subprocess.PIPE, 
+                            stderr=subprocess.STDOUT)
+    stdout, stderr = proc.communicate()
+    if log:
+      LOGGER.debug(stdout)
+    if stdout and (logger.LOG_LEVEL != 'DEBUG'):
+      sys.stdout.write(stdout)
+    retval = proc.returncode
     LOGGER.debug("%s returned %d" % (cmd, retval))
     return retval
+  else:
+    return 0
   
 def humanReadableSize(num, suffix='B'):
   """

@@ -34,37 +34,43 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
+
 # System modules
 import os
+from texttable import Texttable
+from pprint import pformat
 
 # TAU modules
 import tau
 import logger
-import settings
-import error
 import commands
+import error
+import util
 import arguments as args
+import environment as env
+from model.experiment import Experiment
+from model.trial import Trial
 
 
 LOGGER = logger.getLogger(__name__)
 
-_name_parts = __name__.split('.')[1:]
-COMMAND = ' '.join(['tau'] + _name_parts)
+SHORT_DESCRIPTION = "Display trial data in analysis tool."
 
-SHORT_DESCRIPTION = "Show all projects and their components."
+COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
 
 USAGE = """
-  %(command)s [arguments]
+  %(command)s [trial_number] [trial_number] ... [arguments]
+  %(command)s -h | --help
 """ % {'command': COMMAND}
 
 HELP = """
-Help page to be written.
-"""
+'%(command)s' page to be written.
+""" % {'command': COMMAND}
 
-
-_arguments = [(('-l','--long'), {'help': "Display all information",
-                                 'action': 'store_true',
-                                 'default': False})]
+_arguments = [(('numbers',), {'help': "If given, show details for trial with this number",
+                              'metavar': 'trial_number', 
+                              'nargs': '*',
+                              'default': args.SUPPRESS})]
 PARSER = args.getParser(_arguments,
                         prog=COMMAND, 
                         usage=USAGE, 
@@ -82,18 +88,27 @@ def getHelp():
 def main(argv):
   """
   Program entry point
-  """
+  """ 
   args = PARSER.parse_args(args=argv)
   LOGGER.debug('Arguments: %s' % args)
   
-  subargs = []
-  if args.long:
-    subargs.append('-l')
+  selection = Experiment.getSelected()
+  if not selection:
+    LOGGER.info("No experiment configured. See `tau project select`\n")
+    return tau.EXIT_FAILURE
   
-  commands.executeCommand(['target', 'list'], subargs)
-  commands.executeCommand(['application', 'list'], subargs)
-  commands.executeCommand(['measurement', 'list'], subargs)
-  commands.executeCommand(['project', 'list'], subargs)
-  commands.executeCommand(['trial', 'list'], ['-s'])
   
-  return tau.EXIT_SUCCESS
+  try:
+    str_numbers = args.numbers
+  except AttributeError:
+    numbers = None
+  else:
+    numbers = []
+    for n in str_numbers:
+      try:
+        numbers.append(int(n))
+      except ValueError:
+        PARSER.error("Invalid trial number: %s" % n)
+
+  return selection.show(numbers)
+

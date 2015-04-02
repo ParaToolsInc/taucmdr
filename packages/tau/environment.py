@@ -39,7 +39,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import os
 import sys
 
-
 def getEnv(name):
   """
   Gets the value of the environment variable named 'name' or fails

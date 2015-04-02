@@ -42,8 +42,8 @@ import sys
 import tau
 import commands
 import logger
+import util
 import arguments as args
-
 
 LOGGER = logger.getLogger(__name__)
 
@@ -69,10 +69,17 @@ USAGE_EPILOG = """
 %(command_descr)s
 
 shortcuts:
-  tau <compiler>    A compiler command, e.g. gcc, mpif90, upcc, nvcc, etc. 
-                    An alias for 'tau build <compiler>'
-  tau <executable>  A program executable, e.g. ./a.out
-                    An alias for 'tau trial create <executable>'
+  tau <compiler>     Execute a compiler command 
+                     - Example: tau gcc *.c -o a.out
+                     - Alias for 'tau build <compiler>'
+  tau <program>      Gather data from a program
+                     - Example: tau ./a.out
+                     - Alias for 'tau trial create <program>'
+  tau run <program>  Gather data from a program
+                     - Example: tau ./a.out
+                     - Alias for 'tau trial create <program>'
+  tau show           Show data from the most recent trial                    
+                     - An alias for 'tau trial show'
 
 See 'tau help <subcommand>' for more information on <subcommand>.
 """  % {'command_descr': commands.getCommandsHelp()}
@@ -104,7 +111,7 @@ def getHelp():
 def main():
   """
   Program entry point
-  """
+  """ 
 
   # Check Python version
   if sys.version_info < tau.MINIMUM_PYTHON_VERSION:
@@ -117,11 +124,10 @@ def main():
   cmd = args.command
   cmd_args = args.options
 
-  
   # Set verbosity level
   logger.setLogLevel(args.verbose)
   LOGGER.debug('Arguments: %s' % args)
-  LOGGER.debug('Verbosity level: %s' % logger.getLogLevel())
+  LOGGER.debug('Verbosity level: %s' % logger.LOG_LEVEL)
   
   # Try to execute as a TAU command
   try:
@@ -133,11 +139,17 @@ def main():
   shortcut = None
   if commands.build.isCompatible(cmd):
     shortcut = ['build']
+    cmd_args = [cmd] + cmd_args
   elif commands.trial.create.isCompatible(cmd):
     shortcut = ['trial', 'create']
+    cmd_args = [cmd] + cmd_args
+  elif cmd == 'run' and commands.build.isCompatible(cmd):
+    shortcut = ['build']
+  elif cmd == 'show':
+    shortcut = ['trial', 'show']
   if shortcut:
     LOGGER.debug('Trying shortcut: %s' % shortcut)
-    return commands.executeCommand(shortcut, [cmd] + cmd_args)
+    return commands.executeCommand(shortcut, cmd_args)
   else:
     LOGGER.debug('No shortcut found for %r' % cmd)
 
@@ -147,4 +159,4 @@ def main():
   
 # Command line execution
 if __name__ == "__main__":
-    exit(main())
+  exit(main())
