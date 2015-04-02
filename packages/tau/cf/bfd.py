@@ -84,7 +84,7 @@ class Bfd(object):
   def verify(self):
     """
     Returns true if if there is a working BFD installation at `prefix` with a
-    directory named `arch` containing `bin` and `lib` directories or 
+    directory named `arch` containing  `lib` directories or 
     raises a ConfigurationError describing why that installation is broken.
     """
     LOGGER.debug("Checking BFD installation at '%s' targeting arch '%s'" % (self.bfd_prefix, self.arch))    
@@ -96,8 +96,8 @@ class Bfd(object):
       path = os.path.join(self.bin_path, cmd)
       if not os.path.exists(path):
         raise error.ConfigurationError("'%s' is missing" % path)
-      if not os.access(path, os.X_OK):
-        raise error.ConfigurationError("'%s' exists but is not executable" % path)
+#      if not os.access(path, os.X_OK):
+#        raise error.ConfigurationError("'%s' exists but is not executable" % path)
     
     LOGGER.debug("BFD installation at '%s' is valid" % self.bfd_prefix)
     return True
