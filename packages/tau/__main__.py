@@ -42,8 +42,8 @@ import sys
 import tau
 import commands
 import logger
+import util
 import arguments as args
-
 
 LOGGER = logger.getLogger(__name__)
 
@@ -104,7 +104,7 @@ def getHelp():
 def main():
   """
   Program entry point
-  """
+  """ 
 
   # Check Python version
   if sys.version_info < tau.MINIMUM_PYTHON_VERSION:
@@ -117,11 +117,10 @@ def main():
   cmd = args.command
   cmd_args = args.options
 
-  
   # Set verbosity level
   logger.setLogLevel(args.verbose)
   LOGGER.debug('Arguments: %s' % args)
-  LOGGER.debug('Verbosity level: %s' % logger.getLogLevel())
+  LOGGER.debug('Verbosity level: %s' % logger.LOG_LEVEL)
   
   # Try to execute as a TAU command
   try:
@@ -147,4 +146,4 @@ def main():
   
 # Command line execution
 if __name__ == "__main__":
-    exit(main())
+  exit(main())
