@@ -53,8 +53,6 @@ COMMAND = ' '.join(['tau'] + _name_parts)
 
 SHORT_DESCRIPTION = "Show help for a command or suggest actions for a file."
 
-GROUP = "information"
-
 USAGE = """
   %(command)s (<command>|<file>) [arguments]
 """ % {'command': COMMAND}

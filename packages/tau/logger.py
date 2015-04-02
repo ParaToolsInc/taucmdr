@@ -166,7 +166,6 @@ def getLogger(name):
   """
   return logging.getLogger('tau.' + name)
 
-LOG_LEVEL = 'INFO'
 def setLogLevel(level):
   """
   Sets the output level for all logging objects
@@ -175,6 +174,9 @@ def setLogLevel(level):
   LOG_LEVEL = level.upper()
   stdout_handler.setLevel(LOG_LEVEL)
 
+LOG_LEVEL = 'INFO'
+
+LOG_FILE = os.path.join(environment.USER_PREFIX, 'debug_log')
 
 # Marker for each line of output
 LINE_MARKER = os.environ.get('TAU_LINE_MARKER', '')
@@ -191,14 +193,13 @@ _text_wrapper = textwrap.TextWrapper(width=LINE_WIDTH,
 
 _root_logger = logging.getLogger('tau')
 if not len(_root_logger.handlers):
+  prefix = os.path.dirname(LOG_FILE)
   try:
-    os.makedirs(environment.USER_PREFIX)
-    LOGGER.debug('Created directory %r' % environment.USER_PREFIX)
+    os.makedirs(prefix)
   except OSError as exc:
-    if exc.errno == errno.EEXIST and os.path.isdir(environment.USER_PREFIX): pass
+    if exc.errno == errno.EEXIST and os.path.isdir(prefix): pass
     else: raise
-  log_file = os.path.join(environment.USER_PREFIX, 'log')
-  file_handler = handlers.TimedRotatingFileHandler(log_file, when='D', interval=1, backupCount=5)
+  file_handler = handlers.TimedRotatingFileHandler(LOG_FILE, when='D', interval=1, backupCount=5)
   file_handler.setFormatter(LogFormatter())
   file_handler.setLevel(logging.DEBUG)
 

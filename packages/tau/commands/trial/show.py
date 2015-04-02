@@ -97,12 +97,18 @@ def main(argv):
     LOGGER.info("No experiment configured. See `tau project select`\n")
     return tau.EXIT_FAILURE
   
+  
   try:
-    numbers = [int(n) for n in args.numbers]
+    str_numbers = args.numbers
   except AttributeError:
     numbers = None
-  except ValueError:
-    PARSER.error("Invalid trial number")
+  else:
+    numbers = []
+    for n in str_numbers:
+      try:
+        numbers.append(int(n))
+      except ValueError:
+        PARSER.error("Invalid trial number: %s" % n)
 
   return selection.show(numbers)
 
