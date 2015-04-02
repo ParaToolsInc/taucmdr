@@ -60,8 +60,7 @@ def _compilersHelp():
 SHORT_DESCRIPTION = "Instrument programs during compilation and/or linking."
 
 USAGE = """
-  %(command)s <command> [args ...]
-  %(command)s -h | --help 
+  %(command)s <command> [arguments]
 """ % {'command': COMMAND}
 
 HELP = """
@@ -79,7 +78,7 @@ compiler commands:
 _arguments = [ (('cmd',), {'help': "Compiler or linker command, e.g. 'gcc'",
                            'metavar': '<command>'}),
                (('cmd_args',), {'help': "Compiler arguments",
-                                'metavar': 'args',
+                                'metavar': '[arguments]',
                                 'nargs': args.REMAINDER})]
 PARSER = args.getParser(_arguments,
                         prog=COMMAND,
@@ -94,7 +93,11 @@ def getUsage():
 def getHelp():
   return HELP
 
-def isKnownCompiler(cmd):
+def isCompatible(cmd):
+  """
+  TODO: DOCS
+  """
+  # TODO: Likely needs more logic here
   return cmd in KNOWN_COMPILERS
 
 
@@ -105,10 +108,7 @@ def main(argv):
   args = PARSER.parse_args(args=argv)
   LOGGER.debug('Arguments: %s' % args)
   
-  compiler_cmd = args.cmd
-  compiler_args = args.cmd_args
-  
   selection = Experiment.getSelected()
   if not selection:
     raise error.ConfigurationError("Nothing selected.", "See `tau project select`") 
-  return selection.managedBuild(compiler_cmd, compiler_args)
+  return selection.managedBuild(args.cmd, args.cmd_args)

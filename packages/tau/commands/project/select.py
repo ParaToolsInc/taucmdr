@@ -54,8 +54,7 @@ SHORT_DESCRIPTION = "Select project components for the next experiment."
 COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
 
 USAGE = """
-  %(command)s project_name [options] [target] [application] [measurement]
-  %(command)s -h | --help
+  %(command)s project_name [target] [application] [measurement] [arguments]
 """ % {'command': COMMAND}
 
 HELP = """
@@ -185,11 +184,11 @@ def main(argv):
     LOGGER.debug('Using existing experiment')
     found = found[0]
 
-  found.populate()
+  populated = found.populate()
   LOGGER.info("'%s' on '%s' measured by '%s'" % 
-              (found['application']['name'],
-               found['target']['name'],
-               found['measurement']['name']))
+              (populated['application']['name'],
+               populated['target']['name'],
+               populated['measurement']['name']))
   found.select()
   
   return tau.EXIT_SUCCESS

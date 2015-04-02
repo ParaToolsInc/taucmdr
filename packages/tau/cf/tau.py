@@ -40,7 +40,6 @@ import os
 import sys
 import glob
 import errno
-import subprocess
 
 # TAU modules
 import logger
@@ -245,15 +244,6 @@ class Tau(object):
     if not makefile:
       raise error.ConfigurationError("TAU Makefile not found: %s" % makefile)
     
-    # Check tauDB
-    LOGGER.debug("Checking tauDB installation at '%s'" % self.taudb_prefix)
-    if not os.path.exists(self.taudb_prefix):
-      raise error.ConfigurationError("'%s' does not exist" % self.taudb_prefix)
-    path = os.path.join(self.taudb_prefix, 'perfdmf.cfg')
-    if not os.path.exists(path):
-      raise error.ConfigurationError("'%s' does not exist" % path)
-  
-    LOGGER.debug("tauDB installation at '%s' is valid" % self.taudb_prefix)
     LOGGER.debug("TAU installation at '%s' is valid" % self.tau_prefix)
     return True
 
@@ -355,18 +345,14 @@ class Tau(object):
 
       # Execute configure
       cmd = ['./configure'] + base_flags + mpi_flags + openmp_flags + pthreads_flags
-      LOGGER.debug('Creating configure subprocess in %r: %r' % (srcdir, cmd))
-      LOGGER.info('Configuring TAU...\n    %s' % ' '.join(cmd))
-      proc = subprocess.Popen(cmd, cwd=srcdir, stdout=sys.stdout, stderr=sys.stderr)
-      if proc.wait():
+      LOGGER.info("Configuring TAU...")
+      if util.createSubprocess(cmd, cwd=srcdir):
         raise error.ConfigurationError('TAU configure failed')
     
       # Execute make
       cmd = ['make', '-j4', 'install']
-      LOGGER.debug('Creating make subprocess in %r: %r' % (srcdir, cmd))
-      LOGGER.info('Compiling TAU...\n    %s' % ' '.join(cmd))
-      proc = subprocess.Popen(cmd, cwd=srcdir, stdout=sys.stdout, stderr=sys.stderr)
-      if proc.wait():
+      LOGGER.info('Compiling TAU...')
+      if util.createSubprocess(cmd, cwd=srcdir):
           raise error.ConfigurationError('TAU compilation failed.')
   
       # Leave source, we'll probably need it again soon
@@ -377,17 +363,7 @@ class Tau(object):
       except OSError as err:
         if not (err.errno == errno.EEXIST and os.path.islink(src)):
           LOGGER.warning("Can't create symlink '%s'. TAU source code won't be reused across configurations." % src)
-          
       
-      # Initialize tauDB with a minimal configuration
-      taudb_configure = os.path.join(self.bin_path, 'taudb_configure')
-      cmd = [taudb_configure, '--create-default']
-      LOGGER.debug('Creating subprocess: %r' % cmd)
-      LOGGER.info('Configuring tauDB...\n    %s' % ' '.join(cmd))
-      proc = subprocess.Popen(cmd, stdout=sys.stdout, stderr=sys.stderr)
-      if proc.wait():
-        raise error.ConfigurationError('tauDB configure failed.')
-    
     # Verify the new installation and return
     LOGGER.info('TAU installation complete')
     return self.verify()
@@ -406,7 +382,6 @@ class Tau(object):
         return os.path.join(self.lib_path, makefile)
     LOGGER.debug("No TAU makefile matches tags '%s'. Available: %s" % (config_tags, tau_makefiles))
     return None
-    
 
   def applyCompiletimeConfig(self, opts, env):
     """
@@ -435,19 +410,20 @@ class Tau(object):
         'sample': {True: ['-ebs'], False: []}
         }
     environment_variables = {
-        'verbose': {True: {'TAU_VERBOSE': 1}, 
-                    False: {'TAU_VERBOSE': 0}},
-        'profile': {True: {'TAU_PROFILE': 1}, 
-                    False: {'TAU_PROFILE': 0}},
-        'trace': {True: {'TAU_TRACE': 1}, 
-                  False: {'TAU_TRACE': 0}},
-        'sample': {True: {'TAU_SAMPLE': 1}, 
-                   False: {'TAU_SAMPLE': 0}},
-        'callpath': lambda depth: ({'TAU_CALLPATH': 1, 'TAU_CALLPATH_DEPTH': depth} 
-                                   if depth > 0 else {'TAU_CALLPATH': 0})
+        'verbose': {True: {'TAU_VERBOSE': '1'}, 
+                    False: {'TAU_VERBOSE': '0'}},
+        'profile': {True: {'TAU_PROFILE': '1'}, 
+                    False: {'TAU_PROFILE': '0'}},
+        'trace': {True: {'TAU_TRACE': '1'}, 
+                  False: {'TAU_TRACE': '0'}},
+        'sample': {True: {'TAU_SAMPLING': '1'}, 
+                   False: {'TAU_SAMPLING': '0'}},
+        'callpath': lambda depth: ({'TAU_CALLPATH': '1', 'TAU_CALLPATH_DEPTH': str(depth)} 
+                                   if depth > 0 else {'TAU_CALLPATH': '0'})
         }
-    tauOpts, tauEnv = _parseConfig(self.config, commandline_opts, environment_vars)
+    tauOpts, tauEnv = _parseConfig(self.config, commandline_options, environment_variables)
     opts.extend(tauOpts)
     env.update(tauEnv)
-    env['PATH'] = os.pathsep.join([self.bin_path, initial_env.get('PATH')])
+
+    env['PATH'] = os.pathsep.join([self.bin_path, env.get('PATH')])
     

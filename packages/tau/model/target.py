@@ -114,7 +114,7 @@ class Target(ctl.Controller, ctl.ByName):
       'required': True,
       'defaultsTo': defaultHostOS(),
       'argparse': {'flags': ('--host-os',),
-                   'group': 'target system arguments',
+                   'group': 'target system',
                    'help': 'Host operating system',
                    'metavar': 'os'}
     },
@@ -123,7 +123,7 @@ class Target(ctl.Controller, ctl.ByName):
       'required': True,
       'defaultsTo': defaultHostArch(),
       'argparse': {'flags': ('--host-arch',),
-                   'group': 'target system arguments',
+                   'group': 'target system',
                    'help': 'Host architecture',
                    'metavar': 'arch'}
     },
@@ -131,7 +131,7 @@ class Target(ctl.Controller, ctl.ByName):
       'type': 'string',
       'defaultsTo': defaultDeviceArch(),
       'argparse': {'flags': ('--device-arch',),
-                   'group': 'target system arguments',
+                   'group': 'target system',
                    'help': 'Coprocessor architecture',
                    'metavar': 'arch'}
     },
@@ -140,7 +140,7 @@ class Target(ctl.Controller, ctl.ByName):
       'required': True,
       'defaultsTo': defaultCC(),
       'argparse': {'flags': ('--cc',),
-                   'group': 'compiler arguments',
+                   'group': 'compiler',
                    'help': 'C Compiler',
                    'metavar': '<command>'}
     },
@@ -149,7 +149,7 @@ class Target(ctl.Controller, ctl.ByName):
       'required': True,
       'defaultsTo': defaultCXX(),
       'argparse': {'flags': ('--cxx','--c++'),
-                   'group': 'compiler arguments',
+                   'group': 'compiler',
                    'help': 'C++ Compiler',
                    'metavar': '<command>'}
     },
@@ -158,14 +158,14 @@ class Target(ctl.Controller, ctl.ByName):
       'required': True,
       'defaultsTo': defaultFC(),
       'argparse': {'flags': ('--fc','--fortran'),
-                   'group': 'compiler arguments',
+                   'group': 'compiler',
                    'help': 'Fortran Compiler',
                    'metavar': '<command>'}
     },
     'cuda': {
       'type': 'string',
       'argparse': {'flags': ('--with-cuda',),
-                   'group': 'software pacakge arguments',
+                   'group': 'software package',
                    'help': 'Path to NVIDIA CUDA installation',
                    'metavar': '<path>'}
     },
@@ -173,7 +173,7 @@ class Target(ctl.Controller, ctl.ByName):
       'type': 'string',
       'defaultsTo': 'download',
       'argparse': {'flags': ('--with-tau',),
-                   'group': 'software pacakge arguments',
+                   'group': 'software package',
                    'help': 'URL or path to a TAU installation or archive file',
                    'metavar': '(<path>|<url>|"download")'}
     },
@@ -181,7 +181,7 @@ class Target(ctl.Controller, ctl.ByName):
       'type': 'string',
       'defaultsTo': 'download',
       'argparse': {'flags': ('--with-pdt',),
-                   'group': 'software pacakge arguments',
+                   'group': 'software package',
                    'help': 'URL or path to a PDT installation or archive file',
                    'metavar': '(<path>|<url>|"download")'}
     },
@@ -189,14 +189,14 @@ class Target(ctl.Controller, ctl.ByName):
       'type': 'string',
       'defaultsTo': 'download',
       'argparse': {'flags': ('--with-bfd',),
-                   'group': 'software pacakge arguments',
+                   'group': 'software package',
                    'help': 'URL or path to a BFD installation or archive file',
                    'metavar': '(<path>|<url>|"download")'}
     },
     'libunwind_source': {
       'type': 'string',
       'argparse': {'flags': ('--with-libunwind',),
-                   'group': 'software pacakge arguments',
+                   'group': 'software package',
                    'help': 'URL or path to a libunwind installation or archive file',
                    'metavar': '(<path>|<url>|"download")'}
     }

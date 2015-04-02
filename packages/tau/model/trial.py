@@ -34,9 +34,20 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
+# System modules
+import os
+import sys
+import glob
+import shutil
+from datetime import datetime
 
 # TAU modules
+import logger
+import util
+import storage
 import controller as ctl
+
+LOGGER = logger.getLogger(__name__)
 
 
 class Trial(ctl.Controller):
@@ -45,17 +56,137 @@ class Trial(ctl.Controller):
   """
   
   attributes = {      
-    'experiment': {
-      'model': 'Experiment'
-    },
-    'name': {
-      'type': 'string' # not unique
-    },
-    'timestamp': {
-      'type': 'datetime',
+    'number': {
+      'type': 'integer',
       'required': True
     },
-    'experiment_snapshot': {
-      'type': 'json'
-    }
+    'experiment': {
+      'model': 'Experiment',
+      'required': True
+    },
+    'command': {
+      'type': 'string',
+      'required': True
+    },
+    'cwd': {
+      'type': 'string',
+      'required': True
+    },
+    'environment': {
+      'type': 'string',
+      'required': True
+    },
+    'begin_time': {
+      'type': 'datetime'
+    },
+    'end_time': {
+      'type': 'datetime'
+    },
+    'return_code': {
+      'type': 'integer'
+    },
+    'data_size': {
+      'type': 'integer'
+    },                
   }
+  
+  def prefix(self):
+    """
+    Path to trial data
+    """
+    experiment = self.populate('experiment')
+    return os.path.join(experiment.prefix(), str(self['number']))
+  
+  def onCreate(self):
+    """
+    Initialize trial data
+    """
+    prefix = self.prefix()
+    try:
+      util.mkdirp(prefix)
+    except Exception as err:
+      raise error.ConfigurationError('Cannot create directory %r: %s' % (prefix, err), 
+                                     'Check that you have `write` access')
+  
+  def onDelete(self):
+    """
+    Clean up trial data
+    """
+    prefix = self.prefix()
+    try:
+      shutil.rmtree(prefix)
+    except Exception as err:
+      if os.path.exists(prefix):
+        LOGGER.error("Could not remove trial data at '%s': %s" % (prefix, err))
+  
+  @classmethod
+  def performTrial(cls, experiment, cmd, cwd, env):
+    """
+    TODO: Docs
+    """
+    def banner(mark, name, time):
+      LOGGER.info('{:=<{}}'.format('== %s %s (%s) ==' %
+                                   (mark, name, time), logger.LINE_WIDTH))    
+    measurement = experiment.populate('measurement')
+    cmd_str = ' '.join(cmd)
+    begin_time = str(datetime.utcnow())
+    
+    trials = experiment.populate('trials')
+    trial_number = None
+    all_trial_numbers = sorted([trial['number'] for trial in trials])
+    LOGGER.debug("Trial numbers: %s" % all_trial_numbers)
+    for i, ii in enumerate(all_trial_numbers):
+      if i != ii:
+        trial_number = i
+        break
+    if trial_number == None:
+      trial_number = len(all_trial_numbers)
+    LOGGER.debug("New trial number is %d" % trial_number)
+    
+    fields = {'number': trial_number,
+              'experiment': experiment.eid,
+              'command': cmd_str,
+              'cwd': cwd,
+              'environment': 'FIXME',
+              'begin_time': begin_time}
+
+    banner('BEGIN', experiment.name(), begin_time)
+    trial = cls.create(fields)
+    prefix = trial.prefix()
+    try:
+      retval = util.createSubprocess(cmd, cwd=cwd, env=env)
+      if retval:
+        LOGGER.warning("Nonzero return code '%d' from '%s'" % (retval, cmd_str))
+      else:
+        LOGGER.info("'%s' returned 0" % cmd_str)
+  
+      # Copy profile files to trial prefix
+      if measurement['profile']:
+        profiles = glob.glob(os.path.join(cwd, 'profile.*.*.*'))
+        if not profiles:
+          LOGGER.error("%s did not generate any profile files!" % cmd_str)
+        else:
+          LOGGER.info("Found %d profile files. Adding to trial..." % len(profiles))
+          for file in profiles:
+            shutil.move(file, prefix)
+            LOGGER.debug("'%s' => '%s'" % (file, prefix))
+  
+      # TODO: Handle traces
+      
+      end_time = str(datetime.utcnow())
+    except:
+      # Something went wrong so revert the trial
+      LOGGER.error("Exception raised, reverting trial...")
+      cls.delete(eids=[trial.eid])
+      raise
+    else:
+      # Trial successful, update record and record state for provenance
+      data_size = sum(os.path.getsize(os.path.join(prefix, f)) for f in os.listdir(prefix))
+      shutil.copy(storage.user_storage.dbfile, prefix)
+      cls.update({'end_time': end_time, 
+                  'return_code': retval,
+                  'data_size': data_size}, eids=[trial.eid])
+      banner('END', experiment.name(), end_time)
+    
+    return retval
+  

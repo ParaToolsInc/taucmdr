@@ -34,6 +34,8 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
+# System modules
+import os
 
 # TAU modules
 import tau
@@ -42,19 +44,19 @@ import settings
 import error
 import commands
 import arguments as args
-from model.experiment import Experiment
 
 
 LOGGER = logger.getLogger(__name__)
 
-_name_parts = __name__.split('.')[2:]
+_name_parts = __name__.split('.')[1:]
 COMMAND = ' '.join(['tau'] + _name_parts)
 
 SHORT_DESCRIPTION = "Show all projects and their components."
 
+GROUP = "information"
+
 USAGE = """
-  %(command)s {<command>|<file_name>}
-  %(command)s -h | --help
+  %(command)s [arguments]
 """ % {'command': COMMAND}
 
 HELP = """
@@ -94,19 +96,6 @@ def main(argv):
   commands.executeCommand(['application', 'list'], subargs)
   commands.executeCommand(['measurement', 'list'], subargs)
   commands.executeCommand(['project', 'list'], subargs)
-  
-  title = '{:=<{}}'.format('== Current Selection ==', logger.LINE_WIDTH)
-  selection = Experiment.getSelected()
-  if selection:
-    LOGGER.debug("Found selection %r" % selection)
-    selection.populate()
-    target = selection['target']
-    application = selection['application']
-    measurement = selection['measurement']
-    msg = "Application '%s' on target '%s' measured by '%s'" % \
-          (application['name'], target['name'], measurement['name'])
-  else:
-    msg = "No selections. See `tau project select --help`"
-  LOGGER.info('\n'.join([title, '', msg, '']))  
+  commands.executeCommand(['trial', 'list'], ['-s'])
   
   return tau.EXIT_SUCCESS

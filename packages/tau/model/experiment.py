@@ -38,7 +38,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # System modules
 import os
 import sys
-import subprocess
+import glob
+import shutil
 
 
 # TAU modules
@@ -53,6 +54,7 @@ import cf.pdt
 from model.project import Project
 from model.target import Target
 from model.compiler import Compiler
+from model.trial import Trial
 
 LOGGER = logger.getLogger(__name__)
 
@@ -85,9 +87,46 @@ class Experiment(controller.Controller):
     },
   }
   
+  def name(self):
+    populated = self.populate()
+    return '%s (%s, %s, %s)' % (populated['project']['name'],
+                                populated['target']['name'],
+                                populated['application']['name'],
+                                populated['measurement']['name'])
+
+  def prefix(self):
+    """
+    Storage location for all experiment data
+    """
+    populated = self.populate()
+    return os.path.join(populated['project'].prefix(),
+                        populated['target']['name'], 
+                        populated['application']['name'], 
+                        populated['measurement']['name'])
+
+  def onCreate(self):
+    """
+    Initialize experiment storage
+    """
+    prefix = self.prefix()
+    try:
+      util.mkdirp(prefix)
+    except:
+      raise error.ConfigurationError('Cannot create directory %r' % prefix, 
+                                     'Check that you have `write` access')
+
   def onDelete(self):
+    """
+    Clean up experiment storage
+    """
     if self.isSelected():
       settings.unset('experiment_id')
+    prefix = self.prefix()
+    try:
+      shutil.rmtree(prefix)
+    except Exception as err:
+      if os.path.exists(prefix):
+        LOGGER.error("Could not remove experiment data at '%s': %s" % (prefix, err))
 
   def select(self):
     if not self.eid:
@@ -113,23 +152,16 @@ class Experiment(controller.Controller):
     """
     Installs all software required to perform the experiment
     """
-    self.populate()
-    target = self['target']
-    application = self['application']
-    measurement = self['measurement']
-    target.populate()
+    populated = self.populate()
+    # TODO: Should install packages in a location where all projects can use
+    prefix = populated['project']['prefix']
+    target = populated['target'].populate()
+    application = populated['application']
+    measurement = populated['measurement']
     cc = target['CC']
     cxx = target['CXX']
     fc = target['FC']
     verbose = (logger.LOG_LEVEL == 'DEBUG')
-
-    # Make sure project prefix exists
-    prefix = self['project']['prefix']
-    try:
-      util.mkdirp(prefix)
-    except:
-      raise error.ConfigurationError('Cannot create directory %r' % prefix, 
-                                     'Check that you have `write` access')
 
     # Configure/build/install PDT if needed
     if not measurement['source_inst']:
@@ -138,7 +170,7 @@ class Experiment(controller.Controller):
       pdt = cf.pdt.Pdt(prefix, cxx, target['pdt_source'], target['host_arch'])
       pdt.install()
       self.pdt = pdt
-      
+
     # Configure/build/install TAU if needed
     tau = cf.tau.Tau(prefix, cc, cxx, fc, target['tau_source'], target['host_arch'],
                      verbose=verbose,
@@ -174,13 +206,13 @@ class Experiment(controller.Controller):
     TODO: Docs
     """
     self.configure()
-    target = self['target']
-    measurement = self['measurement']
+    target = self.populate('target')
+    measurement = self.populate('measurement')
     given_compiler = Compiler.identify(compiler_cmd)
     target_compiler = target[given_compiler['role']]
     
     # Confirm target supports compiler
-    if given_compiler.eid != target_compiler.eid:
+    if given_compiler.eid != target_compiler:
       raise error.ConfigurationError("Target '%s' is configured with %s compiler '%s', not '%s'",
                                      (self['name'], given_compiler['language'], 
                                       given_compiler.absolutePath(),
@@ -189,7 +221,7 @@ class Experiment(controller.Controller):
                                      target_compiler.absolutePath())
 
     # Build compile-time environment from component packages
-    opts, env = [], os.environ
+    opts, env = environment.base()
     if measurement['source_inst']:
       self.pdt.applyCompiletimeConfig(opts, env)
     self.tau.applyCompiletimeConfig(opts, env)
@@ -199,36 +231,42 @@ class Experiment(controller.Controller):
       compiler_cmd = given_compiler['tau_wrapper']
 
     cmd = [compiler_cmd] + opts + compiler_args
+    return util.createSubprocess(cmd, env=env)
 
-    LOGGER.debug('Creating subprocess: cmd=%r, env=%r' % (cmd, env))
-    LOGGER.info('\n'.join(['%s=%s' % i for i in env.iteritems() if i[0].startswith('TAU')]))
-    LOGGER.info(' '.join(cmd))
-    with logger.logging_streams():
-      proc = subprocess.Popen(cmd, env=env, stdout=sys.stdout, stderr=sys.stderr)
-      return proc.wait()
-
-  @classmethod
-  def managedRun(cls, selection, application_cmd, application_args):
+  def managedRun(self, application_cmd, application_args):
     """
     TODO: Docs
     """
-    selection.populate()
-    target = selection['target']
-    application = selection['application']
-    measurement = selection['measurement']
+    self.configure()
+    measurement = self.populate('measurement')
+    
+    command = util.which(application_cmd)
+    if not command:
+      raise error.ConfigurationError("Cannot find executable: %s" % application_cmd)
+    path = os.path.dirname(command)
+    
+    # Check for existing profile files
+    if measurement['profile']:
+      profiles = glob.glob(os.path.join(path, 'profile.*.*.*'))
+      if len(profiles):
+        LOGGER.warning("Profile files found in '%s'! They will be deleted." % path)
+        for file in profiles:
+          try: os.remove(file)
+          except: continue
+    # Check for existing trace files
+    # TODO
 
-    expr = cls.configure(selection, cc, cxx, fc)
-    opts, env = expr.getCompiletimeConfig()
-
-    use_wrapper = measurement['source_inst'] or measurement['comp_inst']
-    if use_wrapper:
-      compiler_cmd = key_compiler['tau_wrapper']
-
-    cmd = [compiler_cmd] + opts + compiler_args
-
-    LOGGER.debug('Creating subprocess: cmd=%r, env=%r' % (cmd, env))
-    LOGGER.info('\n'.join(['%s=%s' % i for i in env.iteritems() if i[0].startswith('TAU')]))
-    LOGGER.info(' '.join(cmd))
-    with logger.logging_streams():
-      proc = subprocess.Popen(cmd, env=env, stdout=sys.stdout, stderr=sys.stderr)
-      return proc.wait()
+    # Build environment from component packages
+    opts, env = environment.base()
+    self.tau.applyRuntimeConfig(opts, env)
+    
+    # TODO : Select tau_exec as needed
+    use_tau_exec = False
+    if use_tau_exec:
+      # TODO: tau_exec flags and command line args
+      cmd = ['tau_exec'] + opts + [application_cmd]
+    else:
+      cmd = [application_cmd]
+    cmd += application_args
+    
+    return Trial.performTrial(self, cmd, path, env)

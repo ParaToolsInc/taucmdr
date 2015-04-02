@@ -36,9 +36,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 # System modules
+import os
 import string
+import shutil
 
 # TAU modules
+import util
+import error
 import environment as env
 import controller as ctl
 
@@ -83,8 +87,24 @@ class Project(ctl.Controller, ctl.ByName):
 
   _valid_name = set(string.digits + string.letters + '-_.')
   
+  def prefix(self):
+    return os.path.join(self['prefix'], self['name'])
+  
   def onCreate(self):
     if set(self['name']) > Project._valid_name:
       raise ctl.ModelError('%r is not a valid project name.' % self['name'],
                            'Use only letters, numbers, dot (.), dash (-), and underscore (_).')
-  
+    prefix = self.prefix()
+    try:
+      util.mkdirp(prefix)
+    except Exception as err:
+      raise error.ConfigurationError('Cannot create directory %r: %s' % (prefix, err), 
+                                     'Check that you have `write` access')
+
+  def onDelete(self):
+    prefix = self.prefix()
+    try:
+      shutil.rmtree(prefix)
+    except Exception as err:
+      if os.path.exists(prefix):
+        LOGGER.error("Could not remove project data at '%s': %s" % (prefix, err))

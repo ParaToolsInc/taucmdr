@@ -28,3 +28,4 @@ tau project create "ex-mm" \
   ex-mm-serial ex-mm-openmp ex-mm-openmp-mpi \
   ex-profile ex-trace ex-sample
 
+tau dashboard

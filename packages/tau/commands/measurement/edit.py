@@ -44,13 +44,12 @@ from model.measurement import Measurement
 
 LOGGER = logger.getLogger(__name__)
 
-SHORT_DESCRIPTION = "Modify an existing measurement configuration."
+SHORT_DESCRIPTION = "Modify a measurement configuration."
 
 COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
 
 USAGE = """
-  %(command)s <measurement_name> [options]
-  %(command)s -h | --help
+  %(command)s <measurement_name> [arguments]
 """ % {'command': COMMAND}
 
 HELP = """

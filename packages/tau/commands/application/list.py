@@ -55,8 +55,7 @@ SHORT_DESCRIPTION = "List application configurations or show configuration detai
 COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
 
 USAGE = """
-  %(command)s [application_name] [application_name] ...
-  %(command)s -h | --help
+  %(command)s [application_name] [application_name] ... [arguments]
 """ % {'command': COMMAND}
 
 HELP = """
@@ -64,10 +63,10 @@ HELP = """
 """ % {'command': COMMAND}
 
 _arguments = [(('names',), {'help': "If given, show details for the application with this name",
-                           'metavar': 'application_name', 
-                           'nargs': '*',
-                           'default': args.SUPPRESS}),
-              (('-l','--long'), {'help': "Display all information about the application",
+                            'metavar': 'application_name', 
+                            'nargs': '*',
+                            'default': args.SUPPRESS}),
+              (('-l','--long'), {'help': "display all information about the application",
                                  'action': 'store_true',
                                  'default': False})]
 PARSER = args.getParser(_arguments,
@@ -101,6 +100,8 @@ def main(argv):
       t = Application.withName(name)
       if t:
         found.append(t)
+      else:
+        PARSER.error("No application configuration named '%s'" % name)
 
   title = '{:=<{}}'.format('== Applications (%s) ==' % env.USER_PREFIX, 
                            logger.LINE_WIDTH)
@@ -121,15 +122,15 @@ def main(argv):
     if args.long:
       parts = []
       for t in found:
-        t.populate()
-        parts.append(pformat(t.data))
+        populated = t.populate()
+        parts.append(pformat(populated))
       listing = '\n'.join(parts)
     else:
       for t in found:
-        t.populate()
-        name = t['name']
-        projects = ', '.join([p['name'] for p in t['projects']])
-        row = [name] + ['Yes' if t.get(attr, None) else '' for _, _, attr in cols if attr] + [projects]
+        populated = t.populate()
+        name = populated['name']
+        projects = ', '.join([p['name'] for p in populated['projects']])
+        row = [name] + ['Yes' if populated.get(attr, None) else '' for _, _, attr in cols if attr] + [projects]
         rows.append(row)
       table.set_cols_align([align for _, align, _ in cols])
       table.add_rows(rows)
