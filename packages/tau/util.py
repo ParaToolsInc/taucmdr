@@ -115,7 +115,7 @@ def download(src, dest):
     wget_cmd = [wget, src, '-O', dest] if wget else None
     for cmd in [curl_cmd, wget_cmd]:
       if cmd:
-        ret = createSubprocess(cmd, quiet=True)
+        ret = createSubprocess(cmd, stdout=False)
         if ret != 0:
           LOGGER.warning("%s failed to download '%s'.  Retrying with a different method..." % (cmd[0], src))
         else:
@@ -198,7 +198,7 @@ def pformatList(d, title=None, empty_msg='No items.', indent=0):
   return '%(line)s%(items)s' % {'line': line, 'items': items}
 
 
-def createSubprocess(cmd, cwd=None, env=None, fork=False, quiet=False):
+def createSubprocess(cmd, cwd=None, env=None, fork=False, stdout=True, log=True):
   """
   """
   if not cwd:
@@ -225,8 +225,9 @@ def createSubprocess(cmd, cwd=None, env=None, fork=False, quiet=False):
                             stdout=subprocess.PIPE, 
                             stderr=subprocess.STDOUT)
     stdout, stderr = proc.communicate()
-    LOGGER.debug(stdout)
-    if (not quiet) and (logger.LOG_LEVEL != 'DEBUG'):
+    if log:
+      LOGGER.debug(stdout)
+    if stdout and (logger.LOG_LEVEL != 'DEBUG'):
       sys.stdout.write(stdout)
     retval = proc.returncode
     LOGGER.debug("%s returned %d" % (cmd, retval))
