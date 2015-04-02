@@ -133,8 +133,8 @@ class Bfd(object):
       compiler_flag = ''
     else:
       family_flags = {'system': '',
-                      'GNU': 'CC=gcc CXX=g++',
-                      'Intel': 'CC=icc CXX=icpc'}
+                      'GNU': '-GNU',
+                      'Intel': ['CC=icc', 'CXX=icpc'] }
 #                      'PGI': '-pgCC'}
       try:
         compiler_flag = family_flags[self.cxx['family']]
@@ -166,7 +166,7 @@ class Bfd(object):
     finally:
       # Always clean up BFD source
       LOGGER.debug('Deleting %r' % srcdir)
-      shutil.rmtree(srcdir, ignore_errors=True)
+#svdebug      shutil.rmtree(srcdir, ignore_errors=True)
          
     # Verify the new installation
     try:
