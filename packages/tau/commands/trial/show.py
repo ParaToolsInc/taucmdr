@@ -54,7 +54,7 @@ from model.trial import Trial
 
 LOGGER = logger.getLogger(__name__)
 
-SHORT_DESCRIPTION = "List experiment trials."
+SHORT_DESCRIPTION = "Display trial data in analysis tool."
 
 COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
 
@@ -70,13 +70,7 @@ HELP = """
 _arguments = [(('numbers',), {'help': "If given, show details for trial with this number",
                               'metavar': 'trial_number', 
                               'nargs': '*',
-                              'default': args.SUPPRESS}),
-              (('-l','--long'), {'help': "Display all information about the trial",
-                                 'action': 'store_true',
-                                 'default': False}),
-              (('-s','--short'), {'help': "Summarize trial information",
-                                 'action': 'store_true',
-                                 'default': False})]
+                              'default': args.SUPPRESS})]
 PARSER = args.getParser(_arguments,
                         prog=COMMAND, 
                         usage=USAGE, 
@@ -103,69 +97,12 @@ def main(argv):
     LOGGER.info("No experiment configured. See `tau project select`\n")
     return tau.EXIT_FAILURE
   
-  long = args.long
-  short = args.short
-  if long and short:
-    PARSER.error("Please specify either '--long' or '--short', not both")
-  
   try:
     numbers = [int(n) for n in args.numbers]
   except AttributeError:
-    found = Trial.search({'experiment': selection.eid})
+    numbers = None
   except ValueError:
     PARSER.error("Invalid trial number")
-  else:
-    found = []
-    for num in numbers:
-      t = Trial.search({'number': num})
-      if t:
-        found.extend(t)
-      else:
-        PARSER.error("No trial number %d in the current experiment" % num)
 
-  LOGGER.info('{:=<{}}'.format('== %s Trials ==' % selection.name(), logger.LINE_WIDTH) + '\n')
-  if not found:
-    LOGGER.info("No trials. Use 'tau <command>' or 'tau trial create <command>' to create a new trial\n")
-    return tau.EXIT_FAILURE
-  
-  table = Texttable(logger.LINE_WIDTH)
-  cols = [('Number', 'c', 'number'),
-          ('Data Size', 'c', 'data_size'), 
-          ('Command', 'l', 'command'), 
-          ('In Directory', 'l', 'cwd'),
-          ('Began at', 'c', 'begin_time'),
-          ('Ended at', 'c', 'end_time'),
-          ('Return Code', 'c', 'return_code')]
-  headers = [header for header, _, _ in cols]
-  rows = [headers]
-  if long:
-    parts = []
-    for t in found:
-      parts.append(pformat(t.data))
-    listing = '\n'.join(parts)
-  elif short:
-    parts = []
-    trials_by_cmd = {}
-    for trial in found:
-      trials_by_cmd.setdefault(trial['command'], []).append(trial)
-    for key, val in trials_by_cmd.iteritems():
-      count = len(val)
-      data_size = util.humanReadableSize(sum([trial['data_size'] for trial in val]))
-      if count == 1:
-        msg = "  1 trial of '%s' (%s)." % (os.path.basename(key), data_size)
-      else:
-        msg = "  %d trials of '%s' (%s)." % (len(val), os.path.basename(key), data_size)
-      parts.append(msg + '  Use `tau trial list` to see details.')
-    listing = '\n'.join(parts) 
-  else:
-    for t in found:
-      row = [t.get(attr, '') for _, _, attr in cols if attr]
-      row[1] = util.humanReadableSize(row[1])
-      rows.append(row)
-    table.set_cols_align([align for _, align, _ in cols])
-    table.add_rows(rows)
-    listing = table.draw()
-    
-  LOGGER.info('\n'.join([listing, '']))
-  return tau.EXIT_SUCCESS
+  return selection.show(numbers)
 

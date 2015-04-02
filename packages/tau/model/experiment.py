@@ -41,7 +41,6 @@ import sys
 import glob
 import shutil
 
-
 # TAU modules
 import logger
 import settings
@@ -269,4 +268,30 @@ class Experiment(controller.Controller):
       cmd = [application_cmd]
     cmd += application_args
     
-    return Trial.performTrial(self, cmd, path, env)
+    return Trial.perform(self, cmd, path, env)
+  
+  def show(self, trial_numbers=None):
+    """
+    Show all trials or only trials with given numbers
+    """
+    self.configure()
+    if trial_numbers:
+      trials = []
+      for n in trial_numbers:
+        t = Trial.one({'experiment': self.eid, 'number': n})
+        if not t:
+          raise error.ConfigurationError("No trial number %d in experiment %s" % (n, self.name()))
+        trials.append(t)
+    else:
+      trials = self.populate('trials')
+      
+    opts, env = environment.base()
+    self.tau.applyRuntimeConfig(opts, env)
+
+    for trial in trials:
+      prefix = trial.prefix()
+      profiles = glob.glob(os.path.join(prefix, 'profile.*.*.*'))
+      if not profiles:
+        profiles = glob.glob(os.path.join(prefix, 'MULTI__*'))
+      if profiles:
+        self.tau.showProfile(prefix)

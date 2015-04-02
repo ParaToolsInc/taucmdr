@@ -45,6 +45,7 @@ import errno
 import logger
 import util
 import error
+import environment
 
 
 LOGGER = logger.getLogger(__name__)
@@ -111,7 +112,6 @@ COMMANDS = [
     'tau_user_setup.sh',
     'trace2profile'
 ]
-
 
 
 def _parseConfig(config, commandline_opts, environment_vars):
@@ -260,109 +260,107 @@ class Tau(object):
         return self.verify()
       except error.ConfigurationError, err:
         LOGGER.debug(err)
-    
-    # Control build output
     LOGGER.info('Starting TAU installation')
-    with logger.logging_streams():
-      # Download, unpack, or copy TAU source code
-      dst = os.path.join(self.src_prefix, os.path.basename(self.src))
-      src = os.path.join(self.tau_prefix, 'src')
-      LOGGER.debug("Checking for TAU source at '%s'" % src)
-      if os.path.exists(src):
-        LOGGER.debug("Found source at '%s'" % src)
-        srcdir = src
-      else:
-        LOGGER.debug("Source not found, aquiring from '%s'" % self.src)
-        try:
-          util.download(self.src, dst)
-          srcdir = util.extract(dst, self.src_prefix)
-        except IOError:
-          raise error.ConfigurationError("Cannot acquire source file '%s'" % self.src,
-                                         "Check that the file or directory is accessable")
-        finally:
-          try: os.remove(dst)
-          except: pass
-
-      # TAU's configure script has a goofy way of specifying the fortran compiler
-      if self.fc:
-        if self.fc['family'] != 'MPI':
-           family_map = {'GNU': 'gfortran', 
-                         'Intel': 'intel'}
-           fc_family = self.fc['family']
-           try:
-             fortran_flag = '-fortran=%s' % family_map[fc_family]
-           except KeyError:
-             raise InternalError("Unknown compiler family for Fortran: '%s'" % fc_family)
-        else:
-          # TODO:  Recognize family from MPI compiler
-          raise InternalError("Unknown compiler family for Fortran: '%s'" % fc_family)
-      else:
-        fortran_flag = ''
-        
-      # Check PDT
-      if bool(self.config['source_inst']) != bool(self.pdt):
-        raise error.InternalError("pdt=%s but config['source_inst']=%s" % (self.pdt, self.config['source_inst']))
-
-      # Check BFD
-      if (self.config['sample'] or self.config['compiler_inst'] != 'never') and (not self.bfd):
-        LOGGER.warning("BFD is recommended when using sampling or compiler-based instrumentation")
-
-      # Check libunwind
-      if (bool(self.config['sample']) or bool(self.config['openmp_support'])) != bool(self.libunwind):
-        LOGGER.warning("libunwind is recommended when using sampling or OpenMP")
-
-      # Gather TAU configuration flags
-      base_flags = ['-prefix=%s' % self.tau_prefix, 
-                    '-arch=%s' % self.arch, 
-                    '-cc=%s' % self.cc['command'] if self.cc else '', 
-                    '-c++=%s' % self.cxx['command'] if self.cxx else '', 
-                    fortran_flag,
-                    '-pdt=%s' % self.pdt.pdt_prefix if self.pdt else '',
-                    '-bfd=%s' % self.bfd.bfd_prefix if self.bfd else '',
-                    '-unwind=%s' % self.libunwind.libunwind_prefix if self.libunwind else '']
-      if self.config['mpi_support']:
-        mpi_flags = ['-mpi'
-                     # TODO: -mpiinc, -mpilib, -mpilibrary
-                     ]
-      else:
-        mpi_flags = []
-      if self.config['openmp_support']:
-        openmp_flags = ['-openmp']
-        measurements = self.config['openmp_measurements'] 
-        if measurements == 'ompt':
-          if self.cc['family'] == 'Intel':
-            openmp_flags.append('-ompt')
-          else:
-            raise error.ConfigurationError('OMPT for OpenMP measurement only works with Intel compilers')
-        elif measurements == 'opari':
-          openmp_flags.append('-opari')
-      else:
-        openmp_flags = []
-      if self.config['pthreads_support']:
-        pthreads_flags = ['-pthread']
-      else:
-        pthreads_flags = []
-
-      # Execute configure
-      cmd = ['./configure'] + base_flags + mpi_flags + openmp_flags + pthreads_flags
-      LOGGER.info("Configuring TAU...")
-      if util.createSubprocess(cmd, cwd=srcdir):
-        raise error.ConfigurationError('TAU configure failed')
     
-      # Execute make
-      cmd = ['make', '-j4', 'install']
-      LOGGER.info('Compiling TAU...')
-      if util.createSubprocess(cmd, cwd=srcdir):
-          raise error.ConfigurationError('TAU compilation failed.')
-  
-      # Leave source, we'll probably need it again soon
-      # Create a link to the source for reuse
-      LOGGER.debug('Preserving %r for future use' % srcdir)
+    # Download, unpack, or copy TAU source code
+    dst = os.path.join(self.src_prefix, os.path.basename(self.src))
+    src = os.path.join(self.tau_prefix, 'src')
+    LOGGER.debug("Checking for TAU source at '%s'" % src)
+    if os.path.exists(src):
+      LOGGER.debug("Found source at '%s'" % src)
+      srcdir = src
+    else:
+      LOGGER.debug("Source not found, aquiring from '%s'" % self.src)
       try:
-        os.symlink(srcdir, src)
-      except OSError as err:
-        if not (err.errno == errno.EEXIST and os.path.islink(src)):
-          LOGGER.warning("Can't create symlink '%s'. TAU source code won't be reused across configurations." % src)
+        util.download(self.src, dst)
+        srcdir = util.extract(dst, self.src_prefix)
+      except IOError:
+        raise error.ConfigurationError("Cannot acquire source file '%s'" % self.src,
+                                       "Check that the file or directory is accessable")
+      finally:
+        try: os.remove(dst)
+        except: pass
+
+    # TAU's configure script has a goofy way of specifying the fortran compiler
+    if self.fc:
+      if self.fc['family'] != 'MPI':
+         family_map = {'GNU': 'gfortran', 
+                       'Intel': 'intel'}
+         fc_family = self.fc['family']
+         try:
+           fortran_flag = '-fortran=%s' % family_map[fc_family]
+         except KeyError:
+           raise InternalError("Unknown compiler family for Fortran: '%s'" % fc_family)
+      else:
+        # TODO:  Recognize family from MPI compiler
+        raise InternalError("Unknown compiler family for Fortran: '%s'" % fc_family)
+    else:
+      fortran_flag = ''
+      
+    # Check PDT
+    if bool(self.config['source_inst']) != bool(self.pdt):
+      raise error.InternalError("pdt=%s but config['source_inst']=%s" % (self.pdt, self.config['source_inst']))
+
+    # Check BFD
+    if (self.config['sample'] or self.config['compiler_inst'] != 'never') and (not self.bfd):
+      LOGGER.warning("BFD is recommended when using sampling or compiler-based instrumentation")
+
+    # Check libunwind
+    if (bool(self.config['sample']) or bool(self.config['openmp_support'])) != bool(self.libunwind):
+      LOGGER.warning("libunwind is recommended when using sampling or OpenMP")
+
+    # Gather TAU configuration flags
+    base_flags = ['-prefix=%s' % self.tau_prefix, 
+                  '-arch=%s' % self.arch, 
+                  '-cc=%s' % self.cc['command'] if self.cc else '', 
+                  '-c++=%s' % self.cxx['command'] if self.cxx else '', 
+                  fortran_flag,
+                  '-pdt=%s' % self.pdt.pdt_prefix if self.pdt else '',
+                  '-bfd=%s' % self.bfd.bfd_prefix if self.bfd else '',
+                  '-unwind=%s' % self.libunwind.libunwind_prefix if self.libunwind else '']
+    if self.config['mpi_support']:
+      mpi_flags = ['-mpi'
+                   # TODO: -mpiinc, -mpilib, -mpilibrary
+                   ]
+    else:
+      mpi_flags = []
+    if self.config['openmp_support']:
+      openmp_flags = ['-openmp']
+      measurements = self.config['openmp_measurements'] 
+      if measurements == 'ompt':
+        if self.cc['family'] == 'Intel':
+          openmp_flags.append('-ompt')
+        else:
+          raise error.ConfigurationError('OMPT for OpenMP measurement only works with Intel compilers')
+      elif measurements == 'opari':
+        openmp_flags.append('-opari')
+    else:
+      openmp_flags = []
+    if self.config['pthreads_support']:
+      pthreads_flags = ['-pthread']
+    else:
+      pthreads_flags = []
+
+    # Execute configure
+    cmd = ['./configure'] + base_flags + mpi_flags + openmp_flags + pthreads_flags
+    LOGGER.info("Configuring TAU...")
+    if util.createSubprocess(cmd, cwd=srcdir):
+      raise error.ConfigurationError('TAU configure failed')
+  
+    # Execute make
+    cmd = ['make', '-j4', 'install']
+    LOGGER.info('Compiling TAU...')
+    if util.createSubprocess(cmd, cwd=srcdir):
+        raise error.ConfigurationError('TAU compilation failed.')
+
+    # Leave source, we'll probably need it again soon
+    # Create a link to the source for reuse
+    LOGGER.debug('Preserving %r for future use' % srcdir)
+    try:
+      os.symlink(srcdir, src)
+    except OSError as err:
+      if not (err.errno == errno.EEXIST and os.path.islink(src)):
+        LOGGER.warning("Can't create symlink '%s'. TAU source code won't be reused across configurations." % src)
       
     # Verify the new installation and return
     LOGGER.info('TAU installation complete')
@@ -425,4 +423,23 @@ class Tau(object):
     opts.extend(tauOpts)
     env.update(tauEnv)
     env['PATH'] = os.pathsep.join([self.bin_path, env.get('PATH')])
-    
+  
+  def showProfile(self, path):
+    """
+    Shows profile data in the specified file or folder
+    """
+    _, env = environment.base()
+    env['PATH'] = os.pathsep.join([self.bin_path, env.get('PATH')])
+    for viewer in 'paraprof', 'pprof':
+      if os.path.isfile(path):
+        cmd = [viewer, path]
+      else:
+        cmd = [viewer]
+      LOGGER.info("Opening %s in %s" % (path, viewer))
+      retval = util.createSubprocess(cmd, cwd=path, env=env)
+      if retval != 0:
+        LOGGER.warning("%s failed")
+    if retval != 0:
+      raise error.ConfigurationError("All viewers failed to open '%s'" % path,
+                                     "Check that `java` is working, X11 is working,"
+                                     " network connectivity, and file permissions")
