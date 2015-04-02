@@ -51,9 +51,8 @@ import environment
 
 LOGGER = logger.getLogger(__name__)
 
-DEFAULT_SOURCE = {None: 'http://tau.uoregon.edu/libunwind.tgz',
-                  # Why isn't this called libunwind-x86_64.tgz ?? "lite" tells me nothing
-                  'x86_64': 'http://tau.uoregon.edu/libunwind_lite.tgz'}
+DEFAULT_SOURCE = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-1.1.tar.gz',
+                  'x86_64': 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-1.1.tar.gz'}
 
 COMMANDS = [
     "test"
