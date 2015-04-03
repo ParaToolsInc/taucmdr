@@ -50,6 +50,7 @@ import util
 import environment
 import cf.tau
 import cf.pdt
+import cf.bfd
 from model.project import Project
 from model.target import Target
 from model.compiler import Compiler
@@ -165,16 +166,20 @@ class Experiment(controller.Controller):
     # Configure/build/install PDT if needed
     if not measurement['source_inst']:
       self.pdt = None
+      self.bfd = None
     else:
       pdt = cf.pdt.Pdt(prefix, cxx, target['pdt_source'], target['host_arch'])
       pdt.install()
       self.pdt = pdt
+      bfd = cf.bfd.Bfd(prefix, cxx, target['pdt_source'], target['host_arch'])
+      bfd.install()
+      self.bfd= bfd
 
     # Configure/build/install TAU if needed
     tau = cf.tau.Tau(prefix, cc, cxx, fc, target['tau_source'], target['host_arch'],
                      verbose=verbose,
                      pdt=pdt,
-                     bfd=None, # TODO
+                     bfd=bfd, 
                      libunwind=None, # TODO
                      profile=measurement['profile'],
                      trace=measurement['trace'],
