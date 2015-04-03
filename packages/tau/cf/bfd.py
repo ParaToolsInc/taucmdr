@@ -133,8 +133,8 @@ class Bfd(object):
       compiler_flag = ''
     else:
       family_flags = {'system': '',
-                      'GNU': '-GNU',
-                      'Intel': 'CC=icc' 
+                      'GNU': ['-GNU'],
+                      'Intel': ['CC=icc','CXX=icpc'] 
                      }
 #                      'PGI': '-pgCC'}
       try:
@@ -144,13 +144,9 @@ class Bfd(object):
 
     try:
       # Configure
-      compiler_flags=' '
-      for x in compiler_flag: 
-        compiler_flags= compiler_flags + x + ' ' 
-      LOGGER.info("compiler_flags = " + compiler_flags)
       prefix_flag = '-prefix=%s' % self.bfd_prefix
-      #cmd = ['./configure', prefix_flag, compiler_flags]
-      cmd = ['./configure', prefix_flag, compiler_flag]
+      LOGGER.info("compiler_flag is " , compiler_flag[1:-1])
+      cmd = ['./configure', prefix_flag, compiler_flag[1:-1]]
       LOGGER.info("Configuring BFD...")
       if util.createSubprocess(cmd, cwd=srcdir, stdout=False):
         raise error.SoftwarePackageError('BFD configure failed')
