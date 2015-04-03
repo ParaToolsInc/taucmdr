@@ -41,6 +41,7 @@ import sys
 import re
 import subprocess
 import errno
+import shutil
 import urllib
 import tarfile
 import pprint
@@ -99,10 +100,12 @@ def download(src, dest):
   Downloads or copies 'dest' to 'src'
   """
   if src.startswith('file://'):
-    try:
-      shutil.copy(src, dst)
-    except:
-      raise IOError("Failed to download '%s'" % src)
+    src = src[6:]
+  if os.path.isfile(src):
+    LOGGER.debug("Copying '%s' to '%s'" % (src, dest))
+    mkdirp(os.path.dirname(dest))
+    shutil.copy(src, dest)
+    return 0
   else:
     LOGGER.debug("Downloading '%s' to '%s'" % (src, dest))
     LOGGER.info("Downloading '%s'" % src)
@@ -125,8 +128,8 @@ def download(src, dest):
       sys.stdout.write("% 3.1f%% of %d bytes\r" % (min(100, float(count * blockSize) / totalSize * 100), totalSize))
     try:
       urllib.urlretrieve(src, dest, reporthook=_dlProgress)
-    except:
-      LOGGER.warning("urllib failed to download '%s'" % src)
+    except Exception as err:
+      LOGGER.warning("urllib failed to download '%s': %s" % (src, err))
       raise IOError("Failed to download '%s'" % src)
 
     

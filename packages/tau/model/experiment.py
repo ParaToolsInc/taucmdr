@@ -171,9 +171,9 @@ class Experiment(controller.Controller):
       pdt = cf.pdt.Pdt(prefix, cxx, target['pdt_source'], target['host_arch'])
       pdt.install()
       self.pdt = pdt
-      bfd = cf.bfd.Bfd(prefix, cxx, target['pdt_source'], target['host_arch'])
+      bfd = cf.bfd.Bfd(prefix, cxx, target['bfd_source'], target['host_arch'])
       bfd.install()
-      self.bfd= bfd
+      self.bfd = bfd
 
     # Configure/build/install TAU if needed
     tau = cf.tau.Tau(prefix, cc, cxx, fc, target['tau_source'], target['host_arch'],
