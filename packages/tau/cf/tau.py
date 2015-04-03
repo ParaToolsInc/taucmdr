@@ -169,16 +169,18 @@ class Tau(object):
     self.pdt = pdt
     self.bfd = bfd
     self.libunwind = libunwind
-    compiler_prefix = '.'.join([str(c.eid) for c in cc, cxx, fc if c])
+    if os.path.isdir(src):
+      self.tau_prefix = src
+    else:
+      compiler_prefix = '.'.join([str(c.eid) for c in cc, cxx, fc if c])
+      self.tau_prefix = os.path.join(prefix, 'tau', compiler_prefix)
     self.src_prefix = os.path.join(prefix, 'src')
-    self.tau_prefix = os.path.join(prefix, 'tau', compiler_prefix)
     self.include_path = os.path.join(self.tau_prefix, 'include')
     self.arch_path = os.path.join(self.tau_prefix, arch)
     self.bin_path = os.path.join(self.arch_path, 'bin')
     self.lib_path = os.path.join(self.arch_path, 'lib')
-    self.taudb_prefix = os.path.join(os.path.expanduser('~'), '.ParaProf')
     self.config = config
-    self.config['halt_build_on_error'] = False
+    self.config['halt_build_on_error'] = False  # This feels hacky
 
   def getTags(self):
     """
