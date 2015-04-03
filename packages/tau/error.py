@@ -128,7 +128,7 @@ Please check the selected configuration for errors or email '%(logfile)s' to  %(
 """
 
   def __init__(self, value, hint="Try `tau --help`"):
-    super(ConfigurationError, self).__init__(value, hint)
+    super(SoftwarePackageError, self).__init__(value, hint)
 
 
 def excepthook(etype, e, tb):
