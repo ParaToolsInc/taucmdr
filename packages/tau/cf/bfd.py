@@ -145,8 +145,8 @@ class Bfd(object):
     try:
       # Configure
       prefix_flag = '-prefix=%s' % self.bfd_prefix
-      LOGGER.info("compiler_flag is " , compiler_flag[1:-1])
-      cmd = ['./configure', prefix_flag, compiler_flag[1:-1]]
+      LOGGER.info("compiler_flag is " , str(compiler_flag)[1:-1])
+      cmd = ['./configure', prefix_flag, str(compiler_flag)[1:-1]]
       LOGGER.info("Configuring BFD...")
       if util.createSubprocess(cmd, cwd=srcdir, stdout=False):
         raise error.SoftwarePackageError('BFD configure failed')
