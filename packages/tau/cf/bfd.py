@@ -66,16 +66,19 @@ class Bfd(object):
   def __init__(self, prefix, cxx, src, arch):
     if src.lower() == 'download':
       try:
-        src = DEFAULT_SOURCE[arch]
+        self.src = DEFAULT_SOURCE[arch]
       except KeyError:
-        src = DEFAULT_SOURCE[None]
+        self.src = DEFAULT_SOURCE[None]
     self.prefix = prefix
     self.cxx = cxx
     self.src = src
     self.arch = arch
-    compiler_prefix = str(cxx.eid) if cxx else 'unknown'
+    if os.path.isdir(src):
+      self.pdt_prefix = src
+    else:
+      compiler_prefix = str(cxx.eid) if cxx else 'unknown'
+      self.bfd_prefix = os.path.join(prefix, 'bfd', compiler_prefix)
     self.src_prefix = os.path.join(prefix, 'src')
-    self.bfd_prefix = os.path.join(prefix, 'bfd', compiler_prefix)
     self.include_path = os.path.join(self.bfd_prefix, 'include')
     self.arch_path = os.path.join(self.bfd_prefix, arch)
     self.bin_path = os.path.join(self.arch_path, 'bin')
@@ -87,12 +90,18 @@ class Bfd(object):
     directory named `arch` containing  `lib` directories or 
     raises a ConfigurationError describing why that installation is broken.
     """
-    LOGGER.debug("Checking BFD installation at '%s' targeting arch '%s'" % (self.bfd_prefix, self.arch))    
+    LOGGER.debug("Checking BFD installation at '%s' targeting arch '%s'" % (self.pdt_prefix, self.arch))    
     if not os.path.exists(self.bfd_prefix):
       raise error.ConfigurationError("'%s' does not exist" % self.bfd_prefix)
   
     # Check for all commands
-    for cmd in COMMANDS:
+    try:
+      commands = COMMANDS[self.arch]
+      LOGGER.debug("Checking %s BFD commands")
+    except KeyError:
+      commands = COMMANDS[None]
+      LOGGER.debug("Checking default BFD commands")
+    for cmd in commands:
       path = os.path.join(self.bin_path, cmd)
       if not os.path.exists(path):
         raise error.ConfigurationError("'%s' is missing" % path)
@@ -122,8 +131,8 @@ class Bfd(object):
     try:
       util.download(self.src, dst)
       srcdir = util.extract(dst, self.src_prefix)
-    except IOError:
-      raise error.ConfigurationError("Cannot acquire source file '%s'" % self.src,
+    except IOError as err:
+      raise error.ConfigurationError("Cannot acquire source file '%s': %s" % (self.src, err),
                                      "Check that the file is accessable")
     finally:
       try: os.remove(dst)
