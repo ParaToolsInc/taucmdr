@@ -174,13 +174,16 @@ class Experiment(controller.Controller):
       bfd = cf.bfd.Bfd(prefix, cxx, target['bfd_source'], target['host_arch'])
       bfd.install()
       self.bfd = bfd
+      libunwind = cf.libunwind.Libunwind(prefix, cxx, target['bfd_source'], target['host_arch'])
+      libwunind.install()
+      self.libunwind = libunwind
 
     # Configure/build/install TAU if needed
     tau = cf.tau.Tau(prefix, cc, cxx, fc, target['tau_source'], target['host_arch'],
                      verbose=verbose,
                      pdt=pdt,
                      bfd=bfd, 
-                     libunwind=None, # TODO
+                     libunwind=libunwind, 
                      profile=measurement['profile'],
                      trace=measurement['trace'],
                      sample=measurement['sample'],
