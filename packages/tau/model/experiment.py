@@ -231,6 +231,7 @@ class Experiment(controller.Controller):
     opts, env = environment.base()
     if measurement['source_inst']:
       self.pdt.applyCompiletimeConfig(opts, env)
+      self.bfd.applyCompiletimeConfig(opts, env)
     self.tau.applyCompiletimeConfig(opts, env)
 
     use_wrapper = measurement['source_inst'] or measurement['comp_inst']
