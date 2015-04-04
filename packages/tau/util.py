@@ -97,7 +97,7 @@ def which(program):
 
 def download(src, dest):
   """
-  Downloads or copies 'dest' to 'src'
+  Downloads or copies 'src' to 'dest'
   """
   if src.startswith('file://'):
     src = src[6:]
