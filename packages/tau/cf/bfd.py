@@ -74,7 +74,7 @@ class Bfd(object):
     self.src = src
     self.arch = arch
     if os.path.isdir(src):
-      self.pdt_prefix = src
+      self.bfd_prefix = src
     else:
       compiler_prefix = str(cxx.eid) if cxx else 'unknown'
       self.bfd_prefix = os.path.join(prefix, 'bfd', compiler_prefix)
@@ -90,7 +90,7 @@ class Bfd(object):
     directory named `arch` containing  `lib` directories or 
     raises a ConfigurationError describing why that installation is broken.
     """
-    LOGGER.debug("Checking BFD installation at '%s' targeting arch '%s'" % (self.pdt_prefix, self.arch))    
+    LOGGER.debug("Checking BFD installation at '%s' targeting arch '%s'" % (self.bfd_prefix, self.arch))    
     if not os.path.exists(self.bfd_prefix):
       raise error.ConfigurationError("'%s' does not exist" % self.bfd_prefix)
   
