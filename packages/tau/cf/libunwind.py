@@ -51,17 +51,17 @@ import environment
 
 LOGGER = logger.getLogger(__name__)
 
-DEFAULT_SOURCE = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-1.1.tar.gz',
-                  'x86_64': 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-1.1.tar.gz'}
+DEFAULT_SOURCE = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/binutils-2.23.2.tar.gz',
+                  'x86_64': 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/binutils-2.23.2.tar.gz'}
 
 COMMANDS = [
-    "test"
+    'libbfd.a',
 ]
 
 
-class Libunwind(object):
+class Bfd(object):
   """
-  Encapsulates a libunwind installation
+  Encapsulates a BFD installation
   """
   def __init__(self, prefix, cxx, src, arch):
     if src.lower() == 'download':
@@ -75,39 +75,39 @@ class Libunwind(object):
     self.arch = arch
     compiler_prefix = str(cxx.eid) if cxx else 'unknown'
     self.src_prefix = os.path.join(prefix, 'src')
-    self.libunwind_prefix = os.path.join(prefix, 'libunwind', compiler_prefix)
-    self.include_path = os.path.join(self.libunwind_prefix, 'include')
-    self.arch_path = os.path.join(self.libunwind_prefix, arch)
+    self.bfd_prefix = os.path.join(prefix, 'bfd', compiler_prefix)
+    self.include_path = os.path.join(self.bfd_prefix, 'include')
+    self.arch_path = os.path.join(self.bfd_prefix, arch)
     self.bin_path = os.path.join(self.arch_path, 'bin')
     self.lib_path = os.path.join(self.arch_path, 'lib')
 
   def verify(self):
     """
-    Returns true if if there is a working libunwind installation at `prefix` with a
-    directory named `arch` containing `bin` and `lib` directories or 
+    Returns true if if there is a working BFD installation at `prefix` with a
+    directory named `arch` containing  `lib` directories or 
     raises a ConfigurationError describing why that installation is broken.
     """
-    LOGGER.debug("Checking libunwind installation at '%s' targeting arch '%s'" % (self.libunwind_prefix, self.arch))    
-    if not os.path.exists(self.libunwind_prefix):
-      raise error.ConfigurationError("'%s' does not exist" % self.libunwind_prefix)
+    LOGGER.debug("Checking BFD installation at '%s' targeting arch '%s'" % (self.bfd_prefix, self.arch))    
+    if not os.path.exists(self.bfd_prefix):
+      raise error.ConfigurationError("'%s' does not exist" % self.bfd_prefix)
   
     # Check for all commands
     for cmd in COMMANDS:
       path = os.path.join(self.bin_path, cmd)
       if not os.path.exists(path):
         raise error.ConfigurationError("'%s' is missing" % path)
-      if not os.access(path, os.X_OK):
-        raise error.ConfigurationError("'%s' exists but is not executable" % path)
+#      if not os.access(path, os.X_OK):
+#        raise error.ConfigurationError("'%s' exists but is not executable" % path)
     
-    LOGGER.debug("libunwind installation at '%s' is valid" % self.libunwind_prefix)
+    LOGGER.debug("BFD installation at '%s' is valid" % self.bfd_prefix)
     return True
 
   def install(self, force_reinstall=False):
     """
     TODO: Docs
     """
-    LOGGER.debug("Initializing libunwind at '%s' from '%s' with arch=%s" % 
-                 (self.libunwind_prefix, self.src, self.arch))
+    LOGGER.debug("Initializing BFD at '%s' from '%s' with arch=%s" % 
+                 (self.bfd_prefix, self.src, self.arch))
     
     # Check if the installation is already initialized
     if not force_reinstall:
@@ -115,64 +115,70 @@ class Libunwind(object):
         return self.verify()
       except error.ConfigurationError, err:
         LOGGER.debug(err)
-    
-    # Control build output
-    LOGGER.info('Starting libunwind installation')
-    with logger.logging_streams():
-      # Download, unpack, or copy libunwind source code
-      dst = os.path.join(self.src_prefix, os.path.basename(self.src))
+    LOGGER.info('Starting BFD installation')
+
+    # Download, unpack, or copy BFD source code
+    dst = os.path.join(self.src_prefix, os.path.basename(self.src))
+    try:
+      util.download(self.src, dst)
+      srcdir = util.extract(dst, self.src_prefix)
+    except IOError:
+      raise error.ConfigurationError("Cannot acquire source file '%s'" % self.src,
+                                     "Check that the file is accessable")
+    finally:
+      try: os.remove(dst)
+      except: pass
+
+    if not self.cxx:
+      compiler_flag = ''
+    else:
+      family_flags = {'system': '',
+                      'GNU': ['-GNU'],
+                      'Intel': ['CC=icc','CXX=icpc'] 
+                     }
+#                      'PGI': '-pgCC'}
       try:
-        util.download(self.src, dst)
-        srcdir = util.extract(dst, self.src_prefix)
-      except IOError:
-        raise error.ConfigurationError("Cannot acquire source file '%s'" % self.src,
-                                       "Check that the file is accessable")
-      finally:
-        try: os.remove(dst)
-        except: pass
+        compiler_flag = family_flags[self.cxx['family']]
+      except KeyError:
+        LOGGER.warning("BFD has no compiler flag for '%s'.  Using defaults." % self.cxx['family'])
 
-      if not self.cxx:
-        compiler_flag = ''
-      else:
-        family_flags = {'system': '',
-                        'GNU': '-GNU',
-                        'Intel': '-icpc',
-                        'PGI': '-pgCC'}
-        try:
-          compiler_flag = family_flags[self.cxx['family']]
-        except KeyError:
-          LOGGER.warning("libunwind has no compiler flag for '%s'.  Using defaults." % self.cxx['family'])
+    try:
+      # Configure
+      prefix_flag = '-prefix=%s' % self.bfd_prefix
+      cmd = ['./configure', prefix_flag] + compiler_flag
+      LOGGER.info("Configuring BFD...")
+      if util.createSubprocess(cmd, cwd=srcdir, stdout=False):
+        raise error.SoftwarePackageError('BFD configure failed')
 
-      try:
-        # Configure
-        prefix_flag = '-prefix=%s' % self.libunwind_prefix
-        cmd = ['./configure', prefix_flag, compiler_flag]
-        LOGGER.info("Configuring libunwind...")
-        if util.createSubprocess(cmd, cwd=srcdir):
-          raise error.SoftwarePackageError('libunwind configure failed')
-  
-        # Build
-        cmd = ['make', '-j4']
-        LOGGER.info("Compiling libunwind...")
-        if util.createSubprocess(cmd, cwd=srcdir):
-          raise error.SoftwarePackageError('libunwind compilation failed.')
+      # Build
+      cmd = ['make', '-j4']
+      LOGGER.info("Compiling BFD...")
+      if util.createSubprocess(cmd, cwd=srcdir, stdout=False):
+        raise error.SoftwarePackageError('BFD compilation failed.')
 
-        # Install
-        cmd = ['make', 'install']
-        LOGGER.info("Installing libunwind...")
-        if util.createSubprocess(cmd, cwd=srcdir):
-          raise error.SoftwarePackageError('libunwind installation failed.')
-      except:
-        LOGGER.info("libunwind installation failed, cleaning up")
-        shutil.rmtree(self.libunwind_prefix, ignore_errors=True)
-      finally:
-        # Always clean up libunwind source
-        LOGGER.debug('Deleting %r' % srcdir)
-        shutil.rmtree(srcdir, ignore_errors=True)
+      # Install
+      cmd = ['make', 'install']
+      LOGGER.info("Installing BFD...")
+      if util.createSubprocess(cmd, cwd=srcdir, stdout=False):
+        raise error.SoftwarePackageError('BFD installation failed.')
+    except:
+      LOGGER.info("BFD installation failed, cleaning up")
+      shutil.rmtree(self.bfd_prefix, ignore_errors=True)
+    finally:
+      # Always clean up BFD source
+      LOGGER.debug('Deleting %r' % srcdir)
+#svdebug      shutil.rmtree(srcdir, ignore_errors=True)
          
-    # Verify the new installation and return
-    LOGGER.info('libunwind installation complete')
-    return self.verify()
+    # Verify the new installation
+    try:
+      retval = self.verify()
+      LOGGER.info('BFD installation complete')
+    except:
+      # Installation failed, clean up any failed install files
+      shutil.rmtree(self.bfd_prefix, ignore_errors=True)
+      raise error.SoftwarePackageError('BFD installation failed.')
+    else:
+      return retval
 
   def applyCompiletimeConfig(self, opts, env):
     """
