@@ -54,7 +54,7 @@ LOGGER = logger.getLogger(__name__)
 DEFAULT_SOURCE = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/binutils-2.23.2.tar.gz',
                   'x86_64': 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/binutils-2.23.2.tar.gz'}
 
-COMMANDS = [
+LIBS= [
     'libbfd.a',
 ]
 
@@ -94,14 +94,14 @@ class Bfd(object):
     if not os.path.exists(self.bfd_prefix):
       raise error.ConfigurationError("'%s' does not exist" % self.bfd_prefix)
   
-    # Check for all commands
+    # Check for all libraries
     try:
-      commands = COMMANDS[self.arch]
-      LOGGER.debug("Checking %s BFD commands")
+      libraries = LIBS[self.arch]
+      LOGGER.debug("Checking %s BFD libraries")
     except KeyError:
-      commands = COMMANDS[None]
-      LOGGER.debug("Checking default BFD commands")
-    for cmd in commands:
+      libraries = LIBS[None]
+      LOGGER.debug("Checking default BFD libraries")
+    for cmd in libraries:
       path = os.path.join(self.bin_path, cmd)
       if not os.path.exists(path):
         raise error.ConfigurationError("'%s' is missing" % path)
