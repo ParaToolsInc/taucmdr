@@ -51,6 +51,7 @@ import environment
 import cf.tau
 import cf.pdt
 import cf.bfd
+import cf.libundwind
 from model.project import Project
 from model.target import Target
 from model.compiler import Compiler
@@ -167,6 +168,7 @@ class Experiment(controller.Controller):
     if not measurement['source_inst']:
       self.pdt = None
       self.bfd = None
+      self.libunwind= None
     else:
       pdt = cf.pdt.Pdt(prefix, cxx, target['pdt_source'], target['host_arch'])
       pdt.install()
@@ -174,7 +176,7 @@ class Experiment(controller.Controller):
       bfd = cf.bfd.Bfd(prefix, cxx, target['bfd_source'], target['host_arch'])
       bfd.install()
       self.bfd = bfd
-      libunwind = cf.libunwind.Libunwind(prefix, cxx, target['bfd_source'], target['host_arch'])
+      libunwind = cf.libunwind.Libunwind(prefix, cxx, target['libunwind_source'], target['host_arch'])
       libwunind.install()
       self.libunwind = libunwind
 
