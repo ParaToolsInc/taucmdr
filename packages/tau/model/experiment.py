@@ -51,7 +51,7 @@ import environment
 import cf.tau
 import cf.pdt
 import cf.bfd
-import cf.libundwind
+import cf.libunwind
 from model.project import Project
 from model.target import Target
 from model.compiler import Compiler
