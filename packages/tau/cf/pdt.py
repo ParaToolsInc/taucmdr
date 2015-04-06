@@ -107,6 +107,7 @@ class Pdt(object):
   Encapsulates a PDT installation
   """
   def __init__(self, prefix, cxx, src, arch):
+    self.src = src
     if src.lower() == 'download':
       try:
         self.src = DEFAULT_SOURCE[arch]
@@ -114,7 +115,6 @@ class Pdt(object):
         self.src = DEFAULT_SOURCE[None]
     self.prefix = prefix
     self.cxx = cxx
-    self.src = src
     self.arch = arch
     if os.path.isdir(src):
       self.pdt_prefix = src
