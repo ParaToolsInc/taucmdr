@@ -51,17 +51,14 @@ import environment
 
 LOGGER = logger.getLogger(__name__)
 
-DEFAULT_SOURCE = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-1.1.tar.gz',
-                  'x86_64': 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-1.1.tar.gz'}
+DEFAULT_SOURCE = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-1.1.tar.gz'}
 
-LIBS= [
-    'libunwind.a',
-]
+LIBS= {None: [ 'libunwind.a' ]}
 
 
 class Libunwind(object):
   """
-  Encapsulates a libunwind installation
+  Encapsulates a Libunwind installation
   """
   def __init__(self, prefix, cxx, src, arch):
     self.src = src
@@ -80,42 +77,40 @@ class Libunwind(object):
       self.libunwind_prefix = os.path.join(prefix, 'libunwind', compiler_prefix)
     self.src_prefix = os.path.join(prefix, 'src')
     self.include_path = os.path.join(self.libunwind_prefix, 'include')
-    self.arch_path = os.path.join(self.libunwind_prefix, arch)
-    self.bin_path = os.path.join(self.arch_path, 'bin')
-    self.lib_path = os.path.join(self.arch_path, 'lib')
+    self.bin_path = os.path.join(self.libunwind_prefix, 'bin')
+    self.lib_path = os.path.join(self.libunwind_prefix, 'lib')
 
   def verify(self):
     """
-    Returns true if if there is a working libunwind installation at `prefix` with a
+    Returns true if if there is a working Libunwind installation at `prefix` with a
     directory named `arch` containing  `lib` directories or 
     raises a ConfigurationError describing why that installation is broken.
     """
-    LOGGER.debug("Checking libunwind installation at '%s' targeting arch '%s'" % (self.libunwind_prefix, self.arch))    
+    LOGGER.debug("Checking Libunwind installation at '%s' targeting arch '%s'" % (self.libunwind_prefix, self.arch))    
     if not os.path.exists(self.libunwind_prefix):
       raise error.ConfigurationError("'%s' does not exist" % self.libunwind_prefix)
-  
     # Check for all libraries
     try:
       libraries = LIBS[self.arch]
-      LOGGER.debug("Checking %s libunwind libraries")
+      LOGGER.debug("Checking %s Libunwind libraries" % libraries)
     except KeyError:
       libraries = LIBS[None]
-      LOGGER.debug("Checking default libunwind libraries")
-    for cmd in libraries:
-      path = os.path.join(self.bin_path, cmd)
+      LOGGER.debug("Checking default Libunwind libraries")
+    for lib in libraries:
+      path = os.path.join(self.lib_path, lib)
       if not os.path.exists(path):
         raise error.ConfigurationError("'%s' is missing" % path)
 #      if not os.access(path, os.X_OK):
 #        raise error.ConfigurationError("'%s' exists but is not executable" % path)
     
-    LOGGER.debug("libunwind installation at '%s' is valid" % self.libunwind_prefix)
+    LOGGER.debug("Libunwind installation at '%s' is valid" % self.libunwind_prefix)
     return True
 
   def install(self, force_reinstall=False):
     """
     TODO: Docs
     """
-    LOGGER.debug("Initializing libunwind at '%s' from '%s' with arch=%s" % 
+    LOGGER.debug("Initializing Libunwind at '%s' from '%s' with arch=%s" % 
                  (self.libunwind_prefix, self.src, self.arch))
     
     # Check if the installation is already initialized
@@ -124,9 +119,9 @@ class Libunwind(object):
         return self.verify()
       except error.ConfigurationError, err:
         LOGGER.debug(err)
-    LOGGER.info('Starting libunwind installation')
+    LOGGER.info('Starting Libunwind installation')
 
-    # Download, unpack, or copy libunwind source code
+    # Download, unpack, or copy Libunwind source code
     dst = os.path.join(self.src_prefix, os.path.basename(self.src))
     try:
       util.download(self.src, dst)
@@ -149,43 +144,43 @@ class Libunwind(object):
       try:
         compiler_flag = family_flags[self.cxx['family']]
       except KeyError:
-        LOGGER.warning("libunwind has no compiler flag for '%s'.  Using defaults." % self.cxx['family'])
+        LOGGER.warning("Libunwind has no compiler flag for '%s'.  Using defaults." % self.cxx['family'])
 
     try:
       # Configure
       prefix_flag = '-prefix=%s' % self.libunwind_prefix
       cmd = ['./configure', prefix_flag] + compiler_flag
-      LOGGER.info("Configuring libunwind...")
+      LOGGER.info("Configuring Libunwind...")
       if util.createSubprocess(cmd, cwd=srcdir, stdout=False):
-        raise error.SoftwarePackageError('libunwind configure failed')
+        raise error.SoftwarePackageError('Libunwind configure failed')
 
       # Build
       cmd = ['make', '-j4']
-      LOGGER.info("Compiling libunwind...")
+      LOGGER.info("Compiling Libunwind...")
       if util.createSubprocess(cmd, cwd=srcdir, stdout=False):
-        raise error.SoftwarePackageError('libunwind compilation failed.')
+        raise error.SoftwarePackageError('Libunwind compilation failed.')
 
       # Install
       cmd = ['make', 'install']
-      LOGGER.info("Installing libunwind...")
+      LOGGER.info("Installing Libunwind...")
       if util.createSubprocess(cmd, cwd=srcdir, stdout=False):
-        raise error.SoftwarePackageError('libunwind installation failed.')
+        raise error.SoftwarePackageError('Libunwind installation failedi before verifcation.')
     except:
-      LOGGER.info("libunwind installation failed, cleaning up")
+      LOGGER.info("Libunwind installation failed, cleaning up")
       shutil.rmtree(self.libunwind_prefix, ignore_errors=True)
     finally:
-      # Always clean up libunwind source
+      # Always clean up Libunwind source
       LOGGER.debug('Deleting %r' % srcdir)
-#svdebug      shutil.rmtree(srcdir, ignore_errors=True)
+      shutil.rmtree(srcdir, ignore_errors=True)
          
     # Verify the new installation
     try:
       retval = self.verify()
-      LOGGER.info('libunwind installation complete')
-    except:
+      LOGGER.info('Libunwind installation complete')
+    except Exception as err:
       # Installation failed, clean up any failed install files
       shutil.rmtree(self.libunwind_prefix, ignore_errors=True)
-      raise error.SoftwarePackageError('libunwind installation failed.')
+      raise error.SoftwarePackageError('Libunwind installation failed verifciation: %s' % err)
     else:
       return retval
 
