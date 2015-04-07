@@ -37,6 +37,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # System modules
 import os
+import glob
 import sys
 import shutil
 import platform
@@ -51,12 +52,9 @@ import environment
 
 LOGGER = logger.getLogger(__name__)
 
-DEFAULT_SOURCE = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/binutils-2.23.2.tar.gz',
-                  'x86_64': 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/binutils-2.23.2.tar.gz'}
+DEFAULT_SOURCE = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/binutils-2.23.2.tar.gz'}
 
-LIBS= [
-    'libbfd.a',
-]
+LIBS= {None: [ 'libbfd.a' ]}
 
 
 class Bfd(object):
@@ -80,9 +78,8 @@ class Bfd(object):
       self.bfd_prefix = os.path.join(prefix, 'bfd', compiler_prefix)
     self.src_prefix = os.path.join(prefix, 'src')
     self.include_path = os.path.join(self.bfd_prefix, 'include')
-    self.arch_path = os.path.join(self.bfd_prefix, arch)
-    self.bin_path = os.path.join(self.arch_path, 'bin')
-    self.lib_path = os.path.join(self.arch_path, 'lib')
+    self.bin_path = os.path.join(self.bfd_prefix, 'bin')
+    self.lib_path = os.path.join(self.bfd_prefix, 'lib')
 
   def verify(self):
     """
@@ -93,16 +90,15 @@ class Bfd(object):
     LOGGER.debug("Checking BFD installation at '%s' targeting arch '%s'" % (self.bfd_prefix, self.arch))    
     if not os.path.exists(self.bfd_prefix):
       raise error.ConfigurationError("'%s' does not exist" % self.bfd_prefix)
-  
     # Check for all libraries
     try:
       libraries = LIBS[self.arch]
-      LOGGER.debug("Checking %s BFD libraries")
+      LOGGER.debug("Checking %s BFD libraries" % libraries)
     except KeyError:
       libraries = LIBS[None]
       LOGGER.debug("Checking default BFD libraries")
-    for cmd in libraries:
-      path = os.path.join(self.bin_path, cmd)
+    for lib in libraries:
+      path = os.path.join(self.lib_path, lib)
       if not os.path.exists(path):
         raise error.ConfigurationError("'%s' is missing" % path)
 #      if not os.access(path, os.X_OK):
@@ -169,23 +165,50 @@ class Bfd(object):
       cmd = ['make', 'install']
       LOGGER.info("Installing BFD...")
       if util.createSubprocess(cmd, cwd=srcdir, stdout=False):
-        raise error.SoftwarePackageError('BFD installation failed.')
-    except:
-      LOGGER.info("BFD installation failed, cleaning up")
+        raise error.SoftwarePackageError('BFD installation failed before verifcation.')
+
+     #cp headers from source to install
+
+      LOGGER.info("Copying headers from BFD source to install 'include'.")
+      for file in glob.glob(os.path.join(srcdir,'bfd','*.h')):
+        shutil.copy(file,self.include_path)
+      for file in glob.glob(os.path.join(srcdir,'include','*')):
+        try: 
+          shutil.copy(file, self.include_path)
+        except:  
+          dst = os.path.join(self.include_path, os.path.basename(file))
+          shutil.copytree(file,dst)
+
+       
+     #cp additional libraries:
+      LOGGER.info("Copying missing libraries to install 'lib'.")
+      shutil.copy(os.path.join(srcdir,'libiberty','libiberty.a'),self.lib_path)
+      shutil.copy(os.path.join(srcdir,'opcodes','libopcodes.a'),self.lib_path)
+   
+
+     #fix bfd.h header in the install include location
+      LOGGER.info("Fixing BFD header in install 'include' location.")
+      with open (os.path.join(self.include_path,'bfd.h'),"r+") as myfile:
+        data=myfile.read().replace('#if !defined PACKAGE && !defined PACKAGE_VERSION','#if 0') 
+        myfile.seek(0,0)
+        myfile.write(data)
+         
+    except Exception as err:
+      LOGGER.info("BFD installation failed, cleaning up %s " % err)
       shutil.rmtree(self.bfd_prefix, ignore_errors=True)
     finally:
       # Always clean up BFD source
       LOGGER.debug('Deleting %r' % srcdir)
-#svdebug      shutil.rmtree(srcdir, ignore_errors=True)
+      shutil.rmtree(srcdir, ignore_errors=True)
          
     # Verify the new installation
     try:
       retval = self.verify()
       LOGGER.info('BFD installation complete')
-    except:
+    except Exception as err:
       # Installation failed, clean up any failed install files
       shutil.rmtree(self.bfd_prefix, ignore_errors=True)
-      raise error.SoftwarePackageError('BFD installation failed.')
+      raise error.SoftwarePackageError('BFD installation failed verifciation: %s' % err)
     else:
       return retval
 

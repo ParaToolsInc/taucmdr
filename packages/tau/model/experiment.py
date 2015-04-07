@@ -177,7 +177,7 @@ class Experiment(controller.Controller):
       bfd.install()
       self.bfd = bfd
       libunwind = cf.libunwind.Libunwind(prefix, cxx, target['libunwind_source'], target['host_arch'])
-      libwunind.install()
+      libunwind.install()
       self.libunwind = libunwind
 
     # Configure/build/install TAU if needed
