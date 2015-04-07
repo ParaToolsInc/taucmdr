@@ -254,11 +254,11 @@ class Tau(object):
       if ('BFDINCLUDE=' in line):
         mfBfdInc=line.split('=')[1].strip().strip("-I")
         if (self.bfd.include_path != mfBfdInc):
-           raise error.ConfigurationError("TAU Makefile does not have BFDINCLUDE =" +str(mfBfdInc) +" set to the BFD_INCLUDE_PATH = "+ str(self.bfd.include_path))     
+           raise error.ConfigurationError("TAU Makefile does not have BFDINCLUDE = %s set to the BFD_INCLUDE_PATH = %s " % (mfBfdInc,self.bfd.include_path))     
       if ('UNWIND_INC=' in line):
         mfUwInc=line.split('=')[1].strip().strip("-I")
         if (self.libunwind.include_path != mfUwInc):
-           raise error.ConfigurationError("TAU Makefile does not have UNWIND_INC=" +str(mfUwInc) +" set to the LIBUNWIND_INCLUDE_PATH = "+ str(self.libunwind.include_path))     
+           raise error.ConfigurationError("TAU Makefile does not have UNWIND_INC= {} set to the LIBUNWIND_INCLUDE_PATH = {}".format(mfUwInc,self.libunwind.include_path))     
        
     #matching bfd.include_path
     # grep for BFDINCLUDE
