@@ -246,6 +246,12 @@ class Tau(object):
     if not makefile:
       raise error.ConfigurationError("TAU Makefile not found: %s" % makefile)
     
+    # Open makefile, check BFDINCLUDE, UNWIND_INC
+    # - Must be set if bfd/unwind set and match bfd/unwind flags
+    # grep for BFDINCLUDE
+    # !! not found, raise error.ConfigurationError("BFD not configured in %s" % makefile)
+    # .... similar for libunwind
+    
     LOGGER.debug("TAU installation at '%s' is valid" % self.tau_prefix)
     return True
 
