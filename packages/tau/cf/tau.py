@@ -152,7 +152,7 @@ class Tau(object):
   Encapsulates a TAU installation
   """
   def __init__(self, prefix, cc, cxx, fc, src, arch, 
-               pdt, bfd, libunwind, **config):
+               pdt, bfd, libunwind, papi, **config):
     if not arch:
       arch = _detectDefaultHostArch()
     if src.lower() == 'download':
@@ -168,6 +168,7 @@ class Tau(object):
     self.arch = arch
     self.pdt = pdt
     self.bfd = bfd
+    self.papi= papi
     self.libunwind = libunwind
     if os.path.isdir(src):
       self.tau_prefix = src
