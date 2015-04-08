@@ -163,10 +163,10 @@ class Measurement(ctl.Controller, ctl.ByName):
     'metrics': {
       'type': 'array',
       'defaultsTo': ['TIME'],
-      'argparse': {'flags': ('--with-metircs',),
+      'argparse': {'flags': ('--with-metrics',),
                    'help': 'metrics for measurements space sperated',
                    'metavar': '<TAU_METRICS>',
-                   'nargs': '?'}
+                   'nargs': '+'}
     },
   }
   
