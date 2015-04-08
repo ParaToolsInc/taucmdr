@@ -152,7 +152,7 @@ class Tau(object):
   Encapsulates a TAU installation
   """
   def __init__(self, prefix, cc, cxx, fc, src, arch, 
-               pdt, bfd, libunwind, **config):
+               pdt, bfd, libunwind, papi, **config):
     if not arch:
       arch = _detectDefaultHostArch()
     if src.lower() == 'download':
@@ -168,6 +168,7 @@ class Tau(object):
     self.arch = arch
     self.pdt = pdt
     self.bfd = bfd
+    self.papi= papi
     self.libunwind = libunwind
     if os.path.isdir(src):
       self.tau_prefix = src
@@ -214,6 +215,9 @@ class Tau(object):
       tags.append('shmem')
     if config['mpc_support']:
       tags.append('mpc')
+
+    if self.papi:
+      tags.append('papi')
     
     LOGGER.debug("TAU tags: %s" % tags)
     return tags
@@ -246,7 +250,7 @@ class Tau(object):
     if not makefile:
       raise error.ConfigurationError("TAU Makefile not found: %s" % makefile)
     
-    # Open makefile, check BFDINCLUDE, UNWIND_INC
+    # Open makefile, check BFDINCLUDE, UNWIND_INC, PAPIDIR
     LOGGER.debug("Tau Makefile %s :" %makefile)
     with open(makefile, 'r') as myMakeFile:
       data = myMakeFile.readlines()
@@ -254,11 +258,18 @@ class Tau(object):
       if ('BFDINCLUDE=' in line):
         mfBfdInc=line.split('=')[1].strip().strip("-I")
         if (self.bfd.include_path != mfBfdInc):
-           raise error.ConfigurationError("TAU Makefile does not have BFDINCLUDE = %s set to the BFD_INCLUDE_PATH = %s " % (mfBfdInc,self.bfd.include_path))     
+           raise error.ConfigurationError("TAU Makefile does not have BFDINCLUDE = {} set to the \
+                                          BFD_INCLUDE_PATH = {}".format(mfBfdInc,self.bfd.include_path))     
       if ('UNWIND_INC=' in line):
         mfUwInc=line.split('=')[1].strip().strip("-I")
         if (self.libunwind.include_path != mfUwInc):
-           raise error.ConfigurationError("TAU Makefile does not have UNWIND_INC= {} set to the LIBUNWIND_INCLUDE_PATH = {}".format(mfUwInc,self.libunwind.include_path))     
+           raise error.ConfigurationError("TAU Makefile does not have UNWIND_INC= {}set to the \
+                                          LIBUNWIND_INCLUDE_PATH = {}".format(mfUwInc,self.libunwind.include_path))     
+      if ('PAPIDIR=' in line):
+        mfPapiDir = line.split('=')[1].strip()
+        if (self.papi.papi_prefix != mfPapiDir):
+           raise error.ConfigurationError("TAU Makefile {} does not have PAPIDIR = {} set to \
+                                          the PAPI_PREFIX = {}".format(makefile,mfPapiDir,self.papi.papi_prefix))     
        
     #matching bfd.include_path
     # grep for BFDINCLUDE
@@ -338,6 +349,7 @@ class Tau(object):
                   fortran_flag,
                   '-pdt=%s' % self.pdt.pdt_prefix if self.pdt else '',
                   '-bfd=%s' % self.bfd.bfd_prefix if self.bfd else '',
+                  '-papi=%s' % self.papi.papi_prefix if self.papi else '',
                   '-unwind=%s' % self.libunwind.libunwind_prefix if self.libunwind else '']
     if self.config['mpi_support']:
       mpi_flags = ['-mpi'
@@ -445,6 +457,7 @@ class Tau(object):
     env.update(tauEnv)
 
     env['PATH'] = os.pathsep.join([self.bin_path, env.get('PATH')])
+    env['TAU_METRICS']=os.pathsep.join(self.config['metrics'])
   
   def showProfile(self, path):
     """

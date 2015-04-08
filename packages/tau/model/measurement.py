@@ -160,6 +160,14 @@ class Measurement(ctl.Controller, ctl.ByName):
                    'const': True,
                    'action': args.ParseBooleanAction}
     },
+    'metrics': {
+      'type': 'array',
+      'defaultsTo': ['TIME'],
+      'argparse': {'flags': ('--with-metrics',),
+                   'help': 'metrics for measurements space sperated',
+                   'metavar': '<TAU_METRICS>',
+                   'nargs': '+'}
+    },
   }
   
   _valid_name = set(string.digits + string.letters + '-_.')

@@ -51,6 +51,7 @@ import environment
 import cf.tau
 import cf.pdt
 import cf.bfd
+import cf.papi
 import cf.libunwind
 from model.project import Project
 from model.target import Target
@@ -168,6 +169,7 @@ class Experiment(controller.Controller):
     if not measurement['source_inst']:
       self.pdt = None
       self.bfd = None
+      self.papi= None
       self.libunwind= None
     else:
       pdt = cf.pdt.Pdt(prefix, cxx, target['pdt_source'], target['host_arch'])
@@ -176,6 +178,9 @@ class Experiment(controller.Controller):
       bfd = cf.bfd.Bfd(prefix, cxx, target['bfd_source'], target['host_arch'])
       bfd.install()
       self.bfd = bfd
+      papi = cf.papi.Papi(prefix, cxx, target['papi_source'], target['host_arch'])
+      papi.install()
+      self.papi = papi
       libunwind = cf.libunwind.Libunwind(prefix, cxx, target['libunwind_source'], target['host_arch'])
       libunwind.install()
       self.libunwind = libunwind
@@ -185,6 +190,7 @@ class Experiment(controller.Controller):
                      verbose=verbose,
                      pdt=pdt,
                      bfd=bfd, 
+                     papi=papi, 
                      libunwind=libunwind, 
                      profile=measurement['profile'],
                      trace=measurement['trace'],
@@ -206,7 +212,9 @@ class Experiment(controller.Controller):
                      mpc_measurements=None, # TODO
                      memory_support=None, # TODO
                      memory_measurements=None, # TODO
-                     callpath=measurement['callpath'])
+                     callpath=measurement['callpath'],
+                     metrics=measurement['metrics']
+                    )
     tau.install()
     self.tau = tau
 
@@ -234,6 +242,8 @@ class Experiment(controller.Controller):
     if measurement['source_inst']:
       self.pdt.applyCompiletimeConfig(opts, env)
       self.bfd.applyCompiletimeConfig(opts, env)
+      self.papi.applyCompiletimeConfig(opts, env)
+      self.libunwind.applyCompiletimeConfig(opts, env)
     self.tau.applyCompiletimeConfig(opts, env)
 
     use_wrapper = measurement['source_inst'] or measurement['comp_inst']
