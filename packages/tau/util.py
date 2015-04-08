@@ -46,6 +46,7 @@ import urllib
 import tarfile
 import pprint
 import tempfile
+import urlparse
 from StringIO import StringIO
 
 # TAU modules
@@ -247,3 +248,24 @@ def humanReadableSize(num, suffix='B'):
       return "%3.1f%s%s" % (num, unit, suffix)
     num /= 1024.0
   return "%.1f%s%s" % (num, 'Yi', suffix)
+
+def parseBoolean(value):
+  """
+  Parses a value to a literal True/False boolean
+  """
+  if isinstance(value, bool):
+    return value
+  elif isinstance(value, int):
+    return bool(value)
+  elif isinstance(value, str):
+    value = value.lower()
+    if value in ['1', 't', 'y', 'true', 'yes', 'on']:
+      return True
+    elif value in ['0', 'f', 'n', 'false', 'no', 'off']:
+      return False
+  else:
+    return None
+
+def isURL(url):
+  return bool(len(urlparse.urlparse(url).scheme))
+

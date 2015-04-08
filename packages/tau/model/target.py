@@ -183,7 +183,8 @@ class Target(ctl.Controller, ctl.ByName):
       'argparse': {'flags': ('--with-pdt',),
                    'group': 'software package',
                    'help': 'URL or path to a PDT installation or archive file',
-                   'metavar': '(<path>|<url>|"download")'}
+                   'metavar': '(<path>|<url>|download|False)',
+                   'action': args.ParsePackagePathAction}
     },
     'bfd_source': {
       'type': 'string',
@@ -191,14 +192,16 @@ class Target(ctl.Controller, ctl.ByName):
       'argparse': {'flags': ('--with-bfd',),
                    'group': 'software package',
                    'help': 'URL or path to a BFD installation or archive file',
-                   'metavar': '(<path>|<url>|"download")'}
+                   'metavar': '(<path>|<url>|download|False)',
+                   'action': args.ParsePackagePathAction}
     },
     'libunwind_source': {
       'type': 'string',
       'argparse': {'flags': ('--with-libunwind',),
                    'group': 'software package',
                    'help': 'URL or path to a libunwind installation or archive file',
-                   'metavar': '(<path>|<url>|"download")'}
+                   'metavar': '(<path>|<url>|download|False)',
+                   'action': args.ParsePackagePathAction}
     }
   }
   

@@ -36,10 +36,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 # System modules
+import os
 import argparse
 
 # TAU modules
 import logger
+import util
 
 
 SUPPRESS = argparse.SUPPRESS
@@ -83,18 +85,30 @@ class ArgparseHelpFormatter(argparse.RawDescriptionHelpFormatter):
     return help
   
 
+class ParsePackagePathAction(argparse.Action):
+  """
+  TODO: Docs
+  """
+  def __call__(self, parser, namespace, flag, option_string=None):
+    flag_as_bool = util.parseBoolean(flag)
+    if flag_as_bool == True:
+      value = 'download'
+    elif flag_as_bool == False:
+      value = False
+    elif (flag.lower() == 'download') or (os.path.exists(flag)) or util.isURL(flag):
+      value = flag
+    else:
+      raise argparse.ArgumentError(self, "Boolean, 'download', path, or URL required, received: %s" % flag)
+    setattr(namespace, self.dest, value)
+
+
 class ParseBooleanAction(argparse.Action):
   """
   Parses an option value into a boolean
   """
   def __call__(self, parser, namespace, value, option_string=None):
-    if isinstance(value, bool):
-      bool_value = value
-    elif value.lower() in ['1', 't', 'y', 'true', 'yes', 'on']:
-      bool_value = True
-    elif value.lower() in ['0', 'f', 'n', 'false', 'no', 'off']:
-      bool_value = False
-    else:
+    bool_value = util.parseBoolean(value)
+    if bool_value == None:
       raise argparse.ArgumentError(self, 'Boolean value required')
     setattr(namespace, self.dest, bool_value)
     
