@@ -246,7 +246,7 @@ class Tau(object):
     if not makefile:
       raise error.ConfigurationError("TAU Makefile not found: %s" % makefile)
     
-    # Open makefile, check BFDINCLUDE, UNWIND_INC
+    # Open makefile, check BFDINCLUDE, UNWIND_INC, PAPIDIR
     LOGGER.debug("Tau Makefile %s :" %makefile)
     with open(makefile, 'r') as myMakeFile:
       data = myMakeFile.readlines()
@@ -254,11 +254,18 @@ class Tau(object):
       if ('BFDINCLUDE=' in line):
         mfBfdInc=line.split('=')[1].strip().strip("-I")
         if (self.bfd.include_path != mfBfdInc):
-           raise error.ConfigurationError("TAU Makefile does not have BFDINCLUDE =" +str(mfBfdInc) +" set to the BFD_INCLUDE_PATH = "+ str(self.bfd.include_path))     
+           raise error.ConfigurationError("TAU Makefile does not have BFDINCLUDE = {} set to the \
+                                          BFD_INCLUDE_PATH = {}".format(mfBfdInc,self.bfd.include_path))     
       if ('UNWIND_INC=' in line):
         mfUwInc=line.split('=')[1].strip().strip("-I")
         if (self.libunwind.include_path != mfUwInc):
-           raise error.ConfigurationError("TAU Makefile does not have UNWIND_INC=" +str(mfUwInc) +" set to the LIBUNWIND_INCLUDE_PATH = "+ str(self.libunwind.include_path))     
+           raise error.ConfigurationError("TAU Makefile does not have UNWIND_INC= {}set to the \
+                                          LIBUNWIND_INCLUDE_PATH = {}".format(mfUwInc,self.libunwind.include_path))     
+      if ('PAPIDIR=' in line):
+        mfPapiDir = line.split('=')[1]
+        if (self.papi.papi_prefix != mfPapiDir):
+           raise error.ConfigurationError("TAU Makefile does not have PAPIDIR = {} set to \
+                                          the PAPI_PREFIX = {}".format(mfPapiDir,self.papi.papi_prefix))     
        
     #matching bfd.include_path
     # grep for BFDINCLUDE
