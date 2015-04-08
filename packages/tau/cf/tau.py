@@ -346,6 +346,7 @@ class Tau(object):
                   fortran_flag,
                   '-pdt=%s' % self.pdt.pdt_prefix if self.pdt else '',
                   '-bfd=%s' % self.bfd.bfd_prefix if self.bfd else '',
+                  '-papi=%s' % self.papi.papi_prefix if self.papi else '',
                   '-unwind=%s' % self.libunwind.libunwind_prefix if self.libunwind else '']
     if self.config['mpi_support']:
       mpi_flags = ['-mpi'
