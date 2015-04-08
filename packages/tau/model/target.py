@@ -199,6 +199,14 @@ class Target(ctl.Controller, ctl.ByName):
                    'group': 'software package',
                    'help': 'URL or path to a libunwind installation or archive file',
                    'metavar': '(<path>|<url>|"download")'}
+    },
+    'papi_source': {
+      'type': 'string',
+      'defaultsTo': 'download',
+      'argparse': {'flags': ('--with-papi',),
+                   'group': 'software package',
+                   'help': 'URL or path to a PAPI installation or archive file',
+                   'metavar': '(<path>|<url>|"download")'}
     }
   }
   
