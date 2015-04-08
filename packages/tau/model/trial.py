@@ -163,13 +163,20 @@ class Trial(ctl.Controller):
       # Copy profile files to trial prefix
       if measurement['profile']:
         profiles = glob.glob(os.path.join(cwd, 'profile.*.*.*'))
-        if not profiles:
-          LOGGER.error("%s did not generate any profile files!" % cmd_str)
-        else:
+        multi_profiles= glob.glob(os.path.join(cwd, 'MULTI__*'))
+ 	
+        if profiles:
           LOGGER.info("Found %d profile files. Adding to trial..." % len(profiles))
           for file in profiles:
             shutil.move(file, prefix)
             LOGGER.debug("'%s' => '%s'" % (file, prefix))
+	elif multi_profiles:
+          LOGGER.info("Found %d multi_profile direcotries. Adding to trial..." % len(multi_profiles))
+          for dirs in multi_profiles:
+            shutil.move(dirs, prefix)
+            LOGGER.debug("'%s' => '%s'" % (dirs, prefix))
+	else:
+          LOGGER.error("%s did not generate any profile files or MULTI__ directories!" % cmd_str)
   
       # TODO: Handle traces
       
