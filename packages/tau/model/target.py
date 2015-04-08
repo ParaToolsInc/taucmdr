@@ -197,6 +197,7 @@ class Target(ctl.Controller, ctl.ByName):
     },
     'libunwind_source': {
       'type': 'string',
+      'defaultsTo': 'download',
       'argparse': {'flags': ('--with-libunwind',),
                    'group': 'software package',
                    'help': 'URL or path to a libunwind installation or archive file',
@@ -205,7 +206,7 @@ class Target(ctl.Controller, ctl.ByName):
     },
     'papi_source': {
       'type': 'string',
-      'defaultsTo': 'download',
+      'defaultsTo': 'False',
       'argparse': {'flags': ('--with-papi',),
                    'group': 'software package',
                    'help': 'URL or path to a PAPI installation or archive file',
