@@ -206,7 +206,9 @@ class Experiment(controller.Controller):
                      mpc_measurements=None, # TODO
                      memory_support=None, # TODO
                      memory_measurements=None, # TODO
-                     callpath=measurement['callpath'])
+                     callpath=measurement['callpath'],
+                     metrics=measurement['metrics']
+                    )
     tau.install()
     self.tau = tau
 

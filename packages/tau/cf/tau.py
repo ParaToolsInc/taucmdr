@@ -246,25 +246,6 @@ class Tau(object):
     if not makefile:
       raise error.ConfigurationError("TAU Makefile not found: %s" % makefile)
     
-    # Open makefile, check BFDINCLUDE, UNWIND_INC
-    LOGGER.debug("Tau Makefile %s :" %makefile)
-    with open(makefile, 'r') as myMakeFile:
-      data = myMakeFile.readlines()
-    for line in data:
-      if ('BFDINCLUDE=' in line):
-        mfBfdInc=line.split('=')[1].strip().strip("-I")
-        if (self.bfd.include_path != mfBfdInc):
-           raise error.ConfigurationError("TAU Makefile does not have BFDINCLUDE = %s set to the BFD_INCLUDE_PATH = %s " % (mfBfdInc,self.bfd.include_path))     
-      if ('UNWIND_INC=' in line):
-        mfUwInc=line.split('=')[1].strip().strip("-I")
-        if (self.libunwind.include_path != mfUwInc):
-           raise error.ConfigurationError("TAU Makefile does not have UNWIND_INC= {} set to the LIBUNWIND_INCLUDE_PATH = {}".format(mfUwInc,self.libunwind.include_path))     
-       
-    #matching bfd.include_path
-    # grep for BFDINCLUDE
-    # !! not found, raise error.ConfigurationError("BFD not configured in %s" % makefile)
-    # .... similar for libunwind
-    
     LOGGER.debug("TAU installation at '%s' is valid" % self.tau_prefix)
     return True
 
@@ -445,6 +426,7 @@ class Tau(object):
     env.update(tauEnv)
 
     env['PATH'] = os.pathsep.join([self.bin_path, env.get('PATH')])
+    env['TAU_METRICS']=os.pathsep.join(self.config['metrics'])
   
   def showProfile(self, path):
     """
