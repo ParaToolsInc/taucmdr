@@ -215,6 +215,9 @@ class Tau(object):
       tags.append('shmem')
     if config['mpc_support']:
       tags.append('mpc')
+
+    if self.papi:
+      tags.append('papi')
     
     LOGGER.debug("TAU tags: %s" % tags)
     return tags
@@ -263,10 +266,10 @@ class Tau(object):
            raise error.ConfigurationError("TAU Makefile does not have UNWIND_INC= {}set to the \
                                           LIBUNWIND_INCLUDE_PATH = {}".format(mfUwInc,self.libunwind.include_path))     
       if ('PAPIDIR=' in line):
-        mfPapiDir = line.split('=')[1]
+        mfPapiDir = line.split('=')[1].strip()
         if (self.papi.papi_prefix != mfPapiDir):
-           raise error.ConfigurationError("TAU Makefile does not have PAPIDIR = {} set to \
-                                          the PAPI_PREFIX = {}".format(mfPapiDir,self.papi.papi_prefix))     
+           raise error.ConfigurationError("TAU Makefile {} does not have PAPIDIR = {} set to \
+                                          the PAPI_PREFIX = {}".format(makefile,mfPapiDir,self.papi.papi_prefix))     
        
     #matching bfd.include_path
     # grep for BFDINCLUDE
