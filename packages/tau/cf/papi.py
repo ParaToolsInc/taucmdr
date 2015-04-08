@@ -167,32 +167,6 @@ class Papi(object):
       if util.createSubprocess(cmd, cwd=srcdir, stdout=False):
         raise error.SoftwarePackageError('PAPI installation failed before verifcation.')
 
-     #cp headers from source to install
-
-      LOGGER.info("Copying headers from PAPI source to install 'include'.")
-      for file in glob.glob(os.path.join(srcdir,'papi','*.h')):
-        shutil.copy(file,self.include_path)
-      for file in glob.glob(os.path.join(srcdir,'include','*')):
-        try: 
-          shutil.copy(file, self.include_path)
-        except:  
-          dst = os.path.join(self.include_path, os.path.basename(file))
-          shutil.copytree(file,dst)
-
-       
-     #cp additional libraries:
-      LOGGER.info("Copying missing libraries to install 'lib'.")
-      shutil.copy(os.path.join(srcdir,'libiberty','libiberty.a'),self.lib_path)
-      shutil.copy(os.path.join(srcdir,'opcodes','libopcodes.a'),self.lib_path)
-   
-
-     #fix papi.h header in the install include location
-      LOGGER.info("Fixing PAPI header in install 'include' location.")
-      with open (os.path.join(self.include_path,'papi.h'),"r+") as myfile:
-        data=myfile.read().replace('#if !defined PACKAGE && !defined PACKAGE_VERSION','#if 0') 
-        myfile.seek(0,0)
-        myfile.write(data)
-         
     except Exception as err:
       LOGGER.info("PAPI installation failed, cleaning up %s " % err)
       shutil.rmtree(self.papi_prefix, ignore_errors=True)
