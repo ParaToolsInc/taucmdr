@@ -142,7 +142,7 @@ class Bfd(object):
       compiler_flag = ''
     else:
       family_flags = {'system': '',
-                      'GNU': ['-GNU'],
+                      'GNU': ['CC=gcc', 'CXX=g++'],
                       'Intel': ['CC=icc','CXX=icpc'] 
                      }
 #                      'PGI': '-pgCC'}
