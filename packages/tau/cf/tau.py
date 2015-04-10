@@ -271,10 +271,6 @@ class Tau(object):
            raise error.ConfigurationError("TAU Makefile {} does not have PAPIDIR = {} set to \
                                           the PAPI_PREFIX = {}".format(makefile,mfPapiDir,self.papi.papi_prefix))     
        
-    #matching bfd.include_path
-    # grep for BFDINCLUDE
-    # !! not found, raise error.ConfigurationError("BFD not configured in %s" % makefile)
-    # .... similar for libunwind
     
     LOGGER.debug("TAU installation at '%s' is valid" % self.tau_prefix)
     return True
