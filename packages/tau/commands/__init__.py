@@ -42,6 +42,7 @@ from pkgutil import walk_packages
 # TAU modules
 import logger
 import error
+import environment
 
 
 LOGGER = logger.getLogger(__name__)
@@ -78,6 +79,9 @@ def getCommands(root=__name__):
   """
   Returns commands at the specified level
   """
+  if environment.__TAU_HOME__ == None:
+    # Not executed from command line, don't worry about commands
+    return {}
   def _lookup(c, d):
     if len(c) == 1: return d[c[0]]
     else: return _lookup(c[1:], d[c[0]])

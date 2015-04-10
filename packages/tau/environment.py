@@ -66,10 +66,14 @@ def base():
   return [], dict(os.environ)
 
 # TAU Commander home path
-__TAU_HOME__ = getEnv('__TAU_HOME__')
+#__TAU_HOME__ = getEnv('__TAU_HOME__')
+try:
+  __TAU_HOME__ = os.environ['__TAU_HOME__']
+except KeyError:
+  __TAU_HOME__ = None
+else:
+  SYSTEM_PREFIX = os.path.realpath(os.path.join(__TAU_HOME__, '.system'))
 
 # User-level TAU files
 USER_PREFIX = os.path.join(os.path.expanduser('~'), '.tau')
 
-# System-level TAU files
-SYSTEM_PREFIX = os.path.realpath(os.path.join(__TAU_HOME__, '.system'))
