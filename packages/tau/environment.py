@@ -71,6 +71,7 @@ try:
   __TAU_HOME__ = os.environ['__TAU_HOME__']
 except KeyError:
   __TAU_HOME__ = None
+  SYSTEM_PREFIX = None
 else:
   SYSTEM_PREFIX = os.path.realpath(os.path.join(__TAU_HOME__, '.system'))
 
