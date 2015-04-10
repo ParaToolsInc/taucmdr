@@ -66,12 +66,12 @@ def base():
   return [], dict(os.environ)
 
 # TAU Commander home path
-#__TAU_HOME__ = getEnv('__TAU_HOME__')
 try:
   __TAU_HOME__ = os.environ['__TAU_HOME__']
 except KeyError:
+  import tempfile
   __TAU_HOME__ = None
-  SYSTEM_PREFIX = None
+  SYSTEM_PREFIX = tempfile.gettempdir()
 else:
   SYSTEM_PREFIX = os.path.realpath(os.path.join(__TAU_HOME__, '.system'))
 
