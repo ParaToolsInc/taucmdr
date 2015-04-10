@@ -39,6 +39,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import os
 import sys
 
+# TAU modules
+import tau
+
 def getEnv(name):
   """
   Gets the value of the environment variable named 'name' or fails
@@ -54,7 +57,7 @@ def getEnv(name):
 %(bar)s
   """ % {'bar': '!'*80,
          'name': name})
-    sys.exit(EXIT_FAILURE)
+    sys.exit(tau.EXIT_FAILURE)
     
 def base():
   """
