@@ -1,0 +1,191 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tau.commands.trial.create &mdash; TauCmdr 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="TauCmdr 0.0.1 documentation" href="../../../../index.html" />
+    <link rel="up" title="tau.commands.trial" href="../trial.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">TauCmdr 0.0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../../commands.html" >tau.commands</a> &raquo;</li>
+          <li class="nav-item nav-item-3"><a href="../trial.html" accesskey="U">tau.commands.trial</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for tau.commands.trial.create</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">@file</span>
+<span class="sd">@author John C. Linford (jlinford@paratools.com)</span>
+<span class="sd">@version 1.0</span>
+
+<span class="sd">@brief</span>
+
+<span class="sd">This file is part of the TAU Performance System</span>
+
+<span class="sd">@section COPYRIGHT</span>
+
+<span class="sd">Copyright (c) 2013, ParaTools, Inc.</span>
+<span class="sd">All rights reserved.</span>
+
+<span class="sd">Redistribution and use in source and binary forms, with or without </span>
+<span class="sd">modification, are permitted provided that the following conditions are met:</span>
+<span class="sd"> (1) Redistributions of source code must retain the above copyright notice, </span>
+<span class="sd">     this list of conditions and the following disclaimer.</span>
+<span class="sd"> (2) Redistributions in binary form must reproduce the above copyright notice, </span>
+<span class="sd">     this list of conditions and the following disclaimer in the documentation </span>
+<span class="sd">     and/or other materials provided with the distribution.</span>
+<span class="sd"> (3) Neither the name of ParaTools, Inc. nor the names of its contributors may </span>
+<span class="sd">     be used to endorse or promote products derived from this software without </span>
+<span class="sd">     specific prior written permission.</span>
+
+<span class="sd">THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot; </span>
+<span class="sd">AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE </span>
+<span class="sd">IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE </span>
+<span class="sd">DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE </span>
+<span class="sd">FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL </span>
+<span class="sd">DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR </span>
+<span class="sd">SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER </span>
+<span class="sd">CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, </span>
+<span class="sd">OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE </span>
+<span class="sd">OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="c"># TAU modules</span>
+<span class="kn">import</span> <span class="nn">logger</span>
+<span class="kn">import</span> <span class="nn">commands</span>
+<span class="kn">import</span> <span class="nn">controller</span>
+<span class="kn">import</span> <span class="nn">error</span>
+<span class="kn">import</span> <span class="nn">util</span>
+<span class="kn">import</span> <span class="nn">arguments</span> <span class="kn">as</span> <span class="nn">args</span>
+<span class="kn">from</span> <span class="nn">model.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
+
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+<span class="n">COMMAND</span> <span class="o">=</span> <span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&#39;tau&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">__name__</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">:]))</span>
+
+<span class="n">SHORT_DESCRIPTION</span> <span class="o">=</span> <span class="s">&quot;Run an application under a new experiment trial.&quot;</span>
+
+<span class="n">USAGE</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
+<span class="s">  </span><span class="si">%(command)s</span><span class="s"> &lt;command&gt; [arguments]</span>
+<span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;command&#39;</span><span class="p">:</span> <span class="n">COMMAND</span><span class="p">}</span>
+
+<span class="n">HELP</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
+<span class="s">&#39;</span><span class="si">%(command)s</span><span class="s">&#39; page to be written.</span>
+<span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;command&#39;</span><span class="p">:</span> <span class="n">COMMAND</span><span class="p">}</span>
+
+<span class="n">_arguments</span> <span class="o">=</span> <span class="p">[</span> <span class="p">((</span><span class="s">&#39;cmd&#39;</span><span class="p">,),</span> <span class="p">{</span><span class="s">&#39;help&#39;</span><span class="p">:</span> <span class="s">&quot;Command, e.g. &#39;./a.out&#39; or &#39;mpirun ./a.out&#39;&quot;</span><span class="p">,</span>
+                           <span class="s">&#39;metavar&#39;</span><span class="p">:</span> <span class="s">&#39;&lt;command&gt;&#39;</span><span class="p">}),</span>
+               <span class="p">((</span><span class="s">&#39;cmd_args&#39;</span><span class="p">,),</span> <span class="p">{</span><span class="s">&#39;help&#39;</span><span class="p">:</span> <span class="s">&quot;Command arguments&quot;</span><span class="p">,</span>
+                                <span class="s">&#39;metavar&#39;</span><span class="p">:</span> <span class="s">&#39;[arguments]&#39;</span><span class="p">,</span>
+                                <span class="s">&#39;nargs&#39;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">REMAINDER</span><span class="p">})]</span>
+<span class="n">PARSER</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">getParser</span><span class="p">(</span><span class="n">_arguments</span><span class="p">,</span>
+                        <span class="n">prog</span><span class="o">=</span><span class="n">COMMAND</span><span class="p">,</span>
+                        <span class="n">usage</span><span class="o">=</span><span class="n">USAGE</span><span class="p">,</span> 
+                        <span class="n">description</span><span class="o">=</span><span class="n">SHORT_DESCRIPTION</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="getUsage"><a class="viewcode-back" href="../../../../tau.commands.trial.html#tau.commands.trial.create.getUsage">[docs]</a><span class="k">def</span> <span class="nf">getUsage</span><span class="p">():</span>
+  <span class="k">return</span> <span class="n">PARSER</span><span class="o">.</span><span class="n">format_help</span><span class="p">()</span> 
+</div>
+<div class="viewcode-block" id="getHelp"><a class="viewcode-back" href="../../../../tau.commands.trial.html#tau.commands.trial.create.getHelp">[docs]</a><span class="k">def</span> <span class="nf">getHelp</span><span class="p">():</span>
+  <span class="k">return</span> <span class="n">HELP</span>
+</div>
+<div class="viewcode-block" id="isCompatible"><a class="viewcode-back" href="../../../../tau.commands.trial.html#tau.commands.trial.create.isCompatible">[docs]</a><span class="k">def</span> <span class="nf">isCompatible</span><span class="p">(</span><span class="n">cmd</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  TODO: Docs</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="c"># For now, just see if we can execute the command</span>
+  <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="n">cmd</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../../../tau.commands.trial.html#tau.commands.trial.create.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  Program entry point</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="n">args</span> <span class="o">=</span> <span class="n">PARSER</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">argv</span><span class="p">)</span>
+  <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Arguments: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">args</span><span class="p">)</span>
+  
+  <span class="n">selection</span> <span class="o">=</span> <span class="n">Experiment</span><span class="o">.</span><span class="n">getSelected</span><span class="p">()</span>
+  <span class="k">if</span> <span class="ow">not</span> <span class="n">selection</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="n">error</span><span class="o">.</span><span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&quot;No experiment configured.&quot;</span><span class="p">,</span> <span class="s">&quot;See `tau project select`&quot;</span><span class="p">)</span>
+  <span class="k">return</span> <span class="n">selection</span><span class="o">.</span><span class="n">managedRun</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">cmd</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">cmd_args</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, John Linford  and Srinath Vadlamani @ ParaTools, Inc..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.3</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

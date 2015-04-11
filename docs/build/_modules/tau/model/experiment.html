@@ -1,0 +1,468 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tau.model.experiment &mdash; TauCmdr 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="TauCmdr 0.0.1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">TauCmdr 0.0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for tau.model.experiment</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">@file</span>
+<span class="sd">@author John C. Linford (jlinford@paratools.com)</span>
+<span class="sd">@version 1.0</span>
+
+<span class="sd">@brief</span>
+
+<span class="sd">This file is part of the TAU Performance System</span>
+
+<span class="sd">@section COPYRIGHT</span>
+
+<span class="sd">Copyright (c) 2013, ParaTools, Inc.</span>
+<span class="sd">All rights reserved.</span>
+
+<span class="sd">Redistribution and use in source and binary forms, with or without </span>
+<span class="sd">modification, are permitted provided that the following conditions are met:</span>
+<span class="sd"> (1) Redistributions of source code must retain the above copyright notice, </span>
+<span class="sd">     this list of conditions and the following disclaimer.</span>
+<span class="sd"> (2) Redistributions in binary form must reproduce the above copyright notice, </span>
+<span class="sd">     this list of conditions and the following disclaimer in the documentation </span>
+<span class="sd">     and/or other materials provided with the distribution.</span>
+<span class="sd"> (3) Neither the name of ParaTools, Inc. nor the names of its contributors may </span>
+<span class="sd">     be used to endorse or promote products derived from this software without </span>
+<span class="sd">     specific prior written permission.</span>
+
+<span class="sd">THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot; </span>
+<span class="sd">AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE </span>
+<span class="sd">IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE </span>
+<span class="sd">DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE </span>
+<span class="sd">FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL </span>
+<span class="sd">DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR </span>
+<span class="sd">SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER </span>
+<span class="sd">CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, </span>
+<span class="sd">OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE </span>
+<span class="sd">OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c"># System modules</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+
+<span class="c"># TAU modules</span>
+<span class="kn">import</span> <span class="nn">logger</span>
+<span class="kn">import</span> <span class="nn">settings</span>
+<span class="kn">import</span> <span class="nn">error</span>
+<span class="kn">import</span> <span class="nn">controller</span>
+<span class="kn">import</span> <span class="nn">util</span>
+<span class="kn">import</span> <span class="nn">environment</span>
+<span class="kn">import</span> <span class="nn">cf.tau</span>
+<span class="kn">import</span> <span class="nn">cf.pdt</span>
+<span class="kn">import</span> <span class="nn">cf.bfd</span>
+<span class="kn">import</span> <span class="nn">cf.papi</span>
+<span class="kn">import</span> <span class="nn">cf.libunwind</span>
+<span class="kn">from</span> <span class="nn">model.project</span> <span class="kn">import</span> <span class="n">Project</span>
+<span class="kn">from</span> <span class="nn">model.target</span> <span class="kn">import</span> <span class="n">Target</span>
+<span class="kn">from</span> <span class="nn">model.compiler</span> <span class="kn">import</span> <span class="n">Compiler</span>
+<span class="kn">from</span> <span class="nn">model.trial</span> <span class="kn">import</span> <span class="n">Trial</span>
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Experiment"><a class="viewcode-back" href="../../../tau.model.html#tau.model.experiment.Experiment">[docs]</a><span class="k">class</span> <span class="nc">Experiment</span><span class="p">(</span><span class="n">controller</span><span class="o">.</span><span class="n">Controller</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  Experiment data model controller</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  
+  <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;project&#39;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s">&#39;model&#39;</span><span class="p">:</span> <span class="s">&#39;Project&#39;</span><span class="p">,</span>
+      <span class="s">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s">&#39;target&#39;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s">&#39;model&#39;</span><span class="p">:</span> <span class="s">&#39;Target&#39;</span><span class="p">,</span>
+      <span class="s">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s">&#39;application&#39;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s">&#39;model&#39;</span><span class="p">:</span> <span class="s">&#39;Application&#39;</span><span class="p">,</span>
+      <span class="s">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s">&#39;measurement&#39;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s">&#39;model&#39;</span><span class="p">:</span> <span class="s">&#39;Measurement&#39;</span><span class="p">,</span>
+      <span class="s">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s">&#39;trials&#39;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s">&#39;collection&#39;</span><span class="p">:</span> <span class="s">&#39;Trial&#39;</span><span class="p">,</span>
+      <span class="s">&#39;via&#39;</span><span class="p">:</span> <span class="s">&#39;experiment&#39;</span>
+    <span class="p">},</span>
+  <span class="p">}</span>
+  
+<div class="viewcode-block" id="Experiment.name"><a class="viewcode-back" href="../../../tau.model.html#tau.model.experiment.Experiment.name">[docs]</a>  <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">populated</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate</span><span class="p">()</span>
+    <span class="k">return</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> (</span><span class="si">%s</span><span class="s">, </span><span class="si">%s</span><span class="s">, </span><span class="si">%s</span><span class="s">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">populated</span><span class="p">[</span><span class="s">&#39;project&#39;</span><span class="p">][</span><span class="s">&#39;name&#39;</span><span class="p">],</span>
+                                <span class="n">populated</span><span class="p">[</span><span class="s">&#39;target&#39;</span><span class="p">][</span><span class="s">&#39;name&#39;</span><span class="p">],</span>
+                                <span class="n">populated</span><span class="p">[</span><span class="s">&#39;application&#39;</span><span class="p">][</span><span class="s">&#39;name&#39;</span><span class="p">],</span>
+                                <span class="n">populated</span><span class="p">[</span><span class="s">&#39;measurement&#39;</span><span class="p">][</span><span class="s">&#39;name&#39;</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="Experiment.prefix"><a class="viewcode-back" href="../../../tau.model.html#tau.model.experiment.Experiment.prefix">[docs]</a>  <span class="k">def</span> <span class="nf">prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Storage location for all experiment data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">populated</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">populated</span><span class="p">[</span><span class="s">&#39;project&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">prefix</span><span class="p">(),</span>
+                        <span class="n">populated</span><span class="p">[</span><span class="s">&#39;target&#39;</span><span class="p">][</span><span class="s">&#39;name&#39;</span><span class="p">],</span> 
+                        <span class="n">populated</span><span class="p">[</span><span class="s">&#39;application&#39;</span><span class="p">][</span><span class="s">&#39;name&#39;</span><span class="p">],</span> 
+                        <span class="n">populated</span><span class="p">[</span><span class="s">&#39;measurement&#39;</span><span class="p">][</span><span class="s">&#39;name&#39;</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="Experiment.onCreate"><a class="viewcode-back" href="../../../tau.model.html#tau.model.experiment.Experiment.onCreate">[docs]</a>  <span class="k">def</span> <span class="nf">onCreate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Initialize experiment storage</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">prefix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+      <span class="n">util</span><span class="o">.</span><span class="n">mkdirp</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+      <span class="k">raise</span> <span class="n">error</span><span class="o">.</span><span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&#39;Cannot create directory </span><span class="si">%r</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">prefix</span><span class="p">,</span> 
+                                     <span class="s">&#39;Check that you have `write` access&#39;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Experiment.onDelete"><a class="viewcode-back" href="../../../tau.model.html#tau.model.experiment.Experiment.onDelete">[docs]</a>  <span class="k">def</span> <span class="nf">onDelete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Clean up experiment storage</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">isSelected</span><span class="p">():</span>
+      <span class="n">settings</span><span class="o">.</span><span class="n">unset</span><span class="p">(</span><span class="s">&#39;experiment_id&#39;</span><span class="p">)</span>
+    <span class="n">prefix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+      <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+      <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">prefix</span><span class="p">):</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;Could not remove experiment data at &#39;</span><span class="si">%s</span><span class="s">&#39;: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">err</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="Experiment.select"><a class="viewcode-back" href="../../../tau.model.html#tau.model.experiment.Experiment.select">[docs]</a>  <span class="k">def</span> <span class="nf">select</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">eid</span><span class="p">:</span>
+      <span class="k">raise</span> <span class="n">error</span><span class="o">.</span><span class="n">InternalError</span><span class="p">(</span><span class="s">&#39;Tried to select an experiment without an eid&#39;</span><span class="p">)</span>
+    <span class="n">settings</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s">&#39;experiment_id&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eid</span><span class="p">)</span>
+  </div>
+<div class="viewcode-block" id="Experiment.isSelected"><a class="viewcode-back" href="../../../tau.model.html#tau.model.experiment.Experiment.isSelected">[docs]</a>  <span class="k">def</span> <span class="nf">isSelected</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">eid</span><span class="p">:</span>
+      <span class="k">return</span> <span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;experiment_id&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">eid</span>
+    <span class="k">return</span> <span class="bp">False</span>
+</div>
+  <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Experiment.getSelected"><a class="viewcode-back" href="../../../tau.model.html#tau.model.experiment.Experiment.getSelected">[docs]</a>  <span class="k">def</span> <span class="nf">getSelected</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+    <span class="n">experiment_id</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;experiment_id&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">experiment_id</span><span class="p">:</span>
+      <span class="n">found</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">one</span><span class="p">(</span><span class="n">eid</span><span class="o">=</span><span class="n">experiment_id</span><span class="p">)</span>
+      <span class="k">if</span> <span class="ow">not</span> <span class="n">found</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">error</span><span class="o">.</span><span class="n">InternalError</span><span class="p">(</span><span class="s">&#39;Invalid experiment ID: </span><span class="si">%r</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">experiment_id</span><span class="p">)</span>
+      <span class="k">return</span> <span class="n">found</span>
+    <span class="k">return</span> <span class="bp">None</span>
+</div>
+<div class="viewcode-block" id="Experiment.configure"><a class="viewcode-back" href="../../../tau.model.html#tau.model.experiment.Experiment.configure">[docs]</a>  <span class="k">def</span> <span class="nf">configure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Installs all software required to perform the experiment</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">populated</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate</span><span class="p">()</span>
+    <span class="c"># TODO: Should install packages in a location where all projects can use</span>
+    <span class="n">prefix</span> <span class="o">=</span> <span class="n">populated</span><span class="p">[</span><span class="s">&#39;project&#39;</span><span class="p">][</span><span class="s">&#39;prefix&#39;</span><span class="p">]</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="n">populated</span><span class="p">[</span><span class="s">&#39;target&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">populate</span><span class="p">()</span>
+    <span class="n">application</span> <span class="o">=</span> <span class="n">populated</span><span class="p">[</span><span class="s">&#39;application&#39;</span><span class="p">]</span>
+    <span class="n">measurement</span> <span class="o">=</span> <span class="n">populated</span><span class="p">[</span><span class="s">&#39;measurement&#39;</span><span class="p">]</span>
+    <span class="n">cc</span> <span class="o">=</span> <span class="n">target</span><span class="p">[</span><span class="s">&#39;CC&#39;</span><span class="p">]</span>
+    <span class="n">cxx</span> <span class="o">=</span> <span class="n">target</span><span class="p">[</span><span class="s">&#39;CXX&#39;</span><span class="p">]</span>
+    <span class="n">fc</span> <span class="o">=</span> <span class="n">target</span><span class="p">[</span><span class="s">&#39;FC&#39;</span><span class="p">]</span>
+    <span class="n">verbose</span> <span class="o">=</span> <span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">LOG_LEVEL</span> <span class="o">==</span> <span class="s">&#39;DEBUG&#39;</span><span class="p">)</span>
+
+<span class="c">#want to redo this like:</span>
+<span class="c">#Required = 1</span>
+<span class="c">#NotRequired = 0</span>
+<span class="c">#Recommended = 2</span>
+<span class="c">#compat_mat = {</span>
+<span class="c">#&#39;source_inst&#39;: {&#39;pdt_source&#39;: Required, &#39;bfd_source&#39;: NotRequired ... },</span>
+<span class="c">#&#39;compiler_inst&#39;: {&#39;pdt_source&#39;: NotRequired, &#39;bfd_source&#39;: Recommended, ...  },</span>
+<span class="c">#</span>
+<span class="c">#packages = {</span>
+<span class="c">#&#39;pdt_source&#39;: cf.pdt.Pdt,</span>
+<span class="c">#&#39;bfd_source&#39;: cf.pdt.Bfd</span>
+<span class="c">#...</span>
+<span class="c">#}</span>
+<span class="c">#</span>
+<span class="c">#depends = set()</span>
+<span class="c">#</span>
+<span class="c">#for pkgkey, val in measurement:</span>
+<span class="c">#  try:</span>
+<span class="c">#    compat = compat_mat[pkgkey]</span>
+<span class="c">#  except KeyError:</span>
+<span class="c">#    continue</span>
+<span class="c">#  for key, val in compat:</span>
+<span class="c">#    try:</span>
+<span class="c">#      supplied = target[key]</span>
+<span class="c">#    except KeyError:</span>
+<span class="c">#      raise error.ConfigurationError(&quot;No value for %s was supplied&quot; % key)</span>
+<span class="c">#    if (val == Required) and (util.parseBool(supplied) == False):</span>
+<span class="c">#      # Error, this is required</span>
+<span class="c">#    elif (val == Recommended) and (util.parseBool(supplied) == False):</span>
+<span class="c">#      LOGGER.warning(&quot;Hey, I really think you should use %s&quot; % key</span>
+<span class="c">#    elif (val == NoRequired) and (util.parseBool(supplied) == True):</span>
+<span class="c">#      LOGGER.info(&quot;Hey, %s is not required but you&#39;re using it anyway&quot;)</span>
+<span class="c">#    else:</span>
+<span class="c">#      # Everything looks good</span>
+<span class="c">#      depnds.add((packages[key], key))</span>
+<span class="c">#</span>
+<span class="c">#tau = cf.tau.Tau(prefix, cc, cxx, fc, .... depnds, kwargs)</span>
+
+    <span class="c"># Configure/build/install PDT if needed</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">measurement</span><span class="p">[</span><span class="s">&#39;source_inst&#39;</span><span class="p">]:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">pdt</span> <span class="o">=</span> <span class="bp">None</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">bfd</span> <span class="o">=</span> <span class="bp">None</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">papi</span><span class="o">=</span> <span class="bp">None</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">libunwind</span><span class="o">=</span> <span class="bp">None</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">pdt</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">pdt</span><span class="o">.</span><span class="n">Pdt</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">cxx</span><span class="p">,</span> <span class="n">target</span><span class="p">[</span><span class="s">&#39;pdt_source&#39;</span><span class="p">],</span> <span class="n">target</span><span class="p">[</span><span class="s">&#39;host_arch&#39;</span><span class="p">])</span>
+      <span class="n">pdt</span><span class="o">.</span><span class="n">install</span><span class="p">()</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">pdt</span> <span class="o">=</span> <span class="n">pdt</span>
+      <span class="n">bfd</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">bfd</span><span class="o">.</span><span class="n">Bfd</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">cxx</span><span class="p">,</span> <span class="n">target</span><span class="p">[</span><span class="s">&#39;bfd_source&#39;</span><span class="p">],</span> <span class="n">target</span><span class="p">[</span><span class="s">&#39;host_arch&#39;</span><span class="p">])</span>
+      <span class="n">bfd</span><span class="o">.</span><span class="n">install</span><span class="p">()</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">bfd</span> <span class="o">=</span> <span class="n">bfd</span>
+      <span class="n">papi</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">papi</span><span class="o">.</span><span class="n">Papi</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">cxx</span><span class="p">,</span> <span class="n">target</span><span class="p">[</span><span class="s">&#39;papi_source&#39;</span><span class="p">],</span> <span class="n">target</span><span class="p">[</span><span class="s">&#39;host_arch&#39;</span><span class="p">])</span>
+      <span class="n">papi</span><span class="o">.</span><span class="n">install</span><span class="p">()</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">papi</span> <span class="o">=</span> <span class="n">papi</span>
+      <span class="n">libunwind</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">libunwind</span><span class="o">.</span><span class="n">Libunwind</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">cxx</span><span class="p">,</span> <span class="n">target</span><span class="p">[</span><span class="s">&#39;libunwind_source&#39;</span><span class="p">],</span> <span class="n">target</span><span class="p">[</span><span class="s">&#39;host_arch&#39;</span><span class="p">])</span>
+      <span class="n">libunwind</span><span class="o">.</span><span class="n">install</span><span class="p">()</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">libunwind</span> <span class="o">=</span> <span class="n">libunwind</span>
+
+    <span class="c"># Configure/build/install TAU if needed</span>
+    <span class="n">tau</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">tau</span><span class="o">.</span><span class="n">Tau</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">cc</span><span class="p">,</span> <span class="n">cxx</span><span class="p">,</span> <span class="n">fc</span><span class="p">,</span> <span class="n">target</span><span class="p">[</span><span class="s">&#39;tau_source&#39;</span><span class="p">],</span> <span class="n">target</span><span class="p">[</span><span class="s">&#39;host_arch&#39;</span><span class="p">],</span>
+                     <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+                     <span class="n">pdt</span><span class="o">=</span><span class="n">pdt</span><span class="p">,</span>
+                     <span class="n">bfd</span><span class="o">=</span><span class="n">bfd</span><span class="p">,</span> 
+                     <span class="n">papi</span><span class="o">=</span><span class="n">papi</span><span class="p">,</span> 
+                     <span class="n">libunwind</span><span class="o">=</span><span class="n">libunwind</span><span class="p">,</span> 
+                     <span class="n">profile</span><span class="o">=</span><span class="n">measurement</span><span class="p">[</span><span class="s">&#39;profile&#39;</span><span class="p">],</span>
+                     <span class="n">trace</span><span class="o">=</span><span class="n">measurement</span><span class="p">[</span><span class="s">&#39;trace&#39;</span><span class="p">],</span>
+                     <span class="n">sample</span><span class="o">=</span><span class="n">measurement</span><span class="p">[</span><span class="s">&#39;sample&#39;</span><span class="p">],</span>
+                     <span class="n">source_inst</span><span class="o">=</span><span class="n">measurement</span><span class="p">[</span><span class="s">&#39;source_inst&#39;</span><span class="p">],</span>
+                     <span class="n">compiler_inst</span><span class="o">=</span><span class="n">measurement</span><span class="p">[</span><span class="s">&#39;compiler_inst&#39;</span><span class="p">],</span>
+                     <span class="c"># TODO: Library wrapping inst</span>
+                     <span class="n">openmp_support</span><span class="o">=</span><span class="n">application</span><span class="p">[</span><span class="s">&#39;openmp&#39;</span><span class="p">],</span> 
+                     <span class="n">openmp_measurements</span><span class="o">=</span><span class="n">measurement</span><span class="p">[</span><span class="s">&#39;openmp&#39;</span><span class="p">],</span>
+                     <span class="n">pthreads_support</span><span class="o">=</span><span class="n">application</span><span class="p">[</span><span class="s">&#39;pthreads&#39;</span><span class="p">],</span> 
+                     <span class="n">pthreads_measurements</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="c"># TODO</span>
+                     <span class="n">mpi_support</span><span class="o">=</span><span class="n">application</span><span class="p">[</span><span class="s">&#39;mpi&#39;</span><span class="p">],</span> 
+                     <span class="n">mpi_measurements</span><span class="o">=</span><span class="n">measurement</span><span class="p">[</span><span class="s">&#39;mpi&#39;</span><span class="p">],</span>
+                     <span class="n">cuda_support</span><span class="o">=</span><span class="n">application</span><span class="p">[</span><span class="s">&#39;cuda&#39;</span><span class="p">],</span>
+                     <span class="n">cuda_measurements</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="c"># Todo</span>
+                     <span class="n">shmem_support</span><span class="o">=</span><span class="n">application</span><span class="p">[</span><span class="s">&#39;shmem&#39;</span><span class="p">],</span>
+                     <span class="n">shmem_measurements</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="c"># TODO</span>
+                     <span class="n">mpc_support</span><span class="o">=</span><span class="n">application</span><span class="p">[</span><span class="s">&#39;mpc&#39;</span><span class="p">],</span>
+                     <span class="n">mpc_measurements</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="c"># TODO</span>
+                     <span class="n">memory_support</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="c"># TODO</span>
+                     <span class="n">memory_measurements</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="c"># TODO</span>
+                     <span class="n">callpath</span><span class="o">=</span><span class="n">measurement</span><span class="p">[</span><span class="s">&#39;callpath&#39;</span><span class="p">],</span>
+                     <span class="n">metrics</span><span class="o">=</span><span class="n">measurement</span><span class="p">[</span><span class="s">&#39;metrics&#39;</span><span class="p">]</span>
+                    <span class="p">)</span>
+    <span class="n">tau</span><span class="o">.</span><span class="n">install</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">tau</span> <span class="o">=</span> <span class="n">tau</span>
+</div>
+<div class="viewcode-block" id="Experiment.managedBuild"><a class="viewcode-back" href="../../../tau.model.html#tau.model.experiment.Experiment.managedBuild">[docs]</a>  <span class="k">def</span> <span class="nf">managedBuild</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">compiler_cmd</span><span class="p">,</span> <span class="n">compiler_args</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    TODO: Docs</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">configure</span><span class="p">()</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="s">&#39;target&#39;</span><span class="p">)</span>
+    <span class="n">measurement</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="s">&#39;measurement&#39;</span><span class="p">)</span>
+    <span class="n">given_compiler</span> <span class="o">=</span> <span class="n">Compiler</span><span class="o">.</span><span class="n">identify</span><span class="p">(</span><span class="n">compiler_cmd</span><span class="p">)</span>
+    <span class="n">target_compiler</span> <span class="o">=</span> <span class="n">target</span><span class="p">[</span><span class="n">given_compiler</span><span class="p">[</span><span class="s">&#39;role&#39;</span><span class="p">]]</span>
+
+    <span class="c"># Confirm target supports compiler</span>
+    <span class="k">if</span> <span class="n">given_compiler</span><span class="o">.</span><span class="n">eid</span> <span class="o">!=</span> <span class="n">target_compiler</span><span class="p">:</span>
+      <span class="k">raise</span> <span class="n">error</span><span class="o">.</span><span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&quot;Target &#39;</span><span class="si">%s</span><span class="s">&#39; is configured with </span><span class="si">%s</span><span class="s"> compiler &#39;</span><span class="si">%s</span><span class="s">&#39;, not &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span><span class="p">,</span>
+                                     <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">],</span> <span class="n">given_compiler</span><span class="p">[</span><span class="s">&#39;language&#39;</span><span class="p">],</span> 
+                                      <span class="n">given_compiler</span><span class="o">.</span><span class="n">absolutePath</span><span class="p">(),</span>
+                                      <span class="n">target_compiler</span><span class="o">.</span><span class="n">absolutePath</span><span class="p">()),</span>
+                                     <span class="s">&quot;Use a different target or use compiler &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span>
+                                     <span class="n">target_compiler</span><span class="o">.</span><span class="n">absolutePath</span><span class="p">())</span>
+
+    <span class="c"># Build compile-time environment from component packages</span>
+    <span class="n">opts</span><span class="p">,</span> <span class="n">env</span> <span class="o">=</span> <span class="n">environment</span><span class="o">.</span><span class="n">base</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">measurement</span><span class="p">[</span><span class="s">&#39;source_inst&#39;</span><span class="p">]:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">pdt</span><span class="o">.</span><span class="n">applyCompiletimeConfig</span><span class="p">(</span><span class="n">opts</span><span class="p">,</span> <span class="n">env</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">bfd</span><span class="o">.</span><span class="n">applyCompiletimeConfig</span><span class="p">(</span><span class="n">opts</span><span class="p">,</span> <span class="n">env</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">papi</span><span class="o">.</span><span class="n">applyCompiletimeConfig</span><span class="p">(</span><span class="n">opts</span><span class="p">,</span> <span class="n">env</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">libunwind</span><span class="o">.</span><span class="n">applyCompiletimeConfig</span><span class="p">(</span><span class="n">opts</span><span class="p">,</span> <span class="n">env</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">tau</span><span class="o">.</span><span class="n">applyCompiletimeConfig</span><span class="p">(</span><span class="n">opts</span><span class="p">,</span> <span class="n">env</span><span class="p">)</span>
+
+    <span class="n">use_wrapper</span> <span class="o">=</span> <span class="n">measurement</span><span class="p">[</span><span class="s">&#39;source_inst&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="n">measurement</span><span class="p">[</span><span class="s">&#39;comp_inst&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">use_wrapper</span><span class="p">:</span>
+      <span class="n">compiler_cmd</span> <span class="o">=</span> <span class="n">given_compiler</span><span class="p">[</span><span class="s">&#39;tau_wrapper&#39;</span><span class="p">]</span>
+
+    <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">compiler_cmd</span><span class="p">]</span> <span class="o">+</span> <span class="n">opts</span> <span class="o">+</span> <span class="n">compiler_args</span>
+    <span class="n">retval</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">createSubprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">)</span>
+    <span class="c"># This would work if TAU&#39;s wrapper scripts returned nonzero on error...</span>
+<span class="c">#     if retval == 0:</span>
+<span class="c">#       LOGGER.info(&quot;TAU has finished building the application.  Now use `tau &lt;command&gt;` to gather data from &lt;command&gt;.&quot;)</span>
+<span class="c">#     else:</span>
+<span class="c">#       LOGGER.warning(&quot;TAU was unable to build the application.  You can see detailed output in &#39;%s&#39;&quot; % logger.LOG_FILE)</span>
+    <span class="k">return</span> <span class="n">retval</span>
+</div>
+<div class="viewcode-block" id="Experiment.managedRun"><a class="viewcode-back" href="../../../tau.model.html#tau.model.experiment.Experiment.managedRun">[docs]</a>  <span class="k">def</span> <span class="nf">managedRun</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">application_cmd</span><span class="p">,</span> <span class="n">application_args</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    TODO: Docs</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">configure</span><span class="p">()</span>
+    <span class="n">measurement</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="s">&#39;measurement&#39;</span><span class="p">)</span>
+    
+    <span class="n">command</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="n">application_cmd</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">command</span><span class="p">:</span>
+      <span class="k">raise</span> <span class="n">error</span><span class="o">.</span><span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&quot;Cannot find executable: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">application_cmd</span><span class="p">)</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
+    
+    <span class="c"># Check for existing profile files</span>
+    <span class="k">if</span> <span class="n">measurement</span><span class="p">[</span><span class="s">&#39;profile&#39;</span><span class="p">]:</span>
+      <span class="n">profiles</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s">&#39;profile.*.*.*&#39;</span><span class="p">))</span>
+      <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">profiles</span><span class="p">):</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;Profile files found in &#39;</span><span class="si">%s</span><span class="s">&#39;! They will be deleted.&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span>
+        <span class="k">for</span> <span class="nb">file</span> <span class="ow">in</span> <span class="n">profiles</span><span class="p">:</span>
+          <span class="k">try</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="nb">file</span><span class="p">)</span>
+          <span class="k">except</span><span class="p">:</span> <span class="k">continue</span>
+    <span class="c"># Check for existing trace files</span>
+    <span class="c"># TODO</span>
+
+    <span class="c"># Build environment from component packages</span>
+    <span class="n">opts</span><span class="p">,</span> <span class="n">env</span> <span class="o">=</span> <span class="n">environment</span><span class="o">.</span><span class="n">base</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">tau</span><span class="o">.</span><span class="n">applyRuntimeConfig</span><span class="p">(</span><span class="n">opts</span><span class="p">,</span> <span class="n">env</span><span class="p">)</span>
+    
+    <span class="c"># TODO : Select tau_exec as needed</span>
+    <span class="n">use_tau_exec</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="k">if</span> <span class="n">use_tau_exec</span><span class="p">:</span>
+      <span class="c"># TODO: tau_exec flags and command line args</span>
+      <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;tau_exec&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">opts</span> <span class="o">+</span> <span class="p">[</span><span class="n">application_cmd</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">application_cmd</span><span class="p">]</span>
+    <span class="n">cmd</span> <span class="o">+=</span> <span class="n">application_args</span>
+    
+    <span class="k">return</span> <span class="n">Trial</span><span class="o">.</span><span class="n">perform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">env</span><span class="p">)</span>
+  </div>
+<div class="viewcode-block" id="Experiment.show"><a class="viewcode-back" href="../../../tau.model.html#tau.model.experiment.Experiment.show">[docs]</a>  <span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trial_numbers</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Show most recent trial or all trials with given numbers</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">configure</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">trial_numbers</span><span class="p">:</span>
+      <span class="n">trials</span> <span class="o">=</span> <span class="p">[]</span>
+      <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">trial_numbers</span><span class="p">:</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">Trial</span><span class="o">.</span><span class="n">one</span><span class="p">({</span><span class="s">&#39;experiment&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">eid</span><span class="p">,</span> <span class="s">&#39;number&#39;</span><span class="p">:</span> <span class="n">n</span><span class="p">})</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">t</span><span class="p">:</span>
+          <span class="k">raise</span> <span class="n">error</span><span class="o">.</span><span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&quot;No trial number </span><span class="si">%d</span><span class="s"> in experiment </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">()))</span>
+        <span class="n">trials</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">all_trials</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="s">&#39;trials&#39;</span><span class="p">)</span>
+      <span class="k">if</span> <span class="ow">not</span> <span class="n">all_trials</span><span class="p">:</span>
+        <span class="n">trials</span> <span class="o">=</span> <span class="bp">None</span>
+      <span class="k">else</span><span class="p">:</span>
+        <span class="n">latest_date</span> <span class="o">=</span> <span class="n">all_trials</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s">&#39;begin_time&#39;</span><span class="p">]</span>
+        <span class="n">latest_trial</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">for</span> <span class="n">trial</span> <span class="ow">in</span> <span class="n">all_trials</span><span class="p">:</span>
+          <span class="k">if</span> <span class="n">trial</span><span class="p">[</span><span class="s">&#39;begin_time&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">latest_date</span><span class="p">:</span>
+            <span class="n">latest_date</span> <span class="o">=</span> <span class="n">trial</span><span class="p">[</span><span class="s">&#39;begin_time&#39;</span><span class="p">]</span>
+            <span class="n">latest_trial</span> <span class="o">=</span> <span class="n">trial</span>
+        <span class="n">trials</span> <span class="o">=</span> <span class="p">[</span><span class="n">trial</span><span class="p">]</span>
+      
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">trials</span><span class="p">:</span>
+      <span class="k">raise</span> <span class="n">error</span><span class="o">.</span><span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&quot;No trials in experiment </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">(),</span>
+                                     <span class="s">&quot;See `tau trial create --help`&quot;</span><span class="p">)</span>
+      
+    <span class="n">opts</span><span class="p">,</span> <span class="n">env</span> <span class="o">=</span> <span class="n">environment</span><span class="o">.</span><span class="n">base</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">tau</span><span class="o">.</span><span class="n">applyRuntimeConfig</span><span class="p">(</span><span class="n">opts</span><span class="p">,</span> <span class="n">env</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">trial</span> <span class="ow">in</span> <span class="n">trials</span><span class="p">:</span>
+      <span class="n">prefix</span> <span class="o">=</span> <span class="n">trial</span><span class="o">.</span><span class="n">prefix</span><span class="p">()</span>
+      <span class="n">profiles</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s">&#39;profile.*.*.*&#39;</span><span class="p">))</span>
+      <span class="k">if</span> <span class="ow">not</span> <span class="n">profiles</span><span class="p">:</span>
+        <span class="n">profiles</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s">&#39;MULTI__*&#39;</span><span class="p">))</span>
+      <span class="k">if</span> <span class="n">profiles</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tau</span><span class="o">.</span><span class="n">showProfile</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, John Linford  and Srinath Vadlamani @ ParaTools, Inc..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.3</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

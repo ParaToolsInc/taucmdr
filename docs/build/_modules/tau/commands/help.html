@@ -1,0 +1,289 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tau.commands.help &mdash; TauCmdr 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="TauCmdr 0.0.1 documentation" href="../../../index.html" />
+    <link rel="up" title="tau.commands" href="../commands.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">TauCmdr 0.0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../commands.html" accesskey="U">tau.commands</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for tau.commands.help</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">@file</span>
+<span class="sd">@author John C. Linford (jlinford@paratools.com)</span>
+<span class="sd">@version 1.0</span>
+
+<span class="sd">@brief</span>
+
+<span class="sd">This file is part of the TAU Performance System</span>
+
+<span class="sd">@section COPYRIGHT</span>
+
+<span class="sd">Copyright (c) 2013, ParaTools, Inc.</span>
+<span class="sd">All rights reserved.</span>
+
+<span class="sd">Redistribution and use in source and binary forms, with or without </span>
+<span class="sd">modification, are permitted provided that the following conditions are met:</span>
+<span class="sd"> (1) Redistributions of source code must retain the above copyright notice, </span>
+<span class="sd">     this list of conditions and the following disclaimer.</span>
+<span class="sd"> (2) Redistributions in binary form must reproduce the above copyright notice, </span>
+<span class="sd">     this list of conditions and the following disclaimer in the documentation </span>
+<span class="sd">     and/or other materials provided with the distribution.</span>
+<span class="sd"> (3) Neither the name of ParaTools, Inc. nor the names of its contributors may </span>
+<span class="sd">     be used to endorse or promote products derived from this software without </span>
+<span class="sd">     specific prior written permission.</span>
+
+<span class="sd">THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot; </span>
+<span class="sd">AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE </span>
+<span class="sd">IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE </span>
+<span class="sd">DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE </span>
+<span class="sd">FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL </span>
+<span class="sd">DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR </span>
+<span class="sd">SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER </span>
+<span class="sd">CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, </span>
+<span class="sd">OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE </span>
+<span class="sd">OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c"># System modules</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="c"># TAU modules</span>
+<span class="kn">import</span> <span class="nn">tau</span>
+<span class="kn">import</span> <span class="nn">logger</span>
+<span class="kn">import</span> <span class="nn">commands</span>
+<span class="kn">import</span> <span class="nn">arguments</span> <span class="kn">as</span> <span class="nn">args</span>
+
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+<span class="n">_name_parts</span> <span class="o">=</span> <span class="n">__name__</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)[</span><span class="mi">2</span><span class="p">:]</span>
+<span class="n">COMMAND</span> <span class="o">=</span> <span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&#39;tau&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">_name_parts</span><span class="p">)</span>
+
+<span class="n">SHORT_DESCRIPTION</span> <span class="o">=</span> <span class="s">&quot;Show help for a command or suggest actions for a file.&quot;</span>
+
+<span class="n">USAGE</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
+<span class="s">  </span><span class="si">%(command)s</span><span class="s"> (&lt;command&gt;|&lt;file&gt;) [arguments]</span>
+<span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;command&#39;</span><span class="p">:</span> <span class="n">COMMAND</span><span class="p">}</span>
+
+<span class="n">HELP</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
+<span class="s">Show help for a command line or file.</span>
+<span class="s">&quot;&quot;&quot;</span>
+
+<span class="n">_arguments</span> <span class="o">=</span> <span class="p">[</span> <span class="p">((</span><span class="s">&#39;command&#39;</span><span class="p">,),</span> <span class="p">{</span><span class="s">&#39;help&#39;</span><span class="p">:</span> <span class="s">&quot;A TAU command, system command, or file&quot;</span><span class="p">,</span>
+                               <span class="s">&#39;metavar&#39;</span><span class="p">:</span> <span class="s">&#39;(&lt;command&gt;|&lt;file&gt;)&#39;</span><span class="p">,</span>
+                               <span class="s">&#39;nargs&#39;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">REMAINDER</span><span class="p">})]</span>
+<span class="n">PARSER</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">getParser</span><span class="p">(</span><span class="n">_arguments</span><span class="p">,</span>
+                        <span class="n">prog</span><span class="o">=</span><span class="n">COMMAND</span><span class="p">,</span> 
+                        <span class="n">usage</span><span class="o">=</span><span class="n">USAGE</span><span class="p">,</span> 
+                        <span class="n">description</span><span class="o">=</span><span class="n">SHORT_DESCRIPTION</span><span class="p">)</span>
+
+
+<span class="n">_GENERIC_HELP</span> <span class="o">=</span> <span class="s">&quot;See &#39;tau --help&#39; or contact </span><span class="si">%s</span><span class="s"> for assistance&quot;</span> <span class="o">%</span> <span class="n">tau</span><span class="o">.</span><span class="n">HELP_CONTACT</span>
+
+<span class="n">_KNOWN_FILES</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;makefile&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;makefile script&quot;</span><span class="p">,</span> 
+                             <span class="s">&quot;See &#39;tau make --help&#39; for help building with make&quot;</span><span class="p">),</span>
+                <span class="s">&#39;a.out&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;binary executable&quot;</span><span class="p">,</span> 
+                          <span class="s">&quot;See &#39;tau run --help&#39; for help with profiling this program&quot;</span><span class="p">),</span>
+                <span class="s">&#39;.exe&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;binary executable&quot;</span><span class="p">,</span> 
+                         <span class="s">&quot;See &#39;tau run --help&#39; for help with profiling this program&quot;</span><span class="p">)}</span>
+
+<span class="n">_MIME_HINTS</span> <span class="o">=</span> <span class="p">{</span><span class="bp">None</span><span class="p">:</span> <span class="p">{</span><span class="bp">None</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;unknown file&quot;</span><span class="p">,</span> <span class="n">_GENERIC_HELP</span><span class="p">),</span>
+                      <span class="s">&#39;gzip&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;compressed file&quot;</span><span class="p">,</span> <span class="s">&quot;Please specify an executable file&quot;</span><span class="p">)},</span>
+               <span class="s">&#39;application&#39;</span><span class="p">:</span> <span class="p">{</span><span class="bp">None</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;unknown binary file&quot;</span><span class="p">,</span> <span class="n">_GENERIC_HELP</span><span class="p">),</span>
+                               <span class="s">&#39;sharedlib&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;shared library&quot;</span><span class="p">,</span> <span class="s">&quot;Please specify an executable file&quot;</span><span class="p">),</span>
+                               <span class="s">&#39;archive&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;archive file&quot;</span><span class="p">,</span> <span class="s">&quot;Please specify an executable file&quot;</span><span class="p">),</span>
+                               <span class="s">&#39;tar&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;archive file&quot;</span><span class="p">,</span> <span class="s">&quot;Please specify an executable file&quot;</span><span class="p">),</span>
+                               <span class="s">&#39;unknown&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;unknown binary file&quot;</span><span class="p">,</span> <span class="n">_GENERIC_HELP</span><span class="p">)},</span>
+               <span class="s">&#39;text&#39;</span><span class="p">:</span> <span class="p">{</span><span class="bp">None</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;unknown text file&quot;</span><span class="p">,</span> <span class="n">_GENERIC_HELP</span><span class="p">),</span>
+                        <span class="s">&#39;src&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;source code file&quot;</span><span class="p">,</span> <span class="s">&quot;See &#39;tau build --help&#39; for help compiling this file&quot;</span><span class="p">),</span>
+                        <span class="s">&#39;hdr&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;source header file&quot;</span><span class="p">,</span> <span class="s">&quot;See &#39;tau build --help&#39; for help instrumenting this file&quot;</span><span class="p">),</span>
+                        <span class="s">&#39;fortran&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;fortran source code file&quot;</span><span class="p">,</span> <span class="s">&quot;See &#39;tau build --help&#39; for help compiling this file&quot;</span><span class="p">),</span>
+                        <span class="s">&#39;plain&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;text file&quot;</span><span class="p">,</span> <span class="n">_GENERIC_HELP</span><span class="p">)}</span>
+               <span class="p">}</span>
+
+<span class="k">def</span> <span class="nf">_fuzzy_index</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return d[key] where ((key in k) == true) or return d[None]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">iterkeys</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">and</span> <span class="p">(</span><span class="n">key</span> <span class="ow">in</span> <span class="n">k</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">d</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">d</span><span class="p">[</span><span class="bp">None</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">_guess_filetype</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return a (type, encoding) tuple for a file</span>
+<span class="sd">    &quot;&quot;&quot;</span> 
+    <span class="kn">import</span> <span class="nn">mimetypes</span>
+    <span class="n">mimetypes</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
+    <span class="nb">type</span> <span class="o">=</span> <span class="n">mimetypes</span><span class="o">.</span><span class="n">guess_type</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">type</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+        <span class="n">textchars</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">([</span><span class="mi">7</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">9</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">12</span><span class="p">,</span><span class="mi">13</span><span class="p">,</span><span class="mi">27</span><span class="p">])</span> <span class="o">+</span> <span class="nb">bytearray</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mh">0x20</span><span class="p">,</span> <span class="mh">0x100</span><span class="p">))</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="n">textchars</span><span class="p">):</span>
+                <span class="nb">type</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;application/unknown&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">type</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;text/plain&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">type</span>
+
+
+<div class="viewcode-block" id="getUsage"><a class="viewcode-back" href="../../../tau.commands.html#tau.commands.help.getUsage">[docs]</a><span class="k">def</span> <span class="nf">getUsage</span><span class="p">():</span>
+  <span class="k">return</span> <span class="n">PARSER</span><span class="o">.</span><span class="n">format_help</span><span class="p">()</span> 
+
+</div>
+<div class="viewcode-block" id="getHelp"><a class="viewcode-back" href="../../../tau.commands.html#tau.commands.help.getHelp">[docs]</a><span class="k">def</span> <span class="nf">getHelp</span><span class="p">():</span>
+  <span class="k">return</span> <span class="n">HELP</span>
+
+</div>
+<div class="viewcode-block" id="exitWithHelp"><a class="viewcode-back" href="../../../tau.commands.html#tau.commands.help.exitWithHelp">[docs]</a><span class="k">def</span> <span class="nf">exitWithHelp</span><span class="p">(</span><span class="n">module_name</span><span class="p">):</span>
+  <span class="nb">__import__</span><span class="p">(</span><span class="n">module_name</span><span class="p">)</span>
+  <span class="n">module</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">module_name</span><span class="p">]</span>
+  <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;&quot;&quot;</span>
+<span class="si">%(bar)s</span><span class="s"></span>
+
+<span class="si">%(usage)s</span><span class="s"></span>
+
+<span class="si">%(bar)s</span><span class="s"></span>
+
+<span class="si">%(help)s</span><span class="s"></span>
+
+<span class="si">%(bar)s</span><span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;bar&#39;</span><span class="p">:</span> <span class="s">&#39;-&#39;</span><span class="o">*</span><span class="mi">80</span><span class="p">,</span> 
+              <span class="s">&#39;usage&#39;</span><span class="p">:</span> <span class="n">module</span><span class="o">.</span><span class="n">getUsage</span><span class="p">(),</span>
+              <span class="s">&#39;help&#39;</span><span class="p">:</span> <span class="n">module</span><span class="o">.</span><span class="n">getHelp</span><span class="p">()})</span>
+  <span class="k">return</span> <span class="n">tau</span><span class="o">.</span><span class="n">EXIT_SUCCESS</span>
+
+</div>
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../../tau.commands.html#tau.commands.help.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  Program entry point</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="n">args</span> <span class="o">=</span> <span class="n">PARSER</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">argv</span><span class="p">)</span>
+  <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Arguments: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">args</span><span class="p">)</span>
+  
+  <span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">command</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">exitWithHelp</span><span class="p">(</span><span class="s">&#39;__main__&#39;</span><span class="p">)</span>
+    
+  <span class="c"># Try to look up a Tau command&#39;s built-in help page</span>
+  <span class="n">cmd</span> <span class="o">=</span> <span class="s">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">command</span><span class="p">)</span>
+  <span class="k">try</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">exitWithHelp</span><span class="p">(</span><span class="s">&#39;commands.</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">cmd</span><span class="p">)</span>
+  <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="k">pass</span>
+
+  <span class="c"># Is this a file?</span>
+  <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">cmd</span><span class="p">):</span> 
+    <span class="c"># Do we recognize the file name?</span>
+    <span class="k">try</span><span class="p">:</span>
+      <span class="n">desc</span><span class="p">,</span> <span class="n">hint</span> <span class="o">=</span> <span class="n">_fuzzy_index</span><span class="p">(</span><span class="n">_KNOWN_FILES</span><span class="p">,</span> <span class="n">cmd</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+      <span class="k">pass</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">article</span> <span class="o">=</span> <span class="s">&#39;an&#39;</span> <span class="k">if</span> <span class="n">desc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="s">&#39;aeiou&#39;</span> <span class="k">else</span> <span class="s">&#39;a&#39;</span>
+      <span class="n">hint</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%r</span><span class="s"> is </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">.</span><span class="se">\n</span><span class="si">%s</span><span class="s">.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">article</span><span class="p">,</span> <span class="n">desc</span><span class="p">,</span> <span class="n">hint</span><span class="p">)</span>
+      <span class="k">raise</span> <span class="n">commands</span><span class="o">.</span><span class="n">UnknownCommandError</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">hint</span><span class="p">)</span>
+    
+    <span class="c"># Get the filetype and try to be helpful.</span>
+    <span class="nb">type</span><span class="p">,</span> <span class="n">encoding</span> <span class="o">=</span> <span class="n">_guess_filetype</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%r</span><span class="s"> has type (</span><span class="si">%s</span><span class="s">, </span><span class="si">%s</span><span class="s">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">encoding</span><span class="p">))</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">:</span>
+      <span class="nb">type</span><span class="p">,</span> <span class="n">subtype</span> <span class="o">=</span> <span class="nb">type</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">)</span>
+      <span class="k">try</span><span class="p">:</span>
+        <span class="n">type_hints</span> <span class="o">=</span> <span class="n">_MIME_HINTS</span><span class="p">[</span><span class="nb">type</span><span class="p">]</span>
+      <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="n">hint</span> <span class="o">=</span> <span class="s">&quot;TAU doesn&#39;t recognize </span><span class="si">%r</span><span class="s">.</span><span class="se">\n</span><span class="s">See &#39;tau --help&#39; and use the appropriate subcommand.&quot;</span> <span class="o">%</span> <span class="n">cmd</span>
+      <span class="k">else</span><span class="p">:</span>
+        <span class="n">desc</span><span class="p">,</span> <span class="n">hint</span> <span class="o">=</span> <span class="n">_fuzzy_index</span><span class="p">(</span><span class="n">type_hints</span><span class="p">,</span> <span class="n">subtype</span><span class="p">)</span>
+        <span class="n">article</span> <span class="o">=</span> <span class="s">&#39;an&#39;</span> <span class="k">if</span> <span class="n">desc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="s">&#39;aeiou&#39;</span> <span class="k">else</span> <span class="s">&#39;a&#39;</span>
+        <span class="n">hint</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%r</span><span class="s"> is </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">.</span><span class="se">\n</span><span class="si">%s</span><span class="s">.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">article</span><span class="p">,</span> <span class="n">desc</span><span class="p">,</span> <span class="n">hint</span><span class="p">)</span>
+      <span class="k">raise</span> <span class="n">commands</span><span class="o">.</span><span class="n">UnknownCommandError</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">hint</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="k">raise</span> <span class="n">commands</span><span class="o">.</span><span class="n">UnknownCommandError</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+  
+  <span class="c"># Not a file, not a command, let&#39;s just show TAU usage and exit</span>
+  <span class="k">return</span> <span class="n">exitWithHelp</span><span class="p">(</span><span class="s">&#39;__main__&#39;</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, John Linford  and Srinath Vadlamani @ ParaTools, Inc..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.3</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

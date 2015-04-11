@@ -1,0 +1,264 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tau.arguments &mdash; TauCmdr 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="TauCmdr 0.0.1 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">TauCmdr 0.0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for tau.arguments</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">@file</span>
+<span class="sd">@author John C. Linford (jlinford@paratools.com)</span>
+<span class="sd">@version 1.0</span>
+
+<span class="sd">@brief</span>
+
+<span class="sd">This file is part of the TAU Performance System</span>
+
+<span class="sd">@section COPYRIGHT</span>
+
+<span class="sd">Copyright (c) 2013, ParaTools, Inc.</span>
+<span class="sd">All rights reserved.</span>
+
+<span class="sd">Redistribution and use in source and binary forms, with or without </span>
+<span class="sd">modification, are permitted provided that the following conditions are met:</span>
+<span class="sd"> (1) Redistributions of source code must retain the above copyright notice, </span>
+<span class="sd">     this list of conditions and the following disclaimer.</span>
+<span class="sd"> (2) Redistributions in binary form must reproduce the above copyright notice, </span>
+<span class="sd">     this list of conditions and the following disclaimer in the documentation </span>
+<span class="sd">     and/or other materials provided with the distribution.</span>
+<span class="sd"> (3) Neither the name of ParaTools, Inc. nor the names of its contributors may </span>
+<span class="sd">     be used to endorse or promote products derived from this software without </span>
+<span class="sd">     specific prior written permission.</span>
+
+<span class="sd">THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot; </span>
+<span class="sd">AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE </span>
+<span class="sd">IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE </span>
+<span class="sd">DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE </span>
+<span class="sd">FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL </span>
+<span class="sd">DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR </span>
+<span class="sd">SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER </span>
+<span class="sd">CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, </span>
+<span class="sd">OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE </span>
+<span class="sd">OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c"># System modules</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
+
+<span class="c"># TAU modules</span>
+<span class="kn">import</span> <span class="nn">logger</span>
+<span class="kn">import</span> <span class="nn">util</span>
+
+
+<span class="n">SUPPRESS</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">SUPPRESS</span>
+<span class="n">REMAINDER</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">REMAINDER</span>
+
+
+<div class="viewcode-block" id="MutableGroupArgumentParser"><a class="viewcode-back" href="../../tau.html#tau.arguments.MutableGroupArgumentParser">[docs]</a><span class="k">class</span> <span class="nc">MutableGroupArgumentParser</span><span class="p">(</span><span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  Argument parser that permits groups to be updated</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="MutableGroupArgumentParser.getGroup"><a class="viewcode-back" href="../../tau.html#tau.arguments.MutableGroupArgumentParser.getGroup">[docs]</a>  <span class="k">def</span> <span class="nf">getGroup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_action_groups</span><span class="p">:</span>
+      <span class="k">if</span> <span class="n">group</span><span class="o">.</span><span class="n">title</span> <span class="o">==</span> <span class="n">title</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">group</span>
+    <span class="k">return</span> <span class="bp">None</span>
+</div></div>
+<div class="viewcode-block" id="ArgparseHelpFormatter"><a class="viewcode-back" href="../../tau.html#tau.arguments.ArgparseHelpFormatter">[docs]</a><span class="k">class</span> <span class="nc">ArgparseHelpFormatter</span><span class="p">(</span><span class="n">argparse</span><span class="o">.</span><span class="n">RawDescriptionHelpFormatter</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  Custom formatter for argparse</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prog</span><span class="p">,</span> <span class="n">indent_increment</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">max_help_position</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="n">logger</span><span class="o">.</span><span class="n">LINE_WIDTH</span><span class="p">):</span>
+    <span class="nb">super</span><span class="p">(</span><span class="n">ArgparseHelpFormatter</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">prog</span><span class="p">,</span> <span class="n">indent_increment</span><span class="p">,</span> <span class="n">max_help_position</span><span class="p">,</span> <span class="n">width</span><span class="p">)</span>
+
+  <span class="k">def</span> <span class="nf">_split_lines</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">width</span><span class="p">):</span>
+    <span class="n">parts</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">text</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
+      <span class="n">parts</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">argparse</span><span class="o">.</span><span class="n">HelpFormatter</span><span class="o">.</span><span class="n">_split_lines</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">width</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">parts</span>
+
+  <span class="k">def</span> <span class="nf">_get_help_string</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
+    <span class="n">indent</span> <span class="o">=</span> <span class="s">&#39; &#39;</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_indent_increment</span>
+    <span class="n">help</span> <span class="o">=</span> <span class="n">action</span><span class="o">.</span><span class="n">help</span>
+    <span class="n">choices</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">action</span><span class="p">,</span> <span class="s">&#39;choices&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">choices</span><span class="p">:</span>
+      <span class="n">help</span> <span class="o">+=</span> <span class="s">&#39;</span><span class="se">\n</span><span class="si">%s</span><span class="s">- </span><span class="si">%s</span><span class="s">: (</span><span class="si">%s</span><span class="s">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">indent</span><span class="p">,</span> <span class="n">action</span><span class="o">.</span><span class="n">metavar</span><span class="p">,</span> <span class="s">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">choices</span><span class="p">))</span>
+    <span class="k">if</span> <span class="s">&#39;%(default)&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">action</span><span class="o">.</span><span class="n">help</span><span class="p">:</span>
+      <span class="k">if</span> <span class="n">action</span><span class="o">.</span><span class="n">default</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">argparse</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">:</span>
+        <span class="n">defaulting_nargs</span> <span class="o">=</span> <span class="p">[</span><span class="n">argparse</span><span class="o">.</span><span class="n">OPTIONAL</span><span class="p">,</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ZERO_OR_MORE</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">action</span><span class="o">.</span><span class="n">option_strings</span> <span class="ow">or</span> <span class="n">action</span><span class="o">.</span><span class="n">nargs</span> <span class="ow">in</span> <span class="n">defaulting_nargs</span><span class="p">:</span>
+          <span class="n">help</span> <span class="o">+=</span> <span class="s">&#39;</span><span class="se">\n</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">indent</span> <span class="o">+</span> <span class="s">&#39;- default: </span><span class="si">%(default)s</span><span class="s">&#39;</span>
+    <span class="k">return</span> <span class="n">help</span>
+  
+</div>
+<div class="viewcode-block" id="ParsePackagePathAction"><a class="viewcode-back" href="../../tau.html#tau.arguments.ParsePackagePathAction">[docs]</a><span class="k">class</span> <span class="nc">ParsePackagePathAction</span><span class="p">(</span><span class="n">argparse</span><span class="o">.</span><span class="n">Action</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  TODO: Docs</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parser</span><span class="p">,</span> <span class="n">namespace</span><span class="p">,</span> <span class="n">flag</span><span class="p">,</span> <span class="n">option_string</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="n">flag_as_bool</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">parseBoolean</span><span class="p">(</span><span class="n">flag</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">flag_as_bool</span> <span class="o">==</span> <span class="bp">True</span><span class="p">:</span>
+      <span class="n">value</span> <span class="o">=</span> <span class="s">&#39;download&#39;</span>
+    <span class="k">elif</span> <span class="n">flag_as_bool</span> <span class="o">==</span> <span class="bp">False</span><span class="p">:</span>
+      <span class="n">value</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="k">elif</span> <span class="p">(</span><span class="n">flag</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;download&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">flag</span><span class="p">))</span> <span class="ow">or</span> <span class="n">util</span><span class="o">.</span><span class="n">isURL</span><span class="p">(</span><span class="n">flag</span><span class="p">):</span>
+      <span class="n">value</span> <span class="o">=</span> <span class="n">flag</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="k">raise</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentError</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&quot;Boolean, &#39;download&#39;, path, or URL required, received: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">flag</span><span class="p">)</span>
+    <span class="nb">setattr</span><span class="p">(</span><span class="n">namespace</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="ParseBooleanAction"><a class="viewcode-back" href="../../tau.html#tau.arguments.ParseBooleanAction">[docs]</a><span class="k">class</span> <span class="nc">ParseBooleanAction</span><span class="p">(</span><span class="n">argparse</span><span class="o">.</span><span class="n">Action</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  Parses an option value into a boolean</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parser</span><span class="p">,</span> <span class="n">namespace</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">option_string</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="n">bool_value</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">parseBoolean</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">bool_value</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+      <span class="k">raise</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentError</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;Boolean value required&#39;</span><span class="p">)</span>
+    <span class="nb">setattr</span><span class="p">(</span><span class="n">namespace</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="p">,</span> <span class="n">bool_value</span><span class="p">)</span>
+    
+</div>
+<div class="viewcode-block" id="getParser"><a class="viewcode-back" href="../../tau.html#tau.arguments.getParser">[docs]</a><span class="k">def</span> <span class="nf">getParser</span><span class="p">(</span><span class="n">arguments</span><span class="p">,</span> <span class="n">prog</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">usage</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">epilog</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  Builds and argparse.ArgumentParser from the given arguments</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">prog</span><span class="o">=</span><span class="n">prog</span><span class="p">,</span> 
+                                   <span class="n">usage</span><span class="o">=</span><span class="n">usage</span><span class="p">,</span> 
+                                   <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">,</span>
+                                   <span class="n">epilog</span><span class="o">=</span><span class="n">epilog</span><span class="p">,</span>
+                                   <span class="n">formatter_class</span><span class="o">=</span><span class="n">ArgparseHelpFormatter</span><span class="p">)</span>
+  <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">arguments</span><span class="p">:</span>
+    <span class="n">flags</span><span class="p">,</span> <span class="n">options</span> <span class="o">=</span> <span class="n">arg</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="o">*</span><span class="n">flags</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+  <span class="k">return</span> <span class="n">parser</span>
+
+</div>
+<div class="viewcode-block" id="getParserFromModel"><a class="viewcode-back" href="../../tau.html#tau.arguments.getParserFromModel">[docs]</a><span class="k">def</span> <span class="nf">getParserFromModel</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">use_defaults</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                       <span class="n">prog</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">usage</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">epilog</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  Builds an argparse.ArgumentParser from a model&#39;s attributes</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="n">parser</span> <span class="o">=</span> <span class="n">MutableGroupArgumentParser</span><span class="p">(</span><span class="n">prog</span><span class="o">=</span><span class="n">prog</span><span class="p">,</span> 
+                                      <span class="n">usage</span><span class="o">=</span><span class="n">usage</span><span class="p">,</span> 
+                                      <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">,</span>
+                                      <span class="n">epilog</span><span class="o">=</span><span class="n">epilog</span><span class="p">,</span>
+                                      <span class="n">formatter_class</span><span class="o">=</span><span class="n">ArgparseHelpFormatter</span><span class="p">)</span>
+  <span class="n">groups</span> <span class="o">=</span> <span class="p">{}</span>
+  <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">props</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+    <span class="k">try</span><span class="p">:</span>
+      <span class="n">options</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">props</span><span class="p">[</span><span class="s">&#39;argparse&#39;</span><span class="p">])</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+      <span class="k">continue</span>
+    <span class="k">try</span><span class="p">:</span>
+      <span class="n">default</span> <span class="o">=</span> <span class="n">props</span><span class="p">[</span><span class="s">&#39;defaultsTo&#39;</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+      <span class="n">options</span><span class="p">[</span><span class="s">&#39;default&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">SUPPRESS</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="k">if</span> <span class="n">use_defaults</span> <span class="ow">and</span> <span class="n">default</span><span class="p">:</span>
+        <span class="n">options</span><span class="p">[</span><span class="s">&#39;default&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">default</span>
+      <span class="k">else</span><span class="p">:</span>
+        <span class="n">options</span><span class="p">[</span><span class="s">&#39;default&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">SUPPRESS</span> 
+    <span class="k">try</span><span class="p">:</span>
+      <span class="n">group_name</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s">&#39;group&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s">&#39; arguments&#39;</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+      <span class="n">group</span> <span class="o">=</span> <span class="n">parser</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="k">del</span> <span class="n">options</span><span class="p">[</span><span class="s">&#39;group&#39;</span><span class="p">]</span>
+      <span class="n">groups</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">group_name</span><span class="p">,</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="n">group_name</span><span class="p">))</span>
+      <span class="n">group</span> <span class="o">=</span> <span class="n">groups</span><span class="p">[</span><span class="n">group_name</span><span class="p">]</span>
+    <span class="k">try</span><span class="p">:</span>
+      <span class="n">flags</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s">&#39;flags&#39;</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+      <span class="n">flags</span> <span class="o">=</span> <span class="p">(</span><span class="n">attr</span><span class="p">,)</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="k">del</span> <span class="n">options</span><span class="p">[</span><span class="s">&#39;flags&#39;</span><span class="p">]</span>
+      <span class="n">options</span><span class="p">[</span><span class="s">&#39;dest&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">attr</span>
+    <span class="n">group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="o">*</span><span class="n">flags</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+  <span class="k">return</span> <span class="n">parser</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, John Linford  and Srinath Vadlamani @ ParaTools, Inc..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.3</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

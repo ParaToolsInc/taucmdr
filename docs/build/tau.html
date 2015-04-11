@@ -1,0 +1,977 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tau package &mdash; TauCmdr 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="TauCmdr 0.0.1 documentation" href="index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">TauCmdr 0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="tau-package">
+<h1>tau package<a class="headerlink" href="#tau-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tau.cf.html">tau.cf package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tau.cf.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.cf.html#module-tau.cf.bfd">tau.cf.bfd module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.cf.html#module-tau.cf.libunwind">tau.cf.libunwind module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.cf.html#module-tau.cf.papi">tau.cf.papi module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.cf.html#module-tau.cf.pdt">tau.cf.pdt module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.cf.html#module-tau.cf.scorep">tau.cf.scorep module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.cf.html#module-tau.cf.tau">tau.cf.tau module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.cf.html#module-tau.cf">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tau.commands.html">tau.commands package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tau.commands.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tau.commands.application.html">tau.commands.application package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tau.commands.application.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.commands.application.html#module-tau.commands.application.create">tau.commands.application.create module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.commands.application.html#module-tau.commands.application.delete">tau.commands.application.delete module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.commands.application.html#module-tau.commands.application.edit">tau.commands.application.edit module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.commands.application.html#module-tau.commands.application.list">tau.commands.application.list module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.commands.application.html#module-tau.commands.application">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="tau.commands.measurement.html">tau.commands.measurement package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tau.commands.measurement.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.commands.measurement.html#module-tau.commands.measurement.create">tau.commands.measurement.create module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.commands.measurement.html#module-tau.commands.measurement.delete">tau.commands.measurement.delete module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.commands.measurement.html#module-tau.commands.measurement.edit">tau.commands.measurement.edit module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.commands.measurement.html#module-tau.commands.measurement.list">tau.commands.measurement.list module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.commands.measurement.html#module-tau.commands.measurement">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="tau.commands.project.html">tau.commands.project package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tau.commands.project.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.commands.project.html#module-tau.commands.project.create">tau.commands.project.create module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.commands.project.html#module-tau.commands.project.delete">tau.commands.project.delete module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.commands.project.html#module-tau.commands.project.edit">tau.commands.project.edit module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.commands.project.html#module-tau.commands.project.list">tau.commands.project.list module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.commands.project.html#module-tau.commands.project.select">tau.commands.project.select module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.commands.project.html#module-tau.commands.project">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="tau.commands.target.html">tau.commands.target package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tau.commands.target.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.commands.target.html#module-tau.commands.target.create">tau.commands.target.create module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.commands.target.html#module-tau.commands.target.delete">tau.commands.target.delete module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.commands.target.html#module-tau.commands.target.edit">tau.commands.target.edit module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.commands.target.html#module-tau.commands.target.list">tau.commands.target.list module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.commands.target.html#module-tau.commands.target">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="tau.commands.trial.html">tau.commands.trial package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tau.commands.trial.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.commands.trial.html#module-tau.commands.trial.create">tau.commands.trial.create module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.commands.trial.html#module-tau.commands.trial.delete">tau.commands.trial.delete module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.commands.trial.html#module-tau.commands.trial.list">tau.commands.trial.list module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.commands.trial.html#module-tau.commands.trial.show">tau.commands.trial.show module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.commands.trial.html#module-tau.commands.trial">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tau.commands.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.commands.html#module-tau.commands.build">tau.commands.build module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.commands.html#module-tau.commands.dashboard">tau.commands.dashboard module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.commands.html#module-tau.commands.help">tau.commands.help module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.commands.html#module-tau.commands">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tau.model.html">tau.model package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tau.model.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.model.html#module-tau.model.application">tau.model.application module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.model.html#module-tau.model.compiler">tau.model.compiler module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.model.html#module-tau.model.experiment">tau.model.experiment module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.model.html#module-tau.model.measurement">tau.model.measurement module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.model.html#module-tau.model.project">tau.model.project module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.model.html#module-tau.model.setting">tau.model.setting module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.model.html#module-tau.model.target">tau.model.target module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.model.html#module-tau.model.trial">tau.model.trial module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.model.html#module-tau.model">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-tau.arguments">
+<span id="tau-arguments-module"></span><h2>tau.arguments module<a class="headerlink" href="#module-tau.arguments" title="Permalink to this headline">¶</a></h2>
+<p>&#64;file
+&#64;author John C. Linford (<a class="reference external" href="mailto:jlinford&#37;&#52;&#48;paratools&#46;com">jlinford<span>&#64;</span>paratools<span>&#46;</span>com</a>)
+&#64;version 1.0</p>
+<p>&#64;brief</p>
+<p>This file is part of the TAU Performance System</p>
+<p>&#64;section COPYRIGHT</p>
+<p>Copyright (c) 2013, ParaTools, Inc.
+All rights reserved.</p>
+<p>Redistribution and use in source and binary forms, with or without 
+modification, are permitted provided that the following conditions are met:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Redistributions of source code must retain the above copyright notice, 
+this list of conditions and the following disclaimer.</li>
+<li>Redistributions in binary form must reproduce the above copyright notice, 
+this list of conditions and the following disclaimer in the documentation 
+and/or other materials provided with the distribution.</li>
+<li>Neither the name of ParaTools, Inc. nor the names of its contributors may 
+be used to endorse or promote products derived from this software without 
+specific prior written permission.</li>
+</ol>
+</div></blockquote>
+<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &#8220;AS IS&#8221; 
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE 
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, 
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
+<dl class="class">
+<dt id="tau.arguments.ArgparseHelpFormatter">
+<em class="property">class </em><code class="descclassname">tau.arguments.</code><code class="descname">ArgparseHelpFormatter</code><span class="sig-paren">(</span><em>prog</em>, <em>indent_increment=2</em>, <em>max_help_position=30</em>, <em>width=141</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/arguments.html#ArgparseHelpFormatter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.arguments.ArgparseHelpFormatter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/argparse.html#argparse.RawDescriptionHelpFormatter" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">argparse.RawDescriptionHelpFormatter</span></code></a></p>
+<p>Custom formatter for argparse</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="tau.arguments.MutableGroupArgumentParser">
+<em class="property">class </em><code class="descclassname">tau.arguments.</code><code class="descname">MutableGroupArgumentParser</code><span class="sig-paren">(</span><em>prog=None</em>, <em>usage=None</em>, <em>description=None</em>, <em>epilog=None</em>, <em>version=None</em>, <em>parents=[]</em>, <em>formatter_class=&lt;class 'argparse.HelpFormatter'&gt;</em>, <em>prefix_chars='-'</em>, <em>fromfile_prefix_chars=None</em>, <em>argument_default=None</em>, <em>conflict_handler='error'</em>, <em>add_help=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/arguments.html#MutableGroupArgumentParser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.arguments.MutableGroupArgumentParser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/argparse.html#argparse.ArgumentParser" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">argparse.ArgumentParser</span></code></a></p>
+<p>Argument parser that permits groups to be updated</p>
+<dl class="method">
+<dt id="tau.arguments.MutableGroupArgumentParser.getGroup">
+<code class="descname">getGroup</code><span class="sig-paren">(</span><em>title</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/arguments.html#MutableGroupArgumentParser.getGroup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.arguments.MutableGroupArgumentParser.getGroup" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tau.arguments.ParseBooleanAction">
+<em class="property">class </em><code class="descclassname">tau.arguments.</code><code class="descname">ParseBooleanAction</code><span class="sig-paren">(</span><em>option_strings</em>, <em>dest</em>, <em>nargs=None</em>, <em>const=None</em>, <em>default=None</em>, <em>type=None</em>, <em>choices=None</em>, <em>required=False</em>, <em>help=None</em>, <em>metavar=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/arguments.html#ParseBooleanAction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.arguments.ParseBooleanAction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/argparse.html#argparse.Action" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">argparse.Action</span></code></a></p>
+<p>Parses an option value into a boolean</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="tau.arguments.ParsePackagePathAction">
+<em class="property">class </em><code class="descclassname">tau.arguments.</code><code class="descname">ParsePackagePathAction</code><span class="sig-paren">(</span><em>option_strings</em>, <em>dest</em>, <em>nargs=None</em>, <em>const=None</em>, <em>default=None</em>, <em>type=None</em>, <em>choices=None</em>, <em>required=False</em>, <em>help=None</em>, <em>metavar=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/arguments.html#ParsePackagePathAction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.arguments.ParsePackagePathAction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/argparse.html#argparse.Action" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">argparse.Action</span></code></a></p>
+<p>TODO: Docs</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.arguments.getParser">
+<code class="descclassname">tau.arguments.</code><code class="descname">getParser</code><span class="sig-paren">(</span><em>arguments</em>, <em>prog=None</em>, <em>usage=None</em>, <em>description=None</em>, <em>epilog=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/arguments.html#getParser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.arguments.getParser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Builds and argparse.ArgumentParser from the given arguments</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.arguments.getParserFromModel">
+<code class="descclassname">tau.arguments.</code><code class="descname">getParserFromModel</code><span class="sig-paren">(</span><em>model</em>, <em>use_defaults=True</em>, <em>prog=None</em>, <em>usage=None</em>, <em>description=None</em>, <em>epilog=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/arguments.html#getParserFromModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.arguments.getParserFromModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Builds an argparse.ArgumentParser from a model&#8217;s attributes</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-tau.controller">
+<span id="tau-controller-module"></span><h2>tau.controller module<a class="headerlink" href="#module-tau.controller" title="Permalink to this headline">¶</a></h2>
+<p>&#64;file
+&#64;author John C. Linford (<a class="reference external" href="mailto:jlinford&#37;&#52;&#48;paratools&#46;com">jlinford<span>&#64;</span>paratools<span>&#46;</span>com</a>)
+&#64;version 1.0</p>
+<p>&#64;brief</p>
+<p>This file is part of the TAU Performance System</p>
+<p>&#64;section COPYRIGHT</p>
+<p>Copyright (c) 2013, ParaTools, Inc.
+All rights reserved.</p>
+<p>Redistribution and use in source and binary forms, with or without 
+modification, are permitted provided that the following conditions are met:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Redistributions of source code must retain the above copyright notice, 
+this list of conditions and the following disclaimer.</li>
+<li>Redistributions in binary form must reproduce the above copyright notice, 
+this list of conditions and the following disclaimer in the documentation 
+and/or other materials provided with the distribution.</li>
+<li>Neither the name of ParaTools, Inc. nor the names of its contributors may 
+be used to endorse or promote products derived from this software without 
+specific prior written permission.</li>
+</ol>
+</div></blockquote>
+<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &#8220;AS IS&#8221; 
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE 
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, 
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
+<dl class="class">
+<dt id="tau.controller.ByName">
+<em class="property">class </em><code class="descclassname">tau.controller.</code><code class="descname">ByName</code><a class="reference internal" href="_modules/tau/controller.html#ByName"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.controller.ByName" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Mixin for a model with a unique &#8216;name&#8217; field</p>
+<dl class="classmethod">
+<dt id="tau.controller.ByName.withName">
+<em class="property">classmethod </em><code class="descname">withName</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/controller.html#ByName.withName"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.controller.ByName.withName" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tau.controller.Controller">
+<em class="property">class </em><code class="descclassname">tau.controller.</code><code class="descname">Controller</code><span class="sig-paren">(</span><em>fields</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/controller.html#Controller"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.controller.Controller" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>The C&#8221; in MVC</p>
+<p>Subclasses reside in the &#8216;model&#8217; package and define a member dictionary 
+&#8216;attributes&#8217; that describes the data model in the form:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>&lt;attribute&gt;: {</dt>
+<dd>property: value, 
+[[property: value], ...]</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>The &#8216;model&#8217; package initializes the set &#8216;references&#8217; in each class
+to describe one-sided relationships, e.g.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>Model_A:</dt>
+<dd>attr_x: { &#8216;model&#8217;: &#8216;Model_C&#8217; }</dd>
+<dt>Model_B:</dt>
+<dd>attr_y: { &#8216;model&#8217;: &#8216;Model_C&#8217; }</dd>
+<dt>Model_C:</dt>
+<dd>references = set( (Model_A, &#8216;attr_x&#8217;), (Model_B, &#8216;attr_y&#8217;) )</dd>
+</dl>
+</div></blockquote>
+<p>The &#8216;model&#8217; package also initializes the dictionary &#8216;associations&#8217; in 
+each class to describe two-sided relationships, e.g.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>Model_A:</dt>
+<dd><dl class="first docutils">
+<dt>attr_x: {</dt>
+<dd>model: Model_B
+via: attr_k</dd>
+</dl>
+<p class="last">}
+associations = {attr_x: (Model_B, attr_k)}</p>
+</dd>
+<dt>Model_B:</dt>
+<dd><dl class="first docutils">
+<dt>attr_k: {</dt>
+<dd>model: Model_A</dd>
+</dl>
+<p class="last">}
+associations = {attr_k: (Model_A, attr_x)}</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="classmethod">
+<dt id="tau.controller.Controller.all">
+<em class="property">classmethod </em><code class="descname">all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/controller.html#Controller.all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.controller.Controller.all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of all records</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="tau.controller.Controller.create">
+<em class="property">classmethod </em><code class="descname">create</code><span class="sig-paren">(</span><em>fields</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/controller.html#Controller.create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.controller.Controller.create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store a new model record and update associations</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="tau.controller.Controller.delete">
+<em class="property">classmethod </em><code class="descname">delete</code><span class="sig-paren">(</span><em>keys=None</em>, <em>eids=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/controller.html#Controller.delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.controller.Controller.delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete the records that match the given keys and update associations</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="tau.controller.Controller.exists">
+<em class="property">classmethod </em><code class="descname">exists</code><span class="sig-paren">(</span><em>keys=None</em>, <em>eids=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/controller.html#Controller.exists"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.controller.Controller.exists" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return true if a record matching the given keys exists</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.controller.Controller.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>key</em>, <em>default=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/controller.html#Controller.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.controller.Controller.get" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="tau.controller.Controller.match">
+<em class="property">classmethod </em><code class="descname">match</code><span class="sig-paren">(</span><em>field</em>, <em>regex=None</em>, <em>test=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/controller.html#Controller.match"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.controller.Controller.match" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of records with &#8216;field&#8217; matching &#8216;regex&#8217; or &#8216;test&#8217;</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.controller.Controller.onCreate">
+<code class="descname">onCreate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/controller.html#Controller.onCreate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.controller.Controller.onCreate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.controller.Controller.onDelete">
+<code class="descname">onDelete</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/controller.html#Controller.onDelete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.controller.Controller.onDelete" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.controller.Controller.onUpdate">
+<code class="descname">onUpdate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/controller.html#Controller.onUpdate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.controller.Controller.onUpdate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="tau.controller.Controller.one">
+<em class="property">classmethod </em><code class="descname">one</code><span class="sig-paren">(</span><em>keys=None</em>, <em>eid=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/controller.html#Controller.one"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.controller.Controller.one" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a single record matching all of &#8216;keys&#8217; or element id &#8216;eid&#8217;</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.controller.Controller.populate">
+<code class="descname">populate</code><span class="sig-paren">(</span><em>attribute=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/controller.html#Controller.populate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.controller.Controller.populate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transltes model id numbers in <cite>self</cite> to model controllers and 
+returns all data as a dictionary</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="tau.controller.Controller.search">
+<em class="property">classmethod </em><code class="descname">search</code><span class="sig-paren">(</span><em>keys=None</em>, <em>eids=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/controller.html#Controller.search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.controller.Controller.search" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of records matching all of &#8216;keys&#8217; or element id &#8216;eid&#8217;</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="tau.controller.Controller.update">
+<em class="property">classmethod </em><code class="descname">update</code><span class="sig-paren">(</span><em>fields</em>, <em>keys=None</em>, <em>eids=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/controller.html#Controller.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.controller.Controller.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the fields of all records that match the given keys
+and update associations</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="tau.controller.ModelError">
+<em class="property">exception </em><code class="descclassname">tau.controller.</code><code class="descname">ModelError</code><span class="sig-paren">(</span><em>model_cls</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/controller.html#ModelError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.controller.ModelError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tau.error.InternalError" title="tau.error.InternalError"><code class="xref py py-class docutils literal"><span class="pre">tau.error.InternalError</span></code></a></p>
+<p>Indicates that invalid model data was given.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="tau.controller.UniqueAttributeError">
+<em class="property">exception </em><code class="descclassname">tau.controller.</code><code class="descname">UniqueAttributeError</code><span class="sig-paren">(</span><em>model_cls</em>, <em>unique</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/controller.html#UniqueAttributeError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.controller.UniqueAttributeError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tau.controller.ModelError" title="tau.controller.ModelError"><code class="xref py py-class docutils literal"><span class="pre">tau.controller.ModelError</span></code></a></p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-tau.environment">
+<span id="tau-environment-module"></span><h2>tau.environment module<a class="headerlink" href="#module-tau.environment" title="Permalink to this headline">¶</a></h2>
+<p>&#64;file
+&#64;author John C. Linford (<a class="reference external" href="mailto:jlinford&#37;&#52;&#48;paratools&#46;com">jlinford<span>&#64;</span>paratools<span>&#46;</span>com</a>)
+&#64;version 1.0</p>
+<p>&#64;brief</p>
+<p>This file is part of the TAU Performance System</p>
+<p>&#64;section COPYRIGHT</p>
+<p>Copyright (c) 2013, ParaTools, Inc.
+All rights reserved.</p>
+<p>Redistribution and use in source and binary forms, with or without 
+modification, are permitted provided that the following conditions are met:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Redistributions of source code must retain the above copyright notice, 
+this list of conditions and the following disclaimer.</li>
+<li>Redistributions in binary form must reproduce the above copyright notice, 
+this list of conditions and the following disclaimer in the documentation 
+and/or other materials provided with the distribution.</li>
+<li>Neither the name of ParaTools, Inc. nor the names of its contributors may 
+be used to endorse or promote products derived from this software without 
+specific prior written permission.</li>
+</ol>
+</div></blockquote>
+<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &#8220;AS IS&#8221; 
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE 
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, 
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
+<dl class="function">
+<dt id="tau.environment.base">
+<code class="descclassname">tau.environment.</code><code class="descname">base</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/environment.html#base"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.environment.base" title="Permalink to this definition">¶</a></dt>
+<dd><p>The starting point for all subprocess command line arguments and environment</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.environment.getEnv">
+<code class="descclassname">tau.environment.</code><code class="descname">getEnv</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/environment.html#getEnv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.environment.getEnv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the value of the environment variable named &#8216;name&#8217; or fails</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-tau.error">
+<span id="tau-error-module"></span><h2>tau.error module<a class="headerlink" href="#module-tau.error" title="Permalink to this headline">¶</a></h2>
+<p>&#64;file
+&#64;author John C. Linford (<a class="reference external" href="mailto:jlinford&#37;&#52;&#48;paratools&#46;com">jlinford<span>&#64;</span>paratools<span>&#46;</span>com</a>)
+&#64;version 1.0</p>
+<p>&#64;brief</p>
+<p>This file is part of the TAU Performance System</p>
+<p>&#64;section COPYRIGHT</p>
+<p>Copyright (c) 2013, ParaTools, Inc.
+All rights reserved.</p>
+<p>Redistribution and use in source and binary forms, with or without 
+modification, are permitted provided that the following conditions are met:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Redistributions of source code must retain the above copyright notice, 
+this list of conditions and the following disclaimer.</li>
+<li>Redistributions in binary form must reproduce the above copyright notice, 
+this list of conditions and the following disclaimer in the documentation 
+and/or other materials provided with the distribution.</li>
+<li>Neither the name of ParaTools, Inc. nor the names of its contributors may 
+be used to endorse or promote products derived from this software without 
+specific prior written permission.</li>
+</ol>
+</div></blockquote>
+<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &#8220;AS IS&#8221; 
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE 
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, 
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
+<dl class="exception">
+<dt id="tau.error.ConfigurationError">
+<em class="property">exception </em><code class="descclassname">tau.error.</code><code class="descname">ConfigurationError</code><span class="sig-paren">(</span><em>value</em>, <em>hint='Try `tau --help`'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/error.html#ConfigurationError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.error.ConfigurationError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tau.error.Error" title="tau.error.Error"><code class="xref py py-class docutils literal"><span class="pre">tau.error.Error</span></code></a></p>
+<p>Indicates that Tau cannot succeed with the given parameters</p>
+<dl class="attribute">
+<dt id="tau.error.ConfigurationError.message_fmt">
+<code class="descname">message_fmt</code><em class="property"> = '\n%(value)s\n%(hint)s\n\nTAU cannot proceed with the given inputs. \nPlease check the selected configuration for errors or contact %(contact)s for assistance.\n'</em><a class="headerlink" href="#tau.error.ConfigurationError.message_fmt" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="tau.error.Error">
+<em class="property">exception </em><code class="descclassname">tau.error.</code><code class="descname">Error</code><span class="sig-paren">(</span><em>value</em>, <em>hint='Contact &lt;support&#64;paratools.com&gt;'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/error.html#Error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.error.Error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/exceptions.html#exceptions.Exception" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">exceptions.Exception</span></code></a></p>
+<p>Base class for errors in Tau</p>
+<dl class="method">
+<dt id="tau.error.Error.handle">
+<code class="descname">handle</code><span class="sig-paren">(</span><em>etype</em>, <em>e</em>, <em>tb</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/error.html#Error.handle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.error.Error.handle" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.error.Error.message_fmt">
+<code class="descname">message_fmt</code><em class="property"> = &quot;\nAn unexpected %(typename)s exception was raised:\n\n%(value)s\n\n%(backtrace)s\n\nPlease e-mail '%(logfile)s' to %(contact)s for assistance.\n&quot;</em><a class="headerlink" href="#tau.error.Error.message_fmt" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.error.Error.show_backtrace">
+<code class="descname">show_backtrace</code><em class="property"> = False</em><a class="headerlink" href="#tau.error.Error.show_backtrace" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="tau.error.InternalError">
+<em class="property">exception </em><code class="descclassname">tau.error.</code><code class="descname">InternalError</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/error.html#InternalError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.error.InternalError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tau.error.Error" title="tau.error.Error"><code class="xref py py-class docutils literal"><span class="pre">tau.error.Error</span></code></a></p>
+<p>Indicates that an internal error has occurred
+These are bad and really shouldn&#8217;t happen</p>
+<dl class="attribute">
+<dt id="tau.error.InternalError.show_backtrace">
+<code class="descname">show_backtrace</code><em class="property"> = True</em><a class="headerlink" href="#tau.error.InternalError.show_backtrace" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="tau.error.SoftwarePackageError">
+<em class="property">exception </em><code class="descclassname">tau.error.</code><code class="descname">SoftwarePackageError</code><span class="sig-paren">(</span><em>value</em>, <em>hint='Try `tau --help`'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/error.html#SoftwarePackageError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.error.SoftwarePackageError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tau.error.Error" title="tau.error.Error"><code class="xref py py-class docutils literal"><span class="pre">tau.error.Error</span></code></a></p>
+<p>Indicates there was an error in an external software package</p>
+<dl class="attribute">
+<dt id="tau.error.SoftwarePackageError.message_fmt">
+<code class="descname">message_fmt</code><em class="property"> = &quot;\n%(value)s\n%(hint)s\n\nPlease check the selected configuration for errors or email '%(logfile)s' to  %(contact)s for assistance.\n&quot;</em><a class="headerlink" href="#tau.error.SoftwarePackageError.message_fmt" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.error.excepthook">
+<code class="descclassname">tau.error.</code><code class="descname">excepthook</code><span class="sig-paren">(</span><em>etype</em>, <em>e</em>, <em>tb</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/error.html#excepthook"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.error.excepthook" title="Permalink to this definition">¶</a></dt>
+<dd><p>Exception handler for any uncaught exception (except SystemExit).</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-tau.logger">
+<span id="tau-logger-module"></span><h2>tau.logger module<a class="headerlink" href="#module-tau.logger" title="Permalink to this headline">¶</a></h2>
+<p>&#64;file
+&#64;author John C. Linford (<a class="reference external" href="mailto:jlinford&#37;&#52;&#48;paratools&#46;com">jlinford<span>&#64;</span>paratools<span>&#46;</span>com</a>)
+&#64;version 1.0</p>
+<p>&#64;brief</p>
+<p>This file is part of the TAU Performance System</p>
+<p>&#64;section COPYRIGHT</p>
+<p>Copyright (c) 2015, ParaTools, Inc.
+All rights reserved.</p>
+<p>Redistribution and use in source and binary forms, with or without 
+modification, are permitted provided that the following conditions are met:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Redistributions of source code must retain the above copyright notice, 
+this list of conditions and the following disclaimer.</li>
+<li>Redistributions in binary form must reproduce the above copyright notice, 
+this list of conditions and the following disclaimer in the documentation 
+and/or other materials provided with the distribution.</li>
+<li>Neither the name of ParaTools, Inc. nor the names of its contributors may 
+be used to endorse or promote products derived from this software without 
+specific prior written permission.</li>
+</ol>
+</div></blockquote>
+<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &#8220;AS IS&#8221; 
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE 
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, 
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
+<dl class="class">
+<dt id="tau.logger.LogFormatter">
+<em class="property">class </em><code class="descclassname">tau.logger.</code><code class="descname">LogFormatter</code><a class="reference internal" href="_modules/tau/logger.html#LogFormatter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.logger.LogFormatter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/logging.html#logging.Formatter" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">logging.Formatter</span></code></a>, <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Custom log message formatter.</p>
+<dl class="method">
+<dt id="tau.logger.LogFormatter.format">
+<code class="descname">format</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/logger.html#LogFormatter.format"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.logger.LogFormatter.format" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.logger.getLogger">
+<code class="descclassname">tau.logger.</code><code class="descname">getLogger</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/logger.html#getLogger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.logger.getLogger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a customized logging object by name</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.logger.getTerminalSize">
+<code class="descclassname">tau.logger.</code><code class="descname">getTerminalSize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/logger.html#getTerminalSize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.logger.getTerminalSize" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="tau.logger.setLogLevel">
+<code class="descclassname">tau.logger.</code><code class="descname">setLogLevel</code><span class="sig-paren">(</span><em>level</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/logger.html#setLogLevel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.logger.setLogLevel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the output level for all logging objects</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-tau.settings">
+<span id="tau-settings-module"></span><h2>tau.settings module<a class="headerlink" href="#module-tau.settings" title="Permalink to this headline">¶</a></h2>
+<p>&#64;file
+&#64;author John C. Linford (<a class="reference external" href="mailto:jlinford&#37;&#52;&#48;paratools&#46;com">jlinford<span>&#64;</span>paratools<span>&#46;</span>com</a>)
+&#64;version 1.0</p>
+<p>&#64;brief</p>
+<p>This file is part of the TAU Performance System</p>
+<p>&#64;section COPYRIGHT</p>
+<p>Copyright (c) 2013, ParaTools, Inc.
+All rights reserved.</p>
+<p>Redistribution and use in source and binary forms, with or without 
+modification, are permitted provided that the following conditions are met:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Redistributions of source code must retain the above copyright notice, 
+this list of conditions and the following disclaimer.</li>
+<li>Redistributions in binary form must reproduce the above copyright notice, 
+this list of conditions and the following disclaimer in the documentation 
+and/or other materials provided with the distribution.</li>
+<li>Neither the name of ParaTools, Inc. nor the names of its contributors may 
+be used to endorse or promote products derived from this software without 
+specific prior written permission.</li>
+</ol>
+</div></blockquote>
+<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &#8220;AS IS&#8221; 
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE 
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, 
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
+<dl class="function">
+<dt id="tau.settings.get">
+<code class="descclassname">tau.settings.</code><code class="descname">get</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/settings.html#get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.settings.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the value of setting &#8216;key&#8217; or None if not set</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.settings.set">
+<code class="descclassname">tau.settings.</code><code class="descname">set</code><span class="sig-paren">(</span><em>key</em>, <em>val</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/settings.html#set"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.settings.set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set setting &#8216;key&#8217; to value &#8216;val&#8217;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.settings.unset">
+<code class="descclassname">tau.settings.</code><code class="descname">unset</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/settings.html#unset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.settings.unset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove setting &#8216;key&#8217; from the list of settings</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-tau.storage">
+<span id="tau-storage-module"></span><h2>tau.storage module<a class="headerlink" href="#module-tau.storage" title="Permalink to this headline">¶</a></h2>
+<p>&#64;file
+&#64;author John C. Linford (<a class="reference external" href="mailto:jlinford&#37;&#52;&#48;paratools&#46;com">jlinford<span>&#64;</span>paratools<span>&#46;</span>com</a>)
+&#64;version 1.0</p>
+<p>&#64;brief</p>
+<p>This file is part of the TAU Performance System</p>
+<p>&#64;section COPYRIGHT</p>
+<p>Copyright (c) 2013, ParaTools, Inc.
+All rights reserved.</p>
+<p>Redistribution and use in source and binary forms, with or without 
+modification, are permitted provided that the following conditions are met:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Redistributions of source code must retain the above copyright notice, 
+this list of conditions and the following disclaimer.</li>
+<li>Redistributions in binary form must reproduce the above copyright notice, 
+this list of conditions and the following disclaimer in the documentation 
+and/or other materials provided with the distribution.</li>
+<li>Neither the name of ParaTools, Inc. nor the names of its contributors may 
+be used to endorse or promote products derived from this software without 
+specific prior written permission.</li>
+</ol>
+</div></blockquote>
+<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &#8220;AS IS&#8221; 
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE 
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, 
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
+<dl class="class">
+<dt id="tau.storage.Storage">
+<em class="property">class </em><code class="descclassname">tau.storage.</code><code class="descname">Storage</code><span class="sig-paren">(</span><em>prefix</em>, <em>db_name='local.json'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#Storage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.Storage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>TODO: Classdocs</p>
+<dl class="method">
+<dt id="tau.storage.Storage.contains">
+<code class="descname">contains</code><span class="sig-paren">(</span><em>table_name</em>, <em>keys=None</em>, <em>any=False</em>, <em>eids=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#Storage.contains"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.Storage.contains" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True if the specified table contains at least one 
+record that matches the provided keys or element IDs</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.Storage.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>table_name</em>, <em>keys=None</em>, <em>any=False</em>, <em>eid=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#Storage.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.Storage.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the record with the specified keys or element id</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.Storage.insert">
+<code class="descname">insert</code><span class="sig-paren">(</span><em>table_name</em>, <em>fields</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#Storage.insert"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.Storage.insert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new record in the specified table</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.Storage.match">
+<code class="descname">match</code><span class="sig-paren">(</span><em>table_name</em>, <em>field</em>, <em>regex=None</em>, <em>test=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#Storage.match"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.Storage.match" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of records where &#8216;field&#8217; matches &#8216;regex&#8217;</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.Storage.purge">
+<code class="descname">purge</code><span class="sig-paren">(</span><em>table_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#Storage.purge"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.Storage.purge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes all records from the table_name</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.Storage.remove">
+<code class="descname">remove</code><span class="sig-paren">(</span><em>table_name</em>, <em>keys=None</em>, <em>any=False</em>, <em>eids=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#Storage.remove"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.Storage.remove" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove all records that match keys or eids from table_name</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.Storage.search">
+<code class="descname">search</code><span class="sig-paren">(</span><em>table_name</em>, <em>keys=None</em>, <em>any=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#Storage.search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.Storage.search" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of records from the specified table that 
+match any one of the provided keys</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.Storage.update">
+<code class="descname">update</code><span class="sig-paren">(</span><em>table_name</em>, <em>fields</em>, <em>keys=None</em>, <em>any=False</em>, <em>eids=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#Storage.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.Storage.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates the record that matches keys to contain values from fields</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="tau.storage.StorageError">
+<em class="property">exception </em><code class="descclassname">tau.storage.</code><code class="descname">StorageError</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#StorageError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.StorageError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tau.error.InternalError" title="tau.error.InternalError"><code class="xref py py-class docutils literal"><span class="pre">tau.error.InternalError</span></code></a></p>
+<p>Indicates that there is a problem with storage</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-tau.util">
+<span id="tau-util-module"></span><h2>tau.util module<a class="headerlink" href="#module-tau.util" title="Permalink to this headline">¶</a></h2>
+<p>&#64;file
+&#64;author John C. Linford (<a class="reference external" href="mailto:jlinford&#37;&#52;&#48;paratools&#46;com">jlinford<span>&#64;</span>paratools<span>&#46;</span>com</a>)
+&#64;version 1.0</p>
+<p>&#64;brief</p>
+<p>This file is part of the TAU Performance System</p>
+<p>&#64;section COPYRIGHT</p>
+<p>Copyright (c) 2013, ParaTools, Inc.
+All rights reserved.</p>
+<p>Redistribution and use in source and binary forms, with or without 
+modification, are permitted provided that the following conditions are met:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Redistributions of source code must retain the above copyright notice, 
+this list of conditions and the following disclaimer.</li>
+<li>Redistributions in binary form must reproduce the above copyright notice, 
+this list of conditions and the following disclaimer in the documentation 
+and/or other materials provided with the distribution.</li>
+<li>Neither the name of ParaTools, Inc. nor the names of its contributors may 
+be used to endorse or promote products derived from this software without 
+specific prior written permission.</li>
+</ol>
+</div></blockquote>
+<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &#8220;AS IS&#8221; 
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE 
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, 
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
+<dl class="function">
+<dt id="tau.util.createSubprocess">
+<code class="descclassname">tau.util.</code><code class="descname">createSubprocess</code><span class="sig-paren">(</span><em>cmd</em>, <em>cwd=None</em>, <em>env=None</em>, <em>fork=False</em>, <em>stdout=True</em>, <em>log=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#createSubprocess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.createSubprocess" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="tau.util.download">
+<code class="descclassname">tau.util.</code><code class="descname">download</code><span class="sig-paren">(</span><em>src</em>, <em>dest</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#download"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.download" title="Permalink to this definition">¶</a></dt>
+<dd><p>Downloads or copies &#8216;src&#8217; to &#8216;dest&#8217;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.util.extract">
+<code class="descclassname">tau.util.</code><code class="descname">extract</code><span class="sig-paren">(</span><em>archive</em>, <em>dest</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#extract"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.extract" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracts archive file &#8216;archive&#8217; to dest</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.util.file_accessible">
+<code class="descclassname">tau.util.</code><code class="descname">file_accessible</code><span class="sig-paren">(</span><em>filepath</em>, <em>mode='r'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#file_accessible"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.file_accessible" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if a file exists and is accessible.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.util.humanReadableSize">
+<code class="descclassname">tau.util.</code><code class="descname">humanReadableSize</code><span class="sig-paren">(</span><em>num</em>, <em>suffix='B'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#humanReadableSize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.humanReadableSize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <cite>num</cite> bytes in human readable format</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.util.isURL">
+<code class="descclassname">tau.util.</code><code class="descname">isURL</code><span class="sig-paren">(</span><em>url</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#isURL"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.isURL" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="tau.util.mkdirp">
+<code class="descclassname">tau.util.</code><code class="descname">mkdirp</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#mkdirp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.mkdirp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a directory and all its parents.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.util.parseBoolean">
+<code class="descclassname">tau.util.</code><code class="descname">parseBoolean</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#parseBoolean"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.parseBoolean" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parses a value to a literal True/False boolean</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.util.pformatDict">
+<code class="descclassname">tau.util.</code><code class="descname">pformatDict</code><span class="sig-paren">(</span><em>d</em>, <em>title=None</em>, <em>empty_msg='No items.'</em>, <em>indent=0</em>, <em>truncate=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#pformatDict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.pformatDict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pretty formater for dictionaries</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.util.pformatList">
+<code class="descclassname">tau.util.</code><code class="descname">pformatList</code><span class="sig-paren">(</span><em>d</em>, <em>title=None</em>, <em>empty_msg='No items.'</em>, <em>indent=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#pformatList"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.pformatList" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pretty formatter for lists</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.util.which">
+<code class="descclassname">tau.util.</code><code class="descname">which</code><span class="sig-paren">(</span><em>program</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#which"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.which" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the full path to &#8216;program&#8217;
+Searches the system PATH and the current directory</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-tau">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-tau" title="Permalink to this headline">¶</a></h2>
+<p>&#64;file
+&#64;author John C. Linford (<a class="reference external" href="mailto:jlinford&#37;&#52;&#48;paratools&#46;com">jlinford<span>&#64;</span>paratools<span>&#46;</span>com</a>)
+&#64;version 1.0</p>
+<p>&#64;brief</p>
+<p>This file is part of the TAU Performance System</p>
+<p>&#64;section COPYRIGHT</p>
+<p>Copyright (c) 2013, ParaTools, Inc.
+All rights reserved.</p>
+<p>Redistribution and use in source and binary forms, with or without 
+modification, are permitted provided that the following conditions are met:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Redistributions of source code must retain the above copyright notice, 
+this list of conditions and the following disclaimer.</li>
+<li>Redistributions in binary form must reproduce the above copyright notice, 
+this list of conditions and the following disclaimer in the documentation 
+and/or other materials provided with the distribution.</li>
+<li>Neither the name of ParaTools, Inc. nor the names of its contributors may 
+be used to endorse or promote products derived from this software without 
+specific prior written permission.</li>
+</ol>
+</div></blockquote>
+<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &#8220;AS IS&#8221; 
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE 
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, 
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">tau package</a><ul>
+<li><a class="reference internal" href="#subpackages">Subpackages</a></li>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-tau.arguments">tau.arguments module</a></li>
+<li><a class="reference internal" href="#module-tau.controller">tau.controller module</a></li>
+<li><a class="reference internal" href="#module-tau.environment">tau.environment module</a></li>
+<li><a class="reference internal" href="#module-tau.error">tau.error module</a></li>
+<li><a class="reference internal" href="#module-tau.logger">tau.logger module</a></li>
+<li><a class="reference internal" href="#module-tau.settings">tau.settings module</a></li>
+<li><a class="reference internal" href="#module-tau.storage">tau.storage module</a></li>
+<li><a class="reference internal" href="#module-tau.util">tau.util module</a></li>
+<li><a class="reference internal" href="#module-tau">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/tau.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, John Linford  and Srinath Vadlamani @ ParaTools, Inc..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.3</a>
+      
+      |
+      <a href="_sources/tau.txt"
+          rel="nofollow">Page source</a></li>
+    </div>
+
+    
+
+    
+  </body>
+</html>

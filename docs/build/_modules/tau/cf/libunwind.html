@@ -1,0 +1,291 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tau.cf.libunwind &mdash; TauCmdr 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="TauCmdr 0.0.1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">TauCmdr 0.0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for tau.cf.libunwind</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">@file</span>
+<span class="sd">@author John C. Linford (jlinford@paratools.com)</span>
+<span class="sd">@version 1.0</span>
+
+<span class="sd">@brief</span>
+
+<span class="sd">This file is part of the TAU Performance System</span>
+
+<span class="sd">@section COPYRIGHT</span>
+
+<span class="sd">Copyright (c) 2013, ParaTools, Inc.</span>
+<span class="sd">All rights reserved.</span>
+
+<span class="sd">Redistribution and use in source and binary forms, with or without </span>
+<span class="sd">modification, are permitted provided that the following conditions are met:</span>
+<span class="sd"> (1) Redistributions of source code must retain the above copyright notice, </span>
+<span class="sd">     this list of conditions and the following disclaimer.</span>
+<span class="sd"> (2) Redistributions in binary form must reproduce the above copyright notice, </span>
+<span class="sd">     this list of conditions and the following disclaimer in the documentation </span>
+<span class="sd">     and/or other materials provided with the distribution.</span>
+<span class="sd"> (3) Neither the name of ParaTools, Inc. nor the names of its contributors may </span>
+<span class="sd">     be used to endorse or promote products derived from this software without </span>
+<span class="sd">     specific prior written permission.</span>
+
+<span class="sd">THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot; </span>
+<span class="sd">AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE </span>
+<span class="sd">IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE </span>
+<span class="sd">DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE </span>
+<span class="sd">FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL </span>
+<span class="sd">DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR </span>
+<span class="sd">SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER </span>
+<span class="sd">CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, </span>
+<span class="sd">OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE </span>
+<span class="sd">OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c"># System modules</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">platform</span>
+
+<span class="c"># TAU modules</span>
+<span class="kn">import</span> <span class="nn">cf</span>
+<span class="kn">import</span> <span class="nn">logger</span>
+<span class="kn">import</span> <span class="nn">util</span>
+<span class="kn">import</span> <span class="nn">error</span>
+<span class="kn">import</span> <span class="nn">environment</span>
+
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+<span class="n">DEFAULT_SOURCE</span> <span class="o">=</span> <span class="p">{</span><span class="bp">None</span><span class="p">:</span> <span class="s">&#39;http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-1.1.tar.gz&#39;</span><span class="p">}</span>
+
+<span class="n">LIBS</span><span class="o">=</span> <span class="p">{</span><span class="bp">None</span><span class="p">:</span> <span class="p">[</span> <span class="s">&#39;libunwind.a&#39;</span> <span class="p">]}</span>
+
+
+<div class="viewcode-block" id="Libunwind"><a class="viewcode-back" href="../../../tau.cf.html#tau.cf.libunwind.Libunwind">[docs]</a><span class="k">class</span> <span class="nc">Libunwind</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  Encapsulates a Libunwind installation</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">cxx</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">arch</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">src</span> <span class="o">=</span> <span class="n">src</span>
+    <span class="k">if</span> <span class="n">src</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;download&#39;</span><span class="p">:</span>
+      <span class="k">try</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">src</span> <span class="o">=</span> <span class="n">DEFAULT_SOURCE</span><span class="p">[</span><span class="n">arch</span><span class="p">]</span>
+      <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">src</span> <span class="o">=</span> <span class="n">DEFAULT_SOURCE</span><span class="p">[</span><span class="bp">None</span><span class="p">]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span> <span class="o">=</span> <span class="n">prefix</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">cxx</span> <span class="o">=</span> <span class="n">cxx</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">arch</span> <span class="o">=</span> <span class="n">arch</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">src</span><span class="p">):</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">libunwind_prefix</span> <span class="o">=</span> <span class="n">src</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">compiler_prefix</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">cxx</span><span class="o">.</span><span class="n">eid</span><span class="p">)</span> <span class="k">if</span> <span class="n">cxx</span> <span class="k">else</span> <span class="s">&#39;unknown&#39;</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">libunwind_prefix</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s">&#39;libunwind&#39;</span><span class="p">,</span> <span class="n">compiler_prefix</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">src_prefix</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s">&#39;src&#39;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">include_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">libunwind_prefix</span><span class="p">,</span> <span class="s">&#39;include&#39;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">bin_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">libunwind_prefix</span><span class="p">,</span> <span class="s">&#39;bin&#39;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">lib_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">libunwind_prefix</span><span class="p">,</span> <span class="s">&#39;lib&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Libunwind.verify"><a class="viewcode-back" href="../../../tau.cf.html#tau.cf.libunwind.Libunwind.verify">[docs]</a>  <span class="k">def</span> <span class="nf">verify</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns true if if there is a working Libunwind installation at `prefix` with a</span>
+<span class="sd">    directory named `arch` containing  `lib` directories or </span>
+<span class="sd">    raises a ConfigurationError describing why that installation is broken.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Checking Libunwind installation at &#39;</span><span class="si">%s</span><span class="s">&#39; targeting arch &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">libunwind_prefix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">arch</span><span class="p">))</span>    
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">libunwind_prefix</span><span class="p">):</span>
+      <span class="k">raise</span> <span class="n">error</span><span class="o">.</span><span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&quot;&#39;</span><span class="si">%s</span><span class="s">&#39; does not exist&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">libunwind_prefix</span><span class="p">)</span>
+    <span class="c"># Check for all libraries</span>
+    <span class="k">try</span><span class="p">:</span>
+      <span class="n">libraries</span> <span class="o">=</span> <span class="n">LIBS</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">arch</span><span class="p">]</span>
+      <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Checking </span><span class="si">%s</span><span class="s"> Libunwind libraries&quot;</span> <span class="o">%</span> <span class="n">libraries</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+      <span class="n">libraries</span> <span class="o">=</span> <span class="n">LIBS</span><span class="p">[</span><span class="bp">None</span><span class="p">]</span>
+      <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Checking default Libunwind libraries&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">lib</span> <span class="ow">in</span> <span class="n">libraries</span><span class="p">:</span>
+      <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lib_path</span><span class="p">,</span> <span class="n">lib</span><span class="p">)</span>
+      <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">error</span><span class="o">.</span><span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&quot;&#39;</span><span class="si">%s</span><span class="s">&#39; is missing&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span>
+<span class="c">#      if not os.access(path, os.X_OK):</span>
+<span class="c">#        raise error.ConfigurationError(&quot;&#39;%s&#39; exists but is not executable&quot; % path)</span>
+    
+    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Libunwind installation at &#39;</span><span class="si">%s</span><span class="s">&#39; is valid&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">libunwind_prefix</span><span class="p">)</span>
+    <span class="k">return</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="Libunwind.install"><a class="viewcode-back" href="../../../tau.cf.html#tau.cf.libunwind.Libunwind.install">[docs]</a>  <span class="k">def</span> <span class="nf">install</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force_reinstall</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    TODO: Docs</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Initializing Libunwind at &#39;</span><span class="si">%s</span><span class="s">&#39; from &#39;</span><span class="si">%s</span><span class="s">&#39; with arch=</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> 
+                 <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">libunwind_prefix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">arch</span><span class="p">))</span>
+    
+    <span class="c"># Check if the installation is already initialized</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">force_reinstall</span><span class="p">:</span>
+      <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">verify</span><span class="p">()</span>
+      <span class="k">except</span> <span class="n">error</span><span class="o">.</span><span class="n">ConfigurationError</span><span class="p">,</span> <span class="n">err</span><span class="p">:</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+    <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Starting Libunwind installation&#39;</span><span class="p">)</span>
+
+    <span class="c"># Download, unpack, or copy Libunwind source code</span>
+    <span class="n">dst</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src_prefix</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">))</span>
+    <span class="k">try</span><span class="p">:</span>
+      <span class="n">util</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span>
+      <span class="n">srcdir</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">dst</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">src_prefix</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">IOError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+      <span class="k">raise</span> <span class="n">error</span><span class="o">.</span><span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&quot;Cannot acquire source file &#39;</span><span class="si">%s</span><span class="s">&#39;: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">,</span> <span class="n">err</span><span class="p">),</span>
+                                     <span class="s">&quot;Check that the file is accessable&quot;</span><span class="p">)</span>
+    <span class="k">finally</span><span class="p">:</span>
+      <span class="k">try</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">dst</span><span class="p">)</span>
+      <span class="k">except</span><span class="p">:</span> <span class="k">pass</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">cxx</span><span class="p">:</span>
+      <span class="n">compiler_flag</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">family_flags</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;system&#39;</span><span class="p">:</span> <span class="s">&#39;&#39;</span><span class="p">,</span>
+                      <span class="s">&#39;GNU&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s">&#39;-GNU&#39;</span><span class="p">],</span>
+                      <span class="s">&#39;Intel&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s">&#39;CC=icc&#39;</span><span class="p">,</span><span class="s">&#39;CXX=icpc&#39;</span><span class="p">]</span> 
+                     <span class="p">}</span>
+<span class="c">#                      &#39;PGI&#39;: &#39;-pgCC&#39;}</span>
+      <span class="k">try</span><span class="p">:</span>
+        <span class="n">compiler_flag</span> <span class="o">=</span> <span class="n">family_flags</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">cxx</span><span class="p">[</span><span class="s">&#39;family&#39;</span><span class="p">]]</span>
+      <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;Libunwind has no compiler flag for &#39;</span><span class="si">%s</span><span class="s">&#39;.  Using defaults.&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">cxx</span><span class="p">[</span><span class="s">&#39;family&#39;</span><span class="p">])</span>
+
+    <span class="k">try</span><span class="p">:</span>
+      <span class="c"># Configure</span>
+      <span class="n">prefix_flag</span> <span class="o">=</span> <span class="s">&#39;-prefix=</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">libunwind_prefix</span>
+      <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;./configure&#39;</span><span class="p">,</span> <span class="n">prefix_flag</span><span class="p">]</span> <span class="o">+</span> <span class="n">compiler_flag</span>
+      <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Configuring Libunwind...&quot;</span><span class="p">)</span>
+      <span class="k">if</span> <span class="n">util</span><span class="o">.</span><span class="n">createSubprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">srcdir</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">error</span><span class="o">.</span><span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s">&#39;Libunwind configure failed&#39;</span><span class="p">)</span>
+
+      <span class="c"># Build</span>
+      <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;make&#39;</span><span class="p">,</span> <span class="s">&#39;-j4&#39;</span><span class="p">]</span>
+      <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Compiling Libunwind...&quot;</span><span class="p">)</span>
+      <span class="k">if</span> <span class="n">util</span><span class="o">.</span><span class="n">createSubprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">srcdir</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">error</span><span class="o">.</span><span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s">&#39;Libunwind compilation failed.&#39;</span><span class="p">)</span>
+
+      <span class="c"># Install</span>
+      <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;make&#39;</span><span class="p">,</span> <span class="s">&#39;install&#39;</span><span class="p">]</span>
+      <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Installing Libunwind...&quot;</span><span class="p">)</span>
+      <span class="k">if</span> <span class="n">util</span><span class="o">.</span><span class="n">createSubprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">srcdir</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">error</span><span class="o">.</span><span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s">&#39;Libunwind installation failedi before verifcation.&#39;</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+      <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Libunwind installation failed, cleaning up&quot;</span><span class="p">)</span>
+      <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">libunwind_prefix</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="k">finally</span><span class="p">:</span>
+      <span class="c"># Always clean up Libunwind source</span>
+      <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Deleting </span><span class="si">%r</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">srcdir</span><span class="p">)</span>
+      <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">srcdir</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+         
+    <span class="c"># Verify the new installation</span>
+    <span class="k">try</span><span class="p">:</span>
+      <span class="n">retval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">verify</span><span class="p">()</span>
+      <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Libunwind installation complete&#39;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+      <span class="c"># Installation failed, clean up any failed install files</span>
+      <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">libunwind_prefix</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+      <span class="k">raise</span> <span class="n">error</span><span class="o">.</span><span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s">&#39;Libunwind installation failed verifciation: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">err</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="k">return</span> <span class="n">retval</span>
+</div>
+<div class="viewcode-block" id="Libunwind.applyCompiletimeConfig"><a class="viewcode-back" href="../../../tau.cf.html#tau.cf.libunwind.Libunwind.applyCompiletimeConfig">[docs]</a>  <span class="k">def</span> <span class="nf">applyCompiletimeConfig</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">opts</span><span class="p">,</span> <span class="n">env</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    TODO: Docs</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">env</span><span class="p">[</span><span class="s">&#39;PATH&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">bin_path</span><span class="p">,</span> <span class="n">env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;PATH&#39;</span><span class="p">)])</span>
+</div>
+<div class="viewcode-block" id="Libunwind.getRuntimeConfig"><a class="viewcode-back" href="../../../tau.cf.html#tau.cf.libunwind.Libunwind.getRuntimeConfig">[docs]</a>  <span class="k">def</span> <span class="nf">getRuntimeConfig</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">opts</span><span class="p">,</span> <span class="n">env</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    TODO: Docs</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">pass</span>
+
+    </div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, John Linford  and Srinath Vadlamani @ ParaTools, Inc..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.3</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

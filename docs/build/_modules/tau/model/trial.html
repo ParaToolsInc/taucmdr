@@ -1,0 +1,290 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tau.model.trial &mdash; TauCmdr 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="TauCmdr 0.0.1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">TauCmdr 0.0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for tau.model.trial</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">@file</span>
+<span class="sd">@author John C. Linford (jlinford@paratools.com)</span>
+<span class="sd">@version 1.0</span>
+
+<span class="sd">@brief</span>
+
+<span class="sd">This file is part of the TAU Performance System</span>
+
+<span class="sd">@section COPYRIGHT</span>
+
+<span class="sd">Copyright (c) 2013, ParaTools, Inc.</span>
+<span class="sd">All rights reserved.</span>
+
+<span class="sd">Redistribution and use in source and binary forms, with or without </span>
+<span class="sd">modification, are permitted provided that the following conditions are met:</span>
+<span class="sd"> (1) Redistributions of source code must retain the above copyright notice, </span>
+<span class="sd">     this list of conditions and the following disclaimer.</span>
+<span class="sd"> (2) Redistributions in binary form must reproduce the above copyright notice, </span>
+<span class="sd">     this list of conditions and the following disclaimer in the documentation </span>
+<span class="sd">     and/or other materials provided with the distribution.</span>
+<span class="sd"> (3) Neither the name of ParaTools, Inc. nor the names of its contributors may </span>
+<span class="sd">     be used to endorse or promote products derived from this software without </span>
+<span class="sd">     specific prior written permission.</span>
+
+<span class="sd">THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot; </span>
+<span class="sd">AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE </span>
+<span class="sd">IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE </span>
+<span class="sd">DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE </span>
+<span class="sd">FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL </span>
+<span class="sd">DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR </span>
+<span class="sd">SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER </span>
+<span class="sd">CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, </span>
+<span class="sd">OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE </span>
+<span class="sd">OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="c"># System modules</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+
+<span class="c"># TAU modules</span>
+<span class="kn">import</span> <span class="nn">logger</span>
+<span class="kn">import</span> <span class="nn">util</span>
+<span class="kn">import</span> <span class="nn">storage</span>
+<span class="kn">import</span> <span class="nn">controller</span> <span class="kn">as</span> <span class="nn">ctl</span>
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Trial"><a class="viewcode-back" href="../../../tau.model.html#tau.model.trial.Trial">[docs]</a><span class="k">class</span> <span class="nc">Trial</span><span class="p">(</span><span class="n">ctl</span><span class="o">.</span><span class="n">Controller</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  Trial data model controller</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  
+  <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span>      
+    <span class="s">&#39;number&#39;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;integer&#39;</span><span class="p">,</span>
+      <span class="s">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span>
+    <span class="p">},</span>
+    <span class="s">&#39;experiment&#39;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s">&#39;model&#39;</span><span class="p">:</span> <span class="s">&#39;Experiment&#39;</span><span class="p">,</span>
+      <span class="s">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span>
+    <span class="p">},</span>
+    <span class="s">&#39;command&#39;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;string&#39;</span><span class="p">,</span>
+      <span class="s">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span>
+    <span class="p">},</span>
+    <span class="s">&#39;cwd&#39;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;string&#39;</span><span class="p">,</span>
+      <span class="s">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span>
+    <span class="p">},</span>
+    <span class="s">&#39;environment&#39;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;string&#39;</span><span class="p">,</span>
+      <span class="s">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span>
+    <span class="p">},</span>
+    <span class="s">&#39;begin_time&#39;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;datetime&#39;</span>
+    <span class="p">},</span>
+    <span class="s">&#39;end_time&#39;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;datetime&#39;</span>
+    <span class="p">},</span>
+    <span class="s">&#39;return_code&#39;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;integer&#39;</span>
+    <span class="p">},</span>
+    <span class="s">&#39;data_size&#39;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;integer&#39;</span>
+    <span class="p">},</span>                
+  <span class="p">}</span>
+  
+<div class="viewcode-block" id="Trial.prefix"><a class="viewcode-back" href="../../../tau.model.html#tau.model.trial.Trial.prefix">[docs]</a>  <span class="k">def</span> <span class="nf">prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Path to trial data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">experiment</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="s">&#39;experiment&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">experiment</span><span class="o">.</span><span class="n">prefix</span><span class="p">(),</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s">&#39;number&#39;</span><span class="p">]))</span>
+  </div>
+<div class="viewcode-block" id="Trial.onCreate"><a class="viewcode-back" href="../../../tau.model.html#tau.model.trial.Trial.onCreate">[docs]</a>  <span class="k">def</span> <span class="nf">onCreate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Initialize trial data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">prefix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+      <span class="n">util</span><span class="o">.</span><span class="n">mkdirp</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+      <span class="k">raise</span> <span class="n">error</span><span class="o">.</span><span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&#39;Cannot create directory </span><span class="si">%r</span><span class="s">: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">err</span><span class="p">),</span> 
+                                     <span class="s">&#39;Check that you have `write` access&#39;</span><span class="p">)</span>
+  </div>
+<div class="viewcode-block" id="Trial.onDelete"><a class="viewcode-back" href="../../../tau.model.html#tau.model.trial.Trial.onDelete">[docs]</a>  <span class="k">def</span> <span class="nf">onDelete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Clean up trial data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">prefix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+      <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+      <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">prefix</span><span class="p">):</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;Could not remove trial data at &#39;</span><span class="si">%s</span><span class="s">&#39;: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">err</span><span class="p">))</span>
+  </div>
+  <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Trial.perform"><a class="viewcode-back" href="../../../tau.model.html#tau.model.trial.Trial.perform">[docs]</a>  <span class="k">def</span> <span class="nf">perform</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">experiment</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="p">,</span> <span class="n">env</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    TODO: Docs</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">banner</span><span class="p">(</span><span class="n">mark</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
+      <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;{:=&lt;{}}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s">&#39;== </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> (</span><span class="si">%s</span><span class="s">) ==&#39;</span> <span class="o">%</span>
+                                   <span class="p">(</span><span class="n">mark</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">time</span><span class="p">),</span> <span class="n">logger</span><span class="o">.</span><span class="n">LINE_WIDTH</span><span class="p">))</span>    
+    <span class="n">measurement</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="s">&#39;measurement&#39;</span><span class="p">)</span>
+    <span class="n">cmd_str</span> <span class="o">=</span> <span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+    <span class="n">begin_time</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">())</span>
+    
+    <span class="n">trials</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="s">&#39;trials&#39;</span><span class="p">)</span>
+    <span class="n">trial_number</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">all_trial_numbers</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">([</span><span class="n">trial</span><span class="p">[</span><span class="s">&#39;number&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">trial</span> <span class="ow">in</span> <span class="n">trials</span><span class="p">])</span>
+    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Trial numbers: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">all_trial_numbers</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">all_trial_numbers</span><span class="p">):</span>
+      <span class="k">if</span> <span class="n">i</span> <span class="o">!=</span> <span class="n">ii</span><span class="p">:</span>
+        <span class="n">trial_number</span> <span class="o">=</span> <span class="n">i</span>
+        <span class="k">break</span>
+    <span class="k">if</span> <span class="n">trial_number</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+      <span class="n">trial_number</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_trial_numbers</span><span class="p">)</span>
+    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;New trial number is </span><span class="si">%d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">trial_number</span><span class="p">)</span>
+    
+    <span class="n">fields</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;number&#39;</span><span class="p">:</span> <span class="n">trial_number</span><span class="p">,</span>
+              <span class="s">&#39;experiment&#39;</span><span class="p">:</span> <span class="n">experiment</span><span class="o">.</span><span class="n">eid</span><span class="p">,</span>
+              <span class="s">&#39;command&#39;</span><span class="p">:</span> <span class="n">cmd_str</span><span class="p">,</span>
+              <span class="s">&#39;cwd&#39;</span><span class="p">:</span> <span class="n">cwd</span><span class="p">,</span>
+              <span class="s">&#39;environment&#39;</span><span class="p">:</span> <span class="s">&#39;FIXME&#39;</span><span class="p">,</span>
+              <span class="s">&#39;begin_time&#39;</span><span class="p">:</span> <span class="n">begin_time</span><span class="p">}</span>
+
+    <span class="n">banner</span><span class="p">(</span><span class="s">&#39;BEGIN&#39;</span><span class="p">,</span> <span class="n">experiment</span><span class="o">.</span><span class="n">name</span><span class="p">(),</span> <span class="n">begin_time</span><span class="p">)</span>
+    <span class="n">trial</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">fields</span><span class="p">)</span>
+    <span class="n">prefix</span> <span class="o">=</span> <span class="n">trial</span><span class="o">.</span><span class="n">prefix</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+      <span class="n">retval</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">createSubprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">cwd</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">)</span>
+      <span class="k">if</span> <span class="n">retval</span><span class="p">:</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;Nonzero return code &#39;</span><span class="si">%d</span><span class="s">&#39; from &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">retval</span><span class="p">,</span> <span class="n">cmd_str</span><span class="p">))</span>
+      <span class="k">else</span><span class="p">:</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;&#39;</span><span class="si">%s</span><span class="s">&#39; returned 0&quot;</span> <span class="o">%</span> <span class="n">cmd_str</span><span class="p">)</span>
+  
+      <span class="c"># Copy profile files to trial prefix</span>
+      <span class="k">if</span> <span class="n">measurement</span><span class="p">[</span><span class="s">&#39;profile&#39;</span><span class="p">]:</span>
+        <span class="n">profiles</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cwd</span><span class="p">,</span> <span class="s">&#39;profile.*.*.*&#39;</span><span class="p">))</span>
+        <span class="n">multi_profiles</span><span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cwd</span><span class="p">,</span> <span class="s">&#39;MULTI__*&#39;</span><span class="p">))</span>
+ 	
+        <span class="k">if</span> <span class="n">profiles</span><span class="p">:</span>
+          <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Found </span><span class="si">%d</span><span class="s"> profile files. Adding to trial...&quot;</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">profiles</span><span class="p">))</span>
+          <span class="k">for</span> <span class="nb">file</span> <span class="ow">in</span> <span class="n">profiles</span><span class="p">:</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="nb">file</span><span class="p">,</span> <span class="n">prefix</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;&#39;</span><span class="si">%s</span><span class="s">&#39; =&gt; &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">file</span><span class="p">,</span> <span class="n">prefix</span><span class="p">))</span>
+	<span class="k">elif</span> <span class="n">multi_profiles</span><span class="p">:</span>
+          <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Found </span><span class="si">%d</span><span class="s"> multi_profile direcotries. Adding to trial...&quot;</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">multi_profiles</span><span class="p">))</span>
+          <span class="k">for</span> <span class="n">dirs</span> <span class="ow">in</span> <span class="n">multi_profiles</span><span class="p">:</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">dirs</span><span class="p">,</span> <span class="n">prefix</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;&#39;</span><span class="si">%s</span><span class="s">&#39; =&gt; &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">dirs</span><span class="p">,</span> <span class="n">prefix</span><span class="p">))</span>
+	<span class="k">else</span><span class="p">:</span>
+          <span class="n">LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> did not generate any profile files or MULTI__ directories!&quot;</span> <span class="o">%</span> <span class="n">cmd_str</span><span class="p">)</span>
+  
+      <span class="c"># TODO: Handle traces</span>
+      
+      <span class="n">end_time</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">())</span>
+    <span class="k">except</span><span class="p">:</span>
+      <span class="c"># Something went wrong so revert the trial</span>
+      <span class="n">LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;Exception raised, reverting trial...&quot;</span><span class="p">)</span>
+      <span class="n">cls</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">eids</span><span class="o">=</span><span class="p">[</span><span class="n">trial</span><span class="o">.</span><span class="n">eid</span><span class="p">])</span>
+      <span class="k">raise</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="c"># Trial successful, update record and record state for provenance</span>
+      <span class="n">data_size</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getsize</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">f</span><span class="p">))</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">prefix</span><span class="p">))</span>
+      <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">storage</span><span class="o">.</span><span class="n">user_storage</span><span class="o">.</span><span class="n">dbfile</span><span class="p">,</span> <span class="n">prefix</span><span class="p">)</span>
+      <span class="n">cls</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s">&#39;end_time&#39;</span><span class="p">:</span> <span class="n">end_time</span><span class="p">,</span> 
+                  <span class="s">&#39;return_code&#39;</span><span class="p">:</span> <span class="n">retval</span><span class="p">,</span>
+                  <span class="s">&#39;data_size&#39;</span><span class="p">:</span> <span class="n">data_size</span><span class="p">},</span> <span class="n">eids</span><span class="o">=</span><span class="p">[</span><span class="n">trial</span><span class="o">.</span><span class="n">eid</span><span class="p">])</span>
+      <span class="n">banner</span><span class="p">(</span><span class="s">&#39;END&#39;</span><span class="p">,</span> <span class="n">experiment</span><span class="o">.</span><span class="n">name</span><span class="p">(),</span> <span class="n">end_time</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">retval</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, John Linford  and Srinath Vadlamani @ ParaTools, Inc..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.3</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

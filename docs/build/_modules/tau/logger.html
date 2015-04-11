@@ -1,0 +1,323 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tau.logger &mdash; TauCmdr 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="TauCmdr 0.0.1 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">TauCmdr 0.0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for tau.logger</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">@file</span>
+<span class="sd">@author John C. Linford (jlinford@paratools.com)</span>
+<span class="sd">@version 1.0</span>
+
+<span class="sd">@brief </span>
+
+<span class="sd">This file is part of the TAU Performance System</span>
+
+<span class="sd">@section COPYRIGHT</span>
+
+<span class="sd">Copyright (c) 2015, ParaTools, Inc.</span>
+<span class="sd">All rights reserved.</span>
+
+<span class="sd">Redistribution and use in source and binary forms, with or without </span>
+<span class="sd">modification, are permitted provided that the following conditions are met:</span>
+<span class="sd"> (1) Redistributions of source code must retain the above copyright notice, </span>
+<span class="sd">     this list of conditions and the following disclaimer.</span>
+<span class="sd"> (2) Redistributions in binary form must reproduce the above copyright notice, </span>
+<span class="sd">     this list of conditions and the following disclaimer in the documentation </span>
+<span class="sd">     and/or other materials provided with the distribution.</span>
+<span class="sd"> (3) Neither the name of ParaTools, Inc. nor the names of its contributors may </span>
+<span class="sd">     be used to endorse or promote products derived from this software without </span>
+<span class="sd">     specific prior written permission.</span>
+
+<span class="sd">THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot; </span>
+<span class="sd">AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE </span>
+<span class="sd">IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE </span>
+<span class="sd">DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE </span>
+<span class="sd">FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL </span>
+<span class="sd">DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR </span>
+<span class="sd">SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER </span>
+<span class="sd">CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, </span>
+<span class="sd">OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE </span>
+<span class="sd">OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c"># System modules</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">errno</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">textwrap</span>
+<span class="kn">import</span> <span class="nn">contextlib</span>
+<span class="kn">import</span> <span class="nn">socket</span>
+<span class="kn">import</span> <span class="nn">platform</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">logging</span> <span class="kn">import</span> <span class="n">handlers</span>
+
+<span class="c"># TAU modules</span>
+<span class="kn">import</span> <span class="nn">environment</span>
+
+<div class="viewcode-block" id="getTerminalSize"><a class="viewcode-back" href="../../tau.html#tau.logger.getTerminalSize">[docs]</a><span class="k">def</span> <span class="nf">getTerminalSize</span><span class="p">():</span>
+  <span class="kn">import</span> <span class="nn">platform</span>
+  <span class="n">current_os</span> <span class="o">=</span> <span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span>
+  <span class="n">tuple_xy</span><span class="o">=</span><span class="bp">None</span>
+  <span class="k">if</span> <span class="n">current_os</span> <span class="o">==</span> <span class="s">&#39;Windows&#39;</span><span class="p">:</span>
+    <span class="n">tuple_xy</span> <span class="o">=</span> <span class="n">_getTerminalSize_windows</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">tuple_xy</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+      <span class="n">tuple_xy</span> <span class="o">=</span> <span class="n">_getTerminalSize_tput</span><span class="p">()</span>
+      <span class="c"># needed for window&#39;s python in cygwin&#39;s xterm!</span>
+  <span class="k">if</span> <span class="n">current_os</span> <span class="o">==</span> <span class="s">&#39;Linux&#39;</span> <span class="ow">or</span> <span class="n">current_os</span> <span class="o">==</span> <span class="s">&#39;Darwin&#39;</span> <span class="ow">or</span>  <span class="n">current_os</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;CYGWIN&#39;</span><span class="p">):</span>
+    <span class="n">tuple_xy</span> <span class="o">=</span> <span class="n">_getTerminalSize_linux</span><span class="p">()</span>
+  <span class="k">if</span> <span class="n">tuple_xy</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="n">tuple_xy</span> <span class="o">=</span> <span class="p">(</span><span class="mi">80</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span>      <span class="c"># default value</span>
+  <span class="k">return</span> <span class="n">tuple_xy</span>
+</div>
+<span class="k">def</span> <span class="nf">_getTerminalSize_windows</span><span class="p">():</span>
+  <span class="n">res</span><span class="o">=</span><span class="bp">None</span>
+  <span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">ctypes</span> <span class="kn">import</span> <span class="n">windll</span><span class="p">,</span> <span class="n">create_string_buffer</span>
+    <span class="c"># stdin handle is -10, stdout -11, stderr -12</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">windll</span><span class="o">.</span><span class="n">kernel32</span><span class="o">.</span><span class="n">GetStdHandle</span><span class="p">(</span><span class="o">-</span><span class="mi">12</span><span class="p">)</span>
+    <span class="n">csbi</span> <span class="o">=</span> <span class="n">create_string_buffer</span><span class="p">(</span><span class="mi">22</span><span class="p">)</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">windll</span><span class="o">.</span><span class="n">kernel32</span><span class="o">.</span><span class="n">GetConsoleScreenBufferInfo</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">csbi</span><span class="p">)</span>
+  <span class="k">except</span><span class="p">:</span>
+    <span class="k">return</span> <span class="bp">None</span>
+  <span class="k">if</span> <span class="n">res</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">struct</span>
+    <span class="p">(</span><span class="n">bufx</span><span class="p">,</span> <span class="n">bufy</span><span class="p">,</span> <span class="n">curx</span><span class="p">,</span> <span class="n">cury</span><span class="p">,</span> <span class="n">wattr</span><span class="p">,</span>
+     <span class="n">left</span><span class="p">,</span> <span class="n">top</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">bottom</span><span class="p">,</span> <span class="n">maxx</span><span class="p">,</span> <span class="n">maxy</span><span class="p">)</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s">&quot;hhhhHhhhhhh&quot;</span><span class="p">,</span> <span class="n">csbi</span><span class="o">.</span><span class="n">raw</span><span class="p">)</span>
+    <span class="n">sizex</span> <span class="o">=</span> <span class="n">right</span> <span class="o">-</span> <span class="n">left</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">sizey</span> <span class="o">=</span> <span class="n">bottom</span> <span class="o">-</span> <span class="n">top</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">sizex</span><span class="p">,</span> <span class="n">sizey</span>
+  <span class="k">else</span><span class="p">:</span>
+    <span class="k">return</span> <span class="bp">None</span>
+
+<span class="k">def</span> <span class="nf">_getTerminalSize_tput</span><span class="p">():</span>
+  <span class="c"># get terminal width</span>
+  <span class="c"># src: http://stackoverflow.com/questions/263890/how-do-i-find-the-width-height-of-a-terminal-window</span>
+  <span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">subprocess</span>
+    <span class="n">proc</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">([</span><span class="s">&quot;tput&quot;</span><span class="p">,</span> <span class="s">&quot;cols&quot;</span><span class="p">],</span><span class="n">stdin</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span><span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">)</span>
+    <span class="n">output</span><span class="o">=</span><span class="n">proc</span><span class="o">.</span><span class="n">communicate</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+    <span class="n">cols</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">output</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">proc</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">([</span><span class="s">&quot;tput&quot;</span><span class="p">,</span> <span class="s">&quot;lines&quot;</span><span class="p">],</span><span class="n">stdin</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span><span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">)</span>
+    <span class="n">output</span><span class="o">=</span><span class="n">proc</span><span class="o">.</span><span class="n">communicate</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+    <span class="n">rows</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">output</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">cols</span><span class="p">,</span><span class="n">rows</span><span class="p">)</span>
+  <span class="k">except</span><span class="p">:</span>
+    <span class="k">return</span> <span class="bp">None</span>
+
+<span class="k">def</span> <span class="nf">_getTerminalSize_linux</span><span class="p">():</span>
+  <span class="k">def</span> <span class="nf">ioctl_GWINSZ</span><span class="p">(</span><span class="n">fd</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+      <span class="kn">import</span> <span class="nn">fcntl</span><span class="o">,</span> <span class="nn">termios</span><span class="o">,</span> <span class="nn">struct</span><span class="o">,</span> <span class="nn">os</span>
+      <span class="n">cr</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s">&#39;hh&#39;</span><span class="p">,</span> <span class="n">fcntl</span><span class="o">.</span><span class="n">ioctl</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">termios</span><span class="o">.</span><span class="n">TIOCGWINSZ</span><span class="p">,</span><span class="s">&#39;1234&#39;</span><span class="p">))</span>
+    <span class="k">except</span><span class="p">:</span>
+      <span class="k">return</span> <span class="bp">None</span>
+    <span class="k">return</span> <span class="n">cr</span>
+  <span class="n">cr</span> <span class="o">=</span> <span class="n">ioctl_GWINSZ</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="n">ioctl_GWINSZ</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="ow">or</span> <span class="n">ioctl_GWINSZ</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+  <span class="k">if</span> <span class="ow">not</span> <span class="n">cr</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+      <span class="n">fd</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">ctermid</span><span class="p">(),</span> <span class="n">os</span><span class="o">.</span><span class="n">O_RDONLY</span><span class="p">)</span>
+      <span class="n">cr</span> <span class="o">=</span> <span class="n">ioctl_GWINSZ</span><span class="p">(</span><span class="n">fd</span><span class="p">)</span>
+      <span class="n">os</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fd</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+      <span class="k">pass</span>
+  <span class="k">if</span> <span class="ow">not</span> <span class="n">cr</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+      <span class="n">cr</span> <span class="o">=</span> <span class="p">(</span><span class="n">env</span><span class="p">[</span><span class="s">&#39;LINES&#39;</span><span class="p">],</span> <span class="n">env</span><span class="p">[</span><span class="s">&#39;COLUMNS&#39;</span><span class="p">])</span>
+    <span class="k">except</span><span class="p">:</span>
+      <span class="k">return</span> <span class="bp">None</span>
+  <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">cr</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">cr</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+<span class="k">def</span> <span class="nf">_textwrap_message</span><span class="p">(</span><span class="n">record</span><span class="p">):</span>
+  <span class="k">return</span> <span class="p">[</span><span class="s">&#39;</span><span class="si">%s%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">LINE_MARKER</span><span class="p">,</span> <span class="n">_text_wrapper</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">line</span><span class="p">))</span>
+          <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">record</span><span class="o">.</span><span class="n">getMessage</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)]</span>
+
+
+<span class="k">def</span> <span class="nf">_msgbox</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">marker</span><span class="p">):</span>
+    <span class="n">width</span> <span class="o">=</span> <span class="n">LINE_WIDTH</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">LINE_MARKER</span><span class="p">)</span>
+    <span class="n">hline</span> <span class="o">=</span> <span class="n">LINE_MARKER</span> <span class="o">+</span> <span class="n">marker</span><span class="o">*</span><span class="n">width</span>
+    <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span><span class="n">hline</span><span class="p">,</span> <span class="n">LINE_MARKER</span><span class="p">,</span> <span class="s">&#39;</span><span class="si">%s%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">LINE_MARKER</span><span class="p">,</span> <span class="n">record</span><span class="o">.</span><span class="n">levelname</span><span class="p">)]</span>
+    <span class="n">parts</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">_textwrap_message</span><span class="p">(</span><span class="n">record</span><span class="p">))</span>
+    <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hline</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="LogFormatter"><a class="viewcode-back" href="../../tau.html#tau.logger.LogFormatter">[docs]</a><span class="k">class</span> <span class="nc">LogFormatter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">,</span> <span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Custom log message formatter.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+      <span class="nb">super</span><span class="p">(</span><span class="n">LogFormatter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+
+<div class="viewcode-block" id="LogFormatter.format"><a class="viewcode-back" href="../../tau.html#tau.logger.LogFormatter.format">[docs]</a>    <span class="k">def</span> <span class="nf">format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
+      <span class="k">if</span> <span class="n">record</span><span class="o">.</span><span class="n">levelno</span> <span class="o">==</span> <span class="n">logging</span><span class="o">.</span><span class="n">CRITICAL</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_msgbox</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="s">&#39;!&#39;</span><span class="p">)</span>
+      <span class="k">elif</span> <span class="n">record</span><span class="o">.</span><span class="n">levelno</span> <span class="o">==</span> <span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_msgbox</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="s">&#39;!&#39;</span><span class="p">)</span>
+      <span class="k">elif</span> <span class="n">record</span><span class="o">.</span><span class="n">levelno</span> <span class="o">==</span> <span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_msgbox</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="s">&#39;*&#39;</span><span class="p">)</span>
+      <span class="k">elif</span> <span class="n">record</span><span class="o">.</span><span class="n">levelno</span> <span class="o">==</span> <span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_textwrap_message</span><span class="p">(</span><span class="n">record</span><span class="p">))</span>
+      <span class="k">elif</span> <span class="n">record</span><span class="o">.</span><span class="n">levelno</span> <span class="o">==</span> <span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s">&#39;</span><span class="si">%s%s</span><span class="s">:</span><span class="si">%s</span><span class="s">: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">LINE_MARKER</span><span class="p">,</span> <span class="n">record</span><span class="o">.</span><span class="n">levelname</span><span class="p">,</span> 
+                                <span class="n">record</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">record</span><span class="o">.</span><span class="n">getMessage</span><span class="p">())</span> 
+      <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s">&#39;Unknown record level (name: </span><span class="si">%s</span><span class="s">)&#39;</span> <span class="o">%</span> <span class="n">record</span><span class="o">.</span><span class="n">levelname</span><span class="p">)</span>
+</div></div>
+<div class="viewcode-block" id="getLogger"><a class="viewcode-back" href="../../tau.html#tau.logger.getLogger">[docs]</a><span class="k">def</span> <span class="nf">getLogger</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  Returns a customized logging object by name</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">return</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&#39;tau.&#39;</span> <span class="o">+</span> <span class="n">name</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="setLogLevel"><a class="viewcode-back" href="../../tau.html#tau.logger.setLogLevel">[docs]</a><span class="k">def</span> <span class="nf">setLogLevel</span><span class="p">(</span><span class="n">level</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  Sets the output level for all logging objects</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">global</span> <span class="n">LOG_LEVEL</span>
+  <span class="n">LOG_LEVEL</span> <span class="o">=</span> <span class="n">level</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+  <span class="n">stdout_handler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">LOG_LEVEL</span><span class="p">)</span>
+</div>
+<span class="n">LOG_LEVEL</span> <span class="o">=</span> <span class="s">&#39;INFO&#39;</span>
+
+<span class="n">LOG_FILE</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">environment</span><span class="o">.</span><span class="n">USER_PREFIX</span><span class="p">,</span> <span class="s">&#39;debug_log&#39;</span><span class="p">)</span>
+
+<span class="c"># Marker for each line of output</span>
+<span class="n">LINE_MARKER</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;TAU_LINE_MARKER&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)</span>
+
+<span class="c"># Terminal dimensions</span>
+<span class="n">TERM_SIZE</span> <span class="o">=</span> <span class="n">getTerminalSize</span><span class="p">()</span>
+<span class="n">LINE_WIDTH</span> <span class="o">=</span> <span class="n">TERM_SIZE</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">LINE_MARKER</span><span class="p">)</span>
+
+<span class="n">_text_wrapper</span> <span class="o">=</span> <span class="n">textwrap</span><span class="o">.</span><span class="n">TextWrapper</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="n">LINE_WIDTH</span><span class="p">,</span> 
+                                     <span class="n">subsequent_indent</span><span class="o">=</span><span class="n">LINE_MARKER</span><span class="o">+</span><span class="s">&#39;  &#39;</span><span class="p">,</span>
+                                     <span class="n">break_long_words</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                     <span class="n">break_on_hyphens</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                     <span class="n">drop_whitespace</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+<span class="n">_root_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&#39;tau&#39;</span><span class="p">)</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">_root_logger</span><span class="o">.</span><span class="n">handlers</span><span class="p">):</span>
+  <span class="n">prefix</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">LOG_FILE</span><span class="p">)</span>
+  <span class="k">try</span><span class="p">:</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span>
+  <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">exc</span><span class="o">.</span><span class="n">errno</span> <span class="o">==</span> <span class="n">errno</span><span class="o">.</span><span class="n">EEXIST</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">prefix</span><span class="p">):</span> <span class="k">pass</span>
+    <span class="k">else</span><span class="p">:</span> <span class="k">raise</span>
+  <span class="n">file_handler</span> <span class="o">=</span> <span class="n">handlers</span><span class="o">.</span><span class="n">TimedRotatingFileHandler</span><span class="p">(</span><span class="n">LOG_FILE</span><span class="p">,</span> <span class="n">when</span><span class="o">=</span><span class="s">&#39;D&#39;</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">backupCount</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+  <span class="n">file_handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">LogFormatter</span><span class="p">())</span>
+  <span class="n">file_handler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+
+  <span class="n">stdout_handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
+  <span class="n">stdout_handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">LogFormatter</span><span class="p">())</span>
+  <span class="n">stdout_handler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">LOG_LEVEL</span><span class="p">)</span>
+  
+  <span class="n">_root_logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">file_handler</span><span class="p">)</span>
+  <span class="n">_root_logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">stdout_handler</span><span class="p">)</span>
+  <span class="n">_root_logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>  
+
+  <span class="n">_root_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;&quot;&quot;</span>
+<span class="si">%(bar)s</span><span class="s"></span>
+<span class="s">TAU COMMANDER LOGGING INITIALIZED</span>
+
+<span class="s">Timestamp         : </span><span class="si">%(timestamp)s</span><span class="s"></span>
+<span class="s">Hostname          : </span><span class="si">%(hostname)s</span><span class="s"></span>
+<span class="s">Platform          : </span><span class="si">%(platform)s</span><span class="s"></span>
+<span class="s">Python Version    : </span><span class="si">%(pyversion)s</span><span class="s"></span>
+<span class="s">Working Directory : </span><span class="si">%(cwd)s</span><span class="s"></span>
+<span class="s">Terminal Size     : </span><span class="si">%(termsize)s</span><span class="s"></span>
+<span class="si">%(bar)s</span><span class="s"></span>
+<span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;bar&#39;</span><span class="p">:</span> <span class="s">&#39;#&#39;</span><span class="o">*</span><span class="n">LINE_WIDTH</span><span class="p">,</span>
+       <span class="s">&#39;timestamp&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()),</span>
+       <span class="s">&#39;hostname&#39;</span><span class="p">:</span> <span class="n">socket</span><span class="o">.</span><span class="n">gethostname</span><span class="p">(),</span>                
+       <span class="s">&#39;platform&#39;</span><span class="p">:</span> <span class="n">platform</span><span class="o">.</span><span class="n">platform</span><span class="p">(),</span>                 
+       <span class="s">&#39;pyversion&#39;</span><span class="p">:</span> <span class="n">platform</span><span class="o">.</span><span class="n">python_version</span><span class="p">(),</span>          
+       <span class="s">&#39;cwd&#39;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span>                              
+       <span class="s">&#39;termsize&#39;</span><span class="p">:</span> <span class="s">&#39;x&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">TERM_SIZE</span><span class="p">))})</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, John Linford  and Srinath Vadlamani @ ParaTools, Inc..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.3</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,313 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tau.storage &mdash; TauCmdr 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="TauCmdr 0.0.1 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">TauCmdr 0.0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for tau.storage</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">@file</span>
+<span class="sd">@author John C. Linford (jlinford@paratools.com)</span>
+<span class="sd">@version 1.0</span>
+
+<span class="sd">@brief </span>
+
+<span class="sd">This file is part of the TAU Performance System</span>
+
+<span class="sd">@section COPYRIGHT</span>
+
+<span class="sd">Copyright (c) 2013, ParaTools, Inc.</span>
+<span class="sd">All rights reserved.</span>
+
+<span class="sd">Redistribution and use in source and binary forms, with or without </span>
+<span class="sd">modification, are permitted provided that the following conditions are met:</span>
+<span class="sd"> (1) Redistributions of source code must retain the above copyright notice, </span>
+<span class="sd">     this list of conditions and the following disclaimer.</span>
+<span class="sd"> (2) Redistributions in binary form must reproduce the above copyright notice, </span>
+<span class="sd">     this list of conditions and the following disclaimer in the documentation </span>
+<span class="sd">     and/or other materials provided with the distribution.</span>
+<span class="sd"> (3) Neither the name of ParaTools, Inc. nor the names of its contributors may </span>
+<span class="sd">     be used to endorse or promote products derived from this software without </span>
+<span class="sd">     specific prior written permission.</span>
+
+<span class="sd">THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot; </span>
+<span class="sd">AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE </span>
+<span class="sd">IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE </span>
+<span class="sd">DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE </span>
+<span class="sd">FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL </span>
+<span class="sd">DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR </span>
+<span class="sd">SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER </span>
+<span class="sd">CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, </span>
+<span class="sd">OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE </span>
+<span class="sd">OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c"># Sytem modules</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">tinydb</span> <span class="kn">import</span> <span class="n">TinyDB</span><span class="p">,</span> <span class="n">where</span>
+ 
+
+<span class="c"># TAU modules</span>
+<span class="kn">import</span> <span class="nn">logger</span>
+<span class="kn">import</span> <span class="nn">error</span>
+<span class="kn">import</span> <span class="nn">util</span>
+<span class="kn">import</span> <span class="nn">error</span>
+<span class="kn">import</span> <span class="nn">environment</span> <span class="kn">as</span> <span class="nn">env</span>
+
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="StorageError"><a class="viewcode-back" href="../../tau.html#tau.storage.StorageError">[docs]</a><span class="k">class</span> <span class="nc">StorageError</span><span class="p">(</span><span class="n">error</span><span class="o">.</span><span class="n">InternalError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Indicates that there is a problem with storage</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">pass</span>
+
+</div>
+<div class="viewcode-block" id="Storage"><a class="viewcode-back" href="../../tau.html#tau.storage.Storage">[docs]</a><span class="k">class</span> <span class="nc">Storage</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  TODO: Classdocs</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">db_name</span><span class="o">=</span><span class="s">&#39;local.json&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create the local storage location</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_transaction_count</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">try</span><span class="p">:</span>
+      <span class="n">util</span><span class="o">.</span><span class="n">mkdirp</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span>
+      <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Created &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="n">prefix</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+      <span class="k">raise</span> <span class="n">StorageError</span><span class="p">(</span><span class="s">&#39;Cannot create directory </span><span class="si">%r</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">path</span><span class="p">,</span> <span class="s">&#39;Check that you have `write` access&#39;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">dbfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">db_name</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">db</span> <span class="o">=</span> <span class="n">TinyDB</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dbfile</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+      <span class="k">raise</span> <span class="n">StorageError</span><span class="p">(</span><span class="s">&#39;Cannot create </span><span class="si">%r</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">path</span><span class="p">,</span> <span class="s">&#39;Check that you have `write` access&#39;</span><span class="p">)</span>
+    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Opened &#39;</span><span class="si">%s</span><span class="s">&#39; for read/write&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbfile</span><span class="p">)</span>
+    
+  <span class="k">def</span> <span class="nf">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Initiates the database transaction</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transaction_count</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_db_copy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">_read</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_transaction_count</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="bp">self</span>
+  
+  <span class="k">def</span> <span class="nf">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">traceback</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Finalizes the database transaction</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_transaction_count</span> <span class="o">-=</span> <span class="mi">1</span>
+    <span class="k">if</span> <span class="nb">type</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transaction_count</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">_write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_db_copy</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_db_copy</span> <span class="o">=</span> <span class="bp">None</span>
+
+  <span class="k">def</span> <span class="nf">_getQuery</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="nb">any</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns a query object from a dictionary of keys</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">operator</span> <span class="o">=</span> <span class="s">&#39;or&#39;</span> <span class="k">if</span> <span class="nb">any</span> <span class="k">else</span> <span class="s">&#39;and&#39;</span>
+    <span class="k">def</span> <span class="nf">_and</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">):</span> <span class="k">return</span> <span class="p">(</span><span class="n">lhs</span> <span class="o">&amp;</span> <span class="n">rhs</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_or</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">):</span> <span class="k">return</span> <span class="p">(</span><span class="n">lhs</span> <span class="o">|</span> <span class="n">rhs</span><span class="p">)</span>
+    <span class="n">join</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;and&#39;</span><span class="p">:</span> <span class="n">_and</span><span class="p">,</span> <span class="s">&#39;or&#39;</span><span class="p">:</span> <span class="n">_or</span><span class="p">}[</span><span class="n">operator</span><span class="p">]</span>
+    <span class="nb">iter</span> <span class="o">=</span> <span class="n">keys</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()</span>
+    <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="o">=</span> <span class="nb">iter</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="p">(</span><span class="n">where</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="o">==</span> <span class="n">val</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">iter</span><span class="p">:</span>
+      <span class="n">query</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">(</span><span class="n">where</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="o">==</span> <span class="n">value</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">query</span>
+
+<div class="viewcode-block" id="Storage.get"><a class="viewcode-back" href="../../tau.html#tau.storage.Storage.get">[docs]</a>  <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="nb">any</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">eid</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the record with the specified keys or element id</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">eid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+      <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%r</span><span class="s">: get(eid=</span><span class="si">%r</span><span class="s">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="n">eid</span><span class="p">))</span>
+      <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">eid</span><span class="o">=</span><span class="n">eid</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">keys</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+      <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%r</span><span class="s">: get(keys=</span><span class="si">%r</span><span class="s">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="n">keys</span><span class="p">))</span>
+      <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_getQuery</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="nb">any</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="k">return</span> <span class="bp">None</span>
+</div>
+<div class="viewcode-block" id="Storage.search"><a class="viewcode-back" href="../../tau.html#tau.storage.Storage.search">[docs]</a>  <span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="nb">any</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return a list of records from the specified table that </span>
+<span class="sd">    match any one of the provided keys</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">keys</span><span class="p">:</span>
+      <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%r</span><span class="s">: search(keys=</span><span class="si">%r</span><span class="s">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="n">keys</span><span class="p">))</span>
+      <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_getQuery</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="nb">any</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%r</span><span class="s">: all()&quot;</span> <span class="o">%</span> <span class="n">table_name</span><span class="p">)</span>
+      <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="Storage.match"><a class="viewcode-back" href="../../tau.html#tau.storage.Storage.match">[docs]</a>  <span class="k">def</span> <span class="nf">match</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">test</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return a list of records where &#39;field&#39; matches &#39;regex&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">test</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+      <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%r</span><span class="s">: search(where(</span><span class="si">%r</span><span class="s">).test(</span><span class="si">%r</span><span class="s">))&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">test</span><span class="p">))</span>
+      <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">where</span><span class="p">(</span><span class="n">field</span><span class="p">)</span><span class="o">.</span><span class="n">test</span><span class="p">(</span><span class="n">test</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="n">regex</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+      <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%r</span><span class="s">: search(where(</span><span class="si">%r</span><span class="s">).matches(</span><span class="si">%r</span><span class="s">))&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">regex</span><span class="p">))</span>
+      <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">where</span><span class="p">(</span><span class="n">field</span><span class="p">)</span><span class="o">.</span><span class="n">matches</span><span class="p">(</span><span class="n">regex</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%r</span><span class="s">: search(where(</span><span class="si">%r</span><span class="s">).matches(&#39;.*&#39;))&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="n">field</span><span class="p">))</span>
+      <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">where</span><span class="p">(</span><span class="n">field</span><span class="p">)</span><span class="o">.</span><span class="n">matches</span><span class="p">(</span><span class="s">&#39;.*&#39;</span><span class="p">))</span>
+  </div>
+<div class="viewcode-block" id="Storage.contains"><a class="viewcode-back" href="../../tau.html#tau.storage.Storage.contains">[docs]</a>  <span class="k">def</span> <span class="nf">contains</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="nb">any</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">eids</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return True if the specified table contains at least one </span>
+<span class="sd">    record that matches the provided keys or element IDs</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">eids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+      <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%r</span><span class="s">: contains(eids=</span><span class="si">%r</span><span class="s">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="n">eids</span><span class="p">))</span>
+      <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eids</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="n">eids</span><span class="o">=</span><span class="n">eids</span><span class="p">)</span>
+      <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="n">eids</span><span class="o">=</span><span class="p">[</span><span class="n">eids</span><span class="p">])</span>
+    <span class="k">elif</span> <span class="n">keys</span><span class="p">:</span>
+      <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%r</span><span class="s">: contains(keys=</span><span class="si">%r</span><span class="s">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="n">keys</span><span class="p">))</span>
+      <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_getQuery</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="nb">any</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="k">return</span> <span class="bp">False</span>
+</div>
+<div class="viewcode-block" id="Storage.insert"><a class="viewcode-back" href="../../tau.html#tau.storage.Storage.insert">[docs]</a>  <span class="k">def</span> <span class="nf">insert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">fields</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a new record in the specified table</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%r</span><span class="s">: Inserting </span><span class="si">%r</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="n">fields</span><span class="p">))</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">fields</span><span class="p">)</span>
+  </div>
+<div class="viewcode-block" id="Storage.update"><a class="viewcode-back" href="../../tau.html#tau.storage.Storage.update">[docs]</a>  <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">fields</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="nb">any</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">eids</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Updates the record that matches keys to contain values from fields</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">eids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+      <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%r</span><span class="s">: update(</span><span class="si">%r</span><span class="s">, eids=</span><span class="si">%r</span><span class="s">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="n">fields</span><span class="p">,</span> <span class="n">eids</span><span class="p">))</span>
+      <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eids</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">fields</span><span class="p">,</span> <span class="n">eids</span><span class="o">=</span><span class="n">eids</span><span class="p">)</span>
+      <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">fields</span><span class="p">,</span> <span class="n">eids</span><span class="o">=</span><span class="p">[</span><span class="n">eids</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%r</span><span class="s">: update(</span><span class="si">%r</span><span class="s">, keys=</span><span class="si">%r</span><span class="s">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="n">fields</span><span class="p">,</span> <span class="n">keys</span><span class="p">))</span>
+      <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">fields</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getQuery</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="nb">any</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="Storage.remove"><a class="viewcode-back" href="../../tau.html#tau.storage.Storage.remove">[docs]</a>  <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="nb">any</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">eids</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Remove all records that match keys or eids from table_name </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">eids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+      <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%r</span><span class="s">: remove(eids=</span><span class="si">%r</span><span class="s">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="n">eids</span><span class="p">))</span>
+      <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eids</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">eids</span><span class="o">=</span><span class="n">eids</span><span class="p">)</span>
+      <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">eids</span><span class="o">=</span><span class="p">[</span><span class="n">eids</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%r</span><span class="s">: remove(keys=</span><span class="si">%r</span><span class="s">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="n">keys</span><span class="p">))</span>
+      <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_getQuery</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="nb">any</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="Storage.purge"><a class="viewcode-back" href="../../tau.html#tau.storage.Storage.purge">[docs]</a>  <span class="k">def</span> <span class="nf">purge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Removes all records from the table_name</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%r</span><span class="s">: purge()&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">table_name</span><span class="p">))</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span><span class="o">.</span><span class="n">purge</span><span class="p">()</span>
+
+</div></div>
+<span class="n">user_storage</span> <span class="o">=</span> <span class="n">Storage</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">USER_PREFIX</span><span class="p">,</span> <span class="s">&#39;local.json&#39;</span><span class="p">)</span>
+<span class="n">system_storage</span> <span class="o">=</span> <span class="n">Storage</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">SYSTEM_PREFIX</span><span class="p">,</span> <span class="s">&#39;local.json&#39;</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, John Linford  and Srinath Vadlamani @ ParaTools, Inc..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.3</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

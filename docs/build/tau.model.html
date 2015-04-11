@@ -1,0 +1,829 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tau.model package &mdash; TauCmdr 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="TauCmdr 0.0.1 documentation" href="index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">TauCmdr 0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="tau-model-package">
+<h1>tau.model package<a class="headerlink" href="#tau-model-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-tau.model.application">
+<span id="tau-model-application-module"></span><h2>tau.model.application module<a class="headerlink" href="#module-tau.model.application" title="Permalink to this headline">¶</a></h2>
+<p>&#64;file
+&#64;author John C. Linford (<a class="reference external" href="mailto:jlinford&#37;&#52;&#48;paratools&#46;com">jlinford<span>&#64;</span>paratools<span>&#46;</span>com</a>)
+&#64;version 1.0</p>
+<p>&#64;brief</p>
+<p>This file is part of the TAU Performance System</p>
+<p>&#64;section COPYRIGHT</p>
+<p>Copyright (c) 2013, ParaTools, Inc.
+All rights reserved.</p>
+<p>Redistribution and use in source and binary forms, with or without 
+modification, are permitted provided that the following conditions are met:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Redistributions of source code must retain the above copyright notice, 
+this list of conditions and the following disclaimer.</li>
+<li>Redistributions in binary form must reproduce the above copyright notice, 
+this list of conditions and the following disclaimer in the documentation 
+and/or other materials provided with the distribution.</li>
+<li>Neither the name of ParaTools, Inc. nor the names of its contributors may 
+be used to endorse or promote products derived from this software without 
+specific prior written permission.</li>
+</ol>
+</div></blockquote>
+<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &#8220;AS IS&#8221; 
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE 
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, 
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
+<dl class="class">
+<dt id="tau.model.application.Application">
+<em class="property">class </em><code class="descclassname">tau.model.application.</code><code class="descname">Application</code><span class="sig-paren">(</span><em>fields</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/application.html#Application"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.application.Application" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">controller.Controller</span></code>, <code class="xref py py-class docutils literal"><span class="pre">controller.ByName</span></code></p>
+<p>Application data model controller</p>
+<dl class="attribute">
+<dt id="tau.model.application.Application.associations">
+<code class="descname">associations</code><em class="property"> = {'projects': (&lt;class 'tau.model.project.Project'&gt;, 'applications')}</em><a class="headerlink" href="#tau.model.application.Application.associations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.application.Application.attributes">
+<code class="descname">attributes</code><em class="property"> = {'cuda': {'argparse': {'const': True, 'help': 'application uses NVIDIA CUDA', 'nargs': '?', 'flags': ('--cuda',), 'action': &lt;class 'arguments.ParseBooleanAction'&gt;, 'metavar': 'yes/no'}, 'type': 'boolean', 'defaultsTo': False}, 'mpc': {'argparse': {'const': True, 'help': 'application uses MPC', 'nargs': '?', 'flags': ('--mpc',), 'action': &lt;class 'arguments.ParseBooleanAction'&gt;, 'metavar': 'yes/no'}, 'type': 'boolean', 'defaultsTo': False}, 'name': {'argparse': {'help': 'Application configuration name', 'metavar': '&lt;application_name&gt;'}, 'unique': True, 'type': 'string'}, 'openmp': {'argparse': {'const': True, 'help': 'application uses OpenMP', 'nargs': '?', 'flags': ('--openmp',), 'action': &lt;class 'arguments.ParseBooleanAction'&gt;, 'metavar': 'yes/no'}, 'type': 'boolean', 'defaultsTo': False}, 'pthreads': {'argparse': {'const': True, 'help': 'application uses pthreads', 'nargs': '?', 'flags': ('--pthreads',), 'action': &lt;class 'arguments.ParseBooleanAction'&gt;, 'metavar': 'yes/no'}, 'type': 'boolean', 'defaultsTo': False}, 'shmem': {'argparse': {'const': True, 'help': 'application uses SHMEM', 'nargs': '?', 'flags': ('--shmem',), 'action': &lt;class 'arguments.ParseBooleanAction'&gt;, 'metavar': 'yes/no'}, 'type': 'boolean', 'defaultsTo': False}, 'projects': {'via': 'applications', 'collection': 'Project'}, 'mpi': {'argparse': {'const': True, 'help': 'application uses MPI', 'nargs': '?', 'flags': ('--mpi',), 'action': &lt;class 'arguments.ParseBooleanAction'&gt;, 'metavar': 'yes/no'}, 'type': 'boolean', 'defaultsTo': False}}</em><a class="headerlink" href="#tau.model.application.Application.attributes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.application.Application.model_name">
+<code class="descname">model_name</code><em class="property"> = 'Application'</em><a class="headerlink" href="#tau.model.application.Application.model_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.model.application.Application.onCreate">
+<code class="descname">onCreate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/application.html#Application.onCreate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.application.Application.onCreate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.application.Application.references">
+<code class="descname">references</code><em class="property"> = set([(&lt;class 'tau.model.experiment.Experiment'&gt;, 'application')])</em><a class="headerlink" href="#tau.model.application.Application.references" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-tau.model.compiler">
+<span id="tau-model-compiler-module"></span><h2>tau.model.compiler module<a class="headerlink" href="#module-tau.model.compiler" title="Permalink to this headline">¶</a></h2>
+<p>&#64;file
+&#64;author John C. Linford (<a class="reference external" href="mailto:jlinford&#37;&#52;&#48;paratools&#46;com">jlinford<span>&#64;</span>paratools<span>&#46;</span>com</a>)
+&#64;version 1.0</p>
+<p>&#64;brief</p>
+<p>This file is part of the TAU Performance System</p>
+<p>&#64;section COPYRIGHT</p>
+<p>Copyright (c) 2013, ParaTools, Inc.
+All rights reserved.</p>
+<p>Redistribution and use in source and binary forms, with or without 
+modification, are permitted provided that the following conditions are met:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Redistributions of source code must retain the above copyright notice, 
+this list of conditions and the following disclaimer.</li>
+<li>Redistributions in binary form must reproduce the above copyright notice, 
+this list of conditions and the following disclaimer in the documentation 
+and/or other materials provided with the distribution.</li>
+<li>Neither the name of ParaTools, Inc. nor the names of its contributors may 
+be used to endorse or promote products derived from this software without 
+specific prior written permission.</li>
+</ol>
+</div></blockquote>
+<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &#8220;AS IS&#8221; 
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE 
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, 
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
+<dl class="class">
+<dt id="tau.model.compiler.Compiler">
+<em class="property">class </em><code class="descclassname">tau.model.compiler.</code><code class="descname">Compiler</code><span class="sig-paren">(</span><em>fields</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/compiler.html#Compiler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.compiler.Compiler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">controller.Controller</span></code></p>
+<p>Compiler data model controller</p>
+<dl class="method">
+<dt id="tau.model.compiler.Compiler.absolutePath">
+<code class="descname">absolutePath</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/compiler.html#Compiler.absolutePath"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.compiler.Compiler.absolutePath" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.compiler.Compiler.associations">
+<code class="descname">associations</code><em class="property"> = {}</em><a class="headerlink" href="#tau.model.compiler.Compiler.associations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.compiler.Compiler.attributes">
+<code class="descname">attributes</code><em class="property"> = {'version': {'required': True, 'type': 'string'}, 'command': {'required': True, 'type': 'string'}, 'language': {'required': True, 'type': 'string'}, 'family': {'required': True, 'type': 'string'}, 'path': {'required': True, 'type': 'string'}, 'role': {'required': True, 'type': 'string'}, 'tau_wrapper': {'required': True, 'type': 'string'}, 'md5': {'required': True, 'type': 'string'}}</em><a class="headerlink" href="#tau.model.compiler.Compiler.attributes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="tau.model.compiler.Compiler.getSiblings">
+<em class="property">classmethod </em><code class="descname">getSiblings</code><span class="sig-paren">(</span><em>compiler</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/compiler.html#Compiler.getSiblings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.compiler.Compiler.getSiblings" title="Permalink to this definition">¶</a></dt>
+<dd><p>TODO: Docs</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="tau.model.compiler.Compiler.identify">
+<em class="property">classmethod </em><code class="descname">identify</code><span class="sig-paren">(</span><em>compiler_cmd</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/compiler.html#Compiler.identify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.compiler.Compiler.identify" title="Permalink to this definition">¶</a></dt>
+<dd><p>Identifies a compiler executable from <cite>compiler_cmd</cite></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.compiler.Compiler.model_name">
+<code class="descname">model_name</code><em class="property"> = 'Compiler'</em><a class="headerlink" href="#tau.model.compiler.Compiler.model_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.compiler.Compiler.references">
+<code class="descname">references</code><em class="property"> = set([(&lt;class 'tau.model.target.Target'&gt;, 'CXX'), (&lt;class 'tau.model.target.Target'&gt;, 'FC'), (&lt;class 'tau.model.target.Target'&gt;, 'CC')])</em><a class="headerlink" href="#tau.model.compiler.Compiler.references" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tau.model.compiler.CompilerInfo">
+<em class="property">class </em><code class="descclassname">tau.model.compiler.</code><code class="descname">CompilerInfo</code><span class="sig-paren">(</span><em>cmd</em>, <em>role</em>, <em>family</em>, <em>language</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/compiler.html#CompilerInfo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.compiler.CompilerInfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Information about a compiler command</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-tau.model.experiment">
+<span id="tau-model-experiment-module"></span><h2>tau.model.experiment module<a class="headerlink" href="#module-tau.model.experiment" title="Permalink to this headline">¶</a></h2>
+<p>&#64;file
+&#64;author John C. Linford (<a class="reference external" href="mailto:jlinford&#37;&#52;&#48;paratools&#46;com">jlinford<span>&#64;</span>paratools<span>&#46;</span>com</a>)
+&#64;version 1.0</p>
+<p>&#64;brief</p>
+<p>This file is part of the TAU Performance System</p>
+<p>&#64;section COPYRIGHT</p>
+<p>Copyright (c) 2013, ParaTools, Inc.
+All rights reserved.</p>
+<p>Redistribution and use in source and binary forms, with or without 
+modification, are permitted provided that the following conditions are met:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Redistributions of source code must retain the above copyright notice, 
+this list of conditions and the following disclaimer.</li>
+<li>Redistributions in binary form must reproduce the above copyright notice, 
+this list of conditions and the following disclaimer in the documentation 
+and/or other materials provided with the distribution.</li>
+<li>Neither the name of ParaTools, Inc. nor the names of its contributors may 
+be used to endorse or promote products derived from this software without 
+specific prior written permission.</li>
+</ol>
+</div></blockquote>
+<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &#8220;AS IS&#8221; 
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE 
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, 
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
+<dl class="class">
+<dt id="tau.model.experiment.Experiment">
+<em class="property">class </em><code class="descclassname">tau.model.experiment.</code><code class="descname">Experiment</code><span class="sig-paren">(</span><em>fields</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">controller.Controller</span></code></p>
+<p>Experiment data model controller</p>
+<dl class="attribute">
+<dt id="tau.model.experiment.Experiment.associations">
+<code class="descname">associations</code><em class="property"> = {'project': (&lt;class 'tau.model.project.Project'&gt;, 'experiments'), 'trials': (&lt;class 'tau.model.trial.Trial'&gt;, 'experiment')}</em><a class="headerlink" href="#tau.model.experiment.Experiment.associations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.experiment.Experiment.attributes">
+<code class="descname">attributes</code><em class="property"> = {'project': {'model': 'Project', 'required': True}, 'application': {'model': 'Application', 'required': True}, 'target': {'model': 'Target', 'required': True}, 'trials': {'via': 'experiment', 'collection': 'Trial'}, 'measurement': {'model': 'Measurement', 'required': True}}</em><a class="headerlink" href="#tau.model.experiment.Experiment.attributes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.model.experiment.Experiment.configure">
+<code class="descname">configure</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.configure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.configure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Installs all software required to perform the experiment</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="tau.model.experiment.Experiment.getSelected">
+<em class="property">classmethod </em><code class="descname">getSelected</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.getSelected"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.getSelected" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.model.experiment.Experiment.isSelected">
+<code class="descname">isSelected</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.isSelected"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.isSelected" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.model.experiment.Experiment.managedBuild">
+<code class="descname">managedBuild</code><span class="sig-paren">(</span><em>compiler_cmd</em>, <em>compiler_args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.managedBuild"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.managedBuild" title="Permalink to this definition">¶</a></dt>
+<dd><p>TODO: Docs</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.model.experiment.Experiment.managedRun">
+<code class="descname">managedRun</code><span class="sig-paren">(</span><em>application_cmd</em>, <em>application_args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.managedRun"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.managedRun" title="Permalink to this definition">¶</a></dt>
+<dd><p>TODO: Docs</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.experiment.Experiment.model_name">
+<code class="descname">model_name</code><em class="property"> = 'Experiment'</em><a class="headerlink" href="#tau.model.experiment.Experiment.model_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.model.experiment.Experiment.name">
+<code class="descname">name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.model.experiment.Experiment.onCreate">
+<code class="descname">onCreate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.onCreate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.onCreate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize experiment storage</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.model.experiment.Experiment.onDelete">
+<code class="descname">onDelete</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.onDelete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.onDelete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clean up experiment storage</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.model.experiment.Experiment.prefix">
+<code class="descname">prefix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.prefix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.prefix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Storage location for all experiment data</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.experiment.Experiment.references">
+<code class="descname">references</code><em class="property"> = set([(&lt;class 'tau.model.trial.Trial'&gt;, 'experiment')])</em><a class="headerlink" href="#tau.model.experiment.Experiment.references" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.model.experiment.Experiment.select">
+<code class="descname">select</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.select"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.select" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.model.experiment.Experiment.show">
+<code class="descname">show</code><span class="sig-paren">(</span><em>trial_numbers=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.show"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.show" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show most recent trial or all trials with given numbers</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-tau.model.measurement">
+<span id="tau-model-measurement-module"></span><h2>tau.model.measurement module<a class="headerlink" href="#module-tau.model.measurement" title="Permalink to this headline">¶</a></h2>
+<p>&#64;file
+&#64;author John C. Linford (<a class="reference external" href="mailto:jlinford&#37;&#52;&#48;paratools&#46;com">jlinford<span>&#64;</span>paratools<span>&#46;</span>com</a>)
+&#64;version 1.0</p>
+<p>&#64;brief</p>
+<p>This file is part of the TAU Performance System</p>
+<p>&#64;section COPYRIGHT</p>
+<p>Copyright (c) 2013, ParaTools, Inc.
+All rights reserved.</p>
+<p>Redistribution and use in source and binary forms, with or without 
+modification, are permitted provided that the following conditions are met:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Redistributions of source code must retain the above copyright notice, 
+this list of conditions and the following disclaimer.</li>
+<li>Redistributions in binary form must reproduce the above copyright notice, 
+this list of conditions and the following disclaimer in the documentation 
+and/or other materials provided with the distribution.</li>
+<li>Neither the name of ParaTools, Inc. nor the names of its contributors may 
+be used to endorse or promote products derived from this software without 
+specific prior written permission.</li>
+</ol>
+</div></blockquote>
+<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &#8220;AS IS&#8221; 
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE 
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, 
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
+<dl class="class">
+<dt id="tau.model.measurement.Measurement">
+<em class="property">class </em><code class="descclassname">tau.model.measurement.</code><code class="descname">Measurement</code><span class="sig-paren">(</span><em>fields</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/measurement.html#Measurement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.measurement.Measurement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">controller.Controller</span></code>, <code class="xref py py-class docutils literal"><span class="pre">controller.ByName</span></code></p>
+<p>Measurement data model controller</p>
+<dl class="attribute">
+<dt id="tau.model.measurement.Measurement.associations">
+<code class="descname">associations</code><em class="property"> = {'projects': (&lt;class 'tau.model.project.Project'&gt;, 'measurements')}</em><a class="headerlink" href="#tau.model.measurement.Measurement.associations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.measurement.Measurement.attributes">
+<code class="descname">attributes</code><em class="property"> = {'profile': {'argparse': {'const': True, 'help': 'gather application profiles', 'nargs': '?', 'flags': ('--profile',), 'action': &lt;class 'arguments.ParseBooleanAction'&gt;, 'metavar': 'T/F'}, 'type': 'boolean', 'defaultsTo': True}, 'callpath': {'argparse': {'const': 2, 'help': 'maximum depth of callpath recording', 'nargs': '?', 'flags': ('--callpath',), 'type': &lt;type 'int'&gt;, 'metavar': 'depth'}, 'type': 'integer', 'defaultsTo': 2}, 'trace': {'argparse': {'const': True, 'help': 'gather application traces', 'nargs': '?', 'flags': ('--trace',), 'action': &lt;class 'arguments.ParseBooleanAction'&gt;, 'metavar': 'T/F'}, 'type': 'boolean', 'defaultsTo': False}, 'mpi': {'argparse': {'const': True, 'help': 'measure time spent in MPI methods', 'nargs': '?', 'flags': ('--mpi',), 'action': &lt;class 'arguments.ParseBooleanAction'&gt;, 'metavar': 'T/F'}, 'type': 'boolean', 'defaultsTo': False}, 'sample': {'argparse': {'const': True, 'help': 'gather application program counter samples', 'nargs': '?', 'flags': ('--sample',), 'action': &lt;class 'arguments.ParseBooleanAction'&gt;, 'metavar': 'T/F'}, 'type': 'boolean', 'defaultsTo': False}, 'openmp': {'argparse': {'const': 'opari', 'help': 'method used to measure time spent in OpenMP directives', 'nargs': '?', 'choices': ['ignore', 'opari', 'ompt'], 'flags': ('--openmp',), 'metavar': 'method'}, 'type': 'string', 'defaultsTo': 'ignore'}, 'memory_alloc': {'argparse': {'const': True, 'help': 'record memory allocation and deallocation events', 'nargs': '?', 'flags': ('--memory-alloc',), 'action': &lt;class 'arguments.ParseBooleanAction'&gt;, 'metavar': 'T/F'}, 'type': 'boolean', 'defaultsTo': False}, 'projects': {'via': 'measurements', 'collection': 'Project'}, 'memory_usage': {'argparse': {'const': True, 'help': 'measure memory consumption', 'nargs': '?', 'flags': ('--memory-usage',), 'action': &lt;class 'arguments.ParseBooleanAction'&gt;, 'metavar': 'T/F'}, 'type': 'boolean', 'defaultsTo': False}, 'metrics': {'argparse': {'nargs': '+', 'flags': ('--with-metrics',), 'help': 'metrics for measurements space sperated', 'metavar': '&lt;TAU_METRICS&gt;'}, 'type': 'array', 'defaultsTo': ['TIME']}, 'name': {'argparse': {'help': 'measurement configuration name', 'metavar': '&lt;measurement_name&gt;'}, 'unique': True, 'type': 'string'}, 'source_inst': {'argparse': {'const': True, 'help': 'use source code parsing to instrument the application', 'nargs': '?', 'flags': ('--source-inst',), 'action': &lt;class 'arguments.ParseBooleanAction'&gt;, 'metavar': 'T/F'}, 'type': 'boolean', 'defaultsTo': True}, 'compiler_inst': {'argparse': {'const': 'always', 'help': 'use compiler callbacks to instrument the application', 'nargs': '?', 'choices': ['always', 'fallback', 'never'], 'flags': ('--compiler-inst',), 'metavar': 'mode'}, 'type': 'string', 'defaultsTo': 'fallback'}}</em><a class="headerlink" href="#tau.model.measurement.Measurement.attributes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.measurement.Measurement.model_name">
+<code class="descname">model_name</code><em class="property"> = 'Measurement'</em><a class="headerlink" href="#tau.model.measurement.Measurement.model_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.model.measurement.Measurement.onCreate">
+<code class="descname">onCreate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/measurement.html#Measurement.onCreate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.measurement.Measurement.onCreate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.measurement.Measurement.references">
+<code class="descname">references</code><em class="property"> = set([(&lt;class 'tau.model.experiment.Experiment'&gt;, 'measurement')])</em><a class="headerlink" href="#tau.model.measurement.Measurement.references" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-tau.model.project">
+<span id="tau-model-project-module"></span><h2>tau.model.project module<a class="headerlink" href="#module-tau.model.project" title="Permalink to this headline">¶</a></h2>
+<p>&#64;file
+&#64;author John C. Linford (<a class="reference external" href="mailto:jlinford&#37;&#52;&#48;paratools&#46;com">jlinford<span>&#64;</span>paratools<span>&#46;</span>com</a>)
+&#64;version 1.0</p>
+<p>&#64;brief</p>
+<p>This file is part of the TAU Performance System</p>
+<p>&#64;section COPYRIGHT</p>
+<p>Copyright (c) 2013, ParaTools, Inc.
+All rights reserved.</p>
+<p>Redistribution and use in source and binary forms, with or without 
+modification, are permitted provided that the following conditions are met:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Redistributions of source code must retain the above copyright notice, 
+this list of conditions and the following disclaimer.</li>
+<li>Redistributions in binary form must reproduce the above copyright notice, 
+this list of conditions and the following disclaimer in the documentation 
+and/or other materials provided with the distribution.</li>
+<li>Neither the name of ParaTools, Inc. nor the names of its contributors may 
+be used to endorse or promote products derived from this software without 
+specific prior written permission.</li>
+</ol>
+</div></blockquote>
+<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &#8220;AS IS&#8221; 
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE 
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, 
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
+<dl class="class">
+<dt id="tau.model.project.Project">
+<em class="property">class </em><code class="descclassname">tau.model.project.</code><code class="descname">Project</code><span class="sig-paren">(</span><em>fields</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/project.html#Project"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.project.Project" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">controller.Controller</span></code>, <code class="xref py py-class docutils literal"><span class="pre">controller.ByName</span></code></p>
+<p>Project data model controller</p>
+<dl class="attribute">
+<dt id="tau.model.project.Project.associations">
+<code class="descname">associations</code><em class="property"> = {'experiments': (&lt;class 'tau.model.experiment.Experiment'&gt;, 'project'), 'applications': (&lt;class 'tau.model.application.Application'&gt;, 'projects'), 'measurements': (&lt;class 'tau.model.measurement.Measurement'&gt;, 'projects'), 'targets': (&lt;class 'tau.model.target.Target'&gt;, 'projects')}</em><a class="headerlink" href="#tau.model.project.Project.associations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.project.Project.attributes">
+<code class="descname">attributes</code><em class="property"> = {'name': {'argparse': {'help': 'Project name', 'metavar': '&lt;project_name&gt;'}, 'unique': True, 'type': 'string'}, 'measurements': {'via': 'projects', 'collection': 'Measurement'}, 'applications': {'via': 'projects', 'collection': 'Application'}, 'prefix': {'argparse': {'flags': ('--home',), 'help': 'Location for all files and experiment data related to this project', 'metavar': 'path'}, 'required': True, 'type': 'string', 'defaultsTo': '/Users/srinathv/.tau'}, 'experiments': {'via': 'project', 'collection': 'Experiment'}, 'targets': {'via': 'projects', 'collection': 'Target'}}</em><a class="headerlink" href="#tau.model.project.Project.attributes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.project.Project.model_name">
+<code class="descname">model_name</code><em class="property"> = 'Project'</em><a class="headerlink" href="#tau.model.project.Project.model_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.model.project.Project.onCreate">
+<code class="descname">onCreate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/project.html#Project.onCreate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.project.Project.onCreate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.model.project.Project.onDelete">
+<code class="descname">onDelete</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/project.html#Project.onDelete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.project.Project.onDelete" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.model.project.Project.prefix">
+<code class="descname">prefix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/project.html#Project.prefix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.project.Project.prefix" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.project.Project.references">
+<code class="descname">references</code><em class="property"> = set([(&lt;class 'tau.model.experiment.Experiment'&gt;, 'project')])</em><a class="headerlink" href="#tau.model.project.Project.references" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-tau.model.setting">
+<span id="tau-model-setting-module"></span><h2>tau.model.setting module<a class="headerlink" href="#module-tau.model.setting" title="Permalink to this headline">¶</a></h2>
+<p>&#64;file
+&#64;author John C. Linford (<a class="reference external" href="mailto:jlinford&#37;&#52;&#48;paratools&#46;com">jlinford<span>&#64;</span>paratools<span>&#46;</span>com</a>)
+&#64;version 1.0</p>
+<p>&#64;brief</p>
+<p>This file is part of the TAU Performance System</p>
+<p>&#64;section COPYRIGHT</p>
+<p>Copyright (c) 2013, ParaTools, Inc.
+All rights reserved.</p>
+<p>Redistribution and use in source and binary forms, with or without 
+modification, are permitted provided that the following conditions are met:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Redistributions of source code must retain the above copyright notice, 
+this list of conditions and the following disclaimer.</li>
+<li>Redistributions in binary form must reproduce the above copyright notice, 
+this list of conditions and the following disclaimer in the documentation 
+and/or other materials provided with the distribution.</li>
+<li>Neither the name of ParaTools, Inc. nor the names of its contributors may 
+be used to endorse or promote products derived from this software without 
+specific prior written permission.</li>
+</ol>
+</div></blockquote>
+<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &#8220;AS IS&#8221; 
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE 
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, 
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
+<dl class="class">
+<dt id="tau.model.setting.Setting">
+<em class="property">class </em><code class="descclassname">tau.model.setting.</code><code class="descname">Setting</code><span class="sig-paren">(</span><em>fields</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/setting.html#Setting"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.setting.Setting" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">controller.Controller</span></code></p>
+<p>Setting data model controller</p>
+<dl class="attribute">
+<dt id="tau.model.setting.Setting.associations">
+<code class="descname">associations</code><em class="property"> = {}</em><a class="headerlink" href="#tau.model.setting.Setting.associations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.setting.Setting.attributes">
+<code class="descname">attributes</code><em class="property"> = {'value': {'type': 'string'}, 'key': {'unique': True, 'type': 'string'}}</em><a class="headerlink" href="#tau.model.setting.Setting.attributes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.setting.Setting.model_name">
+<code class="descname">model_name</code><em class="property"> = 'Setting'</em><a class="headerlink" href="#tau.model.setting.Setting.model_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.setting.Setting.references">
+<code class="descname">references</code><em class="property"> = set([])</em><a class="headerlink" href="#tau.model.setting.Setting.references" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-tau.model.target">
+<span id="tau-model-target-module"></span><h2>tau.model.target module<a class="headerlink" href="#module-tau.model.target" title="Permalink to this headline">¶</a></h2>
+<p>&#64;file
+&#64;author John C. Linford (<a class="reference external" href="mailto:jlinford&#37;&#52;&#48;paratools&#46;com">jlinford<span>&#64;</span>paratools<span>&#46;</span>com</a>)
+&#64;version 1.0</p>
+<p>&#64;brief</p>
+<p>This file is part of the TAU Performance System</p>
+<p>&#64;section COPYRIGHT</p>
+<p>Copyright (c) 2013, ParaTools, Inc.
+All rights reserved.</p>
+<p>Redistribution and use in source and binary forms, with or without 
+modification, are permitted provided that the following conditions are met:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Redistributions of source code must retain the above copyright notice, 
+this list of conditions and the following disclaimer.</li>
+<li>Redistributions in binary form must reproduce the above copyright notice, 
+this list of conditions and the following disclaimer in the documentation 
+and/or other materials provided with the distribution.</li>
+<li>Neither the name of ParaTools, Inc. nor the names of its contributors may 
+be used to endorse or promote products derived from this software without 
+specific prior written permission.</li>
+</ol>
+</div></blockquote>
+<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &#8220;AS IS&#8221; 
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE 
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, 
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
+<dl class="class">
+<dt id="tau.model.target.Target">
+<em class="property">class </em><code class="descclassname">tau.model.target.</code><code class="descname">Target</code><span class="sig-paren">(</span><em>fields</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/target.html#Target"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.target.Target" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">controller.Controller</span></code>, <code class="xref py py-class docutils literal"><span class="pre">controller.ByName</span></code></p>
+<p>Target data model controller</p>
+<dl class="attribute">
+<dt id="tau.model.target.Target.associations">
+<code class="descname">associations</code><em class="property"> = {'projects': (&lt;class 'tau.model.project.Project'&gt;, 'targets')}</em><a class="headerlink" href="#tau.model.target.Target.associations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.target.Target.attributes">
+<code class="descname">attributes</code><em class="property"> = {'device_arch': {'argparse': {'group': 'target system', 'flags': ('--device-arch',), 'help': 'Coprocessor architecture', 'metavar': 'arch'}, 'type': 'string', 'defaultsTo': None}, 'CC': {'argparse': {'group': 'compiler', 'flags': ('--cc',), 'help': 'C Compiler', 'metavar': '&lt;command&gt;'}, 'model': 'Compiler', 'required': True, 'defaultsTo': 'gcc'}, 'tau_source': {'argparse': {'group': 'software package', 'flags': ('--with-tau',), 'help': 'URL or path to a TAU installation or archive file', 'metavar': '(&lt;path&gt;|&lt;url&gt;|&quot;download&quot;)'}, 'type': 'string', 'defaultsTo': 'download'}, 'pdt_source': {'argparse': {'action': &lt;class 'arguments.ParsePackagePathAction'&gt;, 'group': 'software package', 'flags': ('--with-pdt',), 'help': 'URL or path to a PDT installation or archive file', 'metavar': '(&lt;path&gt;|&lt;url&gt;|download|False)'}, 'type': 'string', 'defaultsTo': 'download'}, 'FC': {'argparse': {'group': 'compiler', 'flags': ('--fc', '--fortran'), 'help': 'Fortran Compiler', 'metavar': '&lt;command&gt;'}, 'model': 'Compiler', 'required': True, 'defaultsTo': 'gfortran'}, 'host_arch': {'argparse': {'group': 'target system', 'flags': ('--host-arch',), 'help': 'Host architecture', 'metavar': 'arch'}, 'required': True, 'type': 'string', 'defaultsTo': 'apple'}, 'host_os': {'argparse': {'group': 'target system', 'flags': ('--host-os',), 'help': 'Host operating system', 'metavar': 'os'}, 'required': True, 'type': 'string', 'defaultsTo': 'Darwin'}, 'projects': {'via': 'targets', 'collection': 'Project'}, 'name': {'argparse': {'help': 'Target configuration name', 'metavar': '&lt;target_name&gt;'}, 'unique': True, 'type': 'string'}, 'bfd_source': {'argparse': {'action': &lt;class 'arguments.ParsePackagePathAction'&gt;, 'group': 'software package', 'flags': ('--with-bfd',), 'help': 'URL or path to a BFD installation or archive file', 'metavar': '(&lt;path&gt;|&lt;url&gt;|download|False)'}, 'type': 'string', 'defaultsTo': 'download'}, 'CXX': {'argparse': {'group': 'compiler', 'flags': ('--cxx', '--c++'), 'help': 'C++ Compiler', 'metavar': '&lt;command&gt;'}, 'model': 'Compiler', 'required': True, 'defaultsTo': 'g++'}, 'papi_source': {'argparse': {'action': &lt;class 'arguments.ParsePackagePathAction'&gt;, 'group': 'software package', 'flags': ('--with-papi',), 'help': 'URL or path to a PAPI installation or archive file', 'metavar': '(&lt;path&gt;|&lt;url&gt;|download|False)'}, 'type': 'string', 'defaultsTo': 'False'}, 'libunwind_source': {'argparse': {'action': &lt;class 'arguments.ParsePackagePathAction'&gt;, 'group': 'software package', 'flags': ('--with-libunwind',), 'help': 'URL or path to a libunwind installation or archive file', 'metavar': '(&lt;path&gt;|&lt;url&gt;|download|False)'}, 'type': 'string', 'defaultsTo': 'download'}, 'cuda': {'argparse': {'group': 'software package', 'flags': ('--with-cuda',), 'help': 'Path to NVIDIA CUDA installation', 'metavar': '&lt;path&gt;'}, 'type': 'string'}}</em><a class="headerlink" href="#tau.model.target.Target.attributes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.target.Target.model_name">
+<code class="descname">model_name</code><em class="property"> = 'Target'</em><a class="headerlink" href="#tau.model.target.Target.model_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.model.target.Target.onCreate">
+<code class="descname">onCreate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/target.html#Target.onCreate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.target.Target.onCreate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.target.Target.references">
+<code class="descname">references</code><em class="property"> = set([(&lt;class 'tau.model.experiment.Experiment'&gt;, 'target')])</em><a class="headerlink" href="#tau.model.target.Target.references" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.model.target.defaultCC">
+<code class="descclassname">tau.model.target.</code><code class="descname">defaultCC</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/target.html#defaultCC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.target.defaultCC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Detect target&#8217;s default C compiler</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.model.target.defaultCXX">
+<code class="descclassname">tau.model.target.</code><code class="descname">defaultCXX</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/target.html#defaultCXX"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.target.defaultCXX" title="Permalink to this definition">¶</a></dt>
+<dd><p>Detect target&#8217;s default C compiler</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.model.target.defaultDeviceArch">
+<code class="descclassname">tau.model.target.</code><code class="descname">defaultDeviceArch</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/target.html#defaultDeviceArch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.target.defaultDeviceArch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Detect coprocessors</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.model.target.defaultFC">
+<code class="descclassname">tau.model.target.</code><code class="descname">defaultFC</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/target.html#defaultFC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.target.defaultFC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Detect target&#8217;s default C compiler</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.model.target.defaultHostArch">
+<code class="descclassname">tau.model.target.</code><code class="descname">defaultHostArch</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/target.html#defaultHostArch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.target.defaultHostArch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use TAU&#8217;s archfind script to detect the host target architecture</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.model.target.defaultHostOS">
+<code class="descclassname">tau.model.target.</code><code class="descname">defaultHostOS</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/target.html#defaultHostOS"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.target.defaultHostOS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Detect the default host operating system</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-tau.model.trial">
+<span id="tau-model-trial-module"></span><h2>tau.model.trial module<a class="headerlink" href="#module-tau.model.trial" title="Permalink to this headline">¶</a></h2>
+<p>&#64;file
+&#64;author John C. Linford (<a class="reference external" href="mailto:jlinford&#37;&#52;&#48;paratools&#46;com">jlinford<span>&#64;</span>paratools<span>&#46;</span>com</a>)
+&#64;version 1.0</p>
+<p>&#64;brief</p>
+<p>This file is part of the TAU Performance System</p>
+<p>&#64;section COPYRIGHT</p>
+<p>Copyright (c) 2013, ParaTools, Inc.
+All rights reserved.</p>
+<p>Redistribution and use in source and binary forms, with or without 
+modification, are permitted provided that the following conditions are met:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Redistributions of source code must retain the above copyright notice, 
+this list of conditions and the following disclaimer.</li>
+<li>Redistributions in binary form must reproduce the above copyright notice, 
+this list of conditions and the following disclaimer in the documentation 
+and/or other materials provided with the distribution.</li>
+<li>Neither the name of ParaTools, Inc. nor the names of its contributors may 
+be used to endorse or promote products derived from this software without 
+specific prior written permission.</li>
+</ol>
+</div></blockquote>
+<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &#8220;AS IS&#8221; 
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE 
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, 
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
+<dl class="class">
+<dt id="tau.model.trial.Trial">
+<em class="property">class </em><code class="descclassname">tau.model.trial.</code><code class="descname">Trial</code><span class="sig-paren">(</span><em>fields</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/trial.html#Trial"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.trial.Trial" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">controller.Controller</span></code></p>
+<p>Trial data model controller</p>
+<dl class="attribute">
+<dt id="tau.model.trial.Trial.associations">
+<code class="descname">associations</code><em class="property"> = {'experiment': (&lt;class 'tau.model.experiment.Experiment'&gt;, 'trials')}</em><a class="headerlink" href="#tau.model.trial.Trial.associations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.trial.Trial.attributes">
+<code class="descname">attributes</code><em class="property"> = {'environment': {'required': True, 'type': 'string'}, 'experiment': {'model': 'Experiment', 'required': True}, 'command': {'required': True, 'type': 'string'}, 'end_time': {'type': 'datetime'}, 'data_size': {'type': 'integer'}, 'begin_time': {'type': 'datetime'}, 'return_code': {'type': 'integer'}, 'number': {'required': True, 'type': 'integer'}, 'cwd': {'required': True, 'type': 'string'}}</em><a class="headerlink" href="#tau.model.trial.Trial.attributes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.trial.Trial.model_name">
+<code class="descname">model_name</code><em class="property"> = 'Trial'</em><a class="headerlink" href="#tau.model.trial.Trial.model_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.model.trial.Trial.onCreate">
+<code class="descname">onCreate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/trial.html#Trial.onCreate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.trial.Trial.onCreate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize trial data</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.model.trial.Trial.onDelete">
+<code class="descname">onDelete</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/trial.html#Trial.onDelete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.trial.Trial.onDelete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clean up trial data</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="tau.model.trial.Trial.perform">
+<em class="property">classmethod </em><code class="descname">perform</code><span class="sig-paren">(</span><em>experiment</em>, <em>cmd</em>, <em>cwd</em>, <em>env</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/trial.html#Trial.perform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.trial.Trial.perform" title="Permalink to this definition">¶</a></dt>
+<dd><p>TODO: Docs</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.model.trial.Trial.prefix">
+<code class="descname">prefix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/trial.html#Trial.prefix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.trial.Trial.prefix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Path to trial data</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.trial.Trial.references">
+<code class="descname">references</code><em class="property"> = set([])</em><a class="headerlink" href="#tau.model.trial.Trial.references" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-tau.model">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-tau.model" title="Permalink to this headline">¶</a></h2>
+<p>&#64;file
+&#64;author John C. Linford (<a class="reference external" href="mailto:jlinford&#37;&#52;&#48;paratools&#46;com">jlinford<span>&#64;</span>paratools<span>&#46;</span>com</a>)
+&#64;version 1.0</p>
+<p>&#64;brief</p>
+<p>This file is part of the TAU Performance System</p>
+<p>&#64;section COPYRIGHT</p>
+<p>Copyright (c) 2013, ParaTools, Inc.
+All rights reserved.</p>
+<p>Redistribution and use in source and binary forms, with or without 
+modification, are permitted provided that the following conditions are met:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Redistributions of source code must retain the above copyright notice, 
+this list of conditions and the following disclaimer.</li>
+<li>Redistributions in binary form must reproduce the above copyright notice, 
+this list of conditions and the following disclaimer in the documentation 
+and/or other materials provided with the distribution.</li>
+<li>Neither the name of ParaTools, Inc. nor the names of its contributors may 
+be used to endorse or promote products derived from this software without 
+specific prior written permission.</li>
+</ol>
+</div></blockquote>
+<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &#8220;AS IS&#8221; 
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE 
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, 
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">tau.model package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-tau.model.application">tau.model.application module</a></li>
+<li><a class="reference internal" href="#module-tau.model.compiler">tau.model.compiler module</a></li>
+<li><a class="reference internal" href="#module-tau.model.experiment">tau.model.experiment module</a></li>
+<li><a class="reference internal" href="#module-tau.model.measurement">tau.model.measurement module</a></li>
+<li><a class="reference internal" href="#module-tau.model.project">tau.model.project module</a></li>
+<li><a class="reference internal" href="#module-tau.model.setting">tau.model.setting module</a></li>
+<li><a class="reference internal" href="#module-tau.model.target">tau.model.target module</a></li>
+<li><a class="reference internal" href="#module-tau.model.trial">tau.model.trial module</a></li>
+<li><a class="reference internal" href="#module-tau.model">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/tau.model.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, John Linford  and Srinath Vadlamani @ ParaTools, Inc..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.3</a>
+      
+      |
+      <a href="_sources/tau.model.txt"
+          rel="nofollow">Page source</a></li>
+    </div>
+
+    
+
+    
+  </body>
+</html>

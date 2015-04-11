@@ -1,0 +1,267 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tau.commands.target.create &mdash; TauCmdr 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="TauCmdr 0.0.1 documentation" href="../../../../index.html" />
+    <link rel="up" title="tau.commands.target" href="../target.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">TauCmdr 0.0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../../commands.html" >tau.commands</a> &raquo;</li>
+          <li class="nav-item nav-item-3"><a href="../target.html" accesskey="U">tau.commands.target</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for tau.commands.target.create</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">@file</span>
+<span class="sd">@author John C. Linford (jlinford@paratools.com)</span>
+<span class="sd">@version 1.0</span>
+
+<span class="sd">@brief</span>
+
+<span class="sd">This file is part of the TAU Performance System</span>
+
+<span class="sd">@section COPYRIGHT</span>
+
+<span class="sd">Copyright (c) 2013, ParaTools, Inc.</span>
+<span class="sd">All rights reserved.</span>
+
+<span class="sd">Redistribution and use in source and binary forms, with or without </span>
+<span class="sd">modification, are permitted provided that the following conditions are met:</span>
+<span class="sd"> (1) Redistributions of source code must retain the above copyright notice, </span>
+<span class="sd">     this list of conditions and the following disclaimer.</span>
+<span class="sd"> (2) Redistributions in binary form must reproduce the above copyright notice, </span>
+<span class="sd">     this list of conditions and the following disclaimer in the documentation </span>
+<span class="sd">     and/or other materials provided with the distribution.</span>
+<span class="sd"> (3) Neither the name of ParaTools, Inc. nor the names of its contributors may </span>
+<span class="sd">     be used to endorse or promote products derived from this software without </span>
+<span class="sd">     specific prior written permission.</span>
+
+<span class="sd">THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot; </span>
+<span class="sd">AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE </span>
+<span class="sd">IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE </span>
+<span class="sd">DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE </span>
+<span class="sd">FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL </span>
+<span class="sd">DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR </span>
+<span class="sd">SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER </span>
+<span class="sd">CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, </span>
+<span class="sd">OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE </span>
+<span class="sd">OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c"># TAU modules</span>
+<span class="kn">import</span> <span class="nn">logger</span>
+<span class="kn">import</span> <span class="nn">commands</span>
+<span class="kn">import</span> <span class="nn">controller</span>
+<span class="kn">import</span> <span class="nn">error</span>
+<span class="kn">import</span> <span class="nn">arguments</span> <span class="kn">as</span> <span class="nn">args</span>
+<span class="kn">from</span> <span class="nn">model.target</span> <span class="kn">import</span> <span class="n">Target</span>
+<span class="kn">from</span> <span class="nn">model.compiler</span> <span class="kn">import</span> <span class="n">Compiler</span><span class="p">,</span> <span class="n">KNOWN_FAMILIES</span>
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+<span class="n">SHORT_DESCRIPTION</span> <span class="o">=</span> <span class="s">&quot;Create a new target configuration.&quot;</span>
+
+<span class="n">COMMAND</span> <span class="o">=</span> <span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&#39;tau&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">__name__</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">:]))</span>
+
+<span class="n">USAGE</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
+<span class="s">  </span><span class="si">%(command)s</span><span class="s"> &lt;target_name&gt; [arguments]</span>
+<span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;command&#39;</span><span class="p">:</span> <span class="n">COMMAND</span><span class="p">}</span>
+
+<span class="n">HELP</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
+<span class="s">&#39;</span><span class="si">%(command)s</span><span class="s">&#39; page to be written.</span>
+<span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;command&#39;</span><span class="p">:</span> <span class="n">COMMAND</span><span class="p">}</span>
+
+<span class="n">PARSER</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">getParserFromModel</span><span class="p">(</span><span class="n">Target</span><span class="p">,</span>
+                                 <span class="n">prog</span><span class="o">=</span><span class="n">COMMAND</span><span class="p">,</span>
+                                 <span class="n">usage</span><span class="o">=</span><span class="n">USAGE</span><span class="p">,</span> 
+                                 <span class="n">description</span><span class="o">=</span><span class="n">SHORT_DESCRIPTION</span><span class="p">)</span>
+<span class="n">group</span> <span class="o">=</span> <span class="n">PARSER</span><span class="o">.</span><span class="n">getGroup</span><span class="p">(</span><span class="s">&#39;compiler arguments&#39;</span><span class="p">)</span>
+<span class="n">group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--compilers&#39;</span><span class="p">,</span>
+                   <span class="n">help</span><span class="o">=</span><span class="s">&quot;Select all compilers automatically from the given family&quot;</span><span class="p">,</span>
+                   <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;&lt;family&gt;&#39;</span><span class="p">,</span> 
+                   <span class="n">dest</span><span class="o">=</span><span class="s">&#39;family&#39;</span><span class="p">,</span>
+                   <span class="n">default</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">,</span>
+                   <span class="n">choices</span><span class="o">=</span><span class="n">KNOWN_FAMILIES</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+
+<div class="viewcode-block" id="getUsage"><a class="viewcode-back" href="../../../../tau.commands.target.html#tau.commands.target.create.getUsage">[docs]</a><span class="k">def</span> <span class="nf">getUsage</span><span class="p">():</span>
+  <span class="k">return</span> <span class="n">PARSER</span><span class="o">.</span><span class="n">format_help</span><span class="p">()</span> 
+
+</div>
+<div class="viewcode-block" id="getHelp"><a class="viewcode-back" href="../../../../tau.commands.target.html#tau.commands.target.create.getHelp">[docs]</a><span class="k">def</span> <span class="nf">getHelp</span><span class="p">():</span>
+  <span class="k">return</span> <span class="n">HELP</span>
+
+</div>
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../../../tau.commands.target.html#tau.commands.target.create.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  Program entry point</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="n">args</span> <span class="o">=</span> <span class="n">PARSER</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">argv</span><span class="p">)</span>
+  <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Arguments: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">args</span><span class="p">)</span>
+  
+  <span class="k">try</span><span class="p">:</span>
+    <span class="n">family</span> <span class="o">=</span> <span class="n">KNOWN_FAMILIES</span><span class="p">[</span><span class="n">args</span><span class="o">.</span><span class="n">family</span><span class="p">]</span>
+  <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+    <span class="c"># --compilers not specified but that&#39;s OK</span>
+    <span class="k">pass</span>
+  <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="n">error</span><span class="o">.</span><span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&quot;Invalid compiler family: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">args</span><span class="o">.</span><span class="n">family</span><span class="p">,</span>
+                                   <span class="s">&quot;See &#39;compiler arguments&#39; under `tau target create --help`&quot;</span><span class="p">)</span>
+  <span class="k">else</span><span class="p">:</span>
+    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Using </span><span class="si">%s</span><span class="s"> compilers by default&quot;</span> <span class="o">%</span> <span class="n">args</span><span class="o">.</span><span class="n">family</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">comp_info</span> <span class="ow">in</span> <span class="n">family</span><span class="p">:</span>
+      <span class="nb">setattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">comp_info</span><span class="o">.</span><span class="n">role</span><span class="p">,</span> <span class="n">comp_info</span><span class="o">.</span><span class="n">command</span><span class="p">)</span>
+    <span class="k">del</span> <span class="n">args</span><span class="o">.</span><span class="n">family</span>
+  <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Arguments: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">args</span><span class="p">)</span>
+
+  <span class="n">languages</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;CC&#39;</span><span class="p">:</span> <span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="s">&#39;CXX&#39;</span><span class="p">:</span> <span class="s">&#39;C++&#39;</span><span class="p">,</span> <span class="s">&#39;FC&#39;</span><span class="p">:</span> <span class="s">&#39;Fortran&#39;</span><span class="p">}</span>
+  <span class="n">compiler_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">languages</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+  <span class="n">all_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+  <span class="n">given_keys</span> <span class="o">=</span> <span class="n">compiler_keys</span> <span class="o">&amp;</span> <span class="n">all_keys</span>
+  <span class="n">missing_keys</span> <span class="o">=</span> <span class="n">compiler_keys</span> <span class="o">-</span> <span class="n">given_keys</span>
+  <span class="n">compilers</span> <span class="o">=</span> <span class="p">{}</span>
+  
+  <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Given keys: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">given_keys</span><span class="p">)</span>
+  <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Missing keys: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">missing_keys</span><span class="p">)</span> 
+  
+  <span class="k">if</span> <span class="ow">not</span> <span class="n">missing_keys</span><span class="p">:</span>
+    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;All compilers specified by user&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">compiler_keys</span><span class="p">:</span>
+      <span class="n">compilers</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">Compiler</span><span class="o">.</span><span class="n">identify</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">key</span><span class="p">))</span>
+  <span class="k">elif</span> <span class="ow">not</span> <span class="n">given_keys</span><span class="p">:</span>
+    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;No compilers specified by user, using defaults&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">compiler_keys</span><span class="p">:</span>
+      <span class="n">comp</span> <span class="o">=</span> <span class="n">Compiler</span><span class="o">.</span><span class="n">identify</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">key</span><span class="p">))</span>
+      <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> compiler not specified, using default: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> 
+                  <span class="p">(</span><span class="n">comp</span><span class="p">[</span><span class="s">&#39;language&#39;</span><span class="p">],</span> <span class="n">comp</span><span class="o">.</span><span class="n">absolutePath</span><span class="p">()))</span>
+      <span class="n">compilers</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">comp</span>
+  <span class="k">else</span><span class="p">:</span>
+    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Some compilers specified by user, using compiler family defaults&quot;</span><span class="p">)</span>
+    <span class="n">siblings</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">given_keys</span><span class="p">:</span>
+      <span class="n">comp</span> <span class="o">=</span> <span class="n">Compiler</span><span class="o">.</span><span class="n">identify</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">key</span><span class="p">))</span>
+      <span class="n">siblings</span> <span class="o">|=</span> <span class="nb">set</span><span class="p">(</span><span class="n">Compiler</span><span class="o">.</span><span class="n">getSiblings</span><span class="p">(</span><span class="n">comp</span><span class="p">))</span>
+      <span class="n">compilers</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">comp</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">missing_keys</span><span class="p">:</span>
+      <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="n">siblings</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">comp</span><span class="p">[</span><span class="s">&#39;role&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">key</span><span class="p">:</span>
+          <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> compiler not specified, using default: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> 
+                      <span class="p">(</span><span class="n">comp</span><span class="p">[</span><span class="s">&#39;language&#39;</span><span class="p">],</span> <span class="n">comp</span><span class="o">.</span><span class="n">absolutePath</span><span class="p">()))</span>
+          <span class="n">compilers</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">comp</span>
+
+  <span class="c"># Check that all compilers were found</span>
+  <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">compiler_keys</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">compilers</span><span class="p">:</span>
+      <span class="k">raise</span> <span class="n">error</span><span class="o">.</span><span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> compiler could not be found&quot;</span> <span class="o">%</span> <span class="n">languages</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> 
+                                     <span class="s">&quot;See &#39;compiler arguments&#39; under `tau target create --help`&quot;</span><span class="p">)</span>
+     
+  <span class="c"># Check that all compilers are from the same compiler family </span>
+  <span class="c"># This is a TAU requirement.  When this is fixed in TAU we can remove this check</span>
+  <span class="n">families</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="n">comp</span><span class="p">[</span><span class="s">&#39;family&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="n">compilers</span><span class="o">.</span><span class="n">itervalues</span><span class="p">()]))</span>
+  <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">families</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="n">error</span><span class="o">.</span><span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&quot;Compilers from different families specified&quot;</span><span class="p">,</span>
+                                   <span class="s">&quot;TAU requires all compilers to be from the same family, e.g. GNU or Intel&quot;</span><span class="p">)</span>
+  <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Using </span><span class="si">%s</span><span class="s"> compilers&quot;</span> <span class="o">%</span> <span class="n">families</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+  
+  <span class="c"># Check that each compiler is in the right role</span>
+  <span class="k">for</span> <span class="n">role</span><span class="p">,</span> <span class="n">comp</span> <span class="ow">in</span> <span class="n">compilers</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+    <span class="k">if</span> <span class="n">comp</span><span class="p">[</span><span class="s">&#39;role&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="n">role</span><span class="p">:</span>
+      <span class="k">raise</span> <span class="n">error</span><span class="o">.</span><span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&quot;&#39;</span><span class="si">%s</span><span class="s">&#39; specified as </span><span class="si">%s</span><span class="s"> compiler but it is a </span><span class="si">%s</span><span class="s"> compiler&quot;</span> <span class="o">%</span> 
+                                     <span class="p">(</span><span class="n">comp</span><span class="o">.</span><span class="n">absolutePath</span><span class="p">(),</span> <span class="n">languages</span><span class="p">[</span><span class="n">role</span><span class="p">],</span> <span class="n">comp</span><span class="p">[</span><span class="s">&#39;language&#39;</span><span class="p">]),</span>
+                                     <span class="s">&quot;See &#39;compiler arguments&#39; under `tau target create --help`&quot;</span><span class="p">)</span>
+  
+  <span class="c"># Show compilers to user</span>
+  <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="n">compilers</span><span class="o">.</span><span class="n">itervalues</span><span class="p">():</span>
+    <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;  </span><span class="si">%s</span><span class="s"> compiler: &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">comp</span><span class="p">[</span><span class="s">&#39;language&#39;</span><span class="p">],</span> <span class="n">comp</span><span class="o">.</span><span class="n">absolutePath</span><span class="p">()))</span>
+    
+  <span class="n">flags</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">__dict__</span><span class="p">)</span>
+  <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">comp</span> <span class="ow">in</span> <span class="n">compilers</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+    <span class="n">flags</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">comp</span><span class="o">.</span><span class="n">eid</span>
+  <span class="k">try</span><span class="p">:</span>
+    <span class="n">Target</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">flags</span><span class="p">)</span>
+  <span class="k">except</span> <span class="n">controller</span><span class="o">.</span><span class="n">UniqueAttributeError</span><span class="p">:</span>
+    <span class="n">PARSER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&#39;A target named </span><span class="si">%r</span><span class="s"> already exists&#39;</span> <span class="o">%</span> <span class="n">args</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> 
+
+  <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Created a new target named </span><span class="si">%r</span><span class="s">.&#39;</span> <span class="o">%</span> <span class="n">args</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+  <span class="k">return</span> <span class="n">commands</span><span class="o">.</span><span class="n">executeCommand</span><span class="p">([</span><span class="s">&#39;target&#39;</span><span class="p">,</span> <span class="s">&#39;list&#39;</span><span class="p">],</span> <span class="p">[</span><span class="n">args</span><span class="o">.</span><span class="n">name</span><span class="p">])</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, John Linford  and Srinath Vadlamani @ ParaTools, Inc..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.3</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
