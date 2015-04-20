@@ -1,0 +1,48 @@
+
+Time to write as much as possible:
+
+
+packages:
+  *BFD from binutils <--- this seems to have trouble on Yellowstone w/ both Intel 14 and 15
+
+  *libunwind
+
+  *PDT
+
+  *scorep
+
+  *PAPI
+
+  *macqao
+
+
+
+
+types of instrumentation:
+
+  *source:
+    **requires recompiling
+    ** requires PDT
+    ** shows MPI events
+    ** routine level events
+
+
+  *compiler:
+    **requires recompiling
+
+  *binary:
+
+  *Dynamic, interposition,library pre-loading:
+  **
+
+
+When is BFD needed?  When is it suggested?
+
+When is libunwind needed?  When is it suggested?
+
+
+
+
+
+
+
