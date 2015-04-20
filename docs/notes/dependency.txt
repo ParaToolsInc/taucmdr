@@ -20,20 +20,27 @@ packages:
 
 types of instrumentation:
 
-  *source:
-    **requires recompiling
+  *source: tau_compiler.sh
+    ** requires recompiling
     ** requires PDT
     ** shows MPI events
     ** routine level events
+    ** low level events (loops, phases, etc?)
+    ** throttling
+    ** exclude files from instrumentation
+    ** exclude regions of code within a file
 
-
-  *compiler:
+  *compiler: tau_compiler.sh
     **requires recompiling
+    ** shows MPI events
+    ** routine level events
 
   *binary:
 
-  *Dynamic, interposition,library pre-loading:
-  **
+  *Dynamic, interposition,library pre-loading: tau_exec
+    ** shows MPI events
+    ** throttling
+    ** exclude files from instrumentation
 
 
 When is BFD needed?  When is it suggested?
