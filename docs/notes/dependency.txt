@@ -2,7 +2,7 @@
 Time to write as much as possible:
 
 
-packages:
+packages [set via target]:
   *BFD from binutils <--- this seems to have trouble on Yellowstone w/ both Intel 14 and 15
 
   *libunwind
@@ -15,10 +15,12 @@ packages:
 
   *macqao
 
+   these are created in the target component
+
+target can also determine if GPUs or Xeon Phis exist
 
 
-
-types of instrumentation:
+types of instrumentation: [measurement]
 
   *source: tau_compiler.sh
     ** requires recompiling
@@ -29,11 +31,15 @@ types of instrumentation:
     ** throttling
     ** exclude files from instrumentation
     ** exclude regions of code within a file
+    ** OpenMP via the Opari
+    ** use OMPT library to know how to hook up to OMP calls for tracking
+
 
   *compiler: tau_compiler.sh
     **requires recompiling
     ** shows MPI events
     ** routine level events
+
 
   *binary:
 
@@ -41,11 +47,26 @@ types of instrumentation:
     ** shows MPI events
     ** throttling
     ** exclude files from instrumentation
+    ** Intel compilers can do this with OMPT library
+
+application [what it uses library wise]
+  -- uses mPI
+ -- use openmp
+ -- use pthreads
+ -- cuda
+ -- shmem
+ -- xeon phi native
+ -- xeon phi offload
 
 
 When is BFD needed?  When is it suggested?
 
 When is libunwind needed?  When is it suggested?
+
+Requisite: required, recommended, none ->> that helps determine compatability between project components
+  model itself is the fields or data structure of a abstract project
+
+
 
 
 
