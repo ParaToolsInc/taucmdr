@@ -35,68 +35,8 @@
 #OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-# TAU modules
-import logger
-import error
-import models.target
 
-#structure for requisite [first pass]
-#want to redo this like:
 Required = 1
 NotRequired = 0
 Recommended = 2
-
-#want to grab an instance a target, measurement or application class and return dictionary of
-
-def dictGen( component ) :
-  """
-  A function that takes in an instance of a component class and returns a dict
-  with the appropiate keys for compatability.
-  """
-
-#compat_mat = {
-#'source_inst': {'pdt_source': Required, 'bfd_source': NotRequired, 'libuwind': NotRequired,},
-#'compiler_inst': {'pdt_source': NotRequired, 'bfd_source': Recommended, ...  },
-#'binary_inst:':{
-#'dynamic_inst':{
-
-
-#packages = {
-#'pdt_source': cf.pdt.Pdt,
-#'bfd_source': cf.pdt.Bfd
-#...
-#}
-#
-#depends = set()
-#
-#for pkgkey, val in measurement:
-#  try:
-#    compat = compat_mat[pkgkey]
-#  except KeyError:
-#    continue
-#  for key, val in compat:
-#    try:
-#      supplied = target[key]
-#    except KeyError:
-#      raise error.ConfigurationError("No value for %s was supplied" % key)
-#    if (val == Required) and (util.parseBool(supplied) == False):
-#      # Error, this is required
-#    elif (val == Recommended) and (util.parseBool(supplied) == False):
-#      LOGGER.warning("Hey, I really think you should use %s" % key
-#    elif (val == NoRequired) and (util.parseBool(supplied) == True):
-#      LOGGER.info("Hey, %s is not required but you're using it anyway")
-#    else:
-#      # Everything looks good
-#      depnds.add((packages[key], key))
-#
-#tau = cf.tau.Tau(prefix, cc, cxx, fc, .... depnds, kwargs)
-
-#we want a function that can be used in other modules (experiment.py) that looks like
-# def check_compat(A,B,map)
-#where A and B and objects with attributes that are traversed in the same way
-# map is
-
-
-
-
 

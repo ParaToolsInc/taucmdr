@@ -12,26 +12,26 @@
 #Copyright (c) 2015, ParaTools, Inc.
 #All rights reserved.
 #
-#Redistribution and use in source and binary forms, with or without 
+#Redistribution and use in source and binary forms, with or without
 #modification, are permitted provided that the following conditions are met:
-# (1) Redistributions of source code must retain the above copyright notice, 
+# (1) Redistributions of source code must retain the above copyright notice,
 #     this list of conditions and the following disclaimer.
-# (2) Redistributions in binary form must reproduce the above copyright notice, 
-#     this list of conditions and the following disclaimer in the documentation 
+# (2) Redistributions in binary form must reproduce the above copyright notice,
+#     this list of conditions and the following disclaimer in the documentation
 #     and/or other materials provided with the distribution.
-# (3) Neither the name of ParaTools, Inc. nor the names of its contributors may 
-#     be used to endorse or promote products derived from this software without 
+# (3) Neither the name of ParaTools, Inc. nor the names of its contributors may
+#     be used to endorse or promote products derived from this software without
 #     specific prior written permission.
 #
-#THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-#AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-#IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
-#DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE 
-#FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
-#DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
-#SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
-#CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, 
-#OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+#THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+#AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+#IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+#DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+#FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+#DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+#SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+#CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+#OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
@@ -41,13 +41,14 @@ import string
 # TAU modules
 import controller as ctl
 import arguments as args
+import requisite
 
 
 class Measurement(ctl.Controller, ctl.ByName):
   """
   Measurement data model controller
   """
-  
+
   attributes = {
     'projects': {
       'collection': 'Project',
@@ -98,7 +99,8 @@ class Measurement(ctl.Controller, ctl.ByName):
                    'metavar': 'T/F',
                    'nargs': '?',
                    'const': True,
-                   'action': args.ParseBooleanAction}
+                   'action': args.ParseBooleanAction},
+      'compat' : [{'target':{'pdt_source':requisite.Required}}]
     },
     'compiler_inst': {
       'type': 'string',
@@ -108,7 +110,8 @@ class Measurement(ctl.Controller, ctl.ByName):
                    'metavar': 'mode',
                    'nargs': '?',
                    'const': 'always',
-                   'choices': ['always', 'fallback', 'never']}
+                   'choices': ['always', 'fallback', 'never']},
+      'compat' : [{'target':{'bfd_source':requisite.Recommended,'libunwind_source':requisite.Recommended}}]
     },
     'mpi': {
       'type': 'boolean',
@@ -118,7 +121,8 @@ class Measurement(ctl.Controller, ctl.ByName):
                    'metavar': 'T/F',
                    'nargs': '?',
                    'const': True,
-                   'action': args.ParseBooleanAction}
+                   'action': args.ParseBooleanAction},
+      'compat' : [{'application':{'mpi':requisite.Required}}]
     },
     'openmp': {
       'type': 'string',
@@ -128,7 +132,8 @@ class Measurement(ctl.Controller, ctl.ByName):
                    'metavar': 'method',
                    'nargs': '?',
                    'const': 'opari',
-                   'choices': ['ignore', 'opari', 'ompt']}
+                   'choices': ['ignore', 'opari', 'ompt']},
+      'compat' : [{'application':{'openmp':requisite.Required}}]
     },
     'callpath': {
       'type': 'integer',
@@ -138,7 +143,8 @@ class Measurement(ctl.Controller, ctl.ByName):
                    'metavar': 'depth',
                    'nargs': '?',
                    'const': 2,
-                   'type': int}
+                   'type': int},
+      'compat' : [{'target':{'bfd_source':requisite.Recommended,'libunwind_source':requisite.Recommended}}]
     },
     'memory_usage': {
       'type': 'boolean',
@@ -166,12 +172,13 @@ class Measurement(ctl.Controller, ctl.ByName):
       'argparse': {'flags': ('--with-metrics',),
                    'help': 'metrics for measurements space sperated',
                    'metavar': '<TAU_METRICS>',
-                   'nargs': '+'}
+                   'nargs': '+'},
+      'compat' : [{'target':{'papi_source':requisite.Recommended}}]
     },
   }
-  
+
   _valid_name = set(string.digits + string.letters + '-_.')
-  
+
   def onCreate(self):
     if set(self['name']) > Measurement._valid_name:
       raise ctl.ModelError('%r is not a valid measurement name.' % self['name'],

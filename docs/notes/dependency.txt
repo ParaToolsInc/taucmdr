@@ -49,22 +49,34 @@ types of instrumentation: [measurement]
     ** exclude files from instrumentation
     ** Intel compilers can do this with OMPT library
 
+
 application [what it uses library wise]
-  -- uses mPI
+ -- uses mPI
  -- use openmp
  -- use pthreads
  -- cuda
  -- shmem
  -- xeon phi native
  -- xeon phi offload
+ -- mpc
 
 
 When is BFD needed?  When is it suggested?
+  needed:
 
 When is libunwind needed?  When is it suggested?
+  -- when using even-based sampling with dynamic interposition [suggested]
+  -- openmp measurements [suggested]
+
 
 Requisite: required, recommended, none ->> that helps determine compatability between project components
   model itself is the fields or data structure of a abstract project
+
+
+when do want compatability: examples
+
+ if target application has cuda so target required
+ if measurement is openmp but no ompt -- recommended
 
 
 
