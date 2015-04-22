@@ -41,5 +41,8 @@ import error
 import model.experiment
 import model.tau
 
+#structure for requisite [first pass]
+
+
 
 
