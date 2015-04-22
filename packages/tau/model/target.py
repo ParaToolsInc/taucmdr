@@ -165,11 +165,11 @@ class Target(ctl.Controller, ctl.ByName):
     },
     'cuda': {
       'type': 'string',
+      'defaultsTo': 'False',
       'argparse': {'flags': ('--with-cuda',),
                    'group': 'software package',
                    'help': 'Path to NVIDIA CUDA installation',
                    'metavar': '<path>'},
-      'compat': ['experiment']
     },
     'tau_source': {
       'type': 'string',
@@ -187,7 +187,6 @@ class Target(ctl.Controller, ctl.ByName):
                    'help': 'URL or path to a PDT installation or archive file',
                    'metavar': '(<path>|<url>|download|False)',
                    'action': args.ParsePackagePathAction},
-      'compat': ['experiment']
     },
     'bfd_source': {
       'type': 'string',
@@ -196,8 +195,7 @@ class Target(ctl.Controller, ctl.ByName):
                    'group': 'software package',
                    'help': 'URL or path to a BFD installation or archive file',
                    'metavar': '(<path>|<url>|download|False)',
-                   'action': args.ParsePackagePathAction},
-      'compat': ['experiment']
+                   'action': args.ParsePackagePathAction}
     },
     'libunwind_source': {
       'type': 'string',

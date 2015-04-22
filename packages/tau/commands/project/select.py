@@ -12,26 +12,26 @@
 #Copyright (c) 2015, ParaTools, Inc.
 #All rights reserved.
 #
-#Redistribution and use in source and binary forms, with or without 
+#Redistribution and use in source and binary forms, with or without
 #modification, are permitted provided that the following conditions are met:
-# (1) Redistributions of source code must retain the above copyright notice, 
+# (1) Redistributions of source code must retain the above copyright notice,
 #     this list of conditions and the following disclaimer.
-# (2) Redistributions in binary form must reproduce the above copyright notice, 
-#     this list of conditions and the following disclaimer in the documentation 
+# (2) Redistributions in binary form must reproduce the above copyright notice,
+#     this list of conditions and the following disclaimer in the documentation
 #     and/or other materials provided with the distribution.
-# (3) Neither the name of ParaTools, Inc. nor the names of its contributors may 
-#     be used to endorse or promote products derived from this software without 
+# (3) Neither the name of ParaTools, Inc. nor the names of its contributors may
+#     be used to endorse or promote products derived from this software without
 #     specific prior written permission.
 #
-#THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-#AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-#IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
-#DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE 
-#FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
-#DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
-#SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
-#CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, 
-#OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+#THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+#AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+#IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+#DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+#FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+#DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+#SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+#CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+#OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
@@ -62,40 +62,40 @@ HELP = """
 """ % {'command': COMMAND}
 
 PARSER = args.getParserFromModel(Project,
-                            prog=COMMAND, 
-                            usage=USAGE, 
+                            prog=COMMAND,
+                            usage=USAGE,
                             description=SHORT_DESCRIPTION)
-PARSER.add_argument('impl_target', 
+PARSER.add_argument('impl_target',
                     help="Target configuration to select",
                     metavar='[target]',
                     nargs='*',
                     default=args.SUPPRESS)
-PARSER.add_argument('impl_application', 
+PARSER.add_argument('impl_application',
                     help="Application configuration to select",
                     metavar='[application]',
                     nargs='*',
                     default=args.SUPPRESS)
-PARSER.add_argument('impl_measurement', 
+PARSER.add_argument('impl_measurement',
                     help="Measurement configuration to select",
                     metavar='[measurements]',
                     nargs='*',
-                    default=args.SUPPRESS)  
+                    default=args.SUPPRESS)
 PARSER.add_argument('--target',
                     help="Target configuration to select",
                     metavar='<name>',
                     default=args.SUPPRESS)
-PARSER.add_argument('--application', 
+PARSER.add_argument('--application',
                     help="Application configuration to select",
                     metavar='<name>',
                     default=args.SUPPRESS)
-PARSER.add_argument('--measurement', 
+PARSER.add_argument('--measurement',
                     help="Measurement configuration to select",
                     metavar='<name>',
                     default=args.SUPPRESS)
 
 
 def getUsage():
-  return PARSER.format_help() 
+  return PARSER.format_help()
 
 
 def getHelp():
@@ -121,23 +121,24 @@ def _select(project, attr, given):
       PARSER.error("Project '%s' has no %s.  See `tau project edit --help`." % (project['name'], attr))
 
 
+
 def main(argv):
   """
   Program entry point
-  """ 
+  """
   args = PARSER.parse_args(args=argv)
   LOGGER.debug('Arguments: %s' % args)
-  
+
   project = Project.withName(args.name)
   if not project:
     PARSER.error("There is no project named %r" % args.name)
-  
+
   given_targets = set()
   given_applications = set()
   given_measurements = set()
-  
-  for attr, model, dest in [('target', Target, given_targets), 
-                            ('application', Application, given_applications), 
+
+  for attr, model, dest in [('target', Target, given_targets),
+                            ('application', Application, given_applications),
                             ('measurement', Measurement, given_measurements)]:
     try:
       name = getattr(args, attr)
@@ -149,7 +150,7 @@ def main(argv):
         dest.add(m)
       else:
         PARSER.error('There is no %s named %s' % (attr, name))
-        
+
     for name in getattr(args, 'impl_'+attr, []):
       t = Target.withName(name)
       a = Application.withName(name)
@@ -166,10 +167,19 @@ def main(argv):
         given_applications.add(a)
       elif m:
         given_measurements.add(m)
-        
+
   target_eid = _select(project, 'targets', given_targets)
   application_eid = _select(project, 'applications', given_applications)
   measurement_eid = _select(project, 'measurements', given_measurements)
+
+  theTarget=Target.one(eid=target_eid)
+  theApplication=Application.one(eid=application_eid)
+  theMeasurement=Measurement.one(eid=measurement_eid)
+
+  theMeasurement.compatibleWith(theApplication)
+  theMeasurement.compatibleWith(theTarget)
+
+
   data = {'project': project.eid,
           'target': target_eid,
           'application': application_eid,
@@ -185,10 +195,10 @@ def main(argv):
     found = found[0]
 
   populated = found.populate()
-  LOGGER.info("'%s' on '%s' measured by '%s'" % 
+  LOGGER.info("'%s' on '%s' measured by '%s'" %
               (populated['application']['name'],
                populated['target']['name'],
                populated['measurement']['name']))
   found.select()
-  
+
   return tau.EXIT_SUCCESS

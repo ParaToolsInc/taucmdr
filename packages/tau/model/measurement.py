@@ -144,7 +144,7 @@ class Measurement(ctl.Controller, ctl.ByName):
                    'nargs': '?',
                    'const': 2,
                    'type': int},
-      'compat' : [{'target':{'bfd_source':requisite.Recommended,'libunwind_source':requisite.Recommended}}]
+      'compat' : {'target':{'bfd_source':requisite.Recommended,'libunwind_source':requisite.Recommended}}
     },
     'memory_usage': {
       'type': 'boolean',

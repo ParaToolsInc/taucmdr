@@ -12,26 +12,26 @@
 #Copyright (c) 2015, ParaTools, Inc.
 #All rights reserved.
 #
-#Redistribution and use in source and binary forms, with or without 
+#Redistribution and use in source and binary forms, with or without
 #modification, are permitted provided that the following conditions are met:
-# (1) Redistributions of source code must retain the above copyright notice, 
+# (1) Redistributions of source code must retain the above copyright notice,
 #     this list of conditions and the following disclaimer.
-# (2) Redistributions in binary form must reproduce the above copyright notice, 
-#     this list of conditions and the following disclaimer in the documentation 
+# (2) Redistributions in binary form must reproduce the above copyright notice,
+#     this list of conditions and the following disclaimer in the documentation
 #     and/or other materials provided with the distribution.
-# (3) Neither the name of ParaTools, Inc. nor the names of its contributors may 
-#     be used to endorse or promote products derived from this software without 
+# (3) Neither the name of ParaTools, Inc. nor the names of its contributors may
+#     be used to endorse or promote products derived from this software without
 #     specific prior written permission.
 #
-#THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-#AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-#IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
-#DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE 
-#FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
-#DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
-#SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
-#CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, 
-#OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+#THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+#AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+#IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+#DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+#FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+#DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+#SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+#CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+#OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
@@ -42,6 +42,7 @@ import json
 import logger
 import error
 from storage import user_storage
+import requisite
 
 
 LOGGER = logger.getLogger(__name__)
@@ -66,14 +67,14 @@ class UniqueAttributeError(ModelError):
 class Controller(object):
   """
   The C" in MVC
-  
-  Subclasses reside in the 'model' package and define a member dictionary 
+
+  Subclasses reside in the 'model' package and define a member dictionary
   'attributes' that describes the data model in the form:
     <attribute>: {
-      property: value, 
+      property: value,
       [[property: value], ...]
     }
-    
+
   The 'model' package initializes the set 'references' in each class
   to describe one-sided relationships, e.g.
     Model_A:
@@ -83,7 +84,7 @@ class Controller(object):
     Model_C:
       references = set( (Model_A, 'attr_x'), (Model_B, 'attr_y') )
 
-  The 'model' package also initializes the dictionary 'associations' in 
+  The 'model' package also initializes the dictionary 'associations' in
   each class to describe two-sided relationships, e.g.
     Model_A:
       attr_x: {
@@ -97,12 +98,12 @@ class Controller(object):
       }
       associations = {attr_k: (Model_A, attr_x)}
   """
-  
+
   # Subclasses override for callback
   def onCreate(self): pass
   def onUpdate(self): pass
   def onDelete(self): pass
-  
+
   def __init__(self, fields):
     self.eid = getattr(fields, 'eid', None)
     self.data = self._validate(fields)
@@ -110,7 +111,7 @@ class Controller(object):
 
   def __getitem__(self, key):
     return self.data[key]
-  
+
   def get(self, key, default=None):
     return self.data.get(key, default)
 
@@ -166,10 +167,10 @@ class Controller(object):
             raise ModelError(cls, "Invalid non-integer ID '%s' in '%s'" % (value, attr))
           validated[attr] = value
     return validated
-  
+
   def populate(self, attribute=None):
     """
-    Transltes model id numbers in `self` to model controllers and 
+    Transltes model id numbers in `self` to model controllers and
     returns all data as a dictionary
     """
     from tau.model import MODELS
@@ -192,7 +193,7 @@ class Controller(object):
       return self.populated[attribute]
     else:
       return self.populated
-  
+
   @classmethod
   def one(cls, keys=None, eid=None):
     """
@@ -201,7 +202,7 @@ class Controller(object):
     LOGGER.debug("Searching '%s' for keys=%r, eid=%r" % (cls.model_name, keys, eid))
     found = user_storage.get(cls.model_name, keys=keys, eid=eid)
     return cls(found) if found else None
-  
+
   @classmethod
   def all(cls):
     """
@@ -223,21 +224,21 @@ class Controller(object):
       return [cls(record) for record in user_storage.search(cls.model_name, keys=keys)]
     else:
       return cls.all()
-  
+
   @classmethod
   def match(cls, field, regex=None, test=None):
     """
     Return a list of records with 'field' matching 'regex' or 'test'
     """
     return [cls(record) for record in user_storage.match(cls.model_name, field, regex, test)]
-   
+
   @classmethod
   def exists(cls, keys=None, eids=None):
     """
     Return true if a record matching the given keys exists
     """
     return user_storage.contains(cls.model_name, keys=keys, eids=eids)
-  
+
   @classmethod
   def create(cls, fields):
     """
@@ -260,7 +261,7 @@ class Controller(object):
         model._addTo(foreign_model, foreign_keys, via)
       model.onCreate()
       return model
-  
+
   @classmethod
   def update(cls, fields, keys=None, eids=None):
     """
@@ -291,7 +292,7 @@ class Controller(object):
           model._addTo(foreign_model, added, via)
           model._removeFrom(foreign_model.search(eids=list(deled)), via)
           model.onUpdate()
-  
+
   @classmethod
   def delete(cls, keys=None, eids=None):
     """
@@ -308,8 +309,8 @@ class Controller(object):
         model.onDelete()
         for attr, foreign in cls.associations.iteritems():
           foreign_model, via = foreign
-          affected = foreign_model.search(eids=model[attr]) 
-          LOGGER.debug("Deleting %s(eid=%s) affects '%s' in '%s'" % 
+          affected = foreign_model.search(eids=model[attr])
+          LOGGER.debug("Deleting %s(eid=%s) affects '%s' in '%s'" %
                        (cls.model_name, model.eid, via, affected))
           model._removeFrom(affected, via)
         for foreign_model, via in cls.references:
@@ -320,7 +321,7 @@ class Controller(object):
       return storage.remove(cls.model_name, keys=keys, eids=eids)
 
   def _addTo(self, foreign_cls, keys, attr):
-    LOGGER.debug("Adding %s to '%s' in %s(eids=%s)" % 
+    LOGGER.debug("Adding %s to '%s' in %s(eids=%s)" %
                  (self.eid, attr, foreign_cls.model_name, keys))
     with user_storage as storage:
       for key in keys:
@@ -339,7 +340,7 @@ class Controller(object):
       for model in affected:
         if 'model' in model.attributes[attr]:
           if 'required' in model.attributes[attr]:
-            LOGGER.debug("Empty required attr '%s': deleting %s(eid=%s)" % 
+            LOGGER.debug("Empty required attr '%s': deleting %s(eid=%s)" %
                          (attr, model.model_name, model.eid))
             model.delete(eids=model.eid)
           else:
@@ -347,11 +348,27 @@ class Controller(object):
         elif 'collection' in model.attributes[attr]:
           update = list(set(model[attr]) - set([self.eid]))
           if 'required' in model.attributes[attr] and len(update) == 0:
-            LOGGER.debug("Empty required attr '%s': deleting %s(eid=%s)" % 
+            LOGGER.debug("Empty required attr '%s': deleting %s(eid=%s)" %
                          (attr, model.model_name, model.eid))
             model.delete(eids=model.eid)
           else:
             storage.update(model.model_name, {attr: update}, eids=model.eid)
+
+  def compatibleWith(self, other):
+    for attr, fields in self.attributes:
+      try:
+        compat = fields['compat']
+      except KeyError:
+        # No 'compat' field for this attribute
+        continue
+      for model, attributes in compat:
+        if model == other.model_name:
+          for oattr, rule in attributes:
+            if not other[oattr]:
+              if rule == requisite.Required:
+                raise "Required but not set"
+                elif rule == requisite.Recommended:
+                LOGGER.warning("Recommended")
 
 
 

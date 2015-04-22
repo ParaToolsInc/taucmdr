@@ -100,7 +100,7 @@ class Application(ctl.Controller, ctl.ByName):
                    'nargs': '?',
                    'const': True,
                    'action': args.ParseBooleanAction},
-      'compat': ['target']
+      'compat': {'target':{'cuda':requisite.Required}}
     },
     'shmem': {
       'type': 'boolean',

@@ -156,35 +156,43 @@ class Experiment(controller.Controller):
     Installs all software required to perform the experiment
     """
     populated = self.populate()
+    compatable = self.populate(attribute='compat')
     # TODO: Should install packages in a location where all projects can use
     prefix = populated['project']['prefix']
     target = populated['target'].populate()
     application = populated['application']
     measurement = populated['measurement']
+
     cc = target['CC']
     cxx = target['CXX']
     fc = target['FC']
     verbose = (logger.LOG_LEVEL == 'DEBUG')
 
-    # Configure/build/install PDT if needed
-    if not measurement['source_inst']:
+      # Configure/build/install  if needed
+    #TODO:  Needt to change this logic after compatibilty is checked
+    #    REFACTOR ******
+    pdt = cf.pdt.Pdt(prefix, cxx, target['pdt_source'], target['host_arch'])
+    bfd = cf.bfd.Bfd(prefix, cxx, target['bfd_source'], target['host_arch'])
+    libunwind = cf.libunwind.Libunwind(prefix, cxx, target['libunwind_source'], target['host_arch'])
+    papi = cf.papi.Papi(prefix, cxx, target['papi_source'], target['host_arch'])
+
+
+    if not measurement['source_inst'] and not measurement['compiler_inst']:
       self.pdt = None
       self.bfd = None
       self.papi= None
       self.libunwind= None
     else:
-      pdt = cf.pdt.Pdt(prefix, cxx, target['pdt_source'], target['host_arch'])
       pdt.install()
       self.pdt = pdt
-      bfd = cf.bfd.Bfd(prefix, cxx, target['bfd_source'], target['host_arch'])
       bfd.install()
       self.bfd = bfd
-      papi = cf.papi.Papi(prefix, cxx, target['papi_source'], target['host_arch'])
-      papi.install()
-      self.papi = papi
-      libunwind = cf.libunwind.Libunwind(prefix, cxx, target['libunwind_source'], target['host_arch'])
       libunwind.install()
       self.libunwind = libunwind
+      papi.install()
+      self.papi = papi
+
+
 
     # Configure/build/install TAU if needed
     tau = cf.tau.Tau(prefix, cc, cxx, fc, target['tau_source'], target['host_arch'],
