@@ -366,8 +366,8 @@ class Controller(object):
           for oattr, rule in attributes:
             if not other[oattr]:
               if rule == requisite.Required:
-                raise "Required but not set"
-                elif rule == requisite.Recommended:
+                LOGGER.error( " %s Required but not set"  % rule )
+              elif rule == requisite.Recommended:
                 LOGGER.warning("Recommended")
 
 
