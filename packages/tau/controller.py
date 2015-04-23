@@ -363,8 +363,13 @@ class Controller(object):
         # No 'compat' field for this attribute
         continue
       for model, attributes in compat.iteritems():
-        if model == other.model_name:
-          for oattr, rule in attributes:
+        print 'model = ', model
+        print 'attributes = ', attributes
+        print 'other.model_name = ', other.model_name.lower()
+        if model == other.model_name.lower().strip():
+          for oattr, rule in attributes.iteritems():
+            print 'oattr = ' ,oattr
+            print 'rule = ', rule
             if not other[oattr]:
               if rule == requisite.Required:
                 LOGGER.error( " %s Required but not set"  % rule )
