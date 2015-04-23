@@ -372,9 +372,9 @@ class Controller(object):
             print 'rule = ', rule
             if not other[oattr]:
               if rule == requisite.Required:
-                LOGGER.error( " %s Required but not set"  % rule )
+                raise error.ConfigurationError( " %s Required but not set"  % oattr )
               elif rule == requisite.Recommended:
-                 LOGGER.warning("Recommended")
+                 LOGGER.warning("%s is Recommended" % oattr)
 
 
 
