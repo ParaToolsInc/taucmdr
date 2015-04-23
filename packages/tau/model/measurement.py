@@ -173,7 +173,7 @@ class Measurement(ctl.Controller, ctl.ByName):
                    'help': 'metrics for measurements space sperated',
                    'metavar': '<TAU_METRICS>',
                    'nargs': '+'},
-      'compat' : [{'target':{'papi_source':requisite.Recommended}}]
+      'compat' : {'target':{'papi_source':requisite.Recommended}}
     },
   }
 

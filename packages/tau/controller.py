@@ -358,10 +358,11 @@ class Controller(object):
     for attr, fields in self.attributes.iteritems():
       try:
         compat = fields['compat']
+#        if not isinstance(compat,dict): print compat
       except KeyError:
         # No 'compat' field for this attribute
         continue
-      for model, attributes in compat:
+      for model, attributes in compat.iteritems():
         if model == other.model_name:
           for oattr, rule in attributes:
             if not other[oattr]:
