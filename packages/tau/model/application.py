@@ -69,7 +69,6 @@ class Application(ctl.Controller, ctl.ByName):
                    'nargs': '?',
                    'const': True,
                    'action': args.ParseBooleanAction},
-      'compat': ['measurement']
     },
     'pthreads': {
       'type': 'boolean',

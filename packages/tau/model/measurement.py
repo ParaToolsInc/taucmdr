@@ -100,7 +100,7 @@ class Measurement(ctl.Controller, ctl.ByName):
                    'nargs': '?',
                    'const': True,
                    'action': args.ParseBooleanAction},
-      'compat' : [{'target':{'pdt_source':requisite.Required}}]
+      'compat' : {'target':{'pdt_source':requisite.Required}}
     },
     'compiler_inst': {
       'type': 'string',
@@ -111,7 +111,7 @@ class Measurement(ctl.Controller, ctl.ByName):
                    'nargs': '?',
                    'const': 'always',
                    'choices': ['always', 'fallback', 'never']},
-      'compat' : [{'target':{'bfd_source':requisite.Recommended,'libunwind_source':requisite.Recommended}}]
+      'compat' : {'target':{'bfd_source':requisite.Recommended,'libunwind_source':requisite.Recommended}}
     },
     'mpi': {
       'type': 'boolean',
@@ -122,7 +122,7 @@ class Measurement(ctl.Controller, ctl.ByName):
                    'nargs': '?',
                    'const': True,
                    'action': args.ParseBooleanAction},
-      'compat' : [{'application':{'mpi':requisite.Required}}]
+      'compat' : {'application':{'mpi':requisite.Required}}
     },
     'openmp': {
       'type': 'string',
@@ -133,7 +133,7 @@ class Measurement(ctl.Controller, ctl.ByName):
                    'nargs': '?',
                    'const': 'opari',
                    'choices': ['ignore', 'opari', 'ompt']},
-      'compat' : [{'application':{'openmp':requisite.Required}}]
+      'compat' : {'application':{'openmp':requisite.Required}}
     },
     'callpath': {
       'type': 'integer',
