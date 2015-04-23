@@ -367,8 +367,6 @@ class Controller(object):
         otherName = other.model_name.lower().strip()
         if model == otherName :
           for oattr, rule in attributes.iteritems():
-            print 'oattr = ' ,oattr
-            print 'rule = ', rule
             if not other[oattr]:
               if rule == requisite.Required:
                 raise error.ConfigurationError( " %s required by %s but not set in %s "  % (oattr,selfName,otherName ))
