@@ -355,7 +355,7 @@ class Controller(object):
             storage.update(model.model_name, {attr: update}, eids=model.eid)
 
   def compatibleWith(self, other):
-    for attr, fields in self.attributes:
+    for attr, fields in self.attributes.iteritems():
       try:
         compat = fields['compat']
       except KeyError:
@@ -368,7 +368,7 @@ class Controller(object):
               if rule == requisite.Required:
                 LOGGER.error( " %s Required but not set"  % rule )
               elif rule == requisite.Recommended:
-                LOGGER.warning("Recommended")
+                 LOGGER.warning("Recommended")
 
 
 
