@@ -355,6 +355,7 @@ class Controller(object):
             storage.update(model.model_name, {attr: update}, eids=model.eid)
 
   def compatibleWith(self, other):
+    selfName=self.model_name.lower().strip()
     for attr, fields in self.attributes.iteritems():
       try:
         compat = fields['compat']
@@ -363,18 +364,16 @@ class Controller(object):
         # No 'compat' field for this attribute
         continue
       for model, attributes in compat.iteritems():
-        print 'model = ', model
-        print 'attributes = ', attributes
-        print 'other.model_name = ', other.model_name.lower()
-        if model == other.model_name.lower().strip():
+        otherName = other.model_name.lower().strip()
+        if model == otherName :
           for oattr, rule in attributes.iteritems():
             print 'oattr = ' ,oattr
             print 'rule = ', rule
             if not other[oattr]:
               if rule == requisite.Required:
-                raise error.ConfigurationError( " %s Required but not set"  % oattr )
+                raise error.ConfigurationError( " %s required by %s but not set in %s "  % (oattr,selfName,otherName ))
               elif rule == requisite.Recommended:
-                 LOGGER.warning("%s is Recommended" % oattr)
+                 LOGGER.warning("%s is recommended for %s by the %s model" % (oattr,selfName,otherName))
 
 
 
