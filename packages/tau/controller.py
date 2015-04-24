@@ -377,6 +377,7 @@ class Controller(object):
                 LOGGER.debug(" %s is turned on in %s and off in %s with rule %s  " % (oattr,self.model_name,other.model_name,rule))
                 if rule == requisite.Required:
                   LOGGER.error( " %s required by %s but not set in %s "  % (oattr,selfName,otherName ))
+                  raise error.ConfigureError( " %s required by %s but not set in %s "  % (oattr,selfName,otherName ))
                 elif rule == requisite.Recommended:
                    LOGGER.warning("%s is recommended for %s by the %s model" % (oattr,selfName,otherName))
               if (not selfDataOattr) and (otherDataOattr):

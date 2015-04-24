@@ -176,9 +176,13 @@ def main(argv):
   theApplication=Application.one(eid=application_eid)
   theMeasurement=Measurement.one(eid=measurement_eid)
 
-  theMeasurement.compatibleWith(theApplication)
-  theMeasurement.compatibleWith(theTarget)
-  theApplication.compatibleWith(theTarget)
+  try:
+    theMeasurement.compatibleWith(theApplication)
+    theMeasurement.compatibleWith(theTarget)
+    theApplication.compatibleWith(theTarget)
+  except:
+    print "caught the error from compatibleWith"
+    return tau.EXIT_FAILURE
 
 
   data = {'project': project.eid,
