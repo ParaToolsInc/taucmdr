@@ -12,26 +12,26 @@
 #Copyright (c) 2015, ParaTools, Inc.
 #All rights reserved.
 #
-#Redistribution and use in source and binary forms, with or without 
+#Redistribution and use in source and binary forms, with or without
 #modification, are permitted provided that the following conditions are met:
-# (1) Redistributions of source code must retain the above copyright notice, 
+# (1) Redistributions of source code must retain the above copyright notice,
 #     this list of conditions and the following disclaimer.
-# (2) Redistributions in binary form must reproduce the above copyright notice, 
-#     this list of conditions and the following disclaimer in the documentation 
+# (2) Redistributions in binary form must reproduce the above copyright notice,
+#     this list of conditions and the following disclaimer in the documentation
 #     and/or other materials provided with the distribution.
-# (3) Neither the name of ParaTools, Inc. nor the names of its contributors may 
-#     be used to endorse or promote products derived from this software without 
+# (3) Neither the name of ParaTools, Inc. nor the names of its contributors may
+#     be used to endorse or promote products derived from this software without
 #     specific prior written permission.
 #
-#THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-#AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-#IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
-#DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE 
-#FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
-#DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
-#SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
-#CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, 
-#OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+#THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+#AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+#IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+#DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+#FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+#DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+#SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+#CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+#OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
@@ -133,7 +133,7 @@ def download(src, dest):
       LOGGER.warning("urllib failed to download '%s': %s" % (src, err))
       raise IOError("Failed to download '%s'" % src)
 
-    
+
 def extract(archive, dest):
   """
   Extracts archive file 'archive' to dest
@@ -161,7 +161,7 @@ def file_accessible(filepath, mode='r'):
      return True
    return False
 
-  
+
 def pformatDict(d, title=None, empty_msg='No items.', indent=0, truncate=False):
   """
   Pretty formater for dictionaries
@@ -169,7 +169,7 @@ def pformatDict(d, title=None, empty_msg='No items.', indent=0, truncate=False):
   if title:
     line = '{:=<75}\n'.format('== %s ==' % title)
   else:
-    line = '' 
+    line = ''
   if d and len(d):
     longest = max(map(len, d.keys()))
     line_width = logger.LINE_WIDTH - longest - 15
@@ -184,7 +184,7 @@ def pformatDict(d, title=None, empty_msg='No items.', indent=0, truncate=False):
   else:
     items = empty_msg
   return '%(line)s%(items)s' % {'line': line, 'items': items}
-    
+
 
 def pformatList(d, title=None, empty_msg='No items.', indent=0):
   """
@@ -226,7 +226,7 @@ def createSubprocess(cmd, cwd=None, env=None, fork=False, stdout=True, log=True)
   pid = os.fork() if fork else 0
   if pid == 0:
     proc = subprocess.Popen(cmd, cwd=cwd, env=env,
-                            stdout=subprocess.PIPE, 
+                            stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT)
     stdout, stderr = proc.communicate()
     if log:
@@ -238,7 +238,7 @@ def createSubprocess(cmd, cwd=None, env=None, fork=False, stdout=True, log=True)
     return retval
   else:
     return 0
-  
+
 def humanReadableSize(num, suffix='B'):
   """
   Returns `num` bytes in human readable format
@@ -249,7 +249,7 @@ def humanReadableSize(num, suffix='B'):
     num /= 1024.0
   return "%.1f%s%s" % (num, 'Yi', suffix)
 
-def parseBoolean(value):
+def parseBoolean(value,trueList=[],falseList=[]):
   """
   Parses a value to a literal True/False boolean
   """
@@ -259,9 +259,9 @@ def parseBoolean(value):
     return bool(value)
   elif isinstance(value, str):
     value = value.lower()
-    if value in ['1', 't', 'y', 'true', 'yes', 'on']:
+    if value in ['1', 't', 'y', 'true', 'yes', 'on'] + trueList:
       return True
-    elif value in ['0', 'f', 'n', 'false', 'no', 'off']:
+    elif value in ['0', 'f', 'n', 'false', 'no', 'off'] + falseList:
       return False
   else:
     return None

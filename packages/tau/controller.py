@@ -43,6 +43,7 @@ import logger
 import error
 from storage import user_storage
 import requisite
+import util
 
 
 LOGGER = logger.getLogger(__name__)
@@ -355,7 +356,8 @@ class Controller(object):
             storage.update(model.model_name, {attr: update}, eids=model.eid)
 
   def compatibleWith(self, other):
-    selfName=self.model_name.lower().strip()
+    selfName = self.model_name.lower().strip()
+    otherName = other.model_name.lower().strip()
     for attr, fields in self.attributes.iteritems():
       try:
         compat = fields['compat']
@@ -363,15 +365,29 @@ class Controller(object):
       except KeyError:
         # No 'compat' field for this attribute
         continue
-      for model, attributes in compat.iteritems():
-        otherName = other.model_name.lower().strip()
+      for model, selfCompatAttr in compat.iteritems(): # traverse attributes that need compatibility
         if model == otherName :
-          for oattr, rule in attributes.iteritems():
-            if not other[oattr]:
-              if rule == requisite.Required:
-                raise error.ConfigurationError( " %s required by %s but not set in %s "  % (oattr,selfName,otherName ))
-              elif rule == requisite.Recommended:
-                 LOGGER.warning("%s is recommended for %s by the %s model" % (oattr,selfName,otherName))
+          for oattr, rule in selfCompatAttr.iteritems():
+            LOGGER.debug(" %s is oattr, while %s is self.data for %s" % (oattr,self.data,self.model_name))
+            LOGGER.debug(" %s is oattr, while %s is other.data for %s" % (oattr,other.data,other.model_name))
+            try:
+              selfDataOattr=util.parseBoolean(self.data[oattr],trueList=['fallback','always'],falseList=['never'])
+              otherDataOattr=util.parseBoolean(other.data[oattr],trueList=['fallback','always'],falseList=['never'])
+              if selfDataOattr and otherDataOattr:
+                LOGGER.debug(" %s is turned on in %s and on in %s  " % (oattr,self.model_name,other.model_name))
+              if selfDataOattr and (not otherDataOattr):
+                LOGGER.debug(" %s is turned on in %s and off in %s with rule %s  " % (oattr,self.model_name,other.model_name,rule))
+                if rule == requisite.Required:
+                  raise error.ConfigurationError( " %s required by %s but not set in %s "  % (oattr,selfName,otherName ))
+                elif rule == requisite.Recommended:
+                   LOGGER.warning("%s is recommended for %s by the %s model" % (oattr,selfName,otherName))
+              if (not selfDataOattr) and (otherDataOattr):
+                LOGGER.debug(" %s is turned off  in %s and on %s  " % (oattr,self.model_name,other.model_name))
+                LOGGER.debug(" %s is self.data[oattr] and  %s is other.data[oattr] for oattr = %s  " % (selfDataOattr,otherDataOattr,oattr))
+              if (not selfDataOattr) and (not otherDataOattr):
+                LOGGER.debug(" %s is turned off in %s and off %s  " % (oattr,self.model_name,other.model_name))
+            except:
+              continue
 
 
 

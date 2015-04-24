@@ -178,6 +178,7 @@ def main(argv):
 
   theMeasurement.compatibleWith(theApplication)
   theMeasurement.compatibleWith(theTarget)
+  theApplication.compatibleWith(theTarget)
 
 
   data = {'project': project.eid,
