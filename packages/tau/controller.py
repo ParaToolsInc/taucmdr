@@ -361,11 +361,9 @@ class Controller(object):
     for attr, fields in self.attributes.iteritems():
       try:
         compat = fields['compat']
-#        if not isinstance(compat,dict): print compat
       except KeyError:
-        # No 'compat' field for this attribute
         continue
-      for model, selfCompatAttr in compat.iteritems(): # traverse attributes that need compatibility
+      for model, selfCompatAttr in compat.iteritems():
         if model == otherName :
           for oattr, rule in selfCompatAttr.iteritems():
             LOGGER.debug(" %s is oattr, while %s is self.data for %s" % (oattr,self.data,self.model_name))
@@ -378,7 +376,7 @@ class Controller(object):
               if selfDataOattr and (not otherDataOattr):
                 LOGGER.debug(" %s is turned on in %s and off in %s with rule %s  " % (oattr,self.model_name,other.model_name,rule))
                 if rule == requisite.Required:
-                  raise error.ConfigurationError( " %s required by %s but not set in %s "  % (oattr,selfName,otherName ))
+                  LOGGER.error( " %s required by %s but not set in %s "  % (oattr,selfName,otherName ))
                 elif rule == requisite.Recommended:
                    LOGGER.warning("%s is recommended for %s by the %s model" % (oattr,selfName,otherName))
               if (not selfDataOattr) and (otherDataOattr):
