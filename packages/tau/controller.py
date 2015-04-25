@@ -389,7 +389,6 @@ class Controller(object):
               if (not selfDataOattr) and (not otherDataOattr):
                 LOGGER.debug(" %s is turned off in %s and off %s  " % (oattr,self.model_name,other.model_name))
             except error.ConfigurationError:
-              print "configureation issue in compatibleWith"
               return sys.exit(tau.EXIT_FAILURE)
             except :
               continue
