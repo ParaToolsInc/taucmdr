@@ -37,6 +37,7 @@
 
 # System modules
 import json
+import sys
 
 # TAU modules
 import logger
@@ -44,6 +45,7 @@ import error
 from storage import user_storage
 import requisite
 import util
+import tau
 
 
 LOGGER = logger.getLogger(__name__)
@@ -377,15 +379,19 @@ class Controller(object):
                 LOGGER.debug(" %s is turned on in %s and off in %s with rule %s  " % (oattr,self.model_name,other.model_name,rule))
                 if rule == requisite.Required:
                   LOGGER.error( " %s required by %s but not set in %s "  % (oattr,selfName,otherName ))
-                  raise error.ConfigureError( " %s required by %s but not set in %s "  % (oattr,selfName,otherName ))
+                  raise error.ConfigurationError( " %s required by %s but not set in %s "  % (oattr,selfName,otherName ))
                 elif rule == requisite.Recommended:
                    LOGGER.warning("%s is recommended for %s by the %s model" % (oattr,selfName,otherName))
+                    #how to raise error and print but succeed with select
               if (not selfDataOattr) and (otherDataOattr):
                 LOGGER.debug(" %s is turned off  in %s and on %s  " % (oattr,self.model_name,other.model_name))
                 LOGGER.debug(" %s is self.data[oattr] and  %s is other.data[oattr] for oattr = %s  " % (selfDataOattr,otherDataOattr,oattr))
               if (not selfDataOattr) and (not otherDataOattr):
                 LOGGER.debug(" %s is turned off in %s and off %s  " % (oattr,self.model_name,other.model_name))
-            except:
+            except error.ConfigurationError:
+              print "configureation issue in compatibleWith"
+              return sys.exit(tau.EXIT_FAILURE)
+            except :
               continue
 
 

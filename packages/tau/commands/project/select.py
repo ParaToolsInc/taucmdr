@@ -35,6 +35,8 @@
 #OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
+import sys
+
 # TAU modules
 import tau
 import logger
@@ -180,9 +182,9 @@ def main(argv):
     theMeasurement.compatibleWith(theApplication)
     theMeasurement.compatibleWith(theTarget)
     theApplication.compatibleWith(theTarget)
-  except:
+  except error.ConfigurationError:
     print "caught the error from compatibleWith"
-    return tau.EXIT_FAILURE
+    return sys.exit(tau.EXIT_FAILURE)
 
 
   data = {'project': project.eid,
