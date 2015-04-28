@@ -178,17 +178,12 @@ def main(argv):
   theApplication=Application.one(eid=application_eid)
   theMeasurement=Measurement.one(eid=measurement_eid)
 
-  try:
-    theTarget.compatibleWith(theMeasurement)
-    theTarget.compatibleWith(theApplication)
-    theMeasurement.compatibleWith(theTarget)
-    theMeasurement.compatibleWith(theApplication)
-    theApplication.compatibleWith(theTarget)
-    theApplication.compatibleWith(theMeasurement)
-  except error.ConfigurationError:
-    print "caught the error from compatibleWith"
-    return sys.exit(tau.EXIT_FAILURE)
-
+  theTarget.compatibleWith(theMeasurement)
+  theTarget.compatibleWith(theApplication)
+  theMeasurement.compatibleWith(theTarget)
+  theMeasurement.compatibleWith(theApplication)
+  theApplication.compatibleWith(theTarget)
+  theApplication.compatibleWith(theMeasurement)
 
   data = {'project': project.eid,
           'target': target_eid,

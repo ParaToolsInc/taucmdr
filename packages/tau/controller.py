@@ -373,25 +373,22 @@ class Controller(object):
             try:
               selfDataOattr=util.parseBoolean(self.data[oattr],trueList=['fallback','always'],falseList=['never'])
               otherDataOattr=util.parseBoolean(other.data[oattr],trueList=['fallback','always'],falseList=['never'])
-              if selfDataOattr and otherDataOattr:
-                LOGGER.debug(" %s is turned on in %s and on in %s  " % (oattr,self.model_name,other.model_name))
-              if selfDataOattr and (not otherDataOattr):
-                LOGGER.debug(" %s is turned on in %s and off in %s with rule %s  " % (oattr,self.model_name,other.model_name,rule))
-                if rule == requisite.Required:
-                  LOGGER.error( " %s required by %s but not set in %s "  % (oattr,selfName,otherName ))
-                  raise error.ConfigurationError( " %s required by %s but not set in %s "  % (oattr,selfName,otherName ))
-                elif rule == requisite.Recommended:
-                   LOGGER.warning("%s is recommended for %s by the %s model" % (oattr,selfName,otherName))
-                    #how to raise error and print but succeed with select
-              if (not selfDataOattr) and (otherDataOattr):
-                LOGGER.debug(" %s is turned off  in %s and on %s  " % (oattr,self.model_name,other.model_name))
-                LOGGER.debug(" %s is self.data[oattr] and  %s is other.data[oattr] for oattr = %s  " % (selfDataOattr,otherDataOattr,oattr))
-              if (not selfDataOattr) and (not otherDataOattr):
-                LOGGER.debug(" %s is turned off in %s and off %s  " % (oattr,self.model_name,other.model_name))
-            except error.ConfigurationError:
-              return sys.exit(tau.EXIT_FAILURE)
-            except :
+            except KeyError:
               continue
+            if selfDataOattr and otherDataOattr:
+              LOGGER.debug(" %s is turned on in %s and on in %s  " % (oattr,self.model_name,other.model_name))
+            if selfDataOattr and (not otherDataOattr):
+              LOGGER.debug(" %s is turned on in %s and off in %s with rule %s  " % (oattr,self.model_name,other.model_name,rule))
+              if rule == requisite.Required:
+                raise error.ConfigurationError(" %s required by %s but not set in %s "  % (oattr,selfName,otherName))
+              elif rule == requisite.Recommended:
+                LOGGER.warning("%s is recommended for %s by the %s model" % (oattr,selfName,otherName))
+                #how to raise error and print but succeed with select
+            if (not selfDataOattr) and (otherDataOattr):
+              LOGGER.debug(" %s is turned off  in %s and on %s  " % (oattr,self.model_name,other.model_name))
+              LOGGER.debug(" %s is self.data[oattr] and  %s is other.data[oattr] for oattr = %s  " % (selfDataOattr,otherDataOattr,oattr))
+            if (not selfDataOattr) and (not otherDataOattr):
+              LOGGER.debug(" %s is turned off in %s and off %s  " % (oattr,self.model_name,other.model_name))
 
 
 
