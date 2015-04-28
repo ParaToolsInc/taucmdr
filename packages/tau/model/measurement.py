@@ -89,7 +89,8 @@ class Measurement(ctl.Controller, ctl.ByName):
                    'metavar': 'T/F',
                    'nargs': '?',
                    'const': True,
-                   'action': args.ParseBooleanAction}
+                   'action': args.ParseBooleanAction},
+      'compat' : {'Target':{'pdt_source': requisite.Violation}}
     },
     'source_inst': {
       'type': 'boolean',
@@ -100,7 +101,7 @@ class Measurement(ctl.Controller, ctl.ByName):
                    'nargs': '?',
                    'const': True,
                    'action': args.ParseBooleanAction},
-      'compat' : {'target':{'pdt_source':requisite.Required}}
+      'compat' : {'Target':{'pdt_source':requisite.Required}}
     },
     'compiler_inst': {
       'type': 'string',
@@ -111,7 +112,7 @@ class Measurement(ctl.Controller, ctl.ByName):
                    'nargs': '?',
                    'const': 'always',
                    'choices': ['always', 'fallback', 'never']},
-      'compat' : {'target':{'bfd_source':requisite.Recommended,'libunwind_source':requisite.Recommended}}
+      'compat' : {'Target':{'bfd_source':requisite.Recommended,'libunwind_source':requisite.Recommended}}
     },
     'mpi': {
       'type': 'boolean',
@@ -122,7 +123,7 @@ class Measurement(ctl.Controller, ctl.ByName):
                    'nargs': '?',
                    'const': True,
                    'action': args.ParseBooleanAction},
-      'compat' : {'application':{'mpi':requisite.Required}}
+      'compat' : {'Application':{'mpi':requisite.Required}}
     },
     'openmp': {
       'type': 'string',
@@ -133,7 +134,7 @@ class Measurement(ctl.Controller, ctl.ByName):
                    'nargs': '?',
                    'const': 'opari',
                    'choices': ['ignore', 'opari', 'ompt']},
-      'compat' : {'application':{'openmp':requisite.Required}}
+      'compat' : {'Application':{'openmp':requisite.Required}}
     },
     'callpath': {
       'type': 'integer',
@@ -144,7 +145,7 @@ class Measurement(ctl.Controller, ctl.ByName):
                    'nargs': '?',
                    'const': 2,
                    'type': int},
-      'compat' : {'target':{'bfd_source':requisite.Recommended,'libunwind_source':requisite.Recommended}}
+      'compat' : {'Target':{'bfd_source':requisite.Recommended,'libunwind_source':requisite.Recommended}}
     },
     'memory_usage': {
       'type': 'boolean',
@@ -173,7 +174,7 @@ class Measurement(ctl.Controller, ctl.ByName):
                    'help': 'metrics for measurements space sperated',
                    'metavar': '<TAU_METRICS>',
                    'nargs': '+'},
-      'compat' : {'target':{'papi_source':requisite.Recommended}}
+      'compat' : {'Target':{'papi_source':requisite.Recommended}}
     },
   }
 

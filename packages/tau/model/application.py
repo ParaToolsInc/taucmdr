@@ -89,7 +89,7 @@ class Application(ctl.Controller, ctl.ByName):
                    'nargs': '?',
                    'const': True,
                    'action': args.ParseBooleanAction},
-      'compat' : {'measurement':{'mpi':requisite.Required}}
+      'compat' : {'Measurement':{'mpi':requisite.Required}}
     },
     'cuda': {
       'type': 'boolean',
@@ -100,7 +100,7 @@ class Application(ctl.Controller, ctl.ByName):
                    'nargs': '?',
                    'const': True,
                    'action': args.ParseBooleanAction},
-      'compat': {'target':{'cuda':requisite.Required}}
+      'compat': {'Target':{'cuda':requisite.Required}}
     },
     'shmem': {
       'type': 'boolean',

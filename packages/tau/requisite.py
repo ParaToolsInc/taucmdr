@@ -39,4 +39,5 @@
 Required = 1
 NotRequired = 0
 Recommended = 2
+Violation = 3
 
