@@ -88,7 +88,8 @@ class Application(ctl.Controller, ctl.ByName):
                    'metavar': 'yes/no',
                    'nargs': '?',
                    'const': True,
-                   'action': args.ParseBooleanAction}
+                   'action': args.ParseBooleanAction},
+      'compat' : {'measurement':{'mpi':requisite.Required}}
     },
     'cuda': {
       'type': 'boolean',
