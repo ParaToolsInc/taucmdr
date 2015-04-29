@@ -156,7 +156,6 @@ class Experiment(controller.Controller):
     Installs all software required to perform the experiment
     """
     populated = self.populate()
-    compatable = self.populate(attribute='compat')
     # TODO: Should install packages in a location where all projects can use
     prefix = populated['project']['prefix']
     target = populated['target'].populate()
