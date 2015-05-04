@@ -170,10 +170,35 @@ class Experiment(controller.Controller):
       # Configure/build/install  if needed
     #TODO:  Needt to change this logic after compatibilty is checked
     #    REFACTOR ******
-    pdt = cf.pdt.Pdt(prefix, cxx, target['pdt_source'], target['host_arch'])
-    bfd = cf.bfd.Bfd(prefix, cxx, target['bfd_source'], target['host_arch'])
-    libunwind = cf.libunwind.Libunwind(prefix, cxx, target['libunwind_source'], target['host_arch'])
-    papi = cf.papi.Papi(prefix, cxx, target['papi_source'], target['host_arch'])
+    # don't instantiate if  target['pdt_source'] is False
+    if  target['pdt_source']:
+      pdt = cf.pdt.Pdt(prefix, cxx, target['pdt_source'], target['host_arch'])
+      pdt.install()
+      self.pdt = pdt
+    else:
+      self.pdt = None
+
+    if target['bfd_source']:
+      bfd = cf.bfd.Bfd(prefix, cxx, target['bfd_source'], target['host_arch'])
+      bfd.install()
+      self.bfd = bfd
+    else:
+      self.bfd = None
+
+    if target['libunwind_source']:
+      libunwind = cf.libunwind.Libunwind(prefix, cxx, target['libunwind_source'], target['host_arch'])
+      libunwind.install()
+      self.libunwind = libunwind
+    else:
+      self.libunwind = None
+
+    if (util.parseBoolean(target['papi_source'])) or (util.parseBoolean(target['papi_source'])==None) :
+      papi = cf.papi.Papi(prefix, cxx, target['papi_source'], target['host_arch'])
+      papi.install()
+      self.papi = papi
+    else:
+      self.papi = None
+
 
 
     if not measurement['source_inst'] and not measurement['compiler_inst']:
@@ -181,25 +206,17 @@ class Experiment(controller.Controller):
       self.bfd = None
       self.papi= None
       self.libunwind= None
-    else:
-      pdt.install()
-      self.pdt = pdt
-      bfd.install()
-      self.bfd = bfd
-      libunwind.install()
-      self.libunwind = libunwind
-      papi.install()
-      self.papi = papi
+
 
 
 
     # Configure/build/install TAU if needed
     tau = cf.tau.Tau(prefix, cc, cxx, fc, target['tau_source'], target['host_arch'],
                      verbose=verbose,
-                     pdt=pdt,
-                     bfd=bfd,
-                     papi=papi,
-                     libunwind=libunwind,
+                     pdt=self.pdt,
+                     bfd=self.bfd,
+                     papi=self.papi,
+                     libunwind=self.libunwind,
                      profile=measurement['profile'],
                      trace=measurement['trace'],
                      sample=measurement['sample'],
