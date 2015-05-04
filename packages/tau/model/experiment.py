@@ -254,6 +254,7 @@ class Experiment(controller.Controller):
     given_compiler = Compiler.identify(compiler_cmd)
     target_compiler = target[given_compiler['role']]
 
+
     # Confirm target supports compiler
     if given_compiler.eid != target_compiler:
       raise error.ConfigurationError("Target '%s' is configured with %s compiler '%s', not '%s'",
@@ -266,10 +267,14 @@ class Experiment(controller.Controller):
     # Build compile-time environment from component packages
     opts, env = environment.base()
     if measurement['source_inst']:
-      self.pdt.applyCompiletimeConfig(opts, env)
-      self.bfd.applyCompiletimeConfig(opts, env)
-      self.papi.applyCompiletimeConfig(opts, env)
-      self.libunwind.applyCompiletimeConfig(opts, env)
+      if (self.pdt):
+        self.pdt.applyCompiletimeConfig(opts, env)
+      if (self.bfd):
+        self.bfd.applyCompiletimeConfig(opts, env)
+      if (self.papi):
+        self.papi.applyCompiletimeConfig(opts, env)
+      if (self.libunwind):
+        self.libunwind.applyCompiletimeConfig(opts, env)
     self.tau.applyCompiletimeConfig(opts, env)
 
     use_wrapper = measurement['source_inst'] or measurement['comp_inst']
