@@ -12,26 +12,26 @@
 #Copyright (c) 2015, ParaTools, Inc.
 #All rights reserved.
 #
-#Redistribution and use in source and binary forms, with or without
+#Redistribution and use in source and binary forms, with or without 
 #modification, are permitted provided that the following conditions are met:
-# (1) Redistributions of source code must retain the above copyright notice,
+# (1) Redistributions of source code must retain the above copyright notice, 
 #     this list of conditions and the following disclaimer.
-# (2) Redistributions in binary form must reproduce the above copyright notice,
-#     this list of conditions and the following disclaimer in the documentation
+# (2) Redistributions in binary form must reproduce the above copyright notice, 
+#     this list of conditions and the following disclaimer in the documentation 
 #     and/or other materials provided with the distribution.
-# (3) Neither the name of ParaTools, Inc. nor the names of its contributors may
-#     be used to endorse or promote products derived from this software without
+# (3) Neither the name of ParaTools, Inc. nor the names of its contributors may 
+#     be used to endorse or promote products derived from this software without 
 #     specific prior written permission.
 #
-#THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-#AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-#IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-#DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-#FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-#DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-#SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-#CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-#OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+#THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+#AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+#IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+#DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE 
+#FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+#DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
+#SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
+#CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, 
+#OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
 #OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
@@ -151,11 +151,11 @@ class Tau(object):
   """
   Encapsulates a TAU installation
   """
-  def __init__(self, prefix, cc, cxx, fc, src, arch,
+  def __init__(self, prefix, cc, cxx, fc, src, arch, 
                pdt, bfd, libunwind, papi, **config):
     if not arch:
       arch = _detectDefaultHostArch()
-    if not isinstance(src,bool) and src.lower() == 'download':
+    if src.lower() == 'download':
       try:
         src = DEFAULT_SOURCE[arch]
       except KeyError:
@@ -189,7 +189,7 @@ class Tau(object):
     """
     tags = []
     config = self.config
-
+    
     family = self.cc['family']
     if family != 'GNU':
       compiler_tags = {'Intel': 'icpc', 'PGI': 'pgi'}
@@ -197,7 +197,7 @@ class Tau(object):
         tags.append(compiler_tags[family])
       except KeyError:
         raise error.InternalError("No makefile tag specified to compiler family '%s'" % family)
-
+      
     if config['source_inst']:
       tags.append('pdt')
     if config['openmp_support']:
@@ -210,7 +210,7 @@ class Tau(object):
     if config['mpi_support']:
       tags.append('mpi')
     if config['cuda_support']:
-      tags.append('cuda')
+      tags.append('cuda')    
     if config['shmem_support']:
       tags.append('shmem')
     if config['mpc_support']:
@@ -218,20 +218,20 @@ class Tau(object):
 
     if self.papi:
       tags.append('papi')
-
+    
     LOGGER.debug("TAU tags: %s" % tags)
     return tags
 
   def verify(self):
     """
     Returns true if if there is a working TAU installation at `prefix` with a
-    directory named `arch` containing `bin` and `lib` directories or
+    directory named `arch` containing `bin` and `lib` directories or 
     raises a ConfigurationError describing why that installation is broken.
     """
-    LOGGER.debug("Checking TAU installation at '%s' targeting arch '%s'" % (self.tau_prefix, self.arch))
+    LOGGER.debug("Checking TAU installation at '%s' targeting arch '%s'" % (self.tau_prefix, self.arch))    
     if not os.path.exists(self.tau_prefix):
       raise error.ConfigurationError("'%s' does not exist" % self.tau_prefix)
-
+  
     # Check for all commands
     for cmd in COMMANDS:
       path = os.path.join(self.bin_path, cmd)
@@ -239,17 +239,17 @@ class Tau(object):
         raise error.ConfigurationError("'%s' is missing" % path)
       if not os.access(path, os.X_OK):
         raise error.ConfigurationError("'%s' exists but is not executable" % path)
-
+    
     # Check that there is at least one makefile
     makefile = os.path.join(self.include_path, 'Makefile')
     if not os.path.exists(makefile):
       raise error.ConfigurationError("'%s' does not exist" % makefile)
-
+    
     # Check for Makefile.tau matching this configuration
     makefile = self.getMakefile()
     if not makefile:
       raise error.ConfigurationError("TAU Makefile not found: %s" % makefile)
-
+    
     # Open makefile, check BFDINCLUDE, UNWIND_INC, PAPIDIR
     LOGGER.debug("Tau Makefile %s :" %makefile)
     with open(makefile, 'r') as myMakeFile:
@@ -259,19 +259,19 @@ class Tau(object):
         mfBfdInc=line.split('=')[1].strip().strip("-I")
         if (self.bfd.include_path != mfBfdInc):
            raise error.ConfigurationError("TAU Makefile does not have BFDINCLUDE = {} set to the \
-                                          BFD_INCLUDE_PATH = {}".format(mfBfdInc,self.bfd.include_path))
+                                          BFD_INCLUDE_PATH = {}".format(mfBfdInc,self.bfd.include_path))     
       if ('UNWIND_INC=' in line):
         mfUwInc=line.split('=')[1].strip().strip("-I")
         if (self.libunwind.include_path != mfUwInc):
            raise error.ConfigurationError("TAU Makefile does not have UNWIND_INC= {}set to the \
-                                          LIBUNWIND_INCLUDE_PATH = {}".format(mfUwInc,self.libunwind.include_path))
+                                          LIBUNWIND_INCLUDE_PATH = {}".format(mfUwInc,self.libunwind.include_path))     
       if ('PAPIDIR=' in line):
         mfPapiDir = line.split('=')[1].strip()
         if (self.papi.papi_prefix != mfPapiDir):
            raise error.ConfigurationError("TAU Makefile {} does not have PAPIDIR = {} set to \
-                                          the PAPI_PREFIX = {}".format(makefile,mfPapiDir,self.papi.papi_prefix))
-
-
+                                          the PAPI_PREFIX = {}".format(makefile,mfPapiDir,self.papi.papi_prefix))     
+       
+    
     LOGGER.debug("TAU installation at '%s' is valid" % self.tau_prefix)
     return True
 
@@ -279,9 +279,9 @@ class Tau(object):
     """
     TODO: Docs
     """
-    LOGGER.debug("Initializing TAU at '%s' from '%s' with arch=%s" %
+    LOGGER.debug("Initializing TAU at '%s' from '%s' with arch=%s" % 
                  (self.tau_prefix, self.src, self.arch))
-
+    
     # Check if the installation is already initialized
     if not force_reinstall:
       try:
@@ -289,7 +289,7 @@ class Tau(object):
       except error.ConfigurationError, err:
         LOGGER.debug(err)
     LOGGER.info('Starting TAU installation')
-
+    
     # Download, unpack, or copy TAU source code
     dst = os.path.join(self.src_prefix, os.path.basename(self.src))
     src = os.path.join(self.tau_prefix, 'src')
@@ -312,7 +312,7 @@ class Tau(object):
     # TAU's configure script has a goofy way of specifying the fortran compiler
     if self.fc:
       if self.fc['family'] != 'MPI':
-         family_map = {'GNU': 'gfortran',
+         family_map = {'GNU': 'gfortran', 
                        'Intel': 'intel'}
          fc_family = self.fc['family']
          try:
@@ -324,7 +324,7 @@ class Tau(object):
         raise InternalError("Unknown compiler family for Fortran: '%s'" % fc_family)
     else:
       fortran_flag = ''
-
+      
     # Check PDT
     if bool(self.config['source_inst']) != bool(self.pdt):
       raise error.InternalError("pdt=%s but config['source_inst']=%s" % (self.pdt, self.config['source_inst']))
@@ -338,10 +338,10 @@ class Tau(object):
       LOGGER.warning("libunwind is recommended when using sampling or OpenMP")
 
     # Gather TAU configuration flags
-    base_flags = ['-prefix=%s' % self.tau_prefix,
-                  '-arch=%s' % self.arch,
-                  '-cc=%s' % self.cc['command'] if self.cc else '',
-                  '-c++=%s' % self.cxx['command'] if self.cxx else '',
+    base_flags = ['-prefix=%s' % self.tau_prefix, 
+                  '-arch=%s' % self.arch, 
+                  '-cc=%s' % self.cc['command'] if self.cc else '', 
+                  '-c++=%s' % self.cxx['command'] if self.cxx else '', 
                   fortran_flag,
                   '-pdt=%s' % self.pdt.pdt_prefix if self.pdt else '',
                   '-bfd=%s' % self.bfd.bfd_prefix if self.bfd else '',
@@ -355,7 +355,7 @@ class Tau(object):
       mpi_flags = []
     if self.config['openmp_support']:
       openmp_flags = ['-openmp']
-      measurements = self.config['openmp_measurements']
+      measurements = self.config['openmp_measurements'] 
       if measurements == 'ompt':
         if self.cc['family'] == 'Intel':
           openmp_flags.append('-ompt')
@@ -375,7 +375,7 @@ class Tau(object):
     LOGGER.info("Configuring TAU...")
     if util.createSubprocess(cmd, cwd=srcdir, stdout=False):
       raise error.ConfigurationError('TAU configure failed')
-
+  
     # Execute make
     cmd = ['make', '-j4', 'install']
     LOGGER.info('Compiling TAU...')
@@ -390,7 +390,7 @@ class Tau(object):
     except OSError as err:
       if not (err.errno == errno.EEXIST and os.path.islink(src)):
         LOGGER.warning("Can't create symlink '%s'. TAU source code won't be reused across configurations." % src)
-
+      
     # Verify the new installation and return
     LOGGER.info('TAU installation complete')
     return self.verify()
@@ -417,11 +417,11 @@ class Tau(object):
     commandline_options = {
         'halt_build_on_error': {True: [], False: ['-optRevert']},
         'verbose': {True: ['-optVerbose'], False: ['-optQuiet']},
-        'compiler_inst': {'always': ['-optCompInst'],
+        'compiler_inst': {'always': ['-optCompInst'], 
                           'never': ['-optNoCompInst'],
                           'fallback': ['-optRevert', '-optNoCompInst']}
                            }
-    environment_variables = {}
+    environment_variables = {}    
     tauOpts, tauEnv = _parseConfig(self.config, commandline_options, environment_variables)
     opts.extend(tauOpts)
     env.update(tauEnv)
@@ -437,15 +437,15 @@ class Tau(object):
         'sample': {True: ['-ebs'], False: []}
         }
     environment_variables = {
-        'verbose': {True: {'TAU_VERBOSE': '1'},
+        'verbose': {True: {'TAU_VERBOSE': '1'}, 
                     False: {'TAU_VERBOSE': '0'}},
-        'profile': {True: {'TAU_PROFILE': '1'},
+        'profile': {True: {'TAU_PROFILE': '1'}, 
                     False: {'TAU_PROFILE': '0'}},
-        'trace': {True: {'TAU_TRACE': '1'},
+        'trace': {True: {'TAU_TRACE': '1'}, 
                   False: {'TAU_TRACE': '0'}},
-        'sample': {True: {'TAU_SAMPLING': '1'},
+        'sample': {True: {'TAU_SAMPLING': '1'}, 
                    False: {'TAU_SAMPLING': '0'}},
-        'callpath': lambda depth: ({'TAU_CALLPATH': '1', 'TAU_CALLPATH_DEPTH': str(depth)}
+        'callpath': lambda depth: ({'TAU_CALLPATH': '1', 'TAU_CALLPATH_DEPTH': str(depth)} 
                                    if depth > 0 else {'TAU_CALLPATH': '0'})
         }
     tauOpts, tauEnv = _parseConfig(self.config, commandline_options, environment_variables)
@@ -454,7 +454,7 @@ class Tau(object):
 
     env['PATH'] = os.pathsep.join([self.bin_path, env.get('PATH')])
     env['TAU_METRICS']=os.pathsep.join(self.config['metrics'])
-
+  
   def showProfile(self, path):
     """
     Shows profile data in the specified file or folder
