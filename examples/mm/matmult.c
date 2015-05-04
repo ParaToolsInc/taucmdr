@@ -37,8 +37,6 @@ pthread_mutex_t mutexsum;
 #define NCA MATRIX_SIZE                 /* number of columns in matrix A */
 #define NCB MATRIX_SIZE                 /* number of columns in matrix B */
 
-#define APP_USE_INLINE_MULTIPLY
-
 double** allocateMatrix(int rows, int cols) {
   int i;
   double **matrix = (double**)malloc((sizeof(double*)) * rows);
