@@ -12,26 +12,26 @@
 #Copyright (c) 2015, ParaTools, Inc.
 #All rights reserved.
 #
-#Redistribution and use in source and binary forms, with or without 
+#Redistribution and use in source and binary forms, with or without
 #modification, are permitted provided that the following conditions are met:
-# (1) Redistributions of source code must retain the above copyright notice, 
+# (1) Redistributions of source code must retain the above copyright notice,
 #     this list of conditions and the following disclaimer.
-# (2) Redistributions in binary form must reproduce the above copyright notice, 
-#     this list of conditions and the following disclaimer in the documentation 
+# (2) Redistributions in binary form must reproduce the above copyright notice,
+#     this list of conditions and the following disclaimer in the documentation
 #     and/or other materials provided with the distribution.
-# (3) Neither the name of ParaTools, Inc. nor the names of its contributors may 
-#     be used to endorse or promote products derived from this software without 
+# (3) Neither the name of ParaTools, Inc. nor the names of its contributors may
+#     be used to endorse or promote products derived from this software without
 #     specific prior written permission.
 #
-#THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-#AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-#IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
-#DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE 
-#FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
-#DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
-#SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
-#CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, 
-#OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+#THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+#AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+#IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+#DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+#FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+#DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+#SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+#CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+#OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
@@ -63,7 +63,7 @@ class Bfd(object):
   """
   def __init__(self, prefix, cxx, src, arch):
     self.src = src
-    if src.lower() == 'download':
+    if not isinstance(src,bool) and src.lower() == 'download':
       try:
         self.src = DEFAULT_SOURCE[arch]
       except KeyError:
@@ -84,10 +84,10 @@ class Bfd(object):
   def verify(self):
     """
     Returns true if if there is a working BFD installation at `prefix` with a
-    directory named `arch` containing  `lib` directories or 
+    directory named `arch` containing  `lib` directories or
     raises a ConfigurationError describing why that installation is broken.
     """
-    LOGGER.debug("Checking BFD installation at '%s' targeting arch '%s'" % (self.bfd_prefix, self.arch))    
+    LOGGER.debug("Checking BFD installation at '%s' targeting arch '%s'" % (self.bfd_prefix, self.arch))
     if not os.path.exists(self.bfd_prefix):
       raise error.ConfigurationError("'%s' does not exist" % self.bfd_prefix)
     # Check for all libraries
@@ -103,7 +103,7 @@ class Bfd(object):
         raise error.ConfigurationError("'%s' is missing" % path)
 #      if not os.access(path, os.X_OK):
 #        raise error.ConfigurationError("'%s' exists but is not executable" % path)
-    
+
     LOGGER.debug("BFD installation at '%s' is valid" % self.bfd_prefix)
     return True
 
@@ -111,9 +111,9 @@ class Bfd(object):
     """
     TODO: Docs
     """
-    LOGGER.debug("Initializing BFD at '%s' from '%s' with arch=%s" % 
+    LOGGER.debug("Initializing BFD at '%s' from '%s' with arch=%s" %
                  (self.bfd_prefix, self.src, self.arch))
-    
+
     # Check if the installation is already initialized
     if not force_reinstall:
       try:
@@ -139,7 +139,7 @@ class Bfd(object):
     else:
       family_flags = {'system': '',
                       'GNU': ['CC=gcc', 'CXX=g++'],
-                      'Intel': ['CC=icc','CXX=icpc'] 
+                      'Intel': ['CC=icc','CXX=icpc']
                      }
 #                      'PGI': '-pgCC'}
       try:
@@ -173,26 +173,26 @@ class Bfd(object):
       for file in glob.glob(os.path.join(srcdir,'bfd','*.h')):
         shutil.copy(file,self.include_path)
       for file in glob.glob(os.path.join(srcdir,'include','*')):
-        try: 
+        try:
           shutil.copy(file, self.include_path)
-        except:  
+        except:
           dst = os.path.join(self.include_path, os.path.basename(file))
           shutil.copytree(file,dst)
 
-       
+
      #cp additional libraries:
       LOGGER.info("Copying missing libraries to install 'lib'.")
       shutil.copy(os.path.join(srcdir,'libiberty','libiberty.a'),self.lib_path)
       shutil.copy(os.path.join(srcdir,'opcodes','libopcodes.a'),self.lib_path)
-   
+
 
      #fix bfd.h header in the install include location
       LOGGER.info("Fixing BFD header in install 'include' location.")
       with open (os.path.join(self.include_path,'bfd.h'),"r+") as myfile:
-        data=myfile.read().replace('#if !defined PACKAGE && !defined PACKAGE_VERSION','#if 0') 
+        data=myfile.read().replace('#if !defined PACKAGE && !defined PACKAGE_VERSION','#if 0')
         myfile.seek(0,0)
         myfile.write(data)
-         
+
     except Exception as err:
       LOGGER.info("BFD installation failed, cleaning up %s " % err)
       shutil.rmtree(self.bfd_prefix, ignore_errors=True)
@@ -200,7 +200,7 @@ class Bfd(object):
       # Always clean up BFD source
       LOGGER.debug('Deleting %r' % srcdir)
       shutil.rmtree(srcdir, ignore_errors=True)
-         
+
     # Verify the new installation
     try:
       retval = self.verify()
@@ -224,4 +224,4 @@ class Bfd(object):
     """
     pass
 
-    
+
