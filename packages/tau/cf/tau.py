@@ -419,7 +419,8 @@ class Tau(object):
         'verbose': {True: ['-optVerbose'], False: ['-optQuiet']},
         'compiler_inst': {'always': ['-optCompInst'],
                           'never': ['-optNoCompInst'],
-                          'fallback': ['-optRevert', '-optNoCompInst']}
+                          'fallback': ['-optRevert', '-optNoCompInst']},
+        'keep_inst_files': {True: ['-optKeepFiles'], False: []}
                            }
     environment_variables = {}
     tauOpts, tauEnv = _parseConfig(self.config, commandline_options, environment_variables)
