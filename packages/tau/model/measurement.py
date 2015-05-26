@@ -176,6 +176,15 @@ class Measurement(ctl.Controller, ctl.ByName):
                    'nargs': '+'},
       'compat' : {'Target':{'papi_source':requisite.Recommended}}
     },
+    'keepInstFiles': {
+      'type': 'boolean',
+      'defaultsTo': False,
+      'argparse': {'flags': ('--keepInstFiles',),
+                   'help': 'Keep instrumented files.',
+                   'metavar': '<TAU_OPTIONS>',
+                   'const': True,
+                   'action': args.ParseBooleanAction}
+    },
   }
 
   _valid_name = set(string.digits + string.letters + '-_.')
