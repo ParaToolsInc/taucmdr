@@ -257,7 +257,7 @@ def parseBoolean(value,trueList=[],falseList=[]):
     return value
   elif isinstance(value, int):
     return bool(value)
-  elif isinstance(value, str):
+  elif (isinstance(value, str)) or (isinstance(value,unicode)):
     value = value.lower()
     if value in ['1', 't', 'y', 'true', 'yes', 'on'] + trueList:
       return True
