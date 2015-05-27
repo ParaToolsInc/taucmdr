@@ -181,7 +181,8 @@ class Measurement(ctl.Controller, ctl.ByName):
       'defaultsTo': False,
       'argparse': {'flags': ('--keepInstFiles',),
                    'help': 'Keep instrumented files.',
-                   'metavar': '<TAU_OPTIONS>',
+                   'metavar': 'T/F',
+                   'nargs': '?',
                    'const': True,
                    'action': args.ParseBooleanAction}
     },
