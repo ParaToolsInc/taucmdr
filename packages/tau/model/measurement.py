@@ -179,7 +179,7 @@ class Measurement(ctl.Controller, ctl.ByName):
     'keepInstFiles': {
       'type': 'boolean',
       'defaultsTo': False,
-      'argparse': {'flags': ('--keepInstFiles',),
+      'argparse': {'flags': ('--keep-inst-files',),
                    'help': 'Keep instrumented files.',
                    'metavar': 'T/F',
                    'nargs': '?',
