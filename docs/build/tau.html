@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>tau package &mdash; TauCmdr 0.0.1 documentation</title>
+    <title>tau package &mdash; TAU Commander 0.0.1 documentation</title>
     
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -24,7 +24,8 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="TauCmdr 0.0.1 documentation" href="index.html" />
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="top" title="TAU Commander 0.0.1 documentation" href="index.html" />
    
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
@@ -40,7 +41,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">TauCmdr 0.0.1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">TAU Commander 0.0.1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -146,7 +147,7 @@
 <span id="tau-arguments-module"></span><h2>tau.arguments module<a class="headerlink" href="#module-tau.arguments" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="tau.arguments.ArgparseHelpFormatter">
-<em class="property">class </em><code class="descclassname">tau.arguments.</code><code class="descname">ArgparseHelpFormatter</code><span class="sig-paren">(</span><em>prog</em>, <em>indent_increment=2</em>, <em>max_help_position=30</em>, <em>width=141</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/arguments.html#ArgparseHelpFormatter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.arguments.ArgparseHelpFormatter" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.arguments.</code><code class="descname">ArgparseHelpFormatter</code><span class="sig-paren">(</span><em>prog</em>, <em>indent_increment=2</em>, <em>max_help_position=30</em>, <em>width=125</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/arguments.html#ArgparseHelpFormatter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.arguments.ArgparseHelpFormatter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/argparse.html#argparse.RawDescriptionHelpFormatter" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">argparse.RawDescriptionHelpFormatter</span></code></a></p>
 <p>Custom formatter for argparse</p>
 </dd></dl>
@@ -190,6 +191,9 @@
 </dd></dl>
 
 </div>
+<div class="section" id="module-tau.compat">
+<span id="tau-compat-module"></span><h2>tau.compat module<a class="headerlink" href="#module-tau.compat" title="Permalink to this headline">¶</a></h2>
+</div>
 <div class="section" id="module-tau.controller">
 <span id="tau-controller-module"></span><h2>tau.controller module<a class="headerlink" href="#module-tau.controller" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
@@ -209,12 +213,12 @@
 <em class="property">class </em><code class="descclassname">tau.controller.</code><code class="descname">Controller</code><span class="sig-paren">(</span><em>fields</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/controller.html#Controller"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.controller.Controller" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
 <p>The C&#8221; in MVC</p>
-<p>Subclasses reside in the &#8216;model&#8217; package and define a member dictionary 
+<p>Subclasses reside in the &#8216;model&#8217; package and define a member dictionary
 &#8216;attributes&#8217; that describes the data model in the form:</p>
 <blockquote>
 <div><dl class="docutils">
 <dt>&lt;attribute&gt;: {</dt>
-<dd>property: value, 
+<dd>property: value,
 [[property: value], ...]</dd>
 </dl>
 <p>}</p>
@@ -231,7 +235,7 @@ to describe one-sided relationships, e.g.</p>
 <dd>references = set( (Model_A, &#8216;attr_x&#8217;), (Model_B, &#8216;attr_y&#8217;) )</dd>
 </dl>
 </div></blockquote>
-<p>The &#8216;model&#8217; package also initializes the dictionary &#8216;associations&#8217; in 
+<p>The &#8216;model&#8217; package also initializes the dictionary &#8216;associations&#8217; in
 each class to describe two-sided relationships, e.g.</p>
 <blockquote>
 <div><dl class="docutils">
@@ -259,6 +263,11 @@ associations = {attr_k: (Model_A, attr_x)}</p>
 <em class="property">classmethod </em><code class="descname">all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/controller.html#Controller.all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.controller.Controller.all" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a list of all records</p>
 </dd></dl>
+
+<dl class="method">
+<dt id="tau.controller.Controller.compatibleWith">
+<code class="descname">compatibleWith</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/controller.html#Controller.compatibleWith"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.controller.Controller.compatibleWith" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="classmethod">
 <dt id="tau.controller.Controller.create">
@@ -313,7 +322,7 @@ associations = {attr_k: (Model_A, attr_x)}</p>
 <dl class="method">
 <dt id="tau.controller.Controller.populate">
 <code class="descname">populate</code><span class="sig-paren">(</span><em>attribute=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/controller.html#Controller.populate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.controller.Controller.populate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Transltes model id numbers in <cite>self</cite> to model controllers and 
+<dd><p>Transltes model id numbers in <cite>self</cite> to model controllers and
 returns all data as a dictionary</p>
 </dd></dl>
 
@@ -461,6 +470,9 @@ These are bad and really shouldn&#8217;t happen</p>
 </dd></dl>
 
 </div>
+<div class="section" id="module-tau.requisite">
+<span id="tau-requisite-module"></span><h2>tau.requisite module<a class="headerlink" href="#module-tau.requisite" title="Permalink to this headline">¶</a></h2>
+</div>
 <div class="section" id="module-tau.settings">
 <span id="tau-settings-module"></span><h2>tau.settings module<a class="headerlink" href="#module-tau.settings" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
@@ -593,7 +605,7 @@ match any one of the provided keys</p>
 
 <dl class="function">
 <dt id="tau.util.parseBoolean">
-<code class="descclassname">tau.util.</code><code class="descname">parseBoolean</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#parseBoolean"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.parseBoolean" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.util.</code><code class="descname">parseBoolean</code><span class="sig-paren">(</span><em>value</em>, <em>trueList=[]</em>, <em>falseList=[]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#parseBoolean"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.parseBoolean" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parses a value to a literal True/False boolean</p>
 </dd></dl>
 
@@ -628,16 +640,21 @@ Searches the system PATH and the current directory</p>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/taulogo-large.png" alt="Logo"/>
+            </a></p>
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">tau package</a><ul>
 <li><a class="reference internal" href="#subpackages">Subpackages</a></li>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
 <li><a class="reference internal" href="#module-tau.arguments">tau.arguments module</a></li>
+<li><a class="reference internal" href="#module-tau.compat">tau.compat module</a></li>
 <li><a class="reference internal" href="#module-tau.controller">tau.controller module</a></li>
 <li><a class="reference internal" href="#module-tau.environment">tau.environment module</a></li>
 <li><a class="reference internal" href="#module-tau.error">tau.error module</a></li>
 <li><a class="reference internal" href="#module-tau.logger">tau.logger module</a></li>
+<li><a class="reference internal" href="#module-tau.requisite">tau.requisite module</a></li>
 <li><a class="reference internal" href="#module-tau.settings">tau.settings module</a></li>
 <li><a class="reference internal" href="#module-tau.storage">tau.storage module</a></li>
 <li><a class="reference internal" href="#module-tau.util">tau.util module</a></li>
@@ -646,13 +663,6 @@ Searches the system PATH and the current directory</p>
 </li>
 </ul>
 
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/tau.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
@@ -671,15 +681,12 @@ Searches the system PATH and the current directory</p>
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2015, ParaTools, Inc..
+      &copy;2015 ParaTools, Inc..
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.4</a>
       
-      |
-      <a href="_sources/tau.txt"
-          rel="nofollow">Page source</a></li>
     </div>
 
     

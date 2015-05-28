@@ -21,6 +21,14 @@ tau.arguments module
     :undoc-members:
     :show-inheritance:
 
+tau.compat module
+-----------------
+
+.. automodule:: tau.compat
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 tau.controller module
 ---------------------
 
@@ -49,6 +57,14 @@ tau.logger module
 -----------------
 
 .. automodule:: tau.logger
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+tau.requisite module
+--------------------
+
+.. automodule:: tau.requisite
     :members:
     :undoc-members:
     :show-inheritance:
