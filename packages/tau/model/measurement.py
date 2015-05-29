@@ -176,7 +176,7 @@ class Measurement(ctl.Controller, ctl.ByName):
                    'nargs': '+'},
       'compat' : {'Target':{'papi_source':requisite.Recommended}}
     },
-    'keep_Inst_Files': {
+    'keep_inst_files': {
       'type': 'boolean',
       'defaultsTo': False,
       'argparse': {'flags': ('--keep-inst-files',),
