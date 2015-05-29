@@ -223,6 +223,7 @@ class Experiment(controller.Controller):
                      source_inst=measurement['source_inst'],
                      compiler_inst=measurement['compiler_inst'],
                      keep_inst_files=measurement['keep_inst_files'],
+                     reuse_inst_files=measurement['reuse_inst_files'],
                      # TODO: Library wrapping inst [dynamic]
                      # TODO: binary rewrite  inst
                      openmp_support=application['openmp'],

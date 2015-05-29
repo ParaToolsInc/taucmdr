@@ -186,6 +186,17 @@ class Measurement(ctl.Controller, ctl.ByName):
                    'const': True,
                    'action': args.ParseBooleanAction}
     },
+    'reuse_inst_files': {
+      'type': 'boolean',
+      'defaultsTo': False,
+      'argparse': {'flags': ('--reuse-inst-files',),
+                   'help': 'Reuse and preserve instrumented files.',
+                   'metavar': 'T/F',
+                   'nargs': '?',
+                   'const': True,
+                   'action': args.ParseBooleanAction}
+    },
+
   }
 
   _valid_name = set(string.digits + string.letters + '-_.')

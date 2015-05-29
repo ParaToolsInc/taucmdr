@@ -420,7 +420,8 @@ class Tau(object):
         'compiler_inst': {'always': ['-optCompInst'],
                           'never': ['-optNoCompInst'],
                           'fallback': ['-optRevert', '-optNoCompInst']},
-        'keep_inst_files': {True: ['-optKeepFiles'], False: []}
+        'keep_inst_files': {True: ['-optKeepFiles'], False: []},
+        'reuse_inst_files': {True: ['-optReuseFiles'], False: []}
                            }
     environment_variables = {}
     tauOpts, tauEnv = _parseConfig(self.config, commandline_options, environment_variables)
