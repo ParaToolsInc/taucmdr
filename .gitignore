@@ -3,10 +3,6 @@
 /.all_configs
 /.last_config
 /build
-/etc
-/examples
-/include
-/tools
 /x86_64
 /bgl
 /bgp
