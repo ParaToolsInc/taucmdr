@@ -371,22 +371,34 @@ class Tau(object):
     else:
       pthreads_flags = []
 
-    if measurements == 'io_wrapper':
-      io_flags = ['-iowrapper']
-    else:
-      io_flags = []
+
 
     # Execute configure
-    cmd = ['./configure'] + base_flags + mpi_flags + openmp_flags + pthreads_flags +io_flags
-    LOGGER.info("Configuring TAU...")
-    if util.createSubprocess(cmd, cwd=srcdir, stdout=False):
-      raise error.ConfigurationError('TAU configure failed')
+    baseCmd = ['./configure'] + base_flags + mpi_flags + openmp_flags + pthreads_flags
+    ioCmd = baseCmd + ' -iowrapper'
+    try:
+      LOGGER.info("Configuring TAU...iowrapper included.")
 
-    # Execute make
-    cmd = ['make', '-j4', 'install']
-    LOGGER.info('Compiling TAU...')
-    if util.createSubprocess(cmd, cwd=srcdir, stdout=False):
-        raise error.ConfigurationError('TAU compilation failed.')
+      if util.createSubprocess(ioCmd, cwd=srcdir, stdout=False):
+        raise error.ConfigurationError('TAU configure failed.  Retrying without iowrapper.')
+
+      # Execute make
+      cmd = ['make', '-j4', 'install']
+      LOGGER.info('Compiling TAU...iowrapper included.')
+      if util.createSubprocess(cmd, cwd=srcdir, stdout=False):
+          raise error.ConfigurationError('TAU compilation failed.  Retrying without iowrapper.')
+     except:
+      LOGGER.info("Configuring TAU...with out iowrapper")
+
+      if util.createSubprocess(ioCmd, cwd=srcdir, stdout=False):
+        raise error.ConfigurationError('TAU configure failed.')
+
+      # Execute make
+      cmd = ['make', '-j4', 'install']
+      LOGGER.info('Compiling TAU..with out iowrapper.')
+      if util.createSubprocess(cmd, cwd=srcdir, stdout=False):
+          raise error.ConfigurationError('TAU compilation failed.')
+
 
     # Leave source, we'll probably need it again soon
     # Create a link to the source for reuse
