@@ -375,7 +375,7 @@ class Tau(object):
 
     # Execute configure
     baseCmd = ['./configure'] + base_flags + mpi_flags + openmp_flags + pthreads_flags
-    ioCmd = baseCmd + ' -iowrapper'
+    ioCmd = baseCmd + ['-iowrapper']
     try:
       LOGGER.info("Configuring TAU...iowrapper included.")
 
@@ -387,7 +387,7 @@ class Tau(object):
       LOGGER.info('Compiling TAU...iowrapper included.')
       if util.createSubprocess(cmd, cwd=srcdir, stdout=False):
           raise error.ConfigurationError('TAU compilation failed.  Retrying without iowrapper.')
-     except:
+    except:
       LOGGER.info("Configuring TAU...with out iowrapper")
 
       if util.createSubprocess(ioCmd, cwd=srcdir, stdout=False):

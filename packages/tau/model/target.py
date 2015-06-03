@@ -214,7 +214,9 @@ class Target(ctl.Controller, ctl.ByName):
                    'help': 'URL or path to a PAPI installation or archive file',
                    'metavar': '(<path>|<url>|download|False)',
                    'action': args.ParsePackagePathAction}
-    }
+    },
+    'iowrapper': {
+    'defaultsTo': 'True'}
   }
 
   _valid_name = set(string.digits + string.letters + '-_.')

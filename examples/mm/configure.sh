@@ -42,7 +42,7 @@ tau measurement create ex-io --io-wrapper=T
 tau project create "ex-mm" \
   $target_name \
   ex-mm-serial ex-mm-openmp ex-mm-openmp-mpi \
-  ex-profile ex-trace ex-sample
+  ex-profile ex-trace ex-sample ex-io
 
 if $sv_sys; then
   echo "** making gcc target part of project"

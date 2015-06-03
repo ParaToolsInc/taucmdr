@@ -204,7 +204,8 @@ class Measurement(ctl.Controller, ctl.ByName):
                    'metavar': 'T/F',
                    'nargs': '?',
                    'const': True,
-                   'action': args.ParseBooleanAction}
+                   'action': args.ParseBooleanAction},
+      'compat' : {'Target':{'io_wrapper':requisite.Required}}
     }
   }
 
