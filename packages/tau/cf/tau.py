@@ -399,6 +399,7 @@ class Tau(object):
       if util.createSubprocess(cmd, cwd=srcdir, stdout=False):
           raise error.ConfigurationError('TAU compilation failed.')
 
+      # svwip:  need to add a command that sets an attribute to target "iowrapper" to FALSE
 
     # Leave source, we'll probably need it again soon
     # Create a link to the source for reuse
