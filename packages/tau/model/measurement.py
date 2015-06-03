@@ -196,7 +196,16 @@ class Measurement(ctl.Controller, ctl.ByName):
                    'const': True,
                    'action': args.ParseBooleanAction}
     },
-
+    'io_wrapper': {
+      'type': 'boolean',
+      'defaultsTo': False,
+      'argparse': {'flags': ('--io-wrapper',),
+                   'help': 'Build POSIX IO Wrapper.',
+                   'metavar': 'T/F',
+                   'nargs': '?',
+                   'const': True,
+                   'action': args.ParseBooleanAction}
+    }
   }
 
   _valid_name = set(string.digits + string.letters + '-_.')

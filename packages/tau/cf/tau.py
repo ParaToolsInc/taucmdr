@@ -101,7 +101,6 @@ COMMANDS = [
     'tau_multimerge',
     'tau_pebil_rewrite',
     'tau_reduce',
-    'tau_resolve_addresses.py',
     'tau_rewrite',
     'tau_selectfile',
     'tau_show_libs',
@@ -112,6 +111,8 @@ COMMANDS = [
     'tau_user_setup.sh',
     'trace2profile'
 ]
+#if (arch != "apple") then:
+#  COMMAND.aappend('tau_resolve_addresses.py')
 
 
 def _parseConfig(config, commandline_opts, environment_vars):
@@ -370,8 +371,13 @@ class Tau(object):
     else:
       pthreads_flags = []
 
+    if measurements == 'io_wrapper':
+      io_flags = ['-iowrapper']
+    else:
+      io_flags = []
+
     # Execute configure
-    cmd = ['./configure'] + base_flags + mpi_flags + openmp_flags + pthreads_flags
+    cmd = ['./configure'] + base_flags + mpi_flags + openmp_flags + pthreads_flags +io_flags
     LOGGER.info("Configuring TAU...")
     if util.createSubprocess(cmd, cwd=srcdir, stdout=False):
       raise error.ConfigurationError('TAU configure failed')
