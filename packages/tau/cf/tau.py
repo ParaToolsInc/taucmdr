@@ -274,6 +274,7 @@ class Tau(object):
 
 
     LOGGER.debug("TAU installation at '%s' is valid" % self.tau_prefix)
+    LOGGER.info("TAU installation at '%s' is valid" % self.tau_prefix)
     return True
 
   def install(self, force_reinstall=False):
@@ -440,7 +441,9 @@ class Tau(object):
                           'never': ['-optNoCompInst'],
                           'fallback': ['-optRevert', '-optNoCompInst']},
         'keep_inst_files': {True: ['-optKeepFiles'], False: []},
-        'reuse_inst_files': {True: ['-optReuseFiles'], False: []}
+        'reuse_inst_files': {True: ['-optReuseFiles'], False: []},
+        'io_wrapper': {True: ['--optTrackIO'], False: []},
+        'link_only': {True: ['--optLinkOnly'], False: []}
                            }
     environment_variables = {}
     tauOpts, tauEnv = _parseConfig(self.config, commandline_options, environment_variables)

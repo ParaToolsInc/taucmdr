@@ -182,6 +182,7 @@ def main(argv):
   theTarget.compatibleWith(theApplication)
   theMeasurement.compatibleWith(theTarget)
   theMeasurement.compatibleWith(theApplication)
+  theMeasurement.compatibleWith(theMeasurement)
   theApplication.compatibleWith(theTarget)
   theApplication.compatibleWith(theMeasurement)
 

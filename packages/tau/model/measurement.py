@@ -206,7 +206,21 @@ class Measurement(ctl.Controller, ctl.ByName):
                    'const': True,
                    'action': args.ParseBooleanAction},
       'compat' : {'Target':{'io_wrapper':requisite.Required}}
+    },
+    'link_only': {
+      'type': 'boolean',
+      'defaultsTo': False,
+      'argparse': {'flags': ('--link-only',),
+                   'help':'Link only TAU libraries. No source or compiler instrumentation.',
+                   'metavar': 'T/F',
+                   'nargs': '?',
+                   'const': True,
+                   'action': args.ParseBooleanAction},
+      'compat' : {'Target':{'tau_source':requisite.Required},
+                  'Measurement':{'source_inst':requisite.Violation},
+                  'Measurement':{'compiler_inst':requisite.Violation}}
     }
+
   }
 
   _valid_name = set(string.digits + string.letters + '-_.')
