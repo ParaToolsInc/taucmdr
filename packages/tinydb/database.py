@@ -8,12 +8,14 @@ from tinydb.utils import LRUCache
 
 
 class Element(dict):
+
     """
     Represents an element stored in the database.
 
     This is a transparent proxy for database elements. It exists
     to provide a way to access an element's id via ``el.eid``.
     """
+
     def __init__(self, value=None, eid=None, **kwargs):
         super(Element, self).__init__(**kwargs)
 
@@ -23,6 +25,7 @@ class Element(dict):
 
 
 class TinyDB(object):
+
     """
     The main class of TinyDB.
 
@@ -178,6 +181,7 @@ class TinyDB(object):
 
 
 class Table(object):
+
     """
     Represents a single TinyDB Table.
     """
@@ -455,6 +459,7 @@ class Table(object):
 
 
 class SmartCacheTable(Table):
+
     """
     A Table with a smarter query cache.
 

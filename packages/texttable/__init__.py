@@ -110,12 +110,13 @@ except ImportError:
 if sys.version >= '2.7':
     from functools import reduce
 
+
 def len(iterable):
     """Redefining len here so it will be able to work with non-ASCII characters
     """
     if not isinstance(iterable, str):
         return iterable.__len__()
-    
+
     try:
         if sys.version >= '3.0':
             return len(str)
@@ -126,6 +127,7 @@ def len(iterable):
 
 
 class ArraySizeError(Exception):
+
     """Exception raised when specified rows don't fit the required size
     """
 
@@ -186,7 +188,7 @@ class Texttable:
 
         if len(array) != 4:
             raise ArraySizeError("array should contain 4 characters")
-        array = [ x[:1] for x in [ str(s) for s in array ] ]
+        array = [x[:1] for x in [str(s) for s in array]]
         (self._char_horiz, self._char_vert,
             self._char_corner, self._char_header) = array
 
@@ -300,7 +302,7 @@ class Texttable:
 
         if not hasattr(self, "_dtype"):
             self._dtype = ["a"] * self._row_size
-            
+
         cells = []
         for i, x in enumerate(array):
             cells.append(self._str(i, x))
@@ -315,7 +317,7 @@ class Texttable:
           of the table
         """
 
-        # nb: don't use 'iter' on by-dimensional arrays, to get a 
+        # nb: don't use 'iter' on by-dimensional arrays, to get a
         #     usable code for python 2.1
         if header:
             if hasattr(rows, '__iter__') and hasattr(rows, 'next'):
@@ -394,8 +396,8 @@ class Texttable:
         if not self._row_size:
             self._row_size = len(array)
         elif self._row_size != len(array):
-            raise ArraySizeError("array should contain %d elements" \
-                % self._row_size)
+            raise ArraySizeError("array should contain %d elements"
+                                 % self._row_size)
 
     def _has_vlines(self):
         """Return a boolean, if vlines are required or not
@@ -444,13 +446,13 @@ class Texttable:
             horiz = self._char_header
         # compute cell separator
         s = "%s%s%s" % (horiz, [horiz, self._char_corner][self._has_vlines()],
-            horiz)
+                        horiz)
         # build the line
         l = s.join([horiz * n for n in self._width])
         # add border if needed
         if self._has_border():
             l = "%s%s%s%s%s\n" % (self._char_corner, horiz, l, horiz,
-                self._char_corner)
+                                  self._char_corner)
         else:
             l += "\n"
         return l
@@ -470,7 +472,7 @@ class Texttable:
             for part, i in zip(parts, list(range(1, len(parts) + 1))):
                 length = length + len(part)
                 if i < len(parts):
-                    length = (length/8 + 1) * 8
+                    length = (length / 8 + 1) * 8
             maxi = max(maxi, length)
         return maxi
 
@@ -486,17 +488,17 @@ class Texttable:
             return
         maxi = []
         if self._header:
-            maxi = [ self._len_cell(x) for x in self._header ]
+            maxi = [self._len_cell(x) for x in self._header]
         for row in self._rows:
-            for cell,i in zip(row, list(range(len(row)))):
+            for cell, i in zip(row, list(range(len(row)))):
                 try:
                     maxi[i] = max(maxi[i], self._len_cell(cell))
                 except (TypeError, IndexError):
                     maxi.append(self._len_cell(cell))
         items = len(maxi)
-        length = reduce(lambda x, y: x+y, maxi)
+        length = reduce(lambda x, y: x + y, maxi)
         if self._max_width and length + items * 3 + 1 > self._max_width:
-            maxi = [(self._max_width - items * 3 -1) / items \
+            maxi = [(self._max_width - items * 3 - 1) / items
                     for n in range(items)]
         self._width = maxi
 
@@ -531,8 +533,8 @@ class Texttable:
                 if align == "r":
                     out += "%s " % (fill * space + cell_line)
                 elif align == "c":
-                    out += "%s " % (int(fill/2) * space + cell_line \
-                            + int(fill/2 + fill%2) * space)
+                    out += "%s " % (int(fill / 2) * space + cell_line
+                                    + int(fill / 2 + fill % 2) * space)
                 else:
                     out += "%s " % (cell_line + fill * space)
                 if length < len(line):
@@ -557,7 +559,8 @@ class Texttable:
                     else:
                         c = unicode(c, 'utf')
                 except UnicodeDecodeError as strerror:
-                    sys.stderr.write("UnicodeDecodeError exception for string '%s': %s\n" % (c, strerror))
+                    sys.stderr.write(
+                        "UnicodeDecodeError exception for string '%s': %s\n" % (c, strerror))
                     if sys.version >= '3.0':
                         c = str(c, 'utf', 'replace')
                     else:
@@ -590,15 +593,16 @@ if __name__ == '__main__':
 
     table = Texttable()
     table.set_deco(Texttable.HEADER)
-    table.set_cols_dtype(['t',  # text 
+    table.set_cols_dtype(['t',  # text
                           'f',  # float (decimal)
                           'e',  # float (exponent)
                           'i',  # integer
-                          'a']) # automatic
+                          'a'])  # automatic
     table.set_cols_align(["l", "r", "r", "r", "l"])
     table.add_rows([["text",    "float", "exp", "int", "auto"],
                     ["abcd",    "67",    654,   89,    128.001],
-                    ["efghijk", 67.5434, .654,  89.6,  12800000000000000000000.00023],
+                    ["efghijk", 67.5434, .654,  89.6,
+                        12800000000000000000000.00023],
                     ["lmn",     5e-78,   5e-78, 89.4,  .000000000000128],
                     ["opqrstu", .023,    5e+78, 92.,   12800000000000000000000]])
     print(table.draw())

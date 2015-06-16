@@ -19,6 +19,7 @@ def touch(fname, times=None):
 
 
 class Storage(with_metaclass(ABCMeta, object)):
+
     """
     The abstract base class for all Storages.
 
@@ -64,6 +65,7 @@ class Storage(with_metaclass(ABCMeta, object)):
 
 
 class JSONStorage(Storage):
+
     """
     Store the data in a JSON file.
     """
@@ -101,6 +103,7 @@ class JSONStorage(Storage):
 
 
 class MemoryStorage(Storage):
+
     """
     Store the data as JSON in memory.
     """

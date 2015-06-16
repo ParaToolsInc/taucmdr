@@ -5,6 +5,7 @@ middlewares and implementations.
 
 
 class Middleware(object):
+
     """
     The base class for all Middlewares.
 
@@ -73,6 +74,7 @@ class Middleware(object):
 
 
 class CachingMiddleware(Middleware):
+
     """
     Add some caching to TinyDB.
 

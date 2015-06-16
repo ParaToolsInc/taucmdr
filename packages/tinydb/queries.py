@@ -29,6 +29,7 @@ def is_sequence(obj):
 
 
 class AndOrMixin(object):
+
     """
     A mixin providing methods calls ``&`` and ``|``.
 
@@ -66,6 +67,7 @@ class AndOrMixin(object):
 
 
 class Query(AndOrMixin):
+
     """
     Provides methods to do tests on dict fields.
 
@@ -382,6 +384,7 @@ where = Query
 
 
 class QueryNot(AndOrMixin):
+
     """
     Negates a query.
 
@@ -407,6 +410,7 @@ class QueryNot(AndOrMixin):
 
 
 class QueryOr(AndOrMixin):
+
     """
     Combines this query and another with logical or.
 
@@ -429,6 +433,7 @@ class QueryOr(AndOrMixin):
 
 
 class QueryAnd(AndOrMixin):
+
     """
     Combines this query and another with logical and.
 
@@ -451,6 +456,7 @@ class QueryAnd(AndOrMixin):
 
 
 class QueryRegex(AndOrMixin):
+
     """
     Run a regex test against a dict value.
 
@@ -485,6 +491,7 @@ class QueryRegex(AndOrMixin):
 
 
 class QueryCustom(AndOrMixin):
+
     """
     Run a user-defined test function against a dict value.
 
@@ -510,6 +517,7 @@ class QueryCustom(AndOrMixin):
 
 
 class QueryHas(Query):
+
     """
     Run a query on a nested dict.
 
