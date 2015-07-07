@@ -212,17 +212,21 @@ class Target(ctl.Controller, ctl.ByName):
                          'metavar': '(<path>|<url>|download|False)',
                          'action': args.ParsePackagePathAction}
         },
-        'papi_source': {
+        'score-p_source': {
             'type': 'string',
             'defaultsTo': 'False',
-            'argparse': {'flags': ('--with-papi',),
+            'argparse': {'flags': ('--with-score-p',),
                          'group': 'software package',
-                         'help': 'URL or path to a PAPI installation or archive file',
+                         'help': 'URL or path to a Score-P installation or archive file',
                          'metavar': '(<path>|<url>|download|False)',
                          'action': args.ParsePackagePathAction}
         },
         'iowrapper': {
-            'defaultsTo': 'True'}
+            'defaultsTo': 'True'
+        },
+        'mic-linux':{
+            'defaultsTo': 'False'
+        }
     }
 
     _valid_name = set(string.digits + string.letters + '-_.')

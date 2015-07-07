@@ -52,7 +52,7 @@ import environment as env
 
 LOGGER = logger.getLogger(__name__)
 
-DEFAULT_SOURCE = 'http://tau.uoregon.edu/pdt.tgz'
+DEFAULT_SOURCE = 'http://www.vi-hps.org/upload/packages/scorep/scorep-1.4.2.tar.gz'
 
 
 def _detectDefaultHostOS():
@@ -65,7 +65,7 @@ DEFAULT_HOST_OS = _detectDefaultHostOS()
 
 def _detectDefaultHostArch():
     """
-    Use PDT's archfind script to detect the host target architecture
+    Use score-p's archfind script to detect the host target architecture
     """
     here = os.path.dirname(os.path.realpath(__file__))
     cmd = os.path.join(os.path.dirname(here), 'util', 'archfind', 'archfind')
@@ -97,11 +97,11 @@ def _getFortranConfigureFlag(compiler):
 
 def verifyInstallation(prefix, arch, cc=None, cxx=None, fortran=None):
     """
-    Returns True if there is a working PDT installation at 'prefix' or raisestau.
+    Returns True if there is a working score-p installation at 'prefix' or raisestau.
     a error.ConfigurationError describing why that installation is broken.
     """
     LOGGER.debug(
-        "Checking PDT installation at '%s' targeting arch '%s'" % (prefix, arch))
+        "Checking score-p installation at '%s' targeting arch '%s'" % (prefix, arch))
 
     if not os.path.exists(prefix):
         raise error.ConfigurationError("'%s' does not exist" % prefix)
@@ -137,7 +137,7 @@ def verifyInstallation(prefix, arch, cc=None, cxx=None, fortran=None):
 #    raise error.ConfigurationError("'%s' does not exist" % path)
 #
 #  LOGGER.debug("tauDB installation at '%s' is valid" % taudb_prefix)
-    LOGGER.debug("PDT installation at '%s' is valid" % prefix)
+    LOGGER.debug("score-p installation at '%s' is valid" % prefix)
     return True
 
 
@@ -147,11 +147,11 @@ def initialize(prefix, src, force_reinitialize=False,
     """
     TODO: Docs
     """
-    pdt_prefix = os.path.join(prefix, 'pdt')
+    score-p_prefix = os.path.join(prefix, 'scorep')
     if not arch:
         arch = detectDefaultHostArch()
-    LOGGER.debug("Initializing pdt at '%s' from '%s' with arch=%s" %
-                 (pdt_prefix, src, arch))
+    LOGGER.debug("Initializing score-p at '%s' from '%s' with arch=%s" %
+                 (score-p_prefix, src, arch))
 
     # Check compilers
     cc = None
@@ -175,7 +175,7 @@ def initialize(prefix, src, force_reinitialize=False,
         LOGGER.debug('Found CXX=%s' % cxx)
         for comp in family['FC']:
             if util.which(comp.command):
-                # pdt's configure script has a goofy way of specifying the
+                # score-p's configure script has a goofy way of specifying the
                 # fortran compiler
                 fortran = _getFortranConfigureFlag(comp)
         LOGGER.debug('Found FC=%s' % fortran)
@@ -183,7 +183,7 @@ def initialize(prefix, src, force_reinitialize=False,
     # Check if the installation is already initialized
     try:
         verifyInstallation(
-            pdt_prefix, arch=arch, cc=cc, cxx=cxx, fortran=fortran)
+            score-p_prefix, arch=arch, cc=cc, cxx=cxx, fortran=fortran)
     except error.ConfigurationError, err:
         LOGGER.debug("Invalid installation: %s" % err)
         pass
@@ -194,7 +194,7 @@ def initialize(prefix, src, force_reinitialize=False,
     # Control build output
     with logger.logging_streams():
 
-        # Download, unpack, or copy pdt source code
+        # Download, unpack, or copy score-p source code
         if src.lower() == 'download':
             src = DEFAULT_SOURCE
         src_prefix = os.path.join(prefix, 'src')
@@ -212,24 +212,26 @@ def initialize(prefix, src, force_reinitialize=False,
                 pass
 
         # Initialize installation with a minimal configuration
-        prefix_flag = '-prefix=%s' % pdt_prefix
-        arch_flag = '-arch=%s' % arch if arch else ''
-        cmd = ['./configure', prefix_flag, arch_flag]
+        prefix_flag = '-prefix=%s' % score-p_prefix
+        #arch_flag = '-arch=%s' % arch if arch else ''
+        mic_flag = '--enable-platform-mic' if mic else ''
+        mpi_flag = '--with-shmem=%s ' % mpi if mpi else ''
+        cmd = ['./configure', prefix_flag, mic_flag, mpi_flag]
         LOGGER.debug('Creating configure subprocess in %r: %r' % (srcdir, cmd))
-        LOGGER.info('Configuring PDT...\n    %s' % ' '.join(cmd))
+        LOGGER.info('Configuring score-p...\n    %s' % ' '.join(cmd))
         proc = subprocess.Popen(
             cmd, cwd=srcdir, stdout=sys.stdout, stderr=sys.stderr)
         if proc.wait():
-            raise error.ConfigurationError('pdt configure failed')
+            raise error.ConfigurationError('score-p configure failed')
 
         # Execute make
         cmd = ['make', '-j4', 'install']
         LOGGER.debug('Creating make subprocess in %r: %r' % (srcdir, cmd))
-        LOGGER.info('Compiling PDT...\n    %s' % ' '.join(cmd))
+        LOGGER.info('Compiling score-p...\n    %s' % ' '.join(cmd))
         proc = subprocess.Popen(
             cmd, cwd=srcdir, stdout=sys.stdout, stderr=sys.stderr)
         if proc.wait():
-            raise error.ConfigurationError('pdt compilation failed.')
+            raise error.ConfigurationError('score-p compilation failed.')
 
         # Leave source, we'll probably need it again soon
         LOGGER.debug('Preserving %r for future use' % srcdir)
@@ -243,9 +245,9 @@ def initialize(prefix, src, force_reinitialize=False,
 #    if proc.wait():
 #      raise error.ConfigurationError('tauDB configure failed.')
 
-        # Add pdt to PATH
-        env.PATH.append(os.path.join(pdt_prefix, arch, 'bin'))
-        LOGGER.info('pdt configured successfully')
+        # Add score-p to PATH
+        env.PATH.append(os.path.join(score-p_prefix, arch, 'bin'))
+        LOGGER.info('score-p configured successfully')
 
 
 # System modules
@@ -264,29 +266,29 @@ def initialize(prefix, src, force_reinitialize=False,
 #LOGGER = logger.getLogger(__name__)
 #
 #
-# class PdtPackage(Package):
+# class score-pPackage(Package):
 #    """
 #    Program Database Toolkit package
 #    """
 #
-#    SOURCES = ['http://tau.uoregon.edu/pdt.tgz']
+#    SOURCES = ['http://tau.uoregon.edu/score-p.tgz']
 #
 #    def __init__(self, project):
-#        super(PdtPackage, self).__init__(project)
+#        super(score-pPackage, self).__init__(project)
 #        self.system_prefix = os.path.join(getRegistry().system.prefix,
-#                                          self.project.target_prefix, 'pdt')
+#                                          self.project.target_prefix, 'score-p')
 #        self.user_prefix =  os.path.join(getRegistry().user.prefix,
-#                                         self.project.target_prefix, 'pdt')
+#                                         self.project.target_prefix, 'score-p')
 #
 #    def install(self, stdout=sys.stdout, stderr=sys.stderr):
 #        config = self.project.config
-#        pdt = config['pdt']
-#        if not pdt:
-#            raise InternalError('Tried to install pdt when (not config["pdt"])')
+#        score-p = config['score-p']
+#        if not score-p:
+#            raise InternalError('Tried to install score-p when (not config["score-p"])')
 #
 #        for loc in [self.system_prefix, self.user_prefix]:
 #            if os.path.isdir(loc):
-#                LOGGER.info("Using PDT installation found at %s" % loc)
+#                LOGGER.info("Using score-p installation found at %s" % loc)
 #                self.prefix = loc
 #                return
 #
@@ -298,68 +300,68 @@ def initialize(prefix, src, force_reinitialize=False,
 #        else:
 #            raise ConfigurationError("User-level TAU installation at %r is not writable" % self.user_prefix,
 #                                     "Check the file permissions and try again")
-#        LOGGER.info('Installing PDT at %r' % self.prefix)
+#        LOGGER.info('Installing score-p at %r' % self.prefix)
 #
-#        if pdt.lower() == 'download':
+#        if score-p.lower() == 'download':
 #            src = self.SOURCES
-#        elif os.path.isdir(pdt):
-#            LOGGER.debug('Assuming user-supplied PDT at %r is properly installed' % pdt)
+#        elif os.path.isdir(score-p):
+#            LOGGER.debug('Assuming user-supplied score-p at %r is properly installed' % score-p)
 #            return
-#        elif os.path.isfile(pdt):
-#            src = ['file://'+pdt]
-#            LOGGER.debug('Will build PDT from user-specified file %r' % pdt)
+#        elif os.path.isfile(score-p):
+#            src = ['file://'+score-p]
+#            LOGGER.debug('Will build score-p from user-specified file %r' % score-p)
 #        else:
-#            raise PackageError('Invalid PDT directory %r' % pdt,
+#            raise PackageError('Invalid score-p directory %r' % score-p,
 #                               'Verify that the directory exists and that you have correct permissions to access it.')
 #
 #        # Configure the source code for this configuration
 #        srcdir = self._getSource(src, stdout, stderr)
 #        cmd = self._getConfigureCommand()
 #        LOGGER.debug('Creating configure subprocess in %r: %r' % (srcdir, cmd))
-#        LOGGER.info('Configuring PDT...\n%s' % ' '.join(cmd))
+#        LOGGER.info('Configuring score-p...\n%s' % ' '.join(cmd))
 #        proc = subprocess.Popen(cmd, cwd=srcdir, stdout=stdout, stderr=stderr)
 #        if proc.wait():
 #            shutil.rmtree(self.prefix, ignore_errors=True)
-#            raise PackageError('PDT configure failed.')
+#            raise PackageError('score-p configure failed.')
 #
 #        # Execute make
 #        cmd = ['make', '-j']
 #        LOGGER.debug('Creating make subprocess in %r: %r' % (srcdir, cmd))
-#        LOGGER.info('Compiling PDT...\n%s' % ' '.join(cmd))
+#        LOGGER.info('Compiling score-p...\n%s' % ' '.join(cmd))
 #        proc = subprocess.Popen(cmd, cwd=srcdir, stdout=stdout, stderr=stderr)
 #        if proc.wait():
 #            shutil.rmtree(self.prefix, ignore_errors=True)
-#            raise PackageError('PDT compilation failed.')
+#            raise PackageError('score-p compilation failed.')
 #
 #        # Execute make install
 #        cmd = ['make', 'install']
 #        LOGGER.debug('Creating make subprocess in %r: %r' % (srcdir, cmd))
-#        LOGGER.info('Installing PDT...\n%s' % ' '.join(cmd))
+#        LOGGER.info('Installing score-p...\n%s' % ' '.join(cmd))
 #        proc = subprocess.Popen(cmd, cwd=srcdir, stdout=stdout, stderr=stderr)
 #        if proc.wait():
 #            shutil.rmtree(self.prefix, ignore_errors=True)
-#            raise PackageError('PDT installation failed.')
+#            raise PackageError('score-p installation failed.')
 #
 #        # Cleanup
 #        LOGGER.debug('Recursively deleting %r' % srcdir)
 #        shutil.rmtree(srcdir)
-#        LOGGER.info('PDT installation complete.')
+#        LOGGER.info('score-p installation complete.')
 #
 #    def uninstall(self, stdout=sys.stdout, stderr=sys.stderr):
 #        LOGGER.debug('Recursively deleting %r' % self.prefix)
 #        shutil.rmtree(self.prefix)
-#        LOGGER.info('PDT uninstalled.')
+#        LOGGER.info('score-p uninstalled.')
 #
 #    def _getConfigureCommand(self):
 #        """
-#        Returns the command that will configure PDT
+#        Returns the command that will configure score-p
 #        """
 #        # TODO: Support other compilers
 #        return ['./configure', '-GNU', '-prefix=%s' % self.prefix]
 #
 #    def _getSource(self, sources, stdout, stderr):
 #        """
-#        Downloads or copies PDT source code
+#        Downloads or copies score-p source code
 #        """
 #        source_prefix = os.path.join(self.project.registry.prefix, 'src')
 #        for src in sources:
