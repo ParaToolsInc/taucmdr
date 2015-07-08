@@ -212,6 +212,15 @@ class Target(ctl.Controller, ctl.ByName):
                          'metavar': '(<path>|<url>|download|False)',
                          'action': args.ParsePackagePathAction}
         },
+        'papi_source': {
+            'type': 'string',
+            'defaultsTo': 'False',
+            'argparse': {'flags': ('--with-papi',),
+                         'group': 'software package',
+                         'help': 'URL or path to a PAPI installation or archive file',
+                         'metavar': '(<path>|<url>|download|False)',
+                         'action': args.ParsePackagePathAction}
+        },
         'score-p_source': {
             'type': 'string',
             'defaultsTo': 'False',

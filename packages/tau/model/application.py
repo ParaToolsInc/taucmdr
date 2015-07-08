@@ -111,6 +111,16 @@ class Application(ctl.Controller, ctl.ByName):
                          'metavar': 'yes/no',
                          'nargs': '?',
                          'const': True,
+                         'action': args.ParseBooleanAction},
+        },                          
+        'mpc': {
+            'type': 'boolean',
+            'defaultsTo': False,
+            'argparse': {'flags': ('--mpc',),
+                         'help': 'application uses MPC',
+                         'metavar': 'yes/no',
+                         'nargs': '?',
+                         'const': True,
                          'action': args.ParseBooleanAction}
         }
     }

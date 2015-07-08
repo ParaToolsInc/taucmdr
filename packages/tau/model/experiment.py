@@ -50,7 +50,7 @@ import util
 import environment
 import requisite
 import cf.tau
-import cf.scorep
+#import cf.scorep
 import cf.pdt
 import cf.bfd
 import cf.papi
