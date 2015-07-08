@@ -234,7 +234,12 @@ class Target(ctl.Controller, ctl.ByName):
             'defaultsTo': 'True'
         },
         'mic-linux':{
-            'defaultsTo': 'False'
+            'defaultsTo': 'False',
+            'argparse': {'flags': ('--with-mic',),
+            'group': 'software package',
+            'help': 'Target will use MICs',
+            'metavar': 'yes/no',
+            'action': args.ParseBooleanAction}
         }
     }
 
