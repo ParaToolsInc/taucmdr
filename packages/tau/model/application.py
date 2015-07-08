@@ -126,7 +126,7 @@ class Application(ctl.Controller, ctl.ByName):
         'mic-linux': {
             'type': 'boolean',
             'defaultsTo': False,
-            'argparse': {'flags': ('--with-mic',),
+            'argparse': {'flags': ('--mic',),
                          'help': 'application uses MICs',
                          'metavar': 'yes/no',
                          'nargs': '?',
