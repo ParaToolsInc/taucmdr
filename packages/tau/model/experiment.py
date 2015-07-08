@@ -244,6 +244,7 @@ class Experiment(controller.Controller):
                          shmem_support=application['shmem'],
                          shmem_measurements=None,  # TODO
                          mpc_support=application['mpc'],
+                         mic_support=application['mic-linux'],
                          mpc_measurements=None,  # TODO
                          memory_support=None,  # TODO
                          memory_measurements=None,  # TODO

@@ -222,6 +222,9 @@ class Tau(object):
             tags.append('shmem')
         if config['mpc_support']:
             tags.append('mpc')
+        if config['mic_support']:
+            tags.append('mic')
+
 
         if self.papi:
             tags.append('papi')
@@ -389,6 +392,9 @@ class Tau(object):
             pthreads_flags = ['-pthread']
         else:
             pthreads_flags = []
+        if self.config['mic_support']:
+            base_flags = base_flags + '-arch=mic_linux'
+     # we probably should have checks for this but no good way to recover from a configure trying to use the MICs with none on the system
 
         # Execute configure
         baseCmd = ['./configure'] + base_flags + \
