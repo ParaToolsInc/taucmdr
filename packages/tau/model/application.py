@@ -131,7 +131,8 @@ class Application(ctl.Controller, ctl.ByName):
                          'metavar': 'yes/no',
                          'nargs': '?',
                          'const': True,
-                         'action': args.ParseBooleanAction}
+                         'action': args.ParseBooleanAction},
+            'compat': {'Target': {'mic-linux': requisite.Required}}
       }
     }
 
