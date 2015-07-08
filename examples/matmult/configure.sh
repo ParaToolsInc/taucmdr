@@ -29,14 +29,24 @@ fi
 
 #if on srinath systems:
 if $sv_sys; then
-  echo "** making gcc5 a target with now bfd and libunwind"
+  echo "** making gcc5 a target with no bfd and libunwind"
   tau target create gcc5 --compilers=GNU --with-bfd=False --with-libunwind=False
+fi
+
+if $has_mic; then
+  echo "** making a mic target with no bfd and libunwind"
+  tau target create intel-mic --compilers=Intel --with-bfd=False --with-libunwind=False --with-mic=True
 fi
 
 # Example applications
 tau application create "ex-matmult-serial"
+tau application create "ex-matmult-mpi" --mpi
 tau application create "ex-matmult-openmp" --openmp
 tau application create "ex-matmult-openmp-mpi" --openmp --mpi
+
+if $has_mic; then
+  tau application create "ex-matmult-mic-mpi" --mic --mpi
+fi
 
 # Example measurements
 tau measurement create "ex-profile"
@@ -55,6 +65,11 @@ if $sv_sys; then
   echo "** making gcc target part of project"
   tau project edit ex-mm --add-targets gcc5
   tau project edit ex-mm --add-measurement p-keep
+fi
+
+if $has_mic; then
+  echo "** making a mic project"
+  tau project create ex-mic-matmult intel-mic ex-matmult-mic-mpi ex-profile
 fi
 
 tau dashboard

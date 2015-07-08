@@ -393,7 +393,7 @@ class Tau(object):
         else:
             pthreads_flags = []
         if self.config['mic_support']:
-            base_flags = base_flags + '-arch=mic_linux'
+            base_flags = base_flags + ['-arch=mic_linux']
      # we probably should have checks for this but no good way to recover from a configure trying to use the MICs with none on the system
 
         # Execute configure
