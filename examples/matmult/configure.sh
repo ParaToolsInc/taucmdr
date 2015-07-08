@@ -21,7 +21,7 @@ then
 fi
 
 has_mic=false
-if [[ $MIC_ENV_PREFIX == *"MIC"*]]
+if [[ $MIC_ENV_PREFIX == *"MIC"* ]]
 then
   has_mic=true;
   echo "This machine has MICs."
