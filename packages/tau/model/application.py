@@ -112,7 +112,7 @@ class Application(ctl.Controller, ctl.ByName):
                          'nargs': '?',
                          'const': True,
                          'action': args.ParseBooleanAction},
-        },                          
+        },
         'mpc': {
             'type': 'boolean',
             'defaultsTo': False,
@@ -122,7 +122,17 @@ class Application(ctl.Controller, ctl.ByName):
                          'nargs': '?',
                          'const': True,
                          'action': args.ParseBooleanAction}
-        }
+        },
+        'mic-linux': {
+            'type': 'boolean',
+            'defaultsTo': False,
+            'argparse': {'flags': ('--with-mic',),
+                         'help': 'application uses MICs',
+                         'metavar': 'yes/no',
+                         'nargs': '?',
+                         'const': True,
+                         'action': args.ParseBooleanAction}
+      }
     }
 
     _valid_name = set(string.digits + string.letters + '-_.')
