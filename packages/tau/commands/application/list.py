@@ -114,6 +114,7 @@ def main(argv):
                 ('Pthreads', 'c', 'pthreads'),
                 ('MPI', 'c', 'mpi'),
                 ('CUDA', 'c', 'cuda'),
+                ('MIC','c','mic-linux'),
                 ('SHMEM', 'c', 'shmem'),
                 ('MPC', 'c', 'mpc'),
                 ('In Projects', 'l', None)]
