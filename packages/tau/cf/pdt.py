@@ -104,91 +104,90 @@ COMMANDS = {None: ['cparse',
 
 class Pdt(object):
 
-  """
-  Encapsulates a PDT installation
-  """
-
-  def __init__(self, prefix, cxx, src, arch):
-    self.src = src
-    if src.lower() == 'download':
-      try:
-        self.src = DEFAULT_SOURCE[arch]
-      except KeyError:
-        self.src = DEFAULT_SOURCE[None]
-    self.prefix = prefix
-    self.cxx = cxx
-    self.arch = arch
-    if os.path.isdir(src):
-      self.pdt_prefix = src
-    else:
-      compiler_prefix = str(cxx.eid) if cxx else 'unknown'
-      self.pdt_prefix = os.path.join(prefix, 'pdt', compiler_prefix)
-    self.src_prefix = os.path.join(prefix, 'src')
-    self.include_path = os.path.join(self.pdt_prefix, 'include')
-    self.arch_path = os.path.join(self.pdt_prefix, arch)
-    self.bin_path = os.path.join(self.arch_path, 'bin')
-    self.lib_path = os.path.join(self.arch_path, 'lib')
-
-  def verify(self):
     """
-    Returns true if if there is a working PDT installation at `prefix` with a
-    directory named `arch` containing `bin` and `lib` directories or
-    raises a ConfigurationError describing why that installation is broken.
+    Encapsulates a PDT installation
     """
-    LOGGER.debug("Checking PDT installation at '%s' targeting arch '%s'" % (
-        self.pdt_prefix, self.arch))
-    if not os.path.exists(self.pdt_prefix):
-      raise error.ConfigurationError(
-          "'%s' does not exist" % self.pdt_prefix)
 
-    # Check for all commands
-    try:
-      commands = COMMANDS[self.arch]
-      LOGGER.debug("Checking %s PDT commands")
-    except KeyError:
-      commands = COMMANDS[None]
-      LOGGER.debug("Checking default PDT commands")
-    for cmd in commands:
-      path = os.path.join(self.bin_path, cmd)
-      if not os.path.exists(path):
-        raise error.ConfigurationError("'%s' is missing" % path)
-      if not os.access(path, os.X_OK):
-        raise error.ConfigurationError(
-            "'%s' exists but is not executable" % path)
+    def __init__(self, prefix, cxx, src, arch):
+        self.src = src
+        if src.lower() == 'download':
+            try:
+                self.src = DEFAULT_SOURCE[arch]
+            except KeyError:
+                self.src = DEFAULT_SOURCE[None]
+        self.prefix = prefix
+        self.cxx = cxx
+        self.arch = arch
+        if os.path.isdir(src):
+            self.pdt_prefix = src
+        else:
+            compiler_prefix = str(cxx.eid) if cxx else 'unknown'
+            self.pdt_prefix = os.path.join(prefix, 'pdt', compiler_prefix)
+        self.src_prefix = os.path.join(prefix, 'src')
+        self.include_path = os.path.join(self.pdt_prefix, 'include')
+        self.arch_path = os.path.join(self.pdt_prefix, arch)
+        self.bin_path = os.path.join(self.arch_path, 'bin')
+        self.lib_path = os.path.join(self.arch_path, 'lib')
 
-    LOGGER.debug("PDT installation at '%s' is valid" % self.pdt_prefix)
-    LOGGER.info("PDT installation at '%s' is valid" % self.pdt_prefix)
-    return True
+    def verify(self):
+        """
+        Returns true if if there is a working PDT installation at `prefix` with a
+        directory named `arch` containing `bin` and `lib` directories or
+        raises a ConfigurationError describing why that installation is broken.
+        """
+        LOGGER.debug("Checking PDT installation at '%s' targeting arch '%s'" % (
+            self.pdt_prefix, self.arch))
+        if not os.path.exists(self.pdt_prefix):
+            raise error.ConfigurationError(
+                "'%s' does not exist" % self.pdt_prefix)
 
-  def install(self, force_reinstall=False):
-    """
-    TODO: Docs
-    """
-    LOGGER.debug("Initializing PDT at '%s' from '%s' with arch=%s" %
-                 (self.pdt_prefix, self.src, self.arch))
+        # Check for all commands
+        try:
+            commands = COMMANDS[self.arch]
+            LOGGER.debug("Checking %s PDT commands")
+        except KeyError:
+            commands = COMMANDS[None]
+            LOGGER.debug("Checking default PDT commands")
+        for cmd in commands:
+            path = os.path.join(self.bin_path, cmd)
+            if not os.path.exists(path):
+                raise error.ConfigurationError("'%s' is missing" % path)
+            if not os.access(path, os.X_OK):
+                raise error.ConfigurationError(
+                    "'%s' exists but is not executable" % path)
 
-    # Check if the installation is already initialized
-    if not force_reinstall:
-      try:
-        return self.verify()
-      except error.ConfigurationError as err:
-        LOGGER.debug(err)
-    LOGGER.info('Starting PDT installation')
+        LOGGER.debug("PDT installation at '%s' is valid" % self.pdt_prefix)
+        LOGGER.info("PDT installation at '%s' is valid" % self.pdt_prefix)
+        return True
 
-    # Download, unpack, or copy PDT source code
-    dst = os.path.join(self.src_prefix, os.path.basename(self.src))
-    try:
-      util.download(self.src, dst)
-      srcdir = util.extract(dst, self.src_prefix)
-    except IOError as err:
-      raise error.ConfigurationError(
-          "Cannot acquire source file '%s': %s" %
-          (self.src, err), "Check that the file is accessable")
-    finally:
-      try:
-        os.remove(dst)
-      except:
-        pass
+    def install(self, force_reinstall=False):
+        """
+        TODO: Docs
+        """
+        LOGGER.debug("Initializing PDT at '%s' from '%s' with arch=%s" %
+                     (self.pdt_prefix, self.src, self.arch))
+
+        # Check if the installation is already initialized
+        if not force_reinstall:
+            try:
+                return self.verify()
+            except error.ConfigurationError, err:
+                LOGGER.debug(err)
+        LOGGER.info('Starting PDT installation')
+
+        # Download, unpack, or copy PDT source code
+        dst = os.path.join(self.src_prefix, os.path.basename(self.src))
+        try:
+            util.download(self.src, dst)
+            srcdir = util.extract(dst, self.src_prefix)
+        except IOError as err:
+            raise error.ConfigurationError("Cannot acquire source file '%s': %s" % (self.src, err),
+                                           "Check that the file is accessable")
+        finally:
+            try:
+                os.remove(dst)
+            except:
+                pass
 
         if not self.cxx:
             compiler_flag = ''
@@ -203,57 +202,53 @@ class Pdt(object):
                 LOGGER.warning(
                     "PDT has no compiler flag for '%s'.  Using defaults." % self.cxx['family'])
 
-#    compiler_flag = '-GNU'
+        try:
+            # Configure
+            prefix_flag = '-prefix=%s' % self.pdt_prefix
+            cmd = ['./configure', prefix_flag, compiler_flag]
+            LOGGER.info("Configuring PDT...")
+            if util.createSubprocess(cmd, cwd=srcdir, stdout=False):
+                raise error.SoftwarePackageError('PDT configure failed')
 
-    try:
+            # Build
+            cmd = ['make', '-j4']
+            LOGGER.info("Compiling PDT...")
+            if util.createSubprocess(cmd, cwd=srcdir, stdout=False):
+                raise error.SoftwarePackageError('PDT compilation failed.')
 
-#    Configure
+            # Install
+            cmd = ['make', 'install']
+            LOGGER.info("Installing PDT...")
+            if util.createSubprocess(cmd, cwd=srcdir, stdout=False):
+                raise error.SoftwarePackageError('PDT installation failed.')
+        except:
+            LOGGER.info("PDT installation failed, cleaning up")
+            shutil.rmtree(self.pdt_prefix, ignore_errors=True)
+        finally:
+            # Always clean up PDT source
+            LOGGER.debug('Deleting %r' % srcdir)
+            shutil.rmtree(srcdir, ignore_errors=True)
 
-      prefix_flag = '-prefix=%s' % self.pdt_prefix
-      cmd = ['./configure', prefix_flag, compiler_flag]
-      LOGGER.info("Configuring PDT...")
-      if util.createSubprocess(cmd, cwd=srcdir, stdout=False):
-        raise error.SoftwarePackageError('PDT configure failed')
+        # Verify the new installation
+        try:
+            retval = self.verify()
+            LOGGER.info('PDT installation complete')
+        except Exception as err:
+            # Installation failed, clean up any failed install files
+            #shutil.rmtree(self.pdt_prefix, ignore_errors=True)
+            raise error.SoftwarePackageError(
+                'PDT installation failed: %s' % err)
+        else:
+            return retval
 
-      # Build
-      cmd = ['make', '-j4']
-      LOGGER.info("Compiling PDT...")
-      if util.createSubprocess(cmd, cwd=srcdir, stdout=False):
-        raise error.SoftwarePackageError('PDT compilation failed.')
+    def applyCompiletimeConfig(self, opts, env):
+        """
+        TODO: Docs
+        """
+        env['PATH'] = os.pathsep.join([self.bin_path, env.get('PATH')])
 
-      # Install
-      cmd = ['make', 'install']
-      LOGGER.info("Installing PDT...")
-      if util.createSubprocess(cmd, cwd=srcdir, stdout=False):
-        raise error.SoftwarePackageError('PDT installation failed.')
-    except:
-      LOGGER.info("PDT installation failed, cleaning up")
-      shutil.rmtree(self.pdt_prefix, ignore_errors=True)
-    finally:
-      # Always clean up PDT source
-      LOGGER.debug('Deleting %r' % srcdir)
-      shutil.rmtree(srcdir, ignore_errors=True)
-
-    # Verify the new installation
-    try:
-      retval = self.verify()
-      LOGGER.info('PDT installation complete')
-    except Exception as err:
-      # Installation failed, clean up any failed install files
-      #shutil.rmtree(self.pdt_prefix, ignore_errors=True)
-      raise error.SoftwarePackageError(
-          'PDT installation failed: %s' % err)
-    else:
-      return retval
-
-  def applyCompiletimeConfig(self, opts, env):
-    """
-    TODO: Docs
-    """
-    env['PATH'] = os.pathsep.join([self.bin_path, env.get('PATH')])
-
-  def getRuntimeConfig(self, opts, env):
-    """
-    TODO: Docs
-    """
-    pass
+    def getRuntimeConfig(self, opts, env):
+        """
+        TODO: Docs
+        """
+        pass
