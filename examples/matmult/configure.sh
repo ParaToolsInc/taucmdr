@@ -35,7 +35,7 @@ fi
 
 if $has_mic; then
   echo "** making a mic target with no bfd and libunwind"
-  tau target create intel-mic --compilers=Intel --with-bfd=False --with-libunwind=False --with-mic=True
+  tau target create intel-mic --compilers=Intel --with-bfd=False --with-libunwind=False --with-mic=True --with-pdt=Download
 fi
 
 # Example applications
