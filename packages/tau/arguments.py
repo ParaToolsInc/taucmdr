@@ -81,7 +81,7 @@ class ArgparseHelpFormatter(argparse.RawDescriptionHelpFormatter):
         if choices:
             helpstr += '\n%s- %s: (%s)' % (indent,
                                            action.metavar, ', '.join(choices))
-        if '%(default)' not in action.helpstr:
+        if '%(default)' not in action.help:
             if action.default is not argparse.SUPPRESS:
                 defaulting_nargs = [argparse.OPTIONAL, argparse.ZERO_OR_MORE]
                 if action.option_strings or action.nargs in defaulting_nargs:

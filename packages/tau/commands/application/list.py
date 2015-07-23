@@ -39,15 +39,15 @@ from texttable import Texttable
 from pprint import pformat
 
 from tau import EXIT_SUCCESS
-from tau import logger, arguments, environment
+from tau import logger, arguments, environment, commands
 from tau.model.application import Application
 
 
 LOGGER = logger.getLogger(__name__)
 
-SHORT_DESCRIPTION = "List application configurations or show configuration details."
+COMMAND = commands.get_command(__name__)
 
-COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
+SHORT_DESCRIPTION = "List application configurations or show configuration details."
 
 USAGE = """
   %(command)s [application_name] [application_name] ... [arguments]

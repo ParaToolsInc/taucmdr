@@ -36,7 +36,7 @@
 #"""
 
 from tau import EXIT_SUCCESS
-from tau import logger, error, arguments
+from tau import logger, error, arguments, commands
 from tau.model.project import Project
 from tau.model.target import Target
 from tau.model.application import Application
@@ -46,9 +46,9 @@ from tau.model.experiment import Experiment
 
 LOGGER = logger.getLogger(__name__)
 
-SHORT_DESCRIPTION = "Select project components for the next experiment."
+COMMAND = commands.get_command(__name__)
 
-COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
+SHORT_DESCRIPTION = "Select project components for the next experiment."
 
 USAGE = """
   %(command)s project_name [target] [application] [measurement] [arguments]

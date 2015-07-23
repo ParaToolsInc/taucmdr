@@ -42,8 +42,7 @@ from tau.model.compiler import KNOWN_COMPILERS
 
 LOGGER = logger.getLogger(__name__)
 
-_name_parts = __name__.split('.')[1:]
-COMMAND = ' '.join(['tau'] + _name_parts)
+COMMAND = commands.get_command(__name__)
 
 
 def _compilersHelp():

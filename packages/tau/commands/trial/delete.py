@@ -42,9 +42,9 @@ from tau.model.trial import Trial
 
 LOGGER = logger.getLogger(__name__)
 
-SHORT_DESCRIPTION = "Delete experiment trials."
+COMMAND = commands.get_command(__name__)
 
-COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
+SHORT_DESCRIPTION = "Delete experiment trials."
 
 USAGE = """
   %(command)s <trial_number> [arguments]

@@ -40,8 +40,7 @@ from tau import logger, commands, arguments
 
 LOGGER = logger.getLogger(__name__)
 
-_name_parts = __name__.split('.')[1:]
-COMMAND = ' '.join(['tau'] + _name_parts)
+COMMAND = commands.get_command(__name__)
 
 SHORT_DESCRIPTION = "Create and manage experiment trials."
 
@@ -91,4 +90,4 @@ def main(argv):
 
     subcommand = args.subcommand
     options = args.options
-    return commands.executeCommand(_name_parts + [subcommand], options)
+    return commands.executeCommand([subcommand], options, __name__)

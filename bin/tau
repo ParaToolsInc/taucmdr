@@ -41,8 +41,10 @@ if ! which python >/dev/null 2>&1 ; then
   echo "ERROR: 'python' not found in PATH"
   exit 100
 fi
+HERE="$( cd "$(dirname "${BASH_SOURCE[0]}")" && pwd )"
 
-export __TAU_HOME__="$( cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd )"
+export __TAU_HOME__="$(cd "$HERE/.." && pwd)"
+export __TAU_SCRIPT__="$HERE/$(basename "$0")"
 export PYTHONPATH=$__TAU_HOME__/packages:$PYTHONPATH
 
 python $__TAU_HOME__/packages/tau/__main__.py "$@"

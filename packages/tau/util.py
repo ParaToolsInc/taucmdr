@@ -79,7 +79,7 @@ def which(program):
             return abs_program
     else:
         # System path
-        for path in environment.getEnv('PATH').split(os.pathsep):
+        for path in environment.get_env('PATH').split(os.pathsep):
             path = path.strip('"')
             exe_file = os.path.join(path, program)
             if is_exec(exe_file):

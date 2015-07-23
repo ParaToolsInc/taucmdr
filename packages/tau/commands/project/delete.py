@@ -41,9 +41,9 @@ from tau.model.project import Project
 
 LOGGER = logger.getLogger(__name__)
 
-SHORT_DESCRIPTION = "Delete project configurations."
+COMMAND = commands.get_command(__name__)
 
-COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
+SHORT_DESCRIPTION = "Delete project configurations."
 
 USAGE = """
   %(command)s <project_name> [arguments]

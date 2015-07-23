@@ -43,8 +43,7 @@ from tau import logger, commands, arguments
 
 LOGGER = logger.getLogger(__name__)
 
-_name_parts = __name__.split('.')[2:]
-COMMAND = ' '.join(['tau'] + _name_parts)
+COMMAND = commands.get_command(__name__)
 
 SHORT_DESCRIPTION = "Show help for a command or suggest actions for a file."
 

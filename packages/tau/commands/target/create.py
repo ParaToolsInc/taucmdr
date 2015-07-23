@@ -41,9 +41,9 @@ from tau.model.compiler import Compiler, KNOWN_FAMILIES
 
 LOGGER = logger.getLogger(__name__)
 
-SHORT_DESCRIPTION = "Create a new target configuration."
+COMMAND = commands.get_command(__name__)
 
-COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
+SHORT_DESCRIPTION = "Create a new target configuration."
 
 USAGE = """
   %(command)s <target_name> [arguments]

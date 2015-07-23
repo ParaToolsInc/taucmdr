@@ -36,15 +36,15 @@
 #"""
 
 from tau import EXIT_FAILURE
-from tau import logger, arguments
+from tau import logger, arguments, commands
 from tau.model.experiment import Experiment
 
 
 LOGGER = logger.getLogger(__name__)
 
-SHORT_DESCRIPTION = "Display trial data in analysis tool."
+COMMAND = commands.get_command(__name__)
 
-COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
+SHORT_DESCRIPTION = "Display trial data in analysis tool."
 
 USAGE = """
   %(command)s [trial_number] [trial_number] ... [arguments]

@@ -35,13 +35,18 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
+import os
 import sys
-from pprint import pprint
 from pkgutil import walk_packages
 from tau import logger, error, environment
+from pprint import pprint
 
 
 LOGGER = logger.getLogger(__name__)
+
+
+_COMMAND_ROOT = os.path.basename(environment.TAU_SCRIPT)
+_COMMANDS = {_COMMAND_ROOT: {}}
 
 
 class UnknownCommandError(error.ConfigurationError):
@@ -74,50 +79,92 @@ Command %(value)r is ambiguous: %(matches)r
             'Command %s is ambiguous: %s' % (value, matches), hint)
 
 
-_commands = {}
+def get_command_list(module_name):
+    """Converts a module name to a command name list.
+    
+    Maps command module names to their command line equivilants, e.g.
+    'tau.commands.target.create' => ['tau', 'target', 'create']
+    
+    Args:
+        module_name: Name of a module.
+        
+    Returns:
+        A list of strings that identifies the command.
+    """
+    parts = module_name.split('.')
+    for part in __name__.split('.'):
+        if parts[0] == part:
+            parts = parts[1:]
+    return [_COMMAND_ROOT] + parts
 
-def getCommands(root_module=__name__):
+
+def get_command(module_name):
+    """Converts a module name to a command name string.
+    
+    Maps command module names to their command line equivilants, e.g.
+    'tau.commands.target.create' => 'tau target create'
+    
+    Args:
+        module_name: Name of a module.
+        
+    Returns:
+        A string that identifies the command.
     """
-    Returns commands at the specified level
+    return ' '.join(get_command_list(module_name))
+
+
+def get_commands(root_module=__name__):
+    """Returns a dictionary mapping commands to Python modules.
+    
+    Given a root module name, return a dictionary that maps commands and their
+    subcommands to Python modules.  The special key '__module__' maps to the
+    command module.  Other strings map to subcommands of the command.
+    
+    Args:
+        root_module: A string naming the module to search for commands.
+    
+    Returns:
+        A dictionary of strings mapping to dictionaries or modules.
+        
+    Example:
+        get_commands('tau.commands.target') ==>
+            {'__module__': <module 'tau.commands.target' from '/home/jlinford/workspace/taucmdr/packages/tau/commands/target/__init__.pyc'>,
+             'create': {'__module__': <module 'tau.commands.target.create' from '/home/jlinford/workspace/taucmdr/packages/tau/commands/target/create.pyc'>},
+             'delete': {'__module__': <module 'tau.commands.target.delete' from '/home/jlinford/workspace/taucmdr/packages/tau/commands/target/delete.pyc'>},
+             'edit': {'__module__': <module 'tau.commands.target.edit' from '/home/jlinford/workspace/taucmdr/packages/tau/commands/target/edit.pyc'>},
+             'list': {'__module__': <module 'tau.commands.target.list' from '/home/jlinford/workspace/taucmdr/packages/tau/commands/target/list.pyc'>}}
     """
-    if environment.__TAU_HOME__ == None:
+    if environment.TAU_HOME == None:
         # Not executed from command line, don't worry about commands
         # e.g. this happens when building documentation with Sphinx
         return {}
-    
-    def _command_parts(module_name):
-        parts = module_name.split('.')
-        for part in __name__.split('.'):
-            if parts[0] == part:
-                parts = parts[1:]
-        return parts
 
-    def _lookup(c, d):
-        if not c:
-            return d
-        elif len(c) == 1:
-            return d[c[0]]
+    def lookup(cmd, dct):
+        if not cmd:
+            return dct
+        elif len(cmd) == 1:
+            return dct[cmd[0]]
         else:
-            return _lookup(c[1:], d[c[0]])
+            return lookup(cmd[1:], dct[cmd[0]])
 
-    def _walking_import(module, c, d):
-        car, cdr = c[0], c[1:]
+    def walking_import(module, cmd, dct):
+        car, cdr = cmd[0], cmd[1:]
         if cdr:
-            _walking_import(module, cdr, d[car])
-        elif not car in d:
-            d[car] = {}
+            walking_import(module, cdr, dct[car])
+        elif not car in dct:
+            dct[car] = {}
             __import__(module)
-            d[car]['__module__'] = sys.modules[module]
+            dct[car]['__module__'] = sys.modules[module]
 
     command_module = sys.modules[__name__]
     for _, module, _ in walk_packages(command_module.__path__, 
                                       command_module.__name__ + '.'):
         try:
-            _lookup(_command_parts(module), _commands)
+            lookup(get_command_list(module), _COMMANDS)
         except KeyError:
-            _walking_import(module, _command_parts(module), _commands)
+            walking_import(module, get_command_list(module), _COMMANDS)
 
-    return _lookup(_command_parts(root_module), _commands)
+    return lookup(get_command_list(root_module), _COMMANDS)
 
 
 def getCommandsHelp(root=__name__):
@@ -126,7 +173,7 @@ def getCommandsHelp(root=__name__):
     """
     groups = {}
     commands = sorted(
-        [i for i in getCommands(root).iteritems() if i[0] != '__module__'])
+        [i for i in get_commands(root).iteritems() if i[0] != '__module__'])
     for cmd, topcmd in commands:
         module = topcmd['__module__']
         descr = getattr(module, 'SHORT_DESCRIPTION', "FIXME: No description")
@@ -145,7 +192,7 @@ def getCommandsHelp(root=__name__):
     return '\n'.join(parts)
 
 
-def executeCommand(cmd, cmd_args=[]):
+def executeCommand(cmd, cmd_args=[], parent_module=None):
     """
     Import the command module and run its main routine
     """
@@ -164,18 +211,23 @@ def executeCommand(cmd, cmd_args=[]):
         elif len(matches) > 1:
             raise AmbiguousCommandError(' '.join(cmd), [m[0] for m in matches])
 
+    if parent_module:
+        parent = parent_module.split('.')[2:]
+        cmd = parent + cmd
+
     while len(cmd):
         root = '.'.join([__name__] + cmd)
         try:
-            main = getCommands(root)['__module__'].main
+            main = get_commands(root)['__module__'].main
         except KeyError:
             LOGGER.debug('%r not recognized as a TAU command' % cmd)
             try:
-                resolved = _resolve(cmd, _commands)
+                resolved = _resolve(cmd, _COMMANDS[_COMMAND_ROOT])
             except UnknownCommandError:
                 if len(cmd) <= 1:
                     raise  # We finally give up
-                parent = cmd[:-1]
+                if not parent_module:
+                    parent = cmd[:-1]
                 LOGGER.debug('Getting help from parent command %r' % parent)
                 return executeCommand(parent, ['--help'])
             else:

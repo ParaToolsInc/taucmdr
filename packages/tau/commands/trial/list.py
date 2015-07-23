@@ -39,16 +39,16 @@ import os
 from texttable import Texttable
 from pprint import pformat
 from tau import EXIT_FAILURE, EXIT_SUCCESS
-from tau import logger, util, arguments
+from tau import logger, util, arguments, commands
 from tau.model.experiment import Experiment
 from tau.model.trial import Trial
 
 
 LOGGER = logger.getLogger(__name__)
 
-SHORT_DESCRIPTION = "List experiment trials."
+COMMAND = commands.get_command(__name__)
 
-COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
+SHORT_DESCRIPTION = "List experiment trials."
 
 USAGE = """
   %(command)s [trial_number] [trial_number] ... [arguments]

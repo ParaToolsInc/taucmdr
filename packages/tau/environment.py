@@ -41,9 +41,17 @@ import sys
 from tau import EXIT_FAILURE
 
 
-def getEnv(name):
-    """
-    Gets the value of the environment variable named 'name' or fails
+def get_env(name):
+    """Returns the value of an environment variable.
+    
+    If the named environment variable is not set then write a message to
+    stderr and exit the process with status code tau.EXIT_FAILURE.
+    
+    Args:
+        name: Environment variable name.
+    
+    Returns:
+        Value of the named environment variable.
     """
     try:
         return os.environ[name]
@@ -65,15 +73,19 @@ def base():
     """
     return [], dict(os.environ)
 
+
 # TAU Commander home path
 try:
-    __TAU_HOME__ = os.environ['__TAU_HOME__']
+    TAU_HOME = os.environ['__TAU_HOME__']
 except KeyError:
-    import tempfile
-    __TAU_HOME__ = None
-    SYSTEM_PREFIX = tempfile.gettempdir()
+    from tempfile import gettempdir
+    SYSTEM_PREFIX = gettempdir()
+    TAU_HOME = None
 else:
-    SYSTEM_PREFIX = os.path.realpath(os.path.join(__TAU_HOME__, '.system'))
+    SYSTEM_PREFIX = os.path.realpath(os.path.join(TAU_HOME, '.system'))
+
+# The script that launched TAU Commander
+TAU_SCRIPT = get_env('__TAU_SCRIPT__')
 
 # User-level TAU files
 USER_PREFIX = os.path.join(os.path.expanduser('~'), '.tau')

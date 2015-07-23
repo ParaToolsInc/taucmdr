@@ -41,9 +41,9 @@ from tau.model.target import Target
 
 LOGGER = logger.getLogger(__name__)
 
-SHORT_DESCRIPTION = "Delete target configurations."
+COMMAND = commands.get_command(__name__)
 
-COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
+SHORT_DESCRIPTION = "Delete target configurations."
 
 USAGE = """
   %(command)s <target_name> [arguments]

@@ -35,13 +35,13 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-from tau import logger, error, util, arguments
+from tau import logger, error, util, arguments, commands
 from tau.model.experiment import Experiment
 
 
 LOGGER = logger.getLogger(__name__)
 
-COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
+COMMAND = commands.get_command(__name__)
 
 SHORT_DESCRIPTION = "Run an application under a new experiment trial."
 

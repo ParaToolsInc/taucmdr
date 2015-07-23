@@ -44,9 +44,9 @@ from tau.model.measurement import Measurement
 
 LOGGER = logger.getLogger(__name__)
 
-SHORT_DESCRIPTION = "Create a new project configuration."
+COMMAND = commands.get_command(__name__)
 
-COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
+SHORT_DESCRIPTION = "Create a new project configuration."
 
 USAGE = """
   %(command)s <project_name> [targets] [applications] [measurements] [arguments]

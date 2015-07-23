@@ -41,9 +41,9 @@ from tau.model.application import Application
 
 LOGGER = logger.getLogger(__name__)
 
-SHORT_DESCRIPTION = "Create a new application configuration."
+COMMAND = commands.get_command(__name__)
 
-COMMAND = ' '.join(['tau'] + (__name__.split('.')[1:]))
+SHORT_DESCRIPTION = "Create a new application configuration."
 
 USAGE = """
   %(command)s <application_name> [arguments]
