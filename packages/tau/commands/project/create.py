@@ -35,18 +35,11 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-# System modules
-import sys
-
-# TAU modules
-import logger
-import arguments as args
-import commands
-import controller
-from model.project import Project
-from model.target import Target
-from model.application import Application
-from model.measurement import Measurement
+from tau import logger, arguments, commands, controller
+from tau.model.project import Project
+from tau.model.target import Target
+from tau.model.application import Application
+from tau.model.measurement import Measurement
 
 
 LOGGER = logger.getLogger(__name__)
@@ -63,40 +56,40 @@ HELP = """
 '%(command)s' page to be written.
 """ % {'command': COMMAND}
 
-PARSER = args.getParserFromModel(Project,
-                                 prog=COMMAND,
-                                 usage=USAGE,
-                                 description=SHORT_DESCRIPTION)
+PARSER = arguments.getParserFromModel(Project,
+                                      prog=COMMAND,
+                                      usage=USAGE,
+                                      description=SHORT_DESCRIPTION)
 PARSER.add_argument('impl_targets',
                     help="Target configurations in this project",
                     metavar='[targets]',
                     nargs='*',
-                    default=args.SUPPRESS)
+                    default=arguments.SUPPRESS)
 PARSER.add_argument('impl_applications',
                     help="Application configurations in this project",
                     metavar='[applications]',
                     nargs='*',
-                    default=args.SUPPRESS)
+                    default=arguments.SUPPRESS)
 PARSER.add_argument('impl_measurements',
                     help="Measurement configurations in this project",
                     metavar='[measurements]',
                     nargs='*',
-                    default=args.SUPPRESS)
+                    default=arguments.SUPPRESS)
 PARSER.add_argument('--targets',
                     help="Target configurations in this project",
                     metavar='t',
                     nargs='+',
-                    default=args.SUPPRESS)
+                    default=arguments.SUPPRESS)
 PARSER.add_argument('--applications',
                     help="Application configurations in this project",
                     metavar='a',
                     nargs='+',
-                    default=args.SUPPRESS)
+                    default=arguments.SUPPRESS)
 PARSER.add_argument('--measurements',
                     help="Measurement configurations in this project",
                     metavar='m',
                     nargs='+',
-                    default=args.SUPPRESS)
+                    default=arguments.SUPPRESS)
 
 
 def getUsage():

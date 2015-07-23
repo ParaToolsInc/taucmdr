@@ -34,18 +34,10 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
-
-# System modules
 import os
-import sys
 import glob
 import errno
-
-# TAU modules
-import logger
-import util
-import error
-import environment
+from tau import logger, util, error, environment
 
 
 LOGGER = logger.getLogger(__name__)
@@ -159,8 +151,6 @@ class Tau(object):
 
     def __init__(self, prefix, cc, cxx, fc, src, arch,
                  pdt, bfd, libunwind, papi, **config):
-        if not arch:
-            arch = _detectDefaultHostArch()
         if src.lower() == 'download':
             try:
                 src = DEFAULT_SOURCE[arch]
@@ -335,11 +325,11 @@ class Tau(object):
                 try:
                     fortran_flag = '-fortran=%s' % family_map[fc_family]
                 except KeyError:
-                    raise InternalError(
+                    raise error.InternalError(
                         "Unknown compiler family for Fortran: '%s'" % fc_family)
             else:
                 # TODO:  Recognize family from MPI compiler
-                raise InternalError(
+                raise error.InternalError(
                     "Unknown compiler family for Fortran: '%s'" % fc_family)
         else:
             fortran_flag = ''
@@ -393,10 +383,10 @@ class Tau(object):
         else:
             pthreads_flags = []
         if self.config['mic_support']:
-	    self.arch='mic_linux'
+            self.arch='mic_linux'
             base_flags.remove('-arch=x86_64') 
             base_flags = base_flags + ['-arch=mic_linux'] + ['-pdt_c++=icpc']
-     # we probably should have checks for this but no good way to recover from a configure trying to use the MICs with none on the system
+        # we probably should have checks for this but no good way to recover from a configure trying to use the MICs with none on the system
 
         # Execute configure
         baseCmd = ['./configure'] + base_flags + \

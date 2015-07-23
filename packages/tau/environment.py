@@ -38,9 +38,7 @@
 # System modules
 import os
 import sys
-
-# TAU modules
-import tau
+from tau import EXIT_FAILURE
 
 
 def getEnv(name):
@@ -58,7 +56,7 @@ def getEnv(name):
 %(bar)s
   """ % {'bar': '!' * 80,
          'name': name})
-        sys.exit(tau.EXIT_FAILURE)
+        sys.exit(EXIT_FAILURE)
 
 
 def base():

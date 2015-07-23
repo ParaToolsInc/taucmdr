@@ -35,14 +35,9 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-# System modules
 import sys
 from pkgutil import walk_packages
-
-# TAU modules
-import logger
-import error
-import controller
+from tau import logger, error, controller
 
 ModelError = controller.ModelError
 
@@ -66,11 +61,11 @@ MODEL_CLASSES = list(_yieldModelClasses())
 MODELS = dict([(cls.__name__, cls) for cls in MODEL_CLASSES])
 
 
-def _getPropsModelName(props):
+def _getPropsModelName(p):
     try:
-        return props['model']
+        return p['model']
     except KeyError:
-        return props['collection']
+        return p['collection']
 
 # Set cls.model_name
 for cls_name, cls in MODELS.iteritems():

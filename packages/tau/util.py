@@ -35,24 +35,15 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-# System modules
 import os
 import sys
-import re
 import subprocess
 import errno
 import shutil
 import urllib
 import tarfile
-import pprint
-import tempfile
 import urlparse
-from StringIO import StringIO
-
-# TAU modules
-import logger
-import environment
-from tau.logger import LINE_WIDTH
+from tau import logger, environment
 
 
 LOGGER = logger.getLogger(__name__)
@@ -235,7 +226,7 @@ def createSubprocess(cmd, cwd=None, env=None, fork=False, stdout=True, log=True)
         proc = subprocess.Popen(cmd, cwd=cwd, env=env,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT)
-        stdout, stderr = proc.communicate()
+        stdout, _ = proc.communicate()
         if log:
             LOGGER.debug(stdout)
         if stdout and (logger.LOG_LEVEL != 'DEBUG'):

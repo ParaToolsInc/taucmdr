@@ -35,16 +35,13 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-# System modules
 import string
-
-# TAU modules
-import controller as ctl
-import arguments as args
-import requisite
+from tau import requisite
+from tau.arguments import ParseBooleanAction
+from tau.controller import Controller, ByName, ModelError
 
 
-class Measurement(ctl.Controller, ctl.ByName):
+class Measurement(Controller, ByName):
 
     """
     Measurement data model controller
@@ -70,7 +67,7 @@ class Measurement(ctl.Controller, ctl.ByName):
                          'metavar': 'T/F',
                          'nargs': '?',
                          'const': True,
-                         'action': args.ParseBooleanAction}
+                         'action': ParseBooleanAction}
         },
         'trace': {
             'type': 'boolean',
@@ -80,7 +77,7 @@ class Measurement(ctl.Controller, ctl.ByName):
                          'metavar': 'T/F',
                          'nargs': '?',
                          'const': True,
-                         'action': args.ParseBooleanAction}
+                         'action': ParseBooleanAction}
         },
         'sample': {
             'type': 'boolean',
@@ -90,7 +87,7 @@ class Measurement(ctl.Controller, ctl.ByName):
                          'metavar': 'T/F',
                          'nargs': '?',
                          'const': True,
-                         'action': args.ParseBooleanAction},
+                         'action': ParseBooleanAction},
             'compat': {'Target': {'pdt_source': requisite.Violation}}
         },
         'source_inst': {
@@ -101,7 +98,7 @@ class Measurement(ctl.Controller, ctl.ByName):
                          'metavar': 'T/F',
                          'nargs': '?',
                          'const': True,
-                         'action': args.ParseBooleanAction},
+                         'action': ParseBooleanAction},
             'compat': {'Target': {'pdt_source': requisite.Required}}
         },
         'compiler_inst': {
@@ -123,7 +120,7 @@ class Measurement(ctl.Controller, ctl.ByName):
                          'metavar': 'T/F',
                          'nargs': '?',
                          'const': True,
-                         'action': args.ParseBooleanAction},
+                         'action': ParseBooleanAction},
             'compat': {'Application': {'mpi': requisite.Required}}
         },
         'openmp': {
@@ -156,7 +153,7 @@ class Measurement(ctl.Controller, ctl.ByName):
                          'metavar': 'T/F',
                          'nargs': '?',
                          'const': True,
-                         'action': args.ParseBooleanAction}
+                         'action': ParseBooleanAction}
         },
         'memory_alloc': {
             'type': 'boolean',
@@ -166,7 +163,7 @@ class Measurement(ctl.Controller, ctl.ByName):
                          'metavar': 'T/F',
                          'nargs': '?',
                          'const': True,
-                         'action': args.ParseBooleanAction}
+                         'action': ParseBooleanAction}
         },
         'metrics': {
             'type': 'array',
@@ -185,7 +182,7 @@ class Measurement(ctl.Controller, ctl.ByName):
                          'metavar': 'T/F',
                          'nargs': '?',
                          'const': True,
-                         'action': args.ParseBooleanAction}
+                         'action': ParseBooleanAction}
         },
         'reuse_inst_files': {
             'type': 'boolean',
@@ -195,7 +192,7 @@ class Measurement(ctl.Controller, ctl.ByName):
                          'metavar': 'T/F',
                          'nargs': '?',
                          'const': True,
-                         'action': args.ParseBooleanAction}
+                         'action': ParseBooleanAction}
         },
         'io_wrapper': {
             'type': 'boolean',
@@ -205,7 +202,7 @@ class Measurement(ctl.Controller, ctl.ByName):
                          'metavar': 'T/F',
                          'nargs': '?',
                          'const': True,
-                         'action': args.ParseBooleanAction},
+                         'action': ParseBooleanAction},
             'compat': {'Target': {'io_wrapper': requisite.Required}}
         },
         'link_only': {
@@ -216,7 +213,7 @@ class Measurement(ctl.Controller, ctl.ByName):
                          'metavar': 'T/F',
                          'nargs': '?',
                          'const': True,
-                         'action': args.ParseBooleanAction},
+                         'action': ParseBooleanAction},
             'compat': {'Target': {'tau_source': requisite.Required},
                        'Measurement': {'source_inst': requisite.Violation},
                        'Measurement': {'compiler_inst': requisite.Violation}}
@@ -228,5 +225,5 @@ class Measurement(ctl.Controller, ctl.ByName):
 
     def onCreate(self):
         if set(self['name']) > Measurement._valid_name:
-            raise ctl.ModelError('%r is not a valid measurement name.' % self['name'],
-                                 'Use only letters, numbers, dot (.), dash (-), and underscore (_).')
+            raise ModelError('%r is not a valid measurement name.' % self['name'],
+                             'Use only letters, numbers, dot (.), dash (-), and underscore (_).')

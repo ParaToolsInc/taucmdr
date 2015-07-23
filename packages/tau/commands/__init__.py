@@ -35,14 +35,10 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-# System modules
 import sys
+from pprint import pprint
 from pkgutil import walk_packages
-
-# TAU modules
-import logger
-import error
-import environment
+from tau import logger, error, environment
 
 
 LOGGER = logger.getLogger(__name__)
@@ -78,19 +74,28 @@ Command %(value)r is ambiguous: %(matches)r
             'Command %s is ambiguous: %s' % (value, matches), hint)
 
 
-_commands = {__name__: {}}
+_commands = {}
 
-
-def getCommands(root=__name__):
+def getCommands(root_module=__name__):
     """
     Returns commands at the specified level
     """
     if environment.__TAU_HOME__ == None:
         # Not executed from command line, don't worry about commands
+        # e.g. this happens when building documentation with Sphinx
         return {}
+    
+    def _command_parts(module_name):
+        parts = module_name.split('.')
+        for part in __name__.split('.'):
+            if parts[0] == part:
+                parts = parts[1:]
+        return parts
 
     def _lookup(c, d):
-        if len(c) == 1:
+        if not c:
+            return d
+        elif len(c) == 1:
             return d[c[0]]
         else:
             return _lookup(c[1:], d[c[0]])
@@ -105,13 +110,14 @@ def getCommands(root=__name__):
             d[car]['__module__'] = sys.modules[module]
 
     command_module = sys.modules[__name__]
-    for _, module, _ in walk_packages(command_module.__path__, command_module.__name__ + '.'):
+    for _, module, _ in walk_packages(command_module.__path__, 
+                                      command_module.__name__ + '.'):
         try:
-            _lookup(module.split('.'), _commands)
+            _lookup(_command_parts(module), _commands)
         except KeyError:
-            _walking_import(module, module.split('.'), _commands)
+            _walking_import(module, _command_parts(module), _commands)
 
-    return _lookup(root.split('.'), _commands)
+    return _lookup(_command_parts(root_module), _commands)
 
 
 def getCommandsHelp(root=__name__):
@@ -165,7 +171,7 @@ def executeCommand(cmd, cmd_args=[]):
         except KeyError:
             LOGGER.debug('%r not recognized as a TAU command' % cmd)
             try:
-                resolved = _resolve(cmd, _commands[__name__])
+                resolved = _resolve(cmd, _commands)
             except UnknownCommandError:
                 if len(cmd) <= 1:
                     raise  # We finally give up
@@ -177,6 +183,6 @@ def executeCommand(cmd, cmd_args=[]):
                     'Resolved ambiguous command %r to %r' % (cmd, resolved))
                 return executeCommand(resolved, cmd_args)
         except AttributeError:
-            raise InternalError("'main(argv)' undefined in command %r" % cmd)
+            raise error.InternalError("'main(argv)' undefined in command %r" % cmd)
         else:
             return main(cmd_args)

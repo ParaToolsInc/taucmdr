@@ -35,18 +35,13 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-# System modules
 import os
 import string
 import platform
 import subprocess
-
-# TAU modules
-import logger
-import controller as ctl
-import arguments as args
-import requisite
-
+from tau import logger
+from tau.arguments import ParsePackagePathAction, ParseBooleanAction
+from tau.controller import Controller, ByName, ModelError
 
 LOGGER = logger.getLogger(__name__)
 
@@ -99,7 +94,7 @@ def defaultFC():
     return 'gfortran'
 
 
-class Target(ctl.Controller, ctl.ByName):
+class Target(Controller, ByName):
 
     """
     Target data model controller
@@ -192,7 +187,7 @@ class Target(ctl.Controller, ctl.ByName):
                          'group': 'software package',
                          'help': 'URL or path to a PDT installation or archive file',
                          'metavar': '(<path>|<url>|download|False)',
-                         'action': args.ParsePackagePathAction},
+                         'action': ParsePackagePathAction},
         },
         'bfd_source': {
             'type': 'string',
@@ -201,7 +196,7 @@ class Target(ctl.Controller, ctl.ByName):
                          'group': 'software package',
                          'help': 'URL or path to a BFD installation or archive file',
                          'metavar': '(<path>|<url>|download|False)',
-                         'action': args.ParsePackagePathAction}
+                         'action': ParsePackagePathAction}
         },
         'libunwind_source': {
             'type': 'string',
@@ -210,7 +205,7 @@ class Target(ctl.Controller, ctl.ByName):
                          'group': 'software package',
                          'help': 'URL or path to a libunwind installation or archive file',
                          'metavar': '(<path>|<url>|download|False)',
-                         'action': args.ParsePackagePathAction}
+                         'action': ParsePackagePathAction}
         },
         'papi_source': {
             'type': 'string',
@@ -219,7 +214,7 @@ class Target(ctl.Controller, ctl.ByName):
                          'group': 'software package',
                          'help': 'URL or path to a PAPI installation or archive file',
                          'metavar': '(<path>|<url>|download|False)',
-                         'action': args.ParsePackagePathAction}
+                         'action': ParsePackagePathAction}
         },
         'score-p_source': {
             'type': 'string',
@@ -228,7 +223,7 @@ class Target(ctl.Controller, ctl.ByName):
                          'group': 'software package',
                          'help': 'URL or path to a Score-P installation or archive file',
                          'metavar': '(<path>|<url>|download|False)',
-                         'action': args.ParsePackagePathAction}
+                         'action': ParsePackagePathAction}
         },
         'iowrapper': {
             'defaultsTo': 'True'
@@ -239,7 +234,7 @@ class Target(ctl.Controller, ctl.ByName):
             'group': 'software package',
             'help': 'Target will use MICs',
             'metavar': 'yes/no',
-            'action': args.ParseBooleanAction}
+            'action': ParseBooleanAction}
         }
     }
 
@@ -247,5 +242,5 @@ class Target(ctl.Controller, ctl.ByName):
 
     def onCreate(self):
         if set(self['name']) > Target._valid_name:
-            raise ctl.ModelError('%r is not a valid target name.' % self['name'],
-                                 'Use only letters, numbers, dot (.), dash (-), and underscore (_).')
+            raise ModelError('%r is not a valid target name.' % self['name'],
+                             'Use only letters, numbers, dot (.), dash (-), and underscore (_).')

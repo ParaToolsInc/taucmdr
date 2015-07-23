@@ -35,16 +35,11 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-# System modules
 from texttable import Texttable
 from pprint import pformat
-
-# TAU modules
-import tau
-import logger
-import arguments as args
-import environment as env
-from model.target import Target
+from tau import EXIT_SUCCESS
+from tau import logger, arguments, environment
+from tau.model.target import Target
 
 
 LOGGER = logger.getLogger(__name__)
@@ -64,14 +59,14 @@ HELP = """
 _arguments = [(('names',), {'help': "If given, show only targets with this name",
                             'metavar': 'target_name',
                             'nargs': '*',
-                            'default': args.SUPPRESS}),
+                            'default': arguments.SUPPRESS}),
               (('-l', '--long'), {'help': "Display all information about the target",
                                   'action': 'store_true',
                                   'default': False})]
-PARSER = args.getParser(_arguments,
-                        prog=COMMAND,
-                        usage=USAGE,
-                        description=SHORT_DESCRIPTION)
+PARSER = arguments.getParser(_arguments,
+                             prog=COMMAND,
+                             usage=USAGE,
+                             description=SHORT_DESCRIPTION)
 
 
 def getUsage():
@@ -102,7 +97,7 @@ def main(argv):
             else:
                 PARSER.error("No target configuration named '%s'" % name)
 
-    title = '{:=<{}}'.format('== Targets (%s) ==' % env.USER_PREFIX,
+    title = '{:=<{}}'.format('== Targets (%s) ==' % environment.USER_PREFIX,
                              logger.LINE_WIDTH)
     if not found:
         listing = "No targets. See 'tau target create --help'"
@@ -137,4 +132,4 @@ def main(argv):
             listing = table.draw()
 
     LOGGER.info('\n'.join([title, '', listing, '']))
-    return tau.EXIT_SUCCESS
+    return EXIT_SUCCESS

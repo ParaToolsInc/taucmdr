@@ -34,23 +34,18 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
-# System modules
+
 import os
-import sys
 import glob
 import shutil
 from datetime import datetime
-
-# TAU modules
-import logger
-import util
-import storage
-import controller as ctl
+from tau import logger, util, storage, error
+from tau.controller import Controller
 
 LOGGER = logger.getLogger(__name__)
 
 
-class Trial(ctl.Controller):
+class Trial(Controller):
 
     """
     Trial data model controller
@@ -171,9 +166,9 @@ class Trial(ctl.Controller):
                 if profiles:
                     LOGGER.info(
                         "Found %d profile files. Adding to trial..." % len(profiles))
-                    for file in profiles:
-                        shutil.move(file, prefix)
-                        LOGGER.debug("'%s' => '%s'" % (file, prefix))
+                    for f in profiles:
+                        shutil.move(f, prefix)
+                        LOGGER.debug("'%s' => '%s'" % (f, prefix))
                 elif multi_profiles:
                     LOGGER.info(
                         "Found %d multi_profile direcotries. Adding to trial..." % len(multi_profiles))

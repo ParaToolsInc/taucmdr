@@ -35,17 +35,9 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-# System modules
 import json
-import sys
-
-# TAU modules
-import logger
-import error
-from storage import user_storage
-import requisite
-import util
-import tau
+from tau import logger, error, requisite, util
+from tau.storage import user_storage
 
 
 LOGGER = logger.getLogger(__name__)
@@ -162,12 +154,12 @@ class Controller(object):
                     raise ModelError(
                         cls, "Value supplied for '%s' is not a list: %r" % (attr, value))
                 else:
-                    for id in value:
+                    for eid in value:
                         try:
-                            int(id)
+                            int(eid)
                         except ValueError:
                             raise ModelError(
-                                cls, "Invalid non-integer ID '%s' in '%s'" % (id, attr))
+                                cls, "Invalid non-integer ID '%s' in '%s'" % (eid, attr))
                 validated[attr] = value
             # Check model associations
             elif 'model' in props:
@@ -234,7 +226,7 @@ class Controller(object):
         """
         if eids is not None:
             if isinstance(eids, list):
-                return [cls.one(eid=id) for id in eids]
+                return [cls.one(eid=i) for i in eids]
             else:
                 return [cls.one(eid=eids)]
         elif keys:
@@ -384,7 +376,7 @@ class Controller(object):
     def compatibleWith(self, other):
         selfName = self.model_name.lower().strip()
         otherName = other.model_name.lower().strip()
-        for attr, fields in self.attributes.iteritems():
+        for fields in self.attributes.itervalues():
             try:
                 compat = fields['compat']
             except KeyError:

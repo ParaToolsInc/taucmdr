@@ -35,11 +35,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-# TAU modules
-import logger
-import commands
-import arguments as args
-from model.project import Project
+from tau import logger, commands, arguments
+from tau.model.project import Project
 
 
 LOGGER = logger.getLogger(__name__)
@@ -58,10 +55,10 @@ HELP = """
 
 _arguments = [(('name',), {'help': "Name of project configuration to delete",
                            'metavar': '<project_name>'})]
-PARSER = args.getParser(_arguments,
-                        prog=COMMAND,
-                        usage=USAGE % {'command': COMMAND},
-                        description=SHORT_DESCRIPTION)
+PARSER = arguments.getParser(_arguments,
+                             prog=COMMAND,
+                             usage=USAGE % {'command': COMMAND},
+                             description=SHORT_DESCRIPTION)
 
 
 def getUsage():

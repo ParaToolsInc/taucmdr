@@ -35,18 +35,13 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-import sys
-
-# TAU modules
-import tau
-import logger
-import error
-import arguments as args
-from model.project import Project
-from model.target import Target
-from model.application import Application
-from model.measurement import Measurement
-from model.experiment import Experiment
+from tau import EXIT_SUCCESS
+from tau import logger, error, arguments
+from tau.model.project import Project
+from tau.model.target import Target
+from tau.model.application import Application
+from tau.model.measurement import Measurement
+from tau.model.experiment import Experiment
 
 
 LOGGER = logger.getLogger(__name__)
@@ -63,37 +58,37 @@ HELP = """
 '%(command)s' page to be written.
 """ % {'command': COMMAND}
 
-PARSER = args.getParserFromModel(Project,
-                                 prog=COMMAND,
-                                 usage=USAGE,
-                                 description=SHORT_DESCRIPTION)
+PARSER = arguments.getParserFromModel(Project,
+                                      prog=COMMAND,
+                                      usage=USAGE,
+                                      description=SHORT_DESCRIPTION)
 PARSER.add_argument('impl_target',
                     help="Target configuration to select",
                     metavar='[target]',
                     nargs='*',
-                    default=args.SUPPRESS)
+                    default=arguments.SUPPRESS)
 PARSER.add_argument('impl_application',
                     help="Application configuration to select",
                     metavar='[application]',
                     nargs='*',
-                    default=args.SUPPRESS)
+                    default=arguments.SUPPRESS)
 PARSER.add_argument('impl_measurement',
                     help="Measurement configuration to select",
                     metavar='[measurements]',
                     nargs='*',
-                    default=args.SUPPRESS)
+                    default=arguments.SUPPRESS)
 PARSER.add_argument('--target',
                     help="Target configuration to select",
                     metavar='<name>',
-                    default=args.SUPPRESS)
+                    default=arguments.SUPPRESS)
 PARSER.add_argument('--application',
                     help="Application configuration to select",
                     metavar='<name>',
-                    default=args.SUPPRESS)
+                    default=arguments.SUPPRESS)
 PARSER.add_argument('--measurement',
                     help="Measurement configuration to select",
                     metavar='<name>',
-                    default=args.SUPPRESS)
+                    default=arguments.SUPPRESS)
 
 
 def getUsage():
@@ -212,4 +207,4 @@ def main(argv):
                  populated['measurement']['name']))
     found.select()
 
-    return tau.EXIT_SUCCESS
+    return EXIT_SUCCESS

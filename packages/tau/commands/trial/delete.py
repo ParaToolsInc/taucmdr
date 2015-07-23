@@ -35,13 +35,9 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-# TAU modules
-import logger
-import commands
-import error
-import arguments as args
-from model.experiment import Experiment
-from model.trial import Trial
+from tau import logger, commands, error, arguments
+from tau.model.experiment import Experiment
+from tau.model.trial import Trial
 
 
 LOGGER = logger.getLogger(__name__)
@@ -60,10 +56,10 @@ HELP = """
 
 _arguments = [(('number',), {'help': "Number of the trial to delete",
                              'metavar': '<trial_number>'})]
-PARSER = args.getParser(_arguments,
-                        prog=COMMAND,
-                        usage=USAGE % {'command': COMMAND},
-                        description=SHORT_DESCRIPTION)
+PARSER = arguments.getParser(_arguments,
+                             prog=COMMAND,
+                             usage=USAGE % {'command': COMMAND},
+                             description=SHORT_DESCRIPTION)
 
 
 def getUsage():

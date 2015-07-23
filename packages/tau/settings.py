@@ -36,8 +36,8 @@
 #"""
 
 # TAU modules
-import logger
-from model.setting import Setting
+from tau import logger
+from tau.model.setting import Setting
 
 
 LOGGER = logger.getLogger(__name__)

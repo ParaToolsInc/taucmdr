@@ -35,23 +35,20 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-# System modules
 import string
-
-# TAU modules
-import controller as ctl
-import arguments as args
-import requisite
+from tau import requisite
+from tau.arguments import ParseBooleanAction
+from tau.controller import Controller, ByName, ModelError
 
 
-class Application(ctl.Controller, ctl.ByName):
+class Application(Controller, ByName):
 
     """
     Application data model controller
     """
 
     attributes = {
-        'projects': {
+        'projects': { 
             'collection': 'Project',
             'via': 'applications'
         },
@@ -62,14 +59,14 @@ class Application(ctl.Controller, ctl.ByName):
                          'metavar': '<application_name>'}
         },
         'openmp': {
-            'type': 'boolean',
-            'defaultsTo': False,
+            'type': 'boolean', 
+            'defaultsTo': False, 
             'argparse': {'flags': ('--openmp',),
                          'help': 'application uses OpenMP',
                          'metavar': 'yes/no',
                          'nargs': '?',
                          'const': True,
-                         'action': args.ParseBooleanAction},
+                         'action': ParseBooleanAction},
         },
         'pthreads': {
             'type': 'boolean',
@@ -79,7 +76,7 @@ class Application(ctl.Controller, ctl.ByName):
                          'metavar': 'yes/no',
                          'nargs': '?',
                          'const': True,
-                         'action': args.ParseBooleanAction}
+                         'action': ParseBooleanAction}
         },
         'mpi': {
             'type': 'boolean',
@@ -89,7 +86,7 @@ class Application(ctl.Controller, ctl.ByName):
                          'metavar': 'yes/no',
                          'nargs': '?',
                          'const': True,
-                         'action': args.ParseBooleanAction},
+                         'action': ParseBooleanAction},
             'compat': {'Measurement': {'mpi': requisite.Required}}
         },
         'cuda': {
@@ -100,7 +97,7 @@ class Application(ctl.Controller, ctl.ByName):
                          'metavar': 'yes/no',
                          'nargs': '?',
                          'const': True,
-                         'action': args.ParseBooleanAction},
+                         'action': ParseBooleanAction},
             'compat': {'Target': {'cuda': requisite.Required}}
         },
         'shmem': {
@@ -111,7 +108,7 @@ class Application(ctl.Controller, ctl.ByName):
                          'metavar': 'yes/no',
                          'nargs': '?',
                          'const': True,
-                         'action': args.ParseBooleanAction},
+                         'action': ParseBooleanAction},
         },
         'mpc': {
             'type': 'boolean',
@@ -121,7 +118,7 @@ class Application(ctl.Controller, ctl.ByName):
                          'metavar': 'yes/no',
                          'nargs': '?',
                          'const': True,
-                         'action': args.ParseBooleanAction}
+                         'action': ParseBooleanAction}
         },
         'mic-linux': {
             'type': 'boolean',
@@ -131,7 +128,7 @@ class Application(ctl.Controller, ctl.ByName):
                          'metavar': 'yes/no',
                          'nargs': '?',
                          'const': True,
-                         'action': args.ParseBooleanAction},
+                         'action': ParseBooleanAction},
             'compat': {'Target': {'mic-linux': requisite.Required}}
       }
     }
@@ -140,5 +137,5 @@ class Application(ctl.Controller, ctl.ByName):
 
     def onCreate(self):
         if set(self['name']) > Application._valid_name:
-            raise ctl.ModelError('%r is not a valid application name.' % self['name'],
-                                 'Use only letters, numbers, dot (.), dash (-), and underscore (_).')
+            raise ModelError('%r is not a valid application name.' % self['name'],
+                             'Use only letters, numbers, dot (.), dash (-), and underscore (_).')

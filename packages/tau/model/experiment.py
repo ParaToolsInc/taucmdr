@@ -35,35 +35,25 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-# System modules
 import os
-import sys
 import glob
 import shutil
 
-# TAU modules
-import logger
-import settings
-import error
-import controller
-import util
-import environment
-import requisite
-import cf.tau
-#import cf.scorep
+import cf.tau_api
 import cf.pdt
 import cf.bfd
 import cf.papi
 import cf.libunwind
-from model.project import Project
-from model.target import Target
-from model.compiler import Compiler
-from model.trial import Trial
+
+from tau import logger, settings, error, util, environment
+from tau.controller import Controller
+from tau.model.compiler import Compiler
+from tau.model.trial import Trial
 
 LOGGER = logger.getLogger(__name__)
 
 
-class Experiment(controller.Controller):
+class Experiment(Controller):
 
     """
     Experiment data model controller
@@ -216,7 +206,7 @@ class Experiment(controller.Controller):
             self.libunwind = None
 
         # Configure/build/install TAU if needed
-        tau = cf.tau.Tau(prefix, cc, cxx, fc, target['tau_source'], target['host_arch'],
+        tau = cf.tau_api.Tau(prefix, cc, cxx, fc, target['tau_source'], target['host_arch'],
                          verbose=verbose,
                          pdt=self.pdt,
                          bfd=self.bfd,
@@ -318,9 +308,9 @@ class Experiment(controller.Controller):
             if len(profiles):
                 LOGGER.warning(
                     "Profile files found in '%s'! They will be deleted." % path)
-                for file in profiles:
+                for f in profiles:
                     try:
-                        os.remove(file)
+                        os.remove(f)
                     except:
                         continue
         # Check for existing trace files
@@ -360,11 +350,9 @@ class Experiment(controller.Controller):
                 trials = None
             else:
                 latest_date = all_trials[0]['begin_time']
-                latest_trial = None
                 for trial in all_trials:
                     if trial['begin_time'] > latest_date:
                         latest_date = trial['begin_time']
-                        latest_trial = trial
                 trials = [trial]
 
         if not trials:

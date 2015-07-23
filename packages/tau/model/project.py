@@ -35,19 +35,16 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-# System modules
 import os
 import string
 import shutil
+from tau import logger, util, error, environment
+from tau.controller import Controller, ByName, ModelError
 
-# TAU modules
-import util
-import error
-import environment as env
-import controller as ctl
+LOGGER = logger.getLogger(__name__)
 
 
-class Project(ctl.Controller, ctl.ByName):
+class Project(Controller, ByName):
 
     """
     Project data model controller
@@ -79,7 +76,7 @@ class Project(ctl.Controller, ctl.ByName):
         'prefix': {
             'type': 'string',
             'required': True,
-            'defaultsTo': env.USER_PREFIX,
+            'defaultsTo': environment.USER_PREFIX,
             'argparse': {'flags': ('--home',),
                          'help': 'Location for all files and experiment data related to this project',
                          'metavar': 'path'}
@@ -93,8 +90,8 @@ class Project(ctl.Controller, ctl.ByName):
 
     def onCreate(self):
         if set(self['name']) > Project._valid_name:
-            raise ctl.ModelError('%r is not a valid project name.' % self['name'],
-                                 'Use only letters, numbers, dot (.), dash (-), and underscore (_).')
+            raise ModelError('%r is not a valid project name.' % self['name'],
+                             'Use only letters, numbers, dot (.), dash (-), and underscore (_).')
         prefix = self.prefix()
         try:
             util.mkdirp(prefix)

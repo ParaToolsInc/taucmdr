@@ -35,11 +35,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-# TAU modules
-import logger
-import commands
-import arguments as args
-from model.application import Application
+from tau import logger, commands, arguments
+from tau.model.application import Application
 
 
 LOGGER = logger.getLogger(__name__)
@@ -56,15 +53,15 @@ HELP = """
 '%(command)s' page to be written.
 """ % {'command': COMMAND}
 
-PARSER = args.getParserFromModel(Application,
-                                 use_defaults=False,
-                                 prog=COMMAND,
-                                 usage=USAGE,
-                                 description=SHORT_DESCRIPTION)
+PARSER = arguments.getParserFromModel(Application,
+                                      use_defaults=False,
+                                      prog=COMMAND,
+                                      usage=USAGE,
+                                      description=SHORT_DESCRIPTION)
 PARSER.add_argument('--rename',
                     help="rename the application configuration",
                     metavar='<new_name>', dest='new_name',
-                    default=args.SUPPRESS)
+                    default=arguments.SUPPRESS)
 
 
 def getUsage():

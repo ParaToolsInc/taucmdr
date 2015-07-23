@@ -34,19 +34,11 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
-# System modules
+
 import os
 import hashlib
-
-# TAU modules
-import logger
-import settings
-import error
-import controller
-import util
-import cf.tau
-from model.project import Project
-from model.target import Target
+import cf.tau_api
+from tau import logger, error, controller, util
 
 
 LOGGER = logger.getLogger(__name__)
@@ -63,7 +55,7 @@ class CompilerInfo(object):
         self.role = role
         self.family = family
         self.language = language
-        self.tau_wrapper = cf.tau.COMPILER_WRAPPERS[role]
+        self.tau_wrapper = cf.tau_api.COMPILER_WRAPPERS[role]
         self.short_descr = "%s %s compiler." % (family, language)
 
     def __repr__(self):
@@ -95,9 +87,9 @@ KNOWN_COMPILERS = {
 
 KNOWN_FAMILIES = {}
 for comp in KNOWN_COMPILERS.itervalues():
-    family = comp.family
-    KNOWN_FAMILIES.setdefault(family, [])
-    KNOWN_FAMILIES[family].append(comp)
+    fam = comp.family
+    KNOWN_FAMILIES.setdefault(fam, [])
+    KNOWN_FAMILIES[fam].append(comp)
 del comp
 
 

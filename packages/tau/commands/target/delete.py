@@ -35,11 +35,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-# TAU modules
-import logger
-import commands
-import arguments as args
-from model.target import Target
+from tau import logger, commands, arguments
+from tau.model.target import Target
 
 
 LOGGER = logger.getLogger(__name__)
@@ -58,10 +55,10 @@ HELP = """
 
 _arguments = [(('name',), {'help': "Name of target configuration to delete",
                            'metavar': '<target_name>'})]
-PARSER = args.getParser(_arguments,
-                        prog=COMMAND,
-                        usage=USAGE % {'command': COMMAND},
-                        description=SHORT_DESCRIPTION)
+PARSER = arguments.getParser(_arguments,
+                             prog=COMMAND,
+                             usage=USAGE % {'command': COMMAND},
+                             description=SHORT_DESCRIPTION)
 
 
 def getUsage():

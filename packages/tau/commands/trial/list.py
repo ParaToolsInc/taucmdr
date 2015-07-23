@@ -35,21 +35,13 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-# System modules
 import os
 from texttable import Texttable
 from pprint import pformat
-
-# TAU modules
-import tau
-import logger
-import commands
-import error
-import util
-import arguments as args
-import environment as env
-from model.experiment import Experiment
-from model.trial import Trial
+from tau import EXIT_FAILURE, EXIT_SUCCESS
+from tau import logger, util, arguments
+from tau.model.experiment import Experiment
+from tau.model.trial import Trial
 
 
 LOGGER = logger.getLogger(__name__)
@@ -70,17 +62,17 @@ HELP = """
 _arguments = [(('numbers',), {'help': "If given, show details for trial with this number",
                               'metavar': 'trial_number',
                               'nargs': '*',
-                              'default': args.SUPPRESS}),
+                              'default': arguments.SUPPRESS}),
               (('-l', '--long'), {'help': "Display all information about the trial",
                                   'action': 'store_true',
                                   'default': False}),
               (('-s', '--short'), {'help': "Summarize trial information",
                                    'action': 'store_true',
                                    'default': False})]
-PARSER = args.getParser(_arguments,
-                        prog=COMMAND,
-                        usage=USAGE,
-                        description=SHORT_DESCRIPTION)
+PARSER = arguments.getParser(_arguments,
+                             prog=COMMAND,
+                             usage=USAGE,
+                             description=SHORT_DESCRIPTION)
 
 
 def getUsage():
@@ -101,11 +93,11 @@ def main(argv):
     selection = Experiment.getSelected()
     if not selection:
         LOGGER.info("No experiment configured. See `tau project select`\n")
-        return tau.EXIT_FAILURE
+        return EXIT_FAILURE
 
-    long = args.long
-    short = args.short
-    if long and short:
+    longflag = args.long
+    shortflag = args.short
+    if longflag and shortflag:
         PARSER.error("Please specify either '--long' or '--short', not both")
 
     try:
@@ -129,7 +121,7 @@ def main(argv):
     if not found:
         LOGGER.info(
             "No trials. Use 'tau <command>' or 'tau trial create <command>' to create a new trial\n")
-        return tau.EXIT_FAILURE
+        return EXIT_FAILURE
 
     table = Texttable(logger.LINE_WIDTH)
     cols = [('Number', 'c', 'number'),
@@ -141,12 +133,12 @@ def main(argv):
             ('Return Code', 'c', 'return_code')]
     headers = [header for header, _, _ in cols]
     rows = [headers]
-    if long:
+    if longflag:
         parts = []
         for t in found:
             parts.append(pformat(t.data))
         listing = '\n'.join(parts)
-    elif short:
+    elif shortflag:
         parts = []
         trials_by_cmd = {}
         for trial in found:
@@ -173,4 +165,4 @@ def main(argv):
         listing = table.draw()
 
     LOGGER.info('\n'.join([listing, '']))
-    return tau.EXIT_SUCCESS
+    return EXIT_SUCCESS

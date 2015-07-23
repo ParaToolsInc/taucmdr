@@ -35,14 +35,9 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-# TAU modules
-import logger
-import commands
-import controller
-import error
-import arguments as args
-from model.target import Target
-from model.compiler import Compiler, KNOWN_FAMILIES
+from tau import logger, commands, controller, error, arguments
+from tau.model.target import Target
+from tau.model.compiler import Compiler, KNOWN_FAMILIES
 
 LOGGER = logger.getLogger(__name__)
 
@@ -58,16 +53,16 @@ HELP = """
 '%(command)s' page to be written.
 """ % {'command': COMMAND}
 
-PARSER = args.getParserFromModel(Target,
-                                 prog=COMMAND,
-                                 usage=USAGE,
-                                 description=SHORT_DESCRIPTION)
+PARSER = arguments.getParserFromModel(Target,
+                                      prog=COMMAND,
+                                      usage=USAGE,
+                                      description=SHORT_DESCRIPTION)
 group = PARSER.getGroup('compiler arguments')
 group.add_argument('--compilers',
                    help="Select all compilers automatically from the given family",
                    metavar='<family>',
                    dest='family',
-                   default=args.SUPPRESS,
+                   default=arguments.SUPPRESS,
                    choices=KNOWN_FAMILIES.keys())
 
 

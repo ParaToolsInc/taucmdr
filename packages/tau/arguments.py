@@ -35,13 +35,9 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-# System modules
 import os
 import argparse
-
-# TAU modules
-import logger
-import util
+from tau import logger, util
 
 
 SUPPRESS = argparse.SUPPRESS
@@ -80,17 +76,17 @@ class ArgparseHelpFormatter(argparse.RawDescriptionHelpFormatter):
 
     def _get_help_string(self, action):
         indent = ' ' * self._indent_increment
-        help = action.help
+        helpstr = action.help
         choices = getattr(action, 'choices', None)
         if choices:
-            help += '\n%s- %s: (%s)' % (indent,
-                                        action.metavar, ', '.join(choices))
-        if '%(default)' not in action.help:
+            helpstr += '\n%s- %s: (%s)' % (indent,
+                                           action.metavar, ', '.join(choices))
+        if '%(default)' not in action.helpstr:
             if action.default is not argparse.SUPPRESS:
                 defaulting_nargs = [argparse.OPTIONAL, argparse.ZERO_OR_MORE]
                 if action.option_strings or action.nargs in defaulting_nargs:
-                    help += '\n%s' % indent + '- default: %(default)s'
-        return help
+                    helpstr += '\n%s' % indent + '- default: %(default)s'
+        return helpstr
 
 
 class ParsePackagePathAction(argparse.Action):

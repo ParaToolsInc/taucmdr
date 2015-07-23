@@ -35,13 +35,10 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-# System modules
 import sys
 import traceback
-
-# TAU modules
-import tau
-import logger
+from tau import HELP_CONTACT, EXIT_FAILURE, EXIT_WARNING
+from tau import logger
 
 
 LOGGER = logger.getLogger(__name__)
@@ -65,7 +62,7 @@ An unexpected %(typename)s exception was raised:
 Please e-mail '%(logfile)s' to %(contact)s for assistance.
 """
 
-    def __init__(self, value, hint="Contact %s" % tau.HELP_CONTACT):
+    def __init__(self, value, hint="Contact %s" % HELP_CONTACT):
         self.value = value
         self.hint = hint
 
@@ -81,11 +78,11 @@ Please e-mail '%(logfile)s' to %(contact)s for assistance.
                                       'hint': 'Hint: %s' % self.hint,
                                       'typename': etype.__name__,
                                       'cmd': ' '.join([arg for arg in sys.argv[1:]]),
-                                      'contact': tau.HELP_CONTACT,
+                                      'contact': HELP_CONTACT,
                                       'logfile': logger.LOG_FILE,
                                       'backtrace': backtrace}
         LOGGER.critical(message)
-        sys.exit(tau.EXIT_FAILURE)
+        sys.exit(EXIT_FAILURE)
 
 
 class InternalError(Error):
@@ -141,11 +138,11 @@ def excepthook(etype, e, tb):
     """
     if etype == KeyboardInterrupt:
         LOGGER.info('Received keyboard interrupt.  Exiting.')
-        sys.exit(tau.EXIT_WARNING)
+        sys.exit(EXIT_WARNING)
     else:
         try:
             sys.exit(e.handle(etype, e, tb))
-        except AttributeError, err:
+        except AttributeError:
             LOGGER.critical("""
 An unexpected %(typename)s exception was raised:
 
@@ -158,10 +155,10 @@ Please email '%(logfile)s' to %(contact)s for assistance
 """ % {'value': e,
                 'typename': etype.__name__,
                 'cmd': ' '.join([arg for arg in sys.argv[1:]]),
-                'contact': tau.HELP_CONTACT,
+                'contact': HELP_CONTACT,
                 'logfile': logger.LOG_FILE,
                 'backtrace': ''.join(traceback.format_exception(etype, e, tb))})
-            sys.exit(tau.EXIT_FAILURE)
+            sys.exit(EXIT_FAILURE)
 
 # Set the default exception handler
 sys.excepthook = excepthook

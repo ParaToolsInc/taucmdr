@@ -35,15 +35,10 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-# System modules
 import os
 import sys
-
-# TAU modules
-import tau
-import logger
-import commands
-import arguments as args
+from tau import EXIT_SUCCESS, HELP_CONTACT
+from tau import logger, commands, arguments
 
 
 LOGGER = logger.getLogger(__name__)
@@ -63,14 +58,14 @@ Show help for a command line or file.
 
 _arguments = [(('command',), {'help': "A TAU command, system command, or file",
                               'metavar': '(<command>|<file>)',
-                              'nargs': args.REMAINDER})]
-PARSER = args.getParser(_arguments,
-                        prog=COMMAND,
-                        usage=USAGE,
-                        description=SHORT_DESCRIPTION)
+                              'nargs': arguments.REMAINDER})]
+PARSER = arguments.getParser(_arguments,
+                             prog=COMMAND,
+                             usage=USAGE,
+                             description=SHORT_DESCRIPTION)
 
 
-_GENERIC_HELP = "See 'tau --help' or contact %s for assistance" % tau.HELP_CONTACT
+_GENERIC_HELP = "See 'tau --help' or contact %s for assistance" % HELP_CONTACT
 
 _KNOWN_FILES = {'makefile': ("makefile script",
                              "See 'tau make --help' for help building with make"),
@@ -106,20 +101,20 @@ def _fuzzy_index(d, k):
 
 def _guess_filetype(filename):
     """
-    Return a (type, encoding) tuple for a file
+    Return a (filetype, encoding) tuple for a file
     """
     import mimetypes
     mimetypes.init()
-    type = mimetypes.guess_type(filename)
-    if not type[0]:
+    filetype = mimetypes.guess_type(filename)
+    if not filetype[0]:
         textchars = bytearray(
             [7, 8, 9, 10, 12, 13, 27]) + bytearray(range(0x20, 0x100))
         with open(filename) as f:
             if f.read(1024).translate(None, textchars):
-                type = ('application/unknown', None)
+                filetype = ('application/unknown', None)
             else:
-                type = ('text/plain', None)
-    return type
+                filetype = ('text/plain', None)
+    return filetype
 
 
 def getUsage():
@@ -145,7 +140,7 @@ def exitWithHelp(module_name):
 %(bar)s""" % {'bar': '-' * 80,
                 'usage': module.getUsage(),
                 'help': module.getHelp()})
-    return tau.EXIT_SUCCESS
+    return EXIT_SUCCESS
 
 
 def main(argv):
@@ -178,12 +173,12 @@ def main(argv):
             raise commands.UnknownCommandError(cmd, hint)
 
         # Get the filetype and try to be helpful.
-        type, encoding = _guess_filetype(cmd)
-        LOGGER.debug("%r has type (%s, %s)" % (cmd, type, encoding))
-        if type:
-            type, subtype = type.split('/')
+        filetype, encoding = _guess_filetype(cmd)
+        LOGGER.debug("%r has filetype (%s, %s)" % (cmd, filetype, encoding))
+        if filetype:
+            filetype, subtype = filetype.split('/')
             try:
-                type_hints = _MIME_HINTS[type]
+                type_hints = _MIME_HINTS[filetype]
             except KeyError:
                 hint = "TAU doesn't recognize %r.\nSee 'tau --help' and use the appropriate subcommand." % cmd
             else:

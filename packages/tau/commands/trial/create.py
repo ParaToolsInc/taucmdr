@@ -35,15 +35,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-
-# TAU modules
-import logger
-import commands
-import controller
-import error
-import util
-import arguments as args
-from model.experiment import Experiment
+from tau import logger, error, util, arguments
+from tau.model.experiment import Experiment
 
 
 LOGGER = logger.getLogger(__name__)
@@ -64,11 +57,11 @@ _arguments = [(('cmd',), {'help': "Command, e.g. './a.out' or 'mpirun ./a.out'",
                           'metavar': '<command>'}),
               (('cmd_args',), {'help': "Command arguments",
                                'metavar': '[arguments]',
-                               'nargs': args.REMAINDER})]
-PARSER = args.getParser(_arguments,
-                        prog=COMMAND,
-                        usage=USAGE,
-                        description=SHORT_DESCRIPTION)
+                               'nargs': arguments.REMAINDER})]
+PARSER = arguments.getParser(_arguments,
+                             prog=COMMAND,
+                             usage=USAGE,
+                             description=SHORT_DESCRIPTION)
 
 
 def getUsage():

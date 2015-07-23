@@ -34,16 +34,9 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
-# System modules
-import os
 
-# TAU modules
-import tau
-import logger
-import settings
-import error
-import commands
-import arguments as args
+from tau import EXIT_SUCCESS
+from tau import logger, commands, arguments
 
 
 LOGGER = logger.getLogger(__name__)
@@ -65,10 +58,10 @@ Help page to be written.
 _arguments = [(('-l', '--long'), {'help': "Display all information",
                                   'action': 'store_true',
                                   'default': False})]
-PARSER = args.getParser(_arguments,
-                        prog=COMMAND,
-                        usage=USAGE,
-                        description=SHORT_DESCRIPTION)
+PARSER = arguments.getParser(_arguments,
+                             prog=COMMAND,
+                             usage=USAGE,
+                             description=SHORT_DESCRIPTION)
 
 
 def getUsage():
@@ -96,4 +89,4 @@ def main(argv):
     commands.executeCommand(['project', 'list'], subargs)
     commands.executeCommand(['trial', 'list'], ['-s'])
 
-    return tau.EXIT_SUCCESS
+    return EXIT_SUCCESS

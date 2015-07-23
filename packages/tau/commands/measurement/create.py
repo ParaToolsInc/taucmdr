@@ -35,13 +35,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-# TAU modules
-import logger
-import commands
-import controller
-import error
-import arguments as args
-from model.measurement import Measurement
+from tau import logger, commands, controller, arguments
+from tau.model.measurement import Measurement
 
 
 LOGGER = logger.getLogger(__name__)
@@ -58,10 +53,10 @@ HELP = """
 '%(command)s' page to be written.
 """ % {'command': COMMAND}
 
-PARSER = args.getParserFromModel(Measurement,
-                                 prog=COMMAND,
-                                 usage=USAGE,
-                                 description=SHORT_DESCRIPTION)
+PARSER = arguments.getParserFromModel(Measurement,
+                                      prog=COMMAND,
+                                      usage=USAGE,
+                                      description=SHORT_DESCRIPTION)
 
 
 def getUsage():

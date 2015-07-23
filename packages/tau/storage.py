@@ -38,14 +38,8 @@
 # Sytem modules
 import os
 from tinydb import TinyDB, where
-
-
-# TAU modules
-import logger
-import error
-import util
-import error
-import environment as env
+from tau import logger, util, error
+from tau.environment import USER_PREFIX, SYSTEM_PREFIX
 
 
 LOGGER = logger.getLogger(__name__)
@@ -74,14 +68,14 @@ class Storage(object):
             util.mkdirp(prefix)
             LOGGER.debug("Created '%s'" % prefix)
         except:
-            raise StorageError('Cannot create directory %r' %
-                               path, 'Check that you have `write` access')
+            raise StorageError("Cannot create directory '%s'" % prefix, 
+                               'Check that you have `write` access')
         self.dbfile = os.path.join(prefix, db_name)
         try:
             self.db = TinyDB(self.dbfile)
         except:
-            raise StorageError('Cannot create %r' %
-                               path, 'Check that you have `write` access')
+            raise StorageError("Cannot create '%s'" % self.dbfile, 
+                               'Check that you have `write` access')
         LOGGER.debug("Opened '%s' for read/write" % self.dbfile)
 
     def __enter__(self):
@@ -229,5 +223,5 @@ class Storage(object):
         return self.db.table(table_name).purge()
 
 
-user_storage = Storage(env.USER_PREFIX, 'local.json')
-system_storage = Storage(env.SYSTEM_PREFIX, 'local.json')
+user_storage = Storage(USER_PREFIX, 'local.json')
+system_storage = Storage(SYSTEM_PREFIX, 'local.json')

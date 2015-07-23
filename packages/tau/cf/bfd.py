@@ -35,19 +35,10 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-# System modules
 import os
 import glob
-import sys
 import shutil
-import platform
-
-# TAU modules
-import cf
-import logger
-import util
-import error
-import environment
+from tau import logger, util, error
 
 
 LOGGER = logger.getLogger(__name__)
@@ -176,21 +167,21 @@ class Bfd(object):
                 raise error.SoftwarePackageError(
                     'BFD installation failed before verifcation.')
 
-             # cp headers from source to install
+            # cp headers from source to install
 
             LOGGER.info(
                 "Copying headers from BFD source to install 'include'.")
-            for file in glob.glob(os.path.join(srcdir, 'bfd', '*.h')):
-                shutil.copy(file, self.include_path)
-            for file in glob.glob(os.path.join(srcdir, 'include', '*')):
+            for f in glob.glob(os.path.join(srcdir, 'bfd', '*.h')):
+                shutil.copy(f, self.include_path)
+            for f in glob.glob(os.path.join(srcdir, 'include', '*')):
                 try:
-                    shutil.copy(file, self.include_path)
+                    shutil.copy(f, self.include_path)
                 except:
                     dst = os.path.join(
-                        self.include_path, os.path.basename(file))
-                    shutil.copytree(file, dst)
+                        self.include_path, os.path.basename(f))
+                    shutil.copytree(f, dst)
 
-             # cp additional libraries:
+            # cp additional libraries:
             LOGGER.info("Copying missing libraries to install 'lib'.")
             shutil.copy(
                 os.path.join(srcdir, 'libiberty', 'libiberty.a'), self.lib_path)

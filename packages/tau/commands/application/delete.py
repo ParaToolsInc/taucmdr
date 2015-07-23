@@ -35,11 +35,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-# TAU modules
-import logger
-import commands
-import arguments as args
-from model.application import Application
+from tau import logger, commands, arguments
+from tau.model.application import Application
 
 
 LOGGER = logger.getLogger(__name__)
@@ -62,11 +59,11 @@ WARNING: Deleting an application configuration will remove it from all projects
 
 _arguments = [(('name',), {'help': "Name of application configuration to delete",
                            'metavar': '<application_name>'})]
-PARSER = args.getParser(_arguments,
-                        prog=COMMAND,
-                        usage=USAGE % {'command': COMMAND},
-                        description=SHORT_DESCRIPTION,
-                        epilog=HELP_EPILOG)
+PARSER = arguments.getParser(_arguments,
+                             prog=COMMAND,
+                             usage=USAGE % {'command': COMMAND},
+                             description=SHORT_DESCRIPTION,
+                             epilog=HELP_EPILOG)
 
 
 def getUsage():

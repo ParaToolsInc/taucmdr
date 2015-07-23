@@ -35,19 +35,9 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-# System modules
 import os
-import glob
-import sys
 import shutil
-import platform
-
-# TAU modules
-import cf
-import logger
-import util
-import error
-import environment
+from tau import logger, util, error
 
 
 LOGGER = logger.getLogger(__name__)

@@ -35,11 +35,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-# TAU modules
-import logger
-import commands
-import arguments as args
-from model.measurement import Measurement
+from tau import logger, commands, arguments
+from tau.model.measurement import Measurement
 
 
 LOGGER = logger.getLogger(__name__)
@@ -56,15 +53,15 @@ HELP = """
 '%(command)s' page to be written.
 """ % {'command': COMMAND}
 
-PARSER = args.getParserFromModel(Measurement,
-                                 use_defaults=False,
-                                 prog=COMMAND,
-                                 usage=USAGE,
-                                 description=SHORT_DESCRIPTION)
+PARSER = arguments.getParserFromModel(Measurement,
+                                      use_defaults=False,
+                                      prog=COMMAND,
+                                      usage=USAGE,
+                                      description=SHORT_DESCRIPTION)
 PARSER.add_argument('--rename',
                     help="Rename the measurement configuration",
                     metavar='<new_name>', dest='new_name',
-                    default=args.SUPPRESS)
+                    default=arguments.SUPPRESS)
 
 
 def getUsage():

@@ -35,11 +35,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-
-# TAU modules
-import logger
-import commands
-import arguments as args
+from tau import logger, commands, arguments
 
 
 LOGGER = logger.getLogger(__name__)
@@ -71,12 +67,12 @@ _arguments = [(('subcommand',), {'help': "See 'subcommands' below",
                                  'metavar': '<subcommand>'}),
               (('options',), {'help': "Arguments to be passed to <subcommand>",
                               'metavar': '[arguments]',
-                              'nargs': args.REMAINDER})]
-PARSER = args.getParser(_arguments,
-                        prog=COMMAND,
-                        usage=USAGE,
-                        description=SHORT_DESCRIPTION,
-                        epilog=USAGE_EPILOG)
+                              'nargs': arguments.REMAINDER})]
+PARSER = arguments.getParser(_arguments,
+                             prog=COMMAND,
+                             usage=USAGE,
+                             description=SHORT_DESCRIPTION,
+                             epilog=USAGE_EPILOG)
 
 
 def getUsage():

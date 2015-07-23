@@ -41,18 +41,14 @@ import sys
 import errno
 import logging
 import textwrap
-import contextlib
 import socket
 import platform
 from datetime import datetime
 from logging import handlers
-
-# TAU modules
-import environment
+from tau import environment
 
 
 def getTerminalSize():
-    import platform
     current_os = platform.system()
     tuple_xy = None
     if current_os == 'Windows':
@@ -79,18 +75,7 @@ def _getTerminalSize_windows():
         return None
     if res:
         import struct
-        (bufx,
-         bufy,
-         curx,
-         cury,
-         wattr,
-         left,
-         top,
-         right,
-         bottom,
-         maxx,
-         maxy) = struct.unpack("hhhhHhhhhhh",
-                               csbi.raw)
+        (_,_,_,_,_, left,top,right,bottom, _,_) = struct.unpack("hhhhHhhhhhh", csbi.raw)
         sizex = right - left + 1
         sizey = bottom - top + 1
         return sizex, sizey
@@ -123,7 +108,6 @@ def _getTerminalSize_linux():
             import fcntl
             import termios
             import struct
-            import os
             cr = struct.unpack(
                 'hh', fcntl.ioctl(fd, termios.TIOCGWINSZ, '1234'))
         except:
@@ -139,7 +123,7 @@ def _getTerminalSize_linux():
             pass
     if not cr:
         try:
-            cr = (env['LINES'], env['COLUMNS'])
+            cr = (os.environ['LINES'], os.environ['COLUMNS'])
         except:
             return None
     return int(cr[1]), int(cr[0])

@@ -35,14 +35,11 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-# TAU modules
-import logger
-import commands
-import arguments as args
-from model.project import Project
-from model.target import Target
-from model.application import Application
-from model.measurement import Measurement
+from tau import logger, commands, arguments
+from tau.model.project import Project
+from tau.model.target import Target
+from tau.model.application import Application
+from tau.model.measurement import Measurement
 
 
 LOGGER = logger.getLogger(__name__)
@@ -63,52 +60,52 @@ _arguments = [(('--rename',),
                {'help': "Rename the project configuration",
                 'metavar': '<new_name>',
                 'dest': 'new_name',
-                'default': args.SUPPRESS}),
+                'default': arguments.SUPPRESS}),
               (('--add',),
                {'help': "Add target, application, or measurement configurations to the project",
                 'metavar': '<conf>',
                 'nargs': '+',
-                'default': args.SUPPRESS}),
+                'default': arguments.SUPPRESS}),
               (('--remove',),
                {'help': "Remove target, application, or measurement configurations from the project",
                 'metavar': '<conf>',
                 'nargs': '+',
-                'default': args.SUPPRESS}),
+                'default': arguments.SUPPRESS}),
               (('--add-targets',),
                {'help': "Add target configurations to the project",
                 'metavar': '<target>',
                 'nargs': '+',
-                'default': args.SUPPRESS}),
+                'default': arguments.SUPPRESS}),
               (('--add-applications',),
                {'help': "Add application configurations to the project",
                 'metavar': '<application>',
                 'nargs': '+',
-                'default': args.SUPPRESS}),
+                'default': arguments.SUPPRESS}),
               (('--add-measurements',),
                {'help': "Add measurement configurations to the project",
                 'metavar': '<measurement>',
                 'nargs': '+',
-                'default': args.SUPPRESS}),
+                'default': arguments.SUPPRESS}),
               (('--remove-targets',),
                {'help': "Remove target configurations from the project",
                 'metavar': '<target>',
                 'nargs': '+',
-                'default': args.SUPPRESS}),
+                'default': arguments.SUPPRESS}),
               (('--remove-applications',),
                {'help': "Remove application configurations from the project",
                 'metavar': '<application>',
                 'nargs': '+',
-                'default': args.SUPPRESS}),
+                'default': arguments.SUPPRESS}),
               (('--remove-measurements',),
                {'help': "Remove measurement configurations from the project",
                 'metavar': '<measurement>',
                 'nargs': '+',
-                'default': args.SUPPRESS})]
+                'default': arguments.SUPPRESS})]
 
-PARSER = args.getParserFromModel(Project,
-                                 prog=COMMAND,
-                                 usage=USAGE,
-                                 description=SHORT_DESCRIPTION)
+PARSER = arguments.getParserFromModel(Project,
+                                      prog=COMMAND,
+                                      usage=USAGE,
+                                      description=SHORT_DESCRIPTION)
 for arg in _arguments:
     flags, options = arg
     PARSER.add_argument(*flags, **options)

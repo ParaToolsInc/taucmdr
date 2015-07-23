@@ -39,15 +39,12 @@
 import sys
 
 # TAU modules
-import tau
-import commands
-import logger
-import util
-import arguments as args
+from tau import PROJECT_URL, MINIMUM_PYTHON_VERSION
+from tau import commands, logger, arguments
 
 LOGGER = logger.getLogger(__name__)
 
-SHORT_DESCRIPTION = "TAU Commander [ %s ]" % tau.PROJECT_URL
+SHORT_DESCRIPTION = "TAU Commander [ %s ]" % PROJECT_URL
 
 COMMAND = 'tau'
 
@@ -88,13 +85,13 @@ _arguments = [(('command',), {'help': "See subcommand descriptions below",
                               'metavar': '<subcommand>'}),
               (('options',), {'help': "Options to be passed to <subcommand>",
                               'metavar': '[options]',
-                              'nargs': args.REMAINDER}),
+                              'nargs': arguments.REMAINDER}),
               (('-v', '--verbose'), {'help': "Set logging level to DEBUG",
                                      'metavar': '',
                                      'const': 'DEBUG',
                                      'default': 'INFO',
                                      'action': 'store_const'})]
-PARSER = args.getParser(_arguments,
+PARSER = arguments.getParser(_arguments,
                         prog=COMMAND,
                         usage=USAGE,
                         description=SHORT_DESCRIPTION,
@@ -115,9 +112,9 @@ def main():
     """
 
     # Check Python version
-    if sys.version_info < tau.MINIMUM_PYTHON_VERSION:
+    if sys.version_info < MINIMUM_PYTHON_VERSION:
         version = '.'.join(map(str, sys.version_info[0:3]))
-        expected = '.'.join(map(str, tau.MINIMUM_PYTHON_VERSION))
+        expected = '.'.join(map(str, MINIMUM_PYTHON_VERSION))
         LOGGER.error("Your Python version is %s but Python %s or later is required. Please update Python." %
                      (version, sys.argv[0], expected))
 

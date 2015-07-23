@@ -35,11 +35,10 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-# TAU modules
-import controller as ctl
+from tau.controller import Controller
 
 
-class Setting(ctl.Controller):
+class Setting(Controller):
 
     """
     Setting data model controller

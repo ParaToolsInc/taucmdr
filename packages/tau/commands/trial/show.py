@@ -35,21 +35,9 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-# System modules
-import os
-from texttable import Texttable
-from pprint import pformat
-
-# TAU modules
-import tau
-import logger
-import commands
-import error
-import util
-import arguments as args
-import environment as env
-from model.experiment import Experiment
-from model.trial import Trial
+from tau import EXIT_FAILURE
+from tau import logger, arguments
+from tau.model.experiment import Experiment
 
 
 LOGGER = logger.getLogger(__name__)
@@ -70,11 +58,11 @@ HELP = """
 _arguments = [(('numbers',), {'help': "If given, show details for trial with this number",
                               'metavar': 'trial_number',
                               'nargs': '*',
-                              'default': args.SUPPRESS})]
-PARSER = args.getParser(_arguments,
-                        prog=COMMAND,
-                        usage=USAGE,
-                        description=SHORT_DESCRIPTION)
+                              'default': arguments.SUPPRESS})]
+PARSER = arguments.getParser(_arguments,
+                             prog=COMMAND,
+                             usage=USAGE,
+                             description=SHORT_DESCRIPTION)
 
 
 def getUsage():
@@ -95,7 +83,7 @@ def main(argv):
     selection = Experiment.getSelected()
     if not selection:
         LOGGER.info("No experiment configured. See `tau project select`\n")
-        return tau.EXIT_FAILURE
+        return EXIT_FAILURE
 
     try:
         str_numbers = args.numbers

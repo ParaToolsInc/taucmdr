@@ -35,13 +35,9 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # """
 
-# TAU modules
-import logger
-import error
-import commands
-import arguments as args
-from model.experiment import Experiment
-from model.compiler import Compiler, KNOWN_COMPILERS
+from tau import logger, error, commands, arguments
+from tau.model.experiment import Experiment
+from tau.model.compiler import KNOWN_COMPILERS
 
 
 LOGGER = logger.getLogger(__name__)
@@ -79,12 +75,12 @@ _arguments = [(('cmd',), {'help': "Compiler or linker command, e.g. 'gcc'",
                           'metavar': '<command>'}),
               (('cmd_args',), {'help': "Compiler arguments",
                                'metavar': '[arguments]',
-                               'nargs': args.REMAINDER})]
-PARSER = args.getParser(_arguments,
-                        prog=COMMAND,
-                        usage=USAGE,
-                        description=SHORT_DESCRIPTION,
-                        epilog=USAGE_EPILOG)
+                               'nargs': arguments.REMAINDER})]
+PARSER = arguments.getParser(_arguments,
+                             prog=COMMAND,
+                             usage=USAGE,
+                             description=SHORT_DESCRIPTION,
+                             epilog=USAGE_EPILOG)
 
 
 def getUsage():
