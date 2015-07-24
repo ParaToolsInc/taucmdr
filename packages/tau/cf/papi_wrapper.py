@@ -48,7 +48,7 @@ DEFAULT_SOURCE = {
 LIBS = {None: ['libpapi.a']}
 
 
-class Papi(object):
+class PapiInstallation(object):
 
     """
     Encapsulates a PAPI installation

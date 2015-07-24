@@ -103,8 +103,6 @@ COMMANDS = [
     'tau_user_setup.sh',
     'trace2profile'
 ]
-# if (arch != "apple") then:
-#  COMMAND.aappend('tau_resolve_addresses.py')
 
 
 def _parseConfig(config, commandline_opts, environment_vars):
@@ -143,7 +141,7 @@ def _parseConfig(config, commandline_opts, environment_vars):
     return list(opts), envs
 
 
-class Tau(object):
+class TauInstallation(object):
 
     """
     Encapsulates a TAU installation

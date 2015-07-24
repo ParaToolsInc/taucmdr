@@ -93,11 +93,11 @@ COMMANDS = {None: ['cparse',
             }
 
 
-class Pdt(object):
-
+class PdtInstallation(object):
     """
     Encapsulates a PDT installation
     """
+    # pylint: disable=too-many-instance-attributes
 
     def __init__(self, prefix, cxx, src, arch):
         self.src = src

@@ -37,8 +37,8 @@
 
 import os
 import hashlib
-import cf.tau_api
 from tau import logger, error, controller, util
+from tau.cf import tau_wrapper
 
 
 LOGGER = logger.getLogger(__name__)
@@ -55,7 +55,7 @@ class CompilerInfo(object):
         self.role = role
         self.family = family
         self.language = language
-        self.tau_wrapper = cf.tau_api.COMPILER_WRAPPERS[role]
+        self.tau_wrapper = tau_wrapper.COMPILER_WRAPPERS[role]
         self.short_descr = "%s %s compiler." % (family, language)
 
     def __repr__(self):

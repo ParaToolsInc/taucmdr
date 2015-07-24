@@ -48,7 +48,7 @@ DEFAULT_SOURCE = {
 LIBS = {None: ['libunwind.a']}
 
 
-class Libunwind(object):
+class LibunwindInstallation(object):
 
     """
     Encapsulates a Libunwind installation

@@ -39,16 +39,16 @@ import os
 import glob
 import shutil
 
-import cf.tau_api
-import cf.pdt
-import cf.bfd
-import cf.papi
-import cf.libunwind
 
 from tau import logger, settings, error, util, environment
 from tau.controller import Controller
 from tau.model.compiler import Compiler
 from tau.model.trial import Trial
+from tau.cf.tau_wrapper import TauInstallation
+from tau.cf.pdt_wrapper import PdtInstallation
+from tau.cf.bfd_wrapper import BfdInstallation 
+from tau.cf.papi_wrapper import PapiInstallation
+from tau.cf.libunwind_wrapper import LibunwindInstallation
 
 LOGGER = logger.getLogger(__name__)
 
@@ -168,7 +168,7 @@ class Experiment(Controller):
         #    REFACTOR ******
         # don't instantiate if  target['pdt_source'] is False
         if target['pdt_source']:
-            pdt = cf.pdt.Pdt(
+            pdt = PdtInstallation(
                 prefix, cxx, target['pdt_source'], target['host_arch'])
             pdt.install()
             self.pdt = pdt
@@ -176,7 +176,7 @@ class Experiment(Controller):
             self.pdt = None
 
         if target['bfd_source']:
-            bfd = cf.bfd.Bfd(
+            bfd = BfdInstallation(
                 prefix, cxx, target['bfd_source'], target['host_arch'])
             bfd.install()
             self.bfd = bfd
@@ -184,7 +184,7 @@ class Experiment(Controller):
             self.bfd = None
 
         if target['libunwind_source']:
-            libunwind = cf.libunwind.Libunwind(
+            libunwind = LibunwindInstallation(
                 prefix, cxx, target['libunwind_source'], target['host_arch'])
             libunwind.install()
             self.libunwind = libunwind
@@ -192,7 +192,7 @@ class Experiment(Controller):
             self.libunwind = None
 
         if (util.parseBoolean(target['papi_source'])) or (util.parseBoolean(target['papi_source']) == None):
-            papi = cf.papi.Papi(
+            papi = PapiInstallation(
                 prefix, cxx, target['papi_source'], target['host_arch'])
             papi.install()
             self.papi = papi
@@ -206,41 +206,41 @@ class Experiment(Controller):
             self.libunwind = None
 
         # Configure/build/install TAU if needed
-        tau = cf.tau_api.Tau(prefix, cc, cxx, fc, target['tau_source'], target['host_arch'],
-                         verbose=verbose,
-                         pdt=self.pdt,
-                         bfd=self.bfd,
-                         papi=self.papi,
-                         libunwind=self.libunwind,
-                         profile=measurement['profile'],
-                         trace=measurement['trace'],
-                         sample=measurement['sample'],
-                         source_inst=measurement['source_inst'],
-                         compiler_inst=measurement['compiler_inst'],
-                         keep_inst_files=measurement['keep_inst_files'],
-                         reuse_inst_files=measurement['reuse_inst_files'],
-                         io_wrapper=measurement['io_wrapper'],
-                         link_only=measurement['link_only'],
-                         # TODO: Library wrapping inst [dynamic]
-                         # TODO: binary rewrite  inst
-                         openmp_support=application['openmp'],
-                         openmp_measurements=measurement['openmp'],
-                         pthreads_support=application['pthreads'],
-                         pthreads_measurements=None,  # TODO
-                         mpi_support=application['mpi'],
-                         mpi_measurements=measurement['mpi'],
-                         cuda_support=application['cuda'],
-                         cuda_measurements=None,  # Todo
-                         shmem_support=application['shmem'],
-                         shmem_measurements=None,  # TODO
-                         mpc_support=application['mpc'],
-                         mic_support=application['mic-linux'],
-                         mpc_measurements=None,  # TODO
-                         memory_support=None,  # TODO
-                         memory_measurements=None,  # TODO
-                         callpath=measurement['callpath'],
-                         metrics=measurement['metrics']
-                         )
+        tau = TauInstallation(prefix, cc, cxx, fc, 
+                              target['tau_source'], target['host_arch'],
+                              verbose=verbose,
+                              pdt=self.pdt,
+                              bfd=self.bfd,
+                              papi=self.papi,
+                              libunwind=self.libunwind,
+                              profile=measurement['profile'],
+                              trace=measurement['trace'],
+                              sample=measurement['sample'],
+                              source_inst=measurement['source_inst'],
+                              compiler_inst=measurement['compiler_inst'],
+                              keep_inst_files=measurement['keep_inst_files'],
+                              reuse_inst_files=measurement['reuse_inst_files'],
+                              io_wrapper=measurement['io_wrapper'],
+                              link_only=measurement['link_only'],
+                              # TODO: Library wrapping inst [dynamic]
+                              # TODO: binary rewrite  inst
+                              openmp_support=application['openmp'],
+                              openmp_measurements=measurement['openmp'],
+                              pthreads_support=application['pthreads'],
+                              pthreads_measurements=None,  # TODO
+                              mpi_support=application['mpi'],
+                              mpi_measurements=measurement['mpi'],
+                              cuda_support=application['cuda'],
+                              cuda_measurements=None,  # Todo
+                              shmem_support=application['shmem'],
+                              shmem_measurements=None,  # TODO
+                              mpc_support=application['mpc'],
+                              mic_support=application['mic-linux'],
+                              mpc_measurements=None,  # TODO
+                              memory_support=None,  # TODO
+                              memory_measurements=None,  # TODO
+                              callpath=measurement['callpath'],
+                              metrics=measurement['metrics'])
         tau.install()
         self.tau = tau
 
