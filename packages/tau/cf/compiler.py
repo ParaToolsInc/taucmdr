@@ -40,6 +40,7 @@
 
 import os
 import hashlib
+import subprocess
 import logger, util
 from error import ConfigurationError
 from tau import COMPILER_WRAPPERS
@@ -122,7 +123,7 @@ class CompilerInfo(object):
         
     def __str__(self):
         return os.path.join(self.path, self.command)
-
+    
     @classmethod
     def identify(cls, compiler_cmd):
         """Returns a CompilerInfo object matching a given command.
@@ -155,9 +156,49 @@ class CompilerInfo(object):
         with open(path, 'r') as compiler_file:
             md5sum.update(compiler_file.read())
         info.md5sum = md5sum.hexdigest()
+        # If it's an MPI compiler try to determine the real compiler
+        if info.family == 'MPI':
+            wrapped_family = cls._mpi_family(info)
+            if wrapped_family:
+                info.family = wrapped_family 
         # TODO: Compiler version
         info.version = 'FIXME'       
         return info
+    
+    @classmethod
+    def _mpi_family(cls, info):
+        """Determine what compiler the MPI compiler wrapper is wrapping.
+        
+        Executes the compiler command and parses the output to determine
+        the real compiler.
+        
+        Args:
+            info: A mostly populated CompilerInfo.
+            
+        Returns:
+            The compiler family string or None if it couldn't be determined.
+        """
+        abspath = os.path.join(info.path, info.command) 
+        cmd = [abspath, '-show']
+        LOGGER.debug("Creating subprocess: cmd=%s" % abspath)
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        stdout, _ = proc.communicate()
+        retval = proc.returncode
+        LOGGER.debug(stdout)
+        LOGGER.debug("%s returned %d" % (abspath, retval))
+        if retval == 0:
+            wrapped_compiler = stdout.split()[0]
+            try:
+                wrapped_info = KNOWN_COMPILERS[wrapped_compiler]
+            except KeyError:
+                pass
+            else:
+                LOGGER.info("Determined %s is wrapping %s" % (abspath, wrapped_info.short_descr))
+                return wrapped_info.family
+        LOGGER.warning("Could not determine compiler family of '%s'" % abspath)
+        return None
+
+
 
 KNOWN_COMPILERS = {
     'cc': CompilerInfo('cc', CC, 'system', 'C'),

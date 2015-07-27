@@ -35,7 +35,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-from tau import logger, commands, error, arguments
+from tau import logger, commands, arguments
+from tau.error import ConfigurationError
 from tau.model.experiment import Experiment
 from tau.model.trial import Trial
 
@@ -79,8 +80,7 @@ def main(argv):
 
     selection = Experiment.getSelected()
     if not selection:
-        raise error.ConfigurationError(
-            "No experiment configured.", "See `tau project select`")
+        raise ConfigurationError("No experiment configured.", "See `tau project select`")
 
     try:
         number = int(args.number)
@@ -88,8 +88,8 @@ def main(argv):
         PARSER.error("Invalid trial number: %s" % args.number)
     fields = {'experiment': selection.eid, 'number': number}
     if not Trial.exists(fields):
-        PARSER.error(
-            "No trial number %s in the current experiment.  See `tau trial list` to see all trial numbers." % number)
+        PARSER.error("No trial number %s in the current experiment.  "
+                     "See `tau trial list` to see all trial numbers." % number)
     Trial.delete(fields)
     LOGGER.info('Deleted trial %s' % number)
 

@@ -37,7 +37,7 @@
 
 import os
 import logger, util
-from error import SoftwarePackageError
+from cf import SoftwarePackageError
 from installation import AutotoolsInstallation
 
 

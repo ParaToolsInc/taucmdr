@@ -35,7 +35,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-from tau import logger, arguments, commands, controller
+from tau import logger, arguments, commands
+from tau.controller import UniqueAttributeError
 from tau.model.project import Project
 from tau.model.target import Target
 from tau.model.application import Application
@@ -150,7 +151,7 @@ def main(argv):
 
     try:
         Project.create(args.__dict__)
-    except controller.UniqueAttributeError:
+    except UniqueAttributeError:
         PARSER.error("A project named '%s' already exists." % args.name)
 
     LOGGER.info('Created a new project named %r.' % args.name)

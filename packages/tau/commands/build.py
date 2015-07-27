@@ -35,7 +35,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # """
 
-from tau import logger, error, commands, arguments
+from tau import logger, commands, arguments
+from tau.error import ConfigurationError
 from tau.model.experiment import Experiment
 from tau.cf.compiler import KNOWN_COMPILERS
 
@@ -107,6 +108,5 @@ def main(argv):
 
     selection = Experiment.getSelected()
     if not selection:
-        raise error.ConfigurationError(
-            "Nothing selected.", "See `tau project select`")
+        raise ConfigurationError("Nothing selected.", "See `tau project select`")
     return selection.managedBuild(args.cmd, args.cmd_args)

@@ -35,7 +35,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-from tau import logger, commands, controller, arguments
+import logger, commands, arguments
+from controller import UniqueAttributeError
 from tau.model.measurement import Measurement
 
 
@@ -76,7 +77,7 @@ def main(argv):
 
     try:
         Measurement.create(args.__dict__)
-    except controller.UniqueAttributeError:
+    except UniqueAttributeError:
         PARSER.error('A measurement named %r already exists' % args.name)
 
     LOGGER.info('Created a new measurement named %r.' % args.name)

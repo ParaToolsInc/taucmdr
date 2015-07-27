@@ -35,7 +35,9 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-from tau import logger, commands, controller, error, arguments
+from tau import logger, commands, arguments
+from error import ConfigurationError
+from controller import UniqueAttributeError
 from tau.model.target import Target
 from tau.model.compiler import Compiler
 from tau.cf.compiler import KNOWN_FAMILIES, ROLES
@@ -88,8 +90,8 @@ def main(argv):
         # Compilers not specified but that's OK
         pass
     except KeyError:
-        raise error.ConfigurationError("Invalid compiler family: %s" % args.family,
-                                       "See 'compiler arguments' under `%s --help`" % COMMAND)
+        raise ConfigurationError("Invalid compiler family: %s" % args.family,
+                                 "See 'compiler arguments' under `%s --help`" % COMMAND)
     else:
         LOGGER.debug("Using %s compilers by default" % args.family)
         for role in ROLES:
@@ -136,7 +138,7 @@ def main(argv):
     # Check that all compilers were found
     for key in compiler_keys:
         if key not in compilers:
-            raise error.ConfigurationError("%s compiler could not be found" % languages[key],
+            raise ConfigurationError("%s compiler could not be found" % languages[key],
                                            "See 'compiler arguments' under `tau target create --help`")
 
     # Check that all compilers are from the same compiler family
@@ -144,14 +146,14 @@ def main(argv):
     # check
     families = list(set([comp['family'] for comp in compilers.itervalues()]))
     if len(families) != 1:
-        raise error.ConfigurationError("Compilers from different families specified",
+        raise ConfigurationError("Compilers from different families specified",
                                        "TAU requires all compilers to be from the same family, e.g. GNU or Intel")
     LOGGER.info("Using %s compilers" % families[0])
 
     # Check that each compiler is in the right role
     for role, comp in compilers.iteritems():
         if comp['role'] != role:
-            raise error.ConfigurationError("'%s' specified as %s compiler but it is a %s compiler" %
+            raise ConfigurationError("'%s' specified as %s compiler but it is a %s compiler" %
                                            (comp.absolute_path(), languages[
                                             role], comp['language']),
                                            "See 'compiler arguments' under `tau target create --help`")
@@ -166,7 +168,7 @@ def main(argv):
         flags[key] = comp.eid
     try:
         Target.create(flags)
-    except controller.UniqueAttributeError:
+    except UniqueAttributeError:
         PARSER.error('A target named %r already exists' % args.name)
 
     LOGGER.info('Created a new target named %r.' % args.name)

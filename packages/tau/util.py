@@ -218,8 +218,8 @@ def pformat_dict(dct, title=None, empty_msg='No items.', indent=0, truncate=Fals
     return '%(line)s%(items)s' % {'line': line, 'items': items}
 
 
-def createSubprocess(cmd, cwd=None, env=None, fork=False, stdout=True, log=True,
-                     replace_env=False):
+def createSubprocess(cmd, cwd=None, env=None, fork=False, stdout=True, 
+                     log=True, replace_env=False):
     """
     """
     if not cwd:
@@ -254,11 +254,11 @@ def createSubprocess(cmd, cwd=None, env=None, fork=False, stdout=True, log=True,
         proc = subprocess.Popen(cmd, cwd=cwd, env=env,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT)
-        stdout, _ = proc.communicate()
+        out, _ = proc.communicate()
         if log:
-            LOGGER.debug(stdout)
+            LOGGER.debug(out)
         if stdout and (logger.LOG_LEVEL != 'DEBUG'):
-            sys.stdout.write(stdout)
+            sys.stdout.write(out)
         retval = proc.returncode
         LOGGER.debug("%s returned %d" % (cmd, retval))
         return retval

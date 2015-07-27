@@ -39,6 +39,7 @@ import os
 import sys
 from tau import EXIT_SUCCESS, HELP_CONTACT
 from tau import logger, commands, arguments
+from tau.commands import UnknownCommandError
 
 
 LOGGER = logger.getLogger(__name__)
@@ -169,7 +170,7 @@ def main(argv):
         else:
             article = 'an' if desc[0] in 'aeiou' else 'a'
             hint = '%r is %s %s.\n%s.' % (cmd, article, desc, hint)
-            raise commands.UnknownCommandError(cmd, hint)
+            raise UnknownCommandError(cmd, hint)
 
         # Get the filetype and try to be helpful.
         filetype, encoding = _guess_filetype(cmd)
@@ -184,9 +185,9 @@ def main(argv):
                 desc, hint = _fuzzy_index(type_hints, subtype)
                 article = 'an' if desc[0] in 'aeiou' else 'a'
                 hint = '%r is %s %s.\n%s.' % (cmd, article, desc, hint)
-            raise commands.UnknownCommandError(cmd, hint)
+            raise UnknownCommandError(cmd, hint)
         else:
-            raise commands.UnknownCommandError(cmd)
+            raise UnknownCommandError(cmd)
 
     # Not a file, not a command, let's just show TAU usage and exit
     return exitWithHelp('__main__')

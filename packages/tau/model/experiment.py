@@ -40,7 +40,8 @@ import glob
 import shutil
 
 
-from tau import logger, settings, error, util
+from tau import logger, settings, util
+from tau.error import ConfigurationError, InternalError
 from tau.controller import Controller
 from tau.model.compiler import Compiler
 from tau.model.trial import Trial
@@ -115,8 +116,8 @@ class Experiment(Controller):
         try:
             util.mkdirp(prefix)
         except:
-            raise error.ConfigurationError('Cannot create directory %r' % prefix,
-                                           'Check that you have `write` access')
+            raise ConfigurationError('Cannot create directory %r' % prefix,
+                                     'Check that you have `write` access')
 
     def onDelete(self):
         """
@@ -137,8 +138,7 @@ class Experiment(Controller):
         Set this experiment as the "selected" experiment.
         """
         if not self.eid:
-            raise error.InternalError(
-                'Tried to select an experiment without an eid')
+            raise InternalError('Tried to select an experiment without an eid')
         settings.set('experiment_id', self.eid)
 
     def isSelected(self):
@@ -155,8 +155,7 @@ class Experiment(Controller):
         if experiment_id:
             found = cls.one(eid=experiment_id)
             if not found:
-                raise error.InternalError(
-                    'Invalid experiment ID: %r' % experiment_id)
+                raise InternalError('Invalid experiment ID: %r' % experiment_id)
             return found
         return None
 
@@ -255,7 +254,6 @@ class Experiment(Controller):
         """
         TODO: Docs
         """
-        self.configure()
         target = self.populate('target')
         measurement = self.populate('measurement')
         given_compiler = Compiler.identify(compiler_cmd)
@@ -263,12 +261,16 @@ class Experiment(Controller):
 
         # Confirm target supports compiler
         if given_compiler.eid != target_compiler:
-            raise error.ConfigurationError("Target '%s' is configured with %s compiler '%s', not '%s'",
-                                           (self['name'], given_compiler['language'],
-                                            given_compiler.absolute_path(),
-                                            target_compiler.absolute_path()),
-                                           "Use a different target or use compiler '%s'" %
-                                           target_compiler.absolute_path())
+            target_compiler = Compiler.one(eid=target_compiler)
+            raise ConfigurationError("Target '%s' is configured with %s compiler '%s', not '%s'" %
+                                     (target['name'], given_compiler['language'],
+                                      target_compiler.absolute_path(),
+                                      given_compiler.absolute_path()),
+                                     "Use a different target or use compiler '%s'" % 
+                                     target_compiler.absolute_path())
+
+        # Configure software installation
+        self.configure()
 
         # Build compile-time environment from component packages
         opts, env = self.tau.apply_compiletime_config() 
@@ -277,9 +279,7 @@ class Experiment(Controller):
             compiler_cmd = given_compiler['tau_wrapper']
         cmd = [compiler_cmd] + opts + compiler_args
         retval = util.createSubprocess(cmd, env=env)
-        if retval == 0:
-            LOGGER.info("TAU has finished building the application.  Now use `tau <command>` to gather data from <command>.")
-        else:
+        if retval != 0:
             LOGGER.warning("TAU was unable to build the application.  You can see detailed output in '%s'" % logger.LOG_FILE)
         return retval
 
@@ -292,16 +292,14 @@ class Experiment(Controller):
 
         command = util.which(application_cmd)
         if not command:
-            raise error.ConfigurationError(
-                "Cannot find executable: %s" % application_cmd)
-        path = os.path.dirname(command)
+            raise ConfigurationError("Cannot find executable: %s" % application_cmd)
+        cwd = os.getcwd()
 
         # Check for existing profile files
         if measurement['profile']:
-            profiles = glob.glob(os.path.join(path, 'profile.*.*.*'))
+            profiles = glob.glob(os.path.join(cwd, 'profile.*.*.*'))
             if len(profiles):
-                LOGGER.warning(
-                    "Profile files found in '%s'! They will be deleted." % path)
+                LOGGER.warning("Profile files found in '%s'! They will be deleted." % cwd)
                 for f in profiles:
                     try:
                         os.remove(f)
@@ -322,7 +320,7 @@ class Experiment(Controller):
             cmd = [application_cmd]
         cmd += application_args
 
-        return Trial.perform(self, cmd, path, env)
+        return Trial.perform(self, cmd, cwd, env)
 
     def show(self, trial_numbers=None):
         """
@@ -334,8 +332,7 @@ class Experiment(Controller):
             for n in trial_numbers:
                 t = Trial.one({'experiment': self.eid, 'number': n})
                 if not t:
-                    raise error.ConfigurationError(
-                        "No trial number %d in experiment %s" % (n, self.name()))
+                    raise ConfigurationError("No trial number %d in experiment %s" % (n, self.name()))
                 trials.append(t)
         else:
             all_trials = self.populate('trials')
@@ -348,8 +345,8 @@ class Experiment(Controller):
                         latest_date = trial['begin_time']
                 trials = [trial]
         if not trials:
-            raise error.ConfigurationError("No trials in experiment %s" % self.name(),
-                                           "See `tau trial create --help`")
+            raise ConfigurationError("No trials in experiment %s" % self.name(),
+                                     "See `tau trial create --help`")
         for trial in trials:
             prefix = trial.prefix()
             profiles = glob.glob(os.path.join(prefix, 'profile.*.*.*'))

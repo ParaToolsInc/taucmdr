@@ -37,7 +37,8 @@
 import os
 import glob
 import logger, util
-from error import ConfigurationError, InternalError, SoftwarePackageError
+from error import ConfigurationError, InternalError
+from cf import SoftwarePackageError
 from installation import Installation
 
 
@@ -187,19 +188,19 @@ class TauInstallation(Installation):
             True: If the installation at `install_prefix` is working.
         
         Raises:
-          ConfigurationError: Describs why the installation is invalid.
+          SoftwarePackageError: Describs why the installation is invalid.
         """
         super(TauInstallation,self).verify(commands=COMMANDS)
 
         # Check that there is at least one makefile
         makefile = os.path.join(self.include_path, 'Makefile')
         if not os.path.exists(makefile):
-            raise ConfigurationError("'%s' does not exist" % makefile)
+            raise SoftwarePackageError("'%s' does not exist" % makefile)
 
         # Check for Makefile.tau matching this configuration
         makefile = self.get_makefile()
         if not makefile:
-            raise ConfigurationError("TAU Makefile not found: %s" % makefile)
+            raise SoftwarePackageError("TAU Makefile not found: %s" % makefile)
 
         # Open makefile, check BFDINCLUDE, UNWIND_INC, PAPIDIR
         LOGGER.debug("Tau Makefile %s :" % makefile)
@@ -209,17 +210,17 @@ class TauInstallation(Installation):
                     bfd_inc = line.split('=')[1].strip().strip("-I")
                     if self.bfd.include_path != bfd_inc:
                         LOGGER.debug("BFDINCLUDE='%s' != '%s'" % (bfd_inc, self.bfd.include_path))
-                        raise ConfigurationError("BFDINCLUDE in TAU Makefile doesn't match target BFD installation")
+                        raise SoftwarePackageError("BFDINCLUDE in TAU Makefile doesn't match target BFD installation")
                 if self.libunwind and ('UNWIND_INC=' in line):
                     libunwind_inc = line.split('=')[1].strip().strip("-I")
                     if self.libunwind.include_path != libunwind_inc:
                         LOGGER.debug("UNWIND_INC='%s' != '%s'" % (libunwind_inc, self.libunwind.include_path))
-                        raise ConfigurationError("UNWIND_INC in TAU Makefile doesn't match target libunwind installation")
+                        raise SoftwarePackageError("UNWIND_INC in TAU Makefile doesn't match target libunwind installation")
                 if self.papi and ('PAPIDIR=' in line):
                     papi_dir = line.split('=')[1].strip()
                     if self.papi.install_prefix != papi_dir:
                         LOGGER.debug("PAPI_DIR='%s' != '%s'" % (papi_dir, self.papi.install_prefix))
-                        raise ConfigurationError("PAPI_DIR in TAU Makefile doesn't match target PAPI installation")
+                        raise SoftwarePackageError("PAPI_DIR in TAU Makefile doesn't match target PAPI installation")
 
         LOGGER.info("TAU installation at '%s' is valid" % self.install_prefix)
         return True
@@ -245,16 +246,12 @@ class TauInstallation(Installation):
 
         # TAU's configure script has a goofy way of specifying the fortran compiler
         fc_family = self.compilers.fc.family
-        if fc_family != 'MPI':
-            family_map = {'GNU': 'gfortran',
-                          'Intel': 'intel',
-                          'PGI': 'pgi'}
-            try:
-                fortran_flag = '-fortran=%s' % family_map[fc_family]
-            except KeyError:
-                raise InternalError("Unknown compiler family for Fortran: '%s'" % fc_family)
-        else:
-            # TODO:  Recognize family from MPI compiler
+        family_map = {'GNU': 'gfortran',
+                      'Intel': 'intel',
+                      'PGI': 'pgi'}
+        try:
+            fortran_flag = '-fortran=%s' % family_map[fc_family]
+        except KeyError:
             raise InternalError("Unknown compiler family for Fortran: '%s'" % fc_family)
 
         # Gather TAU configuration flags
@@ -281,32 +278,32 @@ class TauInstallation(Installation):
             elif self.measure_openmp == 'opari':
                 flags.append('-opari')
             else:
-                raise ConfigurationError('Unknown OpenMP measurement: %s' % self.measure_openmp)
+                raise InternalError('Unknown OpenMP measurement: %s' % self.measure_openmp)
 
         # Execute configure
         cmd = ['./configure'] + flags
         try:
             LOGGER.info("Configuring TAU...")
             if util.createSubprocess(cmd + ['-iowrapper'], cwd=srcdir, stdout=False):
-                raise ConfigurationError('TAU configure failed. Retrying without iowrapper.')
+                raise SoftwarePackageError('TAU configure failed. Retrying without iowrapper.')
 
             # Execute make
             cmd = ['make', 'install'] + self._parallel_make_flags()
             LOGGER.info('Compiling TAU...')
             if util.createSubprocess(cmd, cwd=srcdir, stdout=False):
-                raise ConfigurationError('TAU compilation failed. Retrying without iowrapper.')
-        except:
+                raise SoftwarePackageError('TAU compilation failed. Retrying without iowrapper.')
+        except SoftwarePackageError:
             LOGGER.warning("Failed to compile TAU with I/O measurement enabled.")
             
             LOGGER.info("Configuring TAU...")
             if util.createSubprocess(cmd, cwd=srcdir, stdout=False):
-                raise ConfigurationError('TAU configure failed.')
+                raise SoftwarePackageError('TAU configure failed.')
 
             # Execute make
             cmd = ['make', 'install'] + self._parallel_make_flags()
             LOGGER.info('Compiling TAU..with out iowrapper.')
             if util.createSubprocess(cmd, cwd=srcdir, stdout=False):
-                raise ConfigurationError('TAU compilation failed.')
+                raise SoftwarePackageError('TAU compilation failed.')
 
             # svwip:  need to add a command that sets an attribute to target
             # "iowrapper" to FALSE
@@ -451,6 +448,7 @@ class TauInstallation(Installation):
         """
         Shows profile data in the specified file or folder
         """
+        LOGGER.debug("Showing profile files at '%s'" % path)
         _, env = super(TauInstallation,self).apply_runtime_config()
         for viewer in 'paraprof', 'pprof':
             if os.path.isfile(path):
@@ -459,9 +457,11 @@ class TauInstallation(Installation):
                 cmd = [viewer]
             LOGGER.info("Opening %s in %s" % (path, viewer))
             retval = util.createSubprocess(cmd, cwd=path, env=env, log=False)
-            if retval != 0:
-                LOGGER.warning("%s failed")
+            if retval == 0:
+                return
+            else:
+                LOGGER.warning("%s failed" % viewer)
         if retval != 0:
             raise ConfigurationError("All viewers failed to open '%s'" % path,
-                                           "Check that `java` is working, X11 is working,"
-                                           " network connectivity, and file permissions")
+                                     "Check that `java` is working, X11 is working,"
+                                     " network connectivity, and file permissions")

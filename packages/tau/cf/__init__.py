@@ -34,3 +34,21 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
+
+from error import ConfigurationError
+
+
+class SoftwarePackageError(ConfigurationError):
+    """
+    Indicates there was an error in an external software package  
+    """
+
+    message_fmt = """
+%(value)s
+%(hint)s
+
+Please check the selected configuration for errors or email '%(logfile)s' to  %(contact)s for assistance.
+"""
+
+    def __init__(self, value, hint="Try `tau --help`"):
+        super(SoftwarePackageError, self).__init__(value, hint)

@@ -116,23 +116,6 @@ Please check the selected configuration for errors or contact %(contact)s for as
         super(ConfigurationError, self).__init__(value, hint)
 
 
-class SoftwarePackageError(Error):
-
-    """
-    Indicates there was an error in an external software package  
-    """
-
-    message_fmt = """
-%(value)s
-%(hint)s
-
-Please check the selected configuration for errors or email '%(logfile)s' to  %(contact)s for assistance.
-"""
-
-    def __init__(self, value, hint="Try `tau --help`"):
-        super(SoftwarePackageError, self).__init__(value, hint)
-
-
 def excepthook(etype, e, tb):
     """
     Exception handler for any uncaught exception (except SystemExit).

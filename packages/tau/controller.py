@@ -36,14 +36,15 @@
 #"""
 
 import json
-from tau import logger, error, requisite, util
+import logger, requisite, util
+from error import InternalError, ConfigurationError
 from tau.storage import user_storage
 
 
 LOGGER = logger.getLogger(__name__)
 
 
-class ModelError(error.InternalError):
+class ModelError(InternalError):
 
     """
     Indicates that invalid model data was given.
@@ -282,8 +283,7 @@ class Controller(object):
         elif keys is not None:
             changing = cls.search(keys)
         else:
-            raise error.InternalError(
-                'Controller.update() requires either keys or eids')
+            raise InternalError('Controller.update() requires either keys or eids')
         with user_storage as storage:
             storage.update(cls.model_name, fields, keys=keys, eids=eids)
             for model in changing:
@@ -314,8 +314,7 @@ class Controller(object):
         elif keys is not None:
             changing = cls.search(keys)
         else:
-            raise error.InternalError(
-                'Controller.delete() requires either keys or eids')
+            raise InternalError('Controller.delete() requires either keys or eids')
         with user_storage as storage:
             for model in changing:
                 model.onDelete()
@@ -402,11 +401,9 @@ class Controller(object):
                             LOGGER.debug(" %s is turned on in %s and off in %s with rule %s  " % (
                                 oattr, self.model_name, other.model_name, rule))
                             if rule == requisite.Required:
-                                raise error.ConfigurationError(
-                                    " %s required by %s but not set in %s " % (oattr, selfName, otherName))
+                                raise ConfigurationError(" %s required by %s but not set in %s " % (oattr, selfName, otherName))
                             elif rule == requisite.Recommended:
-                                LOGGER.warning(
-                                    "%s is recommended for %s by the %s model" % (oattr, selfName, otherName))
+                                LOGGER.warning("%s is recommended for %s by the %s model" % (oattr, selfName, otherName))
                                 # how to raise error and print but succeed with
                                 # select
                         if (not selfDataOattr) and (otherDataOattr):

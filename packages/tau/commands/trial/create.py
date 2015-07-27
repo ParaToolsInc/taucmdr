@@ -35,7 +35,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-from tau import logger, error, util, arguments, commands
+from tau import logger, util, arguments, commands
+from error import ConfigurationError
 from tau.model.experiment import Experiment
 
 
@@ -89,6 +90,5 @@ def main(argv):
 
     selection = Experiment.getSelected()
     if not selection:
-        raise error.ConfigurationError(
-            "No experiment configured.", "See `tau project select`")
+        raise ConfigurationError("No experiment configured.", "See `tau project select`")
     return selection.managedRun(args.cmd, args.cmd_args)

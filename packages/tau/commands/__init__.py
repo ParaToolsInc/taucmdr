@@ -38,7 +38,8 @@
 import os
 import sys
 from pkgutil import walk_packages
-from tau import logger, error, environment
+from tau import logger, environment
+from tau.error import ConfigurationError, InternalError
 
 
 LOGGER = logger.getLogger(__name__)
@@ -48,7 +49,7 @@ _COMMAND_ROOT = os.path.basename(environment.TAU_SCRIPT)
 _COMMANDS = {_COMMAND_ROOT: {}}
 
 
-class UnknownCommandError(error.ConfigurationError):
+class UnknownCommandError(ConfigurationError):
 
     """
     Indicates that a specified command is unknown
@@ -63,7 +64,7 @@ class UnknownCommandError(error.ConfigurationError):
         super(UnknownCommandError, self).__init__(value, hint)
 
 
-class AmbiguousCommandError(error.ConfigurationError):
+class AmbiguousCommandError(ConfigurationError):
 
     """
     Indicates that a specified partial command is ambiguous
@@ -234,6 +235,6 @@ def executeCommand(cmd, cmd_args=[], parent_module=None):
                     'Resolved ambiguous command %r to %r' % (cmd, resolved))
                 return executeCommand(resolved, cmd_args)
         except AttributeError:
-            raise error.InternalError("'main(argv)' undefined in command %r" % cmd)
+            raise InternalError("'main(argv)' undefined in command %r" % cmd)
         else:
             return main(cmd_args)

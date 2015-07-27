@@ -40,7 +40,8 @@ import sys
 import shutil
 import multiprocessing
 import logger, util
-from error import ConfigurationError, SoftwarePackageError
+from cf import SoftwarePackageError
+from error import ConfigurationError
 
 LOGGER = logger.getLogger(__name__)
 

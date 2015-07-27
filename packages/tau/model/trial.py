@@ -39,10 +39,29 @@ import os
 import glob
 import shutil
 from datetime import datetime
-from tau import logger, util, storage, error
+from tau import logger, util, storage
+from tau.error import ConfigurationError
 from tau.controller import Controller
 
 LOGGER = logger.getLogger(__name__)
+
+
+
+class TrialError(ConfigurationError):
+    """
+    Indicates there was an error while performing an experiment trial  
+    """
+
+    message_fmt = """
+%(value)s
+%(hint)s
+
+Please check the selected configuration for errors or email '%(logfile)s' to  %(contact)s for assistance.
+"""
+
+    def __init__(self, value, hint="Try `tau --help`"):
+        super(TrialError, self).__init__(value, hint)
+
 
 
 class Trial(Controller):
@@ -101,8 +120,8 @@ class Trial(Controller):
         try:
             util.mkdirp(prefix)
         except Exception as err:
-            raise error.ConfigurationError('Cannot create directory %r: %s' % (prefix, err),
-                                           'Check that you have `write` access')
+            raise ConfigurationError('Cannot create directory %r: %s' % (prefix, err),
+                                     'Check that you have `write` access')
 
     def onDelete(self):
         """
@@ -122,7 +141,7 @@ class Trial(Controller):
         TODO: Docs
         """
         def banner(mark, name, time):
-            LOGGER.info('{:=<{}}'.format('== %s %s (%s) ==' %
+            LOGGER.info('{:=<{}}'.format('== %s %s (%s) ==' % 
                                          (mark, name, time), logger.LINE_WIDTH))
         measurement = experiment.populate('measurement')
         cmd_str = ' '.join(cmd)
@@ -140,21 +159,19 @@ class Trial(Controller):
             trial_number = len(all_trial_numbers)
         LOGGER.debug("New trial number is %d" % trial_number)
 
+        banner('BEGIN', experiment.name(), begin_time)
         fields = {'number': trial_number,
                   'experiment': experiment.eid,
                   'command': cmd_str,
                   'cwd': cwd,
                   'environment': 'FIXME',
                   'begin_time': begin_time}
-
-        banner('BEGIN', experiment.name(), begin_time)
         trial = cls.create(fields)
         prefix = trial.prefix()
         try:
             retval = util.createSubprocess(cmd, cwd=cwd, env=env)
             if retval:
-                LOGGER.warning(
-                    "Nonzero return code '%d' from '%s'" % (retval, cmd_str))
+                LOGGER.warning("Nonzero return code '%d' from '%s'" % (retval, cmd_str))
             else:
                 LOGGER.info("'%s' returned 0" % cmd_str)
 
@@ -164,27 +181,24 @@ class Trial(Controller):
                 multi_profiles = glob.glob(os.path.join(cwd, 'MULTI__*'))
 
                 if profiles:
-                    LOGGER.info(
-                        "Found %d profile files. Adding to trial..." % len(profiles))
+                    LOGGER.info("Found %d profile files. Adding to trial..." % len(profiles))
                     for f in profiles:
                         shutil.move(f, prefix)
                         LOGGER.debug("'%s' => '%s'" % (f, prefix))
                 elif multi_profiles:
-                    LOGGER.info(
-                        "Found %d multi_profile direcotries. Adding to trial..." % len(multi_profiles))
+                    LOGGER.info("Found %d multi_profile direcotries. Adding to trial..." % len(multi_profiles))
                     for dirs in multi_profiles:
                         shutil.move(dirs, prefix)
                         LOGGER.debug("'%s' => '%s'" % (dirs, prefix))
-                else:
-                    LOGGER.error(
-                        "%s did not generate any profile files or MULTI__ directories!" % cmd_str)
+                elif retval != 0:
+                    # If nonzero exit and no performance data then assume the 
+                    # trial failed completely and revert the trial record
+                    raise TrialError("Program died without producing performance data")
 
             # TODO: Handle traces
 
             end_time = str(datetime.utcnow())
         except:
-            # Something went wrong so revert the trial
-            LOGGER.error("Exception raised, reverting trial...")
             cls.delete(eids=[trial.eid])
             raise
         else:
