@@ -44,12 +44,12 @@ from tau import logger, settings, error, util
 from tau.controller import Controller
 from tau.model.compiler import Compiler
 from tau.model.trial import Trial
-from tau.cf.tau_wrapper import TauInstallation
+from tau.cf.tau import TauInstallation
 from tau.cf.compiler import CompilerSet
-from tau.cf.pdt_wrapper import PdtInstallation
-from tau.cf.bfd_wrapper import BfdInstallation
-from tau.cf.libunwind_wrapper import LibunwindInstallation
-from tau.cf.papi_wrapper import PapiInstallation
+from tau.cf.pdt import PdtInstallation
+from tau.cf.bfd import BfdInstallation
+from tau.cf.libunwind import LibunwindInstallation
+from tau.cf.papi import PapiInstallation
 
 LOGGER = logger.getLogger(__name__)
 

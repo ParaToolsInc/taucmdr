@@ -40,9 +40,9 @@
 
 import os
 import hashlib
-from tau import logger, util
-from tau.error import ConfigurationError
-from tau.cf.tau_wrapper import COMPILER_WRAPPERS
+import logger, util
+from error import ConfigurationError
+from tau import COMPILER_WRAPPERS
 
 
 LOGGER = logger.getLogger(__name__)

@@ -36,9 +36,9 @@
 #"""
 
 import os
-from tau import logger, util
-from tau.error import SoftwarePackageError
-from tau.cf.installation import AutotoolsInstallation
+import logger, util
+from error import SoftwarePackageError
+from installation import AutotoolsInstallation
 
 
 LOGGER = logger.getLogger(__name__)

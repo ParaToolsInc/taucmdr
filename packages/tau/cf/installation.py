@@ -39,8 +39,8 @@ import os
 import sys
 import shutil
 import multiprocessing
-from tau import logger, util
-from tau.error import ConfigurationError, SoftwarePackageError
+import logger, util
+from error import ConfigurationError, SoftwarePackageError
 
 LOGGER = logger.getLogger(__name__)
 

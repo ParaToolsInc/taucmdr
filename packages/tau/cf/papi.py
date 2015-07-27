@@ -36,7 +36,7 @@
 #"""
 
 import os
-from tau.cf.installation import AutotoolsInstallation
+from installation import AutotoolsInstallation
 
 
 SOURCE = {None: 'http://icl.cs.utk.edu/projects/papi/downloads/papi-5.4.1.tar.gz'}

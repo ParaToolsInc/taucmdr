@@ -36,9 +36,9 @@
 #"""
 import os
 import glob
-from tau import logger, util, environment
-from tau.error import ConfigurationError, InternalError, SoftwarePackageError
-from tau.cf.installation import Installation
+import logger, util
+from error import ConfigurationError, InternalError, SoftwarePackageError
+from installation import Installation
 
 
 LOGGER = logger.getLogger(__name__)
@@ -382,7 +382,7 @@ class TauInstallation(Installation):
                      (config_tags, tau_makefiles))
         return None
 
-    def apply_compiletime_config(self, opts, env):
+    def apply_compiletime_config(self, opts=None, env=None):
         """Configures environment for compilation with TAU.
         
         Modifies incoming command line arguments and environment variables 

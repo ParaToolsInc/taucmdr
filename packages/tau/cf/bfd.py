@@ -35,8 +35,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-from tau import logger
-from tau.cf.installation import AutotoolsInstallation
+import logger
+from installation import AutotoolsInstallation
 
 
 LOGGER = logger.getLogger(__name__)
