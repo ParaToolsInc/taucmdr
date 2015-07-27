@@ -50,8 +50,12 @@ LOGGER = logger.getLogger(__name__)
 
 
 def mkdirp(*args):
-    """
-    Creates a directory and all its parents.
+    """Creates a directory and all its parents.
+    
+    Works just like 'mkdir -p'.
+    
+    Args:
+        args: Paths to create
     """
     for path in args:
         try:
@@ -65,9 +69,15 @@ def mkdirp(*args):
 
 
 def which(program):
-    """
-    Returns the full path to 'program'
-    Searches the system PATH and the current directory
+    """Returns the full path to 'program'.
+    
+    Searches the system PATH and the current directory.
+    
+    Args:
+        program: program to find.
+        
+    Returns:
+        Full path to program or None if program can't be found.
     """
     def is_exec(fpath):
         return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
@@ -90,8 +100,18 @@ def which(program):
 
 
 def download(src, dest):
-    """
-    Downloads or copies 'src' to 'dest'
+    """Downloads or copies 'src' to 'dest'.
+    
+    Source argument may be a file path or URL.  The destination folder 
+    will be created if it doesn't exist.  Download is via curl, wget, or
+    Python's urllib as appropriate.
+    
+    Args:
+        src: Path or URL to source file.
+        dest: Path to destination.
+        
+    Raises:
+        IOError: File copy or download failed.
     """
     if src.startswith('file://'):
         src = src[6:]
@@ -99,7 +119,6 @@ def download(src, dest):
         LOGGER.debug("Copying '%s' to '%s'" % (src, dest))
         mkdirp(os.path.dirname(dest))
         shutil.copy(src, dest)
-        return 0
     else:
         LOGGER.debug("Downloading '%s' to '%s'" % (src, dest))
         LOGGER.info("Downloading '%s'" % src)
@@ -112,27 +131,35 @@ def download(src, dest):
         wget_cmd = [wget, src, '-O', dest] if wget else None
         for cmd in [curl_cmd, wget_cmd]:
             if cmd:
-                ret = createSubprocess(cmd, stdout=False)
-                if ret != 0:
-                    LOGGER.warning(
-                        "%s failed to download '%s'.  Retrying with a different method..." % (cmd[0], src))
-                else:
-                    return ret
+                if createSubprocess(cmd, stdout=False) == 0:
+                    return
+                LOGGER.warning("%s failed to download '%s'. Retrying with a different method..." % (cmd[0], src))                    
         # Fallback: this is usually **much** slower than curl or wget
-
-        def _dlProgress(count, blockSize, totalSize):
+        def _dl_progress(count, block_size, total_size):
             sys.stdout.write("% 3.1f%% of %d bytes\r" % (
-                min(100, float(count * blockSize) / totalSize * 100), totalSize))
+                min(100, float(count * block_size) / total_size * 100), total_size))
         try:
-            urllib.urlretrieve(src, dest, reporthook=_dlProgress)
+            urllib.urlretrieve(src, dest, reporthook=_dl_progress)
         except Exception as err:
             LOGGER.warning("urllib failed to download '%s': %s" % (src, err))
             raise IOError("Failed to download '%s'" % src)
 
 
 def extract(archive, dest):
-    """
-    Extracts archive file 'archive' to dest
+    """Extracts archive file to dest.
+    
+    Supports compressed and uncompressed tar archives. Destination folder will
+    be created if it doesn't exist.
+    
+    Args:
+        archive: Path to archive file to extract.
+        dest: Destination folder.
+    
+    Returns:
+        Full path to extracted files.
+        
+    Raises:
+        IOError: Failed to extract archive.
     """
     with tarfile.open(archive) as fp:
         LOGGER.debug("Determining top-level directory name in '%s'" % archive)
@@ -144,21 +171,29 @@ def extract(archive, dest):
         LOGGER.info("Extracting '%s'" % archive)
         mkdirp(dest)
         fp.extractall(dest)
-    assert os.path.isdir(full_dest)
+    if not os.path.isdir(full_dest):
+        raise IOError("Failed to create '%s' by extracting '%s'" % (full_dest, archive))
     LOGGER.debug("Created '%s'" % full_dest)
     return full_dest
 
 
 def file_accessible(filepath, mode='r'):
-    """
-    Check if a file exists and is accessible.
+    """Return True if a file is accessable.
+    
+    Args:
+        filepath: Path to file to check.
+        mode: File access mode to test, e.g. 'r' or 'rw'
+    
+    Returns:
+        True if the file exists and can be opened in the specified mode,
+        False otherwise.
     """
     with open(filepath, mode) as _:
         return True
     return False
 
 
-def pformatDict(d, title=None, empty_msg='No items.', indent=0, truncate=False):
+def pformat_dict(dct, title=None, empty_msg='No items.', indent=0, truncate=False):
     """
     Pretty formater for dictionaries
     """
@@ -166,49 +201,42 @@ def pformatDict(d, title=None, empty_msg='No items.', indent=0, truncate=False):
         line = '{:=<75}\n'.format('== %s ==' % title)
     else:
         line = ''
-    if d and len(d):
-        longest = max(map(len, d.keys()))
+    if dct and len(dct):
+        longest = max(map(len, dct.keys()))
         line_width = logger.LINE_WIDTH - longest - 15
         space = ' ' * indent
 
-        def pf(x):
-            if truncate and (len(x) > line_width):
-                return x[0:line_width] + ' [...]'
+        def pf_helper(item):
+            if truncate and (len(item) > line_width):
+                return item[0:line_width] + ' [...]'
             else:
-                return str(x)
-        items = '\n'.join(['{}{:<{width}} : {}'.format(space, key, pf(val), width=longest)
-                           for key, val in sorted(d.iteritems())])
+                return str(item)
+        items = '\n'.join(['{}{:<{width}} : {}'.format(space, key, pf_helper(val), width=longest)
+                           for key, val in sorted(dct.iteritems())])
     else:
         items = empty_msg
     return '%(line)s%(items)s' % {'line': line, 'items': items}
 
 
-def pformatList(d, title=None, empty_msg='No items.', indent=0):
-    """
-    Pretty formatter for lists
-    """
-    if title:
-        line = '{:=<75}\n'.format('== %s ==' % title)
-    else:
-        line = ''
-    if d and len(d):
-        space = ' ' * indent
-        items = '\n'.join(['%s%s' % (space, val) for val in sorted(d)])
-    else:
-        items = empty_msg
-    return '%(line)s%(items)s' % {'line': line, 'items': items}
-
-
-def createSubprocess(cmd, cwd=None, env=None, fork=False, stdout=True, log=True):
+def createSubprocess(cmd, cwd=None, env=None, fork=False, stdout=True, log=True,
+                     replace_env=False):
     """
     """
     if not cwd:
         cwd = os.getcwd()
     LOGGER.debug("Creating subprocess: cmd=%s, cwd='%s'\n" % (cmd, cwd))
-    # Show what's different in the environment
-    if env:
+    if not env and not replace_env:
+        # Don't accidentally unset all environment variables 
+        env = None
+    else:
+        # Update or replace environment
+        if not replace_env:
+            sub_env = dict(os.environ)
+            sub_env.update(env)
+            env = sub_env
+        # Show what's different in the environment
         changed = {}
-        for key, val in env.iteritems():
+        for key, val in sub_env.iteritems():
             LOGGER.debug(
                 "%s=%s" % (key, ''.join([c for c in val if ord(c) < 128 and ord(c) > 31])))
             try:
@@ -218,7 +246,7 @@ def createSubprocess(cmd, cwd=None, env=None, fork=False, stdout=True, log=True)
             else:
                 if val != orig:
                     changed[key] = val
-        LOGGER.info(pformatDict(changed, truncate=True))
+        LOGGER.info(pformat_dict(changed, truncate=True))
     # Show what will be executed
     LOGGER.info(' '.join(cmd))
     pid = os.fork() if fork else 0

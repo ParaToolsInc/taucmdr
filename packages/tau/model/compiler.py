@@ -36,64 +36,15 @@
 #"""
 
 import os
-import hashlib
-from tau import logger, error, controller, util
-from tau.cf import tau_wrapper
-
+from tau import logger
+from tau.error import ConfigurationError
+from tau.controller import Controller
+from tau.cf.compiler import CompilerInfo
 
 LOGGER = logger.getLogger(__name__)
 
 
-class CompilerInfo(object):
-
-    """
-    Information about a compiler command
-    """
-
-    def __init__(self, cmd, role, family, language):
-        self.command = cmd
-        self.role = role
-        self.family = family
-        self.language = language
-        self.tau_wrapper = tau_wrapper.COMPILER_WRAPPERS[role]
-        self.short_descr = "%s %s compiler." % (family, language)
-
-    def __repr__(self):
-        return repr(self.__dict__)
-
-KNOWN_COMPILERS = {
-    'cc': CompilerInfo('cc', 'CC', 'system', 'C'),
-    'c++': CompilerInfo('c++', 'CXX', 'system', 'C++'),
-    'f77': CompilerInfo('f77', 'FC', 'system', 'FORTRAN77'),
-    'f90': CompilerInfo('f90', 'FC', 'system', 'Fortran90'),
-    'ftn': CompilerInfo('ftn', 'FC', 'system', 'Fortran90'),
-    'gcc': CompilerInfo('gcc', 'CC', 'GNU', 'C'),
-    'g++': CompilerInfo('g++', 'CXX', 'GNU', 'C++'),
-    'gfortran': CompilerInfo('gfortran', 'FC', 'GNU', 'Fortran90'),
-    'icc': CompilerInfo('icc', 'CC', 'Intel', 'C'),
-    'icpc': CompilerInfo('icpc', 'CXX', 'Intel', 'C++'),
-    'ifort': CompilerInfo('ifort', 'FC', 'Intel', 'Fortran90'),
-    'pgcc': CompilerInfo('pgcc', 'CC', 'PGI', 'C'),
-    'pgCC': CompilerInfo('pgCC', 'CXX', 'PGI', 'C++'),
-    'pgf77': CompilerInfo('pgf77', 'FC', 'PGI', 'FORTRAN77'),
-    'pgf90': CompilerInfo('pgf90', 'FC', 'PGI', 'Fortran90'),
-    'mpicc': CompilerInfo('mpicc', 'CC', 'MPI', 'C'),
-    'mpicxx': CompilerInfo('mpicxx', 'CXX', 'MPI', 'C++'),
-    'mpic++': CompilerInfo('mpic++', 'CXX', 'MPI', 'C++'),
-    'mpiCC': CompilerInfo('mpiCC', 'CXX', 'MPI', 'C++'),
-    'mpif77': CompilerInfo('mpif77', 'FC', 'MPI', 'FORTRAN77'),
-    'mpif90': CompilerInfo('mpif90', 'FC', 'MPI', 'Fortran90')
-}
-
-KNOWN_FAMILIES = {}
-for comp in KNOWN_COMPILERS.itervalues():
-    fam = comp.family
-    KNOWN_FAMILIES.setdefault(fam, [])
-    KNOWN_FAMILIES[fam].append(comp)
-del comp
-
-
-class Compiler(controller.Controller):
+class Compiler(Controller):
 
     """
     Compiler data model controller
@@ -103,88 +54,89 @@ class Compiler(controller.Controller):
         'command': {
             'type': 'string',
             'required': True,
+            'description': "The compiler command without path"
         },
         'path': {
             'type': 'string',
             'required': True,
+            'description': "Absolute path to the compiler command"
         },
         'md5': {
             'type': 'string',
             'required': True,
+            'description': "Checksum of the compiler command file"
         },
         'version': {
             'type': 'string',
-            'required': True
+            'required': True,
+            'description': "Version string as reported by compiler command"
         },
         'role': {
             'type': 'string',
-            'required': True
+            'required': True,
+            'description': "Role identifier"
         },
         'family': {
             'type': 'string',
-            'required': True
+            'required': True,
+            'description': "Family name"
         },
         'language': {
             'type': 'string',
-            'required': True
+            'required': True,
+            'description': "Primary language this compiler understands"
         },
         'tau_wrapper': {
             'type': 'string',
-            'required': True
+            'required': True,
+            'description': "Corresponding TAU compiler wrapper script"
         }
     }
 
     def __str__(self):
         return self['command']
 
-    def absolutePath(self):
+    def absolute_path(self):
         return os.path.join(self['path'], self['command'])
+    
+    def info(self):
+        return CompilerInfo(self['command'], self['role'], 
+                            self['family'], 
+                            self['language'], self['path'], self['md5'],
+                            self['version'])
+
 
     @classmethod
     def identify(cls, compiler_cmd):
+        """Identifies a compiler command.
+        
+        Checks the database of known compilers against the command found.
+        If there is no existing record for the compiler, update the database.
+        Otherwise, reuse the existing record.
+               
+        Args:
+            compiler_cmd: The compiler command to identify, e.g. 'gcc'
+            
+        Returns:
+            A Compiler instance. 
+            
+        Raises:
+            ConfigurationError: compiler_cmd was invalid.
         """
-        Identifies a compiler executable from `compiler_cmd`
-        """
-        LOGGER.debug("Identifying compiler: %s" % compiler_cmd)
-        command = os.path.basename(compiler_cmd)
-        path = util.which(compiler_cmd)
-        try:
-            info = KNOWN_COMPILERS[command]
-        except KeyError:
-            raise error.ConfigurationError(
-                "Unknown compiler command: '%s'", compiler_cmd)
-        if not path:
-            raise error.ConfigurationError("%s %s compiler '%s' missing or not executable." %
-                                           (info.family, info.language,
-                                            compiler_cmd),
-                                           "Check spelling, loaded modules, PATH environment variable, and file permissions")
-        if not util.file_accessible(path):
-            raise error.ConfigurationError(
-                "Compiler '%s' not readable." % (os.path.join(path, command)))
-
-        md5sum = hashlib.md5()
-        with open(path, 'r') as compiler_file:
-            md5sum.update(compiler_file.read())
-        md5 = md5sum.hexdigest()
-
-        # TODO: Compiler version
-        version = 'FIXME'
-
-        fields = {'command': command,
-                  'path': path,
-                  'md5': md5,
-                  'version': version,
+        info = CompilerInfo.identify(compiler_cmd)
+        fields = {'command': info.command,
+                  'path': info.path,
+                  'md5': info.md5sum,
+                  'version': info.version,
                   'role': info.role,
                   'family': info.family,
                   'language': info.language,
                   'tau_wrapper': info.tau_wrapper}
-
         found = cls.one(keys=fields)
         if found:
             LOGGER.debug("Found compiler record: %s" % found)
         else:
-            LOGGER.debug(
-                "No compiler record found. Creating new record: %s" % fields)
+            LOGGER.debug("No compiler record found. Creating new record: %s" % fields)
             found = cls.create(fields)
         return found
 
@@ -201,7 +153,7 @@ class Compiler(controller.Controller):
             if (known.family == compiler['family']) and (known.role != compiler['role']):
                 try:
                     other = cls.identify(known.command)
-                except error.ConfigurationError, e:
+                except ConfigurationError, e:
                     LOGGER.debug(e)
                     continue
                 if os.path.dirname(other['path']) == os.path.dirname(compiler['path']):
@@ -212,17 +164,17 @@ class Compiler(controller.Controller):
         try:
             cc = compilers['CC']
         except KeyError:
-            raise error.ConfigurationError(
+            raise ConfigurationError(
                 "Cannot find C compiler for %s" % compiler)
         try:
             cxx = compilers['CXX']
         except KeyError:
-            raise error.ConfigurationError(
+            raise ConfigurationError(
                 "Cannot find C++ compiler for %s" % compiler)
         try:
             fc = compilers['FC']
         except KeyError:
-            raise error.ConfigurationError(
+            raise ConfigurationError(
                 "Cannot find Fortran compiler for %s" % compiler)
 
         return cc, cxx, fc

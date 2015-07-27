@@ -36,16 +36,16 @@
 #"""
 
 import os
-import shutil
-from tau import logger, util, error
+from tau import logger, util
+from tau.error import SoftwarePackageError
+from tau.cf.installation import AutotoolsInstallation
 
 
 LOGGER = logger.getLogger(__name__)
 
-DEFAULT_SOURCE = {None: 'http://tau.uoregon.edu/pdt.tgz',
-                  # Why isn't this called pdt-x86_64.tgz ?? "lite" tells me
-                  # nothing
-                  'x86_64': 'http://tau.uoregon.edu/pdt_lite.tgz'}
+SOURCE = {None: 'http://tau.uoregon.edu/pdt.tgz',
+          # Why isn't this called pdt-x86_64.tgz ?? "lite" tells me nothing
+          'x86_64': 'http://tau.uoregon.edu/pdt_lite.tgz'}
 
 COMMANDS = {None: ['cparse',
                    'cxxparse',
@@ -89,157 +89,39 @@ COMMANDS = {None: ['cparse',
                       'pdtf90disp',
                       'pdtflint',
                       'taucpdisp',
-                      'xmlgen']
-            }
+                      'xmlgen']}
 
 
-class PdtInstallation(object):
+class PdtInstallation(AutotoolsInstallation):
     """
-    Encapsulates a PDT installation
+    Encapsulates a PDT installation.
     """
-    # pylint: disable=too-many-instance-attributes
 
-    def __init__(self, prefix, cxx, src, arch):
-        self.src = src
+    def __init__(self, prefix, src, arch, compilers):
         if src.lower() == 'download':
-            try:
-                self.src = DEFAULT_SOURCE[arch]
-            except KeyError:
-                self.src = DEFAULT_SOURCE[None]
-        self.prefix = prefix
-        self.cxx = cxx
-        self.arch = arch
-        if os.path.isdir(src):
-            self.pdt_prefix = src
-        else:
-            compiler_prefix = str(cxx.eid) if cxx else 'unknown'
-            self.pdt_prefix = os.path.join(prefix, 'pdt', compiler_prefix)
-        self.src_prefix = os.path.join(prefix, 'src')
-        self.include_path = os.path.join(self.pdt_prefix, 'include')
-        self.arch_path = os.path.join(self.pdt_prefix, arch)
+            src = SOURCE.get(arch, SOURCE[None])
+        super(PdtInstallation, self).__init__('PDT', prefix, src, arch, compilers)
+        self.arch_path = os.path.join(self.install_prefix, arch)
         self.bin_path = os.path.join(self.arch_path, 'bin')
         self.lib_path = os.path.join(self.arch_path, 'lib')
 
     def verify(self):
+        commands = COMMANDS.get(self.arch, COMMANDS[None])
+        return super(PdtInstallation,self).verify(commands=commands)
+
+    def configure(self):
+        """Configures PDT.
+        
+        PDT doesn't actually use an Autotools configure script so we need
+        to override this step.  Otherwise the installation proceedure is the same.
         """
-        Returns true if if there is a working PDT installation at `prefix` with a
-        directory named `arch` containing `bin` and `lib` directories or
-        raises a ConfigurationError describing why that installation is broken.
-        """
-        LOGGER.debug("Checking PDT installation at '%s' targeting arch '%s'" % (
-            self.pdt_prefix, self.arch))
-        if not os.path.exists(self.pdt_prefix):
-            raise error.ConfigurationError(
-                "'%s' does not exist" % self.pdt_prefix)
-
-        # Check for all commands
-        try:
-            commands = COMMANDS[self.arch]
-            LOGGER.debug("Checking %s PDT commands")
-        except KeyError:
-            commands = COMMANDS[None]
-            LOGGER.debug("Checking default PDT commands")
-        for cmd in commands:
-            path = os.path.join(self.bin_path, cmd)
-            if not os.path.exists(path):
-                raise error.ConfigurationError("'%s' is missing" % path)
-            if not os.access(path, os.X_OK):
-                raise error.ConfigurationError(
-                    "'%s' exists but is not executable" % path)
-
-        LOGGER.debug("PDT installation at '%s' is valid" % self.pdt_prefix)
-        LOGGER.info("PDT installation at '%s' is valid" % self.pdt_prefix)
-        return True
-
-    def install(self, force_reinstall=False):
-        """
-        TODO: Docs
-        """
-        LOGGER.debug("Initializing PDT at '%s' from '%s' with arch=%s" %
-                     (self.pdt_prefix, self.src, self.arch))
-
-        # Check if the installation is already initialized
-        if not force_reinstall:
-            try:
-                return self.verify()
-            except error.ConfigurationError, err:
-                LOGGER.debug(err)
-        LOGGER.info('Starting PDT installation')
-
-        # Download, unpack, or copy PDT source code
-        dst = os.path.join(self.src_prefix, os.path.basename(self.src))
-        try:
-            util.download(self.src, dst)
-            srcdir = util.extract(dst, self.src_prefix)
-        except IOError as err:
-            raise error.ConfigurationError("Cannot acquire source file '%s': %s" % (self.src, err),
-                                           "Check that the file is accessable")
-        finally:
-            try:
-                os.remove(dst)
-            except:
-                pass
-
-        if not self.cxx:
-            compiler_flag = ''
-        else:
-            family_flags = {'system': '',
-                            'GNU': '-GNU',
-                            'Intel': '-icpc',
-                            'PGI': '-pgCC'}
-            try:
-                compiler_flag = family_flags[self.cxx['family']]
-            except KeyError:
-                LOGGER.warning(
-                    "PDT has no compiler flag for '%s'.  Using defaults." % self.cxx['family'])
-
-        try:
-            # Configure
-            prefix_flag = '-prefix=%s' % self.pdt_prefix
-            cmd = ['./configure', prefix_flag, compiler_flag]
-            LOGGER.info("Configuring PDT...")
-            if util.createSubprocess(cmd, cwd=srcdir, stdout=False):
-                raise error.SoftwarePackageError('PDT configure failed')
-
-            # Build
-            cmd = ['make', '-j4']
-            LOGGER.info("Compiling PDT...")
-            if util.createSubprocess(cmd, cwd=srcdir, stdout=False):
-                raise error.SoftwarePackageError('PDT compilation failed.')
-
-            # Install
-            cmd = ['make', 'install']
-            LOGGER.info("Installing PDT...")
-            if util.createSubprocess(cmd, cwd=srcdir, stdout=False):
-                raise error.SoftwarePackageError('PDT installation failed.')
-        except:
-            LOGGER.info("PDT installation failed, cleaning up")
-            shutil.rmtree(self.pdt_prefix, ignore_errors=True)
-        finally:
-            # Always clean up PDT source
-            LOGGER.debug('Deleting %r' % srcdir)
-            shutil.rmtree(srcdir, ignore_errors=True)
-
-        # Verify the new installation
-        try:
-            retval = self.verify()
-            LOGGER.info('PDT installation complete')
-        except Exception as err:
-            # Installation failed, clean up any failed install files
-            #shutil.rmtree(self.pdt_prefix, ignore_errors=True)
-            raise error.SoftwarePackageError(
-                'PDT installation failed: %s' % err)
-        else:
-            return retval
-
-    def applyCompiletimeConfig(self, opts, env):
-        """
-        TODO: Docs
-        """
-        env['PATH'] = os.pathsep.join([self.bin_path, env.get('PATH')])
-
-    def getRuntimeConfig(self, opts, env):
-        """
-        TODO: Docs
-        """
-        pass
+        family_flags = {'GNU': '-GNU', 
+                        'Intel': '-icpc', 
+                        'PGI': '-pgCC', 
+                        None: ''}
+        compiler_flag = family_flags.get(self.compilers.cxx.family, family_flags[None])
+        prefix_flag = '-prefix=%s' % self.install_prefix
+        cmd = ['./configure', prefix_flag, compiler_flag]
+        LOGGER.info("Configuring PDT...")
+        if util.createSubprocess(cmd, cwd=self.src_path, stdout=False):
+            raise SoftwarePackageError('PDT configure failed')

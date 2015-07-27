@@ -420,7 +420,6 @@ class Controller(object):
 
 
 class ByName(object):
-
     """
     Mixin for a model with a unique 'name' field
     """

@@ -40,20 +40,20 @@ import string
 import platform
 import subprocess
 from tau import logger
-from tau.arguments import ParsePackagePathAction, ParseBooleanAction
+from tau.arguments import ParsePackagePathAction
 from tau.controller import Controller, ByName, ModelError
 
 LOGGER = logger.getLogger(__name__)
 
 
-def defaultHostOS():
+def default_host_os():
     """
     Detect the default host operating system
     """
     return platform.system()
 
 
-def defaultHostArch():
+def default_host_arch():
     """
     Use TAU's archfind script to detect the host target architecture
     """
@@ -62,7 +62,7 @@ def defaultHostArch():
     return subprocess.check_output(cmd).strip()
 
 
-def defaultDeviceArch():
+def default_device_arch():
     """
     Detect coprocessors
     """
@@ -70,7 +70,7 @@ def defaultDeviceArch():
     return None
 
 
-def defaultCC():
+def default_cc():
     """
     Detect target's default C compiler
     """
@@ -78,7 +78,7 @@ def defaultCC():
     return 'gcc'
 
 
-def defaultCXX():
+def default_cxx():
     """
     Detect target's default C compiler
     """
@@ -86,7 +86,7 @@ def defaultCXX():
     return 'g++'
 
 
-def defaultFC():
+def default_fc():
     """
     Detect target's default C compiler
     """
@@ -114,16 +114,16 @@ class Target(Controller, ByName):
         'host_os': {
             'type': 'string',
             'required': True,
-            'defaultsTo': defaultHostOS(),
+            'defaultsTo': default_host_os(),
             'argparse': {'flags': ('--host-os',),
                          'group': 'target system',
                          'help': 'Host operating system',
                          'metavar': 'os'}
-        },
+        }, 
         'host_arch': {
             'type': 'string',
             'required': True,
-            'defaultsTo': defaultHostArch(),
+            'defaultsTo': default_host_arch(),
             'argparse': {'flags': ('--host-arch',),
                          'group': 'target system',
                          'help': 'Host architecture',
@@ -131,7 +131,7 @@ class Target(Controller, ByName):
         },
         'device_arch': {
             'type': 'string',
-            'defaultsTo': defaultDeviceArch(),
+            'defaultsTo': default_device_arch(),
             'argparse': {'flags': ('--device-arch',),
                          'group': 'target system',
                          'help': 'Coprocessor architecture',
@@ -140,7 +140,7 @@ class Target(Controller, ByName):
         'CC': {
             'model': 'Compiler',
             'required': True,
-            'defaultsTo': defaultCC(),
+            'defaultsTo': default_cc(),
             'argparse': {'flags': ('--cc',),
                          'group': 'compiler',
                          'help': 'C Compiler',
@@ -149,7 +149,7 @@ class Target(Controller, ByName):
         'CXX': {
             'model': 'Compiler',
             'required': True,
-            'defaultsTo': defaultCXX(),
+            'defaultsTo': default_cxx(),
             'argparse': {'flags': ('--cxx', '--c++'),
                          'group': 'compiler',
                          'help': 'C++ Compiler',
@@ -158,7 +158,7 @@ class Target(Controller, ByName):
         'FC': {
             'model': 'Compiler',
             'required': True,
-            'defaultsTo': defaultFC(),
+            'defaultsTo': default_fc(),
             'argparse': {'flags': ('--fc', '--fortran'),
                          'group': 'compiler',
                          'help': 'Fortran Compiler',
@@ -166,11 +166,12 @@ class Target(Controller, ByName):
         },
         'cuda': {
             'type': 'string',
-            'defaultsTo': 'False',
+            'defaultsTo': None,
             'argparse': {'flags': ('--with-cuda',),
                          'group': 'software package',
                          'help': 'Path to NVIDIA CUDA installation',
-                         'metavar': '<path>'},
+                         'metavar': '<path>',
+                         'action': ParsePackagePathAction},
         },
         'tau_source': {
             'type': 'string',
@@ -178,7 +179,8 @@ class Target(Controller, ByName):
             'argparse': {'flags': ('--with-tau',),
                          'group': 'software package',
                          'help': 'URL or path to a TAU installation or archive file',
-                         'metavar': '(<path>|<url>|"download")'}
+                         'metavar': '(<path>|<url>|"download")',
+                         'action': ParsePackagePathAction}
         },
         'pdt_source': {
             'type': 'string',
@@ -186,7 +188,7 @@ class Target(Controller, ByName):
             'argparse': {'flags': ('--with-pdt',),
                          'group': 'software package',
                          'help': 'URL or path to a PDT installation or archive file',
-                         'metavar': '(<path>|<url>|download|False)',
+                         'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction},
         },
         'bfd_source': {
@@ -195,7 +197,7 @@ class Target(Controller, ByName):
             'argparse': {'flags': ('--with-bfd',),
                          'group': 'software package',
                          'help': 'URL or path to a BFD installation or archive file',
-                         'metavar': '(<path>|<url>|download|False)',
+                         'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction}
         },
         'libunwind_source': {
@@ -204,37 +206,26 @@ class Target(Controller, ByName):
             'argparse': {'flags': ('--with-libunwind',),
                          'group': 'software package',
                          'help': 'URL or path to a libunwind installation or archive file',
-                         'metavar': '(<path>|<url>|download|False)',
+                         'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction}
         },
         'papi_source': {
             'type': 'string',
-            'defaultsTo': 'False',
+            'defaultsTo': None,
             'argparse': {'flags': ('--with-papi',),
                          'group': 'software package',
                          'help': 'URL or path to a PAPI installation or archive file',
-                         'metavar': '(<path>|<url>|download|False)',
+                         'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction}
         },
         'score-p_source': {
             'type': 'string',
-            'defaultsTo': 'False',
+            'defaultsTo': None,
             'argparse': {'flags': ('--with-score-p',),
                          'group': 'software package',
                          'help': 'URL or path to a Score-P installation or archive file',
-                         'metavar': '(<path>|<url>|download|False)',
+                         'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction}
-        },
-        'iowrapper': {
-            'defaultsTo': 'True'
-        },
-        'mic-linux':{
-            'defaultsTo': 'False',
-            'argparse': {'flags': ('--with-mic',),
-            'group': 'software package',
-            'help': 'Target will use MICs',
-            'metavar': 'yes/no',
-            'action': ParseBooleanAction}
         }
     }
 

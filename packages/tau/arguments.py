@@ -97,15 +97,16 @@ class ParsePackagePathAction(argparse.Action):
 
     def __call__(self, parser, namespace, flag, option_string=None):
         flag_as_bool = util.parseBoolean(flag)
-        if flag_as_bool == True:
+        if flag_as_bool == True or flag.lower() == 'download':
             value = 'download'
         elif flag_as_bool == False:
-            value = False
-        elif (flag.lower() == 'download') or (os.path.exists(flag)) or util.isURL(flag):
+            value = None
+        elif util.isURL(flag):
             value = flag
         else:
-            raise argparse.ArgumentError(
-                self, "Boolean, 'download', path, or URL required, received: %s" % flag)
+            value = os.path.abspath(os.path.expanduser(flag))
+            if not util.file_accessible(value):
+                raise argparse.ArgumentError(self, "Boolean, 'download', valid path, or URL required: %s" % flag)
         setattr(namespace, self.dest, value)
 
 

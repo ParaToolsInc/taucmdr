@@ -61,10 +61,15 @@ An unexpected %(typename)s exception was raised:
 
 Please e-mail '%(logfile)s' to %(contact)s for assistance.
 """
-
+    
     def __init__(self, value, hint="Contact %s" % HELP_CONTACT):
         self.value = value
         self.hint = hint
+        self.message_fields = {'value': self.value,
+                               'hint': 'Hint: %s' % self.hint,
+                               'cmd': ' '.join([arg for arg in sys.argv[1:]]),
+                               'contact': HELP_CONTACT,
+                               'logfile': logger.LOG_FILE}
 
     def __str__(self):
         return self.value
@@ -74,13 +79,9 @@ Please e-mail '%(logfile)s' to %(contact)s for assistance.
             backtrace = ''.join(traceback.format_exception(etype, e, tb))
         else:
             backtrace = ''
-        message = self.message_fmt % {'value': self.value,
-                                      'hint': 'Hint: %s' % self.hint,
-                                      'typename': etype.__name__,
-                                      'cmd': ' '.join([arg for arg in sys.argv[1:]]),
-                                      'contact': HELP_CONTACT,
-                                      'logfile': logger.LOG_FILE,
-                                      'backtrace': backtrace}
+        self.message_fields['typename'] = etype.__name__
+        self.message_fields['backtrace'] = backtrace
+        message = self.message_fmt % self.message_fields
         LOGGER.critical(message)
         sys.exit(EXIT_FAILURE)
 

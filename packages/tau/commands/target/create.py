@@ -37,7 +37,8 @@
 
 from tau import logger, commands, controller, error, arguments
 from tau.model.target import Target
-from tau.model.compiler import Compiler, KNOWN_FAMILIES
+from tau.model.compiler import Compiler
+from tau.cf.compiler import KNOWN_FAMILIES, ROLES
 
 LOGGER = logger.getLogger(__name__)
 
@@ -84,15 +85,15 @@ def main(argv):
     try:
         family = KNOWN_FAMILIES[args.family]
     except AttributeError:
-        # --compilers not specified but that's OK
+        # Compilers not specified but that's OK
         pass
     except KeyError:
         raise error.ConfigurationError("Invalid compiler family: %s" % args.family,
-                                       "See 'compiler arguments' under `tau target create --help`")
+                                       "See 'compiler arguments' under `%s --help`" % COMMAND)
     else:
         LOGGER.debug("Using %s compilers by default" % args.family)
-        for comp_info in family:
-            setattr(args, comp_info.role, comp_info.command)
+        for role in ROLES:
+            setattr(args, role, family[role][0])
         del args.family
     LOGGER.debug('Arguments: %s' % args)
 
@@ -115,7 +116,7 @@ def main(argv):
         for key in compiler_keys:
             comp = Compiler.identify(getattr(args, key))
             LOGGER.info("%s compiler not specified, using default: %s" %
-                        (comp['language'], comp.absolutePath()))
+                        (comp['language'], comp.absolute_path()))
             compilers[key] = comp
     else:
         LOGGER.debug(
@@ -129,7 +130,7 @@ def main(argv):
             for comp in siblings:
                 if comp['role'] == key:
                     LOGGER.info("%s compiler not specified, using default: %s" %
-                                (comp['language'], comp.absolutePath()))
+                                (comp['language'], comp.absolute_path()))
                     compilers[key] = comp
 
     # Check that all compilers were found
@@ -151,14 +152,14 @@ def main(argv):
     for role, comp in compilers.iteritems():
         if comp['role'] != role:
             raise error.ConfigurationError("'%s' specified as %s compiler but it is a %s compiler" %
-                                           (comp.absolutePath(), languages[
+                                           (comp.absolute_path(), languages[
                                             role], comp['language']),
                                            "See 'compiler arguments' under `tau target create --help`")
 
     # Show compilers to user
     for comp in compilers.itervalues():
         LOGGER.info("  %s compiler: '%s'" %
-                    (comp['language'], comp.absolutePath()))
+                    (comp['language'], comp.absolute_path()))
 
     flags = dict(args.__dict__)
     for key, comp in compilers.iteritems():

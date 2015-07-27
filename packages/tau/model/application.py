@@ -119,18 +119,7 @@ class Application(Controller, ByName):
                          'nargs': '?',
                          'const': True,
                          'action': ParseBooleanAction}
-        },
-        'mic-linux': {
-            'type': 'boolean',
-            'defaultsTo': False,
-            'argparse': {'flags': ('--mic',),
-                         'help': 'application uses MICs',
-                         'metavar': 'yes/no',
-                         'nargs': '?',
-                         'const': True,
-                         'action': ParseBooleanAction},
-            'compat': {'Target': {'mic-linux': requisite.Required}}
-      }
+        }
     }
 
     _valid_name = set(string.digits + string.letters + '-_.')

@@ -86,7 +86,6 @@ def main(argv):
     """
     Program entry point
     """
-    print argv
     args = PARSER.parse_args(args=argv)
     LOGGER.debug('Arguments: %s' % args)
 

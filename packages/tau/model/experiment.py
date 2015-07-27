@@ -40,45 +40,53 @@ import glob
 import shutil
 
 
-from tau import logger, settings, error, util, environment
+from tau import logger, settings, error, util
 from tau.controller import Controller
 from tau.model.compiler import Compiler
 from tau.model.trial import Trial
 from tau.cf.tau_wrapper import TauInstallation
+from tau.cf.compiler import CompilerSet
 from tau.cf.pdt_wrapper import PdtInstallation
-from tau.cf.bfd_wrapper import BfdInstallation 
-from tau.cf.papi_wrapper import PapiInstallation
+from tau.cf.bfd_wrapper import BfdInstallation
 from tau.cf.libunwind_wrapper import LibunwindInstallation
+from tau.cf.papi_wrapper import PapiInstallation
 
 LOGGER = logger.getLogger(__name__)
 
 
 class Experiment(Controller):
-
     """
     Experiment data model controller
+    
+    An Experiment uniquely groups a Target, Application, and Measurement and
+    will have zero or more Trials. 
     """
 
     attributes = {
         'project': {
             'model': 'Project',
             'required': True,
+            'description': "Project this experiment belongs to"
         },
         'target': {
             'model': 'Target',
             'required': True,
+            'description': "Target this experiment runs on"
         },
         'application': {
             'model': 'Application',
             'required': True,
+            'description': "Application this experiment uses"
         },
         'measurement': {
             'model': 'Measurement',
             'required': True,
+            'description': "Measurement parameters for this experiment"
         },
         'trials': {
             'collection': 'Trial',
-            'via': 'experiment'
+            'via': 'experiment',
+            'description': "Trials of this experiment"
         },
     }
 
@@ -125,18 +133,24 @@ class Experiment(Controller):
                     "Could not remove experiment data at '%s': %s" % (prefix, err))
 
     def select(self):
+        """
+        Set this experiment as the "selected" experiment.
+        """
         if not self.eid:
             raise error.InternalError(
                 'Tried to select an experiment without an eid')
         settings.set('experiment_id', self.eid)
 
     def isSelected(self):
-        if self.eid:
-            return settings.get('experiment_id') == self.eid
-        return False
+        return self.eid and settings.get('experiment_id') == self.eid
 
     @classmethod
     def getSelected(cls):
+        """Gets the selected Experiment.
+        
+        Returns:
+            An Experiment object for the currently selected experiment.
+        """
         experiment_id = settings.get('experiment_id')
         if experiment_id:
             found = cls.one(eid=experiment_id)
@@ -147,102 +161,95 @@ class Experiment(Controller):
         return None
 
     def configure(self):
-        """
-        Installs all software required to perform the experiment
+        """Sets up the Experiment for a new trial.
+        
+        Installs new software as needed.
         """
         populated = self.populate()
-        # TODO: Should install packages in a location where all projects can
-        # use
+        # TODO: Should install packages in a location where all projects can use
         prefix = populated['project']['prefix']
         target = populated['target'].populate()
         application = populated['application']
         measurement = populated['measurement']
 
-        cc = target['CC']
-        cxx = target['CXX']
-        fc = target['FC']
-        verbose = (logger.LOG_LEVEL == 'DEBUG')
+        host_arch = target['host_arch']
+        compilers = CompilerSet(target['CC'].info(),
+                                target['CXX'].info(),
+                                target['FC'].info())
+        verbose=(logger.LOG_LEVEL == 'DEBUG')
 
-        # Configure/build/install  if needed
-        # TODO:  Needt to change this logic after compatibilty is checked
-        #    REFACTOR ******
-        # don't instantiate if  target['pdt_source'] is False
-        if target['pdt_source']:
-            pdt = PdtInstallation(
-                prefix, cxx, target['pdt_source'], target['host_arch'])
+        # Install PDT, if needed        
+        if (measurement['source_inst'] != 'never'):
+            pdt = PdtInstallation(prefix, target['pdt_source'], 
+                                       host_arch, compilers)
             pdt.install()
-            self.pdt = pdt
         else:
-            self.pdt = None
+            pdt = None
 
-        if target['bfd_source']:
-            bfd = BfdInstallation(
-                prefix, cxx, target['bfd_source'], target['host_arch'])
+        # Install BFD, if needed
+        if (measurement['sample'] or 
+            measurement['compiler_inst'] != 'never' or 
+            measurement['openmp'] != 'ignore'):
+            bfd = BfdInstallation(prefix, target['bfd_source'], 
+                                       host_arch, compilers)
             bfd.install()
-            self.bfd = bfd
         else:
-            self.bfd = None
+            bfd = None
 
-        if target['libunwind_source']:
-            libunwind = LibunwindInstallation(
-                prefix, cxx, target['libunwind_source'], target['host_arch'])
+        # Install libunwind, if needed
+        if (measurement['sample'] or 
+            measurement['compiler_inst'] != 'never' or 
+            measurement['openmp'] != 'ignore'):
+            libunwind = LibunwindInstallation(prefix, target['libunwind_source'], 
+                                                   host_arch, compilers)
             libunwind.install()
-            self.libunwind = libunwind
         else:
-            self.libunwind = None
+            libunwind = None
 
-        if (util.parseBoolean(target['papi_source'])) or (util.parseBoolean(target['papi_source']) == None):
-            papi = PapiInstallation(
-                prefix, cxx, target['papi_source'], target['host_arch'])
+        # Install PAPI, if needed
+        papi_metrics = [met for met in measurement['metrics'] if 'PAPI' in met]
+        if papi_metrics:
+            papi = PapiInstallation(prefix, target['papi_source'], 
+                                         host_arch, compilers)
             papi.install()
-            self.papi = papi
         else:
-            self.papi = None
-
-        if not measurement['source_inst'] and not measurement['compiler_inst']:
-            self.pdt = None
-            self.bfd = None
-            self.papi = None
-            self.libunwind = None
+            papi = None 
 
         # Configure/build/install TAU if needed
-        tau = TauInstallation(prefix, cc, cxx, fc, 
-                              target['tau_source'], target['host_arch'],
-                              verbose=verbose,
-                              pdt=self.pdt,
-                              bfd=self.bfd,
-                              papi=self.papi,
-                              libunwind=self.libunwind,
-                              profile=measurement['profile'],
-                              trace=measurement['trace'],
-                              sample=measurement['sample'],
-                              source_inst=measurement['source_inst'],
-                              compiler_inst=measurement['compiler_inst'],
-                              keep_inst_files=measurement['keep_inst_files'],
-                              reuse_inst_files=measurement['reuse_inst_files'],
-                              io_wrapper=measurement['io_wrapper'],
-                              link_only=measurement['link_only'],
-                              # TODO: Library wrapping inst [dynamic]
-                              # TODO: binary rewrite  inst
-                              openmp_support=application['openmp'],
-                              openmp_measurements=measurement['openmp'],
-                              pthreads_support=application['pthreads'],
-                              pthreads_measurements=None,  # TODO
-                              mpi_support=application['mpi'],
-                              mpi_measurements=measurement['mpi'],
-                              cuda_support=application['cuda'],
-                              cuda_measurements=None,  # Todo
-                              shmem_support=application['shmem'],
-                              shmem_measurements=None,  # TODO
-                              mpc_support=application['mpc'],
-                              mic_support=application['mic-linux'],
-                              mpc_measurements=None,  # TODO
-                              memory_support=None,  # TODO
-                              memory_measurements=None,  # TODO
-                              callpath=measurement['callpath'],
-                              metrics=measurement['metrics'])
-        tau.install()
-        self.tau = tau
+        self.tau = TauInstallation(prefix, target['tau_source'], host_arch, compilers,
+                                   pdt=pdt,
+                                   bfd=bfd,
+                                   libunwind=libunwind,
+                                   papi=papi, 
+                                   verbose=verbose,
+                                   openmp_support=application['openmp'],
+                                   pthreads_support=application['pthreads'],
+                                   mpi_support=application['mpi'],
+                                   cuda_support=application['cuda'],
+                                   shmem_support=application['shmem'],
+                                   mpc_support=application['mpc'],
+                                   # Instrumentation methods and options            
+                                   source_inst=measurement['source_inst'],
+                                   compiler_inst=measurement['compiler_inst'],
+                                   io_inst=measurement['io'],
+                                   keep_inst_files=measurement['keep_inst_files'],
+                                   reuse_inst_files=measurement['reuse_inst_files'],
+                                   # Measurements TAU must support
+                                   profile=measurement['profile'],
+                                   trace=measurement['trace'],
+                                   sample=measurement['sample'],
+                                   metrics=measurement['metrics'],
+                                   measure_mpi=measurement['mpi'],
+                                   measure_openmp=measurement['openmp'],
+                                   measure_pthreads=None,  # TODO
+                                   measure_cuda=None,  # Todo
+                                   measure_shmem=None,  # TODO
+                                   measure_mpc=None,  # TODO
+                                   measure_memory_usage=measurement['memory_usage'],
+                                   measure_memory_alloc=measurement['memory_alloc'],
+                                   measure_callpath=measurement['callpath'])
+        self.tau.install()
+
 
     def managedBuild(self, compiler_cmd, compiler_args):
         """
@@ -258,35 +265,22 @@ class Experiment(Controller):
         if given_compiler.eid != target_compiler:
             raise error.ConfigurationError("Target '%s' is configured with %s compiler '%s', not '%s'",
                                            (self['name'], given_compiler['language'],
-                                            given_compiler.absolutePath(),
-                                            target_compiler.absolutePath()),
+                                            given_compiler.absolute_path(),
+                                            target_compiler.absolute_path()),
                                            "Use a different target or use compiler '%s'" %
-                                           target_compiler.absolutePath())
+                                           target_compiler.absolute_path())
 
         # Build compile-time environment from component packages
-        opts, env = environment.base()
-        if measurement['source_inst']:
-            if (self.pdt):
-                self.pdt.applyCompiletimeConfig(opts, env)
-            if (self.bfd):
-                self.bfd.applyCompiletimeConfig(opts, env)
-            if (self.papi):
-                self.papi.applyCompiletimeConfig(opts, env)
-            if (self.libunwind):
-                self.libunwind.applyCompiletimeConfig(opts, env)
-        self.tau.applyCompiletimeConfig(opts, env)
-
+        opts, env = self.tau.apply_compiletime_config() 
         use_wrapper = measurement['source_inst'] or measurement['comp_inst']
         if use_wrapper:
             compiler_cmd = given_compiler['tau_wrapper']
-
         cmd = [compiler_cmd] + opts + compiler_args
         retval = util.createSubprocess(cmd, env=env)
-        # This would work if TAU's wrapper scripts returned nonzero on error...
-#     if retval == 0:
-#       LOGGER.info("TAU has finished building the application.  Now use `tau <command>` to gather data from <command>.")
-#     else:
-#       LOGGER.warning("TAU was unable to build the application.  You can see detailed output in '%s'" % logger.LOG_FILE)
+        if retval == 0:
+            LOGGER.info("TAU has finished building the application.  Now use `tau <command>` to gather data from <command>.")
+        else:
+            LOGGER.warning("TAU was unable to build the application.  You can see detailed output in '%s'" % logger.LOG_FILE)
         return retval
 
     def managedRun(self, application_cmd, application_args):
@@ -317,8 +311,7 @@ class Experiment(Controller):
         # TODO
 
         # Build environment from component packages
-        opts, env = environment.base()
-        self.tau.applyRuntimeConfig(opts, env)
+        opts, env = self.tau.apply_runtime_config()
 
         # TODO : Select tau_exec as needed
         use_tau_exec = False
@@ -354,18 +347,13 @@ class Experiment(Controller):
                     if trial['begin_time'] > latest_date:
                         latest_date = trial['begin_time']
                 trials = [trial]
-
         if not trials:
             raise error.ConfigurationError("No trials in experiment %s" % self.name(),
                                            "See `tau trial create --help`")
-
-        opts, env = environment.base()
-        self.tau.applyRuntimeConfig(opts, env)
-
         for trial in trials:
             prefix = trial.prefix()
             profiles = glob.glob(os.path.join(prefix, 'profile.*.*.*'))
             if not profiles:
                 profiles = glob.glob(os.path.join(prefix, 'MULTI__*'))
             if profiles:
-                self.tau.showProfile(prefix)
+                self.tau.show_profile(prefix)

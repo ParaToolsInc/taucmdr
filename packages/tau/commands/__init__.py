@@ -39,7 +39,6 @@ import os
 import sys
 from pkgutil import walk_packages
 from tau import logger, error, environment
-from pprint import pprint
 
 
 LOGGER = logger.getLogger(__name__)
@@ -70,13 +69,13 @@ class AmbiguousCommandError(error.ConfigurationError):
     Indicates that a specified partial command is ambiguous
     """
     message_fmt = """
-Command %(value)r is ambiguous: %(matches)r
+Command '%(value)s' is ambiguous: %(matches)s
 
 %(hint)s"""
 
     def __init__(self, value, matches, hint="Try 'tau --help'."):
-        super(AmbiguousCommandError, self).__init__(
-            'Command %s is ambiguous: %s' % (value, matches), hint)
+        super(AmbiguousCommandError, self).__init__(value, hint)
+        self.message_fields['matches'] = ', '.join(matches)
 
 
 def get_command_list(module_name):

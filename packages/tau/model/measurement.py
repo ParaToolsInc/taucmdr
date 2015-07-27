@@ -42,21 +42,25 @@ from tau.controller import Controller, ByName, ModelError
 
 
 class Measurement(Controller, ByName):
-
     """
-    Measurement data model controller
+    Measurement data model controller.
+    
+    A Measurement describes how data will be gathered during the measurement
+    phase of the performance engineering workflow.
     """
 
     attributes = {
         'projects': {
             'collection': 'Project',
-            'via': 'measurements'
+            'via': 'measurements',
+            'description': "Projects using this Measurement"
         },
         'name': {
             'type': 'string',
             'unique': True,
             'argparse': {'help': 'measurement configuration name',
-                         'metavar': '<measurement_name>'}
+                         'metavar': '<measurement_name>'},
+            'description': "Measurement configuration name"
 
         },
         'profile': {
@@ -67,7 +71,8 @@ class Measurement(Controller, ByName):
                          'metavar': 'T/F',
                          'nargs': '?',
                          'const': True,
-                         'action': ParseBooleanAction}
+                         'action': ParseBooleanAction},
+            'description': "Set to True to gather profiles"
         },
         'trace': {
             'type': 'boolean',
@@ -77,7 +82,8 @@ class Measurement(Controller, ByName):
                          'metavar': 'T/F',
                          'nargs': '?',
                          'const': True,
-                         'action': ParseBooleanAction}
+                         'action': ParseBooleanAction},
+            'description': "Set to True to gather traces"
         },
         'sample': {
             'type': 'boolean',
@@ -88,18 +94,22 @@ class Measurement(Controller, ByName):
                          'nargs': '?',
                          'const': True,
                          'action': ParseBooleanAction},
-            'compat': {'Target': {'pdt_source': requisite.Violation}}
+            'compat': {'Target': {'pdt_source': requisite.Violation}},
+            'description': "Set to True to use event-based sampling to gather performance data"
         },
         'source_inst': {
-            'type': 'boolean',
-            'defaultsTo': True,
+            'type': 'string',
+            'defaultsTo': 'auto',
             'argparse': {'flags': ('--source-inst',),
-                         'help': 'use source code parsing to instrument the application',
-                         'metavar': 'T/F',
+                         'help': 'use hooks inserted into the application '
+                                 'source code to instrument the application',
+                         'metavar': 'mode',
                          'nargs': '?',
-                         'const': True,
-                         'action': ParseBooleanAction},
-            'compat': {'Target': {'pdt_source': requisite.Required}}
+                         'const': 'auto',
+                         'choices': ['automatic', 'manual', 'never']},
+            'compat': {'Target': {'pdt_source': requisite.Required}},
+            'description': "Use hooks inserted into the application source code "
+                           "to instrument the application"
         },
         'compiler_inst': {
             'type': 'string',
@@ -110,7 +120,9 @@ class Measurement(Controller, ByName):
                          'nargs': '?',
                          'const': 'always',
                          'choices': ['always', 'fallback', 'never']},
-            'compat': {'Target': {'bfd_source': requisite.Recommended, 'libunwind_source': requisite.Recommended}}
+            'compat': {'Target': {'bfd_source': requisite.Recommended, 
+                                  'libunwind_source': requisite.Recommended}},
+            'description': "Use compiler callbacks to instrument the application"
         },
         'mpi': {
             'type': 'boolean',
@@ -121,18 +133,20 @@ class Measurement(Controller, ByName):
                          'nargs': '?',
                          'const': True,
                          'action': ParseBooleanAction},
-            'compat': {'Application': {'mpi': requisite.Required}}
+            'compat': {'Application': {'mpi': requisite.Required}},
+            'description': "Measure time spent in MPI methods"
         },
         'openmp': {
             'type': 'string',
             'defaultsTo': 'ignore',
             'argparse': {'flags': ('--openmp',),
-                         'help': 'method used to measure time spent in OpenMP directives',
+                         'help': 'approach for measuring time spent in OpenMP directives',
                          'metavar': 'method',
                          'nargs': '?',
                          'const': 'opari',
                          'choices': ['ignore', 'opari', 'ompt']},
-            'compat': {'Application': {'openmp': requisite.Required}}
+            'compat': {'Application': {'openmp': requisite.Required}},
+            'description': "Measure time spent in OpenMP directives"
         },
         'callpath': {
             'type': 'integer',
@@ -143,7 +157,20 @@ class Measurement(Controller, ByName):
                          'nargs': '?',
                          'const': 2,
                          'type': int},
-            'compat': {'Target': {'bfd_source': requisite.Recommended, 'libunwind_source': requisite.Recommended}}
+            'compat': {'Target': {'bfd_source': requisite.Recommended, 
+                                  'libunwind_source': requisite.Recommended}},
+            'description': 'Maximum depth for callpath recording'
+        },
+        'io': {
+            'type': 'boolean',
+            'defaultsTo': False,
+            'argparse': {'flags': ('--io',),
+                         'help': 'measure time spent in I/O calls',
+                         'metavar': 'T/F',
+                         'nargs': '?',
+                         'const': True,
+                         'action': ParseBooleanAction},
+            'description': 'Measure time spent in I/O calls'
         },
         'memory_usage': {
             'type': 'boolean',
@@ -153,7 +180,8 @@ class Measurement(Controller, ByName):
                          'metavar': 'T/F',
                          'nargs': '?',
                          'const': True,
-                         'action': ParseBooleanAction}
+                         'action': ParseBooleanAction},
+            'description': 'Measure memory consumption'
         },
         'memory_alloc': {
             'type': 'boolean',
@@ -163,62 +191,41 @@ class Measurement(Controller, ByName):
                          'metavar': 'T/F',
                          'nargs': '?',
                          'const': True,
-                         'action': ParseBooleanAction}
+                         'action': ParseBooleanAction},
+            'description': 'Record memory allocation and deallocation events'
         },
         'metrics': {
             'type': 'array',
             'defaultsTo': ['TIME'],
             'argparse': {'flags': ('--with-metrics',),
-                         'help': 'metrics for measurements space sperated',
+                         'help': 'metrics to measure, e.g. TIME or PAPI_FP_INS',
                          'metavar': '<TAU_METRICS>',
                          'nargs': '+'},
-            'compat': {'Target': {'papi_source': requisite.Recommended}}
+            'compat': {'Target': {'papi_source': requisite.Recommended}},
+            'description': 'Metrics to measure, e.g. TIME or PAPI_FP_INS',
         },
         'keep_inst_files': {
             'type': 'boolean',
             'defaultsTo': False,
             'argparse': {'flags': ('--keep-inst-files',),
-                         'help': 'Keep instrumented files.',
+                         'help': 'keep instrumented files',
                          'metavar': 'T/F',
                          'nargs': '?',
                          'const': True,
-                         'action': ParseBooleanAction}
+                         'action': ParseBooleanAction},
+            'description': "Don't remove instrumented files after compilation"
         },
         'reuse_inst_files': {
             'type': 'boolean',
             'defaultsTo': False,
             'argparse': {'flags': ('--reuse-inst-files',),
-                         'help': 'Reuse and preserve instrumented files.',
-                         'metavar': 'T/F',
-                         'nargs': '?',
-                         'const': True,
-                         'action': ParseBooleanAction}
-        },
-        'io_wrapper': {
-            'type': 'boolean',
-            'defaultsTo': False,
-            'argparse': {'flags': ('--io-wrapper',),
-                         'help': 'Build POSIX IO Wrapper.',
+                         'help': 'reuse and preserve instrumented files.',
                          'metavar': 'T/F',
                          'nargs': '?',
                          'const': True,
                          'action': ParseBooleanAction},
-            'compat': {'Target': {'io_wrapper': requisite.Required}}
+            'description': 'reuse and preserve instrumented files after compilation',
         },
-        'link_only': {
-            'type': 'boolean',
-            'defaultsTo': False,
-            'argparse': {'flags': ('--link-only',),
-                         'help': 'Link only TAU libraries. No source or compiler instrumentation.',
-                         'metavar': 'T/F',
-                         'nargs': '?',
-                         'const': True,
-                         'action': ParseBooleanAction},
-            'compat': {'Target': {'tau_source': requisite.Required},
-                       'Measurement': {'source_inst': requisite.Violation},
-                       'Measurement': {'compiler_inst': requisite.Violation}}
-        }
-
     }
 
     _valid_name = set(string.digits + string.letters + '-_.')

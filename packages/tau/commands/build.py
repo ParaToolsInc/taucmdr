@@ -37,7 +37,7 @@
 
 from tau import logger, error, commands, arguments
 from tau.model.experiment import Experiment
-from tau.model.compiler import KNOWN_COMPILERS
+from tau.cf.compiler import KNOWN_COMPILERS
 
 
 LOGGER = logger.getLogger(__name__)
