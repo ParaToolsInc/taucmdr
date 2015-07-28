@@ -185,7 +185,7 @@ class Installation(object):
         """
         raise NotImplementedError
     
-    def apply_compiletime_config(self, opts=None, env=None):
+    def compiletime_config(self, opts=None, env=None):
         """Configure compilation environment to use this software package. 
 
         Returns command line options and environment variables required by this
@@ -209,7 +209,7 @@ class Installation(object):
                 env['PATH'] = self.bin_path
         return list(set(opts)), env
 
-    def apply_runtime_config(self, opts=None, env=None):
+    def runtime_config(self, opts=None, env=None):
         """Configure runtime environment to use this software package.
         
         Returns command line options and environment variables required by this 

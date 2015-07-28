@@ -262,7 +262,6 @@ class Experiment(Controller):
         TODO: Docs
         """
         target = self.populate('target')
-        measurement = self.populate('measurement')
         given_compiler = Compiler.identify(compiler_cmd)
         target_compiler = target[given_compiler['role']]
 
@@ -275,58 +274,20 @@ class Experiment(Controller):
                                       given_compiler.absolute_path()),
                                      "Use a different target or use compiler '%s'" % 
                                      target_compiler.absolute_path())
-
-        # Configure software installation
         self.configure()
-
-        # Build compile-time environment from component packages
-        opts, env = self.tau.apply_compiletime_config() 
-        use_wrapper = measurement['source_inst'] or measurement['comp_inst']
-        if use_wrapper:
-            compiler_cmd = given_compiler['tau_wrapper']
-        cmd = [compiler_cmd] + opts + compiler_args
-        retval = util.createSubprocess(cmd, env=env)
-        if retval != 0:
-            LOGGER.warning("TAU was unable to build the application.  You can see detailed output in '%s'" % logger.LOG_FILE)
-        return retval
-
+        self.tau.compile(given_compiler.info(), compiler_args)
+        
     def managedRun(self, application_cmd, application_args):
         """
         TODO: Docs
         """
-        self.configure()
-        measurement = self.populate('measurement')
-
         command = util.which(application_cmd)
         if not command:
             raise ConfigurationError("Cannot find executable: %s" % application_cmd)
         cwd = os.getcwd()
 
-        # Check for existing profile files
-        if measurement['profile']:
-            profiles = glob.glob(os.path.join(cwd, 'profile.*.*.*'))
-            if len(profiles):
-                LOGGER.warning("Profile files found in '%s'! They will be deleted." % cwd)
-                for f in profiles:
-                    try:
-                        os.remove(f)
-                    except:
-                        continue
-        # Check for existing trace files
-        # TODO
-
-        # Build environment from component packages
-        opts, env = self.tau.apply_runtime_config()
-
-        # TODO : Select tau_exec as needed
-        use_tau_exec = False
-        if use_tau_exec:
-            # TODO: tau_exec flags and command line args
-            cmd = ['tau_exec'] + opts + [application_cmd]
-        else:
-            cmd = [application_cmd]
-        cmd += application_args
-
+        self.configure()
+        cmd, env = self.tau.get_application_command(application_cmd, application_args)
         return Trial.perform(self, cmd, cwd, env)
 
     def show(self, trial_numbers=None):

@@ -168,6 +168,23 @@ class Trial(Controller):
                   'begin_time': begin_time}
         trial = cls.create(fields)
         prefix = trial.prefix()
+        
+        # Check for existing profile files
+        if measurement['profile']:
+            profiles = glob.glob(os.path.join(cwd, 'profile.*.*.*'))
+            if profiles:
+                LOGGER.warning("Profile files found in '%s'! They will be deleted." % cwd)
+                for f in profiles:
+                    try: os.remove(f)
+                    except: continue
+            multi_dirs = glob.glob(os.path.join(cwd, 'MULTI__*'))
+            if multi_dirs:
+                LOGGER.warning("Profile directories found in '%s'! They will be deleted." % cwd)
+                for f in multi_dirs:
+                    shutil.rmtree(f, ignore_errors=True)
+        # Check for existing trace files
+        # TODO
+
         try:
             retval = util.createSubprocess(cmd, cwd=cwd, env=env)
             if retval:
@@ -191,18 +208,19 @@ class Trial(Controller):
                         shutil.move(dirs, prefix)
                         LOGGER.debug("'%s' => '%s'" % (dirs, prefix))
                 elif retval != 0:
-                    # If nonzero exit and no performance data then assume the 
-                    # trial failed completely and revert the trial record
                     raise TrialError("Program died without producing performance data")
+                else:
+                    raise TrialError("Application completed successfuly but "
+                                     "did not produce any performance data")
 
             # TODO: Handle traces
-
-            end_time = str(datetime.utcnow())
+            
         except:
             cls.delete(eids=[trial.eid])
             raise
         else:
             # Trial successful, update record and record state for provenance
+            end_time = str(datetime.utcnow())
             data_size = sum(os.path.getsize(os.path.join(prefix, f))
                             for f in os.listdir(prefix))
             shutil.copy(storage.user_storage.dbfile, prefix)

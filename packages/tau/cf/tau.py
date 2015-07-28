@@ -347,7 +347,19 @@ class TauInstallation(Installation):
         if self.mpc_support:
             tags.append('mpc')
         LOGGER.debug("TAU tags: %s" % tags)
-        return tags
+        return set(tags)
+    
+    def _incompatible_tags(self):
+        """
+        Returns a set of makefile tags incompatible with the specified config
+        """
+        tags = []
+        if not self.mpi_support:
+            tags.append('mpi')
+        if self.source_inst == 'never':
+            tags.append('pdt')
+        LOGGER.debug("Incompatible tags: %s" % tags)
+        return set(tags)
 
     def get_makefile(self):
         """Returns an absolute path to a TAU_MAKEFILE.
@@ -359,12 +371,12 @@ class TauInstallation(Installation):
             A file path that could be used to set the TAU_MAKEFILE environment
             variable, or None if a suitable makefile couldn't be found.
         """
-        config_tags = set(self.get_makefile_tags())
+        config_tags = self.get_makefile_tags()
         tau_makefiles = glob.glob(os.path.join(self.lib_path, 'Makefile.tau*'))
         LOGGER.debug('Found makefiles: %r' % tau_makefiles)
         approx_tags = None
         approx_makefile = None
-        dangerous_tags = set(['mpi']) - config_tags
+        dangerous_tags = self._incompatible_tags()
         for makefile in tau_makefiles:
             tags = set(os.path.basename(makefile).split('.')[1].split('-')[1:])
             if config_tags <= tags:
@@ -372,11 +384,12 @@ class TauInstallation(Installation):
                     makefile = os.path.join(self.lib_path, makefile) 
                     LOGGER.debug("Found TAU makefile %s" % makefile)
                     return makefile
-                elif (not approx_tags or
-                      (tags < approx_tags and 
-                       not approx_tags & dangerous_tags)):
-                    approx_makefile = makefile
-                    approx_tags = tags
+                elif not (tags & dangerous_tags):
+                    if not approx_tags:
+                        approx_tags = tags
+                    elif tags < approx_tags:
+                        approx_makefile = makefile
+                        approx_tags = tags
         LOGGER.debug("No TAU makefile exactly matches tags '%s'" % config_tags)
         if approx_makefile:
             makefile = os.path.join(self.lib_path, approx_makefile) 
@@ -386,7 +399,7 @@ class TauInstallation(Installation):
         raise SoftwarePackageError("TAU Makefile not found for tags '%s' in '%s'" % 
                                    (', '.join(config_tags), self.install_prefix))
 
-    def apply_compiletime_config(self, opts=None, env=None):
+    def compiletime_config(self, opts=None, env=None):
         """Configures environment for compilation with TAU.
 
         Modifies incoming command line arguments and environment variables
@@ -396,39 +409,47 @@ class TauInstallation(Installation):
             opts: List of command line options.
             env: Dictionary of environment variables
         """
-        opts, env = super(TauInstallation,self).apply_compiletime_config(opts, env)
-        opts.append('-optRevert')
-        env['TAU_MAKEFILE'] = self.get_makefile()
+        opts, env = super(TauInstallation,self).compiletime_config(opts, env)
+        if self.sample:
+            # TODO: Handle compilers that don't use -g for debug symbols
+            opts.append('-g')
+        try:
+            tau_opts = env['TAU_OPTIONS'].split(' ')
+        except KeyError:
+            tau_opts = []       
+        tau_opts.append('-optRevert')
         if self.verbose:
-            opts.append('-optVerbose')
+            tau_opts.append('-optVerbose')
         else:
-            opts.append('-optQuiet')
+            tau_opts.append('-optQuiet')
         if self.compiler_inst == 'always':
-            opts.append('-optCompInst')
+            tau_opts.append('-optCompInst')
         elif self.compiler_inst == 'never':
-            opts.append('-optNoCompInst')
+            tau_opts.append('-optNoCompInst')
         elif self.compiler_inst == 'fallback':
-            opts.append('-optRevert')
+            tau_opts.append('-optRevert')
         if self.link_only:
-            opts.append('-optLinkOnly')
+            tau_opts.append('-optLinkOnly')
         if self.keep_inst_files:
-            opts.append('-optKeepFiles')
+            tau_opts.append('-optKeepFiles')
         if self.reuse_inst_files:
-            opts.append('-optReuseFiles')
+            tau_opts.append('-optReuseFiles')
         if self.io_inst:
-            opts.append('-optTrackIO')
+            tau_opts.append('-optTrackIO')
+        env['TAU_MAKEFILE'] = self.get_makefile()
+        env['TAU_OPTIONS'] = ' '.join(tau_opts)
         if self.pdt:
-            self.pdt.apply_compiletime_config(opts, env)
+            self.pdt.compiletime_config(opts, env)
         if self.bfd:
-            self.bfd.apply_compiletime_config(opts, env)
+            self.bfd.compiletime_config(opts, env)
         if self.papi:
-            self.papi.apply_compiletime_config(opts, env)
+            self.papi.compiletime_config(opts, env)
         if self.libunwind:
-            self.libunwind.apply_compiletime_config(opts, env)
+            self.libunwind.compiletime_config(opts, env)
         return list(set(opts)), env
 
 
-    def apply_runtime_config(self, opts=None, env=None):
+    def runtime_config(self, opts=None, env=None):
         """Configures environment for execution with TAU.
         
         Modifies incoming command line arguments and environment variables 
@@ -438,7 +459,7 @@ class TauInstallation(Installation):
             opts: List of command line options.
             env: Dictionary of environment variables
         """
-        opts, env = super(TauInstallation,self).apply_runtime_config(opts, env)
+        opts, env = super(TauInstallation,self).runtime_config(opts, env)
         env['TAU_VERBOSE'] = str(int(self.verbose))
         env['TAU_PROFILE'] = str(int(self.profile))
         env['TAU_TRACE'] = str(int(self.trace))
@@ -453,12 +474,55 @@ class TauInstallation(Installation):
         env['TAU_METRICS'] = os.pathsep.join(self.metrics)
         return list(set(opts)), env
 
+
+    def compile(self, compiler, compiler_args):
+        """Executes a compilation command.
+        
+        Sets TAU environment variables and configures TAU compiler wrapper
+        command line arguments to match specified configuration, then
+        executes the compiler command. 
+        
+        Args:
+            compiler: CompilerInfo for a compiler command
+            compiler_args: List of compiler command line arguments
+        
+        Raises:
+            ConfigurationError: Compilation failed
+        """
+        opts, env = self.compiletime_config() 
+        use_wrapper = (self.source_inst != 'never' or 
+                       self.compiler_inst != 'never')
+        if use_wrapper:
+            compiler_cmd = compiler.tau_wrapper
+        else:
+            compiler_cmd = compiler.command
+        cmd = [compiler_cmd] + opts + compiler_args
+        retval = util.createSubprocess(cmd, env=env)
+        if retval != 0:
+            raise ConfigurationError("TAU was unable to build the application.",
+                                     "See detailed output at the end of in '%s'" % logger.LOG_FILE)
+
+    def get_application_command(self, application_cmd, application_args):
+        
+        tau_exec_opts, env = self.runtime_config()
+        use_tau_exec = (self.source_inst == 'never' and
+                        self.compiler_inst == 'never')
+        if use_tau_exec:
+            tags = self.get_makefile_tags()
+            if not self.mpi_support:
+                tags.add('serial')
+            cmd = ['tau_exec', '-T', ','.join(tags)] + tau_exec_opts + [application_cmd] + application_args
+        else:
+            cmd = [application_cmd] + application_args
+        return cmd, env
+
+
     def show_profile(self, path):
         """
         Shows profile data in the specified file or folder
         """
         LOGGER.debug("Showing profile files at '%s'" % path)
-        _, env = super(TauInstallation,self).apply_runtime_config()
+        _, env = super(TauInstallation,self).runtime_config()
         for viewer in 'paraprof', 'pprof':
             if os.path.isfile(path):
                 cmd = [viewer, path]
