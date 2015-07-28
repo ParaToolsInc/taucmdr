@@ -232,7 +232,7 @@ class TauInstallation(Installation):
         LOGGER.debug("Installing TAU at '%s' from '%s' with arch=%s" %
                      (self.install_prefix, self.src, self.arch))
 
-        self.prepare_src()
+        self._prepare_src()
 
         # TAU's configure script has a goofy way of specifying the fortran compiler
         fc_family = self.compilers.fc.family
@@ -260,8 +260,9 @@ class TauInstallation(Installation):
             # TODO: -mpiinc, -mpilib, -mpilibrary
             flags.append('-mpi')           
         if self.openmp_support:
-            flags.append('-openmp')
-            if self.measure_openmp == 'ompt':
+            if self.measure_openmp == 'ignore':
+                flags.append('-openmp')
+            elif self.measure_openmp == 'ompt':
                 if self.compilers.cc.family == 'Intel':
                     flags.append('-ompt')
                 else:

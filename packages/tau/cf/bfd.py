@@ -35,13 +35,17 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
+import os
+import glob
+import shutil
 import logger
 from installation import AutotoolsInstallation
 
 
 LOGGER = logger.getLogger(__name__)
  
-SOURCES = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/binutils-2.23.2.tar.gz'}
+SOURCES = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/binutils-2.23.2.tar.gz',
+           'arm64_linux': 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/arm64-bfd.tgz'}
 
 LIBS = {None: ['libbfd.a']}
 
@@ -151,3 +155,30 @@ class BfdInstallation(AutotoolsInstallation):
 #               err=$?
 #             fi
         return super(BfdInstallation,self).configure(flags=flags, env=env)
+    
+    def make_install(self, flags=[], env={}, parallel=False):
+        super(BfdInstallation,self).make_install(flags=flags, env=env, parallel=parallel)
+
+        LOGGER.debug("Copying missing BFD headers")
+        for hdr in glob.glob(os.path.join(self._src_path, 'bfd', '*.h')):
+            shutil.copy(hdr, self.include_path)
+        for f in glob.glob(os.path.join(self._src_path, 'include', '*')):
+            try:
+                shutil.copy(f, self.include_path)
+            except:
+                dst = os.path.join(
+                    self.include_path, os.path.basename(f))
+                shutil.copytree(f, dst)
+
+        LOGGER.debug("Copying missing BFD libraries")
+        shutil.copy(os.path.join(self._src_path, 'libiberty', 'libiberty.a'), 
+                    self.lib_path)
+        shutil.copy(os.path.join(self._src_path, 'opcodes', 'libopcodes.a'), 
+                    self.lib_path)
+
+        LOGGER.debug("Fixing BFD header")
+        with open(os.path.join(self.include_path, 'bfd.h'), "rw+") as fin:
+            data = fin.read().replace('#if !defined PACKAGE && !defined PACKAGE_VERSION', '#if 0')
+            fin.seek(0, 0)
+            fin.write(data)
+            fin.truncate()

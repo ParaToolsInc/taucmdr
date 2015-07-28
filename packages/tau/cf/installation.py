@@ -51,9 +51,6 @@ class Installation(object):
     
     Attributes:
         name: Software package name.
-        prefix: String absolute path to the directory that will contain
-                subdirectories containing the source files and the 
-                installation products.
         src: String absolute path to the source code.
         arch: String describing the target architecture.
         compilers: CompilerSet object
@@ -67,19 +64,44 @@ class Installation(object):
     #pylint: disable=too-many-arguments
 
     def __init__(self, name, prefix, src, arch, compilers, sources):
+        """Initializes the installation object.
+        
+        To set up a new installation, pass prefix=/path/to/directory and
+        src={/path/to/source_archive_file, 'download'}.  `prefix` will be 
+        created if it does not exist.  `src` may be a URL, file path, or the
+        special keyword 'download'
+        
+        To set up an interface to an existing installation, pass
+        src=/path/to/existing/installation and ignore prefix. Attributes
+        `src` and `src_prefix` will be set to None.
+        
+        Args:
+            name: Human readable name of the software package, e.g. 'TAU'
+            prefix: Path to a directory to contain subdirectories for 
+                    installation files, source file, and compilation files.
+            src: Path to a directory where the software has already been 
+                 installed, or a path to a source archive file, or the special
+                 keyword 'download'
+            arch: Target architecture (a.k.a TAU architecture)
+            compilers: CompilerSet specifying which compilers to use
+            sources: (arch, path) dictionary specifying where to get source
+                     code archives for different architectures.  The None
+                     key specifies the default (i.e. universal) source.    
+        """ 
         self.name = name
-        self.prefix = prefix
-        if src and src.lower() == 'download':
-            self.src = sources.get(arch, sources[None])
+        if os.path.isdir(src):
+            self.install_prefix = src
+            self.src_prefix = None
+            self.src = None
         else:
-            self.src = src
+            self.install_prefix = os.path.join(prefix, name, compilers.id)
+            self.src_prefix = os.path.join(prefix, 'src')
+            if src and src.lower() == 'download':
+                self.src = sources.get(arch, sources[None])
+            else:
+                self.src = src
         self.arch = arch
         self.compilers = compilers
-        self.src_prefix = os.path.join(prefix, 'src')
-        if src:
-            self.install_prefix = os.path.join(prefix, name, compilers.id)
-        else:
-            self.install_prefix = prefix
         self.include_path = os.path.join(self.install_prefix, 'include')
         self.bin_path = os.path.join(self.install_prefix, 'bin')
         self.lib_path = os.path.join(self.install_prefix, 'lib')
@@ -162,7 +184,7 @@ class Installation(object):
             NotImplementedError: This method must be overridden by a subclass.
         """
         raise NotImplementedError
-
+    
     def apply_compiletime_config(self, opts=None, env=None):
         """Configure compilation environment to use this software package. 
 
@@ -230,8 +252,9 @@ class AutotoolsInstallation(Installation):
     """
     #pylint: disable=too-many-arguments
 
-    def __init__(self, name, prefix, src, arch, compilers):
-        super(AutotoolsInstallation,self).__init__(name, prefix, src, arch, compilers)
+    def __init__(self, name, prefix, src, arch, compilers, sources):
+        super(AutotoolsInstallation,self).__init__(name, prefix, src, arch, 
+                                                   compilers, sources)
         
     def configure(self, flags=[], env={}):
         """Invoke configure.
@@ -327,7 +350,7 @@ class AutotoolsInstallation(Installation):
         LOGGER.debug("Installing %s at '%s' from '%s' with arch=%s" %
                      (self.name, self.install_prefix, self.src, self.arch))
 
-        self.prepare_src()
+        self._prepare_src()
 
         # Perform Autotools installation sequence
         try:

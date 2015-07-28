@@ -186,7 +186,7 @@ class Trial(Controller):
                         shutil.move(f, prefix)
                         LOGGER.debug("'%s' => '%s'" % (f, prefix))
                 elif multi_profiles:
-                    LOGGER.info("Found %d multi_profile direcotries. Adding to trial..." % len(multi_profiles))
+                    LOGGER.info("Found %d multi_profile directories. Adding to trial..." % len(multi_profiles))
                     for dirs in multi_profiles:
                         shutil.move(dirs, prefix)
                         LOGGER.debug("'%s' => '%s'" % (dirs, prefix))

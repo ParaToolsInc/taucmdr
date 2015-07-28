@@ -188,8 +188,16 @@ def file_accessible(filepath, mode='r'):
         True if the file exists and can be opened in the specified mode,
         False otherwise.
     """
-    with open(filepath, mode) as _:
+    handle = None
+    try:
+        handle = open(filepath, mode)
+    except:
+        return False
+    else:
         return True
+    finally:
+        if (handle):
+            handle.close()
     return False
 
 

@@ -58,7 +58,7 @@ class PapiInstallation(AutotoolsInstallation):
         libraries = LIBS.get(self.arch, LIBS[None])
         return super(PapiInstallation,self).verify(libraries=libraries)
     
-    def prepare_src(self):
+    def _prepare_src(self):
         # PAPI keeps its source in a subdirectory
-        prefix = super(PapiInstallation,self).prepare_src()
+        prefix = super(PapiInstallation,self)._prepare_src()
         return os.path.join(prefix, 'src')

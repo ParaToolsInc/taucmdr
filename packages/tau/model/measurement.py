@@ -219,7 +219,7 @@ class Measurement(Controller, ByName):
         'metrics': {
             'type': 'array',
             'defaultsTo': ['TIME'],
-            'argparse': {'flags': ('--with-metrics',),
+            'argparse': {'flags': ('--metrics',),
                          'help': 'metrics to measure, e.g. TIME or PAPI_FP_INS',
                          'metavar': '<TAU_METRICS>',
                          'nargs': '+'},
