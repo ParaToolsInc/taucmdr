@@ -108,7 +108,7 @@ def main(argv):
                 ('Profile', 'c', lambda t: yesno(t['profile'])),
                 ('Trace', 'c', lambda t: yesno(t['trace'])),
                 ('Sample', 'c', lambda t: yesno(t['sample'])),
-                ('Source Inst.', 'c', lambda t: yesno(t['source_inst'])),
+                ('Source Inst.', 'c', lambda t: t['source_inst']),
                 ('Compiler Inst.', 'c', lambda t: t['compiler_inst']),
                 ('MPI', 'c', lambda t: yesno(t['mpi'])),
                 ('OpenMP', 'c', lambda t: t['openmp']),

@@ -41,7 +41,7 @@ from installation import AutotoolsInstallation
 
 LOGGER = logger.getLogger(__name__)
  
-SOURCE = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/binutils-2.23.2.tar.gz'}
+SOURCES = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/binutils-2.23.2.tar.gz'}
 
 LIBS = {None: ['libbfd.a']}
 
@@ -54,9 +54,8 @@ class BfdInstallation(AutotoolsInstallation):
     """
     
     def __init__(self, prefix, src, arch, compilers):
-        if src.lower() == 'download':
-            src = SOURCE.get(arch, SOURCE[None])
-        super(BfdInstallation,self).__init__('BFD', prefix, src, arch, compilers)
+        super(BfdInstallation,self).__init__('BFD', prefix, src, arch, 
+                                             compilers, SOURCES)
 
     def verify(self):
         libraries = LIBS.get(self.arch, LIBS[None])

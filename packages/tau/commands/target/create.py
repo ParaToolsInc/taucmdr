@@ -35,9 +35,10 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-from tau import logger, commands, arguments
-from error import ConfigurationError
-from controller import UniqueAttributeError
+import os
+from tau import logger, commands, arguments, HELP_CONTACT 
+from tau.error import ConfigurationError
+from tau.controller import UniqueAttributeError
 from tau.model.target import Target
 from tau.model.compiler import Compiler
 from tau.cf.compiler import KNOWN_FAMILIES, ROLES
@@ -121,8 +122,7 @@ def main(argv):
                         (comp['language'], comp.absolute_path()))
             compilers[key] = comp
     else:
-        LOGGER.debug(
-            "Some compilers specified by user, using compiler family defaults")
+        LOGGER.debug("Some compilers specified by user, using compiler family defaults")
         siblings = set()
         for key in given_keys:
             comp = Compiler.identify(getattr(args, key))
@@ -139,29 +139,22 @@ def main(argv):
     for key in compiler_keys:
         if key not in compilers:
             raise ConfigurationError("%s compiler could not be found" % languages[key],
-                                           "See 'compiler arguments' under `tau target create --help`")
+                                     "See 'compiler arguments' under `tau target create --help`")
 
     # Check that all compilers are from the same compiler family
-    # This is a TAU requirement.  When this is fixed in TAU we can remove this
-    # check
+    # This is a TAU requirement.  When this is fixed in TAU we can remove this check
     families = list(set([comp['family'] for comp in compilers.itervalues()]))
     if len(families) != 1:
         raise ConfigurationError("Compilers from different families specified",
-                                       "TAU requires all compilers to be from the same family, e.g. GNU or Intel")
-    LOGGER.info("Using %s compilers" % families[0])
+                                 "TAU requires all compilers to be from the same family, e.g. GNU or Intel")
 
     # Check that each compiler is in the right role
     for role, comp in compilers.iteritems():
         if comp['role'] != role:
             raise ConfigurationError("'%s' specified as %s compiler but it is a %s compiler" %
-                                           (comp.absolute_path(), languages[
-                                            role], comp['language']),
-                                           "See 'compiler arguments' under `tau target create --help`")
-
-    # Show compilers to user
-    for comp in compilers.itervalues():
-        LOGGER.info("  %s compiler: '%s'" %
-                    (comp['language'], comp.absolute_path()))
+                                     (comp.absolute_path(), languages[
+                                      role], comp['language']),
+                                     "See 'compiler arguments' under `tau target create --help`")
 
     flags = dict(args.__dict__)
     for key, comp in compilers.iteritems():
@@ -171,5 +164,40 @@ def main(argv):
     except UniqueAttributeError:
         PARSER.error('A target named %r already exists' % args.name)
 
+    # Show compilers to user
+    LOGGER.info("Using %s compilers" % families[0])
+    for comp in compilers.itervalues():
+        LOGGER.info("  %s compiler: '%s'" %
+                    (comp['language'], comp.absolute_path()))
+
+    # Warn about reusing existing installations
+    existing_package_fmt = """
+You have created a target configuration that reuses an existing installation:
+
+%(name)s at '%(path)s'
+
+TAU Commander cannot configure software packages outside of its sphere of 
+influence, so it is your responsibility to guarantee that this software 
+provides all the necessary measurement and application support features for 
+your project configuration.  You will likely have a bad time with this.
+
+We strongly recommend allowing TAU Commander to build and install %(name)s
+and its dependencies whenever possible.  
+
+If you are doing this because TAU Commander isn't installing software the way
+you want, please contact %(support)s so we can fix the problem.
+"""
+    for attr in Target.attributes.iterkeys():
+        if attr.endswith('_source'):
+            try:
+                source_path = getattr(args, attr)
+            except AttributeError:
+                continue
+            name = attr.replace('_source', '')
+            if os.path.isdir(source_path):
+                LOGGER.warning(existing_package_fmt % {'name': name, 
+                                                       'path': source_path,
+                                                       'support': HELP_CONTACT})
+    
     LOGGER.info('Created a new target named %r.' % args.name)
     return commands.executeCommand(['target', 'list'], [args.name])

@@ -39,7 +39,7 @@ import os
 from installation import AutotoolsInstallation
 
 
-SOURCE = {None: 'http://icl.cs.utk.edu/projects/papi/downloads/papi-5.4.1.tar.gz'}
+SOURCES = {None: 'http://icl.cs.utk.edu/projects/papi/downloads/papi-5.4.1.tar.gz'}
 
 LIBS = {None: ['libpapi.a']}
 
@@ -51,9 +51,8 @@ class PapiInstallation(AutotoolsInstallation):
     """
 
     def __init__(self, prefix, src, arch, compilers):
-        if src.lower() == 'download':
-            src = SOURCE.get(arch, SOURCE[None])
-        super(PapiInstallation,self).__init__('PAPI', prefix, src, arch, compilers)
+        super(PapiInstallation,self).__init__('PAPI', prefix, src, arch, 
+                                              compilers, SOURCES)
 
     def verify(self):
         libraries = LIBS.get(self.arch, LIBS[None])

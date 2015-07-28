@@ -176,46 +176,52 @@ class Experiment(Controller):
                                 target['CXX'].info(),
                                 target['FC'].info())
         verbose=(logger.LOG_LEVEL == 'DEBUG')
+        
+        # Determine if we're reusing an existing TAU installation 
+        # or if we need to build a new one
+        tau_source = target['tau_source']
+        if os.path.isdir(tau_source):
+            tau_prefix = tau_source
+            tau_source = None
+            # Existing TAU installations provide their own dependencies
+            pdt = None
+            bfd = None
+            libunwind = None
+            papi = None
+        else:
+            tau_prefix = prefix
+            pdt = (measurement['source_inst'] != 'never')
+            bfd = (measurement['sample'] or 
+                   measurement['compiler_inst'] != 'never' or 
+                   measurement['openmp'] != 'ignore')
+            libunwind = (measurement['sample'] or 
+                         measurement['compiler_inst'] != 'never' or 
+                         measurement['openmp'] != 'ignore')
+            papi = bool(len([met for met in measurement['metrics'] if 'PAPI' in met]))
 
         # Install PDT, if needed        
-        if (measurement['source_inst'] != 'never'):
-            pdt = PdtInstallation(prefix, target['pdt_source'], 
-                                       host_arch, compilers)
+        if pdt:
+            pdt = PdtInstallation(prefix, target['pdt_source'], host_arch, compilers)
             pdt.install()
-        else:
-            pdt = None
 
         # Install BFD, if needed
-        if (measurement['sample'] or 
-            measurement['compiler_inst'] != 'never' or 
-            measurement['openmp'] != 'ignore'):
-            bfd = BfdInstallation(prefix, target['bfd_source'], 
-                                       host_arch, compilers)
+        if bfd:
+            bfd = BfdInstallation(prefix, target['bfd_source'], host_arch, compilers)
             bfd.install()
-        else:
-            bfd = None
 
         # Install libunwind, if needed
-        if (measurement['sample'] or 
-            measurement['compiler_inst'] != 'never' or 
-            measurement['openmp'] != 'ignore'):
-            libunwind = LibunwindInstallation(prefix, target['libunwind_source'], 
-                                                   host_arch, compilers)
+        if libunwind:
+            libunwind = LibunwindInstallation(prefix, target['libunwind_source'],
+                                              host_arch, compilers)
             libunwind.install()
-        else:
-            libunwind = None
 
         # Install PAPI, if needed
-        papi_metrics = [met for met in measurement['metrics'] if 'PAPI' in met]
-        if papi_metrics:
-            papi = PapiInstallation(prefix, target['papi_source'], 
-                                         host_arch, compilers)
+        if papi:
+            papi = PapiInstallation(prefix, target['papi_source'], host_arch, compilers)
             papi.install()
-        else:
-            papi = None 
 
         # Configure/build/install TAU if needed
-        self.tau = TauInstallation(prefix, target['tau_source'], host_arch, compilers,
+        self.tau = TauInstallation(tau_prefix, tau_source, host_arch, compilers,
                                    pdt=pdt,
                                    bfd=bfd,
                                    libunwind=libunwind,
@@ -230,6 +236,7 @@ class Experiment(Controller):
                                    # Instrumentation methods and options            
                                    source_inst=measurement['source_inst'],
                                    compiler_inst=measurement['compiler_inst'],
+                                   link_only=measurement['link_only'],
                                    io_inst=measurement['io'],
                                    keep_inst_files=measurement['keep_inst_files'],
                                    reuse_inst_files=measurement['reuse_inst_files'],

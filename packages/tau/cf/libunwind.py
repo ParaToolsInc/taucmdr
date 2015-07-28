@@ -38,7 +38,7 @@
 from installation import AutotoolsInstallation
 
 
-SOURCE = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-1.1.tar.gz'}
+SOURCES = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-1.1.tar.gz'}
  
 LIBS = {None: ['libunwind.a']}
 
@@ -51,10 +51,8 @@ class LibunwindInstallation(AutotoolsInstallation):
     """
 
     def __init__(self, prefix, src, arch, compilers):
-        if src.lower() == 'download':
-            src = SOURCE.get(arch, SOURCE[None])
         super(LibunwindInstallation,self).__init__('libunwind', prefix, 
-                                                   src, arch, compilers)
+                                                   src, arch, compilers, SOURCES)
 
     def verify(self):
         libraries = LIBS.get(self.arch, LIBS[None])

@@ -42,8 +42,8 @@ import os
 import hashlib
 import subprocess
 import logger, util
-from error import ConfigurationError
 from tau import COMPILER_WRAPPERS
+from error import InternalError, ConfigurationError
 
 
 LOGGER = logger.getLogger(__name__)
@@ -156,17 +156,12 @@ class CompilerInfo(object):
         with open(path, 'r') as compiler_file:
             md5sum.update(compiler_file.read())
         info.md5sum = md5sum.hexdigest()
-        # If it's an MPI compiler try to determine the real compiler
-        if info.family == 'MPI':
-            wrapped_family = cls._mpi_family(info)
-            if wrapped_family:
-                info.family = wrapped_family 
         # TODO: Compiler version
         info.version = 'FIXME'       
         return info
     
     @classmethod
-    def _mpi_family(cls, info):
+    def identify_mpiwrapper(cls, info):
         """Determine what compiler the MPI compiler wrapper is wrapping.
         
         Executes the compiler command and parses the output to determine
@@ -176,7 +171,7 @@ class CompilerInfo(object):
             info: A mostly populated CompilerInfo.
             
         Returns:
-            The compiler family string or None if it couldn't be determined.
+            CompilerInfo for the wrapped compiler.
         """
         abspath = os.path.join(info.path, info.command) 
         cmd = [abspath, '-show']
@@ -186,17 +181,16 @@ class CompilerInfo(object):
         retval = proc.returncode
         LOGGER.debug(stdout)
         LOGGER.debug("%s returned %d" % (abspath, retval))
-        if retval == 0:
-            wrapped_compiler = stdout.split()[0]
-            try:
-                wrapped_info = KNOWN_COMPILERS[wrapped_compiler]
-            except KeyError:
-                pass
-            else:
-                LOGGER.info("Determined %s is wrapping %s" % (abspath, wrapped_info.short_descr))
-                return wrapped_info.family
-        LOGGER.warning("Could not determine compiler family of '%s'" % abspath)
-        return None
+        if retval != 0:
+            raise InternalError("Command '%s' failed with return code %d" % 
+                                (' '.join(cmd), retval))
+        wrapped_cmd = stdout.split()[0]
+        try:
+            wrapped_info = KNOWN_COMPILERS[wrapped_cmd]
+        except KeyError:
+            raise ConfigurationError("Unknown compiler command: '%s'", wrapped_cmd)
+        LOGGER.info("Determined %s is wrapping %s" % (abspath, wrapped_info.short_descr))
+        return wrapped_info
 
 
 

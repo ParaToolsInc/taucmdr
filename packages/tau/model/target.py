@@ -179,7 +179,7 @@ class Target(Controller, ByName):
             'argparse': {'flags': ('--with-tau',),
                          'group': 'software package',
                          'help': 'URL or path to a TAU installation or archive file',
-                         'metavar': '(<path>|<url>|"download")',
+                         'metavar': '(<path>|<url>|download)',
                          'action': ParsePackagePathAction}
         },
         'pdt_source': {
@@ -218,7 +218,7 @@ class Target(Controller, ByName):
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction}
         },
-        'score-p_source': {
+        'scorep_source': {
             'type': 'string',
             'defaultsTo': None,
             'argparse': {'flags': ('--with-score-p',),

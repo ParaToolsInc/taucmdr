@@ -66,14 +66,20 @@ class Installation(object):
     #pylint: disable=too-many-instance-attributes
     #pylint: disable=too-many-arguments
 
-    def __init__(self, name, prefix, src, arch, compilers):
+    def __init__(self, name, prefix, src, arch, compilers, sources):
         self.name = name
         self.prefix = prefix
-        self.src = src
+        if src and src.lower() == 'download':
+            self.src = sources.get(arch, sources[None])
+        else:
+            self.src = src
         self.arch = arch
         self.compilers = compilers
         self.src_prefix = os.path.join(prefix, 'src')
-        self.install_prefix = os.path.join(prefix, name, compilers.id)
+        if src:
+            self.install_prefix = os.path.join(prefix, name, compilers.id)
+        else:
+            self.install_prefix = prefix
         self.include_path = os.path.join(self.install_prefix, 'include')
         self.bin_path = os.path.join(self.install_prefix, 'bin')
         self.lib_path = os.path.join(self.install_prefix, 'lib')
@@ -82,16 +88,17 @@ class Installation(object):
         ncores = multiprocessing.cpu_count()
         return ['-j%s' % ncores]
 
-    def prepare_src(self):
+    def _prepare_src(self):
         """Prepares source code for installation.
         
-        Returns:
-            Path to the fresh, clean source code.
+        Sets self._src_path to the path to the fresh, clean source code.
             
         Raises:
             ConfigurationError: The source code couldn't be copied or downloaded.
-        """ 
-        if os.path.isdir(self.src):
+        """
+        if not self.src: 
+            raise SoftwarePackageError("No source code provided for %s" % self.name)
+        elif os.path.isdir(self.src):
             LOGGER.debug("Copying source directory '%s' to '%s'" % (self.src, self.src_prefix))
             try:
                 shutil.copytree(self.src, self.src_prefix, symlinks=True)
@@ -99,7 +106,7 @@ class Installation(object):
                 raise ConfigurationError("Cannot copy source directory '%s'" % self.src,
                                          "Check that the directory is accessable")
             else:
-                return os.path.join(self.src_prefix, os.path.basename(self.src))
+                self._src_path = os.path.join(self.src_prefix, os.path.basename(self.src))
         else:
             dst = os.path.join(self.src_prefix, os.path.basename(self.src))
             try:
@@ -108,7 +115,7 @@ class Installation(object):
                 raise ConfigurationError("Cannot acquire source archive '%s'" % self.src,
                                          "Check that the file or directory is accessable")
             try:
-                return util.extract(dst, self.src_prefix)
+                self._src_path = util.extract(dst, self.src_prefix)
             except IOError:
                 raise ConfigurationError("Cannot extract source archive '%s'" % self.src,
                                          "Check that the file or directory is accessable")
@@ -147,7 +154,7 @@ class Installation(object):
                 raise SoftwarePackageError("'%s' is not accessible" % path)
         LOGGER.debug("%s installation at '%s' is valid" % (self.name, self.install_prefix))
         return True
-     
+        
     def install(self):
         """Installs the software package.
         
@@ -225,7 +232,6 @@ class AutotoolsInstallation(Installation):
 
     def __init__(self, name, prefix, src, arch, compilers):
         super(AutotoolsInstallation,self).__init__(name, prefix, src, arch, compilers)
-        self.src_path = None
         
     def configure(self, flags=[], env={}):
         """Invoke configure.
@@ -237,7 +243,7 @@ class AutotoolsInstallation(Installation):
         Raises:
             SoftwarePackageError: Configuration failed.
         """
-        LOGGER.debug("Configuring %s at '%s'" % (self.name, self.src_path))
+        LOGGER.debug("Configuring %s at '%s'" % (self.name, self._src_path))
         flags = list(flags)
         env = dict(env)
 
@@ -252,7 +258,7 @@ class AutotoolsInstallation(Installation):
             LOGGER.info("Allowing %s to select compilers" % self.name)
         cmd = ['./configure'] + flags
         LOGGER.info("Configuring %s..." % self.name)
-        if util.createSubprocess(cmd, cwd=self.src_path, env=env, stdout=False):
+        if util.createSubprocess(cmd, cwd=self._src_path, env=env, stdout=False):
             raise SoftwarePackageError('%s configure failed' % self.name)   
     
     def make(self, flags=[], env={}, parallel=True):
@@ -265,17 +271,14 @@ class AutotoolsInstallation(Installation):
         Raises:
             SoftwarePackageError: Configuration failed.
         """
-        LOGGER.debug("Making %s at '%s'" % (self.name, self.src_path))
+        LOGGER.debug("Making %s at '%s'" % (self.name, self._src_path))
         flags = list(flags)
         env = dict(env)
-
-        # Prepare make flags
         if parallel:
             flags += self._parallel_make_flags()
-        # Build
         cmd = ['make'] + flags
         LOGGER.info("Compiling %s..." % self.name)
-        if util.createSubprocess(cmd, cwd=self.src_path, env=env, stdout=False):
+        if util.createSubprocess(cmd, cwd=self._src_path, env=env, stdout=False):
             raise SoftwarePackageError('%s compilation failed' % self.name)
 
     def make_install(self, flags=[], env={}, parallel=False):
@@ -289,22 +292,19 @@ class AutotoolsInstallation(Installation):
             SoftwarePackageError: Configuration failed.
         """
         LOGGER.debug("Installing %s at '%s' to '%s'" % 
-                     (self.name, self.src_path, self.install_prefix))
+                     (self.name, self._src_path, self.install_prefix))
         flags = list(flags)
         env = dict(env)
-
-        # Prepare make flags
         if parallel:
             flags += self._parallel_make_flags()
-        # Install
         cmd = ['make', 'install'] + flags
         LOGGER.info("Installing %s..." % self.name)
-        if util.createSubprocess(cmd, cwd=self.src_path, env=env, stdout=False):
+        if util.createSubprocess(cmd, cwd=self._src_path, env=env, stdout=False):
             raise SoftwarePackageError('%s installation failed' % self.name)
         # Some systems use lib64 instead of lib
         if (os.path.isdir(self.lib_path+'64') and not os.path.isdir(self.lib_path)):
             os.symlink(self.lib_path+'64', self.lib_path)
-                    
+
     def install(self, force_reinstall=False):
         """Execute the typical GNU Autotools installation sequence.
         
@@ -317,19 +317,17 @@ class AutotoolsInstallation(Installation):
         Raises:
             SoftwarePackageError: Installation failed.
         """
-        LOGGER.debug("Installing %s at '%s' from '%s' with arch=%s" %
-                     (self.name, self.install_prefix, self.src, self.arch))
-
-        # Check if the installation is already initialized
-        if not force_reinstall:
+        if not self.src:
+            return self.verify()
+        elif not force_reinstall:
             try:
                 return self.verify()
             except Exception as err:
                 LOGGER.debug(err)
-        LOGGER.info('Starting %s installation' % self.name)
+        LOGGER.debug("Installing %s at '%s' from '%s' with arch=%s" %
+                     (self.name, self.install_prefix, self.src, self.arch))
 
-        # Download, unpack, or copy source code
-        self.src_path = self.prepare_src()
+        self.prepare_src()
 
         # Perform Autotools installation sequence
         try:
@@ -340,8 +338,9 @@ class AutotoolsInstallation(Installation):
             LOGGER.info("%s installation failed: %s " % (self.name, err))
             shutil.rmtree(self.install_prefix, ignore_errors=True)
         finally:
-            LOGGER.debug("Deleting '%s'" % self.src_path)
-            shutil.rmtree(self.src_path, ignore_errors=True)
+            LOGGER.debug("Deleting '%s'" % self._src_path)
+            shutil.rmtree(self._src_path, ignore_errors=True)
+            del self._src_path
 
         # Verify the new installation
         try:

@@ -43,9 +43,9 @@ from installation import AutotoolsInstallation
 
 LOGGER = logger.getLogger(__name__)
 
-SOURCE = {None: 'http://tau.uoregon.edu/pdt.tgz',
-          # Why isn't this called pdt-x86_64.tgz ?? "lite" tells me nothing
-          'x86_64': 'http://tau.uoregon.edu/pdt_lite.tgz'}
+SOURCES = {None: 'http://tau.uoregon.edu/pdt.tgz',
+           # Why isn't this called pdt-x86_64.tgz ?? "lite" tells me nothing
+           'x86_64': 'http://tau.uoregon.edu/pdt_lite.tgz'}
 
 COMMANDS = {None: ['cparse',
                    'cxxparse',
@@ -98,9 +98,8 @@ class PdtInstallation(AutotoolsInstallation):
     """
 
     def __init__(self, prefix, src, arch, compilers):
-        if src.lower() == 'download':
-            src = SOURCE.get(arch, SOURCE[None])
-        super(PdtInstallation, self).__init__('PDT', prefix, src, arch, compilers)
+        super(PdtInstallation, self).__init__('PDT', prefix, src, arch, 
+                                              compilers, SOURCES)
         self.arch_path = os.path.join(self.install_prefix, arch)
         self.bin_path = os.path.join(self.arch_path, 'bin')
         self.lib_path = os.path.join(self.arch_path, 'lib')
