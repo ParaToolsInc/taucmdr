@@ -36,7 +36,6 @@
 #"""
 
 import os
-import string
 import shutil
 from tau import logger, util, error, environment
 from tau.controller import Controller, ByName, ModelError
@@ -54,44 +53,43 @@ class Project(Controller, ByName):
         'name': {
             'type': 'string',
             'unique': True,
-            'argparse': {'help': 'Project name',
-                         'metavar': '<project_name>'}
+            'description': 'project name',
+            'argparse': {'metavar': '<project_name>'}
         },
         'targets': {
             'collection': 'Target',
             'via': 'projects',
+            'description': 'targets used by this project'
         },
         'applications': {
             'collection': 'Application',
             'via': 'projects',
+            'description': 'applications used by this project'
         },
         'measurements': {
             'collection': 'Measurement',
             'via': 'projects',
+            'description': 'measurements used by this project'
         },
         'experiments': {
             'collection': 'Experiment',
-            'via': 'project'
+            'via': 'project',
+            'description': 'experiments formed from this project'
         },
         'prefix': {
             'type': 'string',
             'required': True,
             'defaultsTo': environment.USER_PREFIX,
+            'description': 'location for all files and experiment data related to this project',
             'argparse': {'flags': ('--home',),
-                         'help': 'Location for all files and experiment data related to this project',
                          'metavar': 'path'}
         },
     }
-
-    _valid_name = set(string.digits + string.letters + '-_.')
 
     def prefix(self):
         return os.path.join(self['prefix'], self['name'])
 
     def onCreate(self):
-        if set(self['name']) > Project._valid_name:
-            raise ModelError('%r is not a valid project name.' % self['name'],
-                             'Use only letters, numbers, dot (.), dash (-), and underscore (_).')
         prefix = self.prefix()
         try:
             util.mkdirp(prefix)

@@ -36,7 +36,6 @@
 #"""
 
 import os
-import string
 import platform
 import subprocess
 from tau import logger
@@ -112,138 +111,134 @@ class Target(Controller, ByName):
     attributes = {
         'projects': {
             'collection': 'Project',
-            'via': 'targets'
+            'via': 'targets',
+            'description': 'projects using this target'
         },
         'name': {
             'type': 'string',
             'unique': True,
-            'argparse': {'help': 'Target configuration name',
-                         'metavar': '<target_name>'}
+            'description': 'target configuration name',
+            'argparse': {'metavar': '<target_name>'}
         },
         'host_os': {
             'type': 'string',
             'required': True,
+            'description': 'host operating system',
             'defaultsTo': host_os_default(),
             'argparse': {'flags': ('--host-os',),
                          'group': 'target system',
-                         'help': 'Host operating system',
                          'metavar': 'os'}
         }, 
         'host_arch': {
             'type': 'string',
             'required': True,
+            'description': 'host architecture',
             'defaultsTo': host_arch_default(),
             'argparse': {'flags': ('--host-arch',),
                          'group': 'target system',
-                         'help': 'Host architecture',
                          'metavar': 'arch'}
         },
         'device_arch': {
             'type': 'string',
+            'description': 'coprocessor architecture',
             'defaultsTo': device_arch_default(),
             'argparse': {'flags': ('--device-arch',),
                          'group': 'target system',
-                         'help': 'Coprocessor architecture',
                          'metavar': 'arch'}
         },
         'CC': {
             'model': 'Compiler',
             'required': True,
+            'description': 'C compiler command',
             'defaultsTo': cc_default(),
             'argparse': {'flags': ('--cc',),
                          'group': 'compiler',
-                         'help': 'C Compiler',
                          'metavar': '<command>'}
         },
         'CXX': {
             'model': 'Compiler',
             'required': True,
+            'description': 'C++ compiler command',
             'defaultsTo': cxx_default(),
             'argparse': {'flags': ('--cxx', '--c++'),
                          'group': 'compiler',
-                         'help': 'C++ Compiler',
                          'metavar': '<command>'}
         },
         'FC': {
             'model': 'Compiler',
             'required': True,
+            'description': 'Fortran compiler command',
             'defaultsTo': fc_default(),
             'argparse': {'flags': ('--fc', '--fortran'),
                          'group': 'compiler',
-                         'help': 'Fortran Compiler',
                          'metavar': '<command>'}
         },
         'cuda': {
             'type': 'string',
+            'description': 'path to NVIDIA CUDA installation',
             'defaultsTo': None,
             'argparse': {'flags': ('--with-cuda',),
                          'group': 'software package',
-                         'help': 'Path to NVIDIA CUDA installation',
                          'metavar': '<path>',
                          'action': ParsePackagePathAction},
         },
         'tau_source': {
             'type': 'string',
+            'description': 'path or URL to a TAU installation or archive file',
             'defaultsTo': 'download',
             'argparse': {'flags': ('--with-tau',),
                          'group': 'software package',
-                         'help': 'URL or path to a TAU installation or archive file',
                          'metavar': '(<path>|<url>|download)',
                          'action': ParsePackagePathAction}
         },
         'pdt_source': {
             'type': 'string',
+            'description': 'path or URL to a PDT installation or archive file',
             'defaultsTo': 'download',
             'argparse': {'flags': ('--with-pdt',),
                          'group': 'software package',
-                         'help': 'URL or path to a PDT installation or archive file',
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction},
         },
         'bfd_source': {
             'type': 'string',
+            'description': 'path or URL to a GNU binutils installation or archive file',
             'defaultsTo': 'download',
             'argparse': {'flags': ('--with-bfd',),
                          'group': 'software package',
-                         'help': 'URL or path to a BFD installation or archive file',
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction}
         },
         'libunwind_source': {
             'type': 'string',
+            'description': 'path or URL to a libunwind installation or archive file',
             'defaultsTo': libunwind_default(),
             'argparse': {'flags': ('--with-libunwind',),
                          'group': 'software package',
-                         'help': 'URL or path to a libunwind installation or archive file',
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction}
         },
         'papi_source': {
             'type': 'string',
+            'description': 'path or URL to a PAPI installation or archive file',
             'defaultsTo': None,
             'argparse': {'flags': ('--with-papi',),
                          'group': 'software package',
-                         'help': 'URL or path to a PAPI installation or archive file',
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction}
         },
         'scorep_source': {
             'type': 'string',
+            'description': 'path or URL to a Score-P installation or archive file',
             'defaultsTo': None,
             'argparse': {'flags': ('--with-score-p',),
                          'group': 'software package',
-                         'help': 'URL or path to a Score-P installation or archive file',
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction}
         }
     }
 
-    _valid_name = set(string.digits + string.letters + '-_.')
-
     def onCreate(self):
-        if set(self['name']) > Target._valid_name:
-            raise ModelError('%r is not a valid target name.' % self['name'],
-                             'Use only letters, numbers, dot (.), dash (-), and underscore (_).')
         if self['libunwind_source'] and self['host_arch'] == 'apple':
             libunwind_flag = self.attributes['libunwind_source']['argparse']['flags'][0]
             raise ConfigurationError("libunwind not supported on host architecture 'apple'",

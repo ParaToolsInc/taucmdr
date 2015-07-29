@@ -38,8 +38,6 @@
 import os
 import glob
 import shutil
-
-
 from tau import logger, settings, util
 from tau.error import ConfigurationError, InternalError
 from tau.controller import Controller

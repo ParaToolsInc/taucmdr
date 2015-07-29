@@ -164,6 +164,10 @@ def getParserFromModel(model, use_defaults=True,
             else:
                 options['default'] = argparse.SUPPRESS
         try:
+            options['help'] = props['description']
+        except KeyError:
+            pass
+        try:
             group_name = options['group'] + ' arguments'
         except KeyError:
             group = parser

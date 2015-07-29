@@ -35,7 +35,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-import string
 from tau import requisite
 from tau.arguments import ParseBooleanAction
 from tau.controller import Controller, ByName, ModelError
@@ -50,19 +49,20 @@ class Application(Controller, ByName):
     attributes = {
         'projects': { 
             'collection': 'Project',
-            'via': 'applications'
+            'via': 'applications',
+            'description': 'projects using this application'
         },
         'name': {
             'type': 'string',
+            'description': 'application configuration name',
             'unique': True,
-            'argparse': {'help': 'Application configuration name',
-                         'metavar': '<application_name>'}
+            'argparse': {'metavar': '<application_name>'}
         },
         'openmp': {
             'type': 'boolean', 
+            'description': 'application uses OpenMP',
             'defaultsTo': False, 
             'argparse': {'flags': ('--openmp',),
-                         'help': 'application uses OpenMP',
                          'metavar': 'yes/no',
                          'nargs': '?',
                          'const': True,
@@ -70,9 +70,9 @@ class Application(Controller, ByName):
         },
         'pthreads': {
             'type': 'boolean',
+            'description': 'application uses pthreads',
             'defaultsTo': False,
             'argparse': {'flags': ('--pthreads',),
-                         'help': 'application uses pthreads',
                          'metavar': 'yes/no',
                          'nargs': '?',
                          'const': True,
@@ -81,8 +81,8 @@ class Application(Controller, ByName):
         'mpi': {
             'type': 'boolean',
             'defaultsTo': False,
+            'description': 'application uses MPI',
             'argparse': {'flags': ('--mpi',),
-                         'help': 'application uses MPI',
                          'metavar': 'yes/no',
                          'nargs': '?',
                          'const': True,
@@ -92,8 +92,8 @@ class Application(Controller, ByName):
         'cuda': {
             'type': 'boolean',
             'defaultsTo': False,
+            'description': 'application uses NVIDIA CUDA',
             'argparse': {'flags': ('--cuda',),
-                         'help': 'application uses NVIDIA CUDA',
                          'metavar': 'yes/no',
                          'nargs': '?',
                          'const': True,
@@ -103,8 +103,8 @@ class Application(Controller, ByName):
         'shmem': {
             'type': 'boolean',
             'defaultsTo': False,
+            'description': 'application uses SHMEM',
             'argparse': {'flags': ('--shmem',),
-                         'help': 'application uses SHMEM',
                          'metavar': 'yes/no',
                          'nargs': '?',
                          'const': True,
@@ -113,18 +113,11 @@ class Application(Controller, ByName):
         'mpc': {
             'type': 'boolean',
             'defaultsTo': False,
+            'description': 'application uses MPC',
             'argparse': {'flags': ('--mpc',),
-                         'help': 'application uses MPC',
                          'metavar': 'yes/no',
                          'nargs': '?',
                          'const': True,
                          'action': ParseBooleanAction}
         }
     }
-
-    _valid_name = set(string.digits + string.letters + '-_.')
-
-    def onCreate(self):
-        if set(self['name']) > Application._valid_name:
-            raise ModelError('%r is not a valid application name.' % self['name'],
-                             'Use only letters, numbers, dot (.), dash (-), and underscore (_).')

@@ -54,42 +54,42 @@ class Compiler(Controller):
         'command': {
             'type': 'string',
             'required': True,
-            'description': "The compiler command without path"
+            'description': "the compiler command without path"
         },
         'path': {
             'type': 'string',
             'required': True,
-            'description': "Absolute path to the compiler command"
+            'description': "absolute path to the compiler command"
         },
         'md5': {
             'type': 'string',
             'required': True,
-            'description': "Checksum of the compiler command file"
+            'description': "checksum of the compiler command file"
         },
         'version': {
             'type': 'string',
             'required': True,
-            'description': "Version string as reported by compiler command"
+            'description': "version string as reported by compiler command"
         },
         'role': {
             'type': 'string',
             'required': True,
-            'description': "Role identifier"
+            'description': "role identifier"
         },
         'family': {
             'type': 'string',
             'required': True,
-            'description': "Family name"
+            'description': "family name"
         },
         'language': {
             'type': 'string',
             'required': True,
-            'description': "Primary language this compiler understands"
+            'description': "primary language this compiler understands"
         },
         'tau_wrapper': {
             'type': 'string',
             'required': True,
-            'description': "Corresponding TAU compiler wrapper script"
+            'description': "corresponding TAU compiler wrapper script"
         }
     }
 
