@@ -63,6 +63,10 @@ registry
 installed
 .system
 
+# TAU intermediate compilation files
+*.inst.*
+*.pdb
+
 # Misc
 *~
 core
