@@ -118,36 +118,40 @@ class TauInstallation(Installation):
     # pylint: disable=too-many-instance-attributes
 
     def __init__(self, prefix, src, arch, compilers, 
-                 verbose=False,
-                 pdt_source=None,
-                 bfd_source=None,
-                 libunwind_source=None,
-                 papi_source=None,
-                 openmp_support=False,
-                 pthreads_support=False, 
-                 mpi_support=False,
-                 cuda_support=False,
-                 shmem_support=False,
-                 mpc_support=False,
-                 source_inst='never',
-                 compiler_inst='fallback',
-                 link_only=False,
-                 io_inst=False,
-                 keep_inst_files=False,
-                 reuse_inst_files=False,
-                 profile=True,
-                 trace=False,
-                 sample=False,
-                 metrics=['TIME'],
-                 measure_mpi=False,
-                 measure_openmp='ignore',
-                 measure_pthreads=None,
-                 measure_cuda=None,
-                 measure_shmem=None,
-                 measure_mpc=None,
-                 measure_memory_usage=None,
-                 measure_memory_alloc=None,
-                 measure_callpath=2):
+                 verbose,
+                 # Source code for dependencies
+                 pdt_source,
+                 bfd_source,
+                 libunwind_source,
+                 papi_source,
+                 # Application support features
+                 openmp_support,
+                 pthreads_support, 
+                 mpi_support,
+                 cuda_support,
+                 shmem_support,
+                 mpc_support,
+                 # Instrumentation methods and options
+                 source_inst,
+                 compiler_inst,
+                 link_only,
+                 io_inst,
+                 keep_inst_files,
+                 reuse_inst_files,
+                 # Measurement methods and options
+                 profile,
+                 trace,
+                 sample,
+                 metrics,
+                 measure_mpi,
+                 measure_openmp,
+                 measure_pthreads,
+                 measure_cuda,
+                 measure_shmem,
+                 measure_mpc,
+                 measure_memory_usage,
+                 measure_memory_alloc,
+                 measure_callpath):
         super(TauInstallation, self).__init__('TAU', prefix, src, arch, 
                                               compilers, SOURCES)
         self.arch_path = os.path.join(self.install_prefix, arch)
@@ -207,10 +211,9 @@ class TauInstallation(Installation):
     def uses_papi(self):
         return bool(len([met for met in self.metrics if 'PAPI' in met]))
 
-
     def _check_dependencies(self):
         """
-        Installs or verifies software packages required by TAU.
+        Ensures all required dependencies are installed and working.
         """
         if self.uses_pdt():
             self.pdt = PdtInstallation(self.prefix, self.pdt_source, self.arch, self.compilers)
