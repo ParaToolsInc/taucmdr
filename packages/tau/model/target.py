@@ -42,27 +42,30 @@ import subprocess
 from tau import logger
 from tau.arguments import ParsePackagePathAction
 from tau.controller import Controller, ByName, ModelError
+from tau.error import ConfigurationError
+
 
 LOGGER = logger.getLogger(__name__)
 
 
-def default_host_os():
+def host_os_default():
     """
     Detect the default host operating system
     """
     return platform.system()
 
 
-def default_host_arch():
+def host_arch_default():
     """
     Use TAU's archfind script to detect the host target architecture
     """
     here = os.path.dirname(os.path.realpath(__file__))
     cmd = os.path.join(os.path.dirname(here), 'util', 'archfind', 'archfind')
-    return subprocess.check_output(cmd).strip()
+    _HOST_ARCH = subprocess.check_output(cmd).strip() 
+    return _HOST_ARCH
 
 
-def default_device_arch():
+def device_arch_default():
     """
     Detect coprocessors
     """
@@ -70,7 +73,7 @@ def default_device_arch():
     return None
 
 
-def default_cc():
+def cc_default():
     """
     Detect target's default C compiler
     """
@@ -78,7 +81,7 @@ def default_cc():
     return 'gcc'
 
 
-def default_cxx():
+def cxx_default():
     """
     Detect target's default C compiler
     """
@@ -86,12 +89,18 @@ def default_cxx():
     return 'g++'
 
 
-def default_fc():
+def fc_default():
     """
     Detect target's default C compiler
     """
     # TODO
     return 'gfortran'
+
+def libunwind_default():
+    if host_arch_default() == 'apple':
+        return None
+    else:
+        return 'default'
 
 
 class Target(Controller, ByName):
@@ -114,7 +123,7 @@ class Target(Controller, ByName):
         'host_os': {
             'type': 'string',
             'required': True,
-            'defaultsTo': default_host_os(),
+            'defaultsTo': host_os_default(),
             'argparse': {'flags': ('--host-os',),
                          'group': 'target system',
                          'help': 'Host operating system',
@@ -123,7 +132,7 @@ class Target(Controller, ByName):
         'host_arch': {
             'type': 'string',
             'required': True,
-            'defaultsTo': default_host_arch(),
+            'defaultsTo': host_arch_default(),
             'argparse': {'flags': ('--host-arch',),
                          'group': 'target system',
                          'help': 'Host architecture',
@@ -131,7 +140,7 @@ class Target(Controller, ByName):
         },
         'device_arch': {
             'type': 'string',
-            'defaultsTo': default_device_arch(),
+            'defaultsTo': device_arch_default(),
             'argparse': {'flags': ('--device-arch',),
                          'group': 'target system',
                          'help': 'Coprocessor architecture',
@@ -140,7 +149,7 @@ class Target(Controller, ByName):
         'CC': {
             'model': 'Compiler',
             'required': True,
-            'defaultsTo': default_cc(),
+            'defaultsTo': cc_default(),
             'argparse': {'flags': ('--cc',),
                          'group': 'compiler',
                          'help': 'C Compiler',
@@ -149,7 +158,7 @@ class Target(Controller, ByName):
         'CXX': {
             'model': 'Compiler',
             'required': True,
-            'defaultsTo': default_cxx(),
+            'defaultsTo': cxx_default(),
             'argparse': {'flags': ('--cxx', '--c++'),
                          'group': 'compiler',
                          'help': 'C++ Compiler',
@@ -158,7 +167,7 @@ class Target(Controller, ByName):
         'FC': {
             'model': 'Compiler',
             'required': True,
-            'defaultsTo': default_fc(),
+            'defaultsTo': fc_default(),
             'argparse': {'flags': ('--fc', '--fortran'),
                          'group': 'compiler',
                          'help': 'Fortran Compiler',
@@ -202,7 +211,7 @@ class Target(Controller, ByName):
         },
         'libunwind_source': {
             'type': 'string',
-            'defaultsTo': 'download',
+            'defaultsTo': libunwind_default(),
             'argparse': {'flags': ('--with-libunwind',),
                          'group': 'software package',
                          'help': 'URL or path to a libunwind installation or archive file',
@@ -235,3 +244,7 @@ class Target(Controller, ByName):
         if set(self['name']) > Target._valid_name:
             raise ModelError('%r is not a valid target name.' % self['name'],
                              'Use only letters, numbers, dot (.), dash (-), and underscore (_).')
+        if self['libunwind_source'] and self['host_arch'] == 'apple':
+            libunwind_flag = self.attributes['libunwind_source']['argparse']['flags'][0]
+            raise ConfigurationError("libunwind not supported on host architecture 'apple'",
+                                     "Use %s=None" % libunwind_flag)

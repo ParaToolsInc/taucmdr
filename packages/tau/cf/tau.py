@@ -41,6 +41,10 @@ import logger, util
 from error import ConfigurationError, InternalError
 from cf import SoftwarePackageError
 from installation import Installation
+from pdt import PdtInstallation
+from bfd import BfdInstallation
+from libunwind import LibunwindInstallation
+from papi import PapiInstallation
 
 
 LOGGER = logger.getLogger(__name__)
@@ -115,10 +119,10 @@ class TauInstallation(Installation):
 
     def __init__(self, prefix, src, arch, compilers, 
                  verbose=False,
-                 pdt=None,
-                 bfd=None,
-                 libunwind=None,
-                 papi=None,
+                 pdt_source=None,
+                 bfd_source=None,
+                 libunwind_source=None,
+                 papi_source=None,
                  openmp_support=False,
                  pthreads_support=False, 
                  mpi_support=False,
@@ -150,10 +154,10 @@ class TauInstallation(Installation):
         self.bin_path = os.path.join(self.arch_path, 'bin')
         self.lib_path = os.path.join(self.arch_path, 'lib')
         self.verbose = verbose
-        self.pdt = pdt
-        self.bfd = bfd
-        self.libunwind = libunwind
-        self.papi = papi
+        self.pdt_source = pdt_source
+        self.bfd_source = bfd_source
+        self.libunwind_source = libunwind_source
+        self.papi_source = papi_source
         self.openmp_support = openmp_support
         self.pthreads_support = pthreads_support 
         self.mpi_support = mpi_support
@@ -179,7 +183,48 @@ class TauInstallation(Installation):
         self.measure_memory_usage = measure_memory_usage
         self.measure_memory_alloc = measure_memory_alloc
         self.measure_callpath = measure_callpath
+        for pkg in ['pdt', 'bfd', 'libunwind', 'papi']:
+            if eval('self.uses_%s()' % pkg):
+                if not getattr(self, '%s_source' % pkg): 
+                    raise ConfigurationError("Specified TAU configuration requires %s but no source specified" % pkg)
+            else:
+                setattr(self, pkg, None)
         
+    def uses_pdt(self):
+        return (self.source_inst != 'never')
+    
+    def uses_bfd(self):
+        return (self.sample or 
+                self.compiler_inst != 'never' or 
+                self.openmp_support)
+        
+    def uses_libunwind(self):
+        return (self.arch != 'apple' and
+                (self.sample or 
+                 self.compiler_inst != 'never' or 
+                 self.openmp_support))
+        
+    def uses_papi(self):
+        return bool(len([met for met in self.metrics if 'PAPI' in met]))
+
+
+    def _check_dependencies(self):
+        """
+        Installs or verifies software packages required by TAU.
+        """
+        if self.uses_pdt():
+            self.pdt = PdtInstallation(self.prefix, self.pdt_source, self.arch, self.compilers)
+            self.pdt.install()
+        if self.uses_bfd():
+            self.bfd = BfdInstallation(self.prefix, self.bfd_source, self.arch, self.compilers)
+            self.bfd.install()
+        if self.uses_libunwind():
+            self.libunwind = LibunwindInstallation(self.prefix, self.libunwind_source, self.arch, self.compilers)
+            self.libunwind.install()
+        if self.uses_papi():
+            self.papi = PapiInstallation(self.prefix, self.papi_source, self.arch, self.compilers)
+            self.papi.install()
+    
     def verify(self):
         """Returns true if the installation is valid.
         
@@ -193,6 +238,7 @@ class TauInstallation(Installation):
         Raises:
           SoftwarePackageError: Describes why the installation is invalid.
         """
+        self._check_dependencies()
         super(TauInstallation,self).verify(commands=COMMANDS)
 
         # Open TAU makefile and check BFDINCLUDE, UNWIND_INC, PAPIDIR, etc.

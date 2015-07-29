@@ -47,10 +47,6 @@ from tau.model.compiler import Compiler
 from tau.model.trial import Trial
 from tau.cf.tau import TauInstallation
 from tau.cf.compiler import CompilerSet
-from tau.cf.pdt import PdtInstallation
-from tau.cf.bfd import BfdInstallation
-from tau.cf.libunwind import LibunwindInstallation
-from tau.cf.papi import PapiInstallation
 
 LOGGER = logger.getLogger(__name__)
 
@@ -177,56 +173,13 @@ class Experiment(Controller):
                                 target['FC'].info())
         verbose=(logger.LOG_LEVEL == 'DEBUG')
         
-        # Determine if we're reusing an existing TAU installation 
-        # or if we need to build a new one
-        tau_source = target['tau_source']
-        if os.path.isdir(tau_source):
-            tau_prefix = tau_source
-            tau_source = None
-            # Existing TAU installations provide their own dependencies
-            pdt = None
-            bfd = None
-            libunwind = None
-            papi = None
-        else:
-            tau_prefix = prefix
-            pdt = (measurement['source_inst'] != 'never')
-            bfd = (measurement['sample'] or 
-                   measurement['compiler_inst'] != 'never' or 
-                   measurement['openmp'] != 'ignore')
-            libunwind = (measurement['sample'] or 
-                         measurement['compiler_inst'] != 'never' or 
-                         measurement['openmp'] != 'ignore')
-            papi = bool(len([met for met in measurement['metrics'] if 'PAPI' in met]))
-
-        # Install PDT, if needed        
-        if pdt:
-            pdt = PdtInstallation(prefix, target['pdt_source'], host_arch, compilers)
-            pdt.install()
-
-        # Install BFD, if needed
-        if bfd:
-            bfd = BfdInstallation(prefix, target['bfd_source'], host_arch, compilers)
-            bfd.install()
-
-        # Install libunwind, if needed
-        if libunwind:
-            libunwind = LibunwindInstallation(prefix, target['libunwind_source'],
-                                              host_arch, compilers)
-            libunwind.install()
-
-        # Install PAPI, if needed
-        if papi:
-            papi = PapiInstallation(prefix, target['papi_source'], host_arch, compilers)
-            papi.install()
-
         # Configure/build/install TAU if needed
-        self.tau = TauInstallation(tau_prefix, tau_source, host_arch, compilers,
-                                   pdt=pdt,
-                                   bfd=bfd,
-                                   libunwind=libunwind,
-                                   papi=papi, 
+        self.tau = TauInstallation(prefix, target['tau_source'], host_arch, compilers,
                                    verbose=verbose,
+                                   pdt_source=target['pdt_source'],
+                                   bfd_source=target['bfd_source'],
+                                   libunwind_source=target['libunwind_source'],
+                                   papi_source=target['papi_source'],
                                    openmp_support=application['openmp'],
                                    pthreads_support=application['pthreads'],
                                    mpi_support=application['mpi'],

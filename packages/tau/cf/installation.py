@@ -89,6 +89,7 @@ class Installation(object):
                      key specifies the default (i.e. universal) source.    
         """ 
         self.name = name
+        self.prefix = prefix
         if os.path.isdir(src):
             self.install_prefix = src
             self.src_prefix = None
@@ -120,7 +121,7 @@ class Installation(object):
         """
         if not self.src: 
             raise SoftwarePackageError("No source code provided for %s" % self.name)
-        elif os.path.isdir(self.src):
+        if os.path.isdir(self.src):
             LOGGER.debug("Copying source directory '%s' to '%s'" % (self.src, self.src_prefix))
             try:
                 shutil.copytree(self.src, self.src_prefix, symlinks=True)
@@ -351,6 +352,11 @@ class AutotoolsInstallation(Installation):
                      (self.name, self.install_prefix, self.src, self.arch))
 
         self._prepare_src()
+        
+        if os.path.isdir(self.install_prefix): 
+            LOGGER.info("Cleaning %s installation prefix '%s'" % 
+                        (self.name, self.install_prefix))
+            shutil.rmtree(self.install_prefix, ignore_errors=True)
 
         # Perform Autotools installation sequence
         try:
@@ -359,8 +365,8 @@ class AutotoolsInstallation(Installation):
             self.make_install()
         except Exception as err:
             LOGGER.info("%s installation failed: %s " % (self.name, err))
-            shutil.rmtree(self.install_prefix, ignore_errors=True)
-        finally:
+            LOGGER.info("%s source retained at '%s'" % (self.name, self._src_path))
+        else:
             LOGGER.debug("Deleting '%s'" % self._src_path)
             shutil.rmtree(self._src_path, ignore_errors=True)
             del self._src_path
@@ -369,7 +375,6 @@ class AutotoolsInstallation(Installation):
         try:
             return self.verify()
         except Exception as err:
-            shutil.rmtree(self.install_prefix, ignore_errors=True)
-            raise SoftwarePackageError('%s installation failed verification: %s' % (err, self.name))
+            raise SoftwarePackageError('%s installation failed verification: %s' % (self.name, err))
         else:
             LOGGER.info('%s installation complete', self.name)
