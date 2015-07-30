@@ -292,10 +292,13 @@ class TauInstallation(Installation):
             for comp in [wrapped_cc, wrapped_cxx, wrapped_fc]:
                 mpi_include_path.extend(comp.include_path)
                 mpi_library_path.extend(comp.library_path)
-                #mpi_libraries.extend(comp.libraries)
-            mpiinc = ' '.join(set(mpi_include_path))
-            mpilib = ' '.join(set(mpi_library_path))
-            mpilibrary = ' '.join(set(mpi_libraries))
+                mpi_libraries.extend(comp.libraries)
+            # Just guess that the shortest path is the top-level directory
+            # for MPI include and lib
+            mpiinc = min(set(mpi_include_path), key=len)
+            mpilib = min(set(mpi_library_path), key=len)
+            # TAU uses '#' as a seperator 
+            mpilibrary = '#'.join(set(mpi_libraries))
             # Identify again in case of a fuzzy match
             cc_command = CompilerInfo.identify(wrapped_cc.command).command
             cxx_command = CompilerInfo.identify(wrapped_cxx.command).command
