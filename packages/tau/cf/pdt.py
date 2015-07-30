@@ -37,6 +37,7 @@
 
 import os
 import logger, util
+from error import ConfigurationError
 from cf import SoftwarePackageError
 from installation import AutotoolsInstallation
 
@@ -116,11 +117,21 @@ class PdtInstallation(AutotoolsInstallation):
         """
         family_flags = {'GNU': '-GNU', 
                         'Intel': '-icpc', 
-                        'PGI': '-pgCC', 
+                        'PGI': '-pgCC',
                         None: ''}
-        compiler_flag = family_flags.get(self.compilers.cxx.family, family_flags[None])
+        if self.compilers.cxx.family == 'MPI':
+            try:
+                wrapped = self.compilers.cxx.mpiwrapper_identify()
+            except ConfigurationError as err:
+                LOGGER.debug("Couldn't identify compiler wrapped by %s, defaulting to GNU compilers" % self.compilers.cxx)
+                family = 'GNU'
+            else:
+                family = wrapped.family
+        else:
+            family = self.compilers.cxx.family
+        compiler_flag = family_flags.get(family, family_flags[None])
         prefix_flag = '-prefix=%s' % self.install_prefix
         cmd = ['./configure', prefix_flag, compiler_flag]
-        LOGGER.info("Configuring PDT...")
+        LOGGER.info("Configuring PDT for %s compilers..." % family)
         if util.createSubprocess(cmd, cwd=self._src_path, stdout=False):
             raise SoftwarePackageError('PDT configure failed')

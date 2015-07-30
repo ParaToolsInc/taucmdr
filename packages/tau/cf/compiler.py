@@ -98,31 +98,57 @@ class CompilerInfo(object):
         role: One of the compiler roles listed in ROLES, e.g. CC
         family: The compiler family string, e.g. 'Intel'
         language: The language this compiler compiles, e.g. 'C'
-        tau_wrapper: The corresponding TAU wrapper script, e.g. 'tau_cc.sh'
-        short_descr: A short descriptive string for command line help.
-        path: The absolute path to folder containing this compiler's command.
-              Is None if compiler is not available on this system.
         md5sum: The md5 checksum of the compiler binary.
                 Is None if compiler is not available on this system.
         version: The version string from the compiler executable.
                  Is None if compiler is not available on this system.
+        path: The absolute path to folder containing this compiler's command.
+              Is None if compiler is not available on this system.
+        include_path: List of paths to search for compiler-specific headers
+        library_path: List of paths to search for compiler-specific libraries
+        libraries: List of compiler-specific libraries needed by the linker
+        tau_wrapper: The corresponding TAU wrapper script, e.g. 'tau_cc.sh'
+        short_descr: A short descriptive string for command line help.
     """
      
-    def __init__(self, command, role, family, language, 
-                 path=None, md5sum=None, version=None):
+    def __init__(self, command, role, family, language, md5sum=None, version=None,
+                 path=None, include_path=[], library_path=[], libraries=[]):
         """Initializes the CompilerInfo object."""
         self.command = command
         self.role = role
         self.family = family
         self.language = language
-        self.tau_wrapper = COMPILER_WRAPPERS[role]
-        self.short_descr = "%s %s compiler." % (family, language)
-        self.path = path
         self.md5sum = md5sum
         self.version = version
+        self.path = path
+        self.include_path = include_path
+        self.library_path = library_path
+        self.libraries = libraries
+        self.tau_wrapper = COMPILER_WRAPPERS[role]
+        self.short_descr = "%s %s compiler." % (family, language)
         
     def __str__(self):
         return os.path.join(self.path, self.command)
+    
+    def absolute_path(self):
+        """Returns the absolute path to this compiler's command.
+        
+        Returns:
+            Absolute path as string
+            
+        Raises:
+            RuntimeError: The compiler could not be found in PATH
+        """
+        if self.path:
+            # Use util.which to check that program exists and is executable
+            abspath = util.which(os.path.join(self.path, self.command))
+        else:
+            abspath = util.which(self.command)
+            if abspath:
+                self.path = os.path.dirname(abspath)
+        if not abspath:
+            raise RuntimeError("Compiler '%s' cannot be found in PATH" % self.command)
+        return abspath
     
     @classmethod
     def identify(cls, compiler_cmd):
@@ -140,17 +166,23 @@ class CompilerInfo(object):
         LOGGER.debug("Identifying compiler: %s" % compiler_cmd)
         command = os.path.basename(compiler_cmd)
         path = util.which(compiler_cmd)
-        try:
-            info = KNOWN_COMPILERS[command]
-        except KeyError:
-            raise ConfigurationError("Unknown compiler command: '%s'", compiler_cmd)
         if not path:
-            raise ConfigurationError("%s %s compiler '%s' missing or not executable." %
-                                     (info.family, info.language, compiler_cmd),
+            raise ConfigurationError("'%s' missing or not executable." % compiler_cmd,
                                      "Check spelling, loaded modules, PATH environment "
                                      "variable, and file permissions")
         if not util.file_accessible(path):
             raise ConfigurationError("Compiler '%s' not readable." % (os.path.join(path, command)))
+        try:
+            info = KNOWN_COMPILERS[command]
+        except KeyError:
+            LOGGER.debug("'%s' not known by name, attempting fuzzy match" % command)
+            matches = [name for name in KNOWN_COMPILERS.iterkeys() if name in command]
+            if not matches: 
+                raise ConfigurationError("Unknown compiler command: '%s'" % compiler_cmd)
+            else:
+                close_command = max(matches, key=len)
+                LOGGER.debug("Matched '%s' to '%s' from %s" % (command, close_command, matches))
+                info = KNOWN_COMPILERS[close_command]
         info.path = os.path.dirname(path)
         md5sum = hashlib.md5()
         with open(path, 'r') as compiler_file:
@@ -160,45 +192,69 @@ class CompilerInfo(object):
         info.version = 'FIXME'       
         return info
     
-    @classmethod
-    def identify_mpiwrapper(cls, info):
-        """Determine what compiler the MPI compiler wrapper is wrapping.
-        
-        Executes the compiler command and parses the output to determine
-        the real compiler.
-        
-        Args:
-            info: A mostly populated CompilerInfo.
-            
-        Returns:
-            CompilerInfo for the wrapped compiler.
+    def _mpi_identify_wrapped(self):
         """
-        abspath = os.path.join(info.path, info.command) 
+        Discovers information about an MPI compiler command wrapping another compiler.
+        """ 
+        abspath = self.absolute_path()
         cmd = [abspath, '-show']
-        LOGGER.debug("Creating subprocess: cmd=%s" % abspath)
-        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        stdout, _ = proc.communicate()
-        retval = proc.returncode
-        LOGGER.debug(stdout)
-        LOGGER.debug("%s returned %d" % (abspath, retval))
-        if retval != 0:
-            raise InternalError("Command '%s' failed with return code %d" % 
-                                (' '.join(cmd), retval))
-        wrapped_cmd = stdout.split()[0]
+        LOGGER.debug("Creating subprocess: cmd=%s" % cmd)
         try:
-            wrapped_info = KNOWN_COMPILERS[wrapped_cmd]
+            stdout = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError as err:
+            raise InternalError("%s failed with return code %d: %s" % 
+                                (cmd, err.returncode, err.output))
+        else:
+            LOGGER.debug(stdout)
+            LOGGER.debug("%s returned 0" % cmd)
+
+        parts = stdout.split()
+        try:
+            wrapped_cmd = parts[0]
+        except IndexError:
+            raise InternalError("Unexpected output from %s: %s" % (cmd, stdout))
+        try:
+            wrapped_path, wrapped_cmd = os.path.split(util.which(wrapped_cmd))
+        except AttributeError:
+            raise ConfigurationError("Cannot find compiler command %s wrapped by %s" % (wrapped_cmd, abspath))
+        try:
+            known_info = self.identify(wrapped_cmd)
         except KeyError:
-            raise ConfigurationError("Unknown compiler command: '%s'", wrapped_cmd)
-        LOGGER.info("Determined %s is wrapping %s" % (abspath, wrapped_info.short_descr))
-        return wrapped_info
+            raise ConfigurationError("Unknown compiler command: '%s'" % wrapped_cmd)
 
+        mpi_include_path = []
+        mpi_library_path = []
+        mpi_libraries = []
+        for part in parts:
+            if part.startswith('-I') and 'include' in part:
+                mpi_include_path.append(part[2:])
+            elif part.startswith('-L') and 'lib' in part:
+                mpi_library_path.append(part[2:])
+            elif part.startswith('-l'):
+                mpi_libraries.append(part)
 
+        wrapped = CompilerInfo(wrapped_cmd, known_info.role, known_info.family, known_info.language, wrapped_path,
+                               include_path=mpi_include_path, library_path=mpi_library_path, libraries=mpi_libraries)
+        LOGGER.info("Determined %s is wrapping %s (%s)" % (abspath, wrapped.short_descr, wrapped.absolute_path()))
+        LOGGER.debug("MPI include path: %s" % mpi_include_path)
+        LOGGER.debug("MPI library path: %s" % mpi_library_path)
+        LOGGER.debug("MPI libraries: %s" % mpi_libraries)
+        return wrapped
+        
+    def identify_wrapped(self):
+        """Identifies the compiler command wrapped by this command, if any.
+        
+        Returns:
+            CompilerInfo on the wrapped compiler or None if this compiler doesn't wrap another.
+        """
+        if self.family == 'MPI':
+            return self._mpi_identify_wrapped()
+        return None
 
+    
 KNOWN_COMPILERS = {
     'cc': CompilerInfo('cc', CC, 'system', 'C'),
     'c++': CompilerInfo('c++', CXX, 'system', 'C++'),
-    'f77': CompilerInfo('f77', FC, 'system', 'FORTRAN77'),
-    'f90': CompilerInfo('f90', FC, 'system', 'Fortran90'),
     'ftn': CompilerInfo('ftn', FC, 'system', 'Fortran90'),
     'gcc': CompilerInfo('gcc', CC, 'GNU', 'C'),
     'g++': CompilerInfo('g++', CXX, 'GNU', 'C++'),
@@ -208,13 +264,10 @@ KNOWN_COMPILERS = {
     'ifort': CompilerInfo('ifort', FC, 'Intel', 'Fortran90'),
     'pgcc': CompilerInfo('pgcc', CC, 'PGI', 'C'),
     'pgCC': CompilerInfo('pgCC', CXX, 'PGI', 'C++'),
-    'pgf77': CompilerInfo('pgf77', FC, 'PGI', 'FORTRAN77'),
     'pgf90': CompilerInfo('pgf90', FC, 'PGI', 'Fortran90'),
     'mpicc': CompilerInfo('mpicc', CC, 'MPI', 'C'),
     'mpicxx': CompilerInfo('mpicxx', CXX, 'MPI', 'C++'),
     'mpic++': CompilerInfo('mpic++', CXX, 'MPI', 'C++'),
-    'mpiCC': CompilerInfo('mpiCC', CXX, 'MPI', 'C++'),
-    'mpif77': CompilerInfo('mpif77', FC, 'MPI', 'FORTRAN77'),
     'mpif90': CompilerInfo('mpif90', FC, 'MPI', 'Fortran90')}
 
 KNOWN_FAMILIES = {}

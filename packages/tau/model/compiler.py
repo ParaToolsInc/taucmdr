@@ -100,11 +100,8 @@ class Compiler(Controller):
         return os.path.join(self['path'], self['command'])
     
     def info(self):
-        return CompilerInfo(self['command'], self['role'], 
-                            self['family'], 
-                            self['language'], self['path'], self['md5'],
-                            self['version'])
-
+        return CompilerInfo(self['command'], self['role'], self['family'], self['language'], 
+                            self['md5'], self['version'], self['path'])
 
     @classmethod
     def identify(cls, compiler_cmd):
@@ -157,24 +154,21 @@ class Compiler(Controller):
                     LOGGER.debug(e)
                     continue
                 if os.path.dirname(other['path']) == os.path.dirname(compiler['path']):
-                    LOGGER.debug("Found %s compiler '%s' matching '%s'" % (
-                        other['role'], other['command'], compiler['command']))
+                    LOGGER.debug("Found %s compiler '%s' matching '%s'" % 
+                                 (other['role'], other['command'], compiler['command']))
                     compilers[other['role']] = other
 
         try:
             cc = compilers['CC']
         except KeyError:
-            raise ConfigurationError(
-                "Cannot find C compiler for %s" % compiler)
+            raise ConfigurationError("Cannot find C compiler for %s" % compiler)
         try:
             cxx = compilers['CXX']
         except KeyError:
-            raise ConfigurationError(
-                "Cannot find C++ compiler for %s" % compiler)
+            raise ConfigurationError("Cannot find C++ compiler for %s" % compiler)
         try:
             fc = compilers['FC']
         except KeyError:
-            raise ConfigurationError(
-                "Cannot find Fortran compiler for %s" % compiler)
+            raise ConfigurationError("Cannot find Fortran compiler for %s" % compiler)
 
         return cc, cxx, fc

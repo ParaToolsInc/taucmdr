@@ -94,9 +94,26 @@ def main(argv):
         raise ConfigurationError("Invalid compiler family: %s" % args.family,
                                  "See 'compiler arguments' under `%s --help`" % COMMAND)
     else:
-        LOGGER.debug("Using %s compilers by default" % args.family)
-        for role in ROLES:
-            setattr(args, role, family[role][0])
+        LOGGER.debug("Using %s compilers" % args.family)
+        missing_roles = dict(zip(ROLES, [None]*len(ROLES)))
+        for comp in family:
+            try:
+                abspath = comp.absolute_path()
+            except RuntimeError as err:
+                # A compiler wasn't found in PATH, but that's OK because another 
+                # compiler may provide the missing role
+                LOGGER.debug("'%s' not found, skipping" % comp.command)
+                missing_roles[comp.role] = str(err)
+                continue
+            else:
+                setattr(args, comp.role, abspath)
+                try: del missing_roles[comp.role]
+                except KeyError: pass
+        if missing_roles:
+            for role, msg in missing_roles.iteritems():
+                LOGGER.error("%s: %s" % role, msg)
+            raise ConfigurationError("One or more compiler roles could not be filled",
+                                     "Check your PATH, load environment modules, or install missing compilers")
         del args.family
     LOGGER.debug('Arguments: %s' % args)
 
