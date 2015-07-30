@@ -35,7 +35,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-import os
 import sys
 
 
@@ -51,3 +50,11 @@ PROJECT_URL = 'http://www.taucommander.com/'
 
 # Expected Python version
 MINIMUM_PYTHON_VERSION = (2, 7)
+
+# Check Python version before we do anything
+if sys.version_info < MINIMUM_PYTHON_VERSION:
+    version = '.'.join(map(str, sys.version_info[0:3]))
+    expected = '.'.join(map(str, MINIMUM_PYTHON_VERSION))
+    sys.stderr.write("%s\nYour Python version is %s but Python %s or later is required. Please update Python.\n" %
+                     (sys.version, version, sys.argv[0], expected))
+    sys.exit(EXIT_FAILURE)

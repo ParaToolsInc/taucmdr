@@ -35,16 +35,13 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-# System modules
 import sys
-
-# TAU modules
-from tau import PROJECT_URL, MINIMUM_PYTHON_VERSION
+import tau
 from tau import commands, logger, arguments
 
 LOGGER = logger.getLogger(__name__)
 
-SHORT_DESCRIPTION = "TAU Commander [ %s ]" % PROJECT_URL
+SHORT_DESCRIPTION = "TAU Commander [ %s ]" % tau.PROJECT_URL
 
 COMMAND = 'tau'
 
@@ -110,13 +107,6 @@ def main():
     """
     Program entry point
     """
-
-    # Check Python version
-    if sys.version_info < MINIMUM_PYTHON_VERSION:
-        version = '.'.join(map(str, sys.version_info[0:3]))
-        expected = '.'.join(map(str, MINIMUM_PYTHON_VERSION))
-        LOGGER.error("Your Python version is %s but Python %s or later is required. Please update Python." %
-                     (version, sys.argv[0], expected))
 
     args = PARSER.parse_args()
     cmd = args.command
