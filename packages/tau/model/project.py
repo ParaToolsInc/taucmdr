@@ -103,5 +103,4 @@ class Project(Controller, ByName):
             shutil.rmtree(prefix)
         except Exception as err:
             if os.path.exists(prefix):
-                LOGGER.error(
-                    "Could not remove project data at '%s': %s" % (prefix, err))
+                LOGGER.error("Could not remove project data at '%s': %s" % (prefix, err))

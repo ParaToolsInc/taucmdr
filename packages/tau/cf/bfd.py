@@ -36,9 +36,11 @@
 #"""
 
 import os
+import sys
 import glob
 import shutil
 import logger
+import fileinput
 from installation import AutotoolsInstallation
 
 
@@ -166,19 +168,14 @@ class BfdInstallation(AutotoolsInstallation):
             try:
                 shutil.copy(f, self.include_path)
             except:
-                dst = os.path.join(
-                    self.include_path, os.path.basename(f))
+                dst = os.path.join(self.include_path, os.path.basename(f))
                 shutil.copytree(f, dst)
 
         LOGGER.debug("Copying missing BFD libraries")
-        shutil.copy(os.path.join(self._src_path, 'libiberty', 'libiberty.a'), 
-                    self.lib_path)
-        shutil.copy(os.path.join(self._src_path, 'opcodes', 'libopcodes.a'), 
-                    self.lib_path)
+        shutil.copy(os.path.join(self._src_path, 'libiberty', 'libiberty.a'), self.lib_path)
+        shutil.copy(os.path.join(self._src_path, 'opcodes', 'libopcodes.a'), self.lib_path)
 
         LOGGER.debug("Fixing BFD header")
-        with open(os.path.join(self.include_path, 'bfd.h'), "rw+") as fin:
-            data = fin.read().replace('#if !defined PACKAGE && !defined PACKAGE_VERSION', '#if 0')
-            fin.seek(0, 0)
-            fin.write(data)
-            fin.truncate()
+        for line in fileinput.input(os.path.join(self.include_path, 'bfd.h'), inplace=1):
+            # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
+            sys.stdout.write(line.replace('#if !defined PACKAGE && !defined PACKAGE_VERSION', '#if 0'))

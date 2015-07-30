@@ -194,7 +194,7 @@ you want, please contact %(support)s so we can fix the problem.
             except AttributeError:
                 continue
             name = attr.replace('_source', '')
-            if os.path.isdir(source_path):
+            if source_path and os.path.isdir(source_path):
                 LOGGER.warning(existing_package_fmt % {'name': name, 
                                                        'path': source_path,
                                                        'support': HELP_CONTACT})

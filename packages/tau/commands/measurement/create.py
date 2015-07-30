@@ -35,8 +35,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-import logger, commands, arguments
-from controller import UniqueAttributeError
+from tau import logger, commands, arguments
+from tau.controller import UniqueAttributeError
 from tau.model.measurement import Measurement
 
 

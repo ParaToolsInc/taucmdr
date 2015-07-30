@@ -36,7 +36,7 @@
 #"""
 
 from tau import logger, commands, arguments
-from controller import UniqueAttributeError
+from tau.controller import UniqueAttributeError
 from tau.model.application import Application
 
 

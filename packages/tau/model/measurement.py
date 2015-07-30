@@ -38,6 +38,7 @@
 from tau import requisite
 from tau.arguments import ParseBooleanAction
 from tau.controller import Controller, ByName, ModelError
+from tau.error import ConfigurationError
 
 
 class Measurement(Controller, ByName):
@@ -65,9 +66,9 @@ class Measurement(Controller, ByName):
         'profile': {
             'type': 'boolean',
             'defaultsTo': True,
-            'description': "gather application profiles",
+            'description': "generate application profiles",
             'argparse': {'flags': ('--profile',),
-                         'group': 'measurement method',
+                         'group': 'output format',
                          'metavar': 'T/F',
                          'nargs': '?',
                          'const': True,
@@ -76,9 +77,9 @@ class Measurement(Controller, ByName):
         'trace': {
             'type': 'boolean',
             'defaultsTo': False,
-            'description': "gather application traces",
+            'description': "generate application traces",
             'argparse': {'flags': ('--trace',),
-                         'group': 'measurement method',
+                         'group': 'output format',
                          'metavar': 'T/F',
                          'nargs': '?',
                          'const': True,
@@ -89,7 +90,7 @@ class Measurement(Controller, ByName):
             'defaultsTo': False,
             'description': "use event-based sampling to gather performance data",
             'argparse': {'flags': ('--sample',),
-                         'group': 'measurement method',
+                         'group': 'instrumentation',
                          'metavar': 'T/F',
                          'nargs': '?',
                          'const': True,
@@ -111,7 +112,7 @@ class Measurement(Controller, ByName):
         'compiler_inst': {
             'type': 'string',
             'defaultsTo': 'fallback',
-            'description': "use compiler callbacks to instrument the application",
+            'description': "use compiler-generated callbacks to gather performance data",
             'argparse': {'flags': ('--compiler-inst',),
                          'group': 'instrumentation',
                          'metavar': 'mode',
@@ -158,7 +159,7 @@ class Measurement(Controller, ByName):
         },
         'callpath': {
             'type': 'integer',
-            'defaultsTo': 2,
+            'defaultsTo': 0,
             'description': 'maximum depth for callpath recording',
             'argparse': {'flags': ('--callpath',),
                          'group': 'data',
@@ -235,3 +236,22 @@ class Measurement(Controller, ByName):
                          'action': ParseBooleanAction},
         },
     }
+
+    def onCreate(self):
+        def get_flag(key):
+            return self.attributes[key]['argparse']['flags'][0]
+        
+        if not (self['profile'] or self['trace']):
+            profile_flag = get_flag('profile')
+            trace_flag = get_flag('trace')
+            raise ConfigurationError("Profiling, tracing, or both must be enabled",
+                                     "Specify %s or %s or both" % (profile_flag, trace_flag))
+        
+        if (self['source_inst'] == 'never' and self['compiler_inst'] == 'never' and not self['sample']):
+            source_inst_flag = get_flag('source_inst')
+            compiler_inst_flag = get_flag('compiler_inst')
+            sample_flag = get_flag('sample')
+            raise ConfigurationError("At least one instrumentation method must be used",
+                                     "Specify %s, %s, or %s" % (source_inst_flag, compiler_inst_flag, sample_flag))
+            
+         

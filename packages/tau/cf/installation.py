@@ -110,42 +110,51 @@ class Installation(object):
     def _parallel_make_flags(self):
         ncores = multiprocessing.cpu_count()
         return ['-j%s' % ncores]
-
-    def _prepare_src(self):
+    
+    def _prepare_src(self, reuse=True):
         """Prepares source code for installation.
         
         Sets self._src_path to the path to the fresh, clean source code.
+        
+        Args:
+            reuse: If True, attempt to reuse old source files.
             
         Raises:
             ConfigurationError: The source code couldn't be copied or downloaded.
         """
         if not self.src: 
-            raise SoftwarePackageError("No source code provided for %s" % self.name)
-        if os.path.isdir(self.src):
-            LOGGER.debug("Copying source directory '%s' to '%s'" % (self.src, self.src_prefix))
-            try:
-                shutil.copytree(self.src, self.src_prefix, symlinks=True)
-            except:
-                raise ConfigurationError("Cannot copy source directory '%s'" % self.src,
-                                         "Check that the directory is accessable")
-            else:
-                self._src_path = os.path.join(self.src_prefix, os.path.basename(self.src))
+            raise SoftwarePackageError("No source code provided for %s" % self.name)       
+        
+        dst = os.path.join(self.src_prefix, os.path.basename(self.src))
+        if reuse and os.path.exists(dst):
+            LOGGER.info("Using %s source archive at '%s'" % (self.name, dst))
         else:
-            dst = os.path.join(self.src_prefix, os.path.basename(self.src))
             try:
                 util.download(self.src, dst)
             except IOError:
                 raise ConfigurationError("Cannot acquire source archive '%s'" % self.src,
                                          "Check that the file or directory is accessable")
-            try:
-                self._src_path = util.extract(dst, self.src_prefix)
-            except IOError:
-                raise ConfigurationError("Cannot extract source archive '%s'" % self.src,
-                                         "Check that the file or directory is accessable")
-            finally:
-                try: os.remove(dst)
-                except: pass
- 
+        try:
+            self._src_path = os.path.join(self.src_prefix, util.archive_toplevel(dst))
+        except IOError as err:
+            LOGGER.debug(err)
+            LOGGER.info("Cannot read %s archive file '%s': %s" % (self.name, dst, err))
+            if reuse:
+                return self._prepare_src(reuse=False)
+            else:
+                raise ConfigurationError("Cannot read %s archive file '%s': %s" % (self.name, dst, err))
+        if os.path.isdir(self._src_path):
+            if reuse:
+                LOGGER.info("Reusing %s source files found at '%s'" % (self.name, self._src_path))
+                return
+            else:
+                shutil.rmtree(self._src_path, ignore_errors=True)
+        try:
+            self._src_path = util.extract(dst, self.src_prefix)
+        except IOError:
+            raise ConfigurationError("Cannot extract source archive '%s'" % self.src,
+                                     "Check that the file or directory is accessable")
+
     def verify(self, commands=[], libraries=[]):
         """Returns true if the installation is valid.
         
@@ -346,7 +355,7 @@ class AutotoolsInstallation(Installation):
         elif not force_reinstall:
             try:
                 return self.verify()
-            except Exception as err:
+            except SoftwarePackageError as err:
                 LOGGER.debug(err)
         LOGGER.debug("Installing %s at '%s' from '%s' with arch=%s" %
                      (self.name, self.install_prefix, self.src, self.arch))
@@ -365,16 +374,14 @@ class AutotoolsInstallation(Installation):
             self.make_install()
         except Exception as err:
             LOGGER.info("%s installation failed: %s " % (self.name, err))
-            LOGGER.info("%s source retained at '%s'" % (self.name, self._src_path))
+            raise
         else:
+            # Delete the decompressed source code to save space and clean up in preperation for
+            # future reconfigurations.  The compressed source archive is retained.
             LOGGER.debug("Deleting '%s'" % self._src_path)
             shutil.rmtree(self._src_path, ignore_errors=True)
             del self._src_path
 
         # Verify the new installation
-        try:
-            return self.verify()
-        except Exception as err:
-            raise SoftwarePackageError('%s installation failed verification: %s' % (self.name, err))
-        else:
-            LOGGER.info('%s installation complete', self.name)
+        LOGGER.info('%s installation complete', self.name)
+        return self.verify()            

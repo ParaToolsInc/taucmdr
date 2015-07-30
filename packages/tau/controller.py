@@ -37,7 +37,7 @@
 
 import json
 import logger, requisite, util
-from error import InternalError, ConfigurationError
+from tau.error import InternalError, ConfigurationError
 from tau.storage import user_storage
 
 

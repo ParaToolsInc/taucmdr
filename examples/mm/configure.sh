@@ -28,17 +28,17 @@ tau target create "$target_name"
 
 # Example applications
 tau application create "ex-mm-serial"
-#tau application create "ex-mm-openmp" --openmp
-#tau application create "ex-mm-openmp-mpi" --openmp --mpi
+tau application create "ex-mm-openmp" --openmp
+tau application create "ex-mm-openmp-mpi" --openmp --mpi
 
 # Example measurements
 tau measurement create "ex-profile"
-#tau measurement create "ex-trace" --profile=F --trace=T
-#tau measurement create "ex-sample" --profile=F --sample=T
+tau measurement create "ex-trace" --profile=F --trace=T
+tau measurement create "ex-sample" --source-inst=never --compiler-inst=never --sample=T
 
 # Set up example project
-tau project create "ex-mm" $target_name ex-mm-serial ex-profile
-tau project select ex-mm
+tau project create "ex-mm" $target_name ex-mm-serial ex-mm-openmp ex-mm-openmp-mpi ex-profile ex-trace ex-sample
+tau project select ex-mm ex-mm-openmp ex-profile
   
 
 #if $sv_sys; then

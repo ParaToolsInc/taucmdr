@@ -195,11 +195,10 @@ class Trial(Controller):
         # TODO
 
         try:
+            LOGGER.info(cmd_str)
             retval = util.createSubprocess(cmd, cwd=cwd, env=env)
             if retval:
                 LOGGER.warning("Nonzero return code '%d' from '%s'" % (retval, cmd_str))
-            else:
-                LOGGER.info("'%s' returned 0" % cmd_str)
 
             # Copy profile files to trial prefix
             if measurement['profile']:

@@ -264,26 +264,21 @@ class TauInstallation(Installation):
                         LOGGER.debug("PAPI_DIR='%s' != '%s'" % (papi_dir, self.papi.install_prefix))
                         raise SoftwarePackageError("PAPI_DIR in TAU Makefile doesn't match target PAPI installation")
 
-        LOGGER.info("TAU installation at '%s' is valid" % self.install_prefix)
+        LOGGER.debug("TAU installation at '%s' is valid" % self.install_prefix)
         return True
     
-    def install(self, force_reinstall=False):
+    def configure(self, additional_flags=[]):
+        """Configures TAU
+        
+        Executes TAU's configuration script with appropriate arguments to suppor the specified configuration.
+        
+        Args:
+            additional_flags: List of additional flags to pass to TAU's configure script.
+        
+        Raises:
+            SoftwareConfigurationError: TAU's configure script failed.
         """
-        Install TAU.
-        """
-        if not self.src:
-            return self.verify()
-        elif not force_reinstall:
-            try:
-                return self.verify()
-            except Exception as err:
-                LOGGER.debug(err)
-        LOGGER.debug("Installing TAU at '%s' from '%s' with arch=%s" %
-                     (self.install_prefix, self.src, self.arch))
-
-        self._prepare_src()
-
-        # TAU's configure script has a goofy way of specifying the fortran compiler
+        # Translate Fortran compiler command into TAU's funkey magic words
         fc_family = self.compilers.fc.family
         family_map = {'GNU': 'gfortran',
                       'Intel': 'intel',
@@ -309,10 +304,12 @@ class TauInstallation(Installation):
             # TODO: -mpiinc, -mpilib, -mpilibrary
             flags.append('-mpi')           
         if self.openmp_support:
-            if self.measure_openmp == 'ignore':
+            if self.measure_openmp == 'compiler_default':
                 flags.append('-openmp')
             elif self.measure_openmp == 'ompt':
-                if self.compilers.cc.family == 'Intel':
+                from compiler import KNOWN_COMPILERS
+                intel_family = KNOWN_COMPILERS['icc'].family
+                if self.compilers.cc.family == intel_family:
                     flags.append('-ompt')
                 else:
                     raise ConfigurationError('OMPT for OpenMP measurement only works with Intel compilers')
@@ -320,42 +317,65 @@ class TauInstallation(Installation):
                 flags.append('-opari')
             else:
                 raise InternalError('Unknown OpenMP measurement: %s' % self.measure_openmp)
-
-        # Execute configure
-        cmd = ['./configure'] + flags
-        try:
-            LOGGER.info("Configuring TAU...")
-            if util.createSubprocess(cmd + ['-iowrapper'], cwd=self._src_path, stdout=False):
-                raise SoftwarePackageError('TAU configure failed. Retrying without iowrapper.')
-
-            # Execute make
-            cmd = ['make', 'install'] + self._parallel_make_flags()
-            LOGGER.info('Compiling TAU...')
-            if util.createSubprocess(cmd, cwd=self._src_path, stdout=False):
-                raise SoftwarePackageError('TAU compilation failed. Retrying without iowrapper.')
-        except SoftwarePackageError:
-            LOGGER.warning("Failed to compile TAU with I/O measurement enabled.")
+        cmd = ['./configure'] + flags + additional_flags
+        LOGGER.info("Configuring TAU...")
+        if util.createSubprocess(cmd, cwd=self._src_path, stdout=False):
+            raise SoftwarePackageError('TAU configure failed')
+    
+    def make_install(self):
+        """Installs TAU to `self.install_prefix`.
+        
+        Executes 'make install' to build and install TAU.
+        
+        Raises:
+            SoftwarePackageError: 'make install' failed.
+        """
+        cmd = ['make', 'install'] + self._parallel_make_flags()
+        LOGGER.info('Compiling and installing TAU...')
+        if util.createSubprocess(cmd, cwd=self._src_path, stdout=False):
+            raise SoftwarePackageError('TAU compilation/installation failed')
+    
+    def install(self, force_reinstall=False):
+        """Installs TAU.
+        
+        Configures, compiles, and installs TAU with all necessarry makefiles and libraries.
+        
+        Args:
+            force_reinstall: Set to True to force reinstall even if TAU is already installed and working.
             
-            LOGGER.info("Configuring TAU...")
-            if util.createSubprocess(cmd, cwd=self._src_path, stdout=False):
-                raise SoftwarePackageError('TAU configure failed.')
+        Raises:
+            SofwarePackageError: TAU failed installation or did not pass verification after it was installed.
+        """
+        if not self.src:
+            return self.verify()
+        elif not force_reinstall:
+            try:
+                return self.verify()
+            except SoftwarePackageError as err:
+                LOGGER.debug(err)
+        LOGGER.debug("Installing TAU at '%s' from '%s' with arch=%s" %
+                     (self.install_prefix, self.src, self.arch))
 
-            # Execute make
-            cmd = ['make', 'install'] + self._parallel_make_flags()
-            LOGGER.info('Compiling TAU..with out iowrapper.')
-            if util.createSubprocess(cmd, cwd=self._src_path, stdout=False):
-                raise SoftwarePackageError('TAU compilation failed.')
+        self._prepare_src()
 
-            # svwip:  need to add a command that sets an attribute to target
-            # "iowrapper" to FALSE
+        # Attempt to build TAU with I/O wrapper enabled.  If that doesn't work, disable I/O wrapper and try again.
+        try:
+            self.configure(['-iowrapper'])
+            self.make_install()
+        except SoftwarePackageError as err:
+            LOGGER.warning(err)
+            try:
+                self.configure()
+                self.make_install()
+                # svwip:  need to add a command that sets an attribute to target
+                # "iowrapper" to FALSE
+            except Exception as err:
+                LOGGER.info("TAU installation failed: %s " % err)
+                raise
 
         # Verify the new installation
-        try:
-            return self.verify()
-        except Exception as err:
-            raise SoftwarePackageError('%s installation failed verification: %s' % (err, self.name))
-        else:
-            LOGGER.info('%s installation complete', self.name)
+        LOGGER.info('%s installation complete', self.name)
+        return self.verify()
 
     def get_makefile_tags(self):
         """Get makefile tags for this TAU installation.
@@ -381,10 +401,12 @@ class TauInstallation(Installation):
         if len([met for met in self.metrics if 'PAPI' in met]):
             tags.append('papi')
         if self.openmp_support:
-            openmp_tags = {'ignore': 'openmp',
-                           'ompt': 'ompt',
-                           'opari': 'opari'}
-            tags.append(openmp_tags[self.measure_openmp])
+            tags.append('openmp')
+            openmp_tags = {'ompt': 'ompt', 'opari': 'opari'}
+            try:
+                tags.append(openmp_tags[self.measure_openmp])
+            except KeyError:
+                pass
         if self.pthreads_support:
             tags.append('pthread')
         if self.mpi_support:
@@ -546,7 +568,8 @@ class TauInstallation(Installation):
         else:
             compiler_cmd = compiler.command
         cmd = [compiler_cmd] + opts + compiler_args
-        retval = util.createSubprocess(cmd, env=env)
+        LOGGER.info(' '.join(cmd))
+        retval = util.createSubprocess(cmd, env=env, stdout=True)
         if retval != 0:
             raise ConfigurationError("TAU was unable to build the application.",
                                      "See detailed output at the end of in '%s'" % logger.LOG_FILE)

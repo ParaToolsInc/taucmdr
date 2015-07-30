@@ -145,6 +145,32 @@ def download(src, dest):
             raise IOError("Failed to download '%s'" % src)
 
 
+def archive_toplevel(archive):
+    """
+    Returns the name of the top-level directory in an archive.
+    
+    Assumes that the archive file is rooted in a single top-level directory:
+        foo
+            /bar
+            /baz
+    The top-level directory here is "foo"
+    This routine will return stupid results for archives with multiple 
+    top-level elements.
+    
+    Args:
+        archive: Path to archive file.
+        
+    Returns:
+        Directory name as a string.
+    """
+    LOGGER.debug("Determining top-level directory name in '%s'" % archive)
+    with tarfile.open(archive) as fp:
+        dirs = [d.name for d in fp.getmembers() if d.type == tarfile.DIRTYPE]
+    topdir = min(dirs, key=len)
+    LOGGER.debug("Top-level directory in '%s' is '%s'" % (archive, topdir))
+    return topdir
+
+
 def extract(archive, dest):
     """Extracts archive file to dest.
     
@@ -161,15 +187,12 @@ def extract(archive, dest):
     Raises:
         IOError: Failed to extract archive.
     """
+    topdir = archive_toplevel(archive)
+    full_dest = os.path.join(dest, topdir)
+    LOGGER.debug("Extracting '%s' to create '%s'" % (archive, full_dest))
+    LOGGER.info("Extracting '%s'" % archive)
+    mkdirp(dest)
     with tarfile.open(archive) as fp:
-        LOGGER.debug("Determining top-level directory name in '%s'" % archive)
-        dirs = [d.name for d in fp.getmembers() if d.type == tarfile.DIRTYPE]
-        topdir = min(dirs, key=len)
-        LOGGER.debug("Top-level directory in '%s' is '%s'" % (archive, topdir))
-        full_dest = os.path.join(dest, topdir)
-        LOGGER.debug("Extracting '%s' to create '%s'" % (archive, full_dest))
-        LOGGER.info("Extracting '%s'" % archive)
-        mkdirp(dest)
         fp.extractall(dest)
     if not os.path.isdir(full_dest):
         raise IOError("Failed to create '%s' by extracting '%s'" % (full_dest, archive))
@@ -226,52 +249,28 @@ def pformat_dict(dct, title=None, empty_msg='No items.', indent=0, truncate=Fals
     return '%(line)s%(items)s' % {'line': line, 'items': items}
 
 
-def createSubprocess(cmd, cwd=None, env=None, fork=False, stdout=True, 
-                     log=True, replace_env=False):
+def createSubprocess(cmd, cwd=None, env=None, stdout=True, log=True):
     """
     """
     if not cwd:
         cwd = os.getcwd()
+    # Don't accidentally unset all environment variables with an empty dict 
+    env = dict(os.environ, **env) if env else None
     LOGGER.debug("Creating subprocess: cmd=%s, cwd='%s'\n" % (cmd, cwd))
-    if not env and not replace_env:
-        # Don't accidentally unset all environment variables 
-        env = None
-    else:
-        # Update or replace environment
-        if not replace_env:
-            sub_env = dict(os.environ)
-            sub_env.update(env)
-            env = sub_env
-        # Show what's different in the environment
-        changed = {}
-        for key, val in sub_env.iteritems():
-            LOGGER.debug(
-                "%s=%s" % (key, ''.join([c for c in val if ord(c) < 128 and ord(c) > 31])))
-            try:
-                orig = os.environ[key]
-            except KeyError:
-                changed[key] = val
-            else:
-                if val != orig:
-                    changed[key] = val
-        LOGGER.info(pformat_dict(changed, truncate=True))
-    # Show what will be executed
-    LOGGER.info(' '.join(cmd))
-    pid = os.fork() if fork else 0
-    if pid == 0:
-        proc = subprocess.Popen(cmd, cwd=cwd, env=env,
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.STDOUT)
-        out, _ = proc.communicate()
-        if log:
-            LOGGER.debug(out)
-        if stdout and (logger.LOG_LEVEL != 'DEBUG'):
-            sys.stdout.write(out)
-        retval = proc.returncode
-        LOGGER.debug("%s returned %d" % (cmd, retval))
-        return retval
-    else:
-        return 0
+    proc = subprocess.Popen(cmd, cwd=cwd, env=env,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT,
+                            bufsize=1)
+    with proc.stdout:
+        for line in iter(proc.stdout.readline, b''):
+            if log:
+                LOGGER.debug(line)
+            if stdout:
+                print line,
+    proc.wait()
+    retval = proc.returncode
+    LOGGER.debug("%s returned %d" % (cmd, retval))
+    return retval
 
 
 def humanReadableSize(num, suffix='B'):

@@ -29,6 +29,8 @@ This is not a parallel implementation */
 pthread_mutex_t mutexsum;
 #endif /* PTHREADS */
 
+#define APP_USE_INLINE_MULTIPLY 1
+
 #ifndef MATRIX_SIZE
 #define MATRIX_SIZE 512
 #endif

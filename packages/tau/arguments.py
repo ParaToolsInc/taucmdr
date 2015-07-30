@@ -79,8 +79,7 @@ class ArgparseHelpFormatter(argparse.RawDescriptionHelpFormatter):
         helpstr = action.help
         choices = getattr(action, 'choices', None)
         if choices:
-            helpstr += '\n%s- %s: (%s)' % (indent,
-                                           action.metavar, ', '.join(choices))
+            helpstr += '\n%s- %s: (%s)' % (indent, action.metavar, ', '.join(choices))
         if '%(default)' not in action.help:
             if action.default is not argparse.SUPPRESS:
                 defaulting_nargs = [argparse.OPTIONAL, argparse.ZERO_OR_MORE]
@@ -159,7 +158,7 @@ def getParserFromModel(model, use_defaults=True,
         except KeyError:
             options['default'] = argparse.SUPPRESS
         else:
-            if use_defaults and default:
+            if use_defaults:
                 options['default'] = default
             else:
                 options['default'] = argparse.SUPPRESS

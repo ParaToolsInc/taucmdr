@@ -173,17 +173,14 @@ def main(argv):
     application_eid = _select(project, 'applications', given_applications)
     measurement_eid = _select(project, 'measurements', given_measurements)
 
-    theTarget = Target.one(eid=target_eid)
-    theApplication = Application.one(eid=application_eid)
-    theMeasurement = Measurement.one(eid=measurement_eid)
-
-    theTarget.compatibleWith(theMeasurement)
-    theTarget.compatibleWith(theApplication)
-    theMeasurement.compatibleWith(theTarget)
-    theMeasurement.compatibleWith(theApplication)
-    theMeasurement.compatibleWith(theMeasurement)
-    theApplication.compatibleWith(theTarget)
-    theApplication.compatibleWith(theMeasurement)
+    targ = Target.one(eid=target_eid)
+    app = Application.one(eid=application_eid)
+    meas = Measurement.one(eid=measurement_eid)
+    
+    for lhs in [targ, app, meas]:
+        for rhs in [targ, app, meas]:
+            if lhs is not rhs:
+                lhs.compatibleWith(rhs)
 
     data = {'project': project.eid,
             'target': target_eid,
@@ -201,10 +198,10 @@ def main(argv):
         found = found[0]
 
     populated = found.populate()
-    LOGGER.info("'%s' on '%s' measured by '%s'" %
+    LOGGER.debug("'%s' on '%s' measured by '%s'" %
                 (populated['application']['name'],
                  populated['target']['name'],
                  populated['measurement']['name']))
     found.select()
 
-    return EXIT_SUCCESS
+    return commands.executeCommand(['trial', 'list'], ['-s'])

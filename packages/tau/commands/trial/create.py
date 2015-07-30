@@ -36,7 +36,7 @@
 #"""
 
 from tau import logger, util, arguments, commands
-from error import ConfigurationError
+from tau.error import ConfigurationError
 from tau.model.experiment import Experiment
 
 
