@@ -277,38 +277,65 @@ class TauInstallation(Installation):
         Raises:
             SoftwareConfigurationError: TAU's configure script failed.
         """
+        from compiler import CompilerInfo
+        flags = ['-prefix=%s' % self.install_prefix,
+                 '-arch=%s' % self.arch]
+
+        # TAU has a really hard time identifying MPI compilers in its configure script
+        if self.compilers.cxx.family == 'MPI':
+            wrapped_cc = self.compilers.cc.identify_wrapped()
+            wrapped_cxx = self.compilers.cxx.identify_wrapped()
+            wrapped_fc = self.compilers.fc.identify_wrapped()
+            mpi_include_path = []
+            mpi_library_path = []
+            mpi_libraries = []
+            for comp in [wrapped_cc, wrapped_cxx, wrapped_fc]:
+                mpi_include_path.extend(comp.include_path)
+                mpi_library_path.extend(comp.library_path)
+                mpi_libraries.extend(comp.libraries)
+            # Just guess that the shortest path is the top-level directory
+            # for MPI include and lib
+            mpiinc = min(set(mpi_include_path), key=len)
+            mpilib = min(set(mpi_library_path), key=len)
+            # TAU uses '#' as a seperator 
+            mpilibrary = '#'.join(set(mpi_libraries))
+            # Identify again in case of a fuzzy match
+            cc_command = CompilerInfo.identify(wrapped_cc.command).command
+            cxx_command = CompilerInfo.identify(wrapped_cxx.command).command
+            fc_family = wrapped_fc.family
+        else:
+            mpiinc=None
+            mpilib=None
+            mpilibrary=None
+            # Identify again in case of a fuzzy match
+            cc_command = CompilerInfo.identify(self.compilers.cc.command).command
+            cxx_command = CompilerInfo.identify(self.compilers.cxx.command).comman
+            fc_family = self.compilers.fc.family
+        
         # Translate Fortran compiler command into TAU's funkey magic words
-        fc_family = self.compilers.fc.family
-        family_map = {'GNU': 'gfortran',
-                      'Intel': 'intel',
-                      'PGI': 'pgi',
-                      'MPI': 'mpif90'}
+        family_map = {'GNU': 'gfortran', 'Intel': 'intel', 'PGI': 'pgi', 'MPI': 'mpif90'}
         try:
             fortran_flag = '-fortran=%s' % family_map[fc_family]
         except KeyError:
             raise InternalError("Unknown compiler family for Fortran: '%s'" % fc_family)
-
-        # Gather TAU configuration flags
-        flags = ['-prefix=%s' % self.install_prefix,
-                 '-arch=%s' % self.arch,
-                 '-cc=%s' % self.compilers.cc.command,
-                 '-c++=%s' % self.compilers.cxx.command,
-                 fortran_flag,
-                 '-pdt=%s' % self.pdt.install_prefix if self.pdt else '',
-                 '-bfd=%s' % self.bfd.install_prefix if self.bfd else '',
-                 '-papi=%s' % self.papi.install_prefix if self.papi else '',
-                 '-unwind=%s' % self.libunwind.install_prefix if self.libunwind else '',
-                 '-pthread' if self.pthreads_support else '']
-        if self.mpi_support:
-            # TODO: -mpiinc, -mpilib, -mpilibrary
-            flags.append('-mpi')           
+        
+        flags.extend(['-cc=%s' % cc_command,
+                      '-c++=%s' % cxx_command,
+                      fortran_flag,
+                      '-pdt=%s' % self.pdt.install_prefix if self.pdt else '',
+                      '-bfd=%s' % self.bfd.install_prefix if self.bfd else '',
+                      '-papi=%s' % self.papi.install_prefix if self.papi else '',
+                      '-unwind=%s' % self.libunwind.install_prefix if self.libunwind else '',
+                      '-pthread' if self.pthreads_support else '',
+                      '-mpi' if self.mpi_support else '',
+                      '-mpiinc=%s' % mpiinc if mpiinc else '',
+                      '-mpilib=%s' % mpilib if mpilib else '',
+                      '-mpilibrary=%s' % mpilibrary if mpilibrary else ''])
         if self.openmp_support:
             if self.measure_openmp == 'compiler_default':
                 flags.append('-openmp')
             elif self.measure_openmp == 'ompt':
-                from compiler import KNOWN_COMPILERS
-                intel_family = KNOWN_COMPILERS['icc'].family
-                if self.compilers.cc.family == intel_family:
+                if self.compilers.cc.family == 'Intel':
                     flags.append('-ompt')
                 else:
                     raise ConfigurationError('OMPT for OpenMP measurement only works with Intel compilers')
@@ -317,7 +344,7 @@ class TauInstallation(Installation):
             else:
                 raise InternalError('Unknown OpenMP measurement: %s' % self.measure_openmp)
         cmd = ['./configure'] + flags + additional_flags
-        LOGGER.info("Configuring TAU...")
+        LOGGER.info("Configuring TAU with %s..." % ' '.join(additional_flags))
         if util.createSubprocess(cmd, cwd=self._src_path, stdout=False):
             raise SoftwarePackageError('TAU configure failed')
     
