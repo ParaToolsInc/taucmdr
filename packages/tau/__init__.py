@@ -55,6 +55,9 @@ MINIMUM_PYTHON_VERSION = (2, 7)
 if sys.version_info < MINIMUM_PYTHON_VERSION:
     version = '.'.join(map(str, sys.version_info[0:3]))
     expected = '.'.join(map(str, MINIMUM_PYTHON_VERSION))
-    sys.stderr.write("%s\nYour Python version is %s but Python %s or later is required. Please update Python.\n" %
-                     (sys.version, version, sys.argv[0], expected))
+    sys.stderr.write("""
+%s
+%s
+Your Python version is %s but Python %s or later is required. Please update Python.
+""" % (sys.executable, sys.version, version, expected))
     sys.exit(EXIT_FAILURE)
