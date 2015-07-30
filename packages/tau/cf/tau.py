@@ -241,7 +241,6 @@ class TauInstallation(Installation):
         Raises:
           SoftwarePackageError: Describes why the installation is invalid.
         """
-        self._check_dependencies()
         super(TauInstallation,self).verify(commands=COMMANDS)
 
         # Open TAU makefile and check BFDINCLUDE, UNWIND_INC, PAPIDIR, etc.
@@ -346,6 +345,8 @@ class TauInstallation(Installation):
         Raises:
             SofwarePackageError: TAU failed installation or did not pass verification after it was installed.
         """
+        self._check_dependencies()
+
         if not self.src:
             return self.verify()
         elif not force_reinstall:

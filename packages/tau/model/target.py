@@ -99,7 +99,7 @@ def libunwind_default():
     if host_arch_default() == 'apple':
         return None
     else:
-        return 'default'
+        return 'download'
 
 
 class Target(Controller, ByName):

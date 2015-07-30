@@ -35,8 +35,12 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-from installation import AutotoolsInstallation
 
+from installation import AutotoolsInstallation
+from tau import logger
+
+
+LOGGER = logger.getLogger(__name__)
 
 SOURCES = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-1.1.tar.gz'}
  
@@ -57,3 +61,15 @@ class LibunwindInstallation(AutotoolsInstallation):
     def verify(self):
         libraries = LIBS.get(self.arch, LIBS[None])
         return super(LibunwindInstallation,self).verify(libraries=libraries)
+
+    def make(self, flags=[], env={}, parallel=True):
+        """Build libunwind.
+        
+        libunwind's tests often fail to build but the library itself compiles
+        just fine, so we just keep pressing on to 'make install' even if 
+        'make' appears to have died.
+        """
+        try:
+            super(LibunwindInstallation,self).make(flags, env, parallel)
+        except Exception as err:
+            LOGGER.debug("libunwind build failed, but continuing anyway: %s" % err)

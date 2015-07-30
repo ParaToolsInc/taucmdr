@@ -264,7 +264,7 @@ def createSubprocess(cmd, cwd=None, env=None, stdout=True, log=True):
     with proc.stdout:
         for line in iter(proc.stdout.readline, b''):
             if log:
-                LOGGER.debug(line)
+                LOGGER.debug(line[:-1])
             if stdout:
                 print line,
     proc.wait()
