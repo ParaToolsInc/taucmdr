@@ -309,7 +309,7 @@ class TauInstallation(Installation):
             mpilibrary=None
             # Identify again in case of a fuzzy match
             cc_command = CompilerInfo.identify(self.compilers.cc.command).command
-            cxx_command = CompilerInfo.identify(self.compilers.cxx.command).comman
+            cxx_command = CompilerInfo.identify(self.compilers.cxx.command).command
             fc_family = self.compilers.fc.family
         
         # Translate Fortran compiler command into TAU's funkey magic words
