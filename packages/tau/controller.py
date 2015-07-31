@@ -285,7 +285,7 @@ class Controller(object):
         else:
             raise InternalError('Controller.update() requires either keys or eids')
         with user_storage as storage:
-            storage.update(cls.model_name, fields, keys=keys, eids=eids)
+            storage.update(cls.model_name, cls._validate(fields), keys=keys, eids=eids)
             for model in changing:
                 for attr, foreign in cls.associations.iteritems():
                     try:
