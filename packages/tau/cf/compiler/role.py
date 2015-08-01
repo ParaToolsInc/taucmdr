@@ -35,51 +35,31 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-from tau import logger
-from tau.controller import Controller
 
-LOGGER = logger.getLogger(__name__)
- 
-class CompilerCommand(Controller):
-
+class CompilerRole(object):
+    """Information about a compiler's role.
+    
+    Attributes:
+        keyword: String identifying how the compiler is used in the build process, e.g. 'CXX'
+        language: Language corresponding to the compiler role, e.g. 'C++'
+        required: True if this role must be filled to compile TAU, False otherwise
     """
-    CompilerCommand data model controller
-    """
+    def __init__(self, keyword, language, required):
+        self.keyword = keyword
+        self.language = language
+        self.required = required
 
-    attributes = {
-        'path': {
-            'type': 'string',
-            'required': True,
-            'unique': True,
-            'description': "absolute path to the compiler command"
-        },
-        'md5': {
-            'type': 'string',
-            'required': True,
-            'description': "checksum of the compiler command file"
-        }
-    }
+    def __eq__(self, other):
+        return isinstance(other, CompilerRole) and (other.keyword == self.keyword)
 
-    def info(self):
-        """Probes the system for information on this compiler command.
-        
-        Returns:
-            CompilerInfo for this compiler command.
-        """
-        from tau.cf.compiler.installed import InstalledCompiler
-        comp = InstalledCompiler(self['path'])
-        if comp.md5sum != self['md5']:
-            LOGGER.warning("%s '%s' has changed!" % (comp.short_descr, comp.command))
-            # TODO: What do we do when compilers change?
-        return comp
 
-    @classmethod
-    def from_info(cls, comp):
-        found = cls.one(keys={'path': comp.absolute_path})
-        if not found:
-            found = cls.create(fields={'path': comp.absolute_path, 'md5': comp.md5sum})
-        else:
-            if comp.md5sum != found['md5']:
-                LOGGER.warning("%s '%s' has changed!" % (comp.short_descr, comp.command))
-                # TODO: What should we do when the compilers change?
-        return found
+CC_ROLE = CompilerRole('CC', 'C', True)
+CXX_ROLE = CompilerRole('CXX', 'C++', True)
+FC_ROLE = CompilerRole('FC', 'Fortran', True)
+F77_ROLE = CompilerRole('F77', 'FORTRAN77', False)
+F90_ROLE = CompilerRole('F90', 'Fortran90', False)
+UPC_ROLE = CompilerRole('UPC', 'Universal Parallel C', False)
+
+ALL_ROLES = [CC_ROLE, CXX_ROLE, FC_ROLE, F77_ROLE, F90_ROLE, UPC_ROLE]
+REQUIRED_ROLES = [_ for _ in ALL_ROLES if _.required]
+KNOWN_ROLES = dict([(_.keyword, _) for _ in ALL_ROLES])

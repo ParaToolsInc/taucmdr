@@ -119,7 +119,7 @@ class PdtInstallation(AutotoolsInstallation):
                         'Intel': '-icpc', 
                         'PGI': '-pgCC',
                         None: ''}
-        if self.compilers.cxx.family == 'MPI':
+        if self.compilers.CXX.family == 'MPI':
             try:
                 wrapped = self.compilers.cxx.identify_wrapped()
             except ConfigurationError:
@@ -128,7 +128,7 @@ class PdtInstallation(AutotoolsInstallation):
             else:
                 family = wrapped.family
         else:
-            family = self.compilers.cxx.family
+            family = self.compilers.CXX.family
         compiler_flag = family_flags.get(family, family_flags[None])
         prefix_flag = '-prefix=%s' % self.install_prefix
         cmd = ['./configure', prefix_flag, compiler_flag]

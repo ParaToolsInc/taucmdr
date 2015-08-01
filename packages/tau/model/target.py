@@ -40,8 +40,10 @@ import platform
 import subprocess
 from tau import logger
 from tau.arguments import ParsePackagePathAction
-from tau.controller import Controller, ByName, ModelError
+from tau.controller import Controller, ByName
 from tau.error import ConfigurationError
+from tau.cf.compiler import CompilerSet
+from tau.cf.compiler.role import ALL_ROLES
 
 
 LOGGER = logger.getLogger(__name__)
@@ -71,29 +73,6 @@ def device_arch_default():
     # TODO
     return None
 
-
-def cc_default():
-    """
-    Detect target's default C compiler
-    """
-    # TODO
-    return 'gcc'
-
-
-def cxx_default():
-    """
-    Detect target's default C compiler
-    """
-    # TODO
-    return 'g++'
-
-
-def fc_default():
-    """
-    Detect target's default C compiler
-    """
-    # TODO
-    return 'gfortran'
 
 def libunwind_default():
     if host_arch_default() == 'apple':
@@ -147,29 +126,50 @@ class Target(Controller, ByName):
                          'metavar': 'arch'}
         },
         'CC': {
-            'model': 'Compiler',
+            'model': 'CompilerCommand',
             'required': True,
             'description': 'C compiler command',
-            'defaultsTo': cc_default(),
             'argparse': {'flags': ('--cc',),
                          'group': 'compiler',
                          'metavar': '<command>'}
         },
         'CXX': {
-            'model': 'Compiler',
+            'model': 'CompilerCommand',
             'required': True,
             'description': 'C++ compiler command',
-            'defaultsTo': cxx_default(),
             'argparse': {'flags': ('--cxx', '--c++'),
                          'group': 'compiler',
                          'metavar': '<command>'}
         },
         'FC': {
-            'model': 'Compiler',
+            'model': 'CompilerCommand',
             'required': True,
             'description': 'Fortran compiler command',
-            'defaultsTo': fc_default(),
             'argparse': {'flags': ('--fc', '--fortran'),
+                         'group': 'compiler',
+                         'metavar': '<command>'}
+        },
+        'F77': {
+            'model': 'CompilerCommand',
+            'required': False,
+            'description': 'FORTRAN77 compiler command',
+            'argparse': {'flags': ('--f77',),
+                         'group': 'compiler',
+                         'metavar': '<command>'}
+        },
+        'F90': {
+            'model': 'CompilerCommand',
+            'required': False,
+            'description': 'Fortran90 compiler command',
+            'argparse': {'flags': ('--f90',),
+                         'group': 'compiler',
+                         'metavar': '<command>'}
+        },
+        'UPC': {
+            'model': 'CompilerCommand',
+            'required': False,
+            'description': 'Universal Parallel C compiler command',
+            'argparse': {'flags': ('--upc',),
                          'group': 'compiler',
                          'metavar': '<command>'}
         },
@@ -243,3 +243,20 @@ class Target(Controller, ByName):
             libunwind_flag = self.attributes['libunwind_source']['argparse']['flags'][0]
             raise ConfigurationError("libunwind not supported on host architecture 'apple'",
                                      "Use %s=None" % libunwind_flag)
+    
+    def get_compilers(self):
+        """Get Compiler objects for all compilers in this Target.
+        
+        Returns:
+            A CompilerSet with all required compilers set.
+        """
+        eids = []
+        compilers = {}
+        for role in ALL_ROLES:
+            try:
+                compiler_command = self.populate(role.keyword)
+            except KeyError:
+                continue
+            compilers[role.keyword] = compiler_command.info()
+            eids.append(str(compiler_command.eid))
+        return CompilerSet(''.join(eids), **compilers)

@@ -45,16 +45,18 @@ from pdt import PdtInstallation
 from bfd import BfdInstallation
 from libunwind import LibunwindInstallation
 from papi import PapiInstallation
-
+from cf.compiler.role import *
 
 LOGGER = logger.getLogger(__name__)
 
 SOURCES = {None: 'http://tau.uoregon.edu/tau.tgz'}
 
-COMPILER_WRAPPERS = {'CC': 'tau_cc.sh',
-                     'CXX': 'tau_cxx.sh',
-                     'FC': 'tau_f90.sh',
-                     'UPC': 'tau_upc.sh'}
+COMPILER_WRAPPERS = {CC_ROLE.keyword: 'tau_cc.sh',
+                     CXX_ROLE.keyword: 'tau_cxx.sh',
+                     FC_ROLE.keyword: 'tau_f90.sh',
+                     F77_ROLE.keyword: 'tau_f77.sh',
+                     F90_ROLE.keyword: 'tau_f90.sh',
+                     UPC_ROLE.keyword: 'tau_upc.sh'}
 
 COMMANDS = [
     'jumpshot',
@@ -277,15 +279,14 @@ class TauInstallation(Installation):
         Raises:
             SoftwareConfigurationError: TAU's configure script failed.
         """
-        from compiler import CompilerInfo
         flags = ['-prefix=%s' % self.install_prefix,
                  '-arch=%s' % self.arch]
 
         # TAU has a really hard time identifying MPI compilers in its configure script
-        if self.compilers.cxx.family == 'MPI':
-            wrapped_cc = self.compilers.cc.identify_wrapped()
-            wrapped_cxx = self.compilers.cxx.identify_wrapped()
-            wrapped_fc = self.compilers.fc.identify_wrapped()
+        if self.compilers.CXX.family == 'MPI':
+            wrapped_cc = self.compilers.CC.identify_wrapped()
+            wrapped_cxx = self.compilers.CXX.identify_wrapped()
+            wrapped_fc = self.compilers.FC.identify_wrapped()
             mpi_include_path = []
             mpi_library_path = []
             mpi_libraries = []
@@ -300,17 +301,17 @@ class TauInstallation(Installation):
             # TAU uses '#' as a seperator 
             mpilibrary = '#'.join(set(mpi_libraries))
             # Identify again in case of a fuzzy match
-            cc_command = CompilerInfo.identify(wrapped_cc.command).command
-            cxx_command = CompilerInfo.identify(wrapped_cxx.command).command
+            cc_command = compiler.identify(wrapped_cc.command).command
+            cxx_command = compiler.identify(wrapped_cxx.command).command
             fc_family = wrapped_fc.family
         else:
             mpiinc=None
             mpilib=None
             mpilibrary=None
             # Identify again in case of a fuzzy match
-            cc_command = CompilerInfo.identify(self.compilers.cc.command).command
-            cxx_command = CompilerInfo.identify(self.compilers.cxx.command).comman
-            fc_family = self.compilers.fc.family
+            cc_command = compiler.identify(self.compilers.CC.command).command
+            cxx_command = compiler.identify(self.compilers.CXX.command).comman
+            fc_family = self.compilers.FC.family
         
         # Translate Fortran compiler command into TAU's funkey magic words
         family_map = {'GNU': 'gfortran', 'Intel': 'intel', 'PGI': 'pgi', 'MPI': 'mpif90'}
@@ -335,7 +336,7 @@ class TauInstallation(Installation):
             if self.measure_openmp == 'compiler_default':
                 flags.append('-openmp')
             elif self.measure_openmp == 'ompt':
-                if self.compilers.cc.family == 'Intel':
+                if self.compilers.CC.family == 'Intel':
                     flags.append('-ompt')
                 else:
                     raise ConfigurationError('OMPT for OpenMP measurement only works with Intel compilers')
@@ -421,7 +422,7 @@ class TauInstallation(Installation):
         tags = []
         compiler_tags = {'Intel': 'icpc', 'PGI': 'pgi'}
         try:
-            tags.append(compiler_tags[self.compilers.cxx.family])
+            tags.append(compiler_tags[self.compilers.CXX.family])
         except KeyError:
             pass
         if self.source_inst != 'never':
