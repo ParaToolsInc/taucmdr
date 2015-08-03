@@ -35,12 +35,12 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # """
 
-from tau import logger, commands, arguments
+from tau import logger, commands, arguments, util
 from tau.error import ConfigurationError
 from tau.commands import SCRIPT_COMMAND
 from tau.model.experiment import Experiment
 from tau.cf.compiler import KNOWN_COMPILERS
-from tau.cf.compiler.role import ALL_ROLES
+from tau.cf.compiler.role import *
 
 
 LOGGER = logger.getLogger(__name__)
@@ -105,19 +105,40 @@ def main(argv):
     target = selection.populate('target')
     compilers = target.get_compilers()
 
+    env = {}
     cmd_args = [arg 
                 for arg in args.cmd_args 
                 for role in ALL_ROLES 
                 if not arg.startswith(role.keyword)]
-    for comp in compilers:
-        keyword = comp.role.keyword
-        found = False
+
+    # Fill roles from command line arguments
+    missing = list(ALL_ROLES)
+    for role in ALL_ROLES:
+        keyword = role.keyword
+        keyword_assign = "%s=" % keyword
         for arg in args.cmd_args:
-            if arg.startswith(keyword):
-                cmd_args.append(arg.replace("%s=" % keyword, "%s=%s " % (keyword, SCRIPT_COMMAND)))
-                found = True
-                break
-        if not found:
-            cmd_args.append("%s=%s %s" % (keyword, SCRIPT_COMMAND, comp.absolute_path))
+            if arg.startswith(keyword_assign):
+                given_comp = arg.replace(keyword_assign, "")
+                cmd_args.append("%s=%s %s" % (keyword, SCRIPT_COMMAND, given_comp))
+                env[keyword] = "%s %s" % (SCRIPT_COMMAND, given_comp)
+                missing.remove(role)
+    LOGGER.debug("Missing roles after parsing command line args: %s" % missing)
+                
+    # Fill remaining roles from target compiler information
+    for role in missing:
+        keyword = role.keyword
+        try:
+            comp = getattr(compilers, keyword)
+        except AttributeError:
+            # TODO: Define primary / alternate compiler roles to solve 
+            # this problem more generally
+            if role in [F77_ROLE, F90_ROLE]:
+                comp = getattr(compilers, FC_ROLE.keyword)
+            else:
+                LOGGER.info("No %s compiler defined, not setting %s" % (role.language, keyword))
+                continue
+        env[keyword] = "%s %s" % (SCRIPT_COMMAND, comp.absolute_path)
+        cmd_args.append("%s=%s %s" % (keyword, SCRIPT_COMMAND, comp.absolute_path))
     
-    return selection.managedBuild("make'", cmd_args)
+    cmd = ['make'] + cmd_args
+    return util.createSubprocess(cmd, env=env)

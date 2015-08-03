@@ -60,5 +60,21 @@ class CompilerSet(object):
             missing_roles.remove(key)
         for role in missing_roles:
             raise InternalError("Required role %s not defined" % role)
+        
+    def iter(self):
+        for keyword in KNOWN_ROLES:
+            try:
+                yield getattr(self, keyword)
+            except AttributeError:
+                continue
 
+    def __iter__(self):
+        return self.iter()
 
+    def __contains__(self, role):
+        try:
+            keyword = role.keyword
+        except AttributeError as err:
+            raise InternalError("%s is not a CompilerRole: %s" % (role, err))
+        else:
+            return hasattr(self, keyword)
