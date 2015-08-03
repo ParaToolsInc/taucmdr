@@ -154,7 +154,7 @@ def getParserFromModel(model, use_defaults=True,
         except KeyError:
             continue
         try:
-            default = props['defaultsTo']
+            default = props['default']
         except KeyError:
             options['default'] = argparse.SUPPRESS
         else:

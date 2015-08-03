@@ -144,8 +144,8 @@ class Controller(object):
                 if 'required' in props:
                     if props['required'] and enforce_required:
                         raise ModelError(cls, "'%s' is required but was not defined" % attr)
-                elif 'defaultsTo' in props:
-                    validated[attr] = props['defaultsTo']
+                elif 'default' in props:
+                    validated[attr] = props['default']
             # Check collections
             if 'collection' in props:
                 value = data.get(attr, [])

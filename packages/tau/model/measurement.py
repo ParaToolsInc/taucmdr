@@ -65,7 +65,7 @@ class Measurement(Controller, ByName):
         },
         'profile': {
             'type': 'boolean',
-            'defaultsTo': True,
+            'default': True,
             'description': "generate application profiles",
             'argparse': {'flags': ('--profile',),
                          'group': 'output format',
@@ -76,7 +76,7 @@ class Measurement(Controller, ByName):
         },
         'trace': {
             'type': 'boolean',
-            'defaultsTo': False,
+            'default': False,
             'description': "generate application traces",
             'argparse': {'flags': ('--trace',),
                          'group': 'output format',
@@ -87,7 +87,7 @@ class Measurement(Controller, ByName):
         },
         'sample': {
             'type': 'boolean',
-            'defaultsTo': False,
+            'default': False,
             'description': "use event-based sampling to gather performance data",
             'argparse': {'flags': ('--sample',),
                          'group': 'instrumentation',
@@ -99,7 +99,7 @@ class Measurement(Controller, ByName):
         },
         'source_inst': {
             'type': 'string',
-            'defaultsTo': 'automatic',
+            'default': 'automatic',
             'description': "use hooks inserted into the application source code to gather performance data",
             'argparse': {'flags': ('--source-inst',),
                          'group': 'instrumentation',
@@ -111,7 +111,7 @@ class Measurement(Controller, ByName):
         },
         'compiler_inst': {
             'type': 'string',
-            'defaultsTo': 'fallback',
+            'default': 'fallback',
             'description': "use compiler-generated callbacks to gather performance data",
             'argparse': {'flags': ('--compiler-inst',),
                          'group': 'instrumentation',
@@ -124,7 +124,7 @@ class Measurement(Controller, ByName):
         },
         'link_only': {
             'type': 'boolean',
-            'defaultsTo': False,
+            'default': False,
             'description': "don't instrument, only link the TAU library to the application",
             'argparse': {'flags': ('--link-only',),
                          'group': 'instrumentation',
@@ -135,7 +135,7 @@ class Measurement(Controller, ByName):
         },
         'mpi': {
             'type': 'boolean',
-            'defaultsTo': False,
+            'default': False,
             'description': 'use MPI library wrapper to measure time spent in MPI methods',
             'argparse': {'flags': ('--mpi',),
                          'group': 'library',
@@ -147,7 +147,7 @@ class Measurement(Controller, ByName):
         },
         'openmp': {
             'type': 'string',
-            'defaultsTo': 'compiler_default',
+            'default': 'compiler_default',
             'description': 'use specified library to measure time spent in OpenMP directives',
             'argparse': {'flags': ('--openmp',),
                          'group': 'library',
@@ -159,7 +159,7 @@ class Measurement(Controller, ByName):
         },
         'callpath': {
             'type': 'integer',
-            'defaultsTo': 0,
+            'default': 0,
             'description': 'maximum depth for callpath recording',
             'argparse': {'flags': ('--callpath',),
                          'group': 'data',
@@ -172,7 +172,7 @@ class Measurement(Controller, ByName):
         },
         'io': {
             'type': 'boolean',
-            'defaultsTo': False,
+            'default': False,
             'description': 'measure time spent in POSIX I/O calls',
             'argparse': {'flags': ('--io',),
                          'group': 'library',
@@ -183,7 +183,7 @@ class Measurement(Controller, ByName):
         },
         'memory_usage': {
             'type': 'boolean',
-            'defaultsTo': False,
+            'default': False,
             'description': 'measure memory consumption',
             'argparse': {'flags': ('--memory-usage',),
                          'group': 'memory',
@@ -194,7 +194,7 @@ class Measurement(Controller, ByName):
         },
         'memory_alloc': {
             'type': 'boolean',
-            'defaultsTo': False,
+            'default': False,
             'description': 'record memory allocation and deallocation events',
             'argparse': {'flags': ('--memory-alloc',),
                          'group': 'memory',
@@ -205,7 +205,7 @@ class Measurement(Controller, ByName):
         },
         'metrics': {
             'type': 'array',
-            'defaultsTo': ['TIME'],
+            'default': ['TIME'],
             'description': 'metrics to measure, e.g. TIME or PAPI_FP_INS',
             'argparse': {'flags': ('--metrics',),
                          'group': 'data',
@@ -215,7 +215,7 @@ class Measurement(Controller, ByName):
         },
         'keep_inst_files': {
             'type': 'boolean',
-            'defaultsTo': False,
+            'default': False,
             'description': "don't remove instrumented files after compilation",
             'argparse': {'flags': ('--keep-inst-files',),
                          'group': 'instrumentation',
@@ -226,7 +226,7 @@ class Measurement(Controller, ByName):
         },
         'reuse_inst_files': {
             'type': 'boolean',
-            'defaultsTo': False,
+            'default': False,
             'description': 'reuse and preserve instrumented files after compilation',
             'argparse': {'flags': ('--reuse-inst-files',),
                          'group': 'instrumentation',

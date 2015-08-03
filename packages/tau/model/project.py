@@ -79,7 +79,7 @@ class Project(Controller, ByName):
         'prefix': {
             'type': 'string',
             'required': True,
-            'defaultsTo': environment.USER_PREFIX,
+            'default': environment.USER_PREFIX,
             'description': 'location for all files and experiment data related to this project',
             'argparse': {'flags': ('--home',),
                          'metavar': 'path'}

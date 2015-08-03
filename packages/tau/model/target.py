@@ -103,7 +103,7 @@ class Target(Controller, ByName):
             'type': 'string',
             'required': True,
             'description': 'host operating system',
-            'defaultsTo': host_os_default(),
+            'default': host_os_default(),
             'argparse': {'flags': ('--host-os',),
                          'group': 'target system',
                          'metavar': 'os'}
@@ -112,7 +112,7 @@ class Target(Controller, ByName):
             'type': 'string',
             'required': True,
             'description': 'host architecture',
-            'defaultsTo': host_arch_default(),
+            'default': host_arch_default(),
             'argparse': {'flags': ('--host-arch',),
                          'group': 'target system',
                          'metavar': 'arch'}
@@ -120,7 +120,7 @@ class Target(Controller, ByName):
         'device_arch': {
             'type': 'string',
             'description': 'coprocessor architecture',
-            'defaultsTo': device_arch_default(),
+            'default': device_arch_default(),
             'argparse': {'flags': ('--device-arch',),
                          'group': 'target system',
                          'metavar': 'arch'}
@@ -173,7 +173,7 @@ class Target(Controller, ByName):
         'cuda': {
             'type': 'string',
             'description': 'path to NVIDIA CUDA installation',
-            'defaultsTo': None,
+            'default': None,
             'argparse': {'flags': ('--cuda',),
                          'group': 'software package',
                          'metavar': '<path>',
@@ -214,7 +214,7 @@ class Target(Controller, ByName):
         'tau_source': {
             'type': 'string',
             'description': 'path or URL to a TAU installation or archive file',
-            'defaultsTo': 'download',
+            'default': 'download',
             'argparse': {'flags': ('--tau',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download)',
@@ -223,7 +223,7 @@ class Target(Controller, ByName):
         'pdt_source': {
             'type': 'string',
             'description': 'path or URL to a PDT installation or archive file',
-            'defaultsTo': 'download',
+            'default': 'download',
             'argparse': {'flags': ('--pdt',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
@@ -232,7 +232,7 @@ class Target(Controller, ByName):
         'bfd_source': {
             'type': 'string',
             'description': 'path or URL to a GNU binutils installation or archive file',
-            'defaultsTo': 'download',
+            'default': 'download',
             'argparse': {'flags': ('--bfd',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
@@ -241,7 +241,7 @@ class Target(Controller, ByName):
         'libunwind_source': {
             'type': 'string',
             'description': 'path or URL to a libunwind installation or archive file',
-            'defaultsTo': libunwind_default(),
+            'default': libunwind_default(),
             'argparse': {'flags': ('--libunwind',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
@@ -250,7 +250,7 @@ class Target(Controller, ByName):
         'papi_source': {
             'type': 'string',
             'description': 'path or URL to a PAPI installation or archive file',
-            'defaultsTo': None,
+            'default': None,
             'argparse': {'flags': ('--papi',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
@@ -259,7 +259,7 @@ class Target(Controller, ByName):
         'score-p_source': {
             'type': 'string',
             'description': 'path or URL to a Score-P installation or archive file',
-            'defaultsTo': None,
+            'default': None,
             'argparse': {'flags': ('--score-p',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',

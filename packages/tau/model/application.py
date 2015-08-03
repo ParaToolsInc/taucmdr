@@ -61,7 +61,7 @@ class Application(Controller, ByName):
         'openmp': {
             'type': 'boolean', 
             'description': 'application uses OpenMP',
-            'defaultsTo': False, 
+            'default': False, 
             'argparse': {'flags': ('--openmp',),
                          'metavar': 'yes/no',
                          'nargs': '?',
@@ -71,7 +71,7 @@ class Application(Controller, ByName):
         'pthreads': {
             'type': 'boolean',
             'description': 'application uses pthreads',
-            'defaultsTo': False,
+            'default': False,
             'argparse': {'flags': ('--pthreads',),
                          'metavar': 'yes/no',
                          'nargs': '?',
@@ -80,7 +80,7 @@ class Application(Controller, ByName):
         },
         'mpi': {
             'type': 'boolean',
-            'defaultsTo': False,
+            'default': False,
             'description': 'application uses MPI',
             'argparse': {'flags': ('--mpi',),
                          'metavar': 'yes/no',
@@ -91,7 +91,7 @@ class Application(Controller, ByName):
         },
         'cuda': {
             'type': 'boolean',
-            'defaultsTo': False,
+            'default': False,
             'description': 'application uses NVIDIA CUDA',
             'argparse': {'flags': ('--cuda',),
                          'metavar': 'yes/no',
@@ -102,7 +102,7 @@ class Application(Controller, ByName):
         },
         'shmem': {
             'type': 'boolean',
-            'defaultsTo': False,
+            'default': False,
             'description': 'application uses SHMEM',
             'argparse': {'flags': ('--shmem',),
                          'metavar': 'yes/no',
@@ -112,7 +112,7 @@ class Application(Controller, ByName):
         },
         'mpc': {
             'type': 'boolean',
-            'defaultsTo': False,
+            'default': False,
             'description': 'application uses MPC',
             'argparse': {'flags': ('--mpc',),
                          'metavar': 'yes/no',
