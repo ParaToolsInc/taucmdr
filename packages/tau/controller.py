@@ -183,18 +183,25 @@ class Controller(object):
             LOGGER.debug("Populating %r" % self)
             self.populated = dict(self.data)
             for attr, props in self.attributes.iteritems():
-                if props.get('required', True):
+                try:
+                    foreign_model = MODELS[props['model']]
+                except KeyError:
                     try:
-                        foreign_model = MODELS[props['model']]
+                        foreign_model = MODELS[props['collection']]
                     except KeyError:
-                        try:
-                            foreign_model = MODELS[props['collection']]
-                        except KeyError:
-                            continue
-                        else:
-                            self.populated[attr] = foreign_model.search(eids=self.data[attr])
+                        continue
                     else:
+                        try:
+                            self.populated[attr] = foreign_model.search(eids=self.data[attr])
+                        except KeyError:
+                            if props.get('required', False):
+                                raise ModelError(cls, "'%s' is required but was not defined" % attr)
+                else:
+                    try:
                         self.populated[attr] = foreign_model.one(eid=self.data[attr])
+                    except KeyError:
+                        if props.get('required', False):
+                            raise ModelError(cls, "'%s' is required but was not defined" % attr)
         if attribute:
             return self.populated[attribute]
         else:
