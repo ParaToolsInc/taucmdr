@@ -35,60 +35,51 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-from tau import logger, commands, arguments
-
+from tau import logger
+from tau.controller import Controller
 
 LOGGER = logger.getLogger(__name__)
+ 
+class CompilerCommand(Controller):
 
-COMMAND = commands.get_command(__name__)
-
-SHORT_DESCRIPTION = "Create and manage target configurations."
-
-GROUP = "configuration"
-
-USAGE = """
-  %(command)s <subcommand> [arguments]
-""" % {'command': COMMAND} 
-
-HELP = """
-'%(command)s' page to be written.
-""" % {'command': COMMAND}
-
-USAGE_EPILOG = """
-%(command_descr)s
-
-See '%(command)s <subcommand> --help' for more information on <subcommand>.
-""" % {'command': COMMAND,
-       'command_descr': commands.getCommandsHelp(__name__)}
-
-
-_arguments = [(('subcommand',), {'help': "See 'subcommands' below",
-                                 'metavar': '<subcommand>'}),
-              (('options',), {'help': "Arguments to be passed to <subcommand>",
-                              'metavar': '[arguments]',
-                              'nargs': arguments.REMAINDER})]
-PARSER = arguments.getParser(_arguments,
-                             prog=COMMAND,
-                             usage=USAGE,
-                             description=SHORT_DESCRIPTION,
-                             epilog=USAGE_EPILOG)
-
-
-def getUsage():
-    return PARSER.format_help()
-
-
-def getHelp():
-    return HELP
-
-
-def main(argv):
     """
-    Program entry point
+    CompilerCommand data model controller
     """
-    args = PARSER.parse_args(args=argv)
-    LOGGER.debug('Arguments: %s' % args)
 
-    subcommand = args.subcommand
-    options = args.options
-    return commands.executeCommand([subcommand], options, __name__)
+    attributes = {
+        'path': {
+            'type': 'string',
+            'required': True,
+            'unique': True,
+            'description': "absolute path to the compiler command"
+        },
+        'md5': {
+            'type': 'string',
+            'required': True,
+            'description': "checksum of the compiler command file"
+        }
+    }
+
+    def info(self):
+        """Probes the system for information on this compiler command.
+        
+        Returns:
+            CompilerInfo for this compiler command.
+        """
+        from tau.cf.compiler.installed import InstalledCompiler
+        comp = InstalledCompiler(self['path'])
+        if comp.md5sum != self['md5']:
+            LOGGER.warning("%s '%s' has changed!" % (comp.short_descr, comp.command))
+            # TODO: What do we do when compilers change?
+        return comp
+
+    @classmethod
+    def from_info(cls, comp):
+        found = cls.one(keys={'path': comp.absolute_path})
+        if not found:
+            found = cls.create(fields={'path': comp.absolute_path, 'md5': comp.md5sum})
+        else:
+            if comp.md5sum != found['md5']:
+                LOGGER.warning("%s '%s' has changed!" % (comp.short_descr, comp.command))
+                # TODO: What should we do when the compilers change?
+        return found

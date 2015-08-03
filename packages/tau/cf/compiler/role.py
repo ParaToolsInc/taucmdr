@@ -35,60 +35,31 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-from tau import logger, commands, arguments
 
-
-LOGGER = logger.getLogger(__name__)
-
-COMMAND = commands.get_command(__name__)
-
-SHORT_DESCRIPTION = "Create and manage target configurations."
-
-GROUP = "configuration"
-
-USAGE = """
-  %(command)s <subcommand> [arguments]
-""" % {'command': COMMAND} 
-
-HELP = """
-'%(command)s' page to be written.
-""" % {'command': COMMAND}
-
-USAGE_EPILOG = """
-%(command_descr)s
-
-See '%(command)s <subcommand> --help' for more information on <subcommand>.
-""" % {'command': COMMAND,
-       'command_descr': commands.getCommandsHelp(__name__)}
-
-
-_arguments = [(('subcommand',), {'help': "See 'subcommands' below",
-                                 'metavar': '<subcommand>'}),
-              (('options',), {'help': "Arguments to be passed to <subcommand>",
-                              'metavar': '[arguments]',
-                              'nargs': arguments.REMAINDER})]
-PARSER = arguments.getParser(_arguments,
-                             prog=COMMAND,
-                             usage=USAGE,
-                             description=SHORT_DESCRIPTION,
-                             epilog=USAGE_EPILOG)
-
-
-def getUsage():
-    return PARSER.format_help()
-
-
-def getHelp():
-    return HELP
-
-
-def main(argv):
+class CompilerRole(object):
+    """Information about a compiler's role.
+    
+    Attributes:
+        keyword: String identifying how the compiler is used in the build process, e.g. 'CXX'
+        language: Language corresponding to the compiler role, e.g. 'C++'
+        required: True if this role must be filled to compile TAU, False otherwise
     """
-    Program entry point
-    """
-    args = PARSER.parse_args(args=argv)
-    LOGGER.debug('Arguments: %s' % args)
+    def __init__(self, keyword, language, required):
+        self.keyword = keyword
+        self.language = language
+        self.required = required
 
-    subcommand = args.subcommand
-    options = args.options
-    return commands.executeCommand([subcommand], options, __name__)
+    def __eq__(self, other):
+        return isinstance(other, CompilerRole) and (other.keyword == self.keyword)
+
+
+CC_ROLE = CompilerRole('CC', 'C', True)
+CXX_ROLE = CompilerRole('CXX', 'C++', True)
+FC_ROLE = CompilerRole('FC', 'Fortran', True)
+F77_ROLE = CompilerRole('F77', 'FORTRAN77', False)
+F90_ROLE = CompilerRole('F90', 'Fortran90', False)
+UPC_ROLE = CompilerRole('UPC', 'Universal Parallel C', False)
+
+ALL_ROLES = [CC_ROLE, CXX_ROLE, FC_ROLE, F77_ROLE, F90_ROLE, UPC_ROLE]
+REQUIRED_ROLES = [_ for _ in ALL_ROLES if _.required]
+KNOWN_ROLES = dict([(_.keyword, _) for _ in ALL_ROLES])

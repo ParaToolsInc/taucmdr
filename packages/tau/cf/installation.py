@@ -39,9 +39,10 @@ import os
 import sys
 import shutil
 import multiprocessing
-import logger, util
-from cf import SoftwarePackageError
+from tau import logger, util
 from error import ConfigurationError
+from cf import SoftwarePackageError
+
 
 LOGGER = logger.getLogger(__name__)
 
@@ -95,7 +96,7 @@ class Installation(object):
             self.src_prefix = None
             self.src = None
         else:
-            self.install_prefix = os.path.join(prefix, name, compilers.id)
+            self.install_prefix = os.path.join(prefix, name, compilers.name)
             self.src_prefix = os.path.join(prefix, 'src')
             if src and src.lower() == 'download':
                 self.src = sources.get(arch, sources[None])
@@ -286,7 +287,7 @@ class AutotoolsInstallation(Installation):
                         'Intel': {'CC': 'icc', 'CXX': 'icpc'},
                         'PGI': {'CC': 'pgcc', 'CXX': 'pgCC'}}
         try:
-            env.update(compiler_env[self.compilers.cc.family])
+            env.update(compiler_env[self.compilers.CC.family])
         except KeyError:
             LOGGER.info("Allowing %s to select compilers" % self.name)
         cmd = ['./configure'] + flags

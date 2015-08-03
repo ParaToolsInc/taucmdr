@@ -122,8 +122,7 @@ def main(argv):
         else:
             for t in found:
                 populated = t.populate()
-                projects = ', '.join([p['name']
-                                      for p in populated['projects']])
+                projects = ', '.join([p['name'] for p in populated['projects']])
                 row = [populated.get(attr, '')
                        for _, _, attr in cols if attr] + [projects]
                 rows.append(row)
