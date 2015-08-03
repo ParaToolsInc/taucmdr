@@ -51,7 +51,7 @@ fi
 # Example measurements
 tau measurement create "ex-profile"
 tau measurement create "ex-trace" --profile=F --trace=T
-tau measurement create "ex-sample" --profile=F --sample=T
+tau measurement create "ex-sample" --profile=T --sample=T
 tau measurement create "p-keep" --keep-inst-files=T
 tau measurement create "no-io" --io=F
 
@@ -59,7 +59,7 @@ tau measurement create "no-io" --io=F
 tau project create "ex-mm" \
   $target_name \
   ex-matmult-serial ex-matmult-openmp ex-matmult-openmp-mpi \
-  ex-profile ex-trace ex-sample ex-io
+  ex-profile ex-trace ex-sample p-keep no-io
 
 if $sv_sys; then
   echo "** making gcc target part of project"
