@@ -105,9 +105,9 @@ class PdtInstallation(AutotoolsInstallation):
         self.bin_path = os.path.join(self.arch_path, 'bin')
         self.lib_path = os.path.join(self.arch_path, 'lib')
 
-    def verify(self):
+    def _verify(self):
         commands = COMMANDS.get(self.arch, COMMANDS[None])
-        return super(PdtInstallation,self).verify(commands=commands)
+        return super(PdtInstallation,self)._verify(commands=commands)
 
     def configure(self):
         """Configures PDT.
@@ -133,5 +133,5 @@ class PdtInstallation(AutotoolsInstallation):
         prefix_flag = '-prefix=%s' % self.install_prefix
         cmd = ['./configure', prefix_flag, compiler_flag]
         LOGGER.info("Configuring PDT for %s compilers..." % family)
-        if util.createSubprocess(cmd, cwd=self._src_path, stdout=False):
+        if self._safe_subprocess(cmd, cwd=self._src_path, stdout=False):
             raise SoftwarePackageError('PDT configure failed')

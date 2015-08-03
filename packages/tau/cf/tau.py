@@ -219,18 +219,22 @@ class TauInstallation(Installation):
         """
         if self.uses_pdt():
             self.pdt = PdtInstallation(self.prefix, self.pdt_source, self.arch, self.compilers)
-            self.pdt.install()
+            with self.pdt:
+                self.pdt.install()
         if self.uses_bfd():
             self.bfd = BfdInstallation(self.prefix, self.bfd_source, self.arch, self.compilers)
-            self.bfd.install()
+            with self.bfd:
+                self.bfd.install()
         if self.uses_libunwind():
             self.libunwind = LibunwindInstallation(self.prefix, self.libunwind_source, self.arch, self.compilers)
-            self.libunwind.install()
+            with self.libunwind:
+                self.libunwind.install()
         if self.uses_papi():
             self.papi = PapiInstallation(self.prefix, self.papi_source, self.arch, self.compilers)
-            self.papi.install()
+            with self.papi:
+                self.papi.install()
     
-    def verify(self):
+    def _verify(self):
         """Returns true if the installation is valid.
         
         A working TAU installation has a directory named `arch` 
@@ -243,7 +247,7 @@ class TauInstallation(Installation):
         Raises:
           SoftwarePackageError: Describes why the installation is invalid.
         """
-        super(TauInstallation,self).verify(commands=COMMANDS)
+        super(TauInstallation,self)._verify(commands=COMMANDS)
 
         # Open TAU makefile and check BFDINCLUDE, UNWIND_INC, PAPIDIR, etc.
         makefile = self.get_makefile()
@@ -346,7 +350,7 @@ class TauInstallation(Installation):
                 raise InternalError('Unknown OpenMP measurement: %s' % self.measure_openmp)
         cmd = ['./configure'] + flags + additional_flags
         LOGGER.info("Configuring TAU with %s..." % ' '.join(additional_flags))
-        if util.createSubprocess(cmd, cwd=self._src_path, stdout=False):
+        if self._safe_subprocess(cmd, cwd=self._src_path, stdout=False):
             raise SoftwarePackageError('TAU configure failed')
     
     def make_install(self):
@@ -359,7 +363,7 @@ class TauInstallation(Installation):
         """
         cmd = ['make', 'install'] + self._parallel_make_flags()
         LOGGER.info('Compiling and installing TAU...')
-        if util.createSubprocess(cmd, cwd=self._src_path, stdout=False):
+        if self._safe_subprocess(cmd, cwd=self._src_path, stdout=False):
             raise SoftwarePackageError('TAU compilation/installation failed')
     
     def install(self, force_reinstall=False):
@@ -377,13 +381,13 @@ class TauInstallation(Installation):
 
         if not self.src:
             try:
-                return self.verify()
+                return self._verify()
             except SoftwarePackageError as err:
                 raise SoftwarePackageError("%s is missing or broken: %s" % (self.name, err),
                                            "Specify source code path or URL to enable broken package reinstallation.")
         elif not force_reinstall:
             try:
-                return self.verify()
+                return self._verify()
             except SoftwarePackageError as err:
                 LOGGER.debug(err)
                 LOGGER.info("%s is missing or broken" % self.name)
@@ -409,7 +413,7 @@ class TauInstallation(Installation):
 
         # Verify the new installation
         LOGGER.info('%s installation complete', self.name)
-        return self.verify()
+        return self._verify()
 
     def get_makefile_tags(self):
         """Get makefile tags for this TAU installation.

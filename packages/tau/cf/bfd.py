@@ -63,9 +63,9 @@ class BfdInstallation(AutotoolsInstallation):
         super(BfdInstallation,self).__init__('BFD', prefix, src, arch, 
                                              compilers, SOURCES)
 
-    def verify(self):
+    def _verify(self):
         libraries = LIBS.get(self.arch, LIBS[None])
-        return super(BfdInstallation,self).verify(libraries=libraries)
+        return super(BfdInstallation,self)._verify(libraries=libraries)
     
     def configure(self, flags=[], env={}):
         """Configures BFD.

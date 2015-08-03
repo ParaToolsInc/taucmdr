@@ -203,8 +203,8 @@ class Experiment(Controller):
                                    measure_memory_usage=measurement['memory_usage'],
                                    measure_memory_alloc=measurement['memory_alloc'],
                                    measure_callpath=measurement['callpath'])
-        self.tau.install()
-
+        with self.tau:
+            self.tau.install()
 
     def managedBuild(self, compiler_cmd, compiler_args):
         """

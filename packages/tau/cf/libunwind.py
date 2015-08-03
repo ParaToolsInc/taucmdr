@@ -58,9 +58,9 @@ class LibunwindInstallation(AutotoolsInstallation):
         super(LibunwindInstallation,self).__init__('libunwind', prefix, 
                                                    src, arch, compilers, SOURCES)
 
-    def verify(self):
+    def _verify(self):
         libraries = LIBS.get(self.arch, LIBS[None])
-        return super(LibunwindInstallation,self).verify(libraries=libraries)
+        return super(LibunwindInstallation,self)._verify(libraries=libraries)
 
     def make(self, flags=[], env={}, parallel=True):
         """Build libunwind.
