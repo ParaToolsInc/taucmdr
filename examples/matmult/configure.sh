@@ -53,6 +53,7 @@ tau measurement create "ex-profile"
 tau measurement create "ex-trace" --profile=F --trace=T
 tau measurement create "ex-sample" --profile=F --sample=T
 tau measurement create "p-keep" --keep-inst-files=T
+tau measurement create "no-io" --io=F
 
 # Set up example project
 tau project create "ex-mm" \
