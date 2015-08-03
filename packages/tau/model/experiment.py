@@ -45,7 +45,6 @@ from tau.model.trial import Trial
 from tau.model.compiler_command import CompilerCommand
 from tau.cf.tau import TauInstallation
 from tau.cf.compiler.installed import InstalledCompiler
-from tau.cf.compiler import CompilerSet
 
 LOGGER = logger.getLogger(__name__)
 

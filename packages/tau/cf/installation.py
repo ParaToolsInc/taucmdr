@@ -352,14 +352,19 @@ class AutotoolsInstallation(Installation):
             SoftwarePackageError: Installation failed.
         """
         if not self.src:
-            return self.verify()
+            try:
+                return self.verify()
+            except SoftwarePackageError as err:
+                raise SoftwarePackageError("%s is missing or broken: %s" % (self.name, err),
+                                           "Specify source code path or URL to enable broken package reinstallation.")
         elif not force_reinstall:
             try:
                 return self.verify()
             except SoftwarePackageError as err:
                 LOGGER.debug(err)
-        LOGGER.debug("Installing %s at '%s' from '%s' with arch=%s" %
-                     (self.name, self.install_prefix, self.src, self.arch))
+                LOGGER.info("%s is missing or broken" % self.name)
+        LOGGER.info("Installing %s at '%s' from '%s' with arch=%s and %s compilers" %
+                    (self.name, self.install_prefix, self.src, self.arch, self.compilers.CC.family))
 
         self._prepare_src()
         
@@ -384,5 +389,5 @@ class AutotoolsInstallation(Installation):
             del self._src_path
 
         # Verify the new installation
-        LOGGER.info('%s installation complete', self.name)
-        return self.verify()            
+        LOGGER.info("%s installation complete, verifying installation", self.name)
+        return self.verify()

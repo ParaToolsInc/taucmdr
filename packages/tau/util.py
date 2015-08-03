@@ -262,6 +262,8 @@ def createSubprocess(cmd, cwd=None, env=None, stdout=True, log=True):
                             stderr=subprocess.STDOUT,
                             bufsize=1)
     with proc.stdout:
+        # Use iter to avoid hidden read-ahead buffer bug in named pipes:
+        # http://bugs.python.org/issue3907
         for line in iter(proc.stdout.readline, b''):
             if log:
                 LOGGER.debug(line[:-1])

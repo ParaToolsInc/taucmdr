@@ -62,27 +62,6 @@ class Compiler(object):
         return str(dict([(key, val) for (key, val) in self.__dict__.iteritems() if not key.startswith('_')]))
 
 
-class CompilerSet(object):
-    """A collection of Compiler objects, one per required role.
-    
-    Attributes:
-        name: Identifier (hopefully unique) for this combination of compilers.
-        CC: Compiler in the 'CC' role
-        CXX: Compiler in the 'CXX' role
-        etc.
-    """
-    def __init__(self, name, **kwargs):
-        self.name = name
-        missing_roles = set([role.keyword for role in REQUIRED_ROLES])
-        for key, comp in kwargs.iteritems():
-            if key not in KNOWN_ROLES:
-                raise InternalError("Invalid role: %s" % role)
-            setattr(self, key, comp)
-            missing_roles.remove(key)
-        for role in missing_roles:
-            raise InternalError("Required role %s not defined" % role)
-
-
 SYSTEM_FAMILY_NAME = 'System'
 GNU_FAMILY_NAME = 'GNU'
 INTEL_FAMILY_NAME = 'Intel'
@@ -93,7 +72,7 @@ MPI_FAMILY_NAME = 'MPI'
 Compiler commands TAU Commander can recognize.
 Fuzzy matching is allowed, e.g. "gcc-4.3" will match to "gcc" 
 so don't litter this list with lots of variants.
-"""    
+"""
 KNOWN_COMPILERS = {
     'cc': Compiler('cc', SYSTEM_FAMILY_NAME, CC_ROLE),
     'cxx': Compiler('cxx', SYSTEM_FAMILY_NAME, CXX_ROLE),

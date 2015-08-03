@@ -41,9 +41,9 @@ import subprocess
 from tau import logger
 from tau.arguments import ParsePackagePathAction
 from tau.controller import Controller, ByName
-from tau.error import ConfigurationError
-from tau.cf.compiler import CompilerSet
-from tau.cf.compiler.role import ALL_ROLES
+from tau.error import ConfigurationError, InternalError
+from tau.cf.compiler.set import CompilerSet
+from tau.cf.compiler.role import ALL_ROLES, REQUIRED_ROLES
 
 
 LOGGER = logger.getLogger(__name__)
@@ -259,4 +259,7 @@ class Target(Controller, ByName):
                 continue
             compilers[role.keyword] = compiler_command.info()
             eids.append(str(compiler_command.eid))
+        missing = [role.keyword for role in REQUIRED_ROLES if role.keyword not in compilers]
+        if missing:
+            raise InternalError("Target '%s' is missing required compilers: %s" % (self['name'], missing))
         return CompilerSet(''.join(eids), **compilers)
