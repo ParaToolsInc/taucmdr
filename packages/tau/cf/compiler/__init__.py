@@ -36,12 +36,17 @@
 #"""
 # pylint: disable=too-few-public-methods
 
+from tau import logger
 from tau.error import ConfigurationError, InternalError
 from tau.cf.compiler.role import *
+
+LOGGER = logger.getLogger(__name__)
 
 
 class Compiler(object):
     """Information about a compiler.
+    
+    The compiler might not be installed in the system.  See InstalledCompiler.  
     
     Attributes:
         command: Compiler command without path, e.g. 'icpc'
@@ -51,11 +56,15 @@ class Compiler(object):
         short_descr: A short descriptive string for command line help
     """
     
-    def __init__(self, command, family, role):
+    def __init__(self, command, family=None, role=None):
         from cf.tau import COMPILER_WRAPPERS
         self.command = command
-        self.family = family
-        self.role = role
+        if not family:
+            family = self.known_info().family
+        if not role:
+            role = self.known_info().role
+        self.family = family  
+        self.role = role  
         self.tau_wrapper = COMPILER_WRAPPERS[role.keyword]
         self.short_descr = "%s %s compiler" % (self.family, role.language)
     
@@ -63,6 +72,23 @@ class Compiler(object):
         return str(dict([(key, val) for (key, val) in self.__dict__.iteritems() 
                          if not key.startswith('_')]))
 
+    def known_info(self):
+        """TODO: Docs
+        """
+        try:
+            info = KNOWN_COMPILERS[self.command]
+        except KeyError:
+            matches = [name for name in KNOWN_COMPILERS.iterkeys() if name in self.command]
+            if not matches:
+                raise ConfigurationError("Unknown compiler command: '%s'" % self.command)
+            else:
+                # TODO: This "longest match is best match" logic is a bit hacky. 
+                # TODO: Would be better to actually probe the compiler somehow, e.g.
+                # TODO: compile a file and read information from compiler output
+                close_command = max(matches, key=len)
+                LOGGER.debug("Matched '%s' to '%s' from %s" % (self.command, close_command, matches))
+                info = KNOWN_COMPILERS[close_command]
+        return info
 
 SYSTEM_FAMILY_NAME = 'System'
 GNU_FAMILY_NAME = 'GNU'
@@ -105,3 +131,4 @@ for _ in KNOWN_COMPILERS.itervalues():
     fam = _.family
     KNOWN_FAMILIES.setdefault(fam, [])
     KNOWN_FAMILIES[fam].append(_)
+    

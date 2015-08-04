@@ -54,6 +54,9 @@ class CompilerRole(object):
 
     def __eq__(self, other):
         return isinstance(other, CompilerRole) and (other.keyword == self.keyword)
+    
+    def __len__(self):
+        return len(self.keyword)
 
 
 CC_ROLE = CompilerRole('CC', 'C', True)

@@ -107,9 +107,9 @@ def main(argv):
                 ('Host OS', 'c', 'host_os'),
                 ('Host Arch.', 'c', 'host_arch'),
                 ('Device Arch.', 'c', 'device_arch'),
-                ('C', 'l', 'CC'),
-                ('C++', 'l', 'CXX'),
-                ('Fortran', 'l', 'FC'),
+                ('C', 'l', None),
+                ('C++', 'l', None),
+                ('Fortran', 'l', None),
                 ('In Projects', 'l', None)]
         headers = [header for header, _, _ in cols]
         rows = [headers]
@@ -123,8 +123,11 @@ def main(argv):
             for t in found:
                 populated = t.populate()
                 projects = ', '.join([p['name'] for p in populated['projects']])
+                cc = populated['CC']['path']
+                cxx = populated['CXX']['path']
+                fc = populated['FC']['path']
                 row = [populated.get(attr, '')
-                       for _, _, attr in cols if attr] + [projects]
+                       for _, _, attr in cols if attr] + [cc, cxx, fc, projects]
                 rows.append(row)
             table.set_cols_align([align for _, align, _ in cols])
             table.add_rows(rows)

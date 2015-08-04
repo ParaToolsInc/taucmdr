@@ -42,8 +42,8 @@ import os
 import hashlib
 from tau import logger, util
 from tau.error import ConfigurationError
-from tau.cf.compiler import Compiler, KNOWN_COMPILERS, KNOWN_FAMILIES
-from tau.cf.compiler.role import *
+from tau.cf.compiler import Compiler, KNOWN_FAMILIES
+from tau.cf.compiler.role import CC_ROLE, CXX_ROLE, FC_ROLE, REQUIRED_ROLES
 
 LOGGER = logger.getLogger(__name__)
 
@@ -65,7 +65,6 @@ class InstalledCompiler(Compiler):
         binary file so we can recognize if it changes.
         """
         LOGGER.debug("Identifying compiler: %s" % compiler_cmd)
-        command = os.path.basename(compiler_cmd)
         abspath = util.which(compiler_cmd)
         if not abspath:
             raise ConfigurationError("'%s' missing or not executable." % compiler_cmd,
@@ -73,28 +72,19 @@ class InstalledCompiler(Compiler):
         if not util.file_accessible(abspath):
             raise ConfigurationError("Compiler '%s' not readable." % abspath, 
                                      "Check file permissions on '%s'" % abspath)
-        try:
-            info = KNOWN_COMPILERS[command]
-        except KeyError:
-            LOGGER.debug("'%s' not known by name, attempting fuzzy match" % command)
-            matches = [name for name in KNOWN_COMPILERS.iterkeys() if name in command]
-            if not matches: 
-                raise ConfigurationError("Unknown compiler command: '%s'" % compiler_cmd)
-            else:
-                # TODO: This "longest match is best match" logic is a bit hacky. 
-                # TODO: Would be better to actually probe the compiler somehow, e.g.
-                # TODO: compile a file and read information from compiler output
-                close_command = max(matches, key=len)
-                LOGGER.debug("Matched '%s' to '%s' from %s" % (command, close_command, matches))
-                info = KNOWN_COMPILERS[close_command]
         md5sum = hashlib.md5()
         with open(abspath, 'r') as compiler_file:
             md5sum.update(compiler_file.read())
-        # All fields found, finally initialize this object
-        super(InstalledCompiler,self).__init__(command, info.family, info.role)
+        # Executable found, initialize this object
+        super(InstalledCompiler,self).__init__(os.path.basename(compiler_cmd))
         self.path = os.path.dirname(abspath)
         self.absolute_path = os.path.join(self.path, self.command)
         self.md5sum = md5sum.hexdigest()
+        from tau.cf.compiler.wrapped import WrappedCompiler
+        try:
+            self.wrapped = WrappedCompiler(self)
+        except NotImplementedError:
+            self.wrapped = None
 
     def get_siblings(self):
         """Gets all compilers in this compiler's family.
@@ -127,8 +117,8 @@ class InstalledCompiler(Compiler):
             found.extend([comp for comp in family if comp.role != self.role])
         return found
 
-    @classmethod
-    def get_default(cls, role):
+    @staticmethod
+    def get_default(role):
         """Gets the default compiler for the specified role.
         
         Args:
@@ -152,8 +142,8 @@ class InstalledCompiler(Compiler):
             raise ConfigurationError("No default compiler %s compiler identified." % role.language)
         return InstalledCompiler(default_cmd)
     
-    @classmethod
-    def get_family(cls, family):
+    @staticmethod
+    def get_family(family):
         """Gets all installed compilers in a compiler family.
     
         Args:
@@ -172,23 +162,24 @@ class InstalledCompiler(Compiler):
         except KeyError:
             raise ConfigurationError("Invalid compiler family: %s" % family,
                                      "Known families: " % KNOWN_FAMILIES.keys())
-        missing_roles = dict(zip(REQUIRED_ROLES, [None]*len(REQUIRED_ROLES)))
+        missing_roles = list(REQUIRED_ROLES)
+        missing_err = {}
         found = []
         for comp in family:
             try:
                 installed = InstalledCompiler(comp.command)
-            except RuntimeError as err:
+            except ConfigurationError as err:
                 # A compiler wasn't found in PATH, but that's OK because 
                 # another compiler may provide the missing role
-                LOGGER.debug("'%s' not found, skipping" % comp.command)
-                missing_roles[comp.role] = str(err)
+                LOGGER.debug("Skipping '%s': %s" % (comp.command, err))
+                missing_err[comp.role] = err
                 continue
             else:
                 found.append(installed)
-                try: del missing_roles[comp.role]
-                except KeyError: pass
+                try: missing_roles.remove(comp.role)
+                except ValueError: pass
         if missing_roles:
-            raise ConfigurationError("One or more compiler roles could not be filled:\n%s" % 
-                                     util.pformat_dict(missing_roles, indent=2),
+            raise ConfigurationError("One or more compiler roles could not be filled:\n%s" %
+                                     util.pformat_dict(missing_err, indent=2),
                                      "Update your PATH, load environment modules, or install missing compilers.")
         return found

@@ -37,52 +37,65 @@
 
 import subprocess
 from tau import logger
-from tau.error import InternalError
+from tau.cf.compiler import MPI_FAMILY_NAME
 from tau.cf.compiler.installed import InstalledCompiler
 
 LOGGER = logger.getLogger(__name__)
 
-
-class MpiInstalledCompiler(InstalledCompiler):
-    """
-    TODO: Docs
+class WrappedCompiler(InstalledCompiler):
+    """Information on a compiler wrapped by another compiler.
+    
+    Attributes:
+        wrapper: InstalledCompiler object for the compiler command wrapping this compiler
+        include_path: List of paths to search for header files
+        library_path: List of paths to search for library files
+        compiler_flags: List of additional compiler flags
+        linker_flags: List of additional linker flags
     """   
-    def __init__(self, compiler_cmd):
+    def __init__(self, wrapper):
+        self.wrapper = wrapper
+        if wrapper.family == MPI_FAMILY_NAME:
+            wrapped_cmd = self._mpi_identify_wrapped()
+        else:
+            raise NotImplementedError
+        super(WrappedCompiler,self).__init__(wrapped_cmd)
+
+    def _mpi_identify_wrapped(self):
         """
-        Discovers information about the compiler wrapped by this MPI compiler
+        Discovers information about an MPI compiler command wrapping another compiler.
         """ 
-        super(MpiInstalledCompiler,self).__init__(compiler_cmd)
-        LOGGER.debug("Probing MPI compiler '%s' to discover wrapped compiler" % self.command)
-        cmd = [self.absolute_path, '-show']
+        LOGGER.debug("Probing MPI compiler '%s' to discover wrapped compiler" % self.wrapper.command)
+        cmd = [self.wrapper.absolute_path, '-show']
         LOGGER.debug("Creating subprocess: cmd=%s" % cmd)
         try:
             stdout = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as err:
-            raise InternalError("%s failed with return code %d: %s" % 
-                                (cmd, err.returncode, err.output))
+            raise RuntimeError("%s failed with return code %d: %s" % 
+                               (cmd, err.returncode, err.output))
         else:
             LOGGER.debug(stdout)
             LOGGER.debug("%s returned 0" % cmd)
 
         parts = stdout.split()
         try:
-            self.wrapped = InstalledCompiler(parts[0])
+            wrapped_cmd = parts[0]
         except IndexError:
-            raise InternalError("Unexpected output from %s: %s" % (cmd, stdout))
-        LOGGER.info("Determined %s is wrapping %s (%s)" % 
-                    (self.absolute_path, self.wrapped.short_descr, self.wrapped.absolute_path))
+            raise RuntimeError("Unexpected output from %s: %s" % (cmd, stdout))
 
         self.include_path = []
         self.library_path = []
-        self.libraries = []
+        self.compiler_flags = []
+        self.linker_flags = []
         for part in parts[1:]:
             if part.startswith('-I'):
                 self.include_path.append(part[2:])
             elif part.startswith('-L'):
                 self.library_path.append(part[2:])
             elif part.startswith('-l'):
-                self.libraries.append(part)
-
+                self.linker_flags.append(part)
+            else:
+                self.compiler_flags.append(part)
         LOGGER.debug("MPI include path: %s" % self.include_path)
         LOGGER.debug("MPI library path: %s" % self.library_path)
-        LOGGER.debug("MPI libraries: %s" % self.libraries)
+        LOGGER.debug("MPI linker flags: %s" % self.linker_flags)
+        return wrapped_cmd

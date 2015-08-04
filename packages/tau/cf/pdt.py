@@ -119,14 +119,8 @@ class PdtInstallation(AutotoolsInstallation):
                         'Intel': '-icpc', 
                         'PGI': '-pgCC',
                         None: ''}
-        if self.compilers.CXX.family == 'MPI':
-            try:
-                wrapped = self.compilers.cxx.identify_wrapped()
-            except ConfigurationError:
-                LOGGER.debug("Couldn't identify compiler wrapped by %s, defaulting to GNU compilers" % self.compilers.cxx)
-                family = 'GNU'
-            else:
-                family = wrapped.family
+        if self.compilers.CXX.wrapped:
+            family = self.compilers.CXX.wrapped.family
         else:
             family = self.compilers.CXX.family
         compiler_flag = family_flags.get(family, family_flags[None])

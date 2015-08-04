@@ -179,6 +179,9 @@ class Experiment(Controller):
                                    openmp_support=application['openmp'],
                                    pthreads_support=application['pthreads'],
                                    mpi_support=application['mpi'],
+                                   mpi_include_path=target['mpi_include_path'],
+                                   mpi_library_path=target['mpi_library_path'],
+                                   mpi_linker_flags=target['mpi_linker_flags'],
                                    cuda_support=application['cuda'],
                                    shmem_support=application['shmem'],
                                    mpc_support=application['mpc'],
@@ -225,7 +228,7 @@ class Experiment(Controller):
                                      "Select a different target or compile with '%s'" % 
                                      target_compiler.absolute_path)
         self.configure()
-        self.tau.compile(given_compiler.info(), compiler_args)
+        self.tau.compile(given_compiler, compiler_args)
         
     def managedRun(self, application_cmd, application_args):
         """

@@ -179,26 +179,34 @@ class Target(Controller, ByName):
                          'metavar': '<path>',
                          'action': ParsePackagePathAction},
         },
-        'mpi_incdir': {
-            'type': 'string',
-            'description': 'path to directory containing MPI header files',
-            'argparse': {'flags': ('--mpi-inc',),
-                         'group': 'Message Passing Interface (MPI)',
-                         'metavar': '<path>',
-                         'action': ParsePackagePathAction},
-        },
-        'mpi_libdir': {
-            'type': 'string',
-            'description': 'path to MPI directory containing MPI library files',
-            'argparse': {'flags': ('--mpi-lib',),
-                         'group': 'Message Passing Interface (MPI)',
-                         'metavar': '<path>',
-                         'action': ParsePackagePathAction},
-        },
-        'mpi_ldflags': {
+        'mpi_include_path': {
             'type': 'array',
-            'description': 'additional linker flags required by MPI ',
-            'argparse': {'flags': ('--mpi-ldflags',),
+            'description': 'paths to search for MPI header files when building MPI applications',
+            'argparse': {'flags': ('--mpi-include-paths',),
+                         'group': 'Message Passing Interface (MPI)',
+                         'metavar': '<path>',
+                         'action': ParsePackagePathAction},
+        },
+        'mpi_library_path': {
+            'type': 'array',
+            'description': 'paths to search for MPI library files when building MPI applications',
+            'argparse': {'flags': ('--mpi-library-paths',),
+                         'group': 'Message Passing Interface (MPI)',
+                         'metavar': '<path>',
+                         'action': ParsePackagePathAction},
+        },
+        'mpi_compiler_flags': {
+            'type': 'array',
+            'description': 'additional compiler flags required to build MPI applications',
+            'argparse': {'flags': ('--mpi-compiler-flags',),
+                         'group': 'Message Passing Interface (MPI)',
+                         'metavar': '<flag>',
+                         'nargs': '+'},
+        },
+        'mpi_linker_flags': {
+            'type': 'array',
+            'description': 'additional linker flags required to build MPI applications',
+            'argparse': {'flags': ('--mpi-linker-flags',),
                          'group': 'Message Passing Interface (MPI)',
                          'metavar': '<flag>',
                          'nargs': '+'},
@@ -284,4 +292,4 @@ class Target(Controller, ByName):
         missing = [role.keyword for role in REQUIRED_ROLES if role.keyword not in compilers]
         if missing:
             raise InternalError("Target '%s' is missing required compilers: %s" % (self['name'], missing))
-        return CompilerSet(''.join(eids), **compilers)
+        return CompilerSet('_'.join(eids), **compilers)

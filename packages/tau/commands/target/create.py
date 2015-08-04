@@ -35,6 +35,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
+import os
 from tau import logger, commands, arguments 
 from tau.error import ConfigurationError
 from tau.controller import UniqueAttributeError
@@ -43,6 +44,7 @@ from tau.model.compiler_command import CompilerCommand
 from tau.cf.compiler import KNOWN_FAMILIES, KNOWN_ROLES, MPI_FAMILY_NAME
 from tau.cf.compiler.installed import InstalledCompiler
 from tau.cf.compiler.role import REQUIRED_ROLES
+from cf.compiler.role import CC_ROLE
 
  
 
@@ -88,16 +90,16 @@ def parse_compiler_flags(args):
         args: Argument namespace containing command line arguments
         
     Returns:
-        Dictionary of InstalledCompiler objects.
+        Dictionary of installed compilers by role keyword string.
         
     Raises:
         ConfigurationError: Invalid command line arguments specified
     """
     try:
         family = InstalledCompiler.get_family(args.family)
-    except AttributeError:
+    except AttributeError as err:
         # args.family missing, but that's OK since args.CC etc. are possibly given instead
-        pass
+        LOGGER.debug(err)
     else:
         compilers = {}
         for comp in family:
@@ -164,8 +166,31 @@ def main(argv):
     # Target model doesn't define a 'family' attribute
     try: del flags['family']
     except KeyError: pass
-
+    
     compilers = parse_compiler_flags(args)
+    if compilers[CC_ROLE.keyword].family == MPI_FAMILY_NAME:
+        mpi_include_path = set()
+        mpi_library_path = set()
+        mpi_compiler_flags = set()
+        mpi_linker_flags = set()
+        for comp in compilers.itervalues():
+            mpi_include_path |= set(comp.wrapped.include_path)
+            mpi_library_path |= set(comp.wrapped.library_path)
+            mpi_compiler_flags |= set(comp.wrapped.compiler_flags)
+            mpi_linker_flags |= set(comp.wrapped.linker_flags)
+        if 'mpi_include_path' not in flags:
+            flags['mpi_include_path'] = list(mpi_include_path) 
+            LOGGER.info("Autodetected MPI include path: %s" % os.pathsep.join(mpi_include_path))
+        if 'mpi_library_path' not in flags:
+            flags['mpi_library_path'] = list(mpi_library_path)
+            LOGGER.info("Autodetected MPI library path: %s" % os.pathsep.join(mpi_library_path))
+        if 'mpi_compiler_flags' not in flags:
+            flags['mpi_compiler_flags'] = list(mpi_compiler_flags)
+            LOGGER.info("Autodetected MPI compiler flags: %s" % ' '.join(mpi_compiler_flags))
+        if 'mpi_linker_flags' not in flags:
+            flags['mpi_linker_flags'] = list(mpi_linker_flags)
+            LOGGER.info("Autodetected MPI linker flags: %s" % ' '.join(mpi_linker_flags))
+    
     for role, comp in compilers.iteritems():
         LOGGER.debug("%s=%s (%s)" % (role, comp.absolute_path, comp.short_descr))
         record = CompilerCommand.from_info(comp)
