@@ -9,22 +9,7 @@ fi
 set +x
 
 # Example targets
-target_name="ex-`echo $HOSTNAME | cut -d. -f1`"
-tau target create "$target_name"
-#user_name="`users`"
-
-#sv_sys=false
-#if [[ $target_name == *"Para"* ]] && [[ $user_name == *"srinath"* ]]
-#then
-#  sv_sys=true;
-#  echo "This is a srinathv Paratools system"
-#fi
-
-#if on srinath systems:
-#if $sv_sys; then
-#  echo "** making gcc5 a target with now bfd and libunwind"
-#  tau target create gcc5 --compilers=GNU --with-bfd=False --with-libunwind=False
-#fi
+tau target create localhost
 
 # Example applications
 tau application create "ex-mm-serial"
@@ -37,14 +22,7 @@ tau measurement create "ex-trace" --profile=F --trace=T
 tau measurement create "ex-sample" --source-inst=never --compiler-inst=never --sample=T
 
 # Set up example project
-tau project create "ex-mm" $target_name ex-mm-serial ex-mm-openmp ex-mm-openmp-mpi ex-profile ex-trace ex-sample
+tau project create "ex-mm" localhost ex-mm-serial ex-mm-openmp ex-mm-openmp-mpi ex-profile ex-trace ex-sample
 tau project select ex-mm ex-mm-openmp ex-profile
   
-
-#if $sv_sys; then
-#  echo "** making gcc target part of project"
-#  tau project edit ex-mm --add-targets gcc5
-#  tau project edit ex-mm --add-measurement p-keep
-#fi
-
 tau dashboard
