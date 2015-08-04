@@ -1,4 +1,4 @@
-CC = gcc
+CC = tau gcc
 RM = /bin/rm -rf
 
 TARGET = matmult
