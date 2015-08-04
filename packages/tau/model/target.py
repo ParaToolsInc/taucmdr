@@ -181,6 +181,7 @@ class Target(Controller, ByName):
         },
         'mpi_include_path': {
             'type': 'array',
+            'default': None,
             'description': 'paths to search for MPI header files when building MPI applications',
             'argparse': {'flags': ('--mpi-include-paths',),
                          'group': 'Message Passing Interface (MPI)',
@@ -189,6 +190,7 @@ class Target(Controller, ByName):
         },
         'mpi_library_path': {
             'type': 'array',
+            'default': None,
             'description': 'paths to search for MPI library files when building MPI applications',
             'argparse': {'flags': ('--mpi-library-paths',),
                          'group': 'Message Passing Interface (MPI)',
@@ -197,6 +199,7 @@ class Target(Controller, ByName):
         },
         'mpi_compiler_flags': {
             'type': 'array',
+            'default': None,
             'description': 'additional compiler flags required to build MPI applications',
             'argparse': {'flags': ('--mpi-compiler-flags',),
                          'group': 'Message Passing Interface (MPI)',
@@ -205,6 +208,7 @@ class Target(Controller, ByName):
         },
         'mpi_linker_flags': {
             'type': 'array',
+            'default': None,
             'description': 'additional linker flags required to build MPI applications',
             'argparse': {'flags': ('--mpi-linker-flags',),
                          'group': 'Message Passing Interface (MPI)',

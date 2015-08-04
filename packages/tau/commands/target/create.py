@@ -178,16 +178,16 @@ def main(argv):
             mpi_library_path |= set(comp.wrapped.library_path)
             mpi_compiler_flags |= set(comp.wrapped.compiler_flags)
             mpi_linker_flags |= set(comp.wrapped.linker_flags)
-        if 'mpi_include_path' not in flags:
+        if not flags['mpi_include_path']:
             flags['mpi_include_path'] = list(mpi_include_path) 
             LOGGER.info("Autodetected MPI include path: %s" % os.pathsep.join(mpi_include_path))
-        if 'mpi_library_path' not in flags:
+        if not flags['mpi_library_path']:
             flags['mpi_library_path'] = list(mpi_library_path)
             LOGGER.info("Autodetected MPI library path: %s" % os.pathsep.join(mpi_library_path))
-        if 'mpi_compiler_flags' not in flags:
+        if not flags['mpi_compiler_flags']:
             flags['mpi_compiler_flags'] = list(mpi_compiler_flags)
             LOGGER.info("Autodetected MPI compiler flags: %s" % ' '.join(mpi_compiler_flags))
-        if 'mpi_linker_flags' not in flags:
+        if not flags['mpi_linker_flags']:
             flags['mpi_linker_flags'] = list(mpi_linker_flags)
             LOGGER.info("Autodetected MPI linker flags: %s" % ' '.join(mpi_linker_flags))
     

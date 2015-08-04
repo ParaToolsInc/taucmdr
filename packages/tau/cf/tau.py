@@ -309,8 +309,8 @@ class TauInstallation(Installation):
 
         # TAU has a really hard time detecting MPI settings in its configure script
         # so set up mpiinc, mpilib, mpilibrary when we have that information
+        mpiinc = None
         if self.mpi_include_path:
-            mpiinc = None
             # TODO: TAU's configure script can only accept one path on -mpiinc
             for path in self.mpi_include_path:
                 if os.path.exists(os.path.join(path, 'mpi.h')):
@@ -318,8 +318,10 @@ class TauInstallation(Installation):
                     break
             if not mpiinc:
                 raise ConfigurationError("mpi.h not found on MPI include path: %s" % self.mpi_include_path)
+        mpilib = None
         if self.mpi_library_path:
             mpilib = self.mpi_library_path[0]
+        mpilibrary = None
         if self.mpi_linker_flags:
             mpilibrary = '#'.join(self.mpi_linker_flags)
 
