@@ -243,7 +243,7 @@ class Experiment(Controller):
         cmd, env = self.tau.get_application_command(application_cmd, application_args)
         return Trial.perform(self, cmd, cwd, env)
 
-    def show(self, trial_numbers=None):
+    def show(self, tool_name=None, trial_numbers=None):
         """
         Show most recent trial or all trials with given numbers
         """
@@ -274,4 +274,4 @@ class Experiment(Controller):
             if not profiles:
                 profiles = glob.glob(os.path.join(prefix, 'MULTI__*'))
             if profiles:
-                self.tau.show_profile(prefix)
+                self.tau.show_profile(prefix, tool_name)

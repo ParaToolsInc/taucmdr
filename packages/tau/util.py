@@ -79,6 +79,8 @@ def which(program):
     Returns:
         Full path to program or None if program can't be found.
     """
+    if not program:
+        return None
     def is_exec(fpath):
         return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
     fpath, _ = os.path.split(program)

@@ -639,24 +639,28 @@ class TauInstallation(Installation):
         return cmd, env
 
 
-    def show_profile(self, path):
+    def show_profile(self, path, tool_name=None):
         """
         Shows profile data in the specified file or folder
         """
         LOGGER.debug("Showing profile files at '%s'" % path)
         _, env = super(TauInstallation,self).runtime_config()
-        for viewer in 'paraprof', 'pprof':
+        if tool_name:
+            tools = [tool_name]
+        else:
+            tools = ['paraprof', 'pprof']
+        for tool in tools:
             if os.path.isfile(path):
-                cmd = [viewer, path]
+                cmd = [tool, path]
             else:
-                cmd = [viewer]
-            LOGGER.info("Opening %s in %s" % (path, viewer))
+                cmd = [tool]
+            LOGGER.info("Opening %s in %s" % (path, tool))
             retval = util.createSubprocess(cmd, cwd=path, env=env, log=False)
             if retval == 0:
                 return
             else:
-                LOGGER.warning("%s failed" % viewer)
+                LOGGER.warning("%s failed" % tool)
         if retval != 0:
-            raise ConfigurationError("All viewers failed to open '%s'" % path,
-                                     "Check that `java` is working, X11 is working,"
+            raise ConfigurationError("All visualization or reporting tools failed to open '%s'" % path,
+                                     "Check Java installation, X11 installation,"
                                      " network connectivity, and file permissions")
