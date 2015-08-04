@@ -43,15 +43,15 @@ class CompilerSet(object):
     """A collection of Compiler objects, one per required role.
     
     Attributes:
-        name: Identifier (hopefully unique) for this combination of compilers.
+        uid: Unique identifier (hopefully) for this combination of compilers.
         CC: Compiler in the 'CC' role
         CXX: Compiler in the 'CXX' role
         etc.
     """
     # pylint: disable=too-few-public-methods
     
-    def __init__(self, name, **kwargs):
-        self.name = name
+    def __init__(self, uid, **kwargs):
+        self.uid = uid
         missing_roles = set([role.keyword for role in REQUIRED_ROLES])
         for key, comp in kwargs.iteritems():
             if key not in KNOWN_ROLES:

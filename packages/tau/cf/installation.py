@@ -98,7 +98,7 @@ class Installation(object):
             self.src_prefix = None
             self.src = None
         else:
-            self.install_prefix = os.path.join(prefix, name, compilers.name)
+            self.install_prefix = os.path.join(prefix, arch, compilers.uid, name)
             self.src_prefix = os.path.join(prefix, 'src')
             if src and src.lower() == 'download':
                 self.src = sources.get(arch, sources[None])
