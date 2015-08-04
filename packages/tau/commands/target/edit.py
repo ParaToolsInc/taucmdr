@@ -35,8 +35,14 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
+import os
 from tau import logger, commands, arguments
+from tau.error import ConfigurationError
 from tau.model.target import Target
+from tau.model.compiler_command import CompilerCommand
+from tau.cf.compiler import KNOWN_FAMILIES
+from tau.cf.compiler.installed import InstalledCompiler
+from tau.cf.compiler.role import REQUIRED_ROLES
 
 
 LOGGER = logger.getLogger(__name__)
@@ -62,6 +68,13 @@ PARSER.add_argument('--rename',
                     help="Rename the target configuration",
                     metavar='<new_name>', dest='new_name',
                     default=arguments.SUPPRESS)
+group = PARSER.getGroup('compiler arguments')
+group.add_argument('--compilers',
+                   help="Select all compilers automatically from the given family",
+                   metavar='<family>',
+                   dest='family',
+                   default=arguments.SUPPRESS,
+                   choices=KNOWN_FAMILIES.keys())
 
 
 def getUsage():
@@ -72,6 +85,58 @@ def getHelp():
     return HELP
 
 
+def parse_compiler_flags(args, compilers):
+    """Parses compiler flags out of the command line arguments.
+    
+    Args:
+        args: Argument namespace containing command line arguments
+        old_compilers: Dictionary mapping role keyword strings to InstalledCompiler objects.
+        
+    Returns:
+        List of InstalledCompiler objects.
+        
+    Raises:
+        ConfigurationError: Invalid command line arguments specified
+    """
+    try:
+        family = InstalledCompiler.get_family(args.family)
+    except AttributeError:
+        # args.family missing, but that's OK since args.CC etc. are possibly given instead
+        pass
+    else:
+        compilers = {}
+        for comp in family:
+            key = comp.role.keyword
+            if key not in compilers:
+                compilers[key] = comp
+        return compilers.values()
+
+    languages = dict([(role.keyword, role.language) for role in REQUIRED_ROLES])
+    compiler_keys = set(languages.keys())
+    all_keys = set(args.__dict__.keys())
+    given_keys = compiler_keys & all_keys
+    LOGGER.debug("Given keys: %s" % given_keys)
+
+    new_compilers = [InstalledCompiler(getattr(args, key)) for key in given_keys]
+    for comp in new_compilers:
+        compilers[comp.role.keyword] = comp
+
+    # Check that all compilers are from the same compiler family
+    # TODO: This is a TAU requirement.  When this is fixed in TAU we can remove this check
+    families = list(set([comp.family for comp in compilers.itervalues()]))
+    if len(families) != 1:
+        raise ConfigurationError("Compilers from different families specified: %s" % families,
+                                 "TAU requires all compilers to be from the same family")
+
+    # Check that each compiler is in the right role
+    for role, comp in compilers.iteritems():
+        if comp.role.keyword != role:
+            raise ConfigurationError("'%s' specified as %s compiler but it is a %s compiler" %
+                                     (comp.absolute_path, role.language, comp.role.language),
+                                     "See 'compiler arguments' under `%s --help`" % COMMAND)
+    return compilers.values()
+
+
 def main(argv):
     """
     Program entry point
@@ -80,19 +145,29 @@ def main(argv):
     LOGGER.debug('Arguments: %s' % args)
 
     name = args.name
-    if not Target.exists({'name': name}):
-        PARSER.error(
-            "'%s' is not an target name. Type `tau target list` to see valid names." % name)
+    found = Target.one(keys={'name': name})
+    if not found:
+        PARSER.error("'%s' is not an target name." % name)
 
-    updates = args.__dict__
+    updates = dict(args.__dict__)
+    # Target model doesn't define a 'family' attribute
+    try: del updates['family']
+    except KeyError: pass
+
     try:
-        new_name = args.new_name
+        name = args.new_name
     except AttributeError:
         pass
     else:
-        updates['name'] = new_name
+        updates['name'] = name
         del updates['new_name']
+    
+    old_compilers = dict([(role.keyword, CompilerCommand.one(eid=found[role.keyword]).info())
+                          for role in REQUIRED_ROLES])
+    compilers = parse_compiler_flags(args, old_compilers)
+    for comp in compilers:
+        record = CompilerCommand.from_info(comp)
+        updates[comp.role.keyword] = record.eid
 
-    Target.update(updates, {'name': name})
-
-    return commands.executeCommand(['target', 'list'], [args.name])
+    Target.update(updates, eids=found.eid)
+    return commands.executeCommand(['target', 'list'], [name])

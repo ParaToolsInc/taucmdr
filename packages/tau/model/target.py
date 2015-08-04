@@ -40,8 +40,10 @@ import platform
 import subprocess
 from tau import logger
 from tau.arguments import ParsePackagePathAction
-from tau.controller import Controller, ByName, ModelError
-from tau.error import ConfigurationError
+from tau.controller import Controller, ByName
+from tau.error import ConfigurationError, InternalError
+from tau.cf.compiler.set import CompilerSet
+from tau.cf.compiler.role import ALL_ROLES, REQUIRED_ROLES
 
 
 LOGGER = logger.getLogger(__name__)
@@ -72,29 +74,6 @@ def device_arch_default():
     return None
 
 
-def cc_default():
-    """
-    Detect target's default C compiler
-    """
-    # TODO
-    return 'gcc'
-
-
-def cxx_default():
-    """
-    Detect target's default C compiler
-    """
-    # TODO
-    return 'g++'
-
-
-def fc_default():
-    """
-    Detect target's default C compiler
-    """
-    # TODO
-    return 'gfortran'
-
 def libunwind_default():
     if host_arch_default() == 'apple':
         return None
@@ -124,7 +103,7 @@ class Target(Controller, ByName):
             'type': 'string',
             'required': True,
             'description': 'host operating system',
-            'defaultsTo': host_os_default(),
+            'default': host_os_default(),
             'argparse': {'flags': ('--host-os',),
                          'group': 'target system',
                          'metavar': 'os'}
@@ -133,7 +112,7 @@ class Target(Controller, ByName):
             'type': 'string',
             'required': True,
             'description': 'host architecture',
-            'defaultsTo': host_arch_default(),
+            'default': host_arch_default(),
             'argparse': {'flags': ('--host-arch',),
                          'group': 'target system',
                          'metavar': 'arch'}
@@ -141,52 +120,106 @@ class Target(Controller, ByName):
         'device_arch': {
             'type': 'string',
             'description': 'coprocessor architecture',
-            'defaultsTo': device_arch_default(),
+            'default': device_arch_default(),
             'argparse': {'flags': ('--device-arch',),
                          'group': 'target system',
                          'metavar': 'arch'}
         },
         'CC': {
-            'model': 'Compiler',
+            'model': 'CompilerCommand',
             'required': True,
             'description': 'C compiler command',
-            'defaultsTo': cc_default(),
             'argparse': {'flags': ('--cc',),
                          'group': 'compiler',
                          'metavar': '<command>'}
         },
         'CXX': {
-            'model': 'Compiler',
+            'model': 'CompilerCommand',
             'required': True,
             'description': 'C++ compiler command',
-            'defaultsTo': cxx_default(),
             'argparse': {'flags': ('--cxx', '--c++'),
                          'group': 'compiler',
                          'metavar': '<command>'}
         },
         'FC': {
-            'model': 'Compiler',
+            'model': 'CompilerCommand',
             'required': True,
             'description': 'Fortran compiler command',
-            'defaultsTo': fc_default(),
             'argparse': {'flags': ('--fc', '--fortran'),
+                         'group': 'compiler',
+                         'metavar': '<command>'}
+        },
+        'F77': {
+            'model': 'CompilerCommand',
+            'description': 'FORTRAN77 compiler command',
+            'argparse': {'flags': ('--f77',),
+                         'group': 'compiler',
+                         'metavar': '<command>'}
+        },
+        'F90': {
+            'model': 'CompilerCommand',
+            'description': 'Fortran90 compiler command',
+            'argparse': {'flags': ('--f90',),
+                         'group': 'compiler',
+                         'metavar': '<command>'}
+        },
+        'UPC': {
+            'model': 'CompilerCommand',
+            'description': 'Universal Parallel C compiler command',
+            'argparse': {'flags': ('--upc',),
                          'group': 'compiler',
                          'metavar': '<command>'}
         },
         'cuda': {
             'type': 'string',
             'description': 'path to NVIDIA CUDA installation',
-            'defaultsTo': None,
-            'argparse': {'flags': ('--with-cuda',),
+            'default': None,
+            'argparse': {'flags': ('--cuda',),
                          'group': 'software package',
                          'metavar': '<path>',
                          'action': ParsePackagePathAction},
         },
+        'mpi_include_path': {
+            'type': 'array',
+            'default': None,
+            'description': 'paths to search for MPI header files when building MPI applications',
+            'argparse': {'flags': ('--mpi-include-paths',),
+                         'group': 'Message Passing Interface (MPI)',
+                         'metavar': '<path>',
+                         'action': ParsePackagePathAction},
+        },
+        'mpi_library_path': {
+            'type': 'array',
+            'default': None,
+            'description': 'paths to search for MPI library files when building MPI applications',
+            'argparse': {'flags': ('--mpi-library-paths',),
+                         'group': 'Message Passing Interface (MPI)',
+                         'metavar': '<path>',
+                         'action': ParsePackagePathAction},
+        },
+        'mpi_compiler_flags': {
+            'type': 'array',
+            'default': None,
+            'description': 'additional compiler flags required to build MPI applications',
+            'argparse': {'flags': ('--mpi-compiler-flags',),
+                         'group': 'Message Passing Interface (MPI)',
+                         'metavar': '<flag>',
+                         'nargs': '+'},
+        },
+        'mpi_linker_flags': {
+            'type': 'array',
+            'default': None,
+            'description': 'additional linker flags required to build MPI applications',
+            'argparse': {'flags': ('--mpi-linker-flags',),
+                         'group': 'Message Passing Interface (MPI)',
+                         'metavar': '<flag>',
+                         'nargs': '+'},
+        },
         'tau_source': {
             'type': 'string',
             'description': 'path or URL to a TAU installation or archive file',
-            'defaultsTo': 'download',
-            'argparse': {'flags': ('--with-tau',),
+            'default': 'download',
+            'argparse': {'flags': ('--tau',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download)',
                          'action': ParsePackagePathAction}
@@ -194,8 +227,8 @@ class Target(Controller, ByName):
         'pdt_source': {
             'type': 'string',
             'description': 'path or URL to a PDT installation or archive file',
-            'defaultsTo': 'download',
-            'argparse': {'flags': ('--with-pdt',),
+            'default': 'download',
+            'argparse': {'flags': ('--pdt',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction},
@@ -203,8 +236,8 @@ class Target(Controller, ByName):
         'bfd_source': {
             'type': 'string',
             'description': 'path or URL to a GNU binutils installation or archive file',
-            'defaultsTo': 'download',
-            'argparse': {'flags': ('--with-bfd',),
+            'default': 'download',
+            'argparse': {'flags': ('--bfd',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction}
@@ -212,8 +245,8 @@ class Target(Controller, ByName):
         'libunwind_source': {
             'type': 'string',
             'description': 'path or URL to a libunwind installation or archive file',
-            'defaultsTo': libunwind_default(),
-            'argparse': {'flags': ('--with-libunwind',),
+            'default': libunwind_default(),
+            'argparse': {'flags': ('--libunwind',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction}
@@ -221,17 +254,17 @@ class Target(Controller, ByName):
         'papi_source': {
             'type': 'string',
             'description': 'path or URL to a PAPI installation or archive file',
-            'defaultsTo': None,
-            'argparse': {'flags': ('--with-papi',),
+            'default': None,
+            'argparse': {'flags': ('--papi',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction}
         },
-        'scorep_source': {
+        'score-p_source': {
             'type': 'string',
             'description': 'path or URL to a Score-P installation or archive file',
-            'defaultsTo': None,
-            'argparse': {'flags': ('--with-score-p',),
+            'default': None,
+            'argparse': {'flags': ('--score-p',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction}
@@ -243,3 +276,24 @@ class Target(Controller, ByName):
             libunwind_flag = self.attributes['libunwind_source']['argparse']['flags'][0]
             raise ConfigurationError("libunwind not supported on host architecture 'apple'",
                                      "Use %s=None" % libunwind_flag)
+        
+    
+    def get_compilers(self):
+        """Get Compiler objects for all compilers in this Target.
+        
+        Returns:
+            A CompilerSet with all required compilers set.
+        """
+        eids = []
+        compilers = {}
+        for role in ALL_ROLES:
+            try:
+                compiler_command = self.populate(role.keyword)
+            except KeyError:
+                continue
+            compilers[role.keyword] = compiler_command.info()
+            eids.append(str(compiler_command.eid))
+        missing = [role.keyword for role in REQUIRED_ROLES if role.keyword not in compilers]
+        if missing:
+            raise InternalError("Target '%s' is missing required compilers: %s" % (self['name'], missing))
+        return CompilerSet('_'.join(eids), **compilers)

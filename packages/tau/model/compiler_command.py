@@ -35,41 +35,51 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-
-from installation import AutotoolsInstallation
 from tau import logger
-
+from tau.controller import Controller
 
 LOGGER = logger.getLogger(__name__)
-
-SOURCES = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-1.1.tar.gz'}
  
-LIBS = {None: ['libunwind.a']}
+class CompilerCommand(Controller):
 
-
-class LibunwindInstallation(AutotoolsInstallation):
-    """Encapsulates a libunwind installation.
-    
-    libunwind is used for symbol resolution during sampling, compiler-based 
-    instrumentation, and other measurement approaches. 
+    """
+    CompilerCommand data model controller
     """
 
-    def __init__(self, prefix, src, arch, compilers):
-        super(LibunwindInstallation,self).__init__('libunwind', prefix, 
-                                                   src, arch, compilers, SOURCES)
+    attributes = {
+        'path': {
+            'type': 'string',
+            'required': True,
+            'unique': True,
+            'description': "absolute path to the compiler command"
+        },
+        'md5': {
+            'type': 'string',
+            'required': True,
+            'description': "checksum of the compiler command file"
+        }
+    }
 
-    def _verify(self):
-        libraries = LIBS.get(self.arch, LIBS[None])
-        return super(LibunwindInstallation,self)._verify(libraries=libraries)
-
-    def make(self, flags=[], env={}, parallel=True):
-        """Build libunwind.
+    def info(self):
+        """Probes the system for information on this compiler command.
         
-        libunwind's tests often fail to build but the library itself compiles
-        just fine, so we just keep pressing on to 'make install' even if 
-        'make' appears to have died.
+        Returns:
+            CompilerInfo for this compiler command.
         """
-        try:
-            super(LibunwindInstallation,self).make(flags, env, parallel)
-        except Exception as err:
-            LOGGER.debug("libunwind build failed, but continuing anyway: %s" % err)
+        from tau.cf.compiler.installed import InstalledCompiler
+        comp = InstalledCompiler(self['path'])
+        if comp.md5sum != self['md5']:
+            LOGGER.warning("%s '%s' has changed!" % (comp.short_descr, comp.command))
+            # TODO: What do we do when compilers change?
+        return comp
+
+    @classmethod
+    def from_info(cls, comp):
+        found = cls.one(keys={'path': comp.absolute_path})
+        if not found:
+            found = cls.create(fields={'path': comp.absolute_path, 'md5': comp.md5sum})
+        else:
+            if comp.md5sum != found['md5']:
+                LOGGER.warning("%s '%s' has changed!" % (comp.short_descr, comp.command))
+                # TODO: What should we do when the compilers change?
+        return found

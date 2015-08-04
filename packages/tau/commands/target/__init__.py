@@ -48,7 +48,7 @@ GROUP = "configuration"
 
 USAGE = """
   %(command)s <subcommand> [arguments]
-""" % {'command': COMMAND}
+""" % {'command': COMMAND} 
 
 HELP = """
 '%(command)s' page to be written.

@@ -45,8 +45,8 @@ from tau.error import ConfigurationError, InternalError
 LOGGER = logger.getLogger(__name__)
 
 
-_COMMAND_ROOT = os.path.basename(environment.TAU_SCRIPT)
-_COMMANDS = {_COMMAND_ROOT: {}}
+SCRIPT_COMMAND = os.path.basename(environment.TAU_SCRIPT)
+_COMMANDS = {SCRIPT_COMMAND: {}}
 
 
 class UnknownCommandError(ConfigurationError):
@@ -95,7 +95,7 @@ def get_command_list(module_name):
     for part in __name__.split('.'):
         if parts[0] == part:
             parts = parts[1:]
-    return [_COMMAND_ROOT] + parts
+    return [SCRIPT_COMMAND] + parts
 
 
 def get_command(module_name):
@@ -222,7 +222,7 @@ def executeCommand(cmd, cmd_args=[], parent_module=None):
         except KeyError:
             LOGGER.debug('%r not recognized as a TAU command' % cmd)
             try:
-                resolved = _resolve(cmd, _COMMANDS[_COMMAND_ROOT])
+                resolved = _resolve(cmd, _COMMANDS[SCRIPT_COMMAND])
             except UnknownCommandError:
                 if len(cmd) <= 1:
                     raise  # We finally give up
