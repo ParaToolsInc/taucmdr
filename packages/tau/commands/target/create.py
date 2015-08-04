@@ -40,7 +40,7 @@ from tau.error import ConfigurationError
 from tau.controller import UniqueAttributeError
 from tau.model.target import Target
 from tau.model.compiler_command import CompilerCommand
-from tau.cf.compiler import KNOWN_FAMILIES, KNOWN_ROLES
+from tau.cf.compiler import KNOWN_FAMILIES, KNOWN_ROLES, MPI_FAMILY_NAME
 from tau.cf.compiler.installed import InstalledCompiler
 from tau.cf.compiler.role import REQUIRED_ROLES
 
@@ -88,7 +88,7 @@ def parse_compiler_flags(args):
         args: Argument namespace containing command line arguments
         
     Returns:
-        List of InstalledCompiler objects.
+        Dictionary of InstalledCompiler objects.
         
     Raises:
         ConfigurationError: Invalid command line arguments specified
@@ -104,9 +104,7 @@ def parse_compiler_flags(args):
             key = comp.role.keyword
             if key not in compilers:
                 compilers[key] = comp
-            else:
-                LOGGER.info("Prefering '%s' to '%s'" % (compilers[key], comp))
-        return compilers.values()
+        return compilers
 
     languages = dict([(role.keyword, role.language) for role in REQUIRED_ROLES])
     compiler_keys = set(languages.keys())
@@ -121,8 +119,8 @@ def parse_compiler_flags(args):
         LOGGER.debug("No compilers specified by user, using defaults")
         for key in compiler_keys:
             comp = InstalledCompiler.get_default(KNOWN_ROLES[key])
-            LOGGER.info("%s compiler not specified, defaulting to: %s" %
-                        (comp.role.language, comp.absolute_path))
+            LOGGER.debug("%s compiler not specified, defaulting to: %s" %
+                         (comp.role.language, comp.absolute_path))
             compilers[key] = comp
     else:
         for key in given_keys:
@@ -152,7 +150,7 @@ def parse_compiler_flags(args):
             raise ConfigurationError("'%s' specified as %s compiler but it is a %s compiler" %
                                      (comp.absolute_path, languages[role], comp.role.language),
                                      "See 'compiler arguments' under `%s --help`" % COMMAND)
-    return compilers.values()
+    return compilers
 
 
 def main(argv):
@@ -168,11 +166,11 @@ def main(argv):
     except KeyError: pass
 
     compilers = parse_compiler_flags(args)
-    for comp in compilers:
-        LOGGER.info("%s: '%s'" % (comp.short_descr, comp.absolute_path))
+    for role, comp in compilers.iteritems():
+        LOGGER.debug("%s=%s (%s)" % (role, comp.absolute_path, comp.short_descr))
         record = CompilerCommand.from_info(comp)
         flags[comp.role.keyword] = record.eid
-
+        
     try:
         Target.create(flags)
     except UniqueAttributeError:

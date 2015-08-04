@@ -34,9 +34,11 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
+# pylint: disable=too-few-public-methods
 
 from tau.error import ConfigurationError, InternalError
 from tau.cf.compiler.role import *
+
 
 class Compiler(object):
     """Information about a compiler.
@@ -48,7 +50,6 @@ class Compiler(object):
         tau_wrapper: The corresponding TAU wrapper script, e.g. 'tau_cxx.sh'
         short_descr: A short descriptive string for command line help
     """
-    # pylint: disable=too-few-public-methods
     
     def __init__(self, command, family, role):
         from cf.tau import COMPILER_WRAPPERS
@@ -59,7 +60,8 @@ class Compiler(object):
         self.short_descr = "%s %s compiler" % (self.family, role.language)
     
     def __str__(self):
-        return str(dict([(key, val) for (key, val) in self.__dict__.iteritems() if not key.startswith('_')]))
+        return str(dict([(key, val) for (key, val) in self.__dict__.iteritems() 
+                         if not key.startswith('_')]))
 
 
 SYSTEM_FAMILY_NAME = 'System'

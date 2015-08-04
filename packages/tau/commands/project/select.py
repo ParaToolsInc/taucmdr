@@ -189,7 +189,7 @@ def main(argv):
     if not matching:
         LOGGER.debug('Creating new experiment')
         found = Experiment.create(data)
-    elif len(found) > 1:
+    elif len(matching) > 1:
         raise error.InternalError(
             'More than one experiment with data %r exists!' % data)
     else:

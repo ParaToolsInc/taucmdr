@@ -48,6 +48,9 @@ class CompilerRole(object):
         self.keyword = keyword
         self.language = language
         self.required = required
+        
+    def __str__(self):
+        return self.keyword
 
     def __eq__(self, other):
         return isinstance(other, CompilerRole) and (other.keyword == self.keyword)

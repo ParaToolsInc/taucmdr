@@ -109,8 +109,6 @@ def parse_compiler_flags(args, compilers):
             key = comp.role.keyword
             if key not in compilers:
                 compilers[key] = comp
-            else:
-                LOGGER.info("Prefering '%s' to '%s'" % (compilers[key], comp))
         return compilers.values()
 
     languages = dict([(role.keyword, role.language) for role in REQUIRED_ROLES])

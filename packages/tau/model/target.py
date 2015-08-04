@@ -179,14 +179,6 @@ class Target(Controller, ByName):
                          'metavar': '<path>',
                          'action': ParsePackagePathAction},
         },
-        'mpi': {
-            'type': 'string',
-            'description': 'path to MPI installation',
-            'argparse': {'flags': ('--mpi',),
-                         'group': 'Message Passing Interface (MPI)',
-                         'metavar': '<path>',
-                         'action': ParsePackagePathAction},
-        },
         'mpi_incdir': {
             'type': 'string',
             'description': 'path to directory containing MPI header files',
@@ -272,6 +264,7 @@ class Target(Controller, ByName):
             libunwind_flag = self.attributes['libunwind_source']['argparse']['flags'][0]
             raise ConfigurationError("libunwind not supported on host architecture 'apple'",
                                      "Use %s=None" % libunwind_flag)
+        
     
     def get_compilers(self):
         """Get Compiler objects for all compilers in this Target.
