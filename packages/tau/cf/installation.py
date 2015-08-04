@@ -420,7 +420,6 @@ class AutotoolsInstallation(Installation):
                 return self._verify()
             except SoftwarePackageError as err:
                 LOGGER.debug(err)
-                LOGGER.info("%s is missing or broken" % self.name)
         LOGGER.info("Installing %s at '%s' from '%s' with arch=%s and %s compilers" %
                     (self.name, self.install_prefix, self.src, self.arch, self.compilers.CC.family))
 
