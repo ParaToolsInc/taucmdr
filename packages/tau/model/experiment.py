@@ -41,10 +41,10 @@ import shutil
 from tau import logger, settings, util
 from tau.error import ConfigurationError, InternalError
 from tau.controller import Controller
-from tau.model.compiler import Compiler
 from tau.model.trial import Trial
+from tau.model.compiler_command import CompilerCommand
 from tau.cf.tau import TauInstallation
-from tau.cf.compiler import CompilerSet
+from tau.cf.compiler.installed import InstalledCompiler
 
 LOGGER = logger.getLogger(__name__)
 
@@ -161,14 +161,12 @@ class Experiment(Controller):
         populated = self.populate()
         # TODO: Should install packages in a location where all projects can use
         prefix = populated['project']['prefix']
-        target = populated['target'].populate()
+        target = populated['target']
         application = populated['application']
         measurement = populated['measurement']
 
         host_arch = target['host_arch']
-        compilers = CompilerSet(target['CC'].info(),
-                                target['CXX'].info(),
-                                target['FC'].info())
+        compilers = target.get_compilers()
         verbose=(logger.LOG_LEVEL == 'DEBUG')
         
         # Configure/build/install TAU if needed
@@ -181,6 +179,9 @@ class Experiment(Controller):
                                    openmp_support=application['openmp'],
                                    pthreads_support=application['pthreads'],
                                    mpi_support=application['mpi'],
+                                   mpi_include_path=target['mpi_include_path'],
+                                   mpi_library_path=target['mpi_library_path'],
+                                   mpi_linker_flags=target['mpi_linker_flags'],
                                    cuda_support=application['cuda'],
                                    shmem_support=application['shmem'],
                                    mpc_support=application['mpc'],
@@ -205,28 +206,29 @@ class Experiment(Controller):
                                    measure_memory_usage=measurement['memory_usage'],
                                    measure_memory_alloc=measurement['memory_alloc'],
                                    measure_callpath=measurement['callpath'])
-        self.tau.install()
-
+        with self.tau:
+            self.tau.install()
 
     def managedBuild(self, compiler_cmd, compiler_args):
         """
         TODO: Docs
         """
+        LOGGER.debug("Managed build: %s" % ([compiler_cmd] + compiler_args))
         target = self.populate('target')
-        given_compiler = Compiler.identify(compiler_cmd)
-        target_compiler = target[given_compiler['role']]
+        given_compiler = InstalledCompiler(compiler_cmd)
+        given_compiler_eid = CompilerCommand.from_info(given_compiler).eid
+        target_compiler_eid = target[given_compiler.role.keyword]       
 
         # Confirm target supports compiler
-        if given_compiler.eid != target_compiler:
-            target_compiler = Compiler.one(eid=target_compiler)
-            raise ConfigurationError("Target '%s' is configured with %s compiler '%s', not '%s'" %
-                                     (target['name'], given_compiler['language'],
-                                      target_compiler.absolute_path(),
-                                      given_compiler.absolute_path()),
-                                     "Use a different target or use compiler '%s'" % 
-                                     target_compiler.absolute_path())
+        if given_compiler_eid != target_compiler_eid:
+            target_compiler = CompilerCommand.one(eid=target_compiler_eid).info()
+            raise ConfigurationError("Target '%s' is configured with %s '%s', not %s '%s'" %
+                                     (target['name'], target_compiler.short_descr, target_compiler.absolute_path,
+                                      given_compiler.short_descr, given_compiler.absolute_path),
+                                     "Select a different target or compile with '%s'" % 
+                                     target_compiler.absolute_path)
         self.configure()
-        self.tau.compile(given_compiler.info(), compiler_args)
+        self.tau.compile(given_compiler, compiler_args)
         
     def managedRun(self, application_cmd, application_args):
         """
@@ -241,7 +243,7 @@ class Experiment(Controller):
         cmd, env = self.tau.get_application_command(application_cmd, application_args)
         return Trial.perform(self, cmd, cwd, env)
 
-    def show(self, trial_numbers=None):
+    def show(self, tool_name=None, trial_numbers=None):
         """
         Show most recent trial or all trials with given numbers
         """
@@ -272,4 +274,4 @@ class Experiment(Controller):
             if not profiles:
                 profiles = glob.glob(os.path.join(prefix, 'MULTI__*'))
             if profiles:
-                self.tau.show_profile(prefix)
+                self.tau.show_profile(prefix, tool_name)

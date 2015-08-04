@@ -36,7 +36,7 @@
 #"""
 
 from tau import EXIT_FAILURE
-from tau import logger, arguments, commands
+from tau import logger, arguments, commands, util
 from tau.model.experiment import Experiment
 
 
@@ -55,7 +55,10 @@ HELP = """
 '%(command)s' page to be written.
 """ % {'command': COMMAND}
 
-_arguments = [(('numbers',), {'help': "If given, show details for trial with this number",
+_arguments = [(('--tool',), {'help': "specify reporting or visualization tool",
+                             'metavar': 'tool_name',
+                             'default': arguments.SUPPRESS}),
+              (('numbers',), {'help': "show details for specified trials",
                               'metavar': 'trial_number',
                               'nargs': '*',
                               'default': arguments.SUPPRESS})]
@@ -97,4 +100,11 @@ def main(argv):
             except ValueError:
                 PARSER.error("Invalid trial number: %s" % n)
 
-    return selection.show(numbers)
+    try:
+        tool = args.tool
+    except AttributeError:
+        tool = None
+    else:
+        if not util.which(tool):
+            PARSER.error("Invalid tool '%s'" % tool)
+    return selection.show(trial_numbers=numbers, tool_name=tool)

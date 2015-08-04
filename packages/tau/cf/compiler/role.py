@@ -36,40 +36,36 @@
 #"""
 
 
-from installation import AutotoolsInstallation
-from tau import logger
-
-
-LOGGER = logger.getLogger(__name__)
-
-SOURCES = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-1.1.tar.gz'}
- 
-LIBS = {None: ['libunwind.a']}
-
-
-class LibunwindInstallation(AutotoolsInstallation):
-    """Encapsulates a libunwind installation.
+class CompilerRole(object):
+    """Information about a compiler's role.
     
-    libunwind is used for symbol resolution during sampling, compiler-based 
-    instrumentation, and other measurement approaches. 
+    Attributes:
+        keyword: String identifying how the compiler is used in the build process, e.g. 'CXX'
+        language: Language corresponding to the compiler role, e.g. 'C++'
+        required: True if this role must be filled to compile TAU, False otherwise
     """
-
-    def __init__(self, prefix, src, arch, compilers):
-        super(LibunwindInstallation,self).__init__('libunwind', prefix, 
-                                                   src, arch, compilers, SOURCES)
-
-    def _verify(self):
-        libraries = LIBS.get(self.arch, LIBS[None])
-        return super(LibunwindInstallation,self)._verify(libraries=libraries)
-
-    def make(self, flags=[], env={}, parallel=True):
-        """Build libunwind.
+    def __init__(self, keyword, language, required):
+        self.keyword = keyword
+        self.language = language
+        self.required = required
         
-        libunwind's tests often fail to build but the library itself compiles
-        just fine, so we just keep pressing on to 'make install' even if 
-        'make' appears to have died.
-        """
-        try:
-            super(LibunwindInstallation,self).make(flags, env, parallel)
-        except Exception as err:
-            LOGGER.debug("libunwind build failed, but continuing anyway: %s" % err)
+    def __str__(self):
+        return self.keyword
+
+    def __eq__(self, other):
+        return isinstance(other, CompilerRole) and (other.keyword == self.keyword)
+    
+    def __len__(self):
+        return len(self.keyword)
+
+
+CC_ROLE = CompilerRole('CC', 'C', True)
+CXX_ROLE = CompilerRole('CXX', 'C++', True)
+FC_ROLE = CompilerRole('FC', 'Fortran', True)
+F77_ROLE = CompilerRole('F77', 'FORTRAN77', False)
+F90_ROLE = CompilerRole('F90', 'Fortran90', False)
+UPC_ROLE = CompilerRole('UPC', 'Universal Parallel C', False)
+
+ALL_ROLES = [CC_ROLE, CXX_ROLE, FC_ROLE, F77_ROLE, F90_ROLE, UPC_ROLE]
+REQUIRED_ROLES = [_ for _ in ALL_ROLES if _.required]
+KNOWN_ROLES = dict([(_.keyword, _) for _ in ALL_ROLES])

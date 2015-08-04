@@ -45,10 +45,13 @@ ModelError = controller.ModelError
 
 
 def _yieldModelClasses():
+    def camelcase(name): 
+        return ''.join(x.capitalize() for x in name.split('_'))
+    
     for _, module_name, _ in walk_packages(__path__, __name__ + '.'):
         __import__(module_name)
         module_dict = sys.modules[module_name].__dict__
-        model_class_name = module_name.split('.')[-1].capitalize()
+        model_class_name = camelcase(module_name.split('.')[-1])
         try:
             model_class = module_dict[model_class_name]
         except KeyError:

@@ -36,7 +36,7 @@
 #"""
 
 import json
-import logger, requisite, util
+from tau import logger, requisite, util
 from tau.error import InternalError, ConfigurationError
 from tau.storage import user_storage
 
@@ -121,46 +121,44 @@ class Controller(object):
         return json.dumps(repr(self.data))
 
     @classmethod
-    def _validate(cls, data, enforce_schema=True):
+    def _validate(cls, data, enforce_schema=True, enforce_required=True):
+        """Validates the given data against the model schema.
+        
+        Args:
+            data: Dictionary of data to validate.
         """
-        Validates the given data against the model schema
-        """
+        #LOGGER.debug("Validating data for %s: %s" % (cls.__name__, data))
         if data is None:
             return None
         if enforce_schema:
             for key in data:
                 if not key in cls.attributes:
-                    raise ModelError(
-                        cls, "Model '%s' has no attribute named '%s'" % (cls.model_name, key))
+                    raise ModelError(cls, "Model '%s' has no attribute named '%s'" % (cls.model_name, key))
         validated = {}
         for attr, props in cls.attributes.iteritems():
-            #
             # TODO: Check types
-            #
             # Check required fields and defaults
             try:
                 validated[attr] = data[attr]
             except KeyError:
                 if 'required' in props:
-                    raise ModelError(
-                        cls, "'%s' is required but was not defined" % attr)
-                elif 'defaultsTo' in props:
-                    validated[attr] = props['defaultsTo']
+                    if props['required'] and enforce_required:
+                        raise ModelError(cls, "'%s' is required but was not defined" % attr)
+                elif 'default' in props:
+                    validated[attr] = props['default']
             # Check collections
             if 'collection' in props:
                 value = data.get(attr, [])
                 if not value:
                     value = []
                 elif not isinstance(value, list):
-                    raise ModelError(
-                        cls, "Value supplied for '%s' is not a list: %r" % (attr, value))
+                    raise ModelError(cls, "Value supplied for '%s' is not a list: %r" % (attr, value))
                 else:
                     for eid in value:
                         try:
                             int(eid)
                         except ValueError:
-                            raise ModelError(
-                                cls, "Invalid non-integer ID '%s' in '%s'" % (eid, attr))
+                            raise ModelError(cls, "Invalid non-integer ID '%s' in '%s'" % (eid, attr))
                 validated[attr] = value
             # Check model associations
             elif 'model' in props:
@@ -170,9 +168,9 @@ class Controller(object):
                         if int(value) != value:
                             raise ValueError
                     except ValueError:
-                        raise ModelError(
-                            cls, "Invalid non-integer ID '%s' in '%s'" % (value, attr))
+                        raise ModelError(cls, "Invalid non-integer ID '%s' in '%s'" % (value, attr))
                     validated[attr] = value
+        #LOGGER.debug("Validated %s data: %s" % (cls.__name__, validated))
         return validated
 
     def populate(self, attribute=None):
@@ -180,9 +178,9 @@ class Controller(object):
         Transltes model id numbers in `self` to model controllers and
         returns all data as a dictionary
         """
-        from tau.model import MODELS
-        LOGGER.debug('Populating %r' % self)
         if not self.populated:
+            from tau.model import MODELS
+            LOGGER.debug("Populating %r" % self)
             self.populated = dict(self.data)
             for attr, props in self.attributes.iteritems():
                 try:
@@ -193,11 +191,17 @@ class Controller(object):
                     except KeyError:
                         continue
                     else:
-                        self.populated[attr] = foreign_model.search(
-                            eids=self.data[attr])
+                        try:
+                            self.populated[attr] = foreign_model.search(eids=self.data[attr])
+                        except KeyError:
+                            if props.get('required', False):
+                                raise ModelError(cls, "'%s' is required but was not defined" % attr)
                 else:
-                    self.populated[attr] = foreign_model.one(
-                        eid=self.data[attr])
+                    try:
+                        self.populated[attr] = foreign_model.one(eid=self.data[attr])
+                    except KeyError:
+                        if props.get('required', False):
+                            raise ModelError(cls, "'%s' is required but was not defined" % attr)
         if attribute:
             return self.populated[attribute]
         else:
@@ -208,8 +212,7 @@ class Controller(object):
         """
         Return a single record matching all of 'keys' or element id 'eid'
         """
-        LOGGER.debug("Searching '%s' for keys=%r, eid=%r" %
-                     (cls.model_name, keys, eid))
+        LOGGER.debug("Searching '%s' for keys=%r, eid=%r" % (cls.model_name, keys, eid))
         found = user_storage.get(cls.model_name, keys=keys, eid=eid)
         return cls(found) if found else None
 
@@ -285,7 +288,7 @@ class Controller(object):
         else:
             raise InternalError('Controller.update() requires either keys or eids')
         with user_storage as storage:
-            storage.update(cls.model_name, fields, keys=keys, eids=eids)
+            storage.update(cls.model_name, cls._validate(fields, enforce_required=False), keys=keys, eids=eids)
             for model in changing:
                 for attr, foreign in cls.associations.iteritems():
                     try:

@@ -13,40 +13,11 @@ target_name="ex-`echo $HOSTNAME | cut -d. -f1`"
 tau target create "$target_name"
 user_name="`users`"
 
-sv_sys=false
-if [[ $target_name == *"Para"* ]] && [[ $user_name == *"srinath"* ]]
-then
-  sv_sys=true;
-  echo "This is a srinathv Paratools system"
-fi
-
-has_mic=false
-if [[ $MIC_ENV_PREFIX == *"MIC"* ]]
-then
-  has_mic=true;
-  echo "This machine has MICs."
-fi
-
-#if on srinath systems:
-if $sv_sys; then
-  echo "** making gcc5 a target with no bfd and libunwind"
-  tau target create gcc5 --compilers=GNU --with-bfd=False --with-libunwind=False
-fi
-
-if $has_mic; then
-  echo "** making a mic target with no bfd and libunwind"
-  tau target create intel-mic --compilers=Intel --with-bfd=False --with-libunwind=False --with-mic=True --with-pdt=Download
-fi
-
 # Example applications
 tau application create "ex-matmult-serial"
 tau application create "ex-matmult-mpi" --mpi
 tau application create "ex-matmult-openmp" --openmp
 tau application create "ex-matmult-openmp-mpi" --openmp --mpi
-
-if $has_mic; then
-  tau application create "ex-matmult-mic-mpi" --mic --mpi
-fi
 
 # Example measurements
 tau measurement create "ex-profile"

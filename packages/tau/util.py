@@ -79,6 +79,8 @@ def which(program):
     Returns:
         Full path to program or None if program can't be found.
     """
+    if not program:
+        return None
     def is_exec(fpath):
         return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
     fpath, _ = os.path.split(program)
@@ -262,6 +264,8 @@ def createSubprocess(cmd, cwd=None, env=None, stdout=True, log=True):
                             stderr=subprocess.STDOUT,
                             bufsize=1)
     with proc.stdout:
+        # Use iter to avoid hidden read-ahead buffer bug in named pipes:
+        # http://bugs.python.org/issue3907
         for line in iter(proc.stdout.readline, b''):
             if log:
                 LOGGER.debug(line[:-1])

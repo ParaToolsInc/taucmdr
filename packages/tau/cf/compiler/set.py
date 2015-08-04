@@ -35,41 +35,46 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-
-from installation import AutotoolsInstallation
-from tau import logger
-
-
-LOGGER = logger.getLogger(__name__)
-
-SOURCES = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-1.1.tar.gz'}
- 
-LIBS = {None: ['libunwind.a']}
+from tau.error import InternalError
+from role import REQUIRED_ROLES, KNOWN_ROLES
 
 
-class LibunwindInstallation(AutotoolsInstallation):
-    """Encapsulates a libunwind installation.
+class CompilerSet(object):
+    """A collection of Compiler objects, one per required role.
     
-    libunwind is used for symbol resolution during sampling, compiler-based 
-    instrumentation, and other measurement approaches. 
+    Attributes:
+        name: Identifier (hopefully unique) for this combination of compilers.
+        CC: Compiler in the 'CC' role
+        CXX: Compiler in the 'CXX' role
+        etc.
     """
-
-    def __init__(self, prefix, src, arch, compilers):
-        super(LibunwindInstallation,self).__init__('libunwind', prefix, 
-                                                   src, arch, compilers, SOURCES)
-
-    def _verify(self):
-        libraries = LIBS.get(self.arch, LIBS[None])
-        return super(LibunwindInstallation,self)._verify(libraries=libraries)
-
-    def make(self, flags=[], env={}, parallel=True):
-        """Build libunwind.
+    # pylint: disable=too-few-public-methods
+    
+    def __init__(self, name, **kwargs):
+        self.name = name
+        missing_roles = set([role.keyword for role in REQUIRED_ROLES])
+        for key, comp in kwargs.iteritems():
+            if key not in KNOWN_ROLES:
+                raise InternalError("Invalid role: %s" % role)
+            setattr(self, key, comp)
+            missing_roles.remove(key)
+        for role in missing_roles:
+            raise InternalError("Required role %s not defined" % role)
         
-        libunwind's tests often fail to build but the library itself compiles
-        just fine, so we just keep pressing on to 'make install' even if 
-        'make' appears to have died.
-        """
+    def iter(self):
+        for keyword in KNOWN_ROLES:
+            try:
+                yield getattr(self, keyword)
+            except AttributeError:
+                continue
+
+    def __iter__(self):
+        return self.iter()
+
+    def __contains__(self, role):
         try:
-            super(LibunwindInstallation,self).make(flags, env, parallel)
-        except Exception as err:
-            LOGGER.debug("libunwind build failed, but continuing anyway: %s" % err)
+            keyword = role.keyword
+        except AttributeError as err:
+            raise InternalError("%s is not a CompilerRole: %s" % (role, err))
+        else:
+            return hasattr(self, keyword)

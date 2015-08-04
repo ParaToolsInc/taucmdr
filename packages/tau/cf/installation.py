@@ -39,9 +39,12 @@ import os
 import sys
 import shutil
 import multiprocessing
-import logger, util
-from cf import SoftwarePackageError
+from lockfile import LockFile, NotLocked
+from tau import logger, util
 from error import ConfigurationError
+from cf import SoftwarePackageError
+from cf.compiler.role import ALL_ROLES
+
 
 LOGGER = logger.getLogger(__name__)
 
@@ -87,7 +90,7 @@ class Installation(object):
             sources: (arch, path) dictionary specifying where to get source
                      code archives for different architectures.  The None
                      key specifies the default (i.e. universal) source.    
-        """ 
+        """
         self.name = name
         self.prefix = prefix
         if os.path.isdir(src):
@@ -95,7 +98,7 @@ class Installation(object):
             self.src_prefix = None
             self.src = None
         else:
-            self.install_prefix = os.path.join(prefix, name, compilers.id)
+            self.install_prefix = os.path.join(prefix, name, compilers.name)
             self.src_prefix = os.path.join(prefix, 'src')
             if src and src.lower() == 'download':
                 self.src = sources.get(arch, sources[None])
@@ -106,11 +109,67 @@ class Installation(object):
         self.include_path = os.path.join(self.install_prefix, 'include')
         self.bin_path = os.path.join(self.install_prefix, 'bin')
         self.lib_path = os.path.join(self.install_prefix, 'lib')
+        self._lockfile = LockFile(os.path.join(self.install_prefix, '.taucmd_lock'))
+        
+    def __enter__(self):
+        util.mkdirp(self.install_prefix)
+        self._lockfile.acquire()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        try:
+            self._lockfile.release()
+        except NotLocked:
+            pass
+        return False
         
     def _parallel_make_flags(self):
-        ncores = multiprocessing.cpu_count()
+        """Returns flags to enable parallel compilation with `make`.
+        
+        Uses one less than the number of CPU cores by default.
+        """
+        ncores = multiprocessing.cpu_count() - 1
         return ['-j%s' % ncores]
     
+    def _scrub_environment(self, env):
+        """Unsets environment variables that endanger compilation.
+        
+        Mainly compilers (CC, CXX, etc.) and TAU_* environment variables.
+        
+        Args:
+            env: Dictionary of environment variables.
+            
+        Returns:
+            Dictionary of environment variables not containing dangerous variables.
+        """
+        def is_dangerous(key):
+            for role in ALL_ROLES:
+                if key.startswith(role.keyword):
+                    return True
+            return key.startswith('TAU')
+        scrubbed = {}
+        for key, val in env.iteritems():
+            if is_dangerous(key):
+                LOGGER.debug("Unsetting dangerous environment variable: %s" % key)
+            else:
+                #LOGGER.info("%s is safe" % key)
+                scrubbed[key] = val
+        return scrubbed
+    
+    def _safe_subprocess(self, cmd, cwd=None, env=None, stdout=True, log=True):
+        """Prevents accidental recursive launch or self-instrumentation.
+        
+        Executes a configure or compile command in a safe environment.
+        
+        Args:
+            Same as util.createSubprocess
+        
+        Returns:
+            Subprocess return code
+        """
+        env = self._scrub_environment(dict(os.environ, **env) if env else os.environ)
+        return util.createSubprocess(cmd=cmd, cwd=cwd, env=env, stdout=stdout, log=log)
+
     def _prepare_src(self, reuse=True):
         """Prepares source code for installation.
         
@@ -155,7 +214,7 @@ class Installation(object):
             raise ConfigurationError("Cannot extract source archive '%s'" % self.src,
                                      "Check that the file or directory is accessable")
 
-    def verify(self, commands=[], libraries=[]):
+    def _verify(self, commands=[], libraries=[]):
         """Returns true if the installation is valid.
         
         A valid installation provides all expected libraries and commands.
@@ -286,12 +345,12 @@ class AutotoolsInstallation(Installation):
                         'Intel': {'CC': 'icc', 'CXX': 'icpc'},
                         'PGI': {'CC': 'pgcc', 'CXX': 'pgCC'}}
         try:
-            env.update(compiler_env[self.compilers.cc.family])
+            env.update(compiler_env[self.compilers.CC.family])
         except KeyError:
             LOGGER.info("Allowing %s to select compilers" % self.name)
         cmd = ['./configure'] + flags
         LOGGER.info("Configuring %s..." % self.name)
-        if util.createSubprocess(cmd, cwd=self._src_path, env=env, stdout=False):
+        if self._safe_subprocess(cmd, cwd=self._src_path, env=env, stdout=False):
             raise SoftwarePackageError('%s configure failed' % self.name)   
     
     def make(self, flags=[], env={}, parallel=True):
@@ -311,7 +370,7 @@ class AutotoolsInstallation(Installation):
             flags += self._parallel_make_flags()
         cmd = ['make'] + flags
         LOGGER.info("Compiling %s..." % self.name)
-        if util.createSubprocess(cmd, cwd=self._src_path, env=env, stdout=False):
+        if self._safe_subprocess(cmd, cwd=self._src_path, env=env, stdout=False):
             raise SoftwarePackageError('%s compilation failed' % self.name)
 
     def make_install(self, flags=[], env={}, parallel=False):
@@ -332,7 +391,7 @@ class AutotoolsInstallation(Installation):
             flags += self._parallel_make_flags()
         cmd = ['make', 'install'] + flags
         LOGGER.info("Installing %s..." % self.name)
-        if util.createSubprocess(cmd, cwd=self._src_path, env=env, stdout=False):
+        if self._safe_subprocess(cmd, cwd=self._src_path, env=env, stdout=False):
             raise SoftwarePackageError('%s installation failed' % self.name)
         # Some systems use lib64 instead of lib
         if (os.path.isdir(self.lib_path+'64') and not os.path.isdir(self.lib_path)):
@@ -351,14 +410,18 @@ class AutotoolsInstallation(Installation):
             SoftwarePackageError: Installation failed.
         """
         if not self.src:
-            return self.verify()
+            try:
+                return self._verify()
+            except SoftwarePackageError as err:
+                raise SoftwarePackageError("%s is missing or broken: %s" % (self.name, err),
+                                           "Specify source code path or URL to enable broken package reinstallation.")
         elif not force_reinstall:
             try:
-                return self.verify()
+                return self._verify()
             except SoftwarePackageError as err:
                 LOGGER.debug(err)
-        LOGGER.debug("Installing %s at '%s' from '%s' with arch=%s" %
-                     (self.name, self.install_prefix, self.src, self.arch))
+        LOGGER.info("Installing %s at '%s' from '%s' with arch=%s and %s compilers" %
+                    (self.name, self.install_prefix, self.src, self.arch, self.compilers.CC.family))
 
         self._prepare_src()
         
@@ -383,5 +446,5 @@ class AutotoolsInstallation(Installation):
             del self._src_path
 
         # Verify the new installation
-        LOGGER.info('%s installation complete', self.name)
-        return self.verify()            
+        LOGGER.info("%s installation complete, verifying installation", self.name)
+        return self._verify()

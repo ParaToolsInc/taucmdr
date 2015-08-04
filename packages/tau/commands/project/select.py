@@ -35,7 +35,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-from tau import EXIT_SUCCESS
 from tau import logger, error, arguments, commands
 from tau.model.project import Project
 from tau.model.target import Target
@@ -186,16 +185,16 @@ def main(argv):
             'target': target_eid,
             'application': application_eid,
             'measurement': measurement_eid}
-    found = Experiment.search(data)
-    if not found:
+    matching = Experiment.search(data)
+    if not matching:
         LOGGER.debug('Creating new experiment')
         found = Experiment.create(data)
-    elif len(found) > 1:
+    elif len(matching) > 1:
         raise error.InternalError(
             'More than one experiment with data %r exists!' % data)
     else:
         LOGGER.debug('Using existing experiment')
-        found = found[0]
+        found = matching[0]
 
     populated = found.populate()
     LOGGER.debug("'%s' on '%s' measured by '%s'" %
