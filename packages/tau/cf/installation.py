@@ -107,7 +107,7 @@ class Installation(object):
                 install_dir = compilers.CC.wrapped.family
             except AttributeError:
                 install_dir = compilers.CC.family
-            self.install_prefix = os.path.join(prefix, name, install_dir)
+            self.install_prefix = os.path.join(prefix, arch, name, install_dir)
             if tag:
                 self.install_prefix = os.path.join(self.install_prefix, tag)
             self.src_prefix = os.path.join(prefix, 'src')
