@@ -39,7 +39,7 @@ import os
 import sys
 import glob
 import shutil
-import logger
+import logger, util
 import fileinput
 from installation import AutotoolsInstallation
 
@@ -114,11 +114,13 @@ class BfdInstallation(AutotoolsInstallation):
             #patch -p1 <$START_DIR/android.binutils-2.23.2.patch
             pass
         elif self.arch == 'mic_linux':
-            # TODO: MIC
-            # Note: may need to search other paths than just /usr/linux-k1om-*
-            #k1om_bin="`ls -1d /usr/linux-k1om-* | sort -r | head -1`/bin"
-            #export PATH=$k1om_bin:$PATH
-            pass
+            k1om_ar = util.which('x86_64-k1om-linux-ar')
+            if not k1om_ar:
+                for path in glob.glob('/usr/linux-k1om-*'):
+                    k1om_ar = util.which(os.path.join(path, 'bin', 'x86_64-k1om-linux-ar'))
+                    if k1om_ar:
+                        break
+            env['PATH'] = os.pathsep.join([os.path.basename(k1om_ar), env.get('PATH', '')]) 
         elif self.arch == 'sparc64fx':
             # TODO: SPARC64
             #fccpxpath=`which fccpx | sed 's/\/bin\/fccpx$//'`
