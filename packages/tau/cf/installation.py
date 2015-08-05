@@ -326,10 +326,6 @@ class AutotoolsInstallation(Installation):
     """
     #pylint: disable=too-many-arguments
 
-    def __init__(self, name, prefix, src, arch, compilers, sources):
-        super(AutotoolsInstallation,self).__init__(name, prefix, src, arch, 
-                                                   compilers, sources)
-        
     def configure(self, flags, env):
         """Invoke configure.
         
