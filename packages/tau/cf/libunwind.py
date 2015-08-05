@@ -62,7 +62,7 @@ class LibunwindInstallation(AutotoolsInstallation):
         libraries = LIBS.get(self.arch, LIBS[None])
         return super(LibunwindInstallation,self)._verify(libraries=libraries)
 
-    def make(self, flags=[], env={}, parallel=True):
+    def make(self, flags, env, parallel=True):
         """Build libunwind.
         
         libunwind's tests often fail to build but the library itself compiles
@@ -72,4 +72,4 @@ class LibunwindInstallation(AutotoolsInstallation):
         try:
             super(LibunwindInstallation,self).make(flags, env, parallel)
         except Exception as err:
-            LOGGER.debug("libunwind build failed, but continuing anyway: %s" % err)
+            LOGGER.debug("libunwind make failed, but continuing anyway: %s" % err)

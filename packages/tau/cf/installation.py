@@ -325,8 +325,10 @@ class AutotoolsInstallation(Installation):
         super(AutotoolsInstallation,self).__init__(name, prefix, src, arch, 
                                                    compilers, sources)
         
-    def configure(self, flags=[], env={}):
+    def configure(self, flags, env):
         """Invoke configure.
+        
+        Changes to `env` are propagated to subsequent steps, i.e. `make`.
         
         Args:
             flags: List of command line flags to pass to 'configure'.
@@ -353,8 +355,10 @@ class AutotoolsInstallation(Installation):
         if self._safe_subprocess(cmd, cwd=self._src_path, env=env, stdout=False):
             raise SoftwarePackageError('%s configure failed' % self.name)   
     
-    def make(self, flags=[], env={}, parallel=True):
+    def make(self, flags, env, parallel=True):
         """Invoke make.
+        
+        Changes to `env` are propagated to subsequent steps, i.e. `make install`.
         
         Args:
             flags: List of command line flags to pass to 'make'.
@@ -373,8 +377,11 @@ class AutotoolsInstallation(Installation):
         if self._safe_subprocess(cmd, cwd=self._src_path, env=env, stdout=False):
             raise SoftwarePackageError('%s compilation failed' % self.name)
 
-    def make_install(self, flags=[], env={}, parallel=False):
+    def make_install(self, flags, env, parallel=False):
         """Invoke 'make install'.
+        
+        Changes to `env` are propagated to subsequent steps.  Normally there 
+        wouldn't be anything after `make install`, but a subclass could change that.
         
         Args:
             flags: List of command line flags to pass to 'make install'.
@@ -431,10 +438,13 @@ class AutotoolsInstallation(Installation):
             shutil.rmtree(self.install_prefix, ignore_errors=True)
 
         # Perform Autotools installation sequence
+        # Environment variables are shared between subprocesses
+        # created for `configure` ; `make` ; `make install`
+        env = {}
         try:
-            self.configure()
-            self.make()
-            self.make_install()
+            self.configure([], env)
+            self.make([], env)
+            self.make_install([], env)
         except Exception as err:
             LOGGER.info("%s installation failed: %s " % (self.name, err))
             raise

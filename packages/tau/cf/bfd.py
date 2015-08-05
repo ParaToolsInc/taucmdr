@@ -67,7 +67,7 @@ class BfdInstallation(AutotoolsInstallation):
         libraries = LIBS.get(self.arch, LIBS[None])
         return super(BfdInstallation,self)._verify(libraries=libraries)
     
-    def configure(self, flags=[], env={}):
+    def configure(self, flags, env):
         """Configures BFD.
         
         BFD needs a customized configration method.
@@ -107,7 +107,7 @@ class BfdInstallation(AutotoolsInstallation):
                       None: ['CFLAGS=-fPIC', 'CXXFLAGS=-fPIC',
                              '--disable-nls', '--disable-werror']}
 
-        flags = arch_flags.get(self.arch, arch_flags[None])
+        flags.extend(arch_flags.get(self.arch, arch_flags[None]))
             
         if self.arch == 'arm_android':
             # TODO: Android
@@ -158,10 +158,10 @@ class BfdInstallation(AutotoolsInstallation):
 #                 --disable-nls --disable-werror > tau_configure.log 2>&1
 #               err=$?
 #             fi
-        return super(BfdInstallation,self).configure(flags=flags, env=env)
+        return super(BfdInstallation,self).configure(flags, env)
     
-    def make_install(self, flags=[], env={}, parallel=False):
-        super(BfdInstallation,self).make_install(flags=flags, env=env, parallel=parallel)
+    def make_install(self, flags, env, parallel=False):
+        super(BfdInstallation,self).make_install(flags, env, parallel)
 
         LOGGER.debug("Copying missing BFD headers")
         for hdr in glob.glob(os.path.join(self._src_path, 'bfd', '*.h')):
