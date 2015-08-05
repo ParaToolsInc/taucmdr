@@ -42,7 +42,8 @@ from installation import AutotoolsInstallation
 
 LOGGER = logger.getLogger(__name__)
 
-SOURCES = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-1.1.tar.gz'}
+SOURCES = {'mic_linux': 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-mic-1.1.tar.gz',
+           None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-1.1.tar.gz'}
  
 LIBS = {None: ['libunwind.a']}
 
