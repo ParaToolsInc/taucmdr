@@ -13,6 +13,7 @@ target_name="ex-`echo $HOSTNAME | cut -d. -f1`"
 tau target create "$target_name"
 user_name="`users`"
 
+
 # Example applications
 tau application create "ex-matmult-serial"
 tau application create "ex-matmult-mpi" --mpi
@@ -32,10 +33,11 @@ tau project create "ex-mm" \
   ex-matmult-serial ex-matmult-openmp ex-matmult-openmp-mpi \
   ex-profile ex-trace ex-sample p-keep no-io
 
-if [ $user_name = "srinathv" ]; then
-  echo "** making gcc target part of project"
+if [[ $target_name == *"Paratools-SV"* ]]; then
+  echo "** making gcc target and part of project"
+  source /Users/srinathv/gnu5Bin/linkGccs.source
+  tau target create gcc5 --compilers MPI
   tau project edit ex-mm --add-targets gcc5
-  tau project edit ex-mm --add-measurement p-keep
 fi
 
 
