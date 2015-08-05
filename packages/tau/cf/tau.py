@@ -459,6 +459,13 @@ class TauInstallation(Installation):
         mpilibrary = None
         if self.mpi_linker_flags:
             mpilibrary = '#'.join(self.mpi_linker_flags)
+            
+        # Pick the right compiler command for PDT
+        if self.pdt:
+            if self.pdt.compilers.CXX.wrapped:
+                pdt_cxx = self.pdt.compilers.CXX.wrapped
+            else:
+                pdt_cxx = self.pdt.compilers.CXX
 
         # TAU's configure script can't detect Fortran compiler from the compiler
         # command so translate Fortran compiler command into TAU's funkey magic words
@@ -475,7 +482,7 @@ class TauInstallation(Installation):
                   '-c++=%s' % cxx_command,
                   '-fortran=%s' % fortran_magic,
                   '-pdt=%s' % self.pdt.install_prefix if self.pdt else '',
-                  '-pdt_c++=%s' % self.pdt.compilers.CXX.command if self.pdt else '',
+                  '-pdt_c++=%s' % pdt_cxx.command if self.pdt else '',
                   '-bfd=%s' % self.bfd.install_prefix if self.bfd else '',
                   '-papi=%s' % self.papi.install_prefix if self.papi else '',
                   '-unwind=%s' % self.libunwind.install_prefix if self.libunwind else '',

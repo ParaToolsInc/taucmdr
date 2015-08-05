@@ -28,7 +28,7 @@ tau measurement create "p-keep" --keep-inst-files=T
 tau measurement create "no-io" --io=F
 
 # Set up example project
-tau project create "ex-mm" \
+tau project create "ex-matmult" \
   $target_name \
   ex-matmult-serial ex-matmult-openmp ex-matmult-openmp-mpi \
   ex-profile ex-trace ex-sample p-keep no-io

@@ -1,11 +1,11 @@
-F90 = mpif90
+F90 = tau mpif90
 RM = /bin/rm -rf
 
 TARGET = matmult
 
 OBJS = matmult.o
-CFLAGS=-g
-LDFLAGS=-g
+CFLAGS=
+LDFLAGS=
 
 ##############################################
 
