@@ -96,6 +96,9 @@ COMMANDS = {None: ['cparse',
 class PdtInstallation(AutotoolsInstallation):
     """
     Encapsulates a PDT installation.
+    
+    PDT doesn't actually use an Autotools configure script but the installation 
+    proceedure is the same otherwise, so we reuse what we can from AutotoolsInstallation.
     """
 
     def __init__(self, prefix, src, arch, compilers):
@@ -109,12 +112,7 @@ class PdtInstallation(AutotoolsInstallation):
         commands = COMMANDS.get(self.arch, COMMANDS[None])
         return super(PdtInstallation,self)._verify(commands=commands)
 
-    def configure(self):
-        """Configures PDT.
-        
-        PDT doesn't actually use an Autotools configure script so we need
-        to override this step.  Otherwise the installation proceedure is the same.
-        """
+    def configure(self, flags, env):
         family_flags = {'GNU': '-GNU', 
                         'Intel': '-icpc', 
                         'PGI': '-pgCC',

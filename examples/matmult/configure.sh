@@ -32,15 +32,11 @@ tau project create "ex-mm" \
   ex-matmult-serial ex-matmult-openmp ex-matmult-openmp-mpi \
   ex-profile ex-trace ex-sample p-keep no-io
 
-if $sv_sys; then
+if [ $user_name = "srinathv" ]; then
   echo "** making gcc target part of project"
   tau project edit ex-mm --add-targets gcc5
   tau project edit ex-mm --add-measurement p-keep
 fi
 
-if $has_mic; then
-  echo "** making a mic project"
-  tau project create ex-mic-matmult intel-mic ex-matmult-mic-mpi ex-profile
-fi
 
 tau dashboard

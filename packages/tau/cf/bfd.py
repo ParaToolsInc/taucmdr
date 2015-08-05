@@ -39,7 +39,7 @@ import os
 import sys
 import glob
 import shutil
-import logger
+import logger, util
 import fileinput
 from installation import AutotoolsInstallation
 
@@ -67,7 +67,7 @@ class BfdInstallation(AutotoolsInstallation):
         libraries = LIBS.get(self.arch, LIBS[None])
         return super(BfdInstallation,self)._verify(libraries=libraries)
     
-    def configure(self, flags=[], env={}):
+    def configure(self, flags, env):
         """Configures BFD.
         
         BFD needs a customized configration method.
@@ -107,18 +107,20 @@ class BfdInstallation(AutotoolsInstallation):
                       None: ['CFLAGS=-fPIC', 'CXXFLAGS=-fPIC',
                              '--disable-nls', '--disable-werror']}
 
-        flags = arch_flags.get(self.arch, arch_flags[None])
+        flags.extend(arch_flags.get(self.arch, arch_flags[None]))
             
         if self.arch == 'arm_android':
             # TODO: Android
             #patch -p1 <$START_DIR/android.binutils-2.23.2.patch
             pass
         elif self.arch == 'mic_linux':
-            # TODO: MIC
-            # Note: may need to search other paths than just /usr/linux-k1om-*
-            #k1om_bin="`ls -1d /usr/linux-k1om-* | sort -r | head -1`/bin"
-            #export PATH=$k1om_bin:$PATH
-            pass
+            k1om_ar = util.which('x86_64-k1om-linux-ar')
+            if not k1om_ar:
+                for path in glob.glob('/usr/linux-k1om-*'):
+                    k1om_ar = util.which(os.path.join(path, 'bin', 'x86_64-k1om-linux-ar'))
+                    if k1om_ar:
+                        break
+            env['PATH'] = os.pathsep.join([os.path.dirname(k1om_ar), env.get('PATH', os.environ['PATH'])])
         elif self.arch == 'sparc64fx':
             # TODO: SPARC64
             #fccpxpath=`which fccpx | sed 's/\/bin\/fccpx$//'`
@@ -156,10 +158,10 @@ class BfdInstallation(AutotoolsInstallation):
 #                 --disable-nls --disable-werror > tau_configure.log 2>&1
 #               err=$?
 #             fi
-        return super(BfdInstallation,self).configure(flags=flags, env=env)
+        return super(BfdInstallation,self).configure(flags, env)
     
-    def make_install(self, flags=[], env={}, parallel=False):
-        super(BfdInstallation,self).make_install(flags=flags, env=env, parallel=parallel)
+    def make_install(self, flags, env, parallel=False):
+        super(BfdInstallation,self).make_install(flags, env, parallel)
 
         LOGGER.debug("Copying missing BFD headers")
         for hdr in glob.glob(os.path.join(self._src_path, 'bfd', '*.h')):
