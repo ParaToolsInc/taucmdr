@@ -35,6 +35,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
+import os
 import sys
 
 
@@ -55,9 +56,36 @@ MINIMUM_PYTHON_VERSION = (2, 7)
 if sys.version_info < MINIMUM_PYTHON_VERSION:
     version = '.'.join(map(str, sys.version_info[0:3]))
     expected = '.'.join(map(str, MINIMUM_PYTHON_VERSION))
-    sys.stderr.write("""
+    sys.stderr.write("""%s
 %s
 %s
-Your Python version is %s but Python %s or later is required. Please update Python.
-""" % (sys.executable, sys.version, version, expected))
+Your Python version is %s but Python %s or later is required.
+Please update Python or contact %s for support.
+""" % (PROJECT_URL, sys.executable, sys.version, version, expected, HELP_CONTACT))
     sys.exit(EXIT_FAILURE)
+
+# TAU Commander home path
+try:
+    TAU_HOME = os.environ['__TAU_HOME__']
+except KeyError:
+    from tempfile import gettempdir
+    SYSTEM_PREFIX = gettempdir()
+    TAU_HOME = None
+else:
+    SYSTEM_PREFIX = os.path.realpath(os.path.join(TAU_HOME, '.system'))
+
+# The script that launched TAU Commander
+try:
+    TAU_SCRIPT = os.environ['__TAU_SCRIPT__']
+except KeyError:
+    sys.stderr.write("""
+%(bar)s
+!
+! CRITICAL ERROR: __TAU_SCRIPT__ environment variable not set.
+!
+%(bar)s
+  """ % {'bar': '!' * 80})
+    sys.exit(EXIT_FAILURE)
+
+# User-level TAU files
+USER_PREFIX = os.path.join(os.path.expanduser('~'), '.tau')

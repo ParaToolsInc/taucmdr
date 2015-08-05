@@ -45,7 +45,7 @@ import socket
 import platform
 from datetime import datetime
 from logging import handlers
-from tau import environment
+from tau import USER_PREFIX
 
 
 def getTerminalSize():
@@ -184,7 +184,7 @@ def setLogLevel(level):
 
 LOG_LEVEL = 'INFO'
 
-LOG_FILE = os.path.join(environment.USER_PREFIX, 'debug_log')
+LOG_FILE = os.path.join(USER_PREFIX, 'debug_log')
 
 # Marker for each line of output
 LINE_MARKER = os.environ.get('TAU_LINE_MARKER', '')

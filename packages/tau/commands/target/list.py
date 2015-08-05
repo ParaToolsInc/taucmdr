@@ -37,8 +37,8 @@
 
 from texttable import Texttable
 from pprint import pformat
-from tau import EXIT_SUCCESS
-from tau import logger, arguments, environment, commands
+from tau import EXIT_SUCCESS, USER_PREFIX
+from tau import logger, arguments, commands
 from tau.model.target import Target
 
 
@@ -97,8 +97,7 @@ def main(argv):
             else:
                 PARSER.error("No target configuration named '%s'" % name)
 
-    title = '{:=<{}}'.format('== Targets (%s) ==' % environment.USER_PREFIX,
-                             logger.LINE_WIDTH)
+    title = '{:=<{}}'.format('== Targets (%s) ==' % USER_PREFIX, logger.LINE_WIDTH)
     if not found:
         listing = "No targets. See 'tau target create --help'"
     else:

@@ -38,8 +38,8 @@
 # Sytem modules
 import os
 from tinydb import TinyDB, where
+from tau import USER_PREFIX, SYSTEM_PREFIX
 from tau import logger, util, error
-from tau.environment import USER_PREFIX, SYSTEM_PREFIX
 
 
 LOGGER = logger.getLogger(__name__)

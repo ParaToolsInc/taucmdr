@@ -37,8 +37,8 @@
 
 from texttable import Texttable
 from pprint import pformat
-from tau import EXIT_SUCCESS
-from tau import logger, arguments, environment, commands
+from tau import EXIT_SUCCESS, USER_PREFIX
+from tau import logger, arguments, commands
 from tau.model.project import Project
 
 
@@ -97,8 +97,7 @@ def main(argv):
             else:
                 PARSER.error("No project configuration named '%s'" % name)
 
-    title = '{:=<{}}'.format('== Projects (%s) ==' % environment.USER_PREFIX,
-                             logger.LINE_WIDTH)
+    title = '{:=<{}}'.format('== Projects (%s) ==' % USER_PREFIX, logger.LINE_WIDTH)
     if not found:
         listing = "No projects. See 'tau project create --help'"
     else:

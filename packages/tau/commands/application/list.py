@@ -38,8 +38,8 @@
 from texttable import Texttable
 from pprint import pformat
 
-from tau import EXIT_SUCCESS
-from tau import logger, arguments, environment, commands
+from tau import EXIT_SUCCESS, USER_PREFIX
+from tau import logger, arguments, commands
 from tau.model.application import Application
 
 
@@ -98,8 +98,7 @@ def main(argv):
             else:
                 PARSER.error("No application configuration named '%s'" % name)
 
-    title = '{:=<{}}'.format('== Applications (%s) ==' % environment.USER_PREFIX,
-                             logger.LINE_WIDTH)
+    title = '{:=<{}}'.format('== Applications (%s) ==' % USER_PREFIX, logger.LINE_WIDTH)
     if not found:
         listing = "No applications. See 'tau application create --help'"
     else:

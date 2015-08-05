@@ -104,7 +104,4 @@ def main(argv):
         tool = args.tool
     except AttributeError:
         tool = None
-    else:
-        if not util.which(tool):
-            PARSER.error("Invalid tool '%s'" % tool)
     return selection.show(trial_numbers=numbers, tool_name=tool)

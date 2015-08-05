@@ -37,8 +37,9 @@
 
 import os
 import shutil
-from tau import logger, util, error, environment
-from tau.controller import Controller, ByName, ModelError
+from tau import USER_PREFIX
+from tau import logger, util, error
+from tau.controller import Controller, ByName
 
 LOGGER = logger.getLogger(__name__)
 
@@ -79,7 +80,7 @@ class Project(Controller, ByName):
         'prefix': {
             'type': 'string',
             'required': True,
-            'default': environment.USER_PREFIX,
+            'default': USER_PREFIX,
             'description': 'location for all files and experiment data related to this project',
             'argparse': {'flags': ('--home',),
                          'metavar': 'path'}

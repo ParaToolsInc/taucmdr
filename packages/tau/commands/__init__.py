@@ -38,14 +38,15 @@
 import os
 import sys
 from pkgutil import walk_packages
-from tau import logger, environment
+from tau import TAU_SCRIPT, TAU_HOME
+from tau import logger
 from tau.error import ConfigurationError, InternalError
 
 
 LOGGER = logger.getLogger(__name__)
 
 
-SCRIPT_COMMAND = os.path.basename(environment.TAU_SCRIPT)
+SCRIPT_COMMAND = os.path.basename(TAU_SCRIPT)
 _COMMANDS = {SCRIPT_COMMAND: {}}
 
 
@@ -134,7 +135,7 @@ def get_commands(root_module=__name__):
              'edit': {'__module__': <module 'tau.commands.target.edit' from '/home/jlinford/workspace/taucmdr/packages/tau/commands/target/edit.pyc'>},
              'list': {'__module__': <module 'tau.commands.target.list' from '/home/jlinford/workspace/taucmdr/packages/tau/commands/target/list.pyc'>}}
     """
-    if environment.TAU_HOME == None:
+    if TAU_HOME == None:
         # Not executed from command line, don't worry about commands
         # e.g. this happens when building documentation with Sphinx
         return {}

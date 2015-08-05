@@ -43,7 +43,7 @@ import shutil
 import urllib
 import tarfile
 import urlparse
-from tau import logger, environment
+from tau import logger
 
 
 LOGGER = logger.getLogger(__name__)
@@ -91,7 +91,7 @@ def which(program):
             return abs_program
     else:
         # System path
-        for path in environment.get_env('PATH').split(os.pathsep):
+        for path in os.environ['PATH'].split(os.pathsep):
             path = path.strip('"')
             exe_file = os.path.join(path, program)
             if is_exec(exe_file):
