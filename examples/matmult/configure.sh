@@ -13,6 +13,7 @@ target_name="ex-`echo $HOSTNAME | cut -d. -f1`"
 tau target create "$target_name"
 user_name="`users`"
 
+
 # Example applications
 tau application create "ex-matmult-serial"
 tau application create "ex-matmult-mpi" --mpi
@@ -22,13 +23,22 @@ tau application create "ex-matmult-openmp-mpi" --openmp --mpi
 # Example measurements
 tau measurement create "ex-profile"
 tau measurement create "ex-trace" --profile=F --trace=T
-tau measurement create "ex-sample" --sample=T
+tau measurement create "ex-sample" --profile=T --sample=T
 tau measurement create "p-keep" --keep-inst-files=T
+tau measurement create "no-io" --io=F
 
 # Set up example project
 tau project create "ex-mm" \
   $target_name \
   ex-matmult-serial ex-matmult-openmp ex-matmult-openmp-mpi \
-  ex-profile ex-trace ex-sample
+  ex-profile ex-trace ex-sample p-keep no-io
+
+if [[ $target_name == *"Paratools-SV"* ]]; then
+  echo "** making gcc target and part of project"
+  source /Users/srinathv/gnu5Bin/linkGccs.source
+  tau target create gcc5 --compilers MPI
+  tau project edit ex-mm --add-targets gcc5
+fi
+
 
 tau dashboard
