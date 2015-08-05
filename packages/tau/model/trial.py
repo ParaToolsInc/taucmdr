@@ -38,6 +38,7 @@
 import os
 import glob
 import shutil
+import errno
 from datetime import datetime
 from tau import logger, util, storage
 from tau.error import ConfigurationError
@@ -196,7 +197,14 @@ class Trial(Controller):
 
         try:
             LOGGER.info(cmd_str)
-            retval = util.createSubprocess(cmd, cwd=cwd, env=env)
+            try:
+                retval = util.createSubprocess(cmd, cwd=cwd, env=env)
+            except OSError as err:
+                target = experiment.populate('target')
+                errno_hint = {errno.EPERM: "Check filesystem permissions",
+                              errno.ENOENT: "Check paths and command line arguments",
+                              errno.ENOEXEC: "Check that this compute node supports the %s architecture" % target['host_arch']}
+                raise TrialError("Couldn't execute %s: %s", errno_hint.get(err.errno, None))
             if retval:
                 LOGGER.warning("Nonzero return code '%d' from '%s'" % (retval, cmd_str))
 
@@ -222,7 +230,6 @@ class Trial(Controller):
                                      "did not produce any performance data")
 
             # TODO: Handle traces
-            
         except:
             cls.delete(eids=[trial.eid])
             raise
