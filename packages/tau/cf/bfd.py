@@ -120,7 +120,7 @@ class BfdInstallation(AutotoolsInstallation):
                     k1om_ar = util.which(os.path.join(path, 'bin', 'x86_64-k1om-linux-ar'))
                     if k1om_ar:
                         break
-            env['PATH'] = os.pathsep.join([os.path.basename(k1om_ar), env.get('PATH', os.environ['PATH'])]) 
+            env['PATH'] = os.pathsep.join([os.path.dirname(k1om_ar), env.get('PATH', os.environ['PATH'])])
         elif self.arch == 'sparc64fx':
             # TODO: SPARC64
             #fccpxpath=`which fccpx | sed 's/\/bin\/fccpx$//'`

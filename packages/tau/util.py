@@ -258,6 +258,9 @@ def createSubprocess(cmd, cwd=None, env=None, stdout=True, log=True):
         cwd = os.getcwd()
     # Don't accidentally unset all environment variables with an empty dict 
     env = dict(os.environ, **env) if env else None
+    for key, val in env:
+        if os.environ[key] != val:
+            LOGGER.debug("%s=%s" % (key, val))
     LOGGER.debug("Creating subprocess: cmd=%s, cwd='%s'\n" % (cmd, cwd))
     proc = subprocess.Popen(cmd, cwd=cwd, env=env,
                             stdout=subprocess.PIPE,
