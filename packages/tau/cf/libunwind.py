@@ -36,14 +36,14 @@
 #"""
 
 import os
-import logger
+import glob
+import logger, util
 from installation import AutotoolsInstallation
 
 
 LOGGER = logger.getLogger(__name__)
 
-SOURCES = {'mic_linux': 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-mic-1.1.tgz',
-           None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-1.1.tar.gz'}
+SOURCES = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-1.1.tar.gz'}
  
 LIBS = {None: ['libunwind.a']}
 
@@ -66,7 +66,26 @@ class LibunwindInstallation(AutotoolsInstallation):
     def _verify(self):
         libraries = LIBS.get(self.arch, LIBS[None])
         return super(LibunwindInstallation,self)._verify(libraries=libraries)
+    
+    def configure(self, flags, env):
+        """
+        Configures libunwind.
+        """
+        arch_flags = {'mic_linux': ['--host=x86_64-k1om-linux'],
+                      None: []}
 
+        flags.extend(arch_flags.get(self.arch, arch_flags[None]))
+            
+        if self.arch == 'mic_linux':
+            k1om_ar = util.which('x86_64-k1om-linux-ar')
+            if not k1om_ar:
+                for path in glob.glob('/usr/linux-k1om-*'):
+                    k1om_ar = util.which(os.path.join(path, 'bin', 'x86_64-k1om-linux-ar'))
+                    if k1om_ar:
+                        break
+            env['PATH'] = os.pathsep.join([os.path.dirname(k1om_ar), env.get('PATH', os.environ['PATH'])])
+        return super(LibunwindInstallation,self).configure(flags, env)
+    
     def make(self, flags, env, parallel=True):
         """Build libunwind.
         
