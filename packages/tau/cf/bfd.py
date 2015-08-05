@@ -60,7 +60,12 @@ class BfdInstallation(AutotoolsInstallation):
     """
     
     def __init__(self, prefix, src, arch, compilers):
-        super(BfdInstallation,self).__init__('BFD', prefix, src, arch, compilers, SOURCES)
+        try:
+            cc_family = compilers.CC.wrapped.family
+        except AttributeError:
+            cc_family = compilers.CC.family
+        dst = os.path.join(arch, cc_family)
+        super(BfdInstallation,self).__init__('BFD', prefix, src, dst, arch, compilers, SOURCES)
 
     def _verify(self):
         libraries = LIBS.get(self.arch, LIBS[None])

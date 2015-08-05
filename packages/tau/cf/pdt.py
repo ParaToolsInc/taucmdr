@@ -102,7 +102,11 @@ class PdtInstallation(AutotoolsInstallation):
     """
 
     def __init__(self, prefix, src, arch, compilers):
-        super(PdtInstallation, self).__init__('PDT', prefix, src, arch, compilers, SOURCES)
+        try:
+            dst = compilers.CC.wrapped.family
+        except AttributeError:
+            dst = compilers.CC.family
+        super(PdtInstallation, self).__init__('PDT', prefix, src, dst, arch, compilers, SOURCES)
         self.arch_path = os.path.join(self.install_prefix, arch)
         self.bin_path = os.path.join(self.arch_path, 'bin')
         self.lib_path = os.path.join(self.arch_path, 'lib')

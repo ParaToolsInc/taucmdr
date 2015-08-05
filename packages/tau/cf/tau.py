@@ -292,7 +292,7 @@ class TauInstallation(Installation):
             arch = TAU_ARCHITECTURES[host_arch][host_os]
         except KeyError:
             raise InternalError("Invalid host_arch '%s' or host_os '%s'" % (host_arch, host_os))
-        super(TauInstallation, self).__init__('TAU', prefix, src, arch, 
+        super(TauInstallation, self).__init__('TAU', prefix, src, '', arch, 
                                               compilers, SOURCES)
         self.arch_path = os.path.join(self.install_prefix, arch)
         self.bin_path = os.path.join(self.arch_path, 'bin')

@@ -70,7 +70,7 @@ class Installation(object):
     #pylint: disable=too-many-instance-attributes
     #pylint: disable=too-many-arguments
 
-    def __init__(self, name, prefix, src, arch, compilers, sources, tag=None):
+    def __init__(self, name, prefix, src, dst, arch, compilers, sources):
         """Initializes the installation object.
         
         To set up a new installation, pass prefix=/path/to/directory and
@@ -89,34 +89,28 @@ class Installation(object):
             src: Path to a directory where the software has already been 
                  installed, or a path to a source archive file, or the special
                  keyword 'download'
+            dst: Installation destination to be created below `prefix`
             arch: String describing the target architecture.
             compilers: CompilerSet specifying which compilers to use.
             sources: (arch, path) dictionary specifying where to get source
                      code archives for different architectures.  The None
                      key specifies the default (i.e. universal) source.
-            tag: Additional identifer for installation, i.e. compiler family UID.
         """
         self.name = name
         self.prefix = prefix
         if os.path.isdir(src):
-            self.install_prefix = src
             self.src_prefix = None
             self.src = None
-        else:
-            try:
-                install_dir = compilers.CC.wrapped.family
-            except AttributeError:
-                install_dir = compilers.CC.family
-            self.install_prefix = os.path.join(prefix, arch, name, install_dir)
-            if tag:
-                self.install_prefix = os.path.join(self.install_prefix, tag)
+            self.install_prefix = src
+        else:            
             self.src_prefix = os.path.join(prefix, 'src')
-            if src and src.lower() == 'download':
+            if src.lower() == 'download':
                 self.src = sources.get(arch, sources[None])
             else:
                 self.src = src
         self.arch = arch
         self.compilers = compilers
+        self.install_prefix = os.path.join(prefix, name, dst)
         self.include_path = os.path.join(self.install_prefix, 'include')
         self.bin_path = os.path.join(self.install_prefix, 'bin')
         self.lib_path = os.path.join(self.install_prefix, 'lib')
