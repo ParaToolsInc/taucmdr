@@ -129,10 +129,13 @@ def main(argv):
     project_name = args.name
     project = Project.withName(project_name)
     if not project:
-        PARSER.error(
-            "'%s' is not a project name. Type `tau project list` to see valid names." % project_name)
+        PARSER.error("'%s' is not a project name. Type `tau project list` to see valid names." % project_name)
 
     updates = dict(project.data)
+    try:
+        updates['prefix'] = args.prefix
+    except AttributeError:
+        pass
     updates['name'] = getattr(args, 'new_name', project_name)
     targets = set(project['targets'])
     applications = set(project['applications'])
