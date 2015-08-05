@@ -102,8 +102,7 @@ class PdtInstallation(AutotoolsInstallation):
     """
 
     def __init__(self, prefix, src, arch, compilers):
-        super(PdtInstallation, self).__init__('PDT', prefix, src, arch, 
-                                              compilers, SOURCES)
+        super(PdtInstallation, self).__init__('PDT', prefix, src, arch, compilers, SOURCES)
         self.arch_path = os.path.join(self.install_prefix, arch)
         self.bin_path = os.path.join(self.arch_path, 'bin')
         self.lib_path = os.path.join(self.arch_path, 'lib')

@@ -51,6 +51,137 @@ LOGGER = logger.getLogger(__name__)
 
 SOURCES = {None: 'http://tau.uoregon.edu/tau.tgz'}
 
+# TAU recognizes (at least) these "magic word" architectures.
+# Many of these haven't been tested in years and are probably broken.
+# Only add tested and verified working architectures to TAU_ARCHITECTURES
+#
+# apple         an i386 or x86_64 running Darwin
+# arm_linux     an ARM running Linux
+# mic_linux     an Intel MIC running k1om Linux
+# ppc64         a PowerPC64 running POWER Linux
+# bgl           a BlueGene/L
+# bgp           a BlueGene/P
+# bgq           a BlueGene/Q
+# ia64
+# crayxmt
+# xt3
+# craycnl
+# x86_64 
+# freebsd
+# 386BSD         an Intel 386, running 386BSD
+# VMS_POSIX      a vax? running VMS/POSIX
+# aix370         an IBM 370, running aix
+# aixESA         an IBM ESA, running aix
+# alliant        an Alliant FX series
+# alliant_fx2800 an Alliant FX2800 (i860 based)
+# alliant_fx80   an Alliant FX80 (mc68000 based)
+# alpha          a DEC Alpha running OSF/1
+# amdahl         an Amdahl running uts 2.1
+# amiga          an amiga running amix 2.02
+# apollo         an Apollo running DomainOS
+# att3b15        an AT&T 3b15
+# att3b2         an AT&T 3b2
+# att3b20        an AT&T 3b20
+# att3b5         an AT&T 3b5
+# balance        a Sequent Balance (32000 based)
+# bsd386         an Intel 386, running BSDI's bsd386
+# c90            a Cray C90 running Unicos
+# cm2            a Thinking Machines Corperation CM-2
+# cm5            a Thinking Machines Corperation CM-5
+# coh386         a 386 running Coherent 4.0
+# coherent       an Unknown machine running Coherent
+# convex         a Convex
+# cray           a Cray running Unicos
+# decmips
+# decstation     a DecStation XXXX
+# eta10          an ETA 10 running SVR3
+# gould_np1      a Gould NP1
+# gp1000         a BBN GP1000 (Butterfly 1) running MACH
+# hk68           a Heurikon HK68 running Uniplus+ 5.0
+# hp             an HP, running hpux
+# hp300          an HP 9000, series 300, running mtXinu
+# hp800          an HP 9000, series 800, running mtXinu
+# hp9000s300     an HP 9000, series 300, running hpux
+# hp9000s500     an HP 9000, series 500, running hpux
+# hp9000s700     an HP 9000, series 700, running hpux
+# hp9000s800     an HP 9000, series 800, running hpux
+# i386           an Intel 386, generic
+# i386_emx       an Intel 386, running emx [unix emulation under OS/2]
+# i386_linux     an Intel 386, running Linux
+# i386_mach      an Intel 386, running mach
+# i860           an Intel i860 Hypercube
+# intel386       an Intel 386, running INTEL's SVR3
+# sgi4k          a Silicon Graphics R4K based machine
+# sgi8k          a Silicon Graphics R8K based machine
+# isc386         an Intel 386, running ISC
+# ksr1           a Kendall Square KSR1
+# m68k           an mc68000 CPU machine
+# m88k           an mc88000 CPU machine
+# mac2           an Apple Computer Macintosh II, running AUX
+# masscomp       a Concurrent (Masscomp), running RTU
+# minix          a mac or an amiga running minix
+# minix386       an i386 running minix
+# mips           another mips CPU
+# multimax       an Encore Computer Corp. Multimax (32000 based)
+# nd500          a Norsk Data ND 500/5000 running Ndix
+# news           a Sony NEWS 800 or 1700 workstation
+# news_mips      a NeWS machine with mips CPU
+# next           a NeXT computer
+# ns32000        an NS32000 CPU machine
+# opus
+# paragon        an Intel paragon running OSF1/Mach
+# pfa50          a PFU/Fujitsu A-xx computer
+# ps2            an IBM PS/2, running aix
+# ptx            a Sequent Symmetry running DYNIX/ptx (386/486 based)
+# pyramid        a Pyramid Technology computer (of any flavor)
+# rs6000         an IBM RS6000, running aix 
+# rt             an IBM PC/RT, running BSD (AOS 4.3) or mach
+# rtpc           an IBM PC/RT, running aix
+# sco386         an Intel 386, running SCO
+# solaris2       a Sun Workstation running SVR4 Solaris 
+# stellar        a stellar running stellix
+# sun            a Sun workstation of none of the above types
+# sun2           a Sun Microsystems series 2 workstation (68010 based)
+# sun3           a Sun Microsystems series 3 workstation (68020 based)
+# sun386i        a Sun Microsystems 386i workstation (386 based)
+# sun4           a Sun Microsystems series 4 workstation (SPARC based)
+# symmetry       a Sequent Symmetry running DYNIX 3 (386/486 based)
+# sysV68
+# sysV88         a Motorola MPC running System V/88 R32V2 (SVR3/88100 based)
+# tahoe          a tahoe running 4BSD
+# tc2000         a BBN TC2000 (Butterfly 2) running MACH
+# tek4300        a Tektronix 4300 running UTek (BSD 4.2 / 68020 based)
+# tekXD88        a Tektronix XD88/10 running UTekV 3.2e (SVR3/88100 based)
+# titan          an Stardent Titan
+# unixpc         an UNIX/PC running SVR1 att7300 aka att3b1
+# unknown        a machine type could not be determined
+# vax            a Digital Equipment Corp. Vax (of any flavor)
+# vistra800      a Stardent Vistra 800 running SVR4
+#
+"""
+TAU_ARCHITECTURES[host_arch][host_os] == tau_magic_word_arch
+
+`host_arch` should be platform.machine() whenever possible.  
+`host_os` should be platform.system() whenever possible.  
+
+Architectures that don't support Python (i.e. Intel MIC) 
+should provide sensible values for host_arch, host_os
+until the true values from the platform package are known.
+
+Only add **TESTED** and working architectures to this list.
+"""
+TAU_ARCHITECTURES = {'x86_64': {'Darwin': 'apple', 
+                                'Linux': 'x86_64'},
+                     'mic': {'Linux': 'mic_linux'}}
+KNOWN_TARGET_ARCH = []
+KNOWN_TARGET_OS = []
+for host_arch, os_list in TAU_ARCHITECTURES.iteritems():
+    KNOWN_TARGET_ARCH.append(host_arch)
+    KNOWN_TARGET_OS.extend(os_list.iterkeys())
+KNOWN_TARGET_ARCH = list(set(KNOWN_TARGET_ARCH))
+KNOWN_TARGET_OS = list(set(KNOWN_TARGET_OS))
+del host_arch, os_list
+
 COMPILER_WRAPPERS = {CC_ROLE.keyword: 'tau_cc.sh',
                      CXX_ROLE.keyword: 'tau_cxx.sh',
                      FC_ROLE.keyword: 'tau_f90.sh',
@@ -119,7 +250,7 @@ class TauInstallation(Installation):
     """
     # pylint: disable=too-many-instance-attributes
 
-    def __init__(self, prefix, src, arch, compilers, 
+    def __init__(self, prefix, src, host_arch, host_os, compilers, 
                  verbose,
                  # Source for dependencies
                  pdt_source,
@@ -157,6 +288,10 @@ class TauInstallation(Installation):
                  measure_memory_usage,
                  measure_memory_alloc,
                  measure_callpath):
+        try:
+            arch = TAU_ARCHITECTURES[host_arch][host_os]
+        except KeyError:
+            raise InternalError("Invalid host_arch '%s' or host_os '%s'" % (host_arch, host_os))
         super(TauInstallation, self).__init__('TAU', prefix, src, arch, 
                                               compilers, SOURCES)
         self.arch_path = os.path.join(self.install_prefix, arch)

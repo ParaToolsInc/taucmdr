@@ -53,12 +53,16 @@ class Installation(object):
     """Encapsulates a software package installation.
     
     Attributes:
-        name: Software package name.
-        src: String absolute path to the source code.
+        name: Human readable name of the software package, e.g. 'TAU'
+        prefix: Path to a directory to contain subdirectories for 
+                installation files, source file, and compilation files.
+        src_prefix: Directory containing a subdirectory containing source code
+        install_prefix: Unique installation location.
+        src: Path to a directory where the software has already been 
+             installed, or a path to a source archive file, or the special
+             keyword 'download'
         arch: String describing the target architecture.
-        compilers: CompilerSet object
-        src_prefix: Directory containing a subdirectory containing source code.
-        install_prefix: Unique installation location depending on compilers.
+        compilers: CompilerSet specifying which compilers to use.
         include_path: Convinence variable, install_prefix + '/include'
         bin_path: Convinence variable, install_prefix + '/bin'
         lib_path: Convinence variable, install_prefix + '/lib'
@@ -66,17 +70,17 @@ class Installation(object):
     #pylint: disable=too-many-instance-attributes
     #pylint: disable=too-many-arguments
 
-    def __init__(self, name, prefix, src, arch, compilers, sources):
+    def __init__(self, name, prefix, src, arch, compilers, sources, tag=None):
         """Initializes the installation object.
         
         To set up a new installation, pass prefix=/path/to/directory and
-        src={/path/to/source_archive_file, 'download'}.  `prefix` will be 
+        src=/path/to/source_archive_file or src='download'.  `prefix` will be 
         created if it does not exist.  `src` may be a URL, file path, or the
         special keyword 'download'
         
-        To set up an interface to an existing installation, pass
-        src=/path/to/existing/installation and ignore prefix. Attributes
-        `src` and `src_prefix` will be set to None.
+        To set up an interface to an existing installation, pass prefix=None
+        and src=/path/to/existing/installation. Attributes `src` and 
+        `src_prefix` will be set to None.
         
         Args:
             name: Human readable name of the software package, e.g. 'TAU'
@@ -85,11 +89,12 @@ class Installation(object):
             src: Path to a directory where the software has already been 
                  installed, or a path to a source archive file, or the special
                  keyword 'download'
-            arch: Target architecture (a.k.a TAU architecture)
-            compilers: CompilerSet specifying which compilers to use
+            arch: String describing the target architecture.
+            compilers: CompilerSet specifying which compilers to use.
             sources: (arch, path) dictionary specifying where to get source
                      code archives for different architectures.  The None
-                     key specifies the default (i.e. universal) source.    
+                     key specifies the default (i.e. universal) source.
+            tag: Additional identifer for installation, i.e. compiler family UID.
         """
         self.name = name
         self.prefix = prefix
@@ -98,7 +103,13 @@ class Installation(object):
             self.src_prefix = None
             self.src = None
         else:
-            self.install_prefix = os.path.join(prefix, arch, compilers.uid, name)
+            try:
+                install_dir = compilers.CC.wrapped.family
+            except AttributeError:
+                install_dir = compilers.CC.family
+            self.install_prefix = os.path.join(prefix, name, install_dir)
+            if tag:
+                self.install_prefix = os.path.join(self.install_prefix, tag)
             self.src_prefix = os.path.join(prefix, 'src')
             if src and src.lower() == 'download':
                 self.src = sources.get(arch, sources[None])
@@ -109,7 +120,7 @@ class Installation(object):
         self.include_path = os.path.join(self.install_prefix, 'include')
         self.bin_path = os.path.join(self.install_prefix, 'bin')
         self.lib_path = os.path.join(self.install_prefix, 'lib')
-        self._lockfile = LockFile(os.path.join(self.install_prefix, '.taucmd_lock'))
+        self._lockfile = LockFile(os.path.join(self.install_prefix, '.tau_lock'))
         
     def __enter__(self):
         util.mkdirp(self.install_prefix)

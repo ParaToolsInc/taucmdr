@@ -36,8 +36,8 @@
 #"""
 
 
+import logger
 from installation import AutotoolsInstallation
-from tau import logger
 
 
 LOGGER = logger.getLogger(__name__)
@@ -55,8 +55,7 @@ class LibunwindInstallation(AutotoolsInstallation):
     """
 
     def __init__(self, prefix, src, arch, compilers):
-        super(LibunwindInstallation,self).__init__('libunwind', prefix, 
-                                                   src, arch, compilers, SOURCES)
+        super(LibunwindInstallation,self).__init__('libunwind', prefix, src, arch, compilers, SOURCES)
 
     def _verify(self):
         libraries = LIBS.get(self.arch, LIBS[None])

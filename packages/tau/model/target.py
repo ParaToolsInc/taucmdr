@@ -35,50 +35,14 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-import os
 import platform
-import subprocess
-from tau import logger
 from tau.arguments import ParsePackagePathAction
 from tau.controller import Controller, ByName
 from tau.error import ConfigurationError, InternalError
+from tau.cf.tau import KNOWN_TARGET_ARCH, KNOWN_TARGET_OS
 from tau.cf.compiler.set import CompilerSet
 from tau.cf.compiler.role import ALL_ROLES, REQUIRED_ROLES
 
-
-LOGGER = logger.getLogger(__name__)
-
-
-def host_os_default():
-    """
-    Detect the default host operating system
-    """
-    return platform.system()
-
-
-def host_arch_default():
-    """
-    Use TAU's archfind script to detect the host target architecture
-    """
-    here = os.path.dirname(os.path.realpath(__file__))
-    cmd = os.path.join(os.path.dirname(here), 'util', 'archfind', 'archfind')
-    _HOST_ARCH = subprocess.check_output(cmd).strip() 
-    return _HOST_ARCH
-
-
-def device_arch_default():
-    """
-    Detect coprocessors
-    """
-    # TODO
-    return None
-
-
-def libunwind_default():
-    if host_arch_default() == 'apple':
-        return None
-    else:
-        return 'download'
 
 
 class Target(Controller, ByName):
@@ -103,28 +67,31 @@ class Target(Controller, ByName):
             'type': 'string',
             'required': True,
             'description': 'host operating system',
-            'default': host_os_default(),
+            'default': platform.system(),
             'argparse': {'flags': ('--host-os',),
                          'group': 'target system',
-                         'metavar': 'os'}
+                         'metavar': 'os',
+                         'choices': KNOWN_TARGET_OS}
         }, 
         'host_arch': {
             'type': 'string',
             'required': True,
             'description': 'host architecture',
-            'default': host_arch_default(),
+            'default': platform.machine(),
             'argparse': {'flags': ('--host-arch',),
                          'group': 'target system',
-                         'metavar': 'arch'}
+                         'metavar': 'arch',
+                         'choices': KNOWN_TARGET_ARCH}
         },
-        'device_arch': {
-            'type': 'string',
-            'description': 'coprocessor architecture',
-            'default': device_arch_default(),
-            'argparse': {'flags': ('--device-arch',),
-                         'group': 'target system',
-                         'metavar': 'arch'}
-        },
+        # TODO: Get TAU to support a proper host/device model for offloading, etc.
+#         'device_arch': {
+#             'type': 'string',
+#             'description': 'coprocessor architecture',
+#             'default': None,
+#             'argparse': {'flags': ('--device-arch',),
+#                          'group': 'target system',
+#                          'metavar': 'arch'}
+#         },
         'CC': {
             'model': 'CompilerCommand',
             'required': True,
@@ -245,7 +212,7 @@ class Target(Controller, ByName):
         'libunwind_source': {
             'type': 'string',
             'description': 'path or URL to a libunwind installation or archive file',
-            'default': libunwind_default(),
+            'default': 'download',
             'argparse': {'flags': ('--libunwind',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
@@ -271,13 +238,6 @@ class Target(Controller, ByName):
         }
     }
 
-    def onCreate(self):
-        if self['libunwind_source'] and self['host_arch'] == 'apple':
-            libunwind_flag = self.attributes['libunwind_source']['argparse']['flags'][0]
-            raise ConfigurationError("libunwind not supported on host architecture 'apple'",
-                                     "Use %s=None" % libunwind_flag)
-        
-    
     def get_compilers(self):
         """Get Compiler objects for all compilers in this Target.
         

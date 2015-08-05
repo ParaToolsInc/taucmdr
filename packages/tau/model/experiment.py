@@ -164,13 +164,12 @@ class Experiment(Controller):
         target = populated['target']
         application = populated['application']
         measurement = populated['measurement']
-
-        host_arch = target['host_arch']
-        compilers = target.get_compilers()
         verbose=(logger.LOG_LEVEL == 'DEBUG')
         
         # Configure/build/install TAU if needed
-        self.tau = TauInstallation(prefix, target['tau_source'], host_arch, compilers,
+        self.tau = TauInstallation(prefix, target['tau_source'], 
+                                   target['host_arch'], target['host_os'], 
+                                   target.get_compilers(),
                                    verbose=verbose,
                                    pdt_source=target['pdt_source'],
                                    bfd_source=target['bfd_source'],

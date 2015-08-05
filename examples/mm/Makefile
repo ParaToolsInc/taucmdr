@@ -4,8 +4,8 @@ RM = /bin/rm -rf
 TARGET = matmult
 
 OBJS = matmult.o matmult_initialize.o
-CFLAGS=-g
-LDFLAGS=-g
+CFLAGS=
+LDFLAGS=
 
 ##############################################
 

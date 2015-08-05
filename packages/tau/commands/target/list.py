@@ -105,8 +105,7 @@ def main(argv):
         table = Texttable(logger.LINE_WIDTH)
         cols = [('Name', 'r', 'name'),
                 ('Host OS', 'c', 'host_os'),
-                ('Host Arch.', 'c', 'host_arch'),
-                ('Device Arch.', 'c', 'device_arch'),
+                ('Host Arch', 'c', 'host_arch'),
                 ('C', 'l', None),
                 ('C++', 'l', None),
                 ('Fortran', 'l', None),

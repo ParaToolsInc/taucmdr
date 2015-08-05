@@ -60,8 +60,7 @@ class BfdInstallation(AutotoolsInstallation):
     """
     
     def __init__(self, prefix, src, arch, compilers):
-        super(BfdInstallation,self).__init__('BFD', prefix, src, arch, 
-                                             compilers, SOURCES)
+        super(BfdInstallation,self).__init__('BFD', prefix, src, arch, compilers, SOURCES)
 
     def _verify(self):
         libraries = LIBS.get(self.arch, LIBS[None])

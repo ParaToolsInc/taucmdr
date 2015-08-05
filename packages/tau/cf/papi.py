@@ -51,8 +51,7 @@ class PapiInstallation(AutotoolsInstallation):
     """
 
     def __init__(self, prefix, src, arch, compilers):
-        super(PapiInstallation,self).__init__('PAPI', prefix, src, arch, 
-                                              compilers, SOURCES)
+        super(PapiInstallation,self).__init__('PAPI', prefix, src, arch, compilers, SOURCES)
 
     def _verify(self):
         libraries = LIBS.get(self.arch, LIBS[None])
