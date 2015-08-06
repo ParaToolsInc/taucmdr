@@ -45,6 +45,7 @@ from pdt import PdtInstallation
 from bfd import BfdInstallation
 from libunwind import LibunwindInstallation
 from papi import PapiInstallation
+from compiler import SYSTEM_FAMILY_NAME, GNU_FAMILY_NAME, INTEL_FAMILY_NAME, PGI_FAMILY_NAME
 from compiler.role import *
 from arch import TAU_ARCHITECTURES
 
@@ -339,7 +340,10 @@ class TauInstallation(Installation):
 
         # TAU's configure script can't detect Fortran compiler from the compiler
         # command so translate Fortran compiler command into TAU's funkey magic words
-        magic_map = {'GNU': 'gfortran', 'Intel': 'intel', 'PGI': 'pgi'}
+        magic_map = {GNU_FAMILY_NAME: 'gfortran', 
+                     INTEL_FAMILY_NAME: 'intel', 
+                     PGI_FAMILY_NAME: 'pgi',
+                     SYSTEM_FAMILY_NAME: 'ftn'}
         try:
             fortran_magic = magic_map[fc_family]
         except KeyError:
