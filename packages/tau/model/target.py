@@ -35,14 +35,13 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-import platform
 from tau.arguments import ParsePackagePathAction
 from tau.controller import Controller, ByName
-from tau.error import ConfigurationError, InternalError
-from tau.cf.tau import KNOWN_TARGET_ARCH, KNOWN_TARGET_OS
+from tau.error import InternalError
 from tau.cf.compiler.set import CompilerSet
 from tau.cf.compiler.role import ALL_ROLES, REQUIRED_ROLES
-
+from tau.cf.arch import KNOWN_TARGET_ARCH, KNOWN_TARGET_OS
+from tau.cf.arch import host
 
 
 class Target(Controller, ByName):
@@ -67,7 +66,7 @@ class Target(Controller, ByName):
             'type': 'string',
             'required': True,
             'description': 'host operating system',
-            'default': platform.system(),
+            'default': host.detect_os(),
             'argparse': {'flags': ('--host-os',),
                          'group': 'target system',
                          'metavar': 'os',
@@ -77,7 +76,7 @@ class Target(Controller, ByName):
             'type': 'string',
             'required': True,
             'description': 'host architecture',
-            'default': platform.machine(),
+            'default': host.detect_arch(),
             'argparse': {'flags': ('--host-arch',),
                          'group': 'target system',
                          'metavar': 'arch',
