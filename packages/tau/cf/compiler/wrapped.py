@@ -35,9 +35,10 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
+import os
 import subprocess
 from tau import logger
-from tau.cf.compiler import MPI_FAMILY_NAME
+from tau.cf.compiler import MPI_FAMILY_NAME, SYSTEM_FAMILY_NAME
 from tau.cf.compiler.installed import InstalledCompiler
 
 LOGGER = logger.getLogger(__name__)
@@ -56,9 +57,31 @@ class WrappedCompiler(InstalledCompiler):
         self.wrapper = wrapper
         if wrapper.family == MPI_FAMILY_NAME:
             wrapped_cmd = self._mpi_identify_wrapped()
+        elif wrapper.family == SYSTEM_FAMILY_NAME and 'PE_ENV' in os.environ:
+            wrapped_cmd = self._cray_identify_wrapped()
         else:
             raise NotImplementedError
         super(WrappedCompiler,self).__init__(wrapped_cmd)
+        
+    def _parse_args(self, args):
+        wrapped_cmd = args[0]
+        self.include_path = []
+        self.library_path = []
+        self.compiler_flags = []
+        self.linker_flags = []
+        for arg in args:
+            if arg.startswith('-I'):
+                self.include_path.append(arg[2:])
+            elif arg.startswith('-L'):
+                self.library_path.append(arg[2:])
+            elif arg.startswith('-l'):
+                self.linker_flags.append(arg)
+            else:
+                self.compiler_flags.append(arg)
+        LOGGER.debug("MPI include path: %s" % self.include_path)
+        LOGGER.debug("MPI library path: %s" % self.library_path)
+        LOGGER.debug("MPI linker flags: %s" % self.linker_flags)
+        return wrapped_cmd
 
     def _mpi_identify_wrapped(self):
         """
@@ -72,30 +95,29 @@ class WrappedCompiler(InstalledCompiler):
         except subprocess.CalledProcessError as err:
             raise RuntimeError("%s failed with return code %d: %s" % 
                                (cmd, err.returncode, err.output))
-        else:
-            LOGGER.debug(stdout)
-            LOGGER.debug("%s returned 0" % cmd)
-
-        parts = stdout.split()
+        LOGGER.debug(stdout)
+        LOGGER.debug("%s returned 0" % cmd)
         try:
-            wrapped_cmd = parts[0]
+            return self._parse_args(stdout.split())
         except IndexError:
             raise RuntimeError("Unexpected output from %s: %s" % (cmd, stdout))
-
-        self.include_path = []
-        self.library_path = []
-        self.compiler_flags = []
-        self.linker_flags = []
-        for part in parts[1:]:
-            if part.startswith('-I'):
-                self.include_path.append(part[2:])
-            elif part.startswith('-L'):
-                self.library_path.append(part[2:])
-            elif part.startswith('-l'):
-                self.linker_flags.append(part)
-            else:
-                self.compiler_flags.append(part)
-        LOGGER.debug("MPI include path: %s" % self.include_path)
-        LOGGER.debug("MPI library path: %s" % self.library_path)
-        LOGGER.debug("MPI linker flags: %s" % self.linker_flags)
-        return wrapped_cmd
+    
+    def _cray_identify_wrapped(self):
+        """
+        Discovers information about a Cray compiler command wrapping another compiler.
+        """ 
+        LOGGER.debug("Probing Cray compiler '%s' to discover wrapped compiler" % self.wrapper.command)
+        cmd = [self.wrapper.absolute_path, '-craype-verbose']
+        LOGGER.debug("Creating subprocess: cmd=%s" % cmd)
+        try:
+            stdout = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError as err:
+            raise RuntimeError("%s failed with return code %d: %s" % 
+                               (cmd, err.returncode, err.output))
+        LOGGER.debug(stdout)
+        LOGGER.debug("%s returned 0" % cmd)
+        try:
+            return self._parse_args(stdout.split())
+        except IndexError:
+            raise RuntimeError("Unexpected output from %s: %s" % (cmd, stdout))
+        

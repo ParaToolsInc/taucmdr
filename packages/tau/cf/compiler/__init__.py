@@ -94,6 +94,7 @@ SYSTEM_FAMILY_NAME = 'System'
 GNU_FAMILY_NAME = 'GNU'
 INTEL_FAMILY_NAME = 'Intel'
 PGI_FAMILY_NAME = 'PGI'
+CRAY_FAMILY_NAME = 'Cray'
 MPI_FAMILY_NAME = 'MPI'
 
 """
@@ -117,18 +118,48 @@ KNOWN_COMPILERS = {
     'pgcc': Compiler('pgcc', PGI_FAMILY_NAME, CC_ROLE),
     'pgCC': Compiler('pgCC', PGI_FAMILY_NAME, CXX_ROLE),
     'pgf90': Compiler('pgf90', PGI_FAMILY_NAME, FC_ROLE),
+    'driver.cc': Compiler('driver.cc', CRAY_FAMILY_NAME, CC_ROLE),
+    'driver.CC': Compiler('driver.CC', CRAY_FAMILY_NAME, CXX_ROLE),
+    'driver.ftn': Compiler('driver.CC', CRAY_FAMILY_NAME, FC_ROLE),
+    'ftn_driver.exe': Compiler('driver.CC', CRAY_FAMILY_NAME, FC_ROLE),
+    'driver.fort77': Compiler('driver.CC', CRAY_FAMILY_NAME, F77_ROLE),
     'mpicc': Compiler('mpicc', MPI_FAMILY_NAME, CC_ROLE),
     'mpicxx': Compiler('mpicxx', MPI_FAMILY_NAME, CXX_ROLE),
     'mpic++': Compiler('mpic++', MPI_FAMILY_NAME, CXX_ROLE),
     'mpif90': Compiler('mpif90', MPI_FAMILY_NAME, FC_ROLE)}
 
 """
-Compiler families TAU Commander can recognize.
+Compiler families known to TAU Commander.
 A nice way to search KNOWN_COMPILERS by family name. 
 """
 KNOWN_FAMILIES = {}
-for _ in KNOWN_COMPILERS.itervalues():
-    fam = _.family
+
+"""
+C compilers known to TAU Commander. 
+A nice way to search KNOWN_COMPILERS by role. 
+"""
+KNOWN_CC = []
+
+"""
+C++ compilers known to TAU Commander. 
+A nice way to search KNOWN_COMPILERS by role. 
+"""
+KNOWN_CXX = []
+
+"""
+Fortran compilers known to TAU Commander. 
+A nice way to search KNOWN_COMPILERS by role. 
+"""
+KNOWN_FC = []
+
+for _comp in KNOWN_COMPILERS.itervalues():
+    if _comp.role is CC_ROLE:
+        KNOWN_CC.append(_comp)
+    elif _comp.role is CXX_ROLE:
+        KNOWN_CXX.append(_comp)
+    elif _comp.role is FC_ROLE:
+        KNOWN_FC.append(_comp)
+    fam = _comp.family
     KNOWN_FAMILIES.setdefault(fam, [])
-    KNOWN_FAMILIES[fam].append(_)
-    
+    KNOWN_FAMILIES[fam].append(_comp)
+del _comp

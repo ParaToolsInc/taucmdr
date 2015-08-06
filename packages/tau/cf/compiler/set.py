@@ -43,7 +43,7 @@ class CompilerSet(object):
     """A collection of Compiler objects, one per required role.
     
     Attributes:
-        uid: Unique identifier (hopefully) for this combination of compilers.
+        uid: Unique identifier for this combination of compilers.
         CC: Compiler in the 'CC' role
         CXX: Compiler in the 'CXX' role
         etc.

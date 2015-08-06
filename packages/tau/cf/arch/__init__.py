@@ -38,10 +38,10 @@
 from tau.error import InternalError
 
 """
-TAU recognizes these "magic word" architectures.
+TAU and PDT recognize these "magic word" architectures.
 Many of these haven't been tested in years and are probably broken.
 """
-TAU_MAGIC_ARCH_NAMES = {
+MAGIC_ARCH_NAMES = {
         "apple":         "i386 or x86_64 running Darwin",
         "arm_linux":     "ARM running Linux",
         "mic_linux":     "Intel MIC running k1om Linux",
@@ -179,7 +179,7 @@ for _host_arch, _os_dict in TAU_ARCHITECTURES.iteritems():
     KNOWN_TARGET_ARCH.append(_host_arch)
     for _os_name, _magic_arch in _os_dict.iteritems():
         KNOWN_TARGET_OS.append(_os_name)
-        if _magic_arch not in TAU_MAGIC_ARCH_NAMES:
+        if _magic_arch not in MAGIC_ARCH_NAMES:
             raise InternalError("Invalid TAU magic architecture name '%s' in TAU_ARCHITECTURES" %_magic_arch)
 KNOWN_TARGET_ARCH = list(set(KNOWN_TARGET_ARCH))
 KNOWN_TARGET_OS = list(set(KNOWN_TARGET_OS))

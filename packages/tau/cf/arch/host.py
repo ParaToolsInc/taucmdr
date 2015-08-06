@@ -37,14 +37,16 @@
 
 import os
 import platform
-from tau import logger
+from tau import logger, util
 from cf.arch import TAU_ARCHITECTURES
-from tau.error import InternalError
+from tau.error import ConfigurationError
+from cf.compiler import KNOWN_FAMILIES, MPI_FAMILY_NAME
+from cf.compiler.role import REQUIRED_ROLES, CC_ROLE, CXX_ROLE, FC_ROLE
 
 LOGGER = logger.getLogger(__name__)
 
-def detect_arch():
-    """Returns a commonly recognized string for the host architecture.
+def _detect_arch():
+    """A commonly recognized string for the host architecture.
     
     This is not necessarrily TAU's magic arch keyword.
     Mostly relies on Python's platform module but may also probe 
@@ -53,11 +55,12 @@ def detect_arch():
     """
     host_arch = platform.machine()
     if not host_arch:
-        raise InternalError("Cannot detect host architecture")
+        raise ConfigurationError("Cannot detect host architecture")
     return host_arch
+HOST_ARCH = _detect_arch()
     
 
-def detect_os():
+def _detect_os():
     """Returns a commonly recognized string for the host operating system.
     
     This is not necessarrily TAU's magic arch keyword.
@@ -71,11 +74,11 @@ def detect_os():
     if not host_os:
         host_os = platform.system()
     if not host_os:
-        raise InternalError("Cannot detect host operating system")
+        raise ConfigurationError("Cannot detect host operating system")
     return host_os
-    
+HOST_OS = _detect_os()
 
-def detect_host():
+def _detect_tau_arch():
     """Return the TAU magic arch keyword for the host architecture.
     
     Mostly relies on Python's platform module but may also probe 
@@ -84,10 +87,36 @@ def detect_host():
     """
     LOGGER.debug("Detecting host architecture")
     
-    host_arch = detect_arch()
-    host_os = detect_os()
+    host_arch = _detect_arch()
+    host_os = _detect_os()
     try:
         return TAU_ARCHITECTURES[host_arch][host_os]
     except KeyError:
-        raise InternalError("No known TAU architecture for (%s, %s)" % (host_arch, host_os))
-      
+        raise ConfigurationError("No known TAU architecture for (%s, %s)" % (host_arch, host_os))
+TAU_ARCH = _detect_tau_arch()
+
+def _detect_default_compilers():
+    """
+    TODO: Docs
+    """
+    if TAU_ARCH == 'craycnl':
+        return {CC_ROLE.keyword: 'cc',
+                CXX_ROLE.keyword: 'CC',
+                FC_ROLE.keyword: 'ftn'}
+    excluded_families = [MPI_FAMILY_NAME]
+    for family_name, compilers in KNOWN_FAMILIES.iteritems():
+        if family_name not in excluded_families:
+            missing_roles = [role.keyword for role in REQUIRED_ROLES]
+            found = {}
+            for comp in compilers:
+                if util.which(comp.command):
+                    found[comp.role.keyword] = comp.command
+                    try: missing_roles.remove(comp.role.keyword)
+                    except ValueError: pass
+            if not missing_roles:
+                return found
+    raise ConfigurationError("No recognized compilers are installed")
+HOST_DEFAULT_COMPILERS = _detect_default_compilers()
+HOST_DEFAULT_CC = HOST_DEFAULT_COMPILERS[CC_ROLE.keyword]
+HOST_DEFAULT_CXX = HOST_DEFAULT_COMPILERS[CXX_ROLE.keyword]
+HOST_DEFAULT_FC = HOST_DEFAULT_COMPILERS[FC_ROLE.keyword]

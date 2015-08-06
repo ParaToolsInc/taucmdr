@@ -66,7 +66,7 @@ class Target(Controller, ByName):
             'type': 'string',
             'required': True,
             'description': 'host operating system',
-            'default': host.detect_os(),
+            'default': host.HOST_OS,
             'argparse': {'flags': ('--host-os',),
                          'group': 'target system',
                          'metavar': 'os',
@@ -76,7 +76,7 @@ class Target(Controller, ByName):
             'type': 'string',
             'required': True,
             'description': 'host architecture',
-            'default': host.detect_arch(),
+            'default': host.HOST_ARCH,
             'argparse': {'flags': ('--host-arch',),
                          'group': 'target system',
                          'metavar': 'arch',
@@ -95,6 +95,7 @@ class Target(Controller, ByName):
             'model': 'CompilerCommand',
             'required': True,
             'description': 'C compiler command',
+            'default': host.HOST_DEFAULT_CC,
             'argparse': {'flags': ('--cc',),
                          'group': 'compiler',
                          'metavar': '<command>'}
@@ -103,6 +104,7 @@ class Target(Controller, ByName):
             'model': 'CompilerCommand',
             'required': True,
             'description': 'C++ compiler command',
+            'default': host.HOST_DEFAULT_CXX,
             'argparse': {'flags': ('--cxx', '--c++'),
                          'group': 'compiler',
                          'metavar': '<command>'}
@@ -111,31 +113,32 @@ class Target(Controller, ByName):
             'model': 'CompilerCommand',
             'required': True,
             'description': 'Fortran compiler command',
+            'default': host.HOST_DEFAULT_FC,
             'argparse': {'flags': ('--fc', '--fortran'),
                          'group': 'compiler',
                          'metavar': '<command>'}
         },
-        'F77': {
-            'model': 'CompilerCommand',
-            'description': 'FORTRAN77 compiler command',
-            'argparse': {'flags': ('--f77',),
-                         'group': 'compiler',
-                         'metavar': '<command>'}
-        },
-        'F90': {
-            'model': 'CompilerCommand',
-            'description': 'Fortran90 compiler command',
-            'argparse': {'flags': ('--f90',),
-                         'group': 'compiler',
-                         'metavar': '<command>'}
-        },
-        'UPC': {
-            'model': 'CompilerCommand',
-            'description': 'Universal Parallel C compiler command',
-            'argparse': {'flags': ('--upc',),
-                         'group': 'compiler',
-                         'metavar': '<command>'}
-        },
+#         'F77': {
+#             'model': 'CompilerCommand',
+#             'description': 'FORTRAN77 compiler command',
+#             'argparse': {'flags': ('--f77',),
+#                          'group': 'compiler',
+#                          'metavar': '<command>'}
+#         },
+#         'F90': {
+#             'model': 'CompilerCommand',
+#             'description': 'Fortran90 compiler command',
+#             'argparse': {'flags': ('--f90',),
+#                          'group': 'compiler',
+#                          'metavar': '<command>'}
+#         },
+#         'UPC': {
+#             'model': 'CompilerCommand',
+#             'description': 'Universal Parallel C compiler command',
+#             'argparse': {'flags': ('--upc',),
+#                          'group': 'compiler',
+#                          'metavar': '<command>'}
+#         },
         'cuda': {
             'type': 'string',
             'description': 'path to NVIDIA CUDA installation',
