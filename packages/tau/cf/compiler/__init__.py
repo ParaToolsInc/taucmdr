@@ -102,6 +102,7 @@ INTEL_FAMILY_NAME = 'Intel'
 PGI_FAMILY_NAME = 'PGI'
 CRAY_FAMILY_NAME = 'Cray'
 MPI_FAMILY_NAME = 'MPI'
+INTEL_MPI_FAMILY_NAME = 'Intel MPI'
 
 """
 Compiler commands TAU Commander can recognize.
@@ -128,7 +129,9 @@ KNOWN_COMPILERS = {
     'mpicc': Compiler('mpicc', MPI_FAMILY_NAME, CC_ROLE),
     'mpicxx': Compiler('mpicxx', MPI_FAMILY_NAME, CXX_ROLE),
     'mpic++': Compiler('mpic++', MPI_FAMILY_NAME, CXX_ROLE),
-    'mpif90': Compiler('mpif90', MPI_FAMILY_NAME, FC_ROLE)}
+    'mpiifort': Compiler('mpiifort', INTEL_MPI_FAMILY_NAME, FC_ROLE),
+    'mpiicc': Compiler('mpiicc', INTEL_MPI_FAMILY_NAME, CC_ROLE),
+    'mpiicpc': Compiler('mpiicpc', INTEL_MPI_FAMILY_NAME, CXX_ROLE)}
 
 """
 Compiler families known to TAU Commander.

@@ -37,7 +37,7 @@
 
 import subprocess
 from tau import logger
-from tau.cf.compiler import MPI_FAMILY_NAME
+from tau.cf.compiler import MPI_FAMILY_NAME, INTEL_MPI_FAMILY_NAME
 from tau.cf.compiler.installed import InstalledCompiler
 
 LOGGER = logger.getLogger(__name__)
@@ -59,6 +59,8 @@ class WrappedCompiler(InstalledCompiler):
         self.compiler_flags = []
         self.linker_flags = []
         if wrapper.family == MPI_FAMILY_NAME:
+            wrapped_cmd = self._mpi_identify_wrapped()
+        elif wrapper.family == INTEL_MPI_FAMILY_NAME:
             wrapped_cmd = self._mpi_identify_wrapped()
         else:
             raise NotImplementedError
