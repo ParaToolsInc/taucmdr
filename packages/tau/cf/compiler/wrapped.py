@@ -35,10 +35,9 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-import os
 import subprocess
-from tau import logger, util
-from tau.cf.compiler import MPI_FAMILY_NAME, SYSTEM_FAMILY_NAME
+from tau import logger
+from tau.cf.compiler import MPI_FAMILY_NAME
 from tau.cf.compiler.installed import InstalledCompiler
 
 LOGGER = logger.getLogger(__name__)

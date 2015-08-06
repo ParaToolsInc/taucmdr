@@ -42,7 +42,6 @@ from tau.cf.compiler.role import *
 
 LOGGER = logger.getLogger(__name__)
 
-
 class Compiler(object):
     """Information about a compiler.
     
@@ -57,7 +56,6 @@ class Compiler(object):
     """
     
     def __init__(self, command, family=None, role=None):
-        from cf.tau import COMPILER_WRAPPERS
         self.command = command
         if not family:
             family = self.known_info().family
@@ -65,7 +63,7 @@ class Compiler(object):
             role = self.known_info().role
         self.family = family  
         self.role = role  
-        self.tau_wrapper = COMPILER_WRAPPERS[role.keyword]
+        self.tau_wrapper = TAU_COMPILER_WRAPPERS[role.keyword]
         self.short_descr = "%s %s compiler" % (self.family, role.language)
     
     def __str__(self):
@@ -89,6 +87,14 @@ class Compiler(object):
                 LOGGER.debug("Matched '%s' to '%s' from %s" % (self.command, close_command, matches))
                 info = KNOWN_COMPILERS[close_command]
         return info
+
+TAU_COMPILER_WRAPPERS = {
+        CC_ROLE.keyword: 'tau_cc.sh',
+        CXX_ROLE.keyword: 'tau_cxx.sh',
+        FC_ROLE.keyword: 'tau_f90.sh',
+        F77_ROLE.keyword: 'tau_f77.sh',
+        F90_ROLE.keyword: 'tau_f90.sh',
+        UPC_ROLE.keyword: 'tau_upc.sh'}
 
 SYSTEM_FAMILY_NAME = 'System'
 GNU_FAMILY_NAME = 'GNU'

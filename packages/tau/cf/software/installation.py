@@ -41,9 +41,8 @@ import shutil
 import multiprocessing
 from lockfile import LockFile, NotLocked
 from tau import logger, util
-from error import ConfigurationError
-from cf import SoftwarePackageError
-from cf.compiler.role import ALL_ROLES
+from tau.error import ConfigurationError, SoftwarePackageError
+from tau.cf.compiler.role import ALL_ROLES
 
 
 LOGGER = logger.getLogger(__name__)

@@ -36,7 +36,7 @@
 #"""
 
 from tau.error import InternalError
-from role import REQUIRED_ROLES, KNOWN_ROLES
+from tau.cf.compiler.role import REQUIRED_ROLES, KNOWN_ROLES
 
 
 class CompilerSet(object):

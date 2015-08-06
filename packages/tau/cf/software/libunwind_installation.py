@@ -37,8 +37,8 @@
 
 import os
 import glob
-import logger, util
-from installation import AutotoolsInstallation
+from tau import logger, util
+from tau.cf.software.installation import AutotoolsInstallation
 
 
 LOGGER = logger.getLogger(__name__)

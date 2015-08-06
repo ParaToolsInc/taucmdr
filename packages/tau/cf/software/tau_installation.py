@@ -37,28 +37,19 @@
 #"""
 import os
 import glob
-import logger, util
-from error import ConfigurationError, InternalError
-from cf import SoftwarePackageError
-from installation import Installation
-from pdt import PdtInstallation
-from bfd import BfdInstallation
-from libunwind import LibunwindInstallation
-from papi import PapiInstallation
-from compiler import SYSTEM_FAMILY_NAME, GNU_FAMILY_NAME, INTEL_FAMILY_NAME, PGI_FAMILY_NAME
-from compiler.role import *
-from arch import TAU_ARCHITECTURES
+from tau import logger, util
+from tau.error import ConfigurationError, InternalError, SoftwarePackageError
+from tau.cf.software.installation import Installation
+from tau.cf.software.pdt_installation import PdtInstallation
+from tau.cf.software.binutils_installation import BinutilsInstallation
+from tau.cf.software.libunwind_installation import LibunwindInstallation
+from tau.cf.software.papi_installation import PapiInstallation
+from tau.cf.compiler import SYSTEM_FAMILY_NAME, GNU_FAMILY_NAME, INTEL_FAMILY_NAME, PGI_FAMILY_NAME
+from tau.cf.architecture import TAU_ARCHITECTURES
 
 LOGGER = logger.getLogger(__name__)
 
 SOURCES = {None: 'http://tau.uoregon.edu/tau.tgz'}
-
-COMPILER_WRAPPERS = {CC_ROLE.keyword: 'tau_cc.sh',
-                     CXX_ROLE.keyword: 'tau_cxx.sh',
-                     FC_ROLE.keyword: 'tau_f90.sh',
-                     F77_ROLE.keyword: 'tau_f77.sh',
-                     F90_ROLE.keyword: 'tau_f90.sh',
-                     UPC_ROLE.keyword: 'tau_upc.sh'}
 
 COMMANDS = [
     'jumpshot',
@@ -234,7 +225,7 @@ class TauInstallation(Installation):
             with self.pdt:
                 self.pdt.install()
         if self.uses_bfd():
-            self.bfd = BfdInstallation(self.prefix, self.bfd_source, self.arch, self.compilers)
+            self.bfd = BinutilsInstallation(self.prefix, self.bfd_source, self.arch, self.compilers)
             with self.bfd:
                 self.bfd.install()
         if self.uses_libunwind():

@@ -43,7 +43,7 @@ from tau.error import ConfigurationError, InternalError
 from tau.controller import Controller
 from tau.model.trial import Trial
 from tau.model.compiler_command import CompilerCommand
-from tau.cf.tau import TauInstallation
+from tau.cf.software.tau_installation import TauInstallation
 from tau.cf.compiler.installed import InstalledCompiler
 
 LOGGER = logger.getLogger(__name__)

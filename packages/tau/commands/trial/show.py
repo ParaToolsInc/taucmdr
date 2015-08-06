@@ -36,7 +36,7 @@
 #"""
 
 from tau import EXIT_FAILURE
-from tau import logger, arguments, commands, util
+from tau import logger, arguments, commands
 from tau.model.experiment import Experiment
 
 

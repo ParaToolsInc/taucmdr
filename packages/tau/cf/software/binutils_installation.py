@@ -39,9 +39,9 @@ import os
 import sys
 import glob
 import shutil
-import logger, util
 import fileinput
-from installation import AutotoolsInstallation
+from tau import logger, util
+from tau.cf.software.installation import AutotoolsInstallation
 
 
 LOGGER = logger.getLogger(__name__)
@@ -52,7 +52,7 @@ SOURCES = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dis
 LIBS = {None: ['libbfd.a']}
 
 
-class BfdInstallation(AutotoolsInstallation):
+class BinutilsInstallation(AutotoolsInstallation):
     """Encapsulates a BFD installation.
     
     BFD is provided by GNU binutils and is used for symbol resolution during
@@ -65,11 +65,11 @@ class BfdInstallation(AutotoolsInstallation):
         except AttributeError:
             cc_family = compilers.CC.family
         dst = os.path.join(arch, cc_family)
-        super(BfdInstallation,self).__init__('BFD', prefix, src, dst, arch, compilers, SOURCES)
+        super(BinutilsInstallation,self).__init__('BFD', prefix, src, dst, arch, compilers, SOURCES)
 
     def _verify(self):
         libraries = LIBS.get(self.arch, LIBS[None])
-        return super(BfdInstallation,self)._verify(libraries=libraries)
+        return super(BinutilsInstallation,self)._verify(libraries=libraries)
     
     def configure(self, flags, env):
         """Configures BFD.
@@ -162,10 +162,10 @@ class BfdInstallation(AutotoolsInstallation):
 #                 --disable-nls --disable-werror > tau_configure.log 2>&1
 #               err=$?
 #             fi
-        return super(BfdInstallation,self).configure(flags, env)
+        return super(BinutilsInstallation,self).configure(flags, env)
     
     def make_install(self, flags, env, parallel=False):
-        super(BfdInstallation,self).make_install(flags, env, parallel)
+        super(BinutilsInstallation,self).make_install(flags, env, parallel)
 
         LOGGER.debug("Copying missing BFD headers")
         for hdr in glob.glob(os.path.join(self._src_path, 'bfd', '*.h')):

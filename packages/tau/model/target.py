@@ -40,8 +40,8 @@ from tau.controller import Controller, ByName
 from tau.error import InternalError
 from tau.cf.compiler.set import CompilerSet
 from tau.cf.compiler.role import ALL_ROLES, REQUIRED_ROLES
-from tau.cf.arch import KNOWN_TARGET_ARCH, KNOWN_TARGET_OS
-from tau.cf.arch import host
+from tau.cf import architecture
+from tau.cf.architecture import host
 
 
 class Target(Controller, ByName):
@@ -70,7 +70,7 @@ class Target(Controller, ByName):
             'argparse': {'flags': ('--host-os',),
                          'group': 'target system',
                          'metavar': 'os',
-                         'choices': KNOWN_TARGET_OS}
+                         'choices': architecture.KNOWN_TARGET_OS}
         }, 
         'host_arch': {
             'type': 'string',
@@ -80,7 +80,7 @@ class Target(Controller, ByName):
             'argparse': {'flags': ('--host-arch',),
                          'group': 'target system',
                          'metavar': 'arch',
-                         'choices': KNOWN_TARGET_ARCH}
+                         'choices': architecture.KNOWN_TARGET_ARCH}
         },
         # TODO: Get TAU to support a proper host/device model for offloading, etc.
 #         'device_arch': {

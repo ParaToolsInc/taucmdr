@@ -36,10 +36,9 @@
 #"""
 
 import os
-import logger, util
-from error import ConfigurationError
-from cf import SoftwarePackageError
-from installation import AutotoolsInstallation
+from tau import logger
+from tau.error import SoftwarePackageError
+from tau.cf.software.installation import AutotoolsInstallation
 
 
 LOGGER = logger.getLogger(__name__)

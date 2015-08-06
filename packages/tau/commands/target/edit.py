@@ -35,7 +35,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-import os
 from tau import logger, commands, arguments
 from tau.error import ConfigurationError
 from tau.model.target import Target

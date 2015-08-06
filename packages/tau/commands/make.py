@@ -40,8 +40,7 @@ from tau.error import ConfigurationError
 from tau.commands import SCRIPT_COMMAND
 from tau.model.experiment import Experiment
 from tau.cf.compiler import KNOWN_COMPILERS
-from tau.cf.compiler.role import *
-
+from tau.cf.compiler.role import ALL_ROLES, F77_ROLE, F90_ROLE, FC_ROLE
 
 LOGGER = logger.getLogger(__name__)
 

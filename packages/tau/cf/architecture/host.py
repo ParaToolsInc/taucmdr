@@ -38,12 +38,13 @@
 import os
 import platform
 from tau import logger, util
-from cf.arch import TAU_ARCHITECTURES
+from tau.cf.architecture import TAU_ARCHITECTURES
 from tau.error import ConfigurationError
-from cf.compiler import KNOWN_FAMILIES, MPI_FAMILY_NAME
-from cf.compiler.role import REQUIRED_ROLES, CC_ROLE, CXX_ROLE, FC_ROLE
+from tau.cf.compiler import KNOWN_FAMILIES, MPI_FAMILY_NAME
+from tau.cf.compiler.role import REQUIRED_ROLES, CC_ROLE, CXX_ROLE, FC_ROLE
 
 LOGGER = logger.getLogger(__name__)
+
 
 def _detect_arch():
     """A commonly recognized string for the host architecture.
@@ -78,6 +79,7 @@ def _detect_os():
     return host_os
 HOST_OS = _detect_os()
 
+
 def _detect_tau_arch():
     """Return the TAU magic arch keyword for the host architecture.
     
@@ -94,6 +96,7 @@ def _detect_tau_arch():
     except KeyError:
         raise ConfigurationError("No known TAU architecture for (%s, %s)" % (host_arch, host_os))
 TAU_ARCH = _detect_tau_arch()
+
 
 def _detect_default_compilers():
     """

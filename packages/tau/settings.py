@@ -35,7 +35,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-# TAU modules
 from tau import logger
 from tau.model.setting import Setting
 
