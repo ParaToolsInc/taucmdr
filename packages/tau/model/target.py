@@ -202,11 +202,11 @@ class Target(Controller, ByName):
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction},
         },
-        'bfd_source': {
+        'binutils_source': {
             'type': 'string',
             'description': 'path or URL to a GNU binutils installation or archive file',
             'default': 'download',
-            'argparse': {'flags': ('--bfd',),
+            'argparse': {'flags': ('--binutils',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction}

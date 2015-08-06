@@ -46,16 +46,15 @@ from tau.cf.software.installation import AutotoolsInstallation
 
 LOGGER = logger.getLogger(__name__)
  
-SOURCES = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/binutils-2.23.2.tar.gz',
-           'arm64_linux': 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/arm64-bfd.tgz'}
+SOURCES = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/binutils-2.23.2.tar.gz'}
 
 LIBS = {None: ['libbfd.a']}
 
 
 class BinutilsInstallation(AutotoolsInstallation):
-    """Encapsulates a BFD installation.
+    """Encapsulates a GNU binutils installation.
     
-    BFD is provided by GNU binutils and is used for symbol resolution during
+    GNU binutils provildes BFD, which is used for symbol resolution during
     sampling, compiler-based instrumentation, and other measurement approaches.
     """
     
@@ -65,17 +64,13 @@ class BinutilsInstallation(AutotoolsInstallation):
         except AttributeError:
             cc_family = compilers.CC.family
         dst = os.path.join(arch, cc_family)
-        super(BinutilsInstallation,self).__init__('BFD', prefix, src, dst, arch, compilers, SOURCES)
+        super(BinutilsInstallation,self).__init__('binutils', prefix, src, dst, arch, compilers, SOURCES)
 
     def _verify(self):
         libraries = LIBS.get(self.arch, LIBS[None])
         return super(BinutilsInstallation,self)._verify(libraries=libraries)
     
     def configure(self, flags, env):
-        """Configures BFD.
-        
-        BFD needs a customized configration method.
-        """
         arch_flags = {'bgp': ['CFLAGS=-fPIC', 'CXXFLAGS=-fPIC',
                               'CC=/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc-bgp-linux-gcc',
                               'CXX=/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc-bgp-linux-g++',
@@ -177,7 +172,7 @@ class BinutilsInstallation(AutotoolsInstallation):
                 dst = os.path.join(self.include_path, os.path.basename(f))
                 shutil.copytree(f, dst)
 
-        LOGGER.debug("Copying missing BFD libraries")
+        LOGGER.debug("Copying missing libiberty libraries")
         shutil.copy(os.path.join(self._src_path, 'libiberty', 'libiberty.a'), self.lib_path)
         shutil.copy(os.path.join(self._src_path, 'opcodes', 'libopcodes.a'), self.lib_path)
 

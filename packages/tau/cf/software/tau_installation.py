@@ -117,7 +117,7 @@ class TauInstallation(Installation):
                  verbose,
                  # Source for dependencies
                  pdt_source,
-                 bfd_source,
+                 binutils_source,
                  libunwind_source,
                  papi_source,
                  # Application support features
@@ -162,7 +162,7 @@ class TauInstallation(Installation):
         self.lib_path = os.path.join(self.arch_path, 'lib')
         self.verbose = verbose
         self.pdt_source = pdt_source
-        self.bfd_source = bfd_source
+        self.binutils_source = binutils_source
         self.libunwind_source = libunwind_source
         self.papi_source = papi_source
         self.openmp_support = openmp_support
@@ -193,7 +193,7 @@ class TauInstallation(Installation):
         self.measure_memory_usage = measure_memory_usage
         self.measure_memory_alloc = measure_memory_alloc
         self.measure_callpath = measure_callpath
-        for pkg in ['pdt', 'bfd', 'libunwind', 'papi']:
+        for pkg in ['pdt', 'binutils', 'libunwind', 'papi']:
             if eval('self.uses_%s()' % pkg):
                 if not getattr(self, '%s_source' % pkg): 
                     raise ConfigurationError("Specified TAU configuration requires %s but no source specified" % pkg)
@@ -203,10 +203,11 @@ class TauInstallation(Installation):
     def uses_pdt(self):
         return (self.source_inst != 'never')
     
-    def uses_bfd(self):
+    def uses_binutils(self):
         return (self.sample or 
                 self.compiler_inst != 'never' or 
-                self.openmp_support)
+                self.measure_openmp == 'ompt' or
+                self.measure_openmp == 'gomp')
         
     def uses_libunwind(self):
         return (self.arch != 'apple' and
@@ -225,10 +226,10 @@ class TauInstallation(Installation):
             self.pdt = PdtInstallation(self.prefix, self.pdt_source, self.arch, self.compilers)
             with self.pdt:
                 self.pdt.install()
-        if self.uses_bfd():
-            self.bfd = BinutilsInstallation(self.prefix, self.bfd_source, self.arch, self.compilers)
-            with self.bfd:
-                self.bfd.install()
+        if self.uses_binutils():
+            self.binutils = BinutilsInstallation(self.prefix, self.binutils_source, self.arch, self.compilers)
+            with self.binutils:
+                self.binutils.install()
         if self.uses_libunwind():
             self.libunwind = LibunwindInstallation(self.prefix, self.libunwind_source, self.arch, self.compilers)
             with self.libunwind:
@@ -259,8 +260,8 @@ class TauInstallation(Installation):
             for line in fin:
                 if self.bfd and ('BFDINCLUDE=' in line):
                     bfd_inc = line.split('=')[1].strip().strip("-I")
-                    if self.bfd.include_path != bfd_inc:
-                        LOGGER.debug("BFDINCLUDE='%s' != '%s'" % (bfd_inc, self.bfd.include_path))
+                    if self.binutils.include_path != bfd_inc:
+                        LOGGER.debug("BFDINCLUDE='%s' != '%s'" % (bfd_inc, self.binutils.include_path))
                         raise SoftwarePackageError("BFDINCLUDE in TAU Makefile doesn't match target BFD installation")
                 if self.libunwind and ('UNWIND_INC=' in line):
                     libunwind_inc = line.split('=')[1].strip().strip("-I")
@@ -349,7 +350,7 @@ class TauInstallation(Installation):
                   '-fortran=%s' % fortran_magic,
                   '-pdt=%s' % self.pdt.install_prefix if self.pdt else '',
                   '-pdt_c++=%s' % pdt_cxx.command if self.pdt else '',
-                  '-bfd=%s' % self.bfd.install_prefix if self.bfd else '',
+                  '-bfd=%s' % self.binutils.install_prefix if self.binutils else '',
                   '-papi=%s' % self.papi.install_prefix if self.papi else '',
                   '-unwind=%s' % self.libunwind.install_prefix if self.libunwind else '',
                   '-pthread' if self.pthreads_support else '',
@@ -570,8 +571,8 @@ class TauInstallation(Installation):
         env['TAU_OPTIONS'] = ' '.join(tau_opts)
         if self.pdt:
             self.pdt.compiletime_config(opts, env)
-        if self.bfd:
-            self.bfd.compiletime_config(opts, env)
+        if self.binutils:
+            self.binutils.compiletime_config(opts, env)
         if self.papi:
             self.papi.compiletime_config(opts, env)
         if self.libunwind:

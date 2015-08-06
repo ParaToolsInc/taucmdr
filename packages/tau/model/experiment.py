@@ -172,7 +172,7 @@ class Experiment(Controller):
                                    target.get_compilers(),
                                    verbose=verbose,
                                    pdt_source=target['pdt_source'],
-                                   bfd_source=target['bfd_source'],
+                                   binutils_source=target['binutils_source'],
                                    libunwind_source=target['libunwind_source'],
                                    papi_source=target['papi_source'],
                                    openmp_support=application['openmp'],
