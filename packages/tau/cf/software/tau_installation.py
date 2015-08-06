@@ -258,7 +258,7 @@ class TauInstallation(Installation):
         makefile = self.get_makefile()
         with open(makefile, 'r') as fin:
             for line in fin:
-                if self.bfd and ('BFDINCLUDE=' in line):
+                if self.binutils and ('BFDINCLUDE=' in line):
                     bfd_inc = line.split('=')[1].strip().strip("-I")
                     if self.binutils.include_path != bfd_inc:
                         LOGGER.debug("BFDINCLUDE='%s' != '%s'" % (bfd_inc, self.binutils.include_path))
