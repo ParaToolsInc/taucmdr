@@ -38,7 +38,8 @@
 import os
 import glob
 from tau import logger, util
-from tau.error import ConfigurationError, InternalError, SoftwarePackageError
+from tau.error import ConfigurationError, InternalError
+from tau.cf.software import SoftwarePackageError
 from tau.cf.software.installation import Installation
 from tau.cf.software.pdt_installation import PdtInstallation
 from tau.cf.software.binutils_installation import BinutilsInstallation

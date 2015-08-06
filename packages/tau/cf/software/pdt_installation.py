@@ -37,7 +37,7 @@
 
 import os
 from tau import logger
-from tau.error import SoftwarePackageError
+from tau.cf.software import SoftwarePackageError
 from tau.cf.software.installation import AutotoolsInstallation
 
 
