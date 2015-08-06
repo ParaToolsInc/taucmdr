@@ -55,6 +55,10 @@ class WrappedCompiler(InstalledCompiler):
     """   
     def __init__(self, wrapper):
         self.wrapper = wrapper
+        self.include_path = []
+        self.library_path = []
+        self.compiler_flags = []
+        self.linker_flags = []
         if wrapper.family == MPI_FAMILY_NAME:
             wrapped_cmd = self._mpi_identify_wrapped()
         elif wrapper.family == SYSTEM_FAMILY_NAME and 'PE_ENV' in os.environ:
@@ -65,10 +69,6 @@ class WrappedCompiler(InstalledCompiler):
         
     def _parse_args(self, args):
         wrapped_cmd = args[0]
-        self.include_path = []
-        self.library_path = []
-        self.compiler_flags = []
-        self.linker_flags = []
         for arg in args:
             if arg.startswith('-I'):
                 self.include_path.append(arg[2:])
@@ -78,9 +78,9 @@ class WrappedCompiler(InstalledCompiler):
                 self.linker_flags.append(arg)
             else:
                 self.compiler_flags.append(arg)
-        LOGGER.debug("MPI include path: %s" % self.include_path)
-        LOGGER.debug("MPI library path: %s" % self.library_path)
-        LOGGER.debug("MPI linker flags: %s" % self.linker_flags)
+        LOGGER.debug("Wrapped include path: %s" % self.include_path)
+        LOGGER.debug("Wrapped library path: %s" % self.library_path)
+        LOGGER.debug("Wrapped linker flags: %s" % self.linker_flags)
         return wrapped_cmd
 
     def _mpi_identify_wrapped(self):
@@ -105,16 +105,7 @@ class WrappedCompiler(InstalledCompiler):
     def _cray_identify_wrapped(self):
         """
         Discovers information about a Cray compiler command wrapping another compiler.
-        """ 
-        LOGGER.debug("Probing Cray compiler '%s' to discover wrapped compiler" % self.wrapper.command)
-        cmd = [self.wrapper.absolute_path, '-craype-verbose']
-        LOGGER.debug("Creating subprocess: cmd=%s" % cmd)
-        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-        stdout, _ = proc.communicate()
-        LOGGER.debug(stdout)
-        LOGGER.debug("%s returned %s" % (cmd, proc.returncode))
-        try:
-            return self._parse_args(stdout.split())
-        except IndexError:
-            raise RuntimeError("Unexpected output from %s: %s" % (cmd, stdout))
+        """
+        return self.command
+        
         
