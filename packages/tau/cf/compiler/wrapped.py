@@ -37,7 +37,7 @@
 
 import os
 import subprocess
-from tau import logger
+from tau import logger, util
 from tau.cf.compiler import MPI_FAMILY_NAME, SYSTEM_FAMILY_NAME
 from tau.cf.compiler.installed import InstalledCompiler
 
@@ -109,13 +109,10 @@ class WrappedCompiler(InstalledCompiler):
         LOGGER.debug("Probing Cray compiler '%s' to discover wrapped compiler" % self.wrapper.command)
         cmd = [self.wrapper.absolute_path, '-craype-verbose']
         LOGGER.debug("Creating subprocess: cmd=%s" % cmd)
-        try:
-            stdout = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-        except subprocess.CalledProcessError as err:
-            raise RuntimeError("%s failed with return code %d: %s" % 
-                               (cmd, err.returncode, err.output))
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        stdout, _ = proc.communicate()
         LOGGER.debug(stdout)
-        LOGGER.debug("%s returned 0" % cmd)
+        LOGGER.debug("%s returned %s" % (cmd, proc.returncode))
         try:
             return self._parse_args(stdout.split())
         except IndexError:
