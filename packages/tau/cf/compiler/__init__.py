@@ -104,6 +104,7 @@ so don't litter this list with lots of variants.
 """
 KNOWN_COMPILERS = {
     'cc': Compiler('cc', SYSTEM_FAMILY_NAME, CC_ROLE),
+    'CC': Compiler('CC', SYSTEM_FAMILY_NAME, CXX_ROLE),
     'cxx': Compiler('cxx', SYSTEM_FAMILY_NAME, CXX_ROLE),
     'c++': Compiler('c++', SYSTEM_FAMILY_NAME, CXX_ROLE),
     'ftn': Compiler('ftn', SYSTEM_FAMILY_NAME, FC_ROLE),

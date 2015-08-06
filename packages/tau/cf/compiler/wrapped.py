@@ -61,8 +61,6 @@ class WrappedCompiler(InstalledCompiler):
         self.linker_flags = []
         if wrapper.family == MPI_FAMILY_NAME:
             wrapped_cmd = self._mpi_identify_wrapped()
-        elif wrapper.family == SYSTEM_FAMILY_NAME and 'PE_ENV' in os.environ:
-            wrapped_cmd = self._cray_identify_wrapped()
         else:
             raise NotImplementedError
         super(WrappedCompiler,self).__init__(wrapped_cmd)
@@ -101,11 +99,3 @@ class WrappedCompiler(InstalledCompiler):
             return self._parse_args(stdout.split())
         except IndexError:
             raise RuntimeError("Unexpected output from %s: %s" % (cmd, stdout))
-    
-    def _cray_identify_wrapped(self):
-        """
-        Discovers information about a Cray compiler command wrapping another compiler.
-        """
-        return self.command
-        
-        
