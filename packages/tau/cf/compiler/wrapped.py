@@ -109,7 +109,7 @@ class WrappedCompiler(InstalledCompiler):
         LOGGER.debug("Probing Cray compiler '%s' to discover wrapped compiler" % self.wrapper.command)
         cmd = [self.wrapper.absolute_path, '-craype-verbose']
         LOGGER.debug("Creating subprocess: cmd=%s" % cmd)
-        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
         stdout, _ = proc.communicate()
         LOGGER.debug(stdout)
         LOGGER.debug("%s returned %s" % (cmd, proc.returncode))
