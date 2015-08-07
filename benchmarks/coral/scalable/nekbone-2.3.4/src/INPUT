@@ -1,0 +1,18 @@
+C
+C     Input parameters from preprocessors.
+C
+C     Note that in parallel implementations, we distinguish between
+C     distributed data (LELT) and uniformly distributed data.
+C
+
+      common /input5/ xc(8,lelt),yc(8,lelt),zc(8,lelt)
+     $               ,bc(5,6,lelt,0:ldimt1)
+
+
+      common /input8/ cbc(6,lelt,0:ldimt1),ccurve(12,lelt)
+      character*1     ccurve
+      character*3     cbc
+
+      common /cflops/ flop_a,flop_cg,mflops
+      real mflops
+

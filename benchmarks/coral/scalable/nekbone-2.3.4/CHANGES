@@ -1,0 +1,41 @@
+***********************************************************
+*              Changes in 2.0                             *
+***********************************************************
+ -Subroutine gsync() has changed to nekgsync() to avoid
+	possible conflict on certain architectures
+
+ -Executable is renamed 'nekbone' to replace 'nekproxy' and
+	other naming changes.
+
+ -iel0 and ielN  set in data.rea file are now used to control the
+ 	range of tests ran.  Test range in size from iel0
+	to ielN elements per process.  (prevoiusly tests 
+	were ran from 1 to lelt elements per process)  The
+	maximum value of ielN is lelt.
+
+ -nx0 and nxN set in data.rea file are now used to control the
+	range of polynomial orders.   Ranging from nx0 to 
+	nxN, where nxN<=lx1 (which is set in SIZE).  Previously
+	tests only ran with nx1=lx1.  The default is set to
+	reflect this, but nekbone now supports a range of
+	polynomial orders without recompiling the code.
+***********************************************************
+*              Changes in 2.1                             *
+***********************************************************
+ -Fixed nx0 and nxN control of polynomial order.  Default is
+ 	now to use lx1 until further notice.  Variable 
+	nx1 caused memory unstabilities and needs further 
+	development.
+ -Fixed a memory copy bug in the jl/ array transfer code.  
+	sarray_trasfer, used for the tuple transfer, should
+	be fixed now.
+
+***********************************************************
+*              Changes in 2.3                             *
+***********************************************************
+ - added OpenMP parallelism, MPITHREADS preprocessor macro
+   controls if MPI is called from one or multiple threads
+ - added timers controlled by TIMERS preprocessor macro
+ - fixed gather-scatter operation gsop() to always use pairwise
+   method
+ - switched to using system_clock routine in dummy mpi_wtime()

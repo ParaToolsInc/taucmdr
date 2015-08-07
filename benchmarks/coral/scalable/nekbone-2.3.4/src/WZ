@@ -1,0 +1,7 @@
+
+
+c     Gauss-Labotto and Gauss points
+      common /gauss/ zgm1(lx1,3)
+
+c     Weights
+      common /wxyz/ wxm1(lx1), wym1(ly1), wzm1(lz1), w3m1(lx1,ly1,lz1)
