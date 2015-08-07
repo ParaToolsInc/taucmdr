@@ -36,8 +36,10 @@
 #"""
 
 import os
+from tau import logger
 from installation import AutotoolsInstallation
 
+LOGGER = logger.getLogger(__name__)
 
 SOURCES = {None: 'http://icl.cs.utk.edu/projects/papi/downloads/papi-5.4.1.tar.gz'}
 
@@ -56,6 +58,7 @@ class PapiInstallation(AutotoolsInstallation):
         except AttributeError:
             cc_family = compilers.CC.family
         dst = os.path.join(arch, cc_family)
+        LOGGER.debug("src=%s, dst=%s" % (src, dst))
         super(PapiInstallation,self).__init__('PAPI', prefix, src, dst, arch, compilers, SOURCES)
 
     def _verify(self):

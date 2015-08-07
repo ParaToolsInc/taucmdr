@@ -99,26 +99,30 @@ class Installation(object):
         self.name = name
         self.prefix = prefix
         if os.path.isdir(src):
+            self.install_prefix = src
             self.src_prefix = None
             self.src = None
-            self.install_prefix = src
+            LOGGER.debug("Reusing installation at %s" % src)
         else:            
+            self.install_prefix = os.path.join(prefix, name, dst)
             self.src_prefix = os.path.join(prefix, 'src')
             if src.lower() == 'download':
                 self.src = sources.get(arch, sources[None])
             else:
                 self.src = src
+            LOGGER.debug("Creating new installation from source at %s" % src)
         self.arch = arch
         self.compilers = compilers
-        self.install_prefix = os.path.join(prefix, name, dst)
         self.include_path = os.path.join(self.install_prefix, 'include')
         self.bin_path = os.path.join(self.install_prefix, 'bin')
         self.lib_path = os.path.join(self.install_prefix, 'lib')
         self._lockfile = LockFile(os.path.join(self.install_prefix, '.tau_lock'))
+        LOGGER.debug("%s installation prefix is %s" % (self.name, self.install_prefix))
         
     def __enter__(self):
-        util.mkdirp(self.install_prefix)
-        self._lockfile.acquire()
+        if self.src:
+            util.mkdirp(self.install_prefix)
+            self._lockfile.acquire()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
