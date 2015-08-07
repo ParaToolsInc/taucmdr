@@ -1,4 +1,4 @@
-### makefile automatically created by makenek 08/06/2015 13:38:27 ###
+### makefile automatically created by makenek 08/07/2015 16:20:31 ###
 BINNAME=nekbone
 CASENAME:=
 CASEDIR:=/work/02463/srinathv/taucmdr/benchmarks/coral/scalable/nekbone-2.3.4/test/example1
@@ -7,8 +7,8 @@ J:=$S/jl
 OPT_INCDIR:=./
 OBJDIR=obj
 IFMPI:=true
-F77:=mpif77 -openmp
-CC:=mpicc -openmp
+F77:=tau mpif90
+CC:=tau mpicc
 P:=-r8 -fpconstant -fpp
 PPPO=
 PPS=TIMERS PTRSIZE8 MPI LONGINT8 UNDERSCORE GLOBAL_LONG_LONG
