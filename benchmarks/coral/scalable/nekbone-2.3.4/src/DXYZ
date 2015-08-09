@@ -1,0 +1,5 @@
+C
+C     Elemental derivative operators
+C
+      common /dxyz/ dxm1(lx1,lx1),  dxtm1(lx1,lx1)
+

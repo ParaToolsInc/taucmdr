@@ -502,25 +502,28 @@ class TauInstallation(Installation):
             A file path that could be used to set the TAU_MAKEFILE environment
             variable, or None if a suitable makefile couldn't be found.
         """
-        config_tags = self.get_makefile_tags()
         tau_makefiles = glob.glob(os.path.join(self.lib_path, 'Makefile.tau*'))
-        LOGGER.debug('Found makefiles: %r' % tau_makefiles)
+        LOGGER.debug("Found makefiles: '%s'" % tau_makefiles)
+        config_tags = self.get_makefile_tags()
+        LOGGER.debug("Searching for makefile with tags: %s" % config_tags)
         approx_tags = None
         approx_makefile = None
         dangerous_tags = self._incompatible_tags()
+        LOGGER.debug("Will not use makefiles containing tags: %s" % dangerous_tags)
         for makefile in tau_makefiles:
             tags = set(os.path.basename(makefile).split('.')[1].split('-')[1:])
+            LOGGER.debug("%s has tags: %s" % (makefile, tags))
             if config_tags <= tags:
+                LOGGER.debug("%s contains desired tags: %s" % (makefile, config_tags))
                 if tags <= config_tags:
                     makefile = os.path.join(self.lib_path, makefile) 
                     LOGGER.debug("Found TAU makefile %s" % makefile)
                     return makefile
                 elif not (tags & dangerous_tags):
-                    if not approx_tags:
-                        approx_tags = tags
-                    elif tags < approx_tags:
+                    if not approx_tags or tags < approx_tags:
                         approx_makefile = makefile
                         approx_tags = tags
+                    LOGGER.debug("Best approximate match is: %s" % approx_tags)
         LOGGER.debug("No TAU makefile exactly matches tags '%s'" % config_tags)
         if approx_makefile:
             makefile = os.path.join(self.lib_path, approx_makefile) 
