@@ -42,6 +42,7 @@ from tau.cf.architecture import TAU_ARCHITECTURES
 from tau.error import ConfigurationError
 from tau.cf.compiler import KNOWN_FAMILIES, MPI_FAMILY_NAME
 from tau.cf.compiler.role import REQUIRED_ROLES, CC_ROLE, CXX_ROLE, FC_ROLE
+from cf.architecture import BGP_ARCH_NAME, BGQ_ARCH_NAME, CRAY_CNL_OS_NAME, IBM_CNK_OS_NAME
 
 LOGGER = logger.getLogger(__name__)
 
@@ -54,12 +55,17 @@ def _detect_arch():
     environment variables and files in cases where the arch isn't
     immediately known to Python.
     """
-    host_arch = platform.machine()
+    # TODO: Find a better way to detect BlueGene architectures
+    if os.path.exists("/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc-bgp-linux-gcc"):
+        host_arch = BGP_ARCH_NAME
+    elif os.path.exists("/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc64-bgq-linux-gcc"):
+        host_arch = BGQ_ARCH_NAME
+    else:
+        host_arch = platform.machine()
     if not host_arch:
         raise ConfigurationError("Cannot detect host architecture")
     return host_arch
-HOST_ARCH = _detect_arch()
-    
+
 
 def _detect_os():
     """Returns a commonly recognized string for the host operating system.
@@ -71,13 +77,16 @@ def _detect_os():
     """
     host_os = None
     if 'CRAYOS_VERSION' in os.environ or 'PE_ENV' in os.environ:
-        host_os = 'CNL'
-    if not host_os:
+        host_os = CRAY_CNL_OS_NAME
+    elif HOST_ARCH == BGP_ARCH_NAME:
+        host_os = IBM_CNK_OS_NAME
+    elif HOST_ARCH == BGQ_ARCH_NAME:
+        host_os = IBM_CNK_OS_NAME 
+    else:
         host_os = platform.system()
     if not host_os:
         raise ConfigurationError("Cannot detect host operating system")
     return host_os
-HOST_OS = _detect_os()
 
 
 def _detect_tau_arch():
@@ -88,14 +97,10 @@ def _detect_tau_arch():
     immediately known to Python.
     """
     LOGGER.debug("Detecting host architecture")
-    
-    host_arch = _detect_arch()
-    host_os = _detect_os()
     try:
-        return TAU_ARCHITECTURES[host_arch][host_os]
+        return TAU_ARCHITECTURES[HOST_ARCH][HOST_OS]
     except KeyError:
-        raise ConfigurationError("No known TAU architecture for (%s, %s)" % (host_arch, host_os))
-TAU_ARCH = _detect_tau_arch()
+        raise ConfigurationError("No known TAU architecture for (%s, %s)" % (HOST_ARCH, HOST_OS))
 
 
 def _detect_default_compilers():
@@ -119,6 +124,12 @@ def _detect_default_compilers():
             if not missing_roles:
                 return found
     raise ConfigurationError("No recognized compilers are installed")
+
+
+HOST_ARCH = _detect_arch()
+HOST_OS = _detect_os()
+TAU_ARCH = _detect_tau_arch()
+
 HOST_DEFAULT_COMPILERS = _detect_default_compilers()
 HOST_DEFAULT_CC = HOST_DEFAULT_COMPILERS[CC_ROLE.keyword]
 HOST_DEFAULT_CXX = HOST_DEFAULT_COMPILERS[CXX_ROLE.keyword]

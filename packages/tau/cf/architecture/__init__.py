@@ -37,6 +37,16 @@
 
 from tau.error import InternalError
 
+MAC_OS_NAME = 'Darwin'
+LINUX_OS_NAME = 'Linux'
+IBM_CNK_OS_NAME = 'CNK'
+CRAY_CNL_OS_NAME = 'CNL'
+
+X86_64_ARCH_NAME = 'x86_64'
+INTEL_KNL_ARCH_NAME = 'KNL'
+BGP_ARCH_NAME = 'BlueGene/P'
+BGQ_ARCH_NAME = 'BlueGene/Q'
+
 """
 TAU and PDT recognize these "magic word" architectures.
 Many of these haven't been tested in years and are probably broken.
@@ -153,16 +163,16 @@ TAU_ARCHITECTURES[host_arch][host_os] == tau_magic_word_arch
 `host_arch` should be platform.machine() whenever possible.
 `host_os` should be platform.system() whenever possible.  
 
-Architectures that don't support Python (i.e. Intel MIC) 
+Architectures that don't support Python (i.e. Intel Knight's Landing) 
 should provide sensible values for host_arch, host_os
 until the true values from the platform package are known.
-
-Only add **TESTED** and working architectures to this list.
 """
-TAU_ARCHITECTURES = {'x86_64': {'Darwin': 'apple', 
-                                'Linux': 'x86_64',
-                                'CNL': 'craycnl'},
-                     'mic': {'Linux': 'mic_linux'}}
+TAU_ARCHITECTURES = {X86_64_ARCH_NAME: {MAC_OS_NAME: 'apple', 
+                                        LINUX_OS_NAME: 'x86_64',
+                                        CRAY_CNL_OS_NAME: 'craycnl'},
+                     INTEL_KNL_ARCH_NAME: {LINUX_OS_NAME: 'mic_linux'},
+                     BGP_ARCH_NAME: {IBM_CNK_OS_NAME: 'bgp'},
+                     BGQ_ARCH_NAME: {IBM_CNK_OS_NAME: 'bgq'}}
 
 """
 Commonly understoond target architectures (i.e. x86_64) known to TAU Commander.
