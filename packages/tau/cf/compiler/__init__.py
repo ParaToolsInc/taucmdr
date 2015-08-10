@@ -101,13 +101,16 @@ GNU_FAMILY_NAME = 'GNU'
 INTEL_FAMILY_NAME = 'Intel'
 PGI_FAMILY_NAME = 'PGI'
 CRAY_FAMILY_NAME = 'Cray'
+IBM_FAMILY_NAME = 'IBM'
 MPI_FAMILY_NAME = 'MPI'
 INTEL_MPI_FAMILY_NAME = 'Intel MPI'
 
 """
 Compiler commands TAU Commander can recognize.
-Fuzzy matching is allowed, e.g. "gcc-4.3" will match to "gcc" 
-so don't litter this list with lots of variants.
+Fuzzy matching is allowed, e.g. "gcc-4.3" will match to "gcc",
+"xlf_r" will match to "xlf", etc.  Don't litter this list with 
+lots of variants!  Only add new varients if there's a relevent
+difference between that compiler and its nearest known match.
 """
 KNOWN_COMPILERS = {
     'cc': Compiler('cc', SYSTEM_FAMILY_NAME, CC_ROLE),
@@ -126,6 +129,10 @@ KNOWN_COMPILERS = {
     'pgcc': Compiler('pgcc', PGI_FAMILY_NAME, CC_ROLE),
     'pgCC': Compiler('pgCC', PGI_FAMILY_NAME, CXX_ROLE),
     'pgf90': Compiler('pgf90', PGI_FAMILY_NAME, FC_ROLE),
+    'xlc': Compiler('xlc', IBM_FAMILY_NAME, CC_ROLE),
+    'xlc++': Compiler('xlc++', IBM_FAMILY_NAME, CXX_ROLE),
+    'xlC': Compiler('xlC', IBM_FAMILY_NAME, CXX_ROLE),
+    'xlf': Compiler('xlf', IBM_FAMILY_NAME, FC_ROLE),
     'mpicc': Compiler('mpicc', MPI_FAMILY_NAME, CC_ROLE),
     'mpicxx': Compiler('mpicxx', MPI_FAMILY_NAME, CXX_ROLE),
     'mpic++': Compiler('mpic++', MPI_FAMILY_NAME, CXX_ROLE),
