@@ -44,8 +44,8 @@ CRAY_CNL_OS_NAME = 'CNL'
 
 X86_64_ARCH_NAME = 'x86_64'
 INTEL_KNL_ARCH_NAME = 'KNL'
-BGP_ARCH_NAME = 'BlueGene/P'
-BGQ_ARCH_NAME = 'BlueGene/Q'
+BGP_ARCH_NAME = 'BGP'
+BGQ_ARCH_NAME = 'BGQ'
 
 """
 TAU and PDT recognize these "magic word" architectures.
