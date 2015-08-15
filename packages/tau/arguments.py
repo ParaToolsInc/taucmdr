@@ -37,7 +37,9 @@
 
 import os
 import argparse
+import textwrap
 from tau import logger, util
+from operator import attrgetter
 
 
 SUPPRESS = argparse.SUPPRESS
@@ -45,16 +47,57 @@ REMAINDER = argparse.REMAINDER
 
 
 class MutableGroupArgumentParser(argparse.ArgumentParser):
-
     """
     Argument parser that permits groups to be updated
     """
-
+    
     def getGroup(self, title):
         for group in self._action_groups:
             if group.title == title:
                 return group
-        return None
+        return self.add_argument_group(title=title)
+    
+    def format_help(self):
+        formatter = self._get_formatter()
+
+        # usage
+        formatter.add_usage(self.usage, self._actions,
+                            self._mutually_exclusive_groups)
+
+        # description
+        formatter.add_text(self.description)
+
+        # positionals, optionals and user-defined groups
+        for action_group in self._sorted_groups():
+            formatter.start_section(action_group.title)
+            formatter.add_text(action_group.description)
+            formatter.add_arguments(self._sort_group_actions(action_group))
+            formatter.end_section()
+
+        # epilog
+        formatter.add_text(self.epilog)
+
+        # determine help from format above
+        return formatter.format_help()
+    
+    def _sorted_groups(self):
+        positional_title = 'positional arguments'
+        optional_title = 'optional arguments'
+        groups = sorted(self._action_groups, key=lambda x: x.title.lower())
+        for group in groups:
+            if group.title == positional_title:
+                yield group
+                break
+        for group in groups:
+            if group.title == optional_title:
+                yield group
+                break
+        for group in groups:
+            if group.title not in [positional_title, optional_title]:
+                yield group
+                
+    def _sort_group_actions(self, action_group):
+        return sorted(action_group._group_actions, key=attrgetter('option_strings'))
 
 
 class ArgparseHelpFormatter(argparse.RawDescriptionHelpFormatter):
@@ -64,14 +107,12 @@ class ArgparseHelpFormatter(argparse.RawDescriptionHelpFormatter):
     """
 
     def __init__(self, prog, indent_increment=2, max_help_position=30, width=logger.LINE_WIDTH):
-        super(ArgparseHelpFormatter, self).__init__(
-            prog, indent_increment, max_help_position, width)
+        super(ArgparseHelpFormatter, self).__init__(prog, indent_increment, max_help_position, width)
 
-    def _split_lines(self, text, width):
+    def _split_lines(self, text, width):        
         parts = []
         for line in text.splitlines():
-            parts.extend(
-                argparse.HelpFormatter._split_lines(self, line, width))
+            parts.extend(textwrap.wrap(line, width))
         return parts
 
     def _get_help_string(self, action):
@@ -79,7 +120,7 @@ class ArgparseHelpFormatter(argparse.RawDescriptionHelpFormatter):
         helpstr = action.help
         choices = getattr(action, 'choices', None)
         if choices:
-            helpstr += '\n%s- %s: (%s)' % (indent, action.metavar, ', '.join(choices))
+            helpstr += '\n%s- %s: %s' % (indent, action.metavar, ', '.join(choices))
         if '%(default)' not in action.help:
             if action.default is not argparse.SUPPRESS:
                 defaulting_nargs = [argparse.OPTIONAL, argparse.ZERO_OR_MORE]

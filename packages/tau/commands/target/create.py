@@ -35,16 +35,15 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-import os
 from tau import logger, commands, arguments 
 from tau.error import ConfigurationError
 from tau.controller import UniqueAttributeError
 from tau.model.target import Target
-from tau.model.compiler_command import CompilerCommand
-from tau.cf.compiler import KNOWN_FAMILIES, KNOWN_ROLES, MPI_FAMILY_NAME
-from tau.cf.compiler.installed import InstalledCompiler
-from tau.cf.compiler.role import REQUIRED_ROLES
-from cf.compiler.role import CC_ROLE
+from tau.model.compiler import Compiler
+from tau.cf.compiler import CompilerFamily, CompilerRole
+from tau.cf.compiler.mpi import MpiCompilerFamily 
+from tau.cf.compiler.installed import CompilerInstallation, InstalledCompiler
+from tau.cf.target import host
 
  
 
@@ -67,12 +66,19 @@ PARSER = arguments.getParserFromModel(Target,
                                       usage=USAGE,
                                       description=SHORT_DESCRIPTION)
 group = PARSER.getGroup('compiler arguments')
-group.add_argument('--compilers',
-                   help="Select all compilers automatically from the given family",
+group.add_argument('--host-compilers',
+                   help="select all host compilers automatically from the given family",
                    metavar='<family>',
-                   dest='family',
-                   default=arguments.SUPPRESS,
-                   choices=KNOWN_FAMILIES.keys())
+                   dest='host_family',
+                   default=host.preferred_compilers().name,
+                   choices=CompilerFamily.family_names())
+group = PARSER.getGroup('Message Passing Interface (MPI) arguments')
+group.add_argument('--mpi-compilers', 
+                   help="select all MPI compilers automatically from the given family",
+                   metavar='<family>',
+                   dest='mpi_family',
+                   default=host.preferred_mpi_compilers().name,
+                   choices=MpiCompilerFamily.family_names())
 
 
 def getUsage():
@@ -96,61 +102,46 @@ def parse_compiler_flags(args):
         ConfigurationError: Invalid command line arguments specified
     """
     try:
-        family = InstalledCompiler.get_family(args.family)
+        host_comp = CompilerInstallation(CompilerFamily.find(args.host_family))
+    except KeyError:
+        PARSER.error("Invalid host compiler family: %s" % args.host_family)
     except AttributeError as err:
-        # args.family missing, but that's OK since args.CC etc. are possibly given instead
+        # args.host_family missing, but that's OK
         LOGGER.debug(err)
     else:
-        compilers = {}
-        for comp in family:
-            key = comp.role.keyword
-            if key not in compilers:
-                compilers[key] = comp
-        return compilers
+        for comp in host_comp:
+            setattr(args, comp.info.role.keyword, comp.absolute_path)
 
-    languages = dict([(role.keyword, role.language) for role in REQUIRED_ROLES])
-    compiler_keys = set(languages.keys())
+    try:
+        mpi_comp = CompilerInstallation(MpiCompilerFamily.find(args.mpi_family))
+    except KeyError:
+        PARSER.error("Invalid MPI compiler family: %s" % args.mpi_family)
+    except AttributeError as err:
+        # args.mpi_family missing, but that's OK
+        LOGGER.debug(err)
+    else:
+        for comp in mpi_comp:
+            setattr(args, comp.info.role.keyword, comp.absolute_path)
+
+    compiler_keys = set(CompilerRole.keys())
     all_keys = set(args.__dict__.keys())
     given_keys = compiler_keys & all_keys
     missing_keys = compiler_keys - given_keys
-    LOGGER.debug("Given keys: %s" % given_keys)
-    LOGGER.debug("Missing keys: %s" % missing_keys)
+    LOGGER.debug("Given compilers: %s" % given_keys)
+    LOGGER.debug("Missing compilers: %s" % missing_keys)
+    
+    LOGGER.debug('Autodetecting missing compilers')
+    compilers = dict([(key, InstalledCompiler(getattr(args, key))) for key in given_keys])
+    for key in missing_keys:
+        try:
+            compilers[key] = host.default_compiler(CompilerRole.find(key))
+        except ConfigurationError as err:
+            LOGGER.debug(err)
 
-    compilers = {}
-    if not given_keys:
-        LOGGER.debug("No compilers specified by user, using defaults")
-        for key in compiler_keys:
-            comp = InstalledCompiler.get_default(KNOWN_ROLES[key])
-            LOGGER.debug("%s compiler not specified, defaulting to: %s" %
-                         (comp.role.language, comp.absolute_path))
-            compilers[key] = comp
-    else:
-        for key in given_keys:
-            compilers[key] = InstalledCompiler(getattr(args, key))
-        siblings = compilers.itervalues().next().get_siblings()
-        for comp in siblings:
-            key = comp.role.keyword
-            if key not in compilers:
-                compilers[key] = comp
-
-    # Check that all compilers were found
-    for key in compiler_keys:
-        if key not in compilers:
-            raise ConfigurationError("%s compiler could not be found" % languages[key],
-                                     "See 'compiler arguments' under `%s --help`" % COMMAND)
-
-    # Check that all compilers are from the same compiler family
-    # TODO: This is a TAU requirement.  When this is fixed in TAU we can remove this check
-    families = list(set([comp.family for comp in compilers.itervalues()]))
-    if len(families) != 1:
-        raise ConfigurationError("Compilers from different families specified: %s" % families,
-                                 "TAU requires all compilers to be from the same family")
-
-    # Check that each compiler is in the right role
-    for role, comp in compilers.iteritems():
-        if comp.role.keyword != role:
-            raise ConfigurationError("'%s' specified as %s compiler but it is a %s compiler" %
-                                     (comp.absolute_path, languages[role], comp.role.language),
+    # Check that all required compilers were found
+    for role in CompilerRole.required():
+        if role.keyword not in compilers:
+            raise ConfigurationError("%s compiler could not be found" % role.language,
                                      "See 'compiler arguments' under `%s --help`" % COMMAND)
     return compilers
 
@@ -162,42 +153,42 @@ def main(argv):
     args = PARSER.parse_args(args=argv)
     LOGGER.debug('Arguments: %s' % args)
     
-    flags = dict(args.__dict__)
-    # Target model doesn't define a 'family' attribute
-    try: del flags['family']
-    except KeyError: pass
+    fields = dict(args.__dict__)
+    for key in 'host_family', 'mpi_family':
+        try: del fields[key]
+        except KeyError: pass
     
     compilers = parse_compiler_flags(args)
-    if compilers[CC_ROLE.keyword].family == MPI_FAMILY_NAME:
-        mpi_include_path = set()
-        mpi_library_path = set()
-        mpi_compiler_flags = set()
-        mpi_linker_flags = set()
-        for comp in compilers.itervalues():
-            mpi_include_path |= set(comp.wrapped.include_path)
-            mpi_library_path |= set(comp.wrapped.library_path)
-            mpi_compiler_flags |= set(comp.wrapped.compiler_flags)
-            mpi_linker_flags |= set(comp.wrapped.linker_flags)
-        if not flags['mpi_include_path']:
-            flags['mpi_include_path'] = list(mpi_include_path) 
-            LOGGER.info("Autodetected MPI include path: %s" % os.pathsep.join(mpi_include_path))
-        if not flags['mpi_library_path']:
-            flags['mpi_library_path'] = list(mpi_library_path)
-            LOGGER.info("Autodetected MPI library path: %s" % os.pathsep.join(mpi_library_path))
-        if not flags['mpi_compiler_flags']:
-            flags['mpi_compiler_flags'] = list(mpi_compiler_flags)
-            LOGGER.info("Autodetected MPI compiler flags: %s" % ' '.join(mpi_compiler_flags))
-        if not flags['mpi_linker_flags']:
-            flags['mpi_linker_flags'] = list(mpi_linker_flags)
-            LOGGER.info("Autodetected MPI linker flags: %s" % ' '.join(mpi_linker_flags))
+#     if compilers[CC_ROLE.keyword].family == MPI_FAMILY_NAME:
+#         mpi_include_path = set()
+#         mpi_library_path = set()
+#         mpi_compiler_flags = set()
+#         mpi_linker_flags = set()
+#         for comp in compilers.itervalues():
+#             mpi_include_path |= set(comp.wrapped.include_path)
+#             mpi_library_path |= set(comp.wrapped.library_path)
+#             mpi_compiler_flags |= set(comp.wrapped.compiler_flags)
+#             mpi_linker_flags |= set(comp.wrapped.linker_flags)
+#         if not flags['mpi_include_path']:
+#             flags['mpi_include_path'] = list(mpi_include_path) 
+#             LOGGER.info("Autodetected MPI include path: %s" % os.pathsep.join(mpi_include_path))
+#         if not flags['mpi_library_path']:
+#             flags['mpi_library_path'] = list(mpi_library_path)
+#             LOGGER.info("Autodetected MPI library path: %s" % os.pathsep.join(mpi_library_path))
+#         if not flags['mpi_compiler_flags']:
+#             flags['mpi_compiler_flags'] = list(mpi_compiler_flags)
+#             LOGGER.info("Autodetected MPI compiler flags: %s" % ' '.join(mpi_compiler_flags))
+#         if not flags['mpi_linker_flags']:
+#             flags['mpi_linker_flags'] = list(mpi_linker_flags)
+#             LOGGER.info("Autodetected MPI linker flags: %s" % ' '.join(mpi_linker_flags))
     
-    for role, comp in compilers.iteritems():
-        LOGGER.debug("%s=%s (%s)" % (role, comp.absolute_path, comp.short_descr))
-        record = CompilerCommand.from_info(comp)
-        flags[comp.role.keyword] = record.eid
-        
+    for keyword, comp in compilers.iteritems():
+        LOGGER.debug("%s=%s (%s)" % (keyword, comp.absolute_path, comp.info.short_descr))
+        record = Compiler.register(comp)
+        fields[comp.info.role.keyword] = record.eid
+
     try:
-        Target.create(flags)
+        Target.create(fields)
     except UniqueAttributeError:
         PARSER.error('A target named %r already exists' % args.name)
     LOGGER.info('Created a new target named %r.' % args.name)

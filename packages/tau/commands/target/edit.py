@@ -35,13 +35,12 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
+from operator import attrgetter
 from tau import logger, commands, arguments
 from tau.error import ConfigurationError
 from tau.model.target import Target
-from tau.model.compiler_command import CompilerCommand
-from tau.cf.compiler import KNOWN_FAMILIES
-from tau.cf.compiler.installed import InstalledCompiler
-from tau.cf.compiler.role import REQUIRED_ROLES
+from tau.model.compiler import Compiler
+from tau.cf.compiler import CompilerFamily
 
 
 LOGGER = logger.getLogger(__name__)
@@ -73,7 +72,7 @@ group.add_argument('--compilers',
                    metavar='<family>',
                    dest='family',
                    default=arguments.SUPPRESS,
-                   choices=KNOWN_FAMILIES.keys())
+                   choices=sorted(CompilerFamily.all()))
 
 
 def getUsage():
@@ -110,7 +109,7 @@ def parse_compiler_flags(args, compilers):
                 compilers[key] = comp
         return compilers.values()
 
-    languages = dict([(role.keyword, role.language) for role in REQUIRED_ROLES])
+    languages = dict([(role.keyword, role.language) for role in CompilerRole.all()])
     compiler_keys = set(languages.keys())
     all_keys = set(args.__dict__.keys())
     given_keys = compiler_keys & all_keys
@@ -162,7 +161,7 @@ def main(argv):
         del updates['new_name']
     
     old_compilers = dict([(role.keyword, CompilerCommand.one(eid=found[role.keyword]).info())
-                          for role in REQUIRED_ROLES])
+                          for role in CompilerRole.required()])
     compilers = parse_compiler_flags(args, old_compilers)
     for comp in compilers:
         record = CompilerCommand.from_info(comp)

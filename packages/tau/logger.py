@@ -43,6 +43,7 @@ import logging
 import textwrap
 import socket
 import platform
+import string
 from datetime import datetime
 from logging import handlers
 from tau import USER_PREFIX
@@ -127,51 +128,64 @@ def _getTerminalSize_linux():
     return int(cr[1]), int(cr[0])
 
 
-def _textwrap_message(record):
-    return ['%s%s' % (LINE_MARKER, _text_wrapper.fill(line))
-            for line in record.getMessage().split('\n')]
-
-
-def _msgbox(record, marker):
-    width = LINE_WIDTH - len(LINE_MARKER)
-    hline = LINE_MARKER + marker * width
-    parts = [hline, LINE_MARKER, '%s%s' % (LINE_MARKER, record.levelname)]
-    parts.extend(_textwrap_message(record))
-    parts.append(hline)
-    return '\n'.join(parts)
-
-
 class LogFormatter(logging.Formatter, object):
 
     """
     Custom log message formatter.
     """
-
-    def __init__(self):
+    
+    PRINTABLE_CHARS = set(string.printable)
+    
+    def __init__(self, line_width, line_marker, printable_only=False):
         super(LogFormatter, self).__init__()
+        self.line_width = line_width
+        self.line_marker = line_marker
+        self.printable_only = printable_only
+        self._text_wrapper = textwrap.TextWrapper(width=line_width,
+                                                  subsequent_indent=line_marker + '    ',
+                                                  break_long_words=False,
+                                                  break_on_hyphens=False,
+                                                  drop_whitespace=False)
 
     def format(self, record):
         if record.levelno == logging.CRITICAL:
-            return _msgbox(record, '!')
+            return self._msgbox(record, '!')
         elif record.levelno == logging.ERROR:
-            return _msgbox(record, '!')
+            return self._msgbox(record, '!')
         elif record.levelno == logging.WARNING:
-            return _msgbox(record, '*')
+            return self._msgbox(record, '*')
         elif record.levelno == logging.INFO:
-            return '\n'.join(_textwrap_message(record))
+            return '\n'.join(self._textwrap_message(record))
         elif record.levelno == logging.DEBUG:
-            return '%s%s:%s: %s' % (LINE_MARKER, record.levelname,
-                                    record.name, record.getMessage())
+            return '%s[%s %s:%s] %s' % (self.line_marker, record.levelname, 
+                                        record.name, record.lineno, record.getMessage())
         else:
-            raise RuntimeError(
-                'Unknown record level (name: %s)' % record.levelname)
+            raise RuntimeError('Unknown record level (name: %s)' % record.levelname)
+
+    def _msgbox(self, record, marker):
+        width = self.line_width - len(self.line_marker)
+        hline = self.line_marker + marker * width
+        parts = [hline, self.line_marker, '%s%s' % (self.line_marker, record.levelname)]
+        parts.extend(self._textwrap_message(record))
+        parts.append(hline)
+        return '\n'.join(parts)
+
+    def _textwrap_message(self, record):
+        parts = []
+        for line in record.getMessage().split('\n'):
+            if self.printable_only and not set(line).issubset(self.PRINTABLE_CHARS):
+                message = "<<UNPRINTABLE>>"
+            else:
+                message = self._text_wrapper.fill(line)
+            parts.append('%s%s' % (self.line_marker, message))
+        return parts
 
 
 def getLogger(name):
     """
     Returns a customized logging object by name
     """
-    return logging.getLogger('tau.' + name)
+    return logging.getLogger(name)
 
 
 def setLogLevel(level):
@@ -193,12 +207,6 @@ LINE_MARKER = os.environ.get('TAU_LINE_MARKER', '')
 TERM_SIZE = getTerminalSize()
 LINE_WIDTH = TERM_SIZE[0] - len(LINE_MARKER)
 
-_text_wrapper = textwrap.TextWrapper(width=LINE_WIDTH,
-                                     subsequent_indent=LINE_MARKER + '  ',
-                                     break_long_words=False,
-                                     break_on_hyphens=False,
-                                     drop_whitespace=False)
-
 _root_logger = logging.getLogger('tau')
 if not len(_root_logger.handlers):
     prefix = os.path.dirname(LOG_FILE)
@@ -209,16 +217,12 @@ if not len(_root_logger.handlers):
             pass
         else:
             raise
-    file_handler = handlers.TimedRotatingFileHandler(
-        LOG_FILE,
-        when='D',
-        interval=1,
-        backupCount=5)
-    file_handler.setFormatter(LogFormatter())
+    file_handler = handlers.TimedRotatingFileHandler(LOG_FILE, when='D', interval=1, backupCount=3)
+    file_handler.setFormatter(LogFormatter(line_width=120, line_marker=LINE_MARKER))
     file_handler.setLevel(logging.DEBUG)
 
     stdout_handler = logging.StreamHandler(sys.stdout)
-    stdout_handler.setFormatter(LogFormatter())
+    stdout_handler.setFormatter(LogFormatter(line_width=LINE_WIDTH, line_marker=LINE_MARKER, printable_only=True))
     stdout_handler.setLevel(LOG_LEVEL)
 
     _root_logger.addHandler(file_handler)

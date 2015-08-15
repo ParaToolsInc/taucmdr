@@ -66,7 +66,6 @@ class Storage(object):
         self._transaction_count = 0
         try:
             util.mkdirp(prefix)
-            LOGGER.debug("Created '%s'" % prefix)
         except:
             raise StorageError("Cannot create directory '%s'" % prefix, 
                                'Check that you have `write` access')

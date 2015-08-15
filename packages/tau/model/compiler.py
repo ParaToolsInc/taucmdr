@@ -38,12 +38,13 @@
 from tau import logger
 from tau.controller import Controller
 
+
 LOGGER = logger.getLogger(__name__)
  
-class CompilerCommand(Controller):
+class Compiler(Controller):
 
     """
-    CompilerCommand data model controller
+    Compiler data model controller
     """
 
     attributes = {
@@ -68,18 +69,21 @@ class CompilerCommand(Controller):
         """
         from tau.cf.compiler.installed import InstalledCompiler
         comp = InstalledCompiler(self['path'])
-        if comp.md5sum != self['md5']:
-            LOGGER.warning("%s '%s' has changed!" % (comp.short_descr, comp.command))
+        if comp.md5sum() != self['md5']:
+            LOGGER.warning("%s '%s' has changed!" % (comp.info.short_descr, comp.command))
             # TODO: What do we do when compilers change?
         return comp
 
     @classmethod
-    def from_info(cls, comp):
-        found = cls.one(keys={'path': comp.absolute_path})
+    def register(cls, comp):
+        path = comp.absolute_path
+        md5sum = comp.md5sum()
+        found = cls.one(keys={'path': path})
         if not found:
-            found = cls.create(fields={'path': comp.absolute_path, 'md5': comp.md5sum})
+            found = cls.create(fields={'path': path, 'md5': md5sum})
         else:
-            if comp.md5sum != found['md5']:
-                LOGGER.warning("%s '%s' has changed!" % (comp.short_descr, comp.command))
+            if md5sum != found['md5']:
+                LOGGER.warning("%s '%s' has changed!  MD5 sum was %s, but now it's %s" % 
+                               (comp.info.short_descr, comp.command, found['md5'], md5sum))
                 # TODO: What should we do when the compilers change?
         return found

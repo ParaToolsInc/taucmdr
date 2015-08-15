@@ -36,142 +36,213 @@
 #"""
 # pylint: disable=too-few-public-methods
 
+import os
 from tau import logger
-from tau.error import ConfigurationError, InternalError
-from tau.cf.compiler.role import *
+from tau.cf import TrackedInstance, KeyedRecord
+from tau.error import InternalError 
+
 
 LOGGER = logger.getLogger(__name__)
 
-class Compiler(object):
+
+class CompilerRole(KeyedRecord):
+    """Information about a compiler's role.
+    
+    Attributes:
+        keyword: String identifying how the compiler is used in the build process, e.g. 'CXX'
+        language: Language corresponding to the compiler role, e.g. 'C++'
+        required: True if this role must be filled to compile TAU, False otherwise
+    """
+    
+    KEY = 'keyword'
+    
+    def __init__(self, keyword, language, required=False):
+        self.keyword = keyword
+        self.language = language
+        self.required = required
+        
+    @classmethod
+    def required(cls):
+        """Yield all roles that must be filled to get TAU to compile."""
+        for role in cls.all():
+            if role.required:
+                yield role
+
+
+class CompilerInfo(TrackedInstance):
     """Information about a compiler.
     
     The compiler might not be installed in the system.  See InstalledCompiler.  
     
     Attributes:
-        command: Compiler command without path, e.g. 'icpc'
-        family: Compiler family string, e.g. 'Intel'
-        role: CompilerRole describing this compiler's role
-        tau_wrapper: The corresponding TAU wrapper script, e.g. 'tau_cxx.sh'
+        command: Command string without path or arguments, e.g. 'icpc'
+        family: CompilerFamily this compiler belongs to
+        role: CompilerRole describing this compiler's family role
         short_descr: A short descriptive string for command line help
     """
-    
-    def __init__(self, command, family=None, role=None):
+
+    def __init__(self, command, family, role):
         self.command = command
-        if not family:
-            family = self.known_info().family
-        if not role:
-            role = self.known_info().role
-        self.family = family  
-        self.role = role  
-        self.tau_wrapper = TAU_COMPILER_WRAPPERS[role.keyword]
-        self.short_descr = "%s %s compiler" % (self.family, role.language)
+        self.family = family
+        self.role = role
+        self.short_descr = "%s %s compiler" % (family.name, role.language)
+        self.tau_wrapper = None
     
-    def __str__(self):
-        return str(dict([(key, val) for (key, val) in self.__dict__.iteritems() 
-                         if not key.startswith('_')]))
+    @classmethod
+    def find(cls, command):
+        """Find compiler info that matches the given command.
+        
+        If an exact match cannot be found then information for the longest command
+        contained in the passed command is returned.
+        
+        Examples:
+            find("gcc-4.7-x86_64") returns info for "gcc" from possible candidates ["gcc", "cc"]
+        
+        Args:
+            command: Absolute or relative path to a compiler command
 
-    def known_info(self):
-        """TODO: Docs
+        Returns:
+            A CompilerInfo object.
+            
+        Raises:
+            KeyError: No compiler info matches the given command.
         """
-        try:
-            info = KNOWN_COMPILERS[self.command]
-        except KeyError:
-            matches = [name for name in KNOWN_COMPILERS.iterkeys() if name in self.command]
-            if not matches:
-                raise ConfigurationError("Unknown compiler command: '%s'" % self.command)
-            else:
-                # TODO: This "longest match is best match" logic is a bit hacky. 
-                # TODO: Would be better to actually probe the compiler somehow, e.g.
-                # TODO: compile a file and read information from compiler output
-                close_command = max(matches, key=len)
-                LOGGER.debug("Matched '%s' to '%s' from %s" % (self.command, close_command, matches))
-                info = KNOWN_COMPILERS[close_command]
-        return info
+        command = os.path.basename(command)
+        for info in cls.all():
+            if info.command == command:
+                return info
+        # Guess that the longest string is the best match
+        LOGGER.debug("No compiler info exactly matches %s, trying approximate match" % command)
+        candidates = filter(lambda comp: comp.command in command, cls.all())
+        if not candidates:
+            raise KeyError
+        return max(candidates, key=len)
 
-TAU_COMPILER_WRAPPERS = {
-        CC_ROLE.keyword: 'tau_cc.sh',
-        CXX_ROLE.keyword: 'tau_cxx.sh',
-        FC_ROLE.keyword: 'tau_f90.sh',
-        F77_ROLE.keyword: 'tau_f77.sh',
-        F90_ROLE.keyword: 'tau_f90.sh',
-        UPC_ROLE.keyword: 'tau_upc.sh'}
 
-SYSTEM_FAMILY_NAME = 'System'
-GNU_FAMILY_NAME = 'GNU'
-INTEL_FAMILY_NAME = 'Intel'
-PGI_FAMILY_NAME = 'PGI'
-CRAY_FAMILY_NAME = 'Cray'
-IBM_FAMILY_NAME = 'IBM'
-MPI_FAMILY_NAME = 'MPI'
-INTEL_MPI_FAMILY_NAME = 'Intel MPI'
 
-"""
-Compiler commands TAU Commander can recognize.
-Fuzzy matching is allowed, e.g. "gcc-4.3" will match to "gcc",
-"xlf_r" will match to "xlf", etc.  Don't litter this list with 
-lots of variants!  Only add new varients if there's a relevent
-difference between that compiler and its nearest known match.
-"""
-KNOWN_COMPILERS = {
-    'cc': Compiler('cc', SYSTEM_FAMILY_NAME, CC_ROLE),
-    'CC': Compiler('CC', SYSTEM_FAMILY_NAME, CXX_ROLE),
-    'cxx': Compiler('cxx', SYSTEM_FAMILY_NAME, CXX_ROLE),
-    'c++': Compiler('c++', SYSTEM_FAMILY_NAME, CXX_ROLE),
-    'ftn': Compiler('ftn', SYSTEM_FAMILY_NAME, FC_ROLE),
-    'f77': Compiler('f77', SYSTEM_FAMILY_NAME, F77_ROLE),
-    'f90': Compiler('f90', SYSTEM_FAMILY_NAME, F90_ROLE),
-    'gcc': Compiler('gcc', GNU_FAMILY_NAME, CC_ROLE),
-    'g++': Compiler('g++', GNU_FAMILY_NAME, CXX_ROLE),
-    'gfortran': Compiler('gfortran', GNU_FAMILY_NAME, FC_ROLE),
-    'icc': Compiler('icc', INTEL_FAMILY_NAME, CC_ROLE),
-    'icpc': Compiler('icpc', INTEL_FAMILY_NAME, CXX_ROLE),
-    'ifort': Compiler('ifort', INTEL_FAMILY_NAME, FC_ROLE),
-    'pgcc': Compiler('pgcc', PGI_FAMILY_NAME, CC_ROLE),
-    'pgCC': Compiler('pgCC', PGI_FAMILY_NAME, CXX_ROLE),
-    'pgf90': Compiler('pgf90', PGI_FAMILY_NAME, FC_ROLE),
-    'xlc': Compiler('xlc', IBM_FAMILY_NAME, CC_ROLE),
-    'xlc++': Compiler('xlc++', IBM_FAMILY_NAME, CXX_ROLE),
-    'xlC': Compiler('xlC', IBM_FAMILY_NAME, CXX_ROLE),
-    'xlf': Compiler('xlf', IBM_FAMILY_NAME, FC_ROLE),
-    'mpicc': Compiler('mpicc', MPI_FAMILY_NAME, CC_ROLE),
-    'mpicxx': Compiler('mpicxx', MPI_FAMILY_NAME, CXX_ROLE),
-    'mpic++': Compiler('mpic++', MPI_FAMILY_NAME, CXX_ROLE),
-    'mpiifort': Compiler('mpiifort', INTEL_MPI_FAMILY_NAME, FC_ROLE),
-    'mpiicc': Compiler('mpiicc', INTEL_MPI_FAMILY_NAME, CC_ROLE),
-    'mpiicpc': Compiler('mpiicpc', INTEL_MPI_FAMILY_NAME, CXX_ROLE)}
+class CompilerFamily(KeyedRecord):
+    """Information about a compiler family.
+    
+    Attributes:
+        name: String identifying this family, e.g. "Intel"
+    """
+    
+    KEY = 'name'
+    
+    def __init__(self, name):
+        self.name = name
+        self._info_by_command = {}
+        self._info_by_role = {}
 
-"""
-Compiler families known to TAU Commander.
-A nice way to search KNOWN_COMPILERS by family name. 
-"""
-KNOWN_FAMILIES = {}
+    @classmethod
+    def all(cls):
+        """Iterate over all compiler families.
+        
+        First value yielded is the host's preferred compiler family.
+        Subsequent values can be in any order.
+        
+        Yields:
+           A CompilerFamily object.
+        """
+        preferred = cls.preferred()
+        yield preferred
+        for fam in cls._INSTANCES.itervalues():
+            if fam.name != preferred.name:
+                yield fam
+                
+    @classmethod
+    def preferred(cls):
+        """Return the host's preferred compiler family."""
+        from tau.cf.target import host
+        return host.preferred_compilers()
 
-"""
-C compilers known to TAU Commander. 
-A nice way to search KNOWN_COMPILERS by role. 
-"""
-KNOWN_CC = []
+    @classmethod
+    def family_names(cls):
+        """Return an alphabetical list of all known compiler family names."""
+        return sorted(map(str, cls.all()))
+    
+    def __iter__(self):
+        """Yield information about all compilers in the family.
+        
+        May yield zero, one, or more CompilerInfo objects for any role,
+        however it will not yield the same command multiple times.
+        """  
+        for info in self._info_by_command.itervalues():
+            yield info
 
-"""
-C++ compilers known to TAU Commander. 
-A nice way to search KNOWN_COMPILERS by role. 
-"""
-KNOWN_CXX = []
+    def add(self, role, *commands):
+        """Register compiler commands in the given role.
+        
+        Commands should be ordered by preference.  For example, we prefer to build
+        C++ codes with "c++" instead of "CC" so that case-insensitive file systems
+        (looking at you Mac OS) don't try to use a C compiler for C++ codes. 
+        
+        Args:
+            role: CompilerRole object specifying role these commands fill in the family
+            commands: Command strings without arguments
+        """ 
+        assert isinstance(role, CompilerRole)
+        for command in commands:
+            assert isinstance(command, basestring)
+            if command in self._info_by_command:
+                raise InternalError('Command %s already a member of %s' % (command, self.name))
+            info = CompilerInfo(command, self, role)
+            self._info_by_command[command] = info
+            self._info_by_role.setdefault(role.keyword, []).append(info)
+                
+    def members_by_role(self, role):
+        """Get all compilers in the specified role.
+         
+        Args:
+            role: CompilerRole object
+             
+        Returns:
+            List of CompilerInfo objects
+        """
+        return self._info_by_role[role.keyword]
+     
+    def member_by_command(self, command):
+        """Get the compiler with the specified command.
+         
+        Args:
+            command: Command string to search for
+         
+        Returns:
+            CompilerInfo object
+        """
+        return self._info_by_command[command]
 
-"""
-Fortran compilers known to TAU Commander. 
-A nice way to search KNOWN_COMPILERS by role. 
-"""
-KNOWN_FC = []
 
-for _comp in KNOWN_COMPILERS.itervalues():
-    if _comp.role is CC_ROLE:
-        KNOWN_CC.append(_comp)
-    elif _comp.role is CXX_ROLE:
-        KNOWN_CXX.append(_comp)
-    elif _comp.role is FC_ROLE:
-        KNOWN_FC.append(_comp)
-    fam = _comp.family
-    KNOWN_FAMILIES.setdefault(fam, [])
-    KNOWN_FAMILIES[fam].append(_comp)
-del _comp
+CC_ROLE = CompilerRole('CC', 'C', True)
+CXX_ROLE = CompilerRole('CXX', 'C++', True)
+FC_ROLE = CompilerRole('FC', 'Fortran', True)
+UPC_ROLE = CompilerRole('UPC', 'Universal Parallel C')
+
+SYSTEM_COMPILERS = CompilerFamily('System')
+SYSTEM_COMPILERS.add(CC_ROLE, 'cc')
+SYSTEM_COMPILERS.add(CXX_ROLE, 'c++', 'cxx', 'CC')
+SYSTEM_COMPILERS.add(FC_ROLE, 'ftn', 'f90', 'f77')
+SYSTEM_COMPILERS.add(UPC_ROLE, 'upc')
+
+GNU_COMPILERS = CompilerFamily('GNU')
+GNU_COMPILERS.add(CC_ROLE, 'gcc')
+GNU_COMPILERS.add(CXX_ROLE, 'g++')
+GNU_COMPILERS.add(FC_ROLE, 'gfortran')
+GNU_COMPILERS.add(UPC_ROLE, 'gupc')
+
+INTEL_COMPILERS = CompilerFamily('Intel')
+INTEL_COMPILERS.add(CC_ROLE, 'icc')
+INTEL_COMPILERS.add(CXX_ROLE, 'icpc')
+INTEL_COMPILERS.add(FC_ROLE, 'ifort')
+
+PGI_COMPILERS = CompilerFamily('PGI')
+PGI_COMPILERS.add(CC_ROLE, 'pgcc')
+PGI_COMPILERS.add(CXX_ROLE, 'pgc++', 'pgcxx', 'pgCC')
+PGI_COMPILERS.add(FC_ROLE, 'pgf90', 'pgf77')
+
+IBM_COMPILERS = CompilerFamily('IBM')
+IBM_COMPILERS.add(CC_ROLE, 'xlc', )
+IBM_COMPILERS.add(CXX_ROLE, 'xlc++', 'xlC')
+IBM_COMPILERS.add(FC_ROLE, 'xlf')
+
+CRAY_COMPILERS = SYSTEM_COMPILERS

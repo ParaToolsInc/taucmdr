@@ -71,6 +71,7 @@ def mkdirp(*args):
 def which(program):
     """Returns the full path to 'program'.
     
+    Program must exist and be executable.
     Searches the system PATH and the current directory.
     
     Args:
@@ -300,7 +301,7 @@ def parseBoolean(value, trueList=[], falseList=[]):
         return value
     elif isinstance(value, int):
         return bool(value)
-    elif (isinstance(value, str)) or (isinstance(value, unicode)):
+    elif isinstance(value, basestring):
         value = value.lower()
         if value in ['1', 't', 'y', 'true', 'yes', 'on'] + trueList:
             return True

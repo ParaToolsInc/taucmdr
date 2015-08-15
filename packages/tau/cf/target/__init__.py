@@ -36,16 +36,7 @@
 #"""
 
 from tau.error import InternalError
-
-MAC_OS_NAME = 'Darwin'
-LINUX_OS_NAME = 'Linux'
-IBM_CNK_OS_NAME = 'CNK'
-CRAY_CNL_OS_NAME = 'CNL'
-
-X86_64_ARCH_NAME = 'x86_64'
-INTEL_KNL_ARCH_NAME = 'KNL'
-BGP_ARCH_NAME = 'BGP'
-BGQ_ARCH_NAME = 'BGQ'
+from tau.cf import KeyedRecord
 
 """
 TAU and PDT recognize these "magic word" architectures.
@@ -157,40 +148,78 @@ MAGIC_ARCH_NAMES = {
     }
 
 
-"""
-TAU_ARCHITECTURES[host_arch][host_os] == tau_magic_word_arch
+class OperatingSystem(KeyedRecord):
+    """Information about a target operating system.
+    
+    Attributes:
+        name: Short string identifying this operating system.
+        description: Description of the operating system.
+    """
+    
+    KEY = 'name'
+    
+    def __init__(self, name, description):
+        self.name = name
+        self.description = description
 
-`host_arch` should be platform.machine() whenever possible.
-`host_os` should be platform.system() whenever possible.  
-
-Architectures that don't support Python (i.e. Intel Knight's Landing) 
-should provide sensible values for host_arch, host_os
-until the true values from the platform package are known.
-"""
-TAU_ARCHITECTURES = {X86_64_ARCH_NAME: {MAC_OS_NAME: 'apple', 
-                                        LINUX_OS_NAME: 'x86_64',
-                                        CRAY_CNL_OS_NAME: 'craycnl'},
-                     INTEL_KNL_ARCH_NAME: {LINUX_OS_NAME: 'mic_linux'},
-                     BGP_ARCH_NAME: {IBM_CNK_OS_NAME: 'bgp'},
-                     BGQ_ARCH_NAME: {IBM_CNK_OS_NAME: 'bgq'}}
-
-"""
-Commonly understoond target architectures (i.e. x86_64) known to TAU Commander.
-"""
-KNOWN_TARGET_ARCH = []
-
-"""
-Commonly understoond target operating systems (i.e. Linux) known to TAU Commander.
-"""
-KNOWN_TARGET_OS = []
+        
+class Architecture(KeyedRecord):
+    """Information about a target architecture.
+    
+    Attributes:
+        name: Short string identifying this architecture.
+        description: Description of the architecture. 
+    """
+    
+    KEY = 'name'
+    
+    def __init__(self, name, description):
+        self.name = name
+        self.description = description
 
 
-for _host_arch, _os_dict in TAU_ARCHITECTURES.iteritems():
-    KNOWN_TARGET_ARCH.append(_host_arch)
-    for _os_name, _magic_arch in _os_dict.iteritems():
-        KNOWN_TARGET_OS.append(_os_name)
-        if _magic_arch not in MAGIC_ARCH_NAMES:
-            raise InternalError("Invalid TAU magic architecture name '%s' in TAU_ARCHITECTURES" %_magic_arch)
-KNOWN_TARGET_ARCH = list(set(KNOWN_TARGET_ARCH))
-KNOWN_TARGET_OS = list(set(KNOWN_TARGET_OS))
-del _host_arch, _os_dict, _os_name, _magic_arch
+class TauArch(KeyedRecord):
+    """Maps (operating system, architecture pairs) to TAU's magic words.
+    
+    Attributes:
+        name: Name of the TAU architecture (the magic word)
+        architecture: Architecture object for this TAU architecture.
+        operating_system: OperatingSystem object for this TAU architecture.
+    """
+    
+    KEY = 'name'
+    
+    def __init__(self, name, architecture, operating_system):
+        self.name = name
+        self.architecture = architecture
+        self.operating_system = operating_system
+        
+    @classmethod
+    def find(cls, arch, os):
+        if isinstance(arch, basestring):
+            arch = Architecture.find(arch)
+        if isinstance(os, basestring):
+            os = OperatingSystem.find(os)
+        for tau_arch in cls.all():
+            if (tau_arch.architecture == arch and tau_arch.operating_system == os):
+                return tau_arch
+        raise KeyError
+
+
+DARWIN_OS = OperatingSystem('Darwin', 'Darwin')
+LINUX_OS = OperatingSystem('Linux', 'Linux')
+IBM_CNK_OS = OperatingSystem('CNK', 'Compute Node Kernel')
+CRAY_CNL_OS = OperatingSystem('CNL', 'Compute Node Linux')
+
+X86_64_ARCH = Architecture('x86_64', 'x86_64')
+INTEL_KNC_ARCH = Architecture('knc', 'Intel Knights Corner')
+INTEL_KNL_ARCH = Architecture('knl', 'Intel Knights Landing')
+IBM_BGP_ARCH = Architecture('bgp', 'IBM BlueGene/P')
+IBM_BGQ_ARCH = Architecture('bgq', 'IBM BlueGene/Q')
+
+TAU_ARCH_APPLE = TauArch('apple', X86_64_ARCH, DARWIN_OS)
+TAU_ARCH_X86_64 = TauArch('x86_64', X86_64_ARCH, LINUX_OS)
+TAU_ARCH_CRAYCNL = TauArch('craycnl', X86_64_ARCH, CRAY_CNL_OS)
+TAU_ARCH_MIC_LINUX = TauArch('mic_linux', INTEL_KNC_ARCH, LINUX_OS)
+TAU_ARCH_BGP = TauArch('bgp', IBM_BGP_ARCH, IBM_CNK_OS)
+TAU_ARCH_BGQ = TauArch('bgq', IBM_BGQ_ARCH, IBM_CNK_OS)

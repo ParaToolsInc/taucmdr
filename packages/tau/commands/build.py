@@ -38,7 +38,7 @@
 from tau import logger, commands, arguments
 from tau.error import ConfigurationError
 from tau.model.experiment import Experiment
-from tau.cf.compiler import KNOWN_COMPILERS
+from tau.cf.compiler import CompilerFamily, CompilerInfo
 
 
 LOGGER = logger.getLogger(__name__)
@@ -47,9 +47,8 @@ COMMAND = commands.get_command(__name__)
 
 
 def _compilersHelp():
-    parts = ['  %s  %s' % ('{:<15}'.format(comp.command), comp.short_descr)
-             for comp in KNOWN_COMPILERS.itervalues()]
-    parts.sort()
+    parts = ['  %s  %s' % ('{:<15}'.format(comp.command), comp.short_descr) 
+             for family in CompilerFamily.all() for comp in family]
     return '\n'.join(parts)
 
 
@@ -96,7 +95,7 @@ def isCompatible(cmd):
     TODO: DOCS
     """
     # TODO: Likely needs more logic here
-    return cmd in KNOWN_COMPILERS
+    return cmd in [info.command for info in CompilerInfo.all()]
 
 
 def main(argv):

@@ -41,145 +41,186 @@
 import os
 import hashlib
 from tau import logger, util
-from tau.error import ConfigurationError
-from tau.cf.compiler import Compiler, KNOWN_FAMILIES
-from tau.cf.compiler.role import CC_ROLE, CXX_ROLE, FC_ROLE, REQUIRED_ROLES
+from tau.error import ConfigurationError, InternalError
+from tau.cf import KeyedRecord
+from tau.cf.compiler import CompilerInfo, CompilerRole
+
 
 LOGGER = logger.getLogger(__name__)
 
 
-class InstalledCompiler(Compiler):
+class InstalledCompiler(KeyedRecord):
     """Information about an installed compiler command.
     
+    There are relatively few well known compilers, but a potentially infinite
+    number of commands that can invoke those compilers.  This class links a
+    command (e.g. icc, gcc-4.2, etc.) with a common compiler command.
+    
     Attributes:
-        path: Absolute path to folder containing the compiler command
         absolute_path: Absolute path to the compiler command
-        md5sum: The md5 checksum of the compiler binary
+        command: Command that invokes the compiler, without path, as a string
+        path: Absolute path to folder containing the compiler command
+        info: Optional CompilerInfo object describing the compiler invoked by the compiler command, detected if None
     """
     
-    def __init__(self, compiler_cmd):
-        """Probes the system to initialize the InstalledCompiler object.
-        
-        Checks PATH and file permissions to see that compiler command is
-        present and executable.  Calculates the md5 checksum of the compiler
-        binary file so we can recognize if it changes.
-        """
-        LOGGER.debug("Identifying compiler: %s" % compiler_cmd)
-        abspath = util.which(compiler_cmd)
-        if not abspath:
-            raise ConfigurationError("'%s' missing or not executable." % compiler_cmd,
-                                     "Check spelling, loaded modules, PATH environment variable, and file permissions")
-        if not util.file_accessible(abspath):
-            raise ConfigurationError("Compiler '%s' not readable." % abspath, 
-                                     "Check file permissions on '%s'" % abspath)
-        md5sum = hashlib.md5()
-        with open(abspath, 'r') as compiler_file:
-            md5sum.update(compiler_file.read())
-        # Executable found, initialize this object
-        super(InstalledCompiler,self).__init__(os.path.basename(compiler_cmd))
-        self.path = os.path.dirname(abspath)
-        self.absolute_path = os.path.join(self.path, self.command)
-        self.md5sum = md5sum.hexdigest()
-        from tau.cf.compiler.wrapped import WrappedCompiler
-        try:
-            self.wrapped = WrappedCompiler(self)
-        except NotImplementedError:
-            self.wrapped = None
-
-    def get_siblings(self):
-        """Gets all compilers in this compiler's family.
-        
-        Compiler commands in the same directory as this compiler's command are preferred
-        over other commands found in $PATH.
-        
-        Returns:
-            List of InstalledCompiler objects for the given family
-            The returned list will have at least one item for all roles in REQUIRED_ROLES.
+    KEY = 'absolute_path'
     
-        Raises:
-            ConfigurationError: Some required roles couldn't be filled.
-        """
-        LOGGER.debug("Identifying siblings of %s" % self.absolute_path)
-        missing_roles = list(set([role.keyword for role in REQUIRED_ROLES]) - set(self.role.keyword))
-        family = KNOWN_FAMILIES[self.family]
-        found = [self]
-        for comp in family:
-            if comp.role != self.role:
-                try:
-                    sibling = InstalledCompiler(os.path.join(self.path, comp.command))
-                except ConfigurationError as err:
-                    LOGGER.debug(err)
-                else:
-                    found.append(sibling)
-                    missing_roles.remove(sibling.role.keyword)
-        if missing_roles:
-            family = InstalledCompiler.get_family(self.family)
-            found.extend([comp for comp in family if comp.role != self.role])
-        return found
-
-    @staticmethod
-    def get_default(role):
-        """Gets the default compiler for the specified role.
+    def __new__(cls, key):
+        """Probes the system to find an installed compiler.
+        
+        May check PATH, file permissions, or other conditions in the system
+        to determine if a compiler command is present and executable.
         
         Args:
-            role: CompilerRole identifying compiler role to be filled.
-            
-        Returns:
-            InstalledCompiler object for the default compiler.
-            
+            key: Command string or CompilerInfo to match.
+        
         Raises:
-            ConfigurationError: Default compiler cannot be found.
+            ConfigurationError: compiler is not installed.
         """
-        LOGGER.debug("'Getting default %s compiler for role '%s'" % (role.language, role.keyword))
-        # TODO: Check PATH, loaded modules, etc to determine default
-        # TORO: instead of just falling back to GNU all the time
-        defaults = {CC_ROLE.keyword: 'gcc',
-                    CXX_ROLE.keyword: 'g++',
-                    FC_ROLE.keyword: 'gfortran'}
-        try:
-            default_cmd = defaults[role.keyword]
-        except KeyError:
-            raise ConfigurationError("No default compiler %s compiler identified." % role.language)
-        return InstalledCompiler(default_cmd)
-    
-    @staticmethod
-    def get_family(family):
-        """Gets all installed compilers in a compiler family.
-    
-        Args:
-            family: A family name, e.g. 'Intel'
-             
-        Returns:
-            List of InstalledCompiler objects for the given family
-            The returned list will have at least one item for all roles in REQUIRED_ROLES.
-    
-        Raises:
-            ConfigurationError: Invalid compiler family or some required roles couldn't be filled.
-        """
-        LOGGER.debug("Discovering installed %s compilers" % family)
-        try:
-            family = KNOWN_FAMILIES[family]
-        except KeyError:
-            raise ConfigurationError("Invalid compiler family: %s" % family,
-                                     "Known families: " % KNOWN_FAMILIES.keys())
-        missing_roles = list(REQUIRED_ROLES)
-        missing_err = {}
-        found = []
-        for comp in family:
+        command = key if isinstance(key, basestring) else key.command
+        if os.path.isabs(command):
             try:
-                installed = InstalledCompiler(comp.command)
+                return cls._INSTANCES[command]
+            except (KeyError, AttributeError):
+                pass
+        absolute_path = util.which(command)
+        if not absolute_path:
+            raise ConfigurationError("'%s' missing or not executable." % command,
+                                     "Check spelling, loaded modules, PATH environment variable, and file permissions")
+        try:
+            return cls._INSTANCES[absolute_path]
+        except (KeyError, AttributeError):
+            try:
+                info = CompilerInfo.find(command)
+            except KeyError:
+                raise ConfigurationError("Cannot recognize compiler command '%s'" % command)
+            instance = KeyedRecord.__new__(cls, absolute_path)
+            instance._md5sum = None
+            instance.absolute_path = absolute_path
+            instance.command = os.path.basename(absolute_path)
+            instance.path = os.path.dirname(absolute_path)
+            instance.info = info
+            return instance
+    
+    @classmethod
+    def find(cls, key):
+        """Probes the system to find an installed compiler.
+        
+        May check PATH, file permissions, or other conditions in the system
+        to determine if a compiler command is present and executable.
+        
+        Args:
+            key: Command string or CompilerInfo to match.
+        
+        Raises:
+            ConfigurationError: compiler is not installed.
+        """
+        command = key if isinstance(key, basestring) else key.command
+        if os.path.isabs(command):
+            try:
+                return cls._INSTANCES[command]
+            except (KeyError, AttributeError):
+                pass
+        abspath = util.which(command)
+        if not abspath:
+            raise ConfigurationError("'%s' missing or not executable." % command,
+                                     "Check spelling, loaded modules, PATH environment variable, and file permissions")
+        try:
+            return cls._INSTANCES[abspath]
+        except (KeyError, AttributeError):
+            try:
+                info = CompilerInfo.find(command)
+            except KeyError:
+                raise ConfigurationError("Cannot recognize compiler command '%s'" % command)
+            return cls(abspath, info)
+        
+    def md5sum(self):
+        if not self._md5sum:
+            LOGGER.debug("Calculating MD5 of '%s'" % self.absolute_path)
+            md5sum = hashlib.md5()
+            with open(self.absolute_path, 'r') as compiler_file:
+                md5sum.update(compiler_file.read())
+            self._md5sum = md5sum.hexdigest()
+        return self._md5sum
+
+
+
+class InstalledCompilerSet(KeyedRecord):
+    """A collection of installed compilers, one per role if the role can be filled.
+    
+    Attributes:
+        uid: A unique identifier for this particular combination of compilers.
+    """
+    
+    KEY = 'uid'
+    
+    def __init__(self, uid, **kwargs):
+        self.uid = uid
+        self.members = {}
+        all_roles = CompilerRole.keys()
+        for key, val in kwargs.iteritems():
+            if key not in all_roles:
+                raise InternalError("Invalid role: %s" % key)
+            self.members[key] = val
+
+    def __getitem__(self, role):
+        return self.members[role.keyword]
+        
+        
+
+class CompilerInstallation(KeyedRecord):
+    """
+    Encapsulates data on a compiler installation.
+    
+    Attributes:
+        family: CompilerFamily for this installation.
+        commands: (command, InstalledCompiler) dictionary listing all installed compiler commands. 
+    """
+    
+    KEY = 'family'
+    
+    def __new__(cls, family):
+        try:
+            return cls._INSTANCES[family]
+        except (KeyError, AttributeError):
+            pass
+        instance = KeyedRecord.__new__(cls, family)
+        instance.family = family
+        instance.commands = {}
+        LOGGER.debug("Detecting %s compiler installation" % family.name)
+        for info in family:
+            try:
+                comp = InstalledCompiler(info)
             except ConfigurationError as err:
-                # A compiler wasn't found in PATH, but that's OK because 
-                # another compiler may provide the missing role
-                LOGGER.debug("Skipping '%s': %s" % (comp.command, err))
-                missing_err[comp.role] = err
-                continue
+                LOGGER.debug(err)
             else:
-                found.append(installed)
-                try: missing_roles.remove(comp.role)
-                except ValueError: pass
-        if missing_roles:
-            raise ConfigurationError("One or more compiler roles could not be filled:\n%s" %
-                                     util.pformat_dict(missing_err, indent=2),
-                                     "Update your PATH, load environment modules, or install missing compilers.")
-        return found
+                instance.commands[comp.info.command] = comp
+                LOGGER.debug("%s %s compiler is %s" % (family.name, comp.info.role.language, comp.absolute_path))
+        return instance
+
+    def __iter__(self):
+        """
+        Yield one InstalledCompiler for each role filled by any compiler in this installation.
+        """
+        for role in CompilerRole.all():
+            try:
+                yield self.preferred(role)
+            except KeyError:
+                pass
+    
+    def preferred(self, role):
+        """Return the preferred installed compiler for a given role.
+        
+        Returns:
+            InstalledCompiler object.
+            
+        Raises:
+            KeyError: No installed compiler can fill the role.
+        """
+        for info in self.family.members_by_role(role):
+            try:
+                return self.commands[info.command]
+            except KeyError:
+                continue
+        raise KeyError
+        

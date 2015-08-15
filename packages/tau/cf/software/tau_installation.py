@@ -45,8 +45,11 @@ from tau.cf.software.pdt_installation import PdtInstallation
 from tau.cf.software.binutils_installation import BinutilsInstallation
 from tau.cf.software.libunwind_installation import LibunwindInstallation
 from tau.cf.software.papi_installation import PapiInstallation
-from tau.cf.compiler import SYSTEM_FAMILY_NAME, GNU_FAMILY_NAME, INTEL_FAMILY_NAME, PGI_FAMILY_NAME
-from tau.cf.architecture import TAU_ARCHITECTURES
+from tau.cf.compiler import SYSTEM_COMPILERS, GNU_COMPILERS, INTEL_COMPILERS, PGI_COMPILERS
+from tau.cf.compiler import CC_ROLE, CXX_ROLE, FC_ROLE
+from tau.cf.compiler.mpi import MPI_CC_ROLE, MPI_CXX_ROLE, MPI_FC_ROLE
+from tau.cf.target import TauArch
+
 
 LOGGER = logger.getLogger(__name__)
 
@@ -107,6 +110,14 @@ COMMANDS = [
     'trace2profile']
 
 
+TAU_COMPILER_WRAPPERS = {CC_ROLE: 'tau_cc.sh',
+                         CXX_ROLE: 'tau_cxx.sh',
+                         FC_ROLE: 'tau_f90.sh',
+                         MPI_CC_ROLE: 'tau_cc.sh',
+                         MPI_CXX_ROLE: 'tau_cxx.sh',
+                         MPI_FC_ROLE: 'tau_f90.sh'}
+
+
 class TauInstallation(Installation):
     """
     Encapsulates a TAU installation
@@ -152,12 +163,11 @@ class TauInstallation(Installation):
                  measure_memory_alloc,
                  measure_callpath):
         try:
-            arch = TAU_ARCHITECTURES[host_arch][host_os]
+            arch = TauArch.find(host_arch, host_os).name
         except KeyError:
             raise InternalError("Invalid host_arch '%s' or host_os '%s'" % (host_arch, host_os))
-        super(TauInstallation, self).__init__('TAU', prefix, src, '', arch, 
-                                              compilers, SOURCES)
-        self.arch_path = os.path.join(self.install_prefix, arch)
+        super(TauInstallation, self).__init__('TAU', prefix, src, '', arch, compilers, SOURCES)
+        self.arch_path = os.path.join(self.install_prefix, str(arch))
         self.bin_path = os.path.join(self.arch_path, 'bin')
         self.lib_path = os.path.join(self.arch_path, 'lib')
         self.verbose = verbose
@@ -290,53 +300,53 @@ class TauInstallation(Installation):
         """
         # TAU's configure script is really bad at detecting wrapped compilers
         # so don't even try.  Replace the compiler wrapper with the wrapped command.
-        if self.compilers.CC.wrapped:
-            cc = self.compilers.CC.wrapped
-            cxx = self.compilers.CXX.wrapped
-            fc = self.compilers.FC.wrapped
-        else:
-            cc = self.compilers.CC
-            cxx = self.compilers.CXX
-            fc = self.compilers.FC
+#         if self.compilers.CC.wrapped:
+#             cc = self.compilers.CC.wrapped
+#             cxx = self.compilers.CXX.wrapped
+#             fc = self.compilers.FC.wrapped
+#         else:
+#             cc = self.compilers.CC
+#             cxx = self.compilers.CXX
+#             fc = self.compilers.FC
 
-        # Use `known_info()` instead of `command` to work around TAU's 
+        # Use info.command instead of `command` to work around TAU's 
         # inability to work with compiler commands that include
         # version numbers in their names, e.g. 'gcc-4.9' becomes 'gcc'
-        cc_command = cc.known_info().command
-        cxx_command = cxx.known_info().command
-        fc_family = fc.family
+        cc_command = self.compilers[CC_ROLE].info.command
+        cxx_command = self.compilers[CXX_ROLE].info.command
+        fc_family = self.compilers[FC_ROLE].info.family
 
         # TAU has a really hard time detecting MPI settings in its configure script
         # so set up mpiinc, mpilib, mpilibrary when we have that information
-        mpiinc = None
-        if self.mpi_include_path:
-            # TODO: TAU's configure script can only accept one path on -mpiinc
-            for path in self.mpi_include_path:
-                if os.path.exists(os.path.join(path, 'mpi.h')):
-                    mpiinc = path
-                    break
-            if not mpiinc:
-                raise ConfigurationError("mpi.h not found on MPI include path: %s" % self.mpi_include_path)
-        mpilib = None
-        if self.mpi_library_path:
-            mpilib = self.mpi_library_path[0]
-        mpilibrary = None
-        if self.mpi_linker_flags:
-            mpilibrary = '#'.join(self.mpi_linker_flags)
+#         mpiinc = None
+#         if self.mpi_include_path:
+#             # TODO: TAU's configure script can only accept one path on -mpiinc
+#             for path in self.mpi_include_path:
+#                 if os.path.exists(os.path.join(path, 'mpi.h')):
+#                     mpiinc = path
+#                     break
+#             if not mpiinc:
+#                 raise ConfigurationError("mpi.h not found on MPI include path: %s" % self.mpi_include_path)
+#         mpilib = None
+#         if self.mpi_library_path:
+#             mpilib = self.mpi_library_path[0]
+#         mpilibrary = None
+#         if self.mpi_linker_flags:
+#             mpilibrary = '#'.join(self.mpi_linker_flags)
             
         # Pick the right compiler command for PDT
-        if self.pdt:
-            if self.pdt.compilers.CXX.wrapped:
-                pdt_cxx = self.pdt.compilers.CXX.wrapped
-            else:
-                pdt_cxx = self.pdt.compilers.CXX
+#         if self.pdt:
+#             if self.pdt.compilers.CXX.wrapped:
+#                 pdt_cxx = self.pdt.compilers.CXX.wrapped
+#             else:
+#                 pdt_cxx = self.pdt.compilers.CXX
 
         # TAU's configure script can't detect Fortran compiler from the compiler
         # command so translate Fortran compiler command into TAU's funkey magic words
-        magic_map = {GNU_FAMILY_NAME: 'gfortran', 
-                     INTEL_FAMILY_NAME: 'intel', 
-                     PGI_FAMILY_NAME: 'pgi',
-                     SYSTEM_FAMILY_NAME: 'ftn'}
+        magic_map = {GNU_COMPILERS: 'gfortran', 
+                     INTEL_COMPILERS: 'intel', 
+                     PGI_COMPILERS: 'pgi',
+                     SYSTEM_COMPILERS: 'ftn'}
         try:
             fortran_magic = magic_map[fc_family]
         except KeyError:
@@ -349,21 +359,22 @@ class TauInstallation(Installation):
                   '-c++=%s' % cxx_command,
                   '-fortran=%s' % fortran_magic,
                   '-pdt=%s' % self.pdt.install_prefix if self.pdt else '',
-                  '-pdt_c++=%s' % pdt_cxx.command if self.pdt else '',
+#                   '-pdt_c++=%s' % pdt_cxx.command if self.pdt else '',
                   '-bfd=%s' % self.binutils.install_prefix if self.binutils else '',
                   '-papi=%s' % self.papi.install_prefix if self.papi else '',
                   '-unwind=%s' % self.libunwind.install_prefix if self.libunwind else '',
                   '-pthread' if self.pthreads_support else '',
                   '-mpi' if self.mpi_support else '',
-                  '-mpiinc=%s' % mpiinc if mpiinc else '',
-                  '-mpilib=%s' % mpilib if mpilib else '',
-                  '-mpilibrary=%s' % mpilibrary if mpilibrary else '']
+#                   '-mpiinc=%s' % mpiinc if mpiinc else '',
+#                   '-mpilib=%s' % mpilib if mpilib else '',
+#                   '-mpilibrary=%s' % mpilibrary if mpilibrary else ''
+                  ]
                  if flag]
         if self.openmp_support:
             if self.measure_openmp == 'compiler_default':
                 flags.append('-openmp')
             elif self.measure_openmp == 'ompt':
-                if cc.family == 'Intel':
+                if self.compilers[CC_ROLE].info.family == INTEL_COMPILERS:
                     flags.append('-ompt')
                 else:
                     raise ConfigurationError('OMPT for OpenMP measurement only works with Intel compilers')
@@ -414,7 +425,7 @@ class TauInstallation(Installation):
             except SoftwarePackageError as err:
                 LOGGER.debug(err)
         LOGGER.info("Installing %s at '%s' from '%s' with arch=%s and %s compilers" %
-                    (self.name, self.install_prefix, self.src, self.arch, self.compilers.CC.family))
+                    (self.name, self.install_prefix, self.src, self.arch, self.compilers[CC_ROLE].info.family))
 
         self._prepare_src()
 
@@ -451,9 +462,10 @@ class TauInstallation(Installation):
             A list of tags, e.g. ['papi', 'pdt', 'icpc']
         """
         tags = []
-        compiler_tags = {'Intel': 'icpc', 'PGI': 'pgi'}
+        compiler_tags = {INTEL_COMPILERS: 'icpc', 
+                         PGI_COMPILERS: 'pgi'}
         try:
-            tags.append(compiler_tags[self.compilers.CXX.family])
+            tags.append(compiler_tags[self.compilers[CXX_ROLE].info.family])
         except KeyError:
             pass
         if self.source_inst != 'never':
@@ -608,6 +620,21 @@ class TauInstallation(Installation):
         env['TAU_METRICS'] = os.pathsep.join(self.metrics)
         return list(set(opts)), env
 
+    def get_compiler_command(self, compiler):
+        """Get the compiler wrapper command for the given compiler.
+        
+        Args:
+            compiler: InstalledCompiler
+            
+        Returns:
+            string command for TAU compiler wrapper without path or arguments.
+        """
+        use_wrapper = (self.source_inst != 'never' or
+                       self.compiler_inst != 'never')
+        if use_wrapper:
+            return TAU_COMPILER_WRAPPERS[compiler.info.role]
+        else:
+            return compiler.absolute_path
 
     def compile(self, compiler, compiler_args):
         """Executes a compilation command.
@@ -623,13 +650,8 @@ class TauInstallation(Installation):
         Raises:
             ConfigurationError: Compilation failed
         """
-        opts, env = self.compiletime_config() 
-        use_wrapper = (self.source_inst != 'never' or 
-                       self.compiler_inst != 'never')
-        if use_wrapper:
-            compiler_cmd = compiler.tau_wrapper
-        else:
-            compiler_cmd = compiler.command
+        opts, env = self.compiletime_config()
+        compiler_cmd = self.get_compiler_command(compiler)
         cmd = [compiler_cmd] + opts + compiler_args
         LOGGER.info(' '.join(cmd))
         retval = util.createSubprocess(cmd, env=env, stdout=True)

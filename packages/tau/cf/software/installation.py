@@ -43,7 +43,7 @@ from lockfile import LockFile, NotLocked
 from tau import logger, util
 from tau.error import ConfigurationError
 from tau.cf.software import SoftwarePackageError
-from tau.cf.compiler.role import ALL_ROLES
+from tau.cf.compiler import CompilerRole, CC_ROLE, CXX_ROLE
 
 
 LOGGER = logger.getLogger(__name__)
@@ -102,7 +102,6 @@ class Installation(object):
             self.install_prefix = src
             self.src_prefix = None
             self.src = None
-            LOGGER.debug("Reusing installation at %s" % src)
         else:            
             self.install_prefix = os.path.join(prefix, name, dst)
             self.src_prefix = os.path.join(prefix, 'src')
@@ -110,7 +109,6 @@ class Installation(object):
                 self.src = sources.get(arch, sources[None])
             else:
                 self.src = src
-            LOGGER.debug("Creating new installation from source at %s" % src)
         self.arch = arch
         self.compilers = compilers
         self.include_path = os.path.join(self.install_prefix, 'include')
@@ -152,7 +150,7 @@ class Installation(object):
             Dictionary of environment variables not containing dangerous variables.
         """
         def is_dangerous(key):
-            for role in ALL_ROLES:
+            for role in CompilerRole.all():
                 if key.startswith(role.keyword):
                     return True
             return key.startswith('TAU')
@@ -352,7 +350,7 @@ class AutotoolsInstallation(Installation):
                         'Intel': {'CC': 'icc', 'CXX': 'icpc'},
                         'PGI': {'CC': 'pgcc', 'CXX': 'pgCC'}}
         try:
-            env.update(compiler_env[self.compilers.CC.family])
+            env.update(compiler_env[self.compilers[CC_ROLE].info.family])
         except KeyError:
             LOGGER.info("Allowing %s to select compilers" % self.name)
         cmd = ['./configure'] + flags
@@ -433,7 +431,7 @@ class AutotoolsInstallation(Installation):
             except SoftwarePackageError as err:
                 LOGGER.debug(err)
         LOGGER.info("Installing %s at '%s' from '%s' with arch=%s and %s compilers" %
-                    (self.name, self.install_prefix, self.src, self.arch, self.compilers.CC.family))
+                    (self.name, self.install_prefix, self.src, self.arch, self.compilers[CXX_ROLE].info.family))
 
         self._prepare_src()
         

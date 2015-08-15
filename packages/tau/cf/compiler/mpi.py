@@ -37,13 +37,26 @@
 
 import subprocess
 from tau import logger
-from tau.cf.compiler import MPI_FAMILY_NAME, INTEL_MPI_FAMILY_NAME
+from tau.cf.compiler import CompilerFamily, CompilerRole
 from tau.cf.compiler.installed import InstalledCompiler
 
 LOGGER = logger.getLogger(__name__)
 
-class WrappedCompiler(InstalledCompiler):
-    """Information on a compiler wrapped by another compiler.
+
+
+class MpiCompilerFamily(CompilerFamily):
+    """Information about an MPI compiler family."""
+    # We subclass CompilerFamily to create a second database of compiler 
+    # family records and keep MPI compilers from mixing with host etc. compilers.
+    
+    @classmethod
+    def preferred(cls):
+        from tau.cf.target import host
+        return host.preferred_mpi_compilers()
+    
+
+class MpiInstalledCompiler(InstalledCompiler):
+    """Information on an MPI compiler wrapping another compiler.
     
     Attributes:
         wrapper: InstalledCompiler object for the compiler command wrapping this compiler
@@ -58,7 +71,7 @@ class WrappedCompiler(InstalledCompiler):
         self.library_path = []
         self.compiler_flags = []
         self.linker_flags = []
-        if wrapper.family == MPI_FAMILY_NAME:
+        if wrapper.family == MPI_FAMILY_NAME: 
             wrapped_cmd = self._mpi_identify_wrapped()
         elif wrapper.family == INTEL_MPI_FAMILY_NAME:
             wrapped_cmd = self._mpi_identify_wrapped()
@@ -100,3 +113,30 @@ class WrappedCompiler(InstalledCompiler):
             return self._parse_args(stdout.split())
         except IndexError:
             raise RuntimeError("Unexpected output from %s: %s" % (cmd, stdout))
+
+
+
+    
+MPI_CC_ROLE = CompilerRole('MPI_CC', 'MPI C')
+MPI_CXX_ROLE = CompilerRole('MPI_CXX', 'MPI C++')
+MPI_FC_ROLE = CompilerRole('MPI_FC', 'MPI Fortran')
+
+SYSTEM_MPI_COMPILERS = MpiCompilerFamily('System')
+SYSTEM_MPI_COMPILERS.add(MPI_CC_ROLE, 'mpicc')
+SYSTEM_MPI_COMPILERS.add(MPI_CXX_ROLE, 'mpic++', 'mpicxx', 'mpiCC')
+SYSTEM_MPI_COMPILERS.add(MPI_FC_ROLE, 'mpiftn', 'mpif90', 'mpif77')
+
+INTEL_MPI_COMPILERS = MpiCompilerFamily('Intel')
+INTEL_MPI_COMPILERS.add(MPI_CC_ROLE, 'mpiicc')
+INTEL_MPI_COMPILERS.add(MPI_CXX_ROLE, 'mpiicpc')
+INTEL_MPI_COMPILERS.add(MPI_FC_ROLE, 'mpiifort')
+
+IBM_MPI_COMPILERS = MpiCompilerFamily('IBM')
+IBM_MPI_COMPILERS.add(MPI_CC_ROLE, 'mpixlc')
+IBM_MPI_COMPILERS.add(MPI_CXX_ROLE, 'mpixlc++', 'mpixlC')
+IBM_MPI_COMPILERS.add(MPI_FC_ROLE, 'mpixlf77')
+
+CRAY_MPI_COMPILERS = MpiCompilerFamily('Cray')
+CRAY_MPI_COMPILERS.add(MPI_CC_ROLE, 'cc')
+CRAY_MPI_COMPILERS.add(MPI_CXX_ROLE, 'CC')
+CRAY_MPI_COMPILERS.add(MPI_FC_ROLE, 'ftn')
