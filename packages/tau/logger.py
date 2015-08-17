@@ -148,17 +148,14 @@ class LogFormatter(logging.Formatter, object):
                                                   drop_whitespace=False)
 
     def format(self, record):
-        if record.levelno == logging.CRITICAL:
-            return self._msgbox(record, '!')
-        elif record.levelno == logging.ERROR:
-            return self._msgbox(record, '!')
-        elif record.levelno == logging.WARNING:
-            return self._msgbox(record, '*')
-        elif record.levelno == logging.INFO:
-            return '\n'.join(self._textwrap_message(record))
-        elif record.levelno == logging.DEBUG:
-            return '[%s %s:%s] %s' % (record.levelname, record.name, record.lineno, record.getMessage())
-        else:
+        formats = {logging.CRITICAL: lambda r: self._msgbox(r, '!'),
+                   logging.ERROR: lambda r: self._msgbox(r, '!'),
+                   logging.WARNING: lambda r: self._msgbox(r, '*'),
+                   logging.INFO: lambda r: '\n'.join(self._textwrap_message(r)),
+                   logging.DEBUG: lambda r: self._debug_message(r)}
+        try:
+            return formats[record.levelno](record)
+        except KeyError:
             raise RuntimeError('Unknown record level (name: %s)' % record.levelname)
 
     def _msgbox(self, record, marker):
@@ -168,13 +165,17 @@ class LogFormatter(logging.Formatter, object):
         parts.extend(self._textwrap_message(record))
         parts.append(hline)
         return '\n'.join(parts)
+    
+    def _debug_message(self, record):
+        message = record.getMessage()
+        if self.printable_only and (not set(message).issubset(self.PRINTABLE_CHARS)):
+            message = "<<UNPRINTABLE>>"
+        return '[%s %s:%s] %s' % (record.levelname, record.name, record.lineno, message)
 
     def _textwrap_message(self, record):
         parts = []
         for line in record.getMessage().split('\n'):
-            if self.printable_only and not set(line).issubset(self.PRINTABLE_CHARS):
-                message = "<<UNPRINTABLE>>"
-            else:
+            if not self.printable_only or set(line).issubset(self.PRINTABLE_CHARS):
                 message = self._text_wrapper.fill(line)
             parts.append('%s%s' % (self.line_marker, message))
         return parts
