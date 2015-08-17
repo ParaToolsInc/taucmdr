@@ -146,15 +146,15 @@ class LogFormatter(logging.Formatter, object):
                                                   break_long_words=False,
                                                   break_on_hyphens=False,
                                                   drop_whitespace=False)
+        self._formats = {logging.CRITICAL: lambda r: self._msgbox(r, '!'),
+                         logging.ERROR: lambda r: self._msgbox(r, '!'),
+                         logging.WARNING: lambda r: self._msgbox(r, '*'),
+                         logging.INFO: lambda r: '\n'.join(self._textwrap_message(r)),
+                         logging.DEBUG: lambda r: self._debug_message(r)}
 
     def format(self, record):
-        formats = {logging.CRITICAL: lambda r: self._msgbox(r, '!'),
-                   logging.ERROR: lambda r: self._msgbox(r, '!'),
-                   logging.WARNING: lambda r: self._msgbox(r, '*'),
-                   logging.INFO: lambda r: '\n'.join(self._textwrap_message(r)),
-                   logging.DEBUG: lambda r: self._debug_message(r)}
         try:
-            return formats[record.levelno](record)
+            return self._formats[record.levelno](record)
         except KeyError:
             raise RuntimeError('Unknown record level (name: %s)' % record.levelname)
 
