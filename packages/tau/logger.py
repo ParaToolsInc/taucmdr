@@ -157,8 +157,7 @@ class LogFormatter(logging.Formatter, object):
         elif record.levelno == logging.INFO:
             return '\n'.join(self._textwrap_message(record))
         elif record.levelno == logging.DEBUG:
-            return '%s[%s %s:%s] %s' % (self.line_marker, record.levelname, 
-                                        record.name, record.lineno, record.getMessage())
+            return '[%s %s:%s] %s' % (record.levelname, record.name, record.lineno, record.getMessage())
         else:
             raise RuntimeError('Unknown record level (name: %s)' % record.levelname)
 
@@ -201,7 +200,7 @@ LOG_LEVEL = 'INFO'
 LOG_FILE = os.path.join(USER_PREFIX, 'debug_log')
 
 # Marker for each line of output
-LINE_MARKER = os.environ.get('TAU_LINE_MARKER', '')
+LINE_MARKER = os.environ.get('TAU_LINE_MARKER', '[TAU] ')
 
 # Terminal dimensions
 TERM_SIZE = getTerminalSize()
