@@ -38,6 +38,7 @@
 import os
 from tau import logger
 from tau.cf.software.installation import AutotoolsInstallation
+from tau.cf.compiler import CC_ROLE
 
 LOGGER = logger.getLogger(__name__)
 
@@ -53,11 +54,11 @@ class PapiInstallation(AutotoolsInstallation):
     """
 
     def __init__(self, prefix, src, arch, compilers):
-        try:
-            cc_family = compilers.CC.wrapped.family
-        except AttributeError:
-            cc_family = compilers.CC.family
-        dst = os.path.join(arch, cc_family)
+#         try:
+#             cc_family = compilers.CC.wrapped.family
+#         except AttributeError:
+#             cc_family = compilers.CC.family
+        dst = os.path.join(arch, compilers[CC_ROLE].info.family.name)
         LOGGER.debug("src=%s, dst=%s" % (src, dst))
         super(PapiInstallation,self).__init__('PAPI', prefix, src, dst, arch, compilers, SOURCES)
 
