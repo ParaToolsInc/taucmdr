@@ -167,10 +167,10 @@ def preferred_mpi_compilers():
     if not _HOST_PREFERRED_MPI_COMPILERS: 
         host_tau_arch = tau_arch()
         if host_tau_arch == 'craycnl':
-            LOGGER.debug("Prefering Cray MPI compiler wrappers")
+            LOGGER.debug("Prefering Cray MPI compilers")
             _HOST_PREFERRED_MPI_COMPILERS = CRAY_MPI_COMPILERS
         elif host_tau_arch in ['bgp', 'bgq']:
-            LOGGER.debug("Prefering IBM compilers")
+            LOGGER.debug("Prefering IBM MPI compilers")
             _HOST_PREFERRED_MPI_COMPILERS = IBM_MPI_COMPILERS
         else:
             LOGGER.debug("No preferred compilers for '%s'" % host_tau_arch)

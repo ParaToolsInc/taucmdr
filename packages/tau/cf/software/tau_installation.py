@@ -46,7 +46,7 @@ from tau.cf.software.binutils_installation import BinutilsInstallation
 from tau.cf.software.libunwind_installation import LibunwindInstallation
 from tau.cf.software.papi_installation import PapiInstallation
 from tau.cf.compiler import SYSTEM_COMPILERS, GNU_COMPILERS, INTEL_COMPILERS, PGI_COMPILERS
-from tau.cf.compiler import CC_ROLE, CXX_ROLE, FC_ROLE
+from tau.cf.compiler import CC_ROLE, CXX_ROLE, FC_ROLE, UPC_ROLE
 from tau.cf.compiler.mpi import MPI_CC_ROLE, MPI_CXX_ROLE, MPI_FC_ROLE
 from tau.cf.target import TauArch
 
@@ -113,6 +113,7 @@ COMMANDS = [
 TAU_COMPILER_WRAPPERS = {CC_ROLE: 'tau_cc.sh',
                          CXX_ROLE: 'tau_cxx.sh',
                          FC_ROLE: 'tau_f90.sh',
+                         UPC_ROLE: 'tau_upc.sh',
                          MPI_CC_ROLE: 'tau_cc.sh',
                          MPI_CXX_ROLE: 'tau_cxx.sh',
                          MPI_FC_ROLE: 'tau_f90.sh'}

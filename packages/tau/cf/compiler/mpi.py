@@ -35,86 +35,20 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-import subprocess
-from tau import logger
 from tau.cf.compiler import CompilerFamily, CompilerRole
-from tau.cf.compiler.installed import InstalledCompiler
-
-LOGGER = logger.getLogger(__name__)
-
 
 
 class MpiCompilerFamily(CompilerFamily):
-    """Information about an MPI compiler family."""
-    # We subclass CompilerFamily to create a second database of compiler 
-    # family records and keep MPI compilers from mixing with host etc. compilers.
+    """Information about an MPI compiler family.
     
+    This subclass creates a second database of compiler family records 
+    and keep MPI compilers from mixing with host preferred compilers.
+    """
+
     @classmethod
     def preferred(cls):
         from tau.cf.target import host
         return host.preferred_mpi_compilers()
-    
-
-class MpiInstalledCompiler(InstalledCompiler):
-    """Information on an MPI compiler wrapping another compiler.
-    
-    Attributes:
-        wrapper: InstalledCompiler object for the compiler command wrapping this compiler
-        include_path: List of paths to search for header files
-        library_path: List of paths to search for library files
-        compiler_flags: List of additional compiler flags
-        linker_flags: List of additional linker flags
-    """   
-    def __init__(self, wrapper):
-        self.wrapper = wrapper
-        self.include_path = []
-        self.library_path = []
-        self.compiler_flags = []
-        self.linker_flags = []
-        if wrapper.family == MPI_FAMILY_NAME: 
-            wrapped_cmd = self._mpi_identify_wrapped()
-        elif wrapper.family == INTEL_MPI_FAMILY_NAME:
-            wrapped_cmd = self._mpi_identify_wrapped()
-        else:
-            raise NotImplementedError
-        super(WrappedCompiler,self).__init__(wrapped_cmd)
-        
-    def _parse_args(self, args):
-        wrapped_cmd = args[0]
-        for arg in args:
-            if arg.startswith('-I'):
-                self.include_path.append(arg[2:])
-            elif arg.startswith('-L'):
-                self.library_path.append(arg[2:])
-            elif arg.startswith('-l'):
-                self.linker_flags.append(arg)
-            else:
-                self.compiler_flags.append(arg)
-        LOGGER.debug("Wrapped include path: %s" % self.include_path)
-        LOGGER.debug("Wrapped library path: %s" % self.library_path)
-        LOGGER.debug("Wrapped linker flags: %s" % self.linker_flags)
-        return wrapped_cmd
-
-    def _mpi_identify_wrapped(self):
-        """
-        Discovers information about an MPI compiler command wrapping another compiler.
-        """ 
-        LOGGER.debug("Probing MPI compiler '%s' to discover wrapped compiler" % self.wrapper.command)
-        cmd = [self.wrapper.absolute_path, '-show']
-        LOGGER.debug("Creating subprocess: cmd=%s" % cmd)
-        try:
-            stdout = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-        except subprocess.CalledProcessError as err:
-            raise RuntimeError("%s failed with return code %d: %s" % 
-                               (cmd, err.returncode, err.output))
-        LOGGER.debug(stdout)
-        LOGGER.debug("%s returned 0" % cmd)
-        try:
-            return self._parse_args(stdout.split())
-        except IndexError:
-            raise RuntimeError("Unexpected output from %s: %s" % (cmd, stdout))
-
-
 
     
 MPI_CC_ROLE = CompilerRole('MPI_CC', 'MPI C')

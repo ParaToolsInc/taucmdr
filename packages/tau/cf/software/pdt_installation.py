@@ -105,10 +105,6 @@ class PdtInstallation(AutotoolsInstallation):
     """
 
     def __init__(self, prefix, src, arch, compilers):
-#         try:
-#             dst = compilers.CC.wrapped.family
-#         except AttributeError:
-#             dst = compilers.CC.family
         dst = compilers[CXX_ROLE].info.family.name
         super(PdtInstallation, self).__init__('PDT', prefix, src, dst, arch, compilers, SOURCES)
         self.arch_path = os.path.join(self.install_prefix, arch)
@@ -123,10 +119,6 @@ class PdtInstallation(AutotoolsInstallation):
         family_flags = {GNU_COMPILERS.name: '-GNU', 
                         INTEL_COMPILERS.name: '-icpc', 
                         PGI_COMPILERS.name: '-pgCC'}
-#         if self.compilers.CXX.wrapped:
-#             family = self.compilers.CXX.wrapped.family
-#         else:
-#             family = self.compilers.CXX.family
         family = self.compilers[CXX_ROLE].info.family
         compiler_flag = family_flags.get(family.name, '')
         prefix_flag = '-prefix=%s' % self.install_prefix

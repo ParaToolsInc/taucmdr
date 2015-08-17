@@ -60,10 +60,6 @@ class BinutilsInstallation(AutotoolsInstallation):
     """
     
     def __init__(self, prefix, src, arch, compilers):
-#         try:
-#             cc_family = compilers.CC.wrapped.family
-#         except AttributeError:
-#             cc_family = compilers.CC.family
         dst = os.path.join(arch, compilers[CC_ROLE].info.family.name)
         super(BinutilsInstallation,self).__init__('binutils', prefix, src, dst, arch, compilers, SOURCES)
 

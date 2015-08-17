@@ -86,7 +86,6 @@ class CompilerInfo(TrackedInstance):
         self.family = family
         self.role = role
         self.short_descr = "%s %s compiler" % (family.name, role.language)
-        self.tau_wrapper = None
     
     @classmethod
     def find(cls, command):
