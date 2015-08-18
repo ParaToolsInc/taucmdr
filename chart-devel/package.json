@@ -1,0 +1,16 @@
+{
+  "name": "taucmdr-chart-devel",
+  "private": true,
+  "version": "0.0.0",
+  "description": "chart development sandbox",
+  "keywords": [],
+  "dependencies": {
+    "requirejs": "*",
+    "c3": "*",
+    "d3": "*",
+    "websocket": "*",
+    "d3pie": "*"
+  },
+  "author": "ParaTools",
+  "license": ""
+}

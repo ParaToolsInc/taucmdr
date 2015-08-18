@@ -1,0 +1,61 @@
+[{
+    "node": "0", 
+    "thread": "2"
+},
+{
+    "#Calls": "1", 
+    "#Subrs": "1", 
+    "Inclusive (msec)": "7876413", 
+    "Function Name": ".TAU application", 
+    "Exclusive (msec)": "731"
+},
+{
+    "#Calls": "1", 
+    "#Subrs": "11", 
+    "Inclusive (msec)": "7875677", 
+    "Function Name": "do_work [{/home/skhuvis/src/tau2/examples/mm/matmult.c} {139,0}]", 
+    "Exclusive (msec)": "23"
+},
+{
+    "#Calls": "3", 
+    "#Subrs": "0", 
+    "Inclusive (msec)": "43230", 
+    "Function Name": "allocateMatrix [{/home/skhuvis/src/tau2/examples/mm/matmult.c} {40,0}]", 
+    "Exclusive (msec)": "43230"
+},
+{
+    "#Calls": "1", 
+    "#Subrs": "1", 
+    "Inclusive (msec)": "7875682", 
+    "Function Name": "threaded_func [{/home/skhuvis/src/tau2/examples/mm/matmult.c} {189,0}]", 
+    "Exclusive (msec)": "5"
+},
+{
+    "#Calls": "3", 
+    "#Subrs": "0", 
+    "Inclusive (msec)": "6164", 
+    "Function Name": "initialize [{/home/skhuvis/src/tau2/examples/mm/matmult_initialize.c} {3,0}]", 
+    "Exclusive (msec)": "6164"
+},
+{
+    "#Calls": "1", 
+    "#Subrs": "0", 
+    "Inclusive (msec)": "5143233", 
+    "Function Name": "compute [{/home/skhuvis/src/tau2/examples/mm/matmult.c} {97,0}]", 
+    "Exclusive (msec)": "5143233"
+},
+{
+    "#Calls": "1", 
+    "#Subrs": "0", 
+    "Inclusive (msec)": "2682023", 
+    "Function Name": "compute_interchange [{/home/skhuvis/src/tau2/examples/mm/matmult.c} {118,0}]", 
+    "Exclusive (msec)": "2682023"
+},
+{
+    "#Calls": "3", 
+    "#Subrs": "0", 
+    "Inclusive (msec)": "1004", 
+    "Function Name": "freeMatrix [{/home/skhuvis/src/tau2/examples/mm/matmult.c} {49,0}]", 
+    "Exclusive (msec)": "1004"
+}
+]
