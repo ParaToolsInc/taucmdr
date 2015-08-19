@@ -85,7 +85,7 @@ def main(argv):
 
     selection = Experiment.getSelected()
     if not selection:
-        LOGGER.info("No experiment configured. See `tau project select`\n")
+        print "No experiment configured. See `tau project select`\n"
         return EXIT_FAILURE
 
     try:

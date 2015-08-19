@@ -131,5 +131,5 @@ def main(argv):
             table.add_rows(rows)
             listing = table.draw()
 
-    LOGGER.info('\n'.join([title, '', listing, '']))
+    print '\n'.join([title, '', listing, ''])
     return EXIT_SUCCESS

@@ -92,7 +92,7 @@ def main(argv):
 
     selection = Experiment.getSelected()
     if not selection:
-        LOGGER.info("No experiment configured. See `tau project select`\n")
+        print "No experiment configured. See `tau project select`\n"
         return EXIT_FAILURE
 
     longflag = args.long
@@ -116,11 +116,9 @@ def main(argv):
                 PARSER.error(
                     "No trial number %d in the current experiment" % num)
 
-    LOGGER.info('{:=<{}}'.format('== %s Trials ==' %
-                                 selection.name(), logger.LINE_WIDTH) + '\n')
+    print '{:=<{}}\n'.format('== %s Trials ==' % selection.name(), logger.LINE_WIDTH)
     if not found:
-        LOGGER.info(
-            "No trials. Use 'tau <command>' or 'tau trial create <command>' to create a new trial\n")
+        print "No trials. Use 'tau <command>' or 'tau trial create <command>' to create a new trial\n"
         return EXIT_FAILURE
 
     table = Texttable(logger.LINE_WIDTH)
@@ -164,5 +162,5 @@ def main(argv):
         table.add_rows(rows)
         listing = table.draw()
 
-    LOGGER.info('\n'.join([listing, '']))
+    print '\n'.join([listing, ''])
     return EXIT_SUCCESS
