@@ -207,7 +207,7 @@ $(function () {
                     width:  '100%',
                     height: '1000px',
                     style: 'bar',
-		    backgroundColor: {stroke: 'black'},
+		    backgroundColor: {fill: 'white', stroke: 'black'},
                     showPerspective: true,
                     showGrid: true,
                     showShadow: false,
@@ -217,6 +217,7 @@ $(function () {
 		    xLabel: "Thread ID",
 		    yValueLabel: function (y) {return funcNames[y]},
 		    yLabel: "Function",
+	            zMin: 0,
 		    zMax: maxVal,
 		    zLabel: metric
                   };
