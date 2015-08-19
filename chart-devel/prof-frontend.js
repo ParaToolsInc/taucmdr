@@ -81,7 +81,7 @@ $(function () {
                 Object.keys(profJson[i]).forEach(function(key){
                     if(metrics.indexOf(key) == -1 && key != "node" && key != "thread" && key != "Function Name")
                     {
-                        metrics.push(key);
+                        metrics.unshift(key);
                     }
                 });
             }
