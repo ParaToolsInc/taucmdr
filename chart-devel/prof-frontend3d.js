@@ -1,0 +1,393 @@
+$(function () {
+    "use strict";
+
+    // for better performance - to avoid searching in DOM
+    var content = $('#content');
+    var input = $('#input');
+    var status = $('#status');
+    var split = $('#split');
+
+    // if user is running mozilla then use it's built-in WebSocket
+    window.WebSocket = window.WebSocket || window.MozWebSocket;
+
+    // if browser doesn't support WebSocket, just show some notification and exit
+    if (!window.WebSocket) {
+        content.html($('<p>', { text: 'Sorry, but your browser doesn\'t '
+                                    + 'support WebSockets.'} ));
+        input.hide();
+        $('span').hide();
+        return;
+    }
+
+    // open connection
+    var connection = new WebSocket('ws://127.0.0.1:1337');
+
+    connection.onopen = function () {
+        // first we want users to enter their names
+        input.removeAttr('disabled');
+        status.text('Choose name:');
+    };
+
+    connection.onerror = function (error) {
+        // just in there were some problems with conenction...
+        content.html($('<p>', { text: 'Sorry, but there\'s some problem with your '
+                                    + 'connection or the server is down.' } ));
+    };
+
+    // most important part - incoming messages
+    connection.onmessage = function (message) {
+        // try to parse JSON message. Because we know that the server always returns
+        // JSON this should work without any problem but we should make sure that
+        // the massage is not chunked or otherwise damaged.
+        try {
+            var json = JSON.parse(message.data);
+        } catch (e) {
+            console.log('This doesn\'t look like a valid JSON: ', message.data);
+            return;
+        }
+
+        // NOTE: if you're not sure about the JSON structure
+        // check the server source code above
+        if ( json.type == 'profile') {// entire profile data
+            var threads = [];
+            var thread = 0;
+            for(var i = 0; i<json.data.length;i++)
+            {
+                var jsontmp = JSON.parse(json.data[i]);
+                threads.push("node: " + jsontmp[0]["node"] + " , thread: " + jsontmp[0]["thread"]);
+            }
+            var selectUI_tid = d3.select("#droplist_tid")
+                     .append("select")
+                     .attr("id", "thread")
+                     .selectAll("option")
+                     .data(d3.values(threads))
+                     .enter().append("option")
+                     .attr("value", function(d) { return d;})
+                     .text(function(d) { return d;});
+            var checkOption_tid = function (e) {
+                    if(e === threads){
+                        return d3.select(this).attr("selected", "selected");
+                    }
+            };
+            selectUI_tid.selectAll("option").each(checkOption_tid);
+
+            var profJson = JSON.parse(json.data[0]);
+
+            //var metrics = ["Exclusive", "Inclusive", "Subroutines", "Calls"];
+            var metrics = [];
+            for(var i = 0;i<profJson.length;i++)
+            {
+                Object.keys(profJson[i]).forEach(function(key){
+                    if(metrics.indexOf(key) == -1 && key != "node" && key != "thread" && key != "Function Name")
+                    {
+                        metrics.push(key);
+                    }
+                });
+            }
+            var metric = metrics[0];
+
+	    make3dVis(json);
+
+
+        } else {
+            console.log('Hmm..., I\'ve never seen JSON like this: ', json);
+        }
+    };
+
+    /**
+     * This method is optional. If the server wasn't able to respond to the
+     * in 3 seconds then show some error message to notify the user that
+     * something is wrong.
+     */
+    setInterval(function() {
+        if (connection.readyState !== 1) {
+            status.text('Error');
+            input.attr('disabled', 'disabled').val('Unable to comminucate '
+                                                 + 'with the WebSocket server.');
+        }
+    }, 3000);
+
+    /**
+     * Create table with profile data
+     */
+    function makeTable(prof) {
+        // Create title for table
+	$('thead').empty();
+        var numkeys = Object.keys(prof[1]).length;
+        var caption = d3.select("thead").append("tr").append("th").attr("colspan", numkeys);
+        var cap = "Node " + prof[0]['node'] + " Thread " + prof[0]['thread'];
+        caption.html(cap);
+
+        var thead = d3.select("thead").selectAll("thead")
+       .data(d3.keys(prof[1]))
+       .enter().append("th").text(function(d){return d});
+
+       // Fill table
+       // Create rows
+       var tr = d3.select("tbody").selectAll("tr")
+       .data(prof.slice(1)).enter().append("tr");
+
+       // Cells
+       var td = tr.selectAll("td")
+         .data(function(d){return d3.values(d)})
+         .enter().append("td")
+         .text(function(d) {return d});
+    }
+
+    function makePieChart(prof, metric) {
+         var pie;
+
+         if(isNaN(Number(prof[1][metric])))
+         {
+             alert("Not a valid metric!");
+             pie = new d3pie("pieChart", {});
+         }
+         else{ 
+         var cont=[];
+         for(var i=0; i< prof.length; i++){
+             cont.push({"label": prof[i]['Function Name'], "value": Number(prof[i][metric])});
+         }
+        pie = new d3pie("pieChart", {
+	"header": {
+		"title": {
+			"text": "Profile",
+			"fontSize": 24,
+			"font": "open sans"
+		},
+		"subtitle": {
+			"text": "node " + prof[0]["node"] + ", thread: " + prof[0]["thread"],
+			"fontSize": 12,
+			"font": "open sans"
+		},
+		"titleSubtitlePadding": 9
+	},
+	"footer": {
+		"fontSize": 10,
+		"font": "open sans",
+		"location": "bottom-left"
+	},
+	"size": {
+		"canvasWidth": 800,
+		"pieOuterRadius": "90%"
+	},
+	"data": {
+		"sortOrder": "value-desc",
+		"content": cont
+	},
+	"labels": {
+		"outer": {
+			"pieDistance": 32
+		},
+		"inner": {
+			"hideWhenLessThanPercentage": 3
+		},
+		"mainLabel": {
+			"fontSize": 11
+		},
+		"percentage": {
+			"color": "#ffffff",
+			"decimalPlaces": 0
+		},
+		"value": {
+			"color": "#adadad",
+			"fontSize": 11
+		},
+		"lines": {
+			"enabled": true
+		},
+		"truncation": {
+			"enabled": true
+		}
+	},
+	"effects": {
+		"pullOutSegmentOnClick": {
+			"effect": "linear",
+			"speed": 400,
+			"size": 8
+		}
+	},
+	"misc": {
+		"gradient": {
+			"enabled": true,
+			"percentage": 100
+		}
+	}
+});
+    }
+        return pie;
+}
+    function makeBarChart(prof, metric) {
+         var fnames=['Function Names'];
+         var cont=[metric];
+         for(var i=1; i< prof.length; i++){
+             fnames.push(prof[i]['Function Name']);
+	     cont.push(Number(prof[i][metric]));
+         }
+	var chart = c3.generate({
+	    bindto: '#bar-chart',
+	    data: {
+	      x: 'Function Names',
+	      columns: [
+		fnames,
+		cont
+	      ],
+	      groups: [
+		      ['Exclusive Time']
+		      ],
+	      type: 'bar'
+	    },
+	    bar: {
+		    width: {
+			    ratio: 0.5
+		    }
+	    },
+	    padding: {left: 400},
+	    axis: {
+		    x : {
+			    type: 'category',
+			    label: {
+				    text: 'Function Name',
+				    position: 'outer-middle'
+			    },
+			    tick: {
+				    multiline: false,
+				    centered: true
+			    }
+		    },
+		    y: {
+			    label:{
+				    text: cont[0],
+				    position: 'outer-middle'
+			    }
+		    },
+		    rotated: true
+	    },
+	    legend: {
+		    show: false
+	    }
+	});
+    }
+
+	function make3dview( prof, key )
+	{
+		if( !key )
+			key = "#Calls";
+		
+		/* Create a thread array each thread with the following data
+		 * {
+		 * 		node : NID,
+		 * 		threadid: ID,
+		 * 		profile : []
+		 * }
+		 */
+
+		var streams = [];
+		
+		/* We need to store functions
+		 * at the same offset */
+		var func_id = 0;
+		var funclut = {};
+
+		for( var p = 0 ; p < prof.data.length ; p++ )
+		{
+			var perthreadprof = JSON.parse( prof.data[p] );
+			
+			var newstream = {};
+			
+			newstream.node = perthreadprof[0].node;
+			newstream.thread = perthreadprof[0].thread;
+			newstream.profile = [];
+			
+			for( var k = 1 ; k < perthreadprof.length ; k++ )
+			{
+				/* Make sure that functions already encountered are
+				 * at the same offset */
+				var functoffset = 0;
+				var funcname = perthreadprof[k]["Function Name"];
+
+				if( funclut[ funcname  ] )
+				{
+					functoffset = funclut[  funcname ] ;
+				}
+				else
+				{
+					functoffset = func_id++;
+					funclut[ funcname ] = functoffset;
+				}
+				
+				newstream.profile[functoffset] =  perthreadprof[k];
+			}
+			
+			streams.push( newstream );
+		}
+
+		//var view = new barviewer("container", streams, key);
+		return streams;
+	}
+
+
+	function make3dVis(prof)
+	{
+		var streams = make3dview(prof,'Exclusive (msec)');
+                var data = null;
+                var graph = null;
+		var funcNames=[];
+       
+                // Called when the Visualization API is loaded.
+                // Create and populate a data table.
+                var options = {};
+                var data = new vis.DataSet(options);
+		var metric = "Exclusive (msec)";
+		var maxVal = 0;
+		var zvals = [];
+
+		  for(var i = 0; i < streams.length; i++) {
+			  for(var j = 0; j < streams[i]["profile"].length; j++) {
+			      if(streams[i]["profile"][j])
+			      {
+			  	data.add({
+					x: i,
+					y: j,
+					z: streams[i]["profile"][j][metric],
+					style: streams[i]["profile"][j][metric]
+				});
+				funcNames[j] = streams[i]["profile"][j]["Function Name"];
+				zvals.push(streams[i]["profile"][j][metric]);
+			      }
+			      else
+			      {
+			  	data.add({
+					x: i,
+					y: j,
+					z: 0,
+					style: 0
+				});
+
+			      }
+			  }
+		  }
+		  maxVal = (Math.max.apply(Math, zvals));
+       
+                  // specify options
+                  var options = {
+                    width:  '100%',
+                    height: '1000px',
+                    style: 'bar',
+                    showPerspective: true,
+                    showGrid: true,
+                    showShadow: false,
+                    keepAspectRatio: true,
+                    verticalRatio: 0.5,
+                    xValueLabel: function (x) {return "node " + streams[x].node + " thread " + streams[x].thread},
+		    yValueLabel: function (y) {return funcNames[y]},
+		    //zMax: 5000000
+		    zMax: maxVal
+                  };
+       
+                  // create a graph3d
+                  var container = document.getElementById('mygraph');
+                  var graph3d = new vis.Graph3d(container, data, options);
+
+	}
+
+});

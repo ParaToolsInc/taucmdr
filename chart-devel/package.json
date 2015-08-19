@@ -9,7 +9,8 @@
     "c3": "*",
     "d3": "*",
     "websocket": "*",
-    "d3pie": "*"
+    "d3pie": "*",
+    "vis": "*"
   },
   "author": "ParaTools",
   "license": ""

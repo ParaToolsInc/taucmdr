@@ -1,8 +1,6 @@
 To view the profile:
-1. Install d3 js with the command
-> npm install d3
-2. Install websocket with the command
-> npm install websocket
-3. Now, start the server
+1. Install necessary Javascript libraries with the command
+> npm install
+2. Now, start the server
 > npm prof-server.js
-4. Open the view.html file in your browser.
+3. Open the view.html file in your browser.
