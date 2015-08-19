@@ -110,7 +110,7 @@ def parse_compiler_flags(args):
         else:
             delattr(args, family_attr)
         try:
-            family_comps = InstalledCompilerFamily(family_cls.find(family_arg))
+            family_comps = InstalledCompilerFamily(family_cls(family_arg))
         except KeyError:
             PARSER.error("Invalid host compiler family: %s" % family_arg)
         for comp in family_comps:
@@ -149,7 +149,7 @@ def parse_compiler_flags(args):
                 except KeyError:
                     LOGGER.debug("Not probing %s: not found" % role)
                 else:
-                    probed.update(getattr(comp.wrapped(), wrapped_attr))
+                    probed.update(getattr(comp.wrapped, wrapped_attr))
             setattr(args, args_attr, list(probed))
 
     return compilers

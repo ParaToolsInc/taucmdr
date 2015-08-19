@@ -43,57 +43,28 @@ import hashlib
 import subprocess
 from tau import logger, util
 from tau.error import ConfigurationError, InternalError
-from tau.cf import KeyedRecord
+from tau.cf import KeyedRecord, KeyedRecordCreator
 from tau.cf.compiler import CompilerInfo, CompilerRole
 
 
 LOGGER = logger.getLogger(__name__)
 
 
-class WrappedCompiler(object):
-    """Information about the compiler wrapped by another compiler.
-    
-    Attributes:
-        wrapped: InstalledCompiler instance for the wrapped compiler command.
-        include_path: List of paths to search for include files when compiling with the wrapped compiler.
-        library_path: List of paths to search for libraries when linking with the wrapped compiler.
-        compiler_flags: List of additional flags used when compiling with the wrapped compiler.
-        libraries: List of additional libraries to link when linking with the wrapped compiler.
-    """
-    def __init__(self, wrapper_family, wrapped_cmd, wrapped_args):
-        self.wrapped = InstalledCompiler(wrapped_cmd)
-        self.include_path = []
-        self.library_path = []
-        self.compiler_flags = []
-        self.libraries = []
-        
-        def parse_flags(idx, flags, acc):
-            arg = wrapped_args[idx]
-            for flag in flags:
-                if arg == flag:
-                    acc.append(wrapped_args[idx+1])
-                    return 2
-                elif arg.startswith(flag):
-                    acc.append(arg[len(flag):])
-                    return 1
-            return 0
-        
-        idx = 0
-        while idx < len(wrapped_args):
-            for flags, acc in [(wrapper_family.include_path_flags, self.include_path),
-                               (wrapper_family.library_path_flags, self.library_path),
-                               (wrapper_family.link_library_flags, self.libraries)]:
-                consumed = parse_flags(idx, flags, acc)
-                if consumed:
-                    idx += consumed
-                    break
-            else:
-                self.compiler_flags.append(wrapped_args[idx])
-                idx += 1
-        LOGGER.debug("Wrapped compiler flags: %s" % self.compiler_flags)
-        LOGGER.debug("Wrapped include path: %s" % self.include_path)
-        LOGGER.debug("Wrapped library path: %s" % self.library_path)
-        LOGGER.debug("Wrapped libraries: %s" % self.libraries)
+
+class InstalledCompilerCreator(KeyedRecordCreator):    
+    def __call__(cls, command):
+        assert isinstance(command, basestring)
+        if os.path.isabs(command):
+            try:
+                return cls.__instances__[command]
+            except KeyError:
+                pass
+        absolute_path = util.which(command)
+        if not absolute_path:
+            raise ConfigurationError("'%s' missing or not executable." % command,
+                                     "Check spelling, loaded modules, PATH environment variable, and file permissions")
+        return KeyedRecordCreator.__call__(cls, absolute_path)
+
 
 
 class InstalledCompiler(KeyedRecord):
@@ -111,9 +82,11 @@ class InstalledCompiler(KeyedRecord):
         info: Optional CompilerInfo object describing the compiler invoked by the compiler command, detected if None
     """
     
-    KEY = 'absolute_path'
+    __metaclass__ = InstalledCompilerCreator
+    
+    __key__ = 'absolute_path'
 
-    def __new__(cls, key):
+    def __init__(self, absolute_path):
         """Probes the system to find an installed compiler.
         
         May check PATH, file permissions, or other conditions in the system
@@ -121,39 +94,35 @@ class InstalledCompiler(KeyedRecord):
         
         If this compiler command wraps another command, may also attempt to discover
         information about the wrapped compiler as well.
-        
-        Args:
-            key: Command string or CompilerInfo.
-        
-        Raises:
-            ConfigurationError: compiler is not installed.
         """
-        command = key if isinstance(key, basestring) else key.command
-        if os.path.isabs(command):
-            try:
-                return cls._INSTANCES[command]
-            except (KeyError, AttributeError):
-                pass
-        absolute_path = util.which(command)
-        if not absolute_path:
-            raise ConfigurationError("'%s' missing or not executable." % command,
-                                     "Check spelling, loaded modules, PATH environment variable, and file permissions")
+        self._md5sum = None
+        self.absolute_path = absolute_path
+        self.path = os.path.dirname(absolute_path)
+        self.command = os.path.basename(absolute_path)
         try:
-            return cls._INSTANCES[absolute_path]
-        except (KeyError, AttributeError):
+            self.info = CompilerInfo.find(self.command)
+        except KeyError:
+            raise ConfigurationError("Unknown compiler command '%s'" % self.absolute_path)
+        if self.info.family.show_wrapper_flags:
+            LOGGER.debug("Probing wrapper compiler '%s' to discover wrapped compiler" % self.absolute_path)
+            cmd = [self.absolute_path] + self.info.family.show_wrapper_flags
+            LOGGER.debug("Creating subprocess: %s" % cmd)
             try:
-                info = CompilerInfo.find(command)
-            except KeyError:
-                raise ConfigurationError("Cannot recognize compiler command '%s'" % command)
-            path, command = os.path.split(absolute_path)
-            instance = KeyedRecord.__new__(cls, absolute_path)
-            instance._md5sum = None
-            instance._wrapped = None
-            instance.absolute_path = absolute_path
-            instance.path = path
-            instance.command = command
-            instance.info = info
-            return instance
+                stdout = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+            except subprocess.CalledProcessError as err:
+                raise RuntimeError("%s failed with return code %d: %s" % (cmd, err.returncode, err.output))
+            else:
+                LOGGER.debug(stdout)
+                LOGGER.debug("%s returned 0" % cmd)
+            args = stdout.split()
+            self.wrapped = WrappedCompiler(args[0])
+            try:
+                self.wrapped.parse_args(args[1:], self.info.family)
+            except IndexError:
+                raise RuntimeError("Unexpected output from '%s':\n%s" % (' '.join(cmd), stdout))
+        else:
+            self.wrapped = None
+
 
     def md5sum(self):
         """
@@ -170,30 +139,52 @@ class InstalledCompiler(KeyedRecord):
             self._md5sum = md5sum.hexdigest()
         return self._md5sum
 
-    def wrapped(self):
-        """
-        Discovers information about the compiler wrapped by this command.
-        """
-        if not self._wrapped:
-            LOGGER.debug("Probing wrapper compiler '%s' to discover wrapped compiler" % self.absolute_path)
-            if self.info.family.show_wrapper_flags:
-                cmd = [self.absolute_path] + self.info.family.show_wrapper_flags
-                LOGGER.debug("Creating subprocess: %s" % cmd)
-                try:
-                    stdout = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-                except subprocess.CalledProcessError as err:
-                    raise RuntimeError("%s failed with return code %d: %s" % (cmd, err.returncode, err.output))
-                else:
-                    LOGGER.debug(stdout)
-                    LOGGER.debug("%s returned 0" % cmd)
-                args = stdout.split()
-                try:
-                    self._wrapped = WrappedCompiler(self.info.family, args[0], args[1:])
-                except IndexError:
-                    raise RuntimeError("Unexpected output from '%s':\n%s" % (' '.join(cmd), stdout))
+
+
+class WrappedCompiler(InstalledCompiler):
+    """Information about the compiler wrapped by another compiler.
+    
+    Attributes:
+        include_path: List of paths to search for include files when compiling with the wrapped compiler.
+        library_path: List of paths to search for libraries when linking with the wrapped compiler.
+        compiler_flags: List of additional flags used when compiling with the wrapped compiler.
+        libraries: List of additional libraries to link when linking with the wrapped compiler.
+    """
+    def __init__(self, absolute_path):
+        super(WrappedCompiler,self).__init__(absolute_path)
+        self.include_path = []
+        self.library_path = []
+        self.compiler_flags = []
+        self.libraries = []
+        
+    def parse_args(self, args, wrapper_family):
+        """Parse arguments passed to the wrapped compiler by the compiler wrapper."""
+        def parse_flags(idx, flags, acc):
+            arg = args[idx]
+            for flag in flags:
+                if arg == flag:
+                    acc.append(args[idx+1])
+                    return 2
+                elif arg.startswith(flag):
+                    acc.append(arg[len(flag):])
+                    return 1
+            return 0
+        idx = 0
+        while idx < len(args):
+            for flags, acc in [(wrapper_family.include_path_flags, self.include_path),
+                               (wrapper_family.library_path_flags, self.library_path),
+                               (wrapper_family.link_library_flags, self.libraries)]:
+                consumed = parse_flags(idx, flags, acc)
+                if consumed:
+                    idx += consumed
+                    break
             else:
-                self._wrapped = WrappedCompiler(self.info.family, self.absolute_path, [])
-        return self._wrapped
+                self.compiler_flags.append(args[idx])
+                idx += 1
+        LOGGER.debug("Wrapped compiler flags: %s" % self.compiler_flags)
+        LOGGER.debug("Wrapped include path: %s" % self.include_path)
+        LOGGER.debug("Wrapped library path: %s" % self.library_path)
+        LOGGER.debug("Wrapped libraries: %s" % self.libraries)
 
 
 class InstalledCompilerSet(KeyedRecord):
@@ -204,7 +195,7 @@ class InstalledCompilerSet(KeyedRecord):
         members: (CompilerRole, InstalledCompiler) dictionary containing members of this set
     """
     
-    KEY = 'uid'
+    __key__ = 'uid'
     
     def __init__(self, uid, **kwargs):
         self.uid = uid
@@ -229,7 +220,7 @@ class InstalledCompilerFamily(KeyedRecord):
         commands: (command, InstalledCompiler) dictionary listing all installed compiler commands. 
     """
     
-    KEY = 'family'
+    __key__ = 'family'
     
     def __init__(self, family):
         self.family = family
@@ -237,7 +228,7 @@ class InstalledCompilerFamily(KeyedRecord):
         LOGGER.debug("Detecting %s compiler installation" % family.name)
         for info in family:
             try:
-                comp = InstalledCompiler(info)
+                comp = InstalledCompiler(info.command)
             except ConfigurationError as err:
                 LOGGER.debug(err)
             else:

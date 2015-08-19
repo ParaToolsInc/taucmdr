@@ -156,7 +156,7 @@ class OperatingSystem(KeyedRecord):
         description: Description of the operating system.
     """
     
-    KEY = 'name'
+    __key__ = 'name'
     
     def __init__(self, name, description):
         self.name = name
@@ -171,7 +171,7 @@ class Architecture(KeyedRecord):
         description: Description of the architecture. 
     """
     
-    KEY = 'name'
+    __key__ = 'name'
     
     def __init__(self, name, description):
         self.name = name
@@ -187,7 +187,7 @@ class TauArch(KeyedRecord):
         operating_system: OperatingSystem object for this TAU architecture.
     """
     
-    KEY = 'name'
+    __key__ = 'name'
     
     def __init__(self, name, architecture, operating_system):
         self.name = name

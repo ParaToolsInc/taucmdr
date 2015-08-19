@@ -54,7 +54,7 @@ class CompilerRole(KeyedRecord):
         required: True if this role must be filled to compile TAU, False otherwise
     """
     
-    KEY = 'keyword'
+    __key__ = 'keyword'
     
     def __init__(self, keyword, language, required=False):
         self.keyword = keyword
@@ -121,7 +121,9 @@ class CompilerInfo(TrackedInstance):
         candidates = filter(lambda instance: instance.command in command, cls.all())
         if not candidates:
             raise KeyError
-        return max(candidates, key=len)
+        match = max(candidates, key=len)
+        LOGGER.debug("Matched info for %s to %s" % (match, command))
+        return match
 
 
 class CompilerFamily(KeyedRecord):
@@ -137,7 +139,7 @@ class CompilerFamily(KeyedRecord):
                             or None if this family does not wrap compilers.
     """
     
-    KEY = 'name'
+    __key__ = 'name'
     
     def __init__(self, name,
                  version_flags=['--version'],
@@ -166,7 +168,7 @@ class CompilerFamily(KeyedRecord):
         """
         preferred = cls.preferred()
         yield preferred
-        for instance in cls._INSTANCES.itervalues():
+        for instance in cls.__instances__.itervalues():
             if instance is not preferred:
                 yield instance
                 
