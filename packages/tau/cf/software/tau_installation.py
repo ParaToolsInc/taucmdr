@@ -308,9 +308,9 @@ class TauInstallation(Installation):
         if self.mpi_support: 
             # TAU's configure script does a really bad job detecting the wrapped compiler command
             # so don't even bother trying.  Pass as much of this as we can and hope for the best.
-            cc_command = self.compilers[MPI_CC_ROLE].wrapped().info.command
-            cxx_command = self.compilers[MPI_CXX_ROLE].wrapped().info.command
-            fc_family = self.compilers[MPI_FC_ROLE].info.family
+            cc_command = self.compilers[MPI_CC_ROLE].wrapped.info.command
+            cxx_command = self.compilers[MPI_CXX_ROLE].wrapped.info.command
+            fc_family = self.compilers[MPI_FC_ROLE].wrapped.info.family
             if self.mpi_include_path:
                 # Unfortunately, TAU's configure script can only accept one path on -mpiinc
                 # and it expects the compiler's include path argument (e.g. "-I") to be omitted
@@ -323,7 +323,10 @@ class TauInstallation(Installation):
             if self.mpi_library_path:
                 # Unfortunately, TAU's configure script can only accept one path on -mpilib
                 # and it expects the compiler's include path argument (e.g. "-L") to be omitted
-                mpilib = self.mpi_library_path[0]
+                for path in self.mpi_library_path:
+                    if glob.glob(os.path.join(path, 'libmpi*')):
+                        mpilib = path
+                        break
             if self.mpi_libraries:
                 # Multiple MPI libraries can be given but only if they're separated by a '#' symbol
                 # and the compiler's library linking flag (e.g. '-l') must be included

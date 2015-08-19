@@ -59,7 +59,10 @@ class KeyedRecordCreator(type):
     """Metaclass to create a new keyed record.
     
     Change object creation proceedure so that only one instance of a KeyedRecord
-    subclass exists for each key argument.
+    subclass exists for each key argument.  Overridding __new__ would be less creepy,
+    but then we can't prevent __init__ from being called on the returned class instance,
+    i.e. the same instance is returned by it is reinitialized every time.  Using
+    thi metaclass guarantees we call __new__ and __init__ only once per class instance.
     """
     def __new__(mcs, name, bases, dct):
         dct['__instances__'] = {}
