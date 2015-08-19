@@ -187,6 +187,7 @@ class WrappedCompiler(InstalledCompiler):
         LOGGER.debug("Wrapped libraries: %s" % self.libraries)
 
 
+
 class InstalledCompilerSet(KeyedRecord):
     """A collection of installed compilers, one per role if the role can be filled.
     
