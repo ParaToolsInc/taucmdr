@@ -47,6 +47,7 @@ from tau.cf.software.libunwind_installation import LibunwindInstallation
 from tau.cf.software.papi_installation import PapiInstallation
 from tau.cf.compiler import SYSTEM_COMPILERS, GNU_COMPILERS, INTEL_COMPILERS, PGI_COMPILERS
 from tau.cf.compiler import CC_ROLE, CXX_ROLE, FC_ROLE, UPC_ROLE
+from tau.cf.compiler.mpi import SYSTEM_MPI_COMPILERS, INTEL_MPI_COMPILERS
 from tau.cf.compiler.mpi import MPI_CC_ROLE, MPI_CXX_ROLE, MPI_FC_ROLE
 from tau.cf.target import TauArch
 
@@ -138,7 +139,7 @@ class TauInstallation(Installation):
                  mpi_support,
                  mpi_include_path,
                  mpi_library_path,
-                 mpi_linker_flags,
+                 mpi_libraries,
                  cuda_support,
                  shmem_support,
                  mpc_support,
@@ -181,7 +182,7 @@ class TauInstallation(Installation):
         self.mpi_support = mpi_support
         self.mpi_include_path = mpi_include_path
         self.mpi_library_path = mpi_library_path
-        self.mpi_linker_flags = mpi_linker_flags
+        self.mpi_libraries = mpi_libraries
         self.cuda_support = cuda_support
         self.shmem_support = shmem_support
         self.mpc_support = mpc_support
@@ -299,60 +300,56 @@ class TauInstallation(Installation):
         Raises:
             SoftwareConfigurationError: TAU's configure script failed.
         """
-        # TAU's configure script is really bad at detecting wrapped compilers
-        # so don't even try.  Replace the compiler wrapper with the wrapped command.
-#         if self.compilers.CC.wrapped:
-#             cc = self.compilers.CC.wrapped
-#             cxx = self.compilers.CXX.wrapped
-#             fc = self.compilers.FC.wrapped
-#         else:
-#             cc = self.compilers.CC
-#             cxx = self.compilers.CXX
-#             fc = self.compilers.FC
-
-        # Use info.command instead of `command` to work around TAU's 
-        # inability to work with compiler commands that include
-        # version numbers in their names, e.g. 'gcc-4.9' becomes 'gcc'
-        cc_command = self.compilers[CC_ROLE].info.command
-        cxx_command = self.compilers[CXX_ROLE].info.command
-        fc_family = self.compilers[FC_ROLE].info.family
-
-        # TAU has a really hard time detecting MPI settings in its configure script
+        # TAU's configure script does a really bad job of detecting MPI settings
         # so set up mpiinc, mpilib, mpilibrary when we have that information
-#         mpiinc = None
-#         if self.mpi_include_path:
-#             # TODO: TAU's configure script can only accept one path on -mpiinc
-#             for path in self.mpi_include_path:
-#                 if os.path.exists(os.path.join(path, 'mpi.h')):
-#                     mpiinc = path
-#                     break
-#             if not mpiinc:
-#                 raise ConfigurationError("mpi.h not found on MPI include path: %s" % self.mpi_include_path)
-#         mpilib = None
-#         if self.mpi_library_path:
-#             mpilib = self.mpi_library_path[0]
-#         mpilibrary = None
-#         if self.mpi_linker_flags:
-#             mpilibrary = '#'.join(self.mpi_linker_flags)
-            
-        # Pick the right compiler command for PDT
-#         if self.pdt:
-#             if self.pdt.compilers.CXX.wrapped:
-#                 pdt_cxx = self.pdt.compilers.CXX.wrapped
-#             else:
-#                 pdt_cxx = self.pdt.compilers.CXX
+        mpiinc = None
+        mpilib = None
+        mpilibrary = None
+        if self.mpi_support: 
+            # TAU's configure script does a really bad job detecting the wrapped compiler command
+            # so don't even bother trying.  Pass as much of this as we can and hope for the best.
+            cc_command = self.compilers[MPI_CC_ROLE].wrapped().info.command
+            cxx_command = self.compilers[MPI_CXX_ROLE].wrapped().info.command
+            fc_family = self.compilers[MPI_FC_ROLE].info.family
+            if self.mpi_include_path:
+                # Unfortunately, TAU's configure script can only accept one path on -mpiinc
+                # and it expects the compiler's include path argument (e.g. "-I") to be omitted
+                for path in self.mpi_include_path:
+                    if os.path.exists(os.path.join(path, 'mpi.h')):
+                        mpiinc = path
+                        break
+                if not mpiinc:
+                    raise ConfigurationError("mpi.h not found on MPI include path: %s" % self.mpi_include_path)
+            if self.mpi_library_path:
+                # Unfortunately, TAU's configure script can only accept one path on -mpilib
+                # and it expects the compiler's include path argument (e.g. "-L") to be omitted
+                mpilib = self.mpi_library_path[0]
+            if self.mpi_libraries:
+                # Multiple MPI libraries can be given but only if they're separated by a '#' symbol
+                # and the compiler's library linking flag (e.g. '-l') must be included
+                link_library_flag = self.compilers[CC_ROLE].info.family.link_library_flags[0]
+                mpilibrary = '#'.join(["%s%s" % (link_library_flag, library) for library in self.mpi_libraries])
+        else:
+            # TAU's configure script can't cope with compiler absolute paths or compiler names that
+            # don't exactly match what it expects.  Use `info.command` instead of `command` to work
+            # around these problems e.g. 'gcc-4.9' becomes 'gcc' 
+            cc_command = self.compilers[CC_ROLE].info.command
+            cxx_command = self.compilers[CXX_ROLE].info.command
+            fc_family = self.compilers[FC_ROLE].info.family
 
         # TAU's configure script can't detect Fortran compiler from the compiler
         # command so translate Fortran compiler command into TAU's funkey magic words
-        magic_map = {GNU_COMPILERS: 'gfortran', 
-                     INTEL_COMPILERS: 'intel', 
+        magic_map = {GNU_COMPILERS: 'gfortran',
+                     INTEL_COMPILERS: 'intel',
                      PGI_COMPILERS: 'pgi',
-                     SYSTEM_COMPILERS: 'ftn'}
+                     SYSTEM_COMPILERS: 'ftn',
+                     SYSTEM_MPI_COMPILERS: 'mpif90',
+                     INTEL_MPI_COMPILERS: 'mpiifort'}
         try:
             fortran_magic = magic_map[fc_family]
         except KeyError:
             raise InternalError("Unknown compiler family for Fortran: '%s'" % fc_family)
-
+            
         flags = [ flag for flag in  
                  ['-prefix=%s' % self.install_prefix,
                   '-arch=%s' % self.arch,
@@ -360,17 +357,15 @@ class TauInstallation(Installation):
                   '-c++=%s' % cxx_command,
                   '-fortran=%s' % fortran_magic,
                   '-pdt=%s' % self.pdt.install_prefix if self.pdt else '',
-#                   '-pdt_c++=%s' % pdt_cxx.command if self.pdt else '',
                   '-bfd=%s' % self.binutils.install_prefix if self.binutils else '',
                   '-papi=%s' % self.papi.install_prefix if self.papi else '',
                   '-unwind=%s' % self.libunwind.install_prefix if self.libunwind else '',
                   '-pthread' if self.pthreads_support else '',
                   '-mpi' if self.mpi_support else '',
-#                   '-mpiinc=%s' % mpiinc if mpiinc else '',
-#                   '-mpilib=%s' % mpilib if mpilib else '',
-#                   '-mpilibrary=%s' % mpilibrary if mpilibrary else ''
-                  ]
-                 if flag]
+                  '-mpiinc=%s' % mpiinc if mpiinc else '',
+                  '-mpilib=%s' % mpilib if mpilib else '',
+                  '-mpilibrary=%s' % mpilibrary if mpilibrary else ''
+                  ] if flag]
         if self.openmp_support:
             if self.measure_openmp == 'compiler_default':
                 flags.append('-openmp')

@@ -104,7 +104,7 @@ def parse_compiler_flags(args):
         try:
             family_arg = getattr(args, family_attr)
         except AttributeError as err:
-            # User didn't specify that argument
+            # User didn't specify that argument, but that's OK
             LOGGER.debug(err)
             continue
         else:
@@ -138,8 +138,8 @@ def parse_compiler_flags(args):
                                      "See 'compiler arguments' under `%s --help`" % COMMAND)
             
     # Probe MPI compilers to discover wrapper flags
-    for args_attr, wrapped_attr in [('mpi_include_paths', 'include_path'), 
-                                    ('mpi_library_paths', 'library_path'),
+    for args_attr, wrapped_attr in [('mpi_include_path', 'include_path'), 
+                                    ('mpi_library_path', 'library_path'),
                                     ('mpi_libraries', 'libraries')]:
         if not hasattr(args, args_attr):
             probed = set()
@@ -165,29 +165,6 @@ def main(argv):
     compilers = parse_compiler_flags(args)
     LOGGER.debug('Arguments after parsing compiler flags: %s' % args)
     fields = dict(args.__dict__)
-    
-#     if compilers[CC_ROLE.keyword].family == MPI_FAMILY_NAME:
-#         mpi_include_path = set()
-#         mpi_library_path = set()
-#         mpi_compiler_flags = set()
-#         mpi_linker_flags = set()
-#         for comp in compilers.itervalues():
-#             mpi_include_path |= set(comp.wrapped.include_path)
-#             mpi_library_path |= set(comp.wrapped.library_path)
-#             mpi_compiler_flags |= set(comp.wrapped.compiler_flags)
-#             mpi_linker_flags |= set(comp.wrapped.linker_flags)
-#         if not flags['mpi_include_path']:
-#             flags['mpi_include_path'] = list(mpi_include_path) 
-#             LOGGER.info("Autodetected MPI include path: %s" % os.pathsep.join(mpi_include_path))
-#         if not flags['mpi_library_path']:
-#             flags['mpi_library_path'] = list(mpi_library_path)
-#             LOGGER.info("Autodetected MPI library path: %s" % os.pathsep.join(mpi_library_path))
-#         if not flags['mpi_compiler_flags']:
-#             flags['mpi_compiler_flags'] = list(mpi_compiler_flags)
-#             LOGGER.info("Autodetected MPI compiler flags: %s" % ' '.join(mpi_compiler_flags))
-#         if not flags['mpi_linker_flags']:
-#             flags['mpi_linker_flags'] = list(mpi_linker_flags)
-#             LOGGER.info("Autodetected MPI linker flags: %s" % ' '.join(mpi_linker_flags))
 
     for keyword, comp in compilers.iteritems():
         LOGGER.debug("%s=%s (%s)" % (keyword, comp.absolute_path, comp.info.short_descr))

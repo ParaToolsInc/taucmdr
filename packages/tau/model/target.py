@@ -148,18 +148,18 @@ class Target(Controller, ByName):
                          'group': 'Message Passing Interface (MPI)',
                          'metavar': '<command>'}
         },
-        'mpi_include_paths': {
+        'mpi_include_path': {
             'type': 'array',
             'description': 'paths to search for MPI header files when building MPI applications',
-            'argparse': {'flags': ('--mpi-include-paths',),
+            'argparse': {'flags': ('--mpi-include-path',),
                          'group': 'Message Passing Interface (MPI)',
                          'metavar': '<path>',
                          'nargs': '+'},
         },
-        'mpi_library_paths': {
+        'mpi_library_path': {
             'type': 'array',
             'description': 'paths to search for MPI library files when building MPI applications',
-            'argparse': {'flags': ('--mpi-library-paths',),
+            'argparse': {'flags': ('--mpi-library-path',),
                          'group': 'Message Passing Interface (MPI)',
                          'metavar': '<path>',
                          'nargs': '+'},
@@ -238,7 +238,7 @@ class Target(Controller, ByName):
         """Get Compiler objects for all compilers in this Target.
          
         Returns:
-            A CompilerSet with all required compilers set.
+            InstalledCompilerSet instance with all required compilers set.
         """
         eids = []
         compilers = {}

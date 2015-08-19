@@ -181,7 +181,7 @@ class Experiment(Controller):
                                    mpi_support=application['mpi'],
                                    mpi_include_path=target.get('mpi_include_path', []),
                                    mpi_library_path=target.get('mpi_library_path', []),
-                                   mpi_linker_flags=target.get('mpi_linker_flags', []),
+                                   mpi_libraries=target.get('mpi_libraries', []),
                                    cuda_support=application['cuda'],
                                    shmem_support=application['shmem'],
                                    mpc_support=application['mpc'],

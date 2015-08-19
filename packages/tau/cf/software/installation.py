@@ -62,7 +62,7 @@ class Installation(object):
              installed, or a path to a source archive file, or the special
              keyword 'download'
         arch: String describing the target architecture.
-        compilers: CompilerSet specifying which compilers to use.
+        compilers: InstalledCompilerSet specifying which compilers to use.
         include_path: Convinence variable, install_prefix + '/include'
         bin_path: Convinence variable, install_prefix + '/bin'
         lib_path: Convinence variable, install_prefix + '/lib'
@@ -91,7 +91,7 @@ class Installation(object):
                  keyword 'download'
             dst: Installation destination to be created below `prefix`
             arch: String describing the target architecture.
-            compilers: CompilerSet specifying which compilers to use.
+            compilers: InstalledCompilerSet specifying which compilers to use.
             sources: (arch, path) dictionary specifying where to get source
                      code archives for different architectures.  The None
                      key specifies the default (i.e. universal) source.
