@@ -1,0 +1,5 @@
+.true. = ifbrick               ! brick or linear geometry
+512 512 1  = iel0,ielN,ielD (per processor)  ! range of number of elements per proc.
+ 9  12 3 = nx0,nxN,nxD         ! poly. order range for nx1
+ 1  1  1 = npx, npy, npz       ! processor distribution in x,y,z
+ 1  1  1 = mx, my, mz          ! local element distribution in x,y,z

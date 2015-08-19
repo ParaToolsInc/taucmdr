@@ -36,7 +36,7 @@
 #"""
 
 from tau import EXIT_FAILURE
-from tau import logger, arguments, commands, util
+from tau import logger, arguments, commands
 from tau.model.experiment import Experiment
 
 
@@ -85,7 +85,7 @@ def main(argv):
 
     selection = Experiment.getSelected()
     if not selection:
-        LOGGER.info("No experiment configured. See `tau project select`\n")
+        print "No experiment configured. See `tau project select`\n"
         return EXIT_FAILURE
 
     try:

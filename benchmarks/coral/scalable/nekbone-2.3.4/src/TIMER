@@ -1,0 +1,9 @@
+
+      integer tmax
+      parameter (tmax = 1024)
+    
+      real  ttemp1, ttemp2
+
+      real tzc(tmax), tglsc3(tmax), tax(tmax), tadd2sx(tmax)
+      real tadd2s2(tmax), tgsop(tmax), taxe(tmax)
+      common /timer/ tzc, tglsc3, tax, tadd2sx, tadd2s2, tgsop, taxe

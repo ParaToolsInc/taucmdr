@@ -1,0 +1,19 @@
+C     Dimension file to be included
+
+      parameter (ldim=3)                      ! dimension
+      parameter (lx1=12,ly1=lx1,lz1=lx1)      ! polynomial order
+
+C      parameter (lp =160)                 ! max number of processors
+      parameter (lp =49152)                 ! max number of processors
+      parameter (lelt= 512)                    ! max number of elements, per proc
+C      parameter (lelt= 16)                    ! max number of elements, per proc
+
+      parameter (lelg=lelt*lp)                ! max total elements in a test
+      parameter (lelx=lelg,lely=1,lelz=1)     ! max elements in each direction
+
+      parameter (ldimt=1,ldimt1=ldimt+1)      ! used in 'include' files
+
+
+      common /dimn/ nelx,nely,nelz,nelt       ! local element common block
+     $            , nx1,ny1,nz1,ndim,nfield,nid
+

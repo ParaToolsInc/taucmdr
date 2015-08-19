@@ -1,0 +1,4 @@
+      common /mass/
+     $       bm1   (lx1,ly1,lz1,lelt)
+     $      ,binvm1(lx1,ly1,lz1,lelt)
+     $      ,volvm1

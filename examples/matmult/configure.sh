@@ -37,7 +37,7 @@ if [[ $target_name == *"Paratools-SV"* ]]; then
   echo "** making gcc target and part of project"
   source /Users/srinathv/gnu5Bin/linkGccs.source
   tau target create gcc5 --compilers MPI
-  tau project edit ex-mm --add-targets gcc5
+  tau project edit ex-matmult --add-targets gcc5
 fi
 
 

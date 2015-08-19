@@ -1,0 +1,66 @@
+  Nek_comm-1.0
+
+This is the communication testing kernel for the MPI 
+all reduce and point to point communication used within
+the nekbone mini-app and standard NEK5000.  This kernel
+runs a battery of platform timers using MPI standard.
+
+To Run:
+
+  NOTE - Unlike the other nek codes, a data.rea file
+	is not needed, since there is no geometry
+	being set up.
+
+  After untarring nek_comm-1.0.tgz, change working 
+  directory to the nek_comm/test/ directory:
+     cd  ~/nek_comm/test/
+
+  Edit the makenek script to specify the compiler and
+  appropriate compiler flags.
+
+  Compile and link the code using the makenek script:
+      ./makenek n
+  where n is the chosen name of test run.
+
+  A successful compilation will result with:
+
+  #############################################################
+  #                  Compilation successful!                  #
+  #############################################################
+  
+  And a nekcomm executable.
+
+  Run the code in parallel using the provided nekpmpi script
+  by specifying the test name (for logfile naming purposes) 
+  and the number of processors.  For example, to run a test
+  called 'n' on 4 processes:
+     ./nekpmpi n 4
+
+  This will produce a logfile, n.log.4.
+
+
+Interpreting results:
+
+  The logfile will have a header describing the parameters the
+  test was ran with and the output of the timing tests.
+
+  All reduce tests are output with the a 'gop' tag:
+		np  nwds time1 time2
+  where,
+	 np - number of processors
+	 nwds - number of words
+	 tmsg - time per message
+ 	 tpwd - time per word
+
+
+  Point to point tests are output with the 'pg' tag:
+		nodeb np nloop nwds tmsg tpwd
+  where,
+	 nodeb - the second processor node 0 is 
+	 testing with
+	 np - number of processors
+	 nloop - number of tests ran with these nodes
+	 nwds - number of words per message
+	 tmsg - time per message
+	 tpwd - time per word  
+        
