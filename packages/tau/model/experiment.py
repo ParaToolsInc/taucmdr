@@ -223,8 +223,8 @@ class Experiment(Controller):
         if given_compiler_eid != target_compiler_eid:
             target_compiler = Compiler.one(eid=target_compiler_eid).info()
             raise ConfigurationError("Target '%s' is configured with %s '%s', not %s '%s'" %
-                                     (target['name'], target_compiler.short_descr, target_compiler.absolute_path,
-                                      given_compiler.short_descr, given_compiler.absolute_path),
+                                     (target['name'], target_compiler.info.short_descr, target_compiler.absolute_path,
+                                      given_compiler.info.short_descr, given_compiler.absolute_path),
                                      "Select a different target or compile with '%s'" % 
                                      target_compiler.absolute_path)
         self.configure()
