@@ -219,7 +219,8 @@ $(function () {
 		    yLabel: "Function",
 	            zMin: 0,
 		    zMax: maxVal,
-		    zLabel: metric
+		    zLabel: metric,
+		    tooltip: true,
                   };
        
                   // create a graph3d

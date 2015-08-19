@@ -149,6 +149,7 @@ $(function () {
     function makeTable(prof) {
         // Create title for table
 	$('thead').empty();
+	$('tbody').empty();
         var numkeys = Object.keys(prof[1]).length;
         var caption = d3.select("thead").append("tr").append("th").attr("colspan", numkeys);
         var cap = "Node " + prof[0]['node'] + " Thread " + prof[0]['thread'];
