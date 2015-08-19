@@ -35,16 +35,15 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-from tau import logger, commands, arguments 
+from tau import logger, commands, arguments
 from tau.error import ConfigurationError
 from tau.controller import UniqueAttributeError
 from tau.model.target import Target
 from tau.model.compiler import Compiler
 from tau.cf.compiler import CompilerFamily, CompilerRole
-from tau.cf.compiler.mpi import MpiCompilerFamily 
-from tau.cf.compiler.installed import CompilerInstallation, InstalledCompiler
+from tau.cf.compiler.mpi import MpiCompilerFamily, MPI_CXX_ROLE, MPI_CC_ROLE, MPI_FC_ROLE
+from tau.cf.compiler.installed import InstalledCompiler, InstalledCompilerFamily
 from tau.cf.target import host
-
  
 
 LOGGER = logger.getLogger(__name__)
@@ -90,47 +89,41 @@ def getHelp():
 
 
 def parse_compiler_flags(args):
-    """Parses compiler flags out of the command line arguments.
-    
+    """Parses host compiler flags out of the command line arguments.
+     
     Args:
         args: Argument namespace containing command line arguments
-        
+         
     Returns:
         Dictionary of installed compilers by role keyword string.
-        
+         
     Raises:
         ConfigurationError: Invalid command line arguments specified
     """
-    try:
-        host_comp = CompilerInstallation(CompilerFamily.find(args.host_family))
-    except KeyError:
-        PARSER.error("Invalid host compiler family: %s" % args.host_family)
-    except AttributeError as err:
-        # args.host_family missing, but that's OK
-        LOGGER.debug(err)
-    else:
-        for comp in host_comp:
+    for family_attr, family_cls in [('host_family', CompilerFamily), ('mpi_family', MpiCompilerFamily)]:
+        try:
+            family_arg = getattr(args, family_attr)
+        except AttributeError as err:
+            # User didn't specify that argument
+            LOGGER.debug(err)
+            continue
+        else:
+            delattr(args, family_attr)
+        try:
+            family_comps = InstalledCompilerFamily(family_cls.find(family_arg))
+        except KeyError:
+            PARSER.error("Invalid host compiler family: %s" % family_arg)
+        for comp in family_comps:
+            LOGGER.debug("args.%s=%r" % (comp.info.role.keyword, comp.absolute_path))
             setattr(args, comp.info.role.keyword, comp.absolute_path)
-
-    try:
-        mpi_comp = CompilerInstallation(MpiCompilerFamily.find(args.mpi_family))
-    except KeyError:
-        PARSER.error("Invalid MPI compiler family: %s" % args.mpi_family)
-    except AttributeError as err:
-        # args.mpi_family missing, but that's OK
-        LOGGER.debug(err)
-    else:
-        for comp in mpi_comp:
-            setattr(args, comp.info.role.keyword, comp.absolute_path)
-
+ 
     compiler_keys = set(CompilerRole.keys())
     all_keys = set(args.__dict__.keys())
     given_keys = compiler_keys & all_keys
     missing_keys = compiler_keys - given_keys
     LOGGER.debug("Given compilers: %s" % given_keys)
     LOGGER.debug("Missing compilers: %s" % missing_keys)
-    
-    LOGGER.debug('Autodetecting missing compilers')
+     
     compilers = dict([(key, InstalledCompiler(getattr(args, key))) for key in given_keys])
     for key in missing_keys:
         try:
@@ -143,6 +136,22 @@ def parse_compiler_flags(args):
         if role.keyword not in compilers:
             raise ConfigurationError("%s compiler could not be found" % role.language,
                                      "See 'compiler arguments' under `%s --help`" % COMMAND)
+            
+    # Probe MPI compilers to discover wrapper flags
+    for args_attr, wrapped_attr in [('mpi_include_paths', 'include_path'), 
+                                    ('mpi_library_paths', 'library_path'),
+                                    ('mpi_libraries', 'libraries')]:
+        if not hasattr(args, args_attr):
+            probed = set()
+            for role in MPI_CC_ROLE, MPI_CXX_ROLE, MPI_FC_ROLE:
+                try:
+                    comp = compilers[role.keyword]
+                except KeyError:
+                    LOGGER.debug("Not probing %s: not found" % role)
+                else:
+                    probed.update(getattr(comp.wrapped(), wrapped_attr))
+            setattr(args, args_attr, list(probed))
+
     return compilers
 
 
@@ -153,12 +162,10 @@ def main(argv):
     args = PARSER.parse_args(args=argv)
     LOGGER.debug('Arguments: %s' % args)
     
-    fields = dict(args.__dict__)
-    for key in 'host_family', 'mpi_family':
-        try: del fields[key]
-        except KeyError: pass
-    
     compilers = parse_compiler_flags(args)
+    LOGGER.debug('Arguments after parsing compiler flags: %s' % args)
+    fields = dict(args.__dict__)
+    
 #     if compilers[CC_ROLE.keyword].family == MPI_FAMILY_NAME:
 #         mpi_include_path = set()
 #         mpi_library_path = set()
@@ -181,7 +188,7 @@ def main(argv):
 #         if not flags['mpi_linker_flags']:
 #             flags['mpi_linker_flags'] = list(mpi_linker_flags)
 #             LOGGER.info("Autodetected MPI linker flags: %s" % ' '.join(mpi_linker_flags))
-    
+
     for keyword, comp in compilers.iteritems():
         LOGGER.debug("%s=%s (%s)" % (keyword, comp.absolute_path, comp.info.short_descr))
         record = Compiler.register(comp)

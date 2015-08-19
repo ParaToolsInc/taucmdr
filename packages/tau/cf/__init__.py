@@ -102,5 +102,3 @@ class KeyedRecord(TrackedInstance):
     
     def __len__(self):
         return len(getattr(self, self.KEY))
-
-    

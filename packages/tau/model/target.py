@@ -154,8 +154,7 @@ class Target(Controller, ByName):
             'argparse': {'flags': ('--mpi-include-paths',),
                          'group': 'Message Passing Interface (MPI)',
                          'metavar': '<path>',
-                         'nargs': '+',
-                         'action': ParsePackagePathAction},
+                         'nargs': '+'},
         },
         'mpi_library_paths': {
             'type': 'array',
@@ -163,13 +162,12 @@ class Target(Controller, ByName):
             'argparse': {'flags': ('--mpi-library-paths',),
                          'group': 'Message Passing Interface (MPI)',
                          'metavar': '<path>',
-                         'nargs': '+',
-                         'action': ParsePackagePathAction},
+                         'nargs': '+'},
         },
-        'mpi_linker_flags': {
+        'mpi_libraries': {
             'type': 'array',
-            'description': 'additional linker flags required to build MPI applications',
-            'argparse': {'flags': ('--mpi-linker-flags',),
+            'description': 'libraries to link to when building MPI applications',
+            'argparse': {'flags': ('--mpi-libraries',),
                          'group': 'Message Passing Interface (MPI)',
                          'metavar': '<flag>',
                          'nargs': '+'},

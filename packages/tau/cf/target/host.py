@@ -41,9 +41,7 @@ from tau import logger
 from tau.error import ConfigurationError
 from tau.cf.target import Architecture, TauArch, OperatingSystem
 from tau.cf.target import IBM_BGP_ARCH, IBM_BGQ_ARCH, CRAY_CNL_OS, IBM_CNK_OS
-from tau.cf.compiler import CompilerFamily, IBM_COMPILERS, GNU_COMPILERS, CRAY_COMPILERS
-from tau.cf.compiler.mpi import MpiCompilerFamily, IBM_MPI_COMPILERS, CRAY_MPI_COMPILERS, SYSTEM_MPI_COMPILERS
-from tau.cf.compiler.installed import CompilerInstallation
+from tau.cf.compiler.installed import InstalledCompilerFamily
  
 
 LOGGER = logger.getLogger(__name__)
@@ -142,7 +140,8 @@ def preferred_compilers():
         A CompilerFamily object.
     """
     global _HOST_PREFERRED_COMPILERS
-    if not _HOST_PREFERRED_COMPILERS: 
+    if not _HOST_PREFERRED_COMPILERS:
+        from tau.cf.compiler import IBM_COMPILERS, GNU_COMPILERS, CRAY_COMPILERS 
         host_tau_arch = tau_arch()
         if host_tau_arch == 'craycnl':
             LOGGER.debug("Prefering Cray compiler wrappers")
@@ -164,7 +163,8 @@ def preferred_mpi_compilers():
         A CompilerFamily object.
     """
     global _HOST_PREFERRED_MPI_COMPILERS
-    if not _HOST_PREFERRED_MPI_COMPILERS: 
+    if not _HOST_PREFERRED_MPI_COMPILERS:
+        from tau.cf.compiler.mpi import IBM_MPI_COMPILERS, CRAY_MPI_COMPILERS, SYSTEM_MPI_COMPILERS 
         host_tau_arch = tau_arch()
         if host_tau_arch == 'craycnl':
             LOGGER.debug("Prefering Cray MPI compilers")
@@ -186,15 +186,16 @@ def default_compilers():
     compilers are not installed then it will be an installation of any known compiler family.
     
     Returns:
-        A CompilerInstallation object.
+        An InstalledCompilerFamily object.
     """
     global _HOST_DEFAULT_COMPILERS
     if not _HOST_DEFAULT_COMPILERS:
+        from tau.cf.compiler import CompilerFamily
         LOGGER.debug("Detecting default host compilers")
         # CompilerFamily.all() returns the host's preferred compilers as the first element
         for family in CompilerFamily.all():
             try:
-                _HOST_DEFAULT_COMPILERS = CompilerInstallation(family)
+                _HOST_DEFAULT_COMPILERS = InstalledCompilerFamily(family)
             except ConfigurationError as err:
                 LOGGER.debug(err)
             else:
@@ -211,10 +212,11 @@ def default_mpi_compilers():
     """
     global _HOST_DEFAULT_MPI_COMPILERS
     if not _HOST_DEFAULT_MPI_COMPILERS:
+        from tau.cf.compiler.mpi import MpiCompilerFamily
         LOGGER.debug("Detecting default MPI compilers")
         for family in MpiCompilerFamily.all():
             try:
-                _HOST_DEFAULT_MPI_COMPILERS = CompilerInstallation(family)
+                _HOST_DEFAULT_MPI_COMPILERS = InstalledCompilerFamily(family)
             except ConfigurationError as err:
                 LOGGER.debug(err)
             else:

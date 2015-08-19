@@ -35,22 +35,31 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
+from tau import logger
 from tau.cf.compiler import CompilerFamily, CompilerRole
+
+
+LOGGER = logger.getLogger(__name__)
 
 
 class MpiCompilerFamily(CompilerFamily):
     """Information about an MPI compiler family.
     
-    This subclass creates a second database of compiler family records 
-    and keep MPI compilers from mixing with host preferred compilers.
+    Subclassing CompilerFamily creates a second database of compiler family 
+    records and keep MPI compilers from mixing with host etc. compilers.
     """
-
+    
+    def __init__(self, *args, **kwargs):
+        if 'show_wrapper_flags' not in kwargs:
+            kwargs['show_wrapper_flags'] = ['-show']
+        super(MpiCompilerFamily,self).__init__(*args, **kwargs)
+    
     @classmethod
     def preferred(cls):
         from tau.cf.target import host
         return host.preferred_mpi_compilers()
 
-    
+
 MPI_CC_ROLE = CompilerRole('MPI_CC', 'MPI C')
 MPI_CXX_ROLE = CompilerRole('MPI_CXX', 'MPI C++')
 MPI_FC_ROLE = CompilerRole('MPI_FC', 'MPI Fortran')
@@ -70,7 +79,7 @@ IBM_MPI_COMPILERS.add(MPI_CC_ROLE, 'mpixlc')
 IBM_MPI_COMPILERS.add(MPI_CXX_ROLE, 'mpixlc++', 'mpixlC')
 IBM_MPI_COMPILERS.add(MPI_FC_ROLE, 'mpixlf77')
 
-CRAY_MPI_COMPILERS = MpiCompilerFamily('Cray')
+CRAY_MPI_COMPILERS = MpiCompilerFamily('Cray', show_wrapper_flags=['-craype-verbose'])
 CRAY_MPI_COMPILERS.add(MPI_CC_ROLE, 'cc')
 CRAY_MPI_COMPILERS.add(MPI_CXX_ROLE, 'CC')
 CRAY_MPI_COMPILERS.add(MPI_FC_ROLE, 'ftn')

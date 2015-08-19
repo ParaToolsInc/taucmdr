@@ -40,6 +40,7 @@
 
 import os
 import hashlib
+import subprocess
 from tau import logger, util
 from tau.error import ConfigurationError, InternalError
 from tau.cf import KeyedRecord
@@ -49,11 +50,58 @@ from tau.cf.compiler import CompilerInfo, CompilerRole
 LOGGER = logger.getLogger(__name__)
 
 
+class WrappedCompiler(object):
+    """Information about the compiler wrapped by another compiler.
+    
+    Attributes:
+        wrapped: InstalledCompiler instance for the wrapped compiler command.
+        include_path: List of paths to search for include files when compiling with the wrapped compiler.
+        library_path: List of paths to search for libraries when linking with the wrapped compiler.
+        compiler_flags: List of additional flags used when compiling with the wrapped compiler.
+        libraries: List of additional libraries to link when linking with the wrapped compiler.
+    """
+    def __init__(self, wrapper_family, wrapped_cmd, wrapped_args):
+        self.wrapped = InstalledCompiler(wrapped_cmd)
+        self.include_path = []
+        self.library_path = []
+        self.compiler_flags = []
+        self.libraries = []
+        
+        def parse_flags(idx, flags, acc):
+            arg = wrapped_args[idx]
+            for flag in flags:
+                if arg == flag:
+                    acc.append(wrapped_args[idx+1])
+                    return 2
+                elif arg.startswith(flag):
+                    acc.append(arg[len(flag):])
+                    return 1
+            return 0
+        
+        idx = 0
+        while idx < len(wrapped_args):
+            for flags, acc in [(wrapper_family.include_path_flags, self.include_path),
+                               (wrapper_family.library_path_flags, self.library_path),
+                               (wrapper_family.link_library_flags, self.libraries)]:
+                consumed = parse_flags(idx, flags, acc)
+                if consumed:
+                    idx += consumed
+                    break
+            else:
+                self.compiler_flags.append(wrapped_args[idx])
+                idx += 1
+        LOGGER.debug("Wrapped compiler flags: %s" % self.compiler_flags)
+        LOGGER.debug("Wrapped include path: %s" % self.include_path)
+        LOGGER.debug("Wrapped library path: %s" % self.library_path)
+        LOGGER.debug("Wrapped libraries: %s" % self.libraries)
+
+
 class InstalledCompiler(KeyedRecord):
     """Information about an installed compiler command.
     
     There are relatively few well known compilers, but a potentially infinite
-    number of commands that can invoke those compilers.  This class links a
+    number of commands that can invoke those compilers.  Additionally, an installed 
+    compiler command may be a wrapper around another command.  This class links a
     command (e.g. icc, gcc-4.2, etc.) with a common compiler command.
     
     Attributes:
@@ -64,15 +112,18 @@ class InstalledCompiler(KeyedRecord):
     """
     
     KEY = 'absolute_path'
-    
+
     def __new__(cls, key):
         """Probes the system to find an installed compiler.
         
         May check PATH, file permissions, or other conditions in the system
         to determine if a compiler command is present and executable.
         
+        If this compiler command wraps another command, may also attempt to discover
+        information about the wrapped compiler as well.
+        
         Args:
-            key: Command string or CompilerInfo to match.
+            key: Command string or CompilerInfo.
         
         Raises:
             ConfigurationError: compiler is not installed.
@@ -94,47 +145,23 @@ class InstalledCompiler(KeyedRecord):
                 info = CompilerInfo.find(command)
             except KeyError:
                 raise ConfigurationError("Cannot recognize compiler command '%s'" % command)
+            path, command = os.path.split(absolute_path)
             instance = KeyedRecord.__new__(cls, absolute_path)
             instance._md5sum = None
+            instance._wrapped = None
             instance.absolute_path = absolute_path
-            instance.command = os.path.basename(absolute_path)
-            instance.path = os.path.dirname(absolute_path)
+            instance.path = path
+            instance.command = command
             instance.info = info
             return instance
-    
-    @classmethod
-    def find(cls, key):
-        """Probes the system to find an installed compiler.
-        
-        May check PATH, file permissions, or other conditions in the system
-        to determine if a compiler command is present and executable.
-        
-        Args:
-            key: Command string or CompilerInfo to match.
-        
-        Raises:
-            ConfigurationError: compiler is not installed.
-        """
-        command = key if isinstance(key, basestring) else key.command
-        if os.path.isabs(command):
-            try:
-                return cls._INSTANCES[command]
-            except (KeyError, AttributeError):
-                pass
-        abspath = util.which(command)
-        if not abspath:
-            raise ConfigurationError("'%s' missing or not executable." % command,
-                                     "Check spelling, loaded modules, PATH environment variable, and file permissions")
-        try:
-            return cls._INSTANCES[abspath]
-        except (KeyError, AttributeError):
-            try:
-                info = CompilerInfo.find(command)
-            except KeyError:
-                raise ConfigurationError("Cannot recognize compiler command '%s'" % command)
-            return cls(abspath, info)
-        
+
     def md5sum(self):
+        """
+        Calculate the MD5 checksum of the installed compiler command executable.
+        
+        Returns:
+            The MD5 sum as a string of hexidecimal digits.
+        """
         if not self._md5sum:
             LOGGER.debug("Calculating MD5 of '%s'" % self.absolute_path)
             md5sum = hashlib.md5()
@@ -143,6 +170,30 @@ class InstalledCompiler(KeyedRecord):
             self._md5sum = md5sum.hexdigest()
         return self._md5sum
 
+    def wrapped(self):
+        """
+        Discovers information about the compiler wrapped by this command.
+        """
+        if not self._wrapped:
+            LOGGER.debug("Probing wrapper compiler '%s' to discover wrapped compiler" % self.absolute_path)
+            if self.info.family.show_wrapper_flags:
+                cmd = [self.absolute_path] + self.info.family.show_wrapper_flags
+                LOGGER.debug("Creating subprocess: %s" % cmd)
+                try:
+                    stdout = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+                except subprocess.CalledProcessError as err:
+                    raise RuntimeError("%s failed with return code %d: %s" % (cmd, err.returncode, err.output))
+                else:
+                    LOGGER.debug(stdout)
+                    LOGGER.debug("%s returned 0" % cmd)
+                args = stdout.split()
+                try:
+                    self._wrapped = WrappedCompiler(self.info.family, args[0], args[1:])
+                except IndexError:
+                    raise RuntimeError("Unexpected output from '%s':\n%s" % (' '.join(cmd), stdout))
+            else:
+                self._wrapped = WrappedCompiler(self.info.family, self.absolute_path, [])
+        return self._wrapped
 
 
 class InstalledCompilerSet(KeyedRecord):
@@ -150,6 +201,7 @@ class InstalledCompilerSet(KeyedRecord):
     
     Attributes:
         uid: A unique identifier for this particular combination of compilers.
+        members: (CompilerRole, InstalledCompiler) dictionary containing members of this set
     """
     
     KEY = 'uid'
@@ -161,16 +213,16 @@ class InstalledCompilerSet(KeyedRecord):
         for key, val in kwargs.iteritems():
             if key not in all_roles:
                 raise InternalError("Invalid role: %s" % key)
-            self.members[key] = val
+            role = CompilerRole.find(key)
+            self.members[role] = val
 
     def __getitem__(self, role):
-        return self.members[role.keyword]
-        
-        
+        return self.members[role]
 
-class CompilerInstallation(KeyedRecord):
-    """
-    Encapsulates data on a compiler installation.
+
+
+class InstalledCompilerFamily(KeyedRecord):
+    """Encapsulates data on a compiler installation.
     
     Attributes:
         family: CompilerFamily for this installation.
@@ -179,14 +231,9 @@ class CompilerInstallation(KeyedRecord):
     
     KEY = 'family'
     
-    def __new__(cls, family):
-        try:
-            return cls._INSTANCES[family]
-        except (KeyError, AttributeError):
-            pass
-        instance = KeyedRecord.__new__(cls, family)
-        instance.family = family
-        instance.commands = {}
+    def __init__(self, family):
+        self.family = family
+        self.commands = {}
         LOGGER.debug("Detecting %s compiler installation" % family.name)
         for info in family:
             try:
@@ -194,9 +241,8 @@ class CompilerInstallation(KeyedRecord):
             except ConfigurationError as err:
                 LOGGER.debug(err)
             else:
-                instance.commands[comp.info.command] = comp
+                self.commands[comp.info.command] = comp
                 LOGGER.debug("%s %s compiler is %s" % (family.name, comp.info.role.language, comp.absolute_path))
-        return instance
 
     def __iter__(self):
         """
@@ -217,10 +263,9 @@ class CompilerInstallation(KeyedRecord):
         Raises:
             KeyError: No installed compiler can fill the role.
         """
-        for info in self.family.members_by_role(role):
+        for info in self.family.members(role):
             try:
                 return self.commands[info.command]
             except KeyError:
                 continue
         raise KeyError
-        

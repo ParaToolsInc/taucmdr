@@ -60,7 +60,7 @@ class CompilerRole(KeyedRecord):
         self.keyword = keyword
         self.language = language
         self.required = required
-        
+
     @classmethod
     def required(cls):
         """Yield all roles that must be filled to get TAU to compile."""
@@ -86,6 +86,12 @@ class CompilerInfo(TrackedInstance):
         self.family = family
         self.role = role
         self.short_descr = "%s %s compiler" % (family.name, role.language)
+        
+    def __str__(self):
+        return self.command
+    
+    def __len__(self):
+        return len(self.command)
     
     @classmethod
     def find(cls, command):
@@ -107,31 +113,46 @@ class CompilerInfo(TrackedInstance):
             KeyError: No compiler info matches the given command.
         """
         command = os.path.basename(command)
-        for info in cls.all():
-            if info.command == command:
-                return info
+        for instance in cls.all():
+            if instance.command == command:
+                return instance
         # Guess that the longest string is the best match
         LOGGER.debug("No compiler info exactly matches %s, trying approximate match" % command)
-        candidates = filter(lambda comp: comp.command in command, cls.all())
+        candidates = filter(lambda instance: instance.command in command, cls.all())
         if not candidates:
             raise KeyError
         return max(candidates, key=len)
-
 
 
 class CompilerFamily(KeyedRecord):
     """Information about a compiler family.
     
     Attributes:
-        name: String identifying this family, e.g. "Intel"
+        name: String identifying this family, e.g. "Intel".
+        version_flags: List of command line flags that show the compiler version.
+        include_path_flags: List of command line flags that add a directory to the compiler's include path. 
+        library_path_flags: List of command line flags that add a directory to the compiler's library path.
+        link_library_flags: List of command line flags that link a library.
+        show_wrapper_flags: List of command line flags that show the wrapped compiler's complete command line
+                            or None if this family does not wrap compilers.
     """
     
     KEY = 'name'
     
-    def __init__(self, name):
-        self.name = name
+    def __init__(self, name,
+                 version_flags=['--version'],
+                 include_path_flags=['-I'], 
+                 library_path_flags=['-L'], 
+                 link_library_flags=['-l'],
+                 show_wrapper_flags=None):
         self._info_by_command = {}
         self._info_by_role = {}
+        self.name = name
+        self.version_flags = version_flags
+        self.include_path_flags = include_path_flags
+        self.library_path_flags = library_path_flags
+        self.link_library_flags = link_library_flags
+        self.show_wrapper_flags = show_wrapper_flags
 
     @classmethod
     def all(cls):
@@ -145,9 +166,9 @@ class CompilerFamily(KeyedRecord):
         """
         preferred = cls.preferred()
         yield preferred
-        for fam in cls._INSTANCES.itervalues():
-            if fam.name != preferred.name:
-                yield fam
+        for instance in cls._INSTANCES.itervalues():
+            if instance is not preferred:
+                yield instance
                 
     @classmethod
     def preferred(cls):
@@ -160,12 +181,28 @@ class CompilerFamily(KeyedRecord):
         """Return an alphabetical list of all known compiler family names."""
         return sorted(map(str, cls.all()))
     
+    def __contains__(self, item):
+        """Tests if a command is in the family or a role has been filled.
+        
+        Args:
+            item: The absolute path to a compiler command as a string, or a CompilerRole instance.
+            
+        Returns:
+            If a string is given then return True if the string is the absolute path to a compiler
+            that is in this family.  If a CompilerRole instance is given, return True if at least
+            one compiler in the family fills the role.  Return False in all other cases.
+        """        
+        if isinstance(item, basestring):
+            return item in self._info_by_command
+        else:
+            return item.keyword in self._info_by_role
+    
     def __iter__(self):
         """Yield information about all compilers in the family.
         
         May yield zero, one, or more CompilerInfo objects for any role,
-        however it will not yield the same command multiple times.
-        """  
+        but it will yield each CompilerInfo object only once.
+        """
         for info in self._info_by_command.itervalues():
             yield info
 
@@ -189,27 +226,20 @@ class CompilerFamily(KeyedRecord):
             self._info_by_command[command] = info
             self._info_by_role.setdefault(role.keyword, []).append(info)
                 
-    def members_by_role(self, role):
-        """Get all compilers in the specified role.
+    def members(self, key):
+        """Get the compiler with the specified command or all compilers in the specified role.
          
         Args:
-            role: CompilerRole object
+            key: Compiler command string or CompilerRole instance
              
         Returns:
-            List of CompilerInfo objects
+            If `key` is a string, return the CompilerInfo instance matching the command string.
+            If `key` is a CompilerRole, return a list of CompilerInfo instances in the specified role. 
         """
-        return self._info_by_role[role.keyword]
-     
-    def member_by_command(self, command):
-        """Get the compiler with the specified command.
-         
-        Args:
-            command: Command string to search for
-         
-        Returns:
-            CompilerInfo object
-        """
-        return self._info_by_command[command]
+        if isinstance(key, basestring):
+            return self._info_by_command[key]
+        else:
+            return self._info_by_role[key.keyword]        
 
 
 CC_ROLE = CompilerRole('CC', 'C', True)
@@ -244,4 +274,10 @@ IBM_COMPILERS.add(CC_ROLE, 'xlc', )
 IBM_COMPILERS.add(CXX_ROLE, 'xlc++', 'xlC')
 IBM_COMPILERS.add(FC_ROLE, 'xlf')
 
-CRAY_COMPILERS = SYSTEM_COMPILERS
+CRAY_COMPILERS = CompilerFamily('Cray')
+CRAY_COMPILERS.add(CC_ROLE, 'cc')
+CRAY_COMPILERS.add(CXX_ROLE, 'c++', 'cxx', 'CC')
+CRAY_COMPILERS.add(FC_ROLE, 'ftn', 'f90', 'f77')
+CRAY_COMPILERS.add(UPC_ROLE, 'upc')
+
+
