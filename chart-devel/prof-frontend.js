@@ -94,6 +94,7 @@ $(function () {
 	       makeTable(profJson);
 	       pie.destroy();
 	       pie = makePieChart(profJson, metric);
+	       pie2 = makePieChart2(profJson, metric);
 	       makeBarChart(profJson, metric);
             });
 
@@ -114,6 +115,7 @@ $(function () {
 
 
             var pie = makePieChart(profJson, metric);
+            var pie2 = makePieChart2(profJson, metric);
             // Updated metric
 	    makeBarChart(profJson, metric);
             d3.selectAll('select')
@@ -122,6 +124,7 @@ $(function () {
                metric = key;
                pie.destroy();
                pie = makePieChart(profJson, metric);
+               pie2 = makePieChart2(profJson, metric);
 	       makeBarChart(profJson, metric);
             });
 
@@ -305,6 +308,28 @@ $(function () {
             subchart: {
                     show: true
             }
+	});
+    }
+
+    function makePieChart2(prof, metric) {
+	 var data = {};
+	 var fnames = [];
+	 prof.forEach(function(e) {
+		 fnames.push(e['Function Name']);
+		 data[e['Function Name']] = e[metric];
+	 });
+	var chart = c3.generate({
+	    bindto: '#pieChart2',
+	    data: {
+		      json : [data],
+		      keys : { 
+			      value : fnames
+		      },
+	      type: 'pie'
+	    },
+	    legend: {
+		    show: false
+	    },
 	});
     }
 });
