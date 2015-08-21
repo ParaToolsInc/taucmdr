@@ -39,43 +39,35 @@ import os
 import sys
 import glob
 import shutil
-import logger, util
 import fileinput
-from installation import AutotoolsInstallation
+from tau import logger, util
+from tau.cf.software.installation import AutotoolsInstallation
+from tau.cf.compiler import CC_ROLE
 
 
 LOGGER = logger.getLogger(__name__)
  
-SOURCES = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/binutils-2.23.2.tar.gz',
-           'arm64_linux': 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/arm64-bfd.tgz'}
+SOURCES = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/binutils-2.23.2.tar.gz'}
 
 LIBS = {None: ['libbfd.a']}
 
 
-class BfdInstallation(AutotoolsInstallation):
-    """Encapsulates a BFD installation.
+class BinutilsInstallation(AutotoolsInstallation):
+    """Encapsulates a GNU binutils installation.
     
-    BFD is provided by GNU binutils and is used for symbol resolution during
+    GNU binutils provildes BFD, which is used for symbol resolution during
     sampling, compiler-based instrumentation, and other measurement approaches.
     """
     
     def __init__(self, prefix, src, arch, compilers):
-        try:
-            cc_family = compilers.CC.wrapped.family
-        except AttributeError:
-            cc_family = compilers.CC.family
-        dst = os.path.join(arch, cc_family)
-        super(BfdInstallation,self).__init__('BFD', prefix, src, dst, arch, compilers, SOURCES)
+        dst = os.path.join(arch, compilers[CC_ROLE].info.family.name)
+        super(BinutilsInstallation,self).__init__('binutils', prefix, src, dst, arch, compilers, SOURCES)
 
     def _verify(self):
         libraries = LIBS.get(self.arch, LIBS[None])
-        return super(BfdInstallation,self)._verify(libraries=libraries)
+        return super(BinutilsInstallation,self)._verify(libraries=libraries)
     
     def configure(self, flags, env):
-        """Configures BFD.
-        
-        BFD needs a customized configration method.
-        """
         arch_flags = {'bgp': ['CFLAGS=-fPIC', 'CXXFLAGS=-fPIC',
                               'CC=/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc-bgp-linux-gcc',
                               'CXX=/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc-bgp-linux-g++',
@@ -162,10 +154,10 @@ class BfdInstallation(AutotoolsInstallation):
 #                 --disable-nls --disable-werror > tau_configure.log 2>&1
 #               err=$?
 #             fi
-        return super(BfdInstallation,self).configure(flags, env)
+        return super(BinutilsInstallation,self).configure(flags, env)
     
     def make_install(self, flags, env, parallel=False):
-        super(BfdInstallation,self).make_install(flags, env, parallel)
+        super(BinutilsInstallation,self).make_install(flags, env, parallel)
 
         LOGGER.debug("Copying missing BFD headers")
         for hdr in glob.glob(os.path.join(self._src_path, 'bfd', '*.h')):
@@ -177,7 +169,7 @@ class BfdInstallation(AutotoolsInstallation):
                 dst = os.path.join(self.include_path, os.path.basename(f))
                 shutil.copytree(f, dst)
 
-        LOGGER.debug("Copying missing BFD libraries")
+        LOGGER.debug("Copying missing libiberty libraries")
         shutil.copy(os.path.join(self._src_path, 'libiberty', 'libiberty.a'), self.lib_path)
         shutil.copy(os.path.join(self._src_path, 'opcodes', 'libopcodes.a'), self.lib_path)
 

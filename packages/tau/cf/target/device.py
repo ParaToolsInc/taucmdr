@@ -35,34 +35,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-import os
-from installation import AutotoolsInstallation
-
-
-SOURCES = {None: 'http://icl.cs.utk.edu/projects/papi/downloads/papi-5.4.1.tar.gz'}
-
-LIBS = {None: ['libpapi.a']}
-
-
-class PapiInstallation(AutotoolsInstallation):
-    """Encapsulates a PAPI installation.
+def detect_device():
+    raise NotImplementedError
     
-    PAPI is used to measure hardware performance counters.
-    """
-
-    def __init__(self, prefix, src, arch, compilers):
-        try:
-            cc_family = compilers.CC.wrapped.family
-        except AttributeError:
-            cc_family = compilers.CC.family
-        dst = os.path.join(arch, cc_family)
-        super(PapiInstallation,self).__init__('PAPI', prefix, src, dst, arch, compilers, SOURCES)
-
-    def _verify(self):
-        libraries = LIBS.get(self.arch, LIBS[None])
-        return super(PapiInstallation,self)._verify(libraries=libraries)
-    
-    def _prepare_src(self):
-        # PAPI keeps its source in a subdirectory
-        prefix = super(PapiInstallation,self)._prepare_src()
-        return os.path.join(prefix, 'src')

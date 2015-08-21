@@ -42,9 +42,10 @@ from tau import logger, settings, util
 from tau.error import ConfigurationError, InternalError
 from tau.controller import Controller
 from tau.model.trial import Trial
-from tau.model.compiler_command import CompilerCommand
-from tau.cf.tau import TauInstallation
+from tau.model.compiler import Compiler
+from tau.cf.software.tau_installation import TauInstallation
 from tau.cf.compiler.installed import InstalledCompiler
+
 
 LOGGER = logger.getLogger(__name__)
 
@@ -169,18 +170,18 @@ class Experiment(Controller):
         # Configure/build/install TAU if needed
         self.tau = TauInstallation(prefix, target['tau_source'], 
                                    target['host_arch'], target['host_os'], 
-                                   target.get_compilers(),
+                                   target.compilers(),
                                    verbose=verbose,
-                                   pdt_source=target['pdt_source'],
-                                   bfd_source=target['bfd_source'],
-                                   libunwind_source=target['libunwind_source'],
-                                   papi_source=target['papi_source'],
+                                   pdt_source=target.get('pdt_source', None),
+                                   binutils_source=target.get('binutils_source', None),
+                                   libunwind_source=target.get('libunwind_source', None),
+                                   papi_source=target.get('papi_source', None),
                                    openmp_support=application['openmp'],
                                    pthreads_support=application['pthreads'],
                                    mpi_support=application['mpi'],
-                                   mpi_include_path=target['mpi_include_path'],
-                                   mpi_library_path=target['mpi_library_path'],
-                                   mpi_linker_flags=target['mpi_linker_flags'],
+                                   mpi_include_path=target.get('mpi_include_path', []),
+                                   mpi_library_path=target.get('mpi_library_path', []),
+                                   mpi_libraries=target.get('mpi_libraries', []),
                                    cuda_support=application['cuda'],
                                    shmem_support=application['shmem'],
                                    mpc_support=application['mpc'],
@@ -215,15 +216,15 @@ class Experiment(Controller):
         LOGGER.debug("Managed build: %s" % ([compiler_cmd] + compiler_args))
         target = self.populate('target')
         given_compiler = InstalledCompiler(compiler_cmd)
-        given_compiler_eid = CompilerCommand.from_info(given_compiler).eid
-        target_compiler_eid = target[given_compiler.role.keyword]       
+        given_compiler_eid = Compiler.register(given_compiler).eid
+        target_compiler_eid = target[given_compiler.info.role.keyword]       
 
         # Confirm target supports compiler
         if given_compiler_eid != target_compiler_eid:
-            target_compiler = CompilerCommand.one(eid=target_compiler_eid).info()
+            target_compiler = Compiler.one(eid=target_compiler_eid).info()
             raise ConfigurationError("Target '%s' is configured with %s '%s', not %s '%s'" %
-                                     (target['name'], target_compiler.short_descr, target_compiler.absolute_path,
-                                      given_compiler.short_descr, given_compiler.absolute_path),
+                                     (target['name'], target_compiler.info.short_descr, target_compiler.absolute_path,
+                                      given_compiler.info.short_descr, given_compiler.absolute_path),
                                      "Select a different target or compile with '%s'" % 
                                      target_compiler.absolute_path)
         self.configure()

@@ -35,37 +35,34 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
+import os
+from tau import logger
+from tau.cf.software.installation import AutotoolsInstallation
+from tau.cf.compiler import CC_ROLE
 
-class CompilerRole(object):
-    """Information about a compiler's role.
+LOGGER = logger.getLogger(__name__)
+
+SOURCES = {None: 'http://icl.cs.utk.edu/projects/papi/downloads/papi-5.4.1.tar.gz'}
+
+LIBS = {None: ['libpapi.a']}
+
+
+class PapiInstallation(AutotoolsInstallation):
+    """Encapsulates a PAPI installation.
     
-    Attributes:
-        keyword: String identifying how the compiler is used in the build process, e.g. 'CXX'
-        language: Language corresponding to the compiler role, e.g. 'C++'
-        required: True if this role must be filled to compile TAU, False otherwise
+    PAPI is used to measure hardware performance counters.
     """
-    def __init__(self, keyword, language, required):
-        self.keyword = keyword
-        self.language = language
-        self.required = required
-        
-    def __str__(self):
-        return self.keyword
 
-    def __eq__(self, other):
-        return isinstance(other, CompilerRole) and (other.keyword == self.keyword)
+    def __init__(self, prefix, src, arch, compilers):
+        dst = os.path.join(arch, compilers[CC_ROLE].info.family.name)
+        LOGGER.debug("src=%s, dst=%s" % (src, dst))
+        super(PapiInstallation,self).__init__('PAPI', prefix, src, dst, arch, compilers, SOURCES)
+
+    def _verify(self):
+        libraries = LIBS.get(self.arch, LIBS[None])
+        return super(PapiInstallation,self)._verify(libraries=libraries)
     
-    def __len__(self):
-        return len(self.keyword)
-
-
-CC_ROLE = CompilerRole('CC', 'C', True)
-CXX_ROLE = CompilerRole('CXX', 'C++', True)
-FC_ROLE = CompilerRole('FC', 'Fortran', True)
-F77_ROLE = CompilerRole('F77', 'FORTRAN77', False)
-F90_ROLE = CompilerRole('F90', 'Fortran90', False)
-UPC_ROLE = CompilerRole('UPC', 'Universal Parallel C', False)
-
-ALL_ROLES = [CC_ROLE, CXX_ROLE, FC_ROLE, F77_ROLE, F90_ROLE, UPC_ROLE]
-REQUIRED_ROLES = [_ for _ in ALL_ROLES if _.required]
-KNOWN_ROLES = dict([(_.keyword, _) for _ in ALL_ROLES])
+    def _prepare_src(self):
+        # PAPI keeps its source in a subdirectory
+        prefix = super(PapiInstallation,self)._prepare_src()
+        return os.path.join(prefix, 'src')

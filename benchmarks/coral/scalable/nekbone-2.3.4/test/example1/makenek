@@ -9,12 +9,15 @@ SOURCE_ROOT="../../src"
 
 # Fortran compiler
 #F77="mpixlf77_r -qsmp=omp -qnosave"
-F77="tau mpif77"
+#F77="tau mpif77"
 #F77="mpif77 -openmp"
+#F77="mpif90 -openmp"
+F77="tau mpif90"
 
 # C compiler
-CC="tau mpicc"
+#CC="tau mpicc"
 #CC="mpicc -openmp"
+CC="tau mpicc"
 
 # pre-processor symbol list 
 # (set PPLIST=? to get a list of available symbols)

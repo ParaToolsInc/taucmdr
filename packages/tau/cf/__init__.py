@@ -35,20 +35,91 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-from error import ConfigurationError
 
-
-class SoftwarePackageError(ConfigurationError):
+class TrackedInstance(object):
+    """Base class for classes that need to keep track of their instances.
+    
+    Each subclass of base will keep track of its own instances separately.
     """
-    Indicates there was an error in an external software package  
+    
+    def __new__(cls, *args, **kwargs):
+        instance = object.__new__(cls, *args, **kwargs)
+        if "__instances__" not in cls.__dict__:
+            cls.__instances__ = set()
+        cls.__instances__.add(instance)
+        return instance
+
+    @classmethod
+    def all(cls):
+        for instance in cls.__instances__:
+            yield instance
+
+
+class KeyedRecordCreator(type):
+    """Metaclass to create a new keyed record.
+    
+    Change object creation proceedure so that only one instance of a KeyedRecord
+    subclass exists for each key argument.  Overridding __new__ would be less creepy,
+    but then we can't prevent __init__ from being called on the returned class instance,
+    i.e. the same instance is returned by it is reinitialized every time.  Using
+    this metaclass guarantees we call __new__ and __init__ only once per class instance.
     """
+    def __new__(mcs, name, bases, dct):
+        dct['__instances__'] = {}
+        return type.__new__(mcs, name, bases, dct)
+    
+    def __call__(cls, *args, **kwargs):
+        key = kwargs.get(cls.__key__, args[0])
+        try:
+            instance = cls.__instances__[key]
+        except KeyError:
+            instance = super(KeyedRecordCreator,cls).__call__(*args, **kwargs)
+            cls.__instances__[key] = instance
+        return instance
 
-    message_fmt = """
-%(value)s
-%(hint)s
 
-Please check the selected configuration for errors or email '%(logfile)s' to  %(contact)s for assistance.
-"""
+class KeyedRecord(object):
+    """Data record with a unique key.
+    
+    Subclasses must declare a __key__ member defining the attribute to be used as the key.
+    Subclass constructors may use the 'key' keyword argument to set the key value or, if 
+    the 'key' keyword argument is not present, calls to the subclass constructor must
+    pass the new key value as the first argument.
+    
+    Only one instance of a KeyedRecord subclass exists per key.  Creating a new instance 
+    with a previously used key will return the existing instance.  For example:
+    
+    class Derived(KeyedRecord):
+        def __init__(a):
+            self.a = a
+        
+    x = Derived('a')
+    y = Derived('a')
+    z = Derived('b')
+    x is y  ==>  True
+    x is z  ==>  False
+    """
+    
+    __metaclass__ = KeyedRecordCreator
+    
+    @classmethod
+    def all(cls):
+        for instance in cls.__instances__.itervalues():
+            yield instance
+    
+    @classmethod
+    def keys(cls):
+        return cls.__instances__.keys()
+    
+    @classmethod
+    def find(cls, key):
+        return cls.__instances__[key]
+    
+    def __str__(self):
+        return str(getattr(self, self.__key__))
 
-    def __init__(self, value, hint="Try `tau --help`"):
-        super(SoftwarePackageError, self).__init__(value, hint)
+    def __eq__(self, other):
+        return self is other
+    
+    def __len__(self):
+        return len(getattr(self, self.__key__))

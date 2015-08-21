@@ -138,8 +138,8 @@ def exitWithHelp(module_name):
 %(help)s
 
 %(bar)s""" % {'bar': '-' * 80,
-                'usage': module.getUsage(),
-                'help': module.getHelp()})
+              'usage': module.getUsage(),
+              'help': module.getHelp()})
     return EXIT_SUCCESS
 
 

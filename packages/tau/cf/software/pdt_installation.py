@@ -36,10 +36,11 @@
 #"""
 
 import os
-import logger, util
-from error import ConfigurationError
-from cf import SoftwarePackageError
-from installation import AutotoolsInstallation
+from tau import logger
+from tau.cf.software import SoftwarePackageError
+from tau.cf.software.installation import AutotoolsInstallation
+from tau.cf.compiler import CXX_ROLE, GNU_COMPILERS, INTEL_COMPILERS, PGI_COMPILERS
+from tau.cf.target import TAU_ARCH_APPLE
 
 
 LOGGER = logger.getLogger(__name__)
@@ -48,49 +49,51 @@ SOURCES = {None: 'http://tau.uoregon.edu/pdt.tgz',
            # Why isn't this called pdt-x86_64.tgz ?? "lite" tells me nothing
            'x86_64': 'http://tau.uoregon.edu/pdt_lite.tgz'}
 
-COMMANDS = {None: ['cparse',
-                   'cxxparse',
-                   'edg33-upcparse',
-                   'edg44-c-roseparse',
-                   'edg44-cxx-roseparse',
-                   'edg44-upcparse',
-                   'edgcpfe',
-                   'f90fe',
-                   'f90parse',
-                   'f95parse',
-                   'gfparse',
-                   'pdbcomment',
-                   'pdbconv',
-                   'pdbhtml',
-                   'pdbmerge',
-                   'pdbstmt',
-                   'pdbtree',
-                   'pdtf90disp',
-                   'pdtflint',
-                   'pebil.static',
-                   'roseparse',
-                   'smaqao',
-                   'taucpdisp',
-                   'tau_instrumentor',
-                   'upcparse',
-                   'xmlgen'],
-            'apple': ['cparse',
-                      'cxxparse',
-                      'edgcpfe',
-                      'f90fe',
-                      'f90parse',
-                      'f95parse',
-                      'gfparse',
-                      'pdbcomment',
-                      'pdbconv',
-                      'pdbhtml',
-                      'pdbmerge',
-                      'pdbstmt',
-                      'pdbtree',
-                      'pdtf90disp',
-                      'pdtflint',
-                      'taucpdisp',
-                      'xmlgen']}
+COMMANDS = {None: 
+            ['cparse',
+             'cxxparse',
+             'edg33-upcparse',
+             'edg44-c-roseparse',
+             'edg44-cxx-roseparse',
+             'edg44-upcparse',
+             'edgcpfe',
+             'f90fe',
+             'f90parse',
+             'f95parse',
+             'gfparse',
+             'pdbcomment',
+             'pdbconv',
+             'pdbhtml',
+             'pdbmerge',
+             'pdbstmt',
+             'pdbtree',
+             'pdtf90disp',
+             'pdtflint',
+             'pebil.static',
+             'roseparse',
+             'smaqao',
+             'taucpdisp',
+             'tau_instrumentor',
+             'upcparse',
+             'xmlgen'],
+            TAU_ARCH_APPLE.name: 
+            ['cparse',
+             'cxxparse',
+             'edgcpfe',
+             'f90fe',
+             'f90parse',
+             'f95parse',
+             'gfparse',
+             'pdbcomment',
+             'pdbconv',
+             'pdbhtml',
+             'pdbmerge',
+             'pdbstmt',
+             'pdbtree',
+             'pdtf90disp',
+             'pdtflint',
+             'taucpdisp',
+             'xmlgen']}
 
 
 class PdtInstallation(AutotoolsInstallation):
@@ -102,10 +105,7 @@ class PdtInstallation(AutotoolsInstallation):
     """
 
     def __init__(self, prefix, src, arch, compilers):
-        try:
-            dst = compilers.CC.wrapped.family
-        except AttributeError:
-            dst = compilers.CC.family
+        dst = compilers[CXX_ROLE].info.family.name
         super(PdtInstallation, self).__init__('PDT', prefix, src, dst, arch, compilers, SOURCES)
         self.arch_path = os.path.join(self.install_prefix, arch)
         self.bin_path = os.path.join(self.arch_path, 'bin')
@@ -116,15 +116,11 @@ class PdtInstallation(AutotoolsInstallation):
         return super(PdtInstallation,self)._verify(commands=commands)
 
     def configure(self, flags, env):
-        family_flags = {'GNU': '-GNU', 
-                        'Intel': '-icpc', 
-                        'PGI': '-pgCC',
-                        None: ''}
-        if self.compilers.CXX.wrapped:
-            family = self.compilers.CXX.wrapped.family
-        else:
-            family = self.compilers.CXX.family
-        compiler_flag = family_flags.get(family, family_flags[None])
+        family_flags = {GNU_COMPILERS.name: '-GNU', 
+                        INTEL_COMPILERS.name: '-icpc', 
+                        PGI_COMPILERS.name: '-pgCC'}
+        family = self.compilers[CXX_ROLE].info.family
+        compiler_flag = family_flags.get(family.name, '')
         prefix_flag = '-prefix=%s' % self.install_prefix
         cmd = ['./configure', prefix_flag, compiler_flag]
         LOGGER.info("Configuring PDT for %s compilers..." % family)

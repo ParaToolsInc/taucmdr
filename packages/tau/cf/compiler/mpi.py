@@ -35,46 +35,51 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-from tau.error import InternalError
-from role import REQUIRED_ROLES, KNOWN_ROLES
+from tau import logger
+from tau.cf.compiler import CompilerFamily, CompilerRole
 
 
-class CompilerSet(object):
-    """A collection of Compiler objects, one per required role.
+LOGGER = logger.getLogger(__name__)
+
+
+class MpiCompilerFamily(CompilerFamily):
+    """Information about an MPI compiler family.
     
-    Attributes:
-        uid: Unique identifier (hopefully) for this combination of compilers.
-        CC: Compiler in the 'CC' role
-        CXX: Compiler in the 'CXX' role
-        etc.
+    Subclassing CompilerFamily creates a second database of compiler family 
+    records and keep MPI compilers from mixing with host etc. compilers.
     """
-    # pylint: disable=too-few-public-methods
     
-    def __init__(self, uid, **kwargs):
-        self.uid = uid
-        missing_roles = set([role.keyword for role in REQUIRED_ROLES])
-        for key, comp in kwargs.iteritems():
-            if key not in KNOWN_ROLES:
-                raise InternalError("Invalid role: %s" % role)
-            setattr(self, key, comp)
-            missing_roles.remove(key)
-        for role in missing_roles:
-            raise InternalError("Required role %s not defined" % role)
-        
-    def iter(self):
-        for keyword in KNOWN_ROLES:
-            try:
-                yield getattr(self, keyword)
-            except AttributeError:
-                continue
+    def __init__(self, *args, **kwargs):
+        if 'show_wrapper_flags' not in kwargs:
+            kwargs['show_wrapper_flags'] = ['-show']
+        super(MpiCompilerFamily,self).__init__(*args, **kwargs)
+    
+    @classmethod
+    def preferred(cls):
+        from tau.cf.target import host
+        return host.preferred_mpi_compilers()
 
-    def __iter__(self):
-        return self.iter()
 
-    def __contains__(self, role):
-        try:
-            keyword = role.keyword
-        except AttributeError as err:
-            raise InternalError("%s is not a CompilerRole: %s" % (role, err))
-        else:
-            return hasattr(self, keyword)
+MPI_CC_ROLE = CompilerRole('MPI_CC', 'MPI C')
+MPI_CXX_ROLE = CompilerRole('MPI_CXX', 'MPI C++')
+MPI_FC_ROLE = CompilerRole('MPI_FC', 'MPI Fortran')
+
+SYSTEM_MPI_COMPILERS = MpiCompilerFamily('System')
+SYSTEM_MPI_COMPILERS.add(MPI_CC_ROLE, 'mpicc')
+SYSTEM_MPI_COMPILERS.add(MPI_CXX_ROLE, 'mpic++', 'mpicxx', 'mpiCC')
+SYSTEM_MPI_COMPILERS.add(MPI_FC_ROLE, 'mpiftn', 'mpif90', 'mpif77')
+
+INTEL_MPI_COMPILERS = MpiCompilerFamily('Intel')
+INTEL_MPI_COMPILERS.add(MPI_CC_ROLE, 'mpiicc')
+INTEL_MPI_COMPILERS.add(MPI_CXX_ROLE, 'mpiicpc')
+INTEL_MPI_COMPILERS.add(MPI_FC_ROLE, 'mpiifort')
+
+IBM_MPI_COMPILERS = MpiCompilerFamily('IBM')
+IBM_MPI_COMPILERS.add(MPI_CC_ROLE, 'mpixlc')
+IBM_MPI_COMPILERS.add(MPI_CXX_ROLE, 'mpixlc++', 'mpixlC')
+IBM_MPI_COMPILERS.add(MPI_FC_ROLE, 'mpixlf77')
+
+CRAY_MPI_COMPILERS = MpiCompilerFamily('Cray', show_wrapper_flags=['-craype-verbose'])
+CRAY_MPI_COMPILERS.add(MPI_CC_ROLE, 'cc')
+CRAY_MPI_COMPILERS.add(MPI_CXX_ROLE, 'CC')
+CRAY_MPI_COMPILERS.add(MPI_FC_ROLE, 'ftn')

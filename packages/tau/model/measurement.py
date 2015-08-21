@@ -119,7 +119,7 @@ class Measurement(Controller, ByName):
                          'nargs': '?',
                          'const': 'always',
                          'choices': ['always', 'fallback', 'never']},
-            'compat': {'Target': {'bfd_source': requisite.Recommended, 
+            'compat': {'Target': {'binutils_source': requisite.Recommended, 
                                   'libunwind_source': requisite.Recommended}},
         },
         'link_only': {
@@ -167,7 +167,7 @@ class Measurement(Controller, ByName):
                          'nargs': '?',
                          'const': 2,
                          'type': int},
-            'compat': {'Target': {'bfd_source': requisite.Recommended, 
+            'compat': {'Target': {'binutils_source': requisite.Recommended, 
                                   'libunwind_source': requisite.Recommended}},
         },
         'io': {

@@ -37,8 +37,9 @@
 
 import os
 import glob
-import logger, util
-from installation import AutotoolsInstallation
+from tau import logger, util
+from tau.cf.software.installation import AutotoolsInstallation
+from tau.cf.compiler import CC_ROLE
 
 
 LOGGER = logger.getLogger(__name__)
@@ -56,11 +57,7 @@ class LibunwindInstallation(AutotoolsInstallation):
     """
 
     def __init__(self, prefix, src, arch, compilers):
-        try:
-            cc_family = compilers.CC.wrapped.family
-        except AttributeError:
-            cc_family = compilers.CC.family
-        dst = os.path.join(arch, cc_family)
+        dst = os.path.join(arch, compilers[CC_ROLE].info.family.name)
         super(LibunwindInstallation,self).__init__('libunwind', prefix, src, dst, arch, compilers, SOURCES)
 
     def _verify(self):

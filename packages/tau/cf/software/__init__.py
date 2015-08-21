@@ -35,51 +35,20 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #"""
 
-from tau import logger
-from tau.model.setting import Setting
+from tau.error import ConfigurationError
 
 
-LOGGER = logger.getLogger(__name__)
-
-_data = {}
-
-
-def _load():
-    for record in Setting.all():
-        key = record['key']
-        val = record['value']
-        _data[key] = val
-    LOGGER.debug("Loaded settings: %r" % _data)
-
-
-def _save():
-    LOGGER.debug("Saving settings: %r" % _data)
-    for key, val in _data.iteritems():
-        if Setting.exists({'key': key}):
-            Setting.update({'value': val}, {'key': key})
-        else:
-            Setting.create({'key': key, 'value': val})
-
-
-def get(key):
+class SoftwarePackageError(ConfigurationError):
     """
-    Get the value of setting 'key' or None if not set
+    Indicates there was an error in an external software package  
     """
-    if not _data:
-        _load()
-    return _data.get(key, None)
 
+    message_fmt = """
+%(value)s
+%(hint)s
 
-def set(key, val):
-    """
-    Set setting 'key' to value 'val'
-    """
-    _data[key] = val
-    _save()
+Please check the selected configuration for errors or email '%(logfile)s' to  %(contact)s for assistance.
+"""
 
-
-def unset(key):
-    """
-    Remove setting 'key' from the list of settings
-    """
-    Setting.delete({'key': key})
+    def __init__(self, value, hint="Try `tau --help`"):
+        super(SoftwarePackageError, self).__init__(value, hint)

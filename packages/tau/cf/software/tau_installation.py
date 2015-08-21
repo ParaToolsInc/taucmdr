@@ -37,157 +37,24 @@
 #"""
 import os
 import glob
-import logger, util
-from error import ConfigurationError, InternalError
-from cf import SoftwarePackageError
-from installation import Installation
-from pdt import PdtInstallation
-from bfd import BfdInstallation
-from libunwind import LibunwindInstallation
-from papi import PapiInstallation
-from compiler.role import *
+from tau import logger, util
+from tau.error import ConfigurationError, InternalError
+from tau.cf.software import SoftwarePackageError
+from tau.cf.software.installation import Installation
+from tau.cf.software.pdt_installation import PdtInstallation
+from tau.cf.software.binutils_installation import BinutilsInstallation
+from tau.cf.software.libunwind_installation import LibunwindInstallation
+from tau.cf.software.papi_installation import PapiInstallation
+from tau.cf.compiler import SYSTEM_COMPILERS, GNU_COMPILERS, INTEL_COMPILERS, PGI_COMPILERS
+from tau.cf.compiler import CC_ROLE, CXX_ROLE, FC_ROLE, UPC_ROLE
+from tau.cf.compiler.mpi import SYSTEM_MPI_COMPILERS, INTEL_MPI_COMPILERS
+from tau.cf.compiler.mpi import MPI_CC_ROLE, MPI_CXX_ROLE, MPI_FC_ROLE
+from tau.cf.target import TauArch
+
 
 LOGGER = logger.getLogger(__name__)
 
 SOURCES = {None: 'http://tau.uoregon.edu/tau.tgz'}
-
-# TAU recognizes (at least) these "magic word" architectures.
-# Many of these haven't been tested in years and are probably broken.
-# Only add tested and verified working architectures to TAU_ARCHITECTURES
-#
-# apple         an i386 or x86_64 running Darwin
-# arm_linux     an ARM running Linux
-# mic_linux     an Intel MIC running k1om Linux
-# ppc64         a PowerPC64 running POWER Linux
-# bgl           a BlueGene/L
-# bgp           a BlueGene/P
-# bgq           a BlueGene/Q
-# ia64
-# crayxmt
-# xt3
-# craycnl
-# x86_64 
-# freebsd
-# 386BSD         an Intel 386, running 386BSD
-# VMS_POSIX      a vax? running VMS/POSIX
-# aix370         an IBM 370, running aix
-# aixESA         an IBM ESA, running aix
-# alliant        an Alliant FX series
-# alliant_fx2800 an Alliant FX2800 (i860 based)
-# alliant_fx80   an Alliant FX80 (mc68000 based)
-# alpha          a DEC Alpha running OSF/1
-# amdahl         an Amdahl running uts 2.1
-# amiga          an amiga running amix 2.02
-# apollo         an Apollo running DomainOS
-# att3b15        an AT&T 3b15
-# att3b2         an AT&T 3b2
-# att3b20        an AT&T 3b20
-# att3b5         an AT&T 3b5
-# balance        a Sequent Balance (32000 based)
-# bsd386         an Intel 386, running BSDI's bsd386
-# c90            a Cray C90 running Unicos
-# cm2            a Thinking Machines Corperation CM-2
-# cm5            a Thinking Machines Corperation CM-5
-# coh386         a 386 running Coherent 4.0
-# coherent       an Unknown machine running Coherent
-# convex         a Convex
-# cray           a Cray running Unicos
-# decmips
-# decstation     a DecStation XXXX
-# eta10          an ETA 10 running SVR3
-# gould_np1      a Gould NP1
-# gp1000         a BBN GP1000 (Butterfly 1) running MACH
-# hk68           a Heurikon HK68 running Uniplus+ 5.0
-# hp             an HP, running hpux
-# hp300          an HP 9000, series 300, running mtXinu
-# hp800          an HP 9000, series 800, running mtXinu
-# hp9000s300     an HP 9000, series 300, running hpux
-# hp9000s500     an HP 9000, series 500, running hpux
-# hp9000s700     an HP 9000, series 700, running hpux
-# hp9000s800     an HP 9000, series 800, running hpux
-# i386           an Intel 386, generic
-# i386_emx       an Intel 386, running emx [unix emulation under OS/2]
-# i386_linux     an Intel 386, running Linux
-# i386_mach      an Intel 386, running mach
-# i860           an Intel i860 Hypercube
-# intel386       an Intel 386, running INTEL's SVR3
-# sgi4k          a Silicon Graphics R4K based machine
-# sgi8k          a Silicon Graphics R8K based machine
-# isc386         an Intel 386, running ISC
-# ksr1           a Kendall Square KSR1
-# m68k           an mc68000 CPU machine
-# m88k           an mc88000 CPU machine
-# mac2           an Apple Computer Macintosh II, running AUX
-# masscomp       a Concurrent (Masscomp), running RTU
-# minix          a mac or an amiga running minix
-# minix386       an i386 running minix
-# mips           another mips CPU
-# multimax       an Encore Computer Corp. Multimax (32000 based)
-# nd500          a Norsk Data ND 500/5000 running Ndix
-# news           a Sony NEWS 800 or 1700 workstation
-# news_mips      a NeWS machine with mips CPU
-# next           a NeXT computer
-# ns32000        an NS32000 CPU machine
-# opus
-# paragon        an Intel paragon running OSF1/Mach
-# pfa50          a PFU/Fujitsu A-xx computer
-# ps2            an IBM PS/2, running aix
-# ptx            a Sequent Symmetry running DYNIX/ptx (386/486 based)
-# pyramid        a Pyramid Technology computer (of any flavor)
-# rs6000         an IBM RS6000, running aix 
-# rt             an IBM PC/RT, running BSD (AOS 4.3) or mach
-# rtpc           an IBM PC/RT, running aix
-# sco386         an Intel 386, running SCO
-# solaris2       a Sun Workstation running SVR4 Solaris 
-# stellar        a stellar running stellix
-# sun            a Sun workstation of none of the above types
-# sun2           a Sun Microsystems series 2 workstation (68010 based)
-# sun3           a Sun Microsystems series 3 workstation (68020 based)
-# sun386i        a Sun Microsystems 386i workstation (386 based)
-# sun4           a Sun Microsystems series 4 workstation (SPARC based)
-# symmetry       a Sequent Symmetry running DYNIX 3 (386/486 based)
-# sysV68
-# sysV88         a Motorola MPC running System V/88 R32V2 (SVR3/88100 based)
-# tahoe          a tahoe running 4BSD
-# tc2000         a BBN TC2000 (Butterfly 2) running MACH
-# tek4300        a Tektronix 4300 running UTek (BSD 4.2 / 68020 based)
-# tekXD88        a Tektronix XD88/10 running UTekV 3.2e (SVR3/88100 based)
-# titan          an Stardent Titan
-# unixpc         an UNIX/PC running SVR1 att7300 aka att3b1
-# unknown        a machine type could not be determined
-# vax            a Digital Equipment Corp. Vax (of any flavor)
-# vistra800      a Stardent Vistra 800 running SVR4
-#
-"""
-TAU_ARCHITECTURES[host_arch][host_os] == tau_magic_word_arch
-
-`host_arch` should be platform.machine() whenever possible.  
-`host_os` should be platform.system() whenever possible.  
-
-Architectures that don't support Python (i.e. Intel MIC) 
-should provide sensible values for host_arch, host_os
-until the true values from the platform package are known.
-
-Only add **TESTED** and working architectures to this list.
-"""
-TAU_ARCHITECTURES = {'x86_64': {'Darwin': 'apple', 
-                                'Linux': 'x86_64'},
-                     'mic': {'Linux': 'mic_linux'}}
-KNOWN_TARGET_ARCH = []
-KNOWN_TARGET_OS = []
-for host_arch, os_list in TAU_ARCHITECTURES.iteritems():
-    KNOWN_TARGET_ARCH.append(host_arch)
-    KNOWN_TARGET_OS.extend(os_list.iterkeys())
-KNOWN_TARGET_ARCH = list(set(KNOWN_TARGET_ARCH))
-KNOWN_TARGET_OS = list(set(KNOWN_TARGET_OS))
-del host_arch, os_list
-
-COMPILER_WRAPPERS = {CC_ROLE.keyword: 'tau_cc.sh',
-                     CXX_ROLE.keyword: 'tau_cxx.sh',
-                     FC_ROLE.keyword: 'tau_f90.sh',
-                     F77_ROLE.keyword: 'tau_f77.sh',
-                     F90_ROLE.keyword: 'tau_f90.sh',
-                     UPC_ROLE.keyword: 'tau_upc.sh'}
 
 COMMANDS = [
     'jumpshot',
@@ -244,6 +111,15 @@ COMMANDS = [
     'trace2profile']
 
 
+TAU_COMPILER_WRAPPERS = {CC_ROLE: 'tau_cc.sh',
+                         CXX_ROLE: 'tau_cxx.sh',
+                         FC_ROLE: 'tau_f90.sh',
+                         UPC_ROLE: 'tau_upc.sh',
+                         MPI_CC_ROLE: 'tau_cc.sh',
+                         MPI_CXX_ROLE: 'tau_cxx.sh',
+                         MPI_FC_ROLE: 'tau_f90.sh'}
+
+
 class TauInstallation(Installation):
     """
     Encapsulates a TAU installation
@@ -254,7 +130,7 @@ class TauInstallation(Installation):
                  verbose,
                  # Source for dependencies
                  pdt_source,
-                 bfd_source,
+                 binutils_source,
                  libunwind_source,
                  papi_source,
                  # Application support features
@@ -263,7 +139,7 @@ class TauInstallation(Installation):
                  mpi_support,
                  mpi_include_path,
                  mpi_library_path,
-                 mpi_linker_flags,
+                 mpi_libraries,
                  cuda_support,
                  shmem_support,
                  mpc_support,
@@ -289,17 +165,16 @@ class TauInstallation(Installation):
                  measure_memory_alloc,
                  measure_callpath):
         try:
-            arch = TAU_ARCHITECTURES[host_arch][host_os]
+            arch = TauArch.find(host_arch, host_os).name
         except KeyError:
             raise InternalError("Invalid host_arch '%s' or host_os '%s'" % (host_arch, host_os))
-        super(TauInstallation, self).__init__('TAU', prefix, src, '', arch, 
-                                              compilers, SOURCES)
-        self.arch_path = os.path.join(self.install_prefix, arch)
+        super(TauInstallation, self).__init__('TAU', prefix, src, '', arch, compilers, SOURCES)
+        self.arch_path = os.path.join(self.install_prefix, str(arch))
         self.bin_path = os.path.join(self.arch_path, 'bin')
         self.lib_path = os.path.join(self.arch_path, 'lib')
         self.verbose = verbose
         self.pdt_source = pdt_source
-        self.bfd_source = bfd_source
+        self.binutils_source = binutils_source
         self.libunwind_source = libunwind_source
         self.papi_source = papi_source
         self.openmp_support = openmp_support
@@ -307,7 +182,7 @@ class TauInstallation(Installation):
         self.mpi_support = mpi_support
         self.mpi_include_path = mpi_include_path
         self.mpi_library_path = mpi_library_path
-        self.mpi_linker_flags = mpi_linker_flags
+        self.mpi_libraries = mpi_libraries
         self.cuda_support = cuda_support
         self.shmem_support = shmem_support
         self.mpc_support = mpc_support
@@ -330,7 +205,7 @@ class TauInstallation(Installation):
         self.measure_memory_usage = measure_memory_usage
         self.measure_memory_alloc = measure_memory_alloc
         self.measure_callpath = measure_callpath
-        for pkg in ['pdt', 'bfd', 'libunwind', 'papi']:
+        for pkg in ['pdt', 'binutils', 'libunwind', 'papi']:
             if eval('self.uses_%s()' % pkg):
                 if not getattr(self, '%s_source' % pkg): 
                     raise ConfigurationError("Specified TAU configuration requires %s but no source specified" % pkg)
@@ -340,10 +215,11 @@ class TauInstallation(Installation):
     def uses_pdt(self):
         return (self.source_inst != 'never')
     
-    def uses_bfd(self):
+    def uses_binutils(self):
         return (self.sample or 
                 self.compiler_inst != 'never' or 
-                self.openmp_support)
+                self.measure_openmp == 'ompt' or
+                self.measure_openmp == 'gomp')
         
     def uses_libunwind(self):
         return (self.arch != 'apple' and
@@ -362,10 +238,10 @@ class TauInstallation(Installation):
             self.pdt = PdtInstallation(self.prefix, self.pdt_source, self.arch, self.compilers)
             with self.pdt:
                 self.pdt.install()
-        if self.uses_bfd():
-            self.bfd = BfdInstallation(self.prefix, self.bfd_source, self.arch, self.compilers)
-            with self.bfd:
-                self.bfd.install()
+        if self.uses_binutils():
+            self.binutils = BinutilsInstallation(self.prefix, self.binutils_source, self.arch, self.compilers)
+            with self.binutils:
+                self.binutils.install()
         if self.uses_libunwind():
             self.libunwind = LibunwindInstallation(self.prefix, self.libunwind_source, self.arch, self.compilers)
             with self.libunwind:
@@ -394,10 +270,10 @@ class TauInstallation(Installation):
         makefile = self.get_makefile()
         with open(makefile, 'r') as fin:
             for line in fin:
-                if self.bfd and ('BFDINCLUDE=' in line):
+                if self.binutils and ('BFDINCLUDE=' in line):
                     bfd_inc = line.split('=')[1].strip().strip("-I")
-                    if self.bfd.include_path != bfd_inc:
-                        LOGGER.debug("BFDINCLUDE='%s' != '%s'" % (bfd_inc, self.bfd.include_path))
+                    if self.binutils.include_path != bfd_inc:
+                        LOGGER.debug("BFDINCLUDE='%s' != '%s'" % (bfd_inc, self.binutils.include_path))
                         raise SoftwarePackageError("BFDINCLUDE in TAU Makefile doesn't match target BFD installation")
                 if self.libunwind and ('UNWIND_INC=' in line):
                     libunwind_inc = line.split('=')[1].strip().strip("-I")
@@ -424,57 +300,59 @@ class TauInstallation(Installation):
         Raises:
             SoftwareConfigurationError: TAU's configure script failed.
         """
-        # TAU's configure script is really bad at detecting wrapped compilers
-        # so don't even try.  Replace the compiler wrapper with the wrapped command.
-        if self.compilers.CC.wrapped:
-            cc = self.compilers.CC.wrapped
-            cxx = self.compilers.CXX.wrapped
-            fc = self.compilers.FC.wrapped
-        else:
-            cc = self.compilers.CC
-            cxx = self.compilers.CXX
-            fc = self.compilers.FC
-
-        # Use `known_info()` instead of `command` to work around TAU's 
-        # inability to work with compiler commands that include
-        # version numbers in their names, e.g. 'gcc-4.9' becomes 'gcc'
-        cc_command = cc.known_info().command
-        cxx_command = cxx.known_info().command
-        fc_family = fc.family
-
-        # TAU has a really hard time detecting MPI settings in its configure script
+        # TAU's configure script does a really bad job of detecting MPI settings
         # so set up mpiinc, mpilib, mpilibrary when we have that information
         mpiinc = None
-        if self.mpi_include_path:
-            # TODO: TAU's configure script can only accept one path on -mpiinc
-            for path in self.mpi_include_path:
-                if os.path.exists(os.path.join(path, 'mpi.h')):
-                    mpiinc = path
-                    break
-            if not mpiinc:
-                raise ConfigurationError("mpi.h not found on MPI include path: %s" % self.mpi_include_path)
         mpilib = None
-        if self.mpi_library_path:
-            mpilib = self.mpi_library_path[0]
         mpilibrary = None
-        if self.mpi_linker_flags:
-            mpilibrary = '#'.join(self.mpi_linker_flags)
-            
-        # Pick the right compiler command for PDT
-        if self.pdt:
-            if self.pdt.compilers.CXX.wrapped:
-                pdt_cxx = self.pdt.compilers.CXX.wrapped
-            else:
-                pdt_cxx = self.pdt.compilers.CXX
+        if self.mpi_support: 
+            # TAU's configure script does a really bad job detecting the wrapped compiler command
+            # so don't even bother trying.  Pass as much of this as we can and hope for the best.
+            cc_command = self.compilers[MPI_CC_ROLE].wrapped.info.command
+            cxx_command = self.compilers[MPI_CXX_ROLE].wrapped.info.command
+            fc_family = self.compilers[MPI_FC_ROLE].wrapped.info.family
+            if self.mpi_include_path:
+                # Unfortunately, TAU's configure script can only accept one path on -mpiinc
+                # and it expects the compiler's include path argument (e.g. "-I") to be omitted
+                for path in self.mpi_include_path:
+                    if os.path.exists(os.path.join(path, 'mpi.h')):
+                        mpiinc = path
+                        break
+                if not mpiinc:
+                    raise ConfigurationError("mpi.h not found on MPI include path: %s" % self.mpi_include_path)
+            if self.mpi_library_path:
+                # Unfortunately, TAU's configure script can only accept one path on -mpilib
+                # and it expects the compiler's include path argument (e.g. "-L") to be omitted
+                for path in self.mpi_library_path:
+                    if glob.glob(os.path.join(path, 'libmpi*')):
+                        mpilib = path
+                        break
+            if self.mpi_libraries:
+                # Multiple MPI libraries can be given but only if they're separated by a '#' symbol
+                # and the compiler's library linking flag (e.g. '-l') must be included
+                link_library_flag = self.compilers[CC_ROLE].info.family.link_library_flags[0]
+                mpilibrary = '#'.join(["%s%s" % (link_library_flag, library) for library in self.mpi_libraries])
+        else:
+            # TAU's configure script can't cope with compiler absolute paths or compiler names that
+            # don't exactly match what it expects.  Use `info.command` instead of `command` to work
+            # around these problems e.g. 'gcc-4.9' becomes 'gcc' 
+            cc_command = self.compilers[CC_ROLE].info.command
+            cxx_command = self.compilers[CXX_ROLE].info.command
+            fc_family = self.compilers[FC_ROLE].info.family
 
         # TAU's configure script can't detect Fortran compiler from the compiler
         # command so translate Fortran compiler command into TAU's funkey magic words
-        magic_map = {'GNU': 'gfortran', 'Intel': 'intel', 'PGI': 'pgi'}
+        magic_map = {GNU_COMPILERS: 'gfortran',
+                     INTEL_COMPILERS: 'intel',
+                     PGI_COMPILERS: 'pgi',
+                     SYSTEM_COMPILERS: 'ftn',
+                     SYSTEM_MPI_COMPILERS: 'mpif90',
+                     INTEL_MPI_COMPILERS: 'mpiifort'}
         try:
             fortran_magic = magic_map[fc_family]
         except KeyError:
             raise InternalError("Unknown compiler family for Fortran: '%s'" % fc_family)
-
+            
         flags = [ flag for flag in  
                  ['-prefix=%s' % self.install_prefix,
                   '-arch=%s' % self.arch,
@@ -482,21 +360,20 @@ class TauInstallation(Installation):
                   '-c++=%s' % cxx_command,
                   '-fortran=%s' % fortran_magic,
                   '-pdt=%s' % self.pdt.install_prefix if self.pdt else '',
-                  '-pdt_c++=%s' % pdt_cxx.command if self.pdt else '',
-                  '-bfd=%s' % self.bfd.install_prefix if self.bfd else '',
+                  '-bfd=%s' % self.binutils.install_prefix if self.binutils else '',
                   '-papi=%s' % self.papi.install_prefix if self.papi else '',
                   '-unwind=%s' % self.libunwind.install_prefix if self.libunwind else '',
                   '-pthread' if self.pthreads_support else '',
                   '-mpi' if self.mpi_support else '',
                   '-mpiinc=%s' % mpiinc if mpiinc else '',
                   '-mpilib=%s' % mpilib if mpilib else '',
-                  '-mpilibrary=%s' % mpilibrary if mpilibrary else '']
-                 if flag]
+                  '-mpilibrary=%s' % mpilibrary if mpilibrary else ''
+                  ] if flag]
         if self.openmp_support:
             if self.measure_openmp == 'compiler_default':
                 flags.append('-openmp')
             elif self.measure_openmp == 'ompt':
-                if cc.family == 'Intel':
+                if self.compilers[CC_ROLE].info.family == INTEL_COMPILERS:
                     flags.append('-ompt')
                 else:
                     raise ConfigurationError('OMPT for OpenMP measurement only works with Intel compilers')
@@ -547,7 +424,7 @@ class TauInstallation(Installation):
             except SoftwarePackageError as err:
                 LOGGER.debug(err)
         LOGGER.info("Installing %s at '%s' from '%s' with arch=%s and %s compilers" %
-                    (self.name, self.install_prefix, self.src, self.arch, self.compilers.CC.family))
+                    (self.name, self.install_prefix, self.src, self.arch, self.compilers[CC_ROLE].info.family))
 
         self._prepare_src()
 
@@ -584,9 +461,10 @@ class TauInstallation(Installation):
             A list of tags, e.g. ['papi', 'pdt', 'icpc']
         """
         tags = []
-        compiler_tags = {'Intel': 'icpc', 'PGI': 'pgi'}
+        compiler_tags = {INTEL_COMPILERS: 'icpc', 
+                         PGI_COMPILERS: 'pgi'}
         try:
-            tags.append(compiler_tags[self.compilers.CXX.family])
+            tags.append(compiler_tags[self.compilers[CXX_ROLE].info.family])
         except KeyError:
             pass
         if self.source_inst != 'never':
@@ -635,25 +513,28 @@ class TauInstallation(Installation):
             A file path that could be used to set the TAU_MAKEFILE environment
             variable, or None if a suitable makefile couldn't be found.
         """
-        config_tags = self.get_makefile_tags()
         tau_makefiles = glob.glob(os.path.join(self.lib_path, 'Makefile.tau*'))
-        LOGGER.debug('Found makefiles: %r' % tau_makefiles)
+        LOGGER.debug("Found makefiles: '%s'" % tau_makefiles)
+        config_tags = self.get_makefile_tags()
+        LOGGER.debug("Searching for makefile with tags: %s" % config_tags)
         approx_tags = None
         approx_makefile = None
         dangerous_tags = self._incompatible_tags()
+        LOGGER.debug("Will not use makefiles containing tags: %s" % dangerous_tags)
         for makefile in tau_makefiles:
             tags = set(os.path.basename(makefile).split('.')[1].split('-')[1:])
+            LOGGER.debug("%s has tags: %s" % (makefile, tags))
             if config_tags <= tags:
+                LOGGER.debug("%s contains desired tags: %s" % (makefile, config_tags))
                 if tags <= config_tags:
                     makefile = os.path.join(self.lib_path, makefile) 
                     LOGGER.debug("Found TAU makefile %s" % makefile)
                     return makefile
                 elif not (tags & dangerous_tags):
-                    if not approx_tags:
-                        approx_tags = tags
-                    elif tags < approx_tags:
+                    if not approx_tags or tags < approx_tags:
                         approx_makefile = makefile
                         approx_tags = tags
+                    LOGGER.debug("Best approximate match is: %s" % approx_tags)
         LOGGER.debug("No TAU makefile exactly matches tags '%s'" % config_tags)
         if approx_makefile:
             makefile = os.path.join(self.lib_path, approx_makefile) 
@@ -704,8 +585,8 @@ class TauInstallation(Installation):
         env['TAU_OPTIONS'] = ' '.join(tau_opts)
         if self.pdt:
             self.pdt.compiletime_config(opts, env)
-        if self.bfd:
-            self.bfd.compiletime_config(opts, env)
+        if self.binutils:
+            self.binutils.compiletime_config(opts, env)
         if self.papi:
             self.papi.compiletime_config(opts, env)
         if self.libunwind:
@@ -738,6 +619,21 @@ class TauInstallation(Installation):
         env['TAU_METRICS'] = os.pathsep.join(self.metrics)
         return list(set(opts)), env
 
+    def get_compiler_command(self, compiler):
+        """Get the compiler wrapper command for the given compiler.
+        
+        Args:
+            compiler: InstalledCompiler
+            
+        Returns:
+            string command for TAU compiler wrapper without path or arguments.
+        """
+        use_wrapper = (self.source_inst != 'never' or
+                       self.compiler_inst != 'never')
+        if use_wrapper:
+            return TAU_COMPILER_WRAPPERS[compiler.info.role]
+        else:
+            return compiler.absolute_path
 
     def compile(self, compiler, compiler_args):
         """Executes a compilation command.
@@ -753,13 +649,8 @@ class TauInstallation(Installation):
         Raises:
             ConfigurationError: Compilation failed
         """
-        opts, env = self.compiletime_config() 
-        use_wrapper = (self.source_inst != 'never' or 
-                       self.compiler_inst != 'never')
-        if use_wrapper:
-            compiler_cmd = compiler.tau_wrapper
-        else:
-            compiler_cmd = compiler.command
+        opts, env = self.compiletime_config()
+        compiler_cmd = self.get_compiler_command(compiler)
         cmd = [compiler_cmd] + opts + compiler_args
         LOGGER.info(' '.join(cmd))
         retval = util.createSubprocess(cmd, env=env, stdout=True)

@@ -37,7 +37,7 @@
 
 from tau import requisite
 from tau.arguments import ParseBooleanAction
-from tau.controller import Controller, ByName, ModelError
+from tau.controller import Controller, ByName
 
 
 class Application(Controller, ByName):

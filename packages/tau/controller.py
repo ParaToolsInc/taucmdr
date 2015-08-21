@@ -386,10 +386,10 @@ class Controller(object):
             for model, selfCompatAttr in compat.iteritems():
                 if model == otherName:
                     for oattr, rule in selfCompatAttr.iteritems():
-                        LOGGER.debug(" %s is oattr, while %s is self.data for %s" % (
-                            oattr, self.data, self.model_name))
-                        LOGGER.debug(" %s is oattr, while %s is other.data for %s" % (
-                            oattr, other.data, other.model_name))
+                        LOGGER.debug(" %s is oattr, while %s is self.data for %s" % 
+                                     (oattr, self.data, self.model_name))
+                        LOGGER.debug(" %s is oattr, while %s is other.data for %s" % 
+                                     (oattr, other.data, other.model_name))
                         try:
                             selfDataOattr = util.parseBoolean(
                                 self.data[oattr], trueList=['fallback', 'always'], falseList=['never'])
@@ -398,15 +398,17 @@ class Controller(object):
                         except KeyError:
                             continue
                         if selfDataOattr and otherDataOattr:
-                            LOGGER.debug(" %s is turned on in %s and on in %s  " % (
-                                oattr, self.model_name, other.model_name))
+                            LOGGER.debug(" %s is turned on in %s and on in %s  " % 
+                                         (oattr, self.model_name, other.model_name))
                         if selfDataOattr and (not otherDataOattr):
-                            LOGGER.debug(" %s is turned on in %s and off in %s with rule %s  " % (
-                                oattr, self.model_name, other.model_name, rule))
+                            LOGGER.debug(" %s is turned on in %s and off in %s with rule %s  " % 
+                                         (oattr, self.model_name, other.model_name, rule))
                             if rule == requisite.Required:
-                                raise ConfigurationError(" %s required by %s but not set in %s " % (oattr, selfName, otherName))
+                                raise ConfigurationError(" %s required by %s but not set in %s " % 
+                                                         (oattr, selfName, otherName))
                             elif rule == requisite.Recommended:
-                                LOGGER.warning("%s is recommended for %s by the %s model" % (oattr, selfName, otherName))
+                                LOGGER.warning("%s is recommended for %s by the %s model" % 
+                                               (oattr, selfName, otherName))
                                 # how to raise error and print but succeed with
                                 # select
                         if (not selfDataOattr) and (otherDataOattr):
