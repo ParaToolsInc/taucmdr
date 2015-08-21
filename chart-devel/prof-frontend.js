@@ -301,7 +301,10 @@ $(function () {
 	    },
 	    legend: {
 		    show: false
-	    }
+	    },
+            subchart: {
+                    show: true
+            }
 	});
     }
 });

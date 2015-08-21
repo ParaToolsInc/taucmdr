@@ -22,7 +22,6 @@ for f in files:
 
 	line = txt.readline()
 	numfunc = int(line.split(' ')[0])
-	print numfunc
 	line = txt.readline()
 	outfile.write('[')
         json.dump({'node' : node, 'thread' : thread}, outfile, indent=4)
@@ -36,7 +35,6 @@ for f in files:
 		inc = (line.split('"')[2]).split(' ')[4]
 		prfcalls = (line.split('"')[2]).split(' ')[5]
 		grp = line.split('GROUP="')[1][:-3]
-		print funcName, calls, subr, exc, inc, prfcalls, grp
 		json.dump({'Function Name' : funcName, '#Calls' : calls, '#Subrs' : subr, 'Exclusive (msec)': exc, 'Inclusive (msec)' : inc}, outfile, indent=4)
 		if(i < numfunc - 1):
 			outfile.write(',\n')

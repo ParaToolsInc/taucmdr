@@ -173,7 +173,7 @@ $(function () {
                 var data = new vis.DataSet(options);
 		//var metric = "Exclusive (msec)";
 		var maxVal = 0;
-		var zvals = [];
+		//var zvals = [];
 
 		  for(var i = 0; i < streams.length; i++) {
 			  for(var j = 0; j < streams[i]["profile"].length; j++) {
@@ -186,7 +186,11 @@ $(function () {
 					style: streams[i]["profile"][j][metric]
 				});
 				funcNames[j] = streams[i]["profile"][j]["Function Name"];
-				zvals.push(streams[i]["profile"][j][metric]);
+				//zvals.push(streams[i]["profile"][j][metric]);
+				if(maxVal < streams[i]["profile"][j][metric])
+				{
+					maxVal = streams[i]["profile"][j][metric];
+				}
 			      }
 			      else
 			      {
@@ -200,7 +204,7 @@ $(function () {
 			      }
 			  }
 		  }
-		  maxVal = (Math.max.apply(Math, zvals));
+		  //maxVal = (Math.max.apply(Math, zvals));
        
                   // specify options
                   var options = {
@@ -209,7 +213,7 @@ $(function () {
                     style: 'bar',
 		    backgroundColor: {fill: 'white', stroke: 'black'},
                     showPerspective: true,
-                    showGrid: true,
+                    showGrid: false,
                     showShadow: false,
                     keepAspectRatio: true,
                     verticalRatio: 0.5,
@@ -220,7 +224,6 @@ $(function () {
 	            zMin: 0,
 		    zMax: maxVal,
 		    zLabel: metric,
-		    tooltip: true,
                   };
        
                   // create a graph3d
