@@ -28,6 +28,10 @@ $(function () {
         status.text('Choose name:');
     };
 
+    $(window).on('beforeunload', function(){
+        connection.close();
+    });
+
     connection.onerror = function (error) {
         // just in there were some problems with conenction...
         content.html($('<p>', { text: 'Sorry, but there\'s some problem with your '
