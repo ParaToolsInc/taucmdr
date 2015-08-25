@@ -430,7 +430,7 @@ class AutotoolsInstallation(Installation):
                 return self._verify()
             except SoftwarePackageError as err:
                 LOGGER.debug(err)
-        LOGGER.info("Installing %s at '%s' from '%s' with arch=%s and %s compilers" %
+        LOGGER.info("Installing %s at '%s' from '%s'" %
                     (self.name, self.install_prefix, self.src, self.arch, self.compilers[CXX_ROLE].info.family))
 
         self._prepare_src()

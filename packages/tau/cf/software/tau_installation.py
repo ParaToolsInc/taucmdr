@@ -352,12 +352,15 @@ class TauInstallation(Installation):
             fortran_magic = magic_map[fc_family]
         except KeyError:
             raise InternalError("Unknown compiler family for Fortran: '%s'" % fc_family)
+        
+        pdt_cxx_command = self.pdt.compilers[CXX_ROLE].info.command if self.pdt else ''
             
         flags = [ flag for flag in  
                  ['-prefix=%s' % self.install_prefix,
                   '-arch=%s' % self.arch,
                   '-cc=%s' % cc_command,
                   '-c++=%s' % cxx_command,
+                  '-pdt_c++=%s' % pdt_cxx_command,
                   '-fortran=%s' % fortran_magic,
                   '-pdt=%s' % self.pdt.install_prefix if self.pdt else '',
                   '-bfd=%s' % self.binutils.install_prefix if self.binutils else '',
