@@ -47,7 +47,7 @@ from tau.cf import KeyedRecord, KeyedRecordCreator
 from tau.cf.compiler import CompilerInfo, CompilerRole
 
 
-LOGGER = logger.getLogger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 
 
@@ -102,7 +102,7 @@ class InstalledCompiler(KeyedRecord):
         try:
             self.info = CompilerInfo.find(self.command)
         except KeyError:
-            raise ConfigurationError("Unknown compiler command '%s'" % self.absolute_path)
+            raise RuntimeError("Unknown compiler command '%s'" % self.absolute_path)
         if self.info.family.show_wrapper_flags:
             LOGGER.debug("Probing wrapper compiler '%s' to discover wrapped compiler" % self.absolute_path)
             cmd = [self.absolute_path] + self.info.family.show_wrapper_flags

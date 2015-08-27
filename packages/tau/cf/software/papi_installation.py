@@ -40,7 +40,7 @@ from tau import logger
 from tau.cf.software.installation import AutotoolsInstallation
 from tau.cf.compiler import CC_ROLE
 
-LOGGER = logger.getLogger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 SOURCES = {None: 'http://icl.cs.utk.edu/projects/papi/downloads/papi-5.4.1.tar.gz'}
 

@@ -1,13 +1,4 @@
-#"""
-#@file
-#@author John C. Linford (jlinford@paratools.com)
-#@version 1.0
-#
-#@brief
-#
-# This file is part of TAU Commander
-#
-#@section COPYRIGHT
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -33,21 +24,23 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#"""
+#
+"""Measurement data model.
+
+:any:`Measurement` completely describes the performance data measurements
+we wish to perform.  It is often the case that we do not wish to gather all
+the available data in a single run since overhead would be extreme.  Different
+measurements allow us to take different views of the application's performance.
+"""
 
 from tau import requisite
-from tau.arguments import ParseBooleanAction
-from tau.controller import Controller, ByName
+from tau.cli.arguments import ParseBooleanAction
+from tau.model import Controller, ByName
 from tau.error import ConfigurationError
 
 
 class Measurement(Controller, ByName):
-    """
-    Measurement data model controller.
-    
-    A Measurement describes how data will be gathered during the measurement
-    phase of the performance engineering workflow.
-    """
+    """Measurement data controller."""
 
     attributes = {
         'projects': {
@@ -237,7 +230,7 @@ class Measurement(Controller, ByName):
         },
     }
 
-    def onCreate(self):
+    def on_create(self):
         def get_flag(key):
             return self.attributes[key]['argparse']['flags'][0]
         
@@ -247,7 +240,7 @@ class Measurement(Controller, ByName):
             raise ConfigurationError("Profiling, tracing, or both must be enabled",
                                      "Specify %s or %s or both" % (profile_flag, trace_flag))
         
-        if (self['source_inst'] == 'never' and self['compiler_inst'] == 'never' and not self['sample']):
+        if self['source_inst'] == 'never' and self['compiler_inst'] == 'never' and not self['sample']:
             source_inst_flag = get_flag('source_inst')
             compiler_inst_flag = get_flag('compiler_inst')
             sample_flag = get_flag('sample')

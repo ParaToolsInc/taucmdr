@@ -46,7 +46,7 @@ from tau.cf.software import SoftwarePackageError
 from tau.cf.compiler import CompilerRole, CC_ROLE, CXX_ROLE
 
 
-LOGGER = logger.getLogger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 
 class Installation(object):
@@ -169,13 +169,13 @@ class Installation(object):
         Executes a configure or compile command in a safe environment.
         
         Args:
-            Same as util.createSubprocess
+            Same as util.create_subprocess
         
         Returns:
             Subprocess return code
         """
         env = self._scrub_environment(dict(os.environ, **env) if env else os.environ)
-        return util.createSubprocess(cmd=cmd, cwd=cwd, env=env, stdout=stdout, log=log)
+        return util.create_subprocess(cmd=cmd, cwd=cwd, env=env, stdout=stdout, log=log)
 
     def _prepare_src(self, reuse=True):
         """Prepares source code for installation.

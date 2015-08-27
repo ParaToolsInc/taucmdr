@@ -1,13 +1,4 @@
-#"""
-#@file
-#@author John C. Linford (jlinford@paratools.com)
-#@version 1.0
-#
-#@brief
-#
-# This file is part of TAU Commander
-#
-#@section COPYRIGHT
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -33,18 +24,24 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#"""
+#
+"""Application data model.
+
+:any:`Application` fully describes the application configuration to be profiled, 
+including the features the application uses, e.g. OpenMP, MPI, CUDA, etc.
+Each specific application **configuration** has its own application record.  
+For example, if an application can operate with or without OpenMP then there 
+are potentially two application records for the same application code: one 
+specifying OpenMP is used and the other specifying OpenMP is not used.
+"""
 
 from tau import requisite
-from tau.arguments import ParseBooleanAction
-from tau.controller import Controller, ByName
+from tau.cli.arguments import ParseBooleanAction
+from tau.model import Controller, ByName
 
 
 class Application(Controller, ByName):
-
-    """
-    Application data model controller
-    """
+    """Application data controller."""
 
     attributes = {
         'projects': { 

@@ -1,13 +1,4 @@
-#"""
-#@file
-#@author John C. Linford (jlinford@paratools.com)
-#@version 1.0
-#
-#@brief
-#
-# This file is part of TAU Commander
-#
-#@section COPYRIGHT
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -33,19 +24,22 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#"""
+#
+"""Compiler data model.
+
+TAU only works reliablly when the same compiler is used to build both the application
+source code and TAU itself.  If the system compiler changes TAU can break entirely.
+This data tracks the system compilers so we can warn the user if they have changed.
+"""
 
 from tau import logger
-from tau.controller import Controller
+from tau.model import Controller
 
 
-LOGGER = logger.getLogger(__name__)
+LOGGER = logger.get_logger(__name__)
  
 class Compiler(Controller):
-
-    """
-    Compiler data model controller
-    """
+    """Compiler data controller."""
 
     attributes = {
         'path': {
@@ -65,17 +59,26 @@ class Compiler(Controller):
         """Probes the system for information on this compiler command.
         
         Returns:
-            CompilerInfo for this compiler command.
+            InstalledCompiler: Information about the installed compiler command.
         """
         from tau.cf.compiler.installed import InstalledCompiler
         comp = InstalledCompiler(self['path'])
         if comp.md5sum() != self['md5']:
-            LOGGER.warning("%s '%s' has changed!" % (comp.info.short_descr, comp.command))
-            # TODO: What do we do when compilers change?
+            LOGGER.warning("%s '%s' has changed!", comp.info.short_descr, comp.command)
         return comp
 
     @classmethod
     def register(cls, comp):
+        """Records information about a compiler command in the database.
+        
+        If the given compiler has already been registered then do not update the database.
+        
+        Args:
+            comp (InstalledCompiler): Information about the installed compiler command.
+            
+        Returns:
+            Compiler: Data controller for the installed compiler's data.
+        """
         path = comp.absolute_path
         md5sum = comp.md5sum()
         found = cls.one(keys={'path': path})
@@ -83,7 +86,6 @@ class Compiler(Controller):
             found = cls.create(fields={'path': path, 'md5': md5sum})
         else:
             if md5sum != found['md5']:
-                LOGGER.warning("%s '%s' has changed!  MD5 sum was %s, but now it's %s" % 
-                               (comp.info.short_descr, comp.command, found['md5'], md5sum))
-                # TODO: What should we do when the compilers change?
+                LOGGER.warning("%s '%s' has changed!  MD5 sum was %s, but now it's %s", 
+                               comp.info.short_descr, comp.command, found['md5'], md5sum)
         return found

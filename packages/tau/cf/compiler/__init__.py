@@ -42,7 +42,7 @@ from tau.cf import TrackedInstance, KeyedRecord
 from tau.error import InternalError 
 
 
-LOGGER = logger.getLogger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 
 class CompilerRole(KeyedRecord):

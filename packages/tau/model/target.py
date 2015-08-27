@@ -1,13 +1,4 @@
-#"""
-#@file
-#@author John C. Linford (jlinford@paratools.com)
-#@version 1.0
-#
-#@brief
-#
-# This file is part of TAU Commander
-#
-#@section COPYRIGHT
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -33,11 +24,20 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#"""
+#
+"""Target data model.
+
+:any:`Target` fully describes the hardware and software environment that our
+experiments will be performed in.  The hardware architecture, available compilers,
+and system libraries are described in the target record.  There will be multiple
+target records for any physical computer system since each target record uniquely
+describes a specific set of system features.  For example, if both GNU and Intel
+compilers are installed then there will target configurations for each compiler family.
+"""
 
 from tau.error import InternalError
-from tau.arguments import ParsePackagePathAction
-from tau.controller import Controller, ByName
+from tau.cli.arguments import ParsePackagePathAction
+from tau.model import Controller, ByName
 from tau.cf.target import Architecture, OperatingSystem
 from tau.cf.target import host
 from tau.cf.compiler import CC_ROLE, CXX_ROLE, FC_ROLE, UPC_ROLE, CompilerRole
@@ -46,10 +46,7 @@ from tau.cf.compiler.installed import InstalledCompilerSet
 
 
 class Target(Controller, ByName):
-
-    """
-    Target data model controller
-    """
+    """Target data controller."""
 
     attributes = {
         'projects': {
@@ -235,10 +232,10 @@ class Target(Controller, ByName):
     }
 
     def compilers(self):
-        """Get Compiler objects for all compilers in this Target.
+        """Get information about the compilers used by this target configuration.
          
         Returns:
-            InstalledCompilerSet instance with all required compilers set.
+            InstalledCompilerSet: Collection of installed compilers used by this target.
         """
         eids = []
         compilers = {}
@@ -252,4 +249,4 @@ class Target(Controller, ByName):
         missing = [role.keyword for role in CompilerRole.required() if role.keyword not in compilers]
         if missing:
             raise InternalError("Target '%s' is missing required compilers: %s" % (self['name'], missing))
-        return InstalledCompilerSet('_'.join(map(str, eids)), **compilers)
+        return InstalledCompilerSet('_'.join([str(x) for x in eids]), **compilers)

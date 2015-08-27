@@ -45,7 +45,7 @@ from tau.cf.software.installation import AutotoolsInstallation
 from tau.cf.compiler import CC_ROLE
 
 
-LOGGER = logger.getLogger(__name__)
+LOGGER = logger.get_logger(__name__)
  
 SOURCES = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/binutils-2.23.2.tar.gz'}
 

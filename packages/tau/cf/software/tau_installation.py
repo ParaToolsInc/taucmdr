@@ -52,7 +52,7 @@ from tau.cf.compiler.mpi import MPI_CC_ROLE, MPI_CXX_ROLE, MPI_FC_ROLE
 from tau.cf.target import TauArch
 
 
-LOGGER = logger.getLogger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 SOURCES = {None: 'http://tau.uoregon.edu/tau.tgz'}
 
@@ -651,15 +651,19 @@ class TauInstallation(Installation):
         
         Raises:
             ConfigurationError: Compilation failed
+            
+        Returns:
+            int: Compiler return value (always 0 if no exception raised) 
         """
         opts, env = self.compiletime_config()
         compiler_cmd = self.get_compiler_command(compiler)
         cmd = [compiler_cmd] + opts + compiler_args
         LOGGER.info(' '.join(cmd))
-        retval = util.createSubprocess(cmd, env=env, stdout=True)
+        retval = util.create_subprocess(cmd, env=env, stdout=True)
         if retval != 0:
             raise ConfigurationError("TAU was unable to build the application.",
                                      "See detailed output at the end of in '%s'" % logger.LOG_FILE)
+        return retval
 
     def get_application_command(self, application_cmd, application_args):
         
@@ -692,7 +696,7 @@ class TauInstallation(Installation):
             else:
                 cmd = [tool]
             LOGGER.info("Opening %s in %s" % (path, tool))
-            retval = util.createSubprocess(cmd, cwd=path, env=env, log=False)
+            retval = util.create_subprocess(cmd, cwd=path, env=env, log=False)
             if retval == 0:
                 return
             else:

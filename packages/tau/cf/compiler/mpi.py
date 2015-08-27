@@ -39,7 +39,7 @@ from tau import logger
 from tau.cf.compiler import CompilerFamily, CompilerRole
 
 
-LOGGER = logger.getLogger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 
 class MpiCompilerFamily(CompilerFamily):

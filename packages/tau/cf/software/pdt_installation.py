@@ -43,7 +43,7 @@ from tau.cf.compiler import CXX_ROLE, GNU_COMPILERS, INTEL_COMPILERS, PGI_COMPIL
 from tau.cf.target import TAU_ARCH_APPLE
 
 
-LOGGER = logger.getLogger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 SOURCES = {None: 'http://tau.uoregon.edu/pdt.tgz',
            # Why isn't this called pdt-x86_64.tgz ?? "lite" tells me nothing

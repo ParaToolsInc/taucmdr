@@ -13,7 +13,7 @@ HERE := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 SPHINX_BUILDER = html
 PROJECT_PACKAGE = tau
 
-PROJECT_DIR = $(HERE)/../packages/$(PROJECT_PACKAGE)/
+PROJECT_DIR = $(HERE)/../packages/
 BUILD_DIR = $(HERE)/build/
 SOURCE_DIR = $(HERE)/source/
 

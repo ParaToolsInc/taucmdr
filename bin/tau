@@ -47,4 +47,4 @@ export __TAU_HOME__="$(cd "$HERE/.." && pwd)"
 export __TAU_SCRIPT__="$HERE/$(basename "$0")"
 export PYTHONPATH=$__TAU_HOME__/packages:$PYTHONPATH
 
-python $__TAU_HOME__/packages/tau/__main__.py "$@"
+python $__TAU_HOME__/packages/tau/cli/commands/__init__.py "$@"

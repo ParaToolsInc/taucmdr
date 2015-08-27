@@ -44,7 +44,7 @@ from tau.cf.target import IBM_BGP_ARCH, IBM_BGQ_ARCH, CRAY_CNL_OS, IBM_CNK_OS
 from tau.cf.compiler.installed import InstalledCompilerFamily
  
 
-LOGGER = logger.getLogger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 
 _HOST_ARCH = None
@@ -231,7 +231,7 @@ def default_compiler(role):
     
     Returns:
         InstalledCompiler object
-        
+
     Raises:
         ConfigurationError: No compiler on this host can fill the role.
     """
