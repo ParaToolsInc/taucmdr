@@ -16,10 +16,11 @@ PROJECT_PACKAGE = tau
 PROJECT_DIR = $(HERE)/../packages/
 BUILD_DIR = $(HERE)/build/
 SOURCE_DIR = $(HERE)/source/
+STATIC_DIR = $(SOURCE_DIR)/_static
 
 CONF_FILES = conf.py
 REST_FILES = index.rst design.rst
-IMAGE_FILES = favicon.ico taulogo-large.png
+STATIC_FILES = $(addprefix $(STATIC_DIR), favicon.ico taulogo-large.png)
 
 
 SOURCE_FILES = $(addprefix $(SOURCE_DIR), $(CONF_FILES) $(REST_FILES) $(IMAGE_FILES))
