@@ -246,7 +246,7 @@ class Target(Controller, ByName):
                 continue
             compilers[role.keyword] = compiler_command.info()
             eids.append(compiler_command.eid)
-        missing = [role.keyword for role in CompilerRole.required() if role.keyword not in compilers]
+        missing = [role.keyword for role in CompilerRole.tau_required() if role.keyword not in compilers]
         if missing:
             raise InternalError("Target '%s' is missing required compilers: %s" % (self['name'], missing))
         return InstalledCompilerSet('_'.join([str(x) for x in eids]), **compilers)

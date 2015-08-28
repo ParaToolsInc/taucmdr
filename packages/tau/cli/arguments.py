@@ -151,8 +151,6 @@ class ParsePackagePathAction(argparse.Action):
         flag (str): Value parsed from the command line
         option_string (str): FIXME: Not used
     """
-    # We're providing a custom argparse action functor so it's OK that there's only one public method 
-    # pylint: disable=too-few-public-methods
 
     def __call__(self, parser, namespace, flag, option_string=None):
         flag_as_bool = util.parse_bool(flag)
@@ -180,8 +178,6 @@ class ParseBooleanAction(argparse.Action):
         flag (str): Value parsed from the command line
         option_string (str): FIXME: Not used
     """
-    # We're providing a custom argparse action functor so it's OK that there's only one public method 
-    # pylint: disable=too-few-public-methods
 
     def __call__(self, parser, namespace, value, option_string=None):
         bool_value = util.parse_bool(value)

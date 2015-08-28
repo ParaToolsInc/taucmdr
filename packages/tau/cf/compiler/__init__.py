@@ -1,13 +1,4 @@
-#"""
-#@file
-#@author John C. Linford (jlinford@paratools.com)
-#@version 1.0
-#
-#@brief
-#
-# This file is part of TAU Commander
-#
-#@section COPYRIGHT
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -33,8 +24,38 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#"""
-# pylint: disable=too-few-public-methods
+#
+"""TAU compiler knowledgebase.
+
+TAU Commander uses this knowledgebase to try to work out what kind of compiler
+the user is using to build their code.  We can get away with this because TAU 
+itself will take care of most of the version-specific details if only we get 
+the configuration line correct.
+
+TAU depends very strongly on compiler characteristics. Each TAU configuration
+is only valid for a single compiler, TAU's feature set changes depending on compiler
+family and version, TAU's configure script is easily confused by compilers with
+strange names or unusual installation paths, etc.  In most cases, TAU doesn't even 
+try to detect the compiler and trusts the user to specify the right "magic words" 
+at configuration. Worse, TAU sometimes does probe the compiler to discover things
+like MPI headers, except it does such a poor job that many time we get the wrong
+answer or simply cause the configure script to fail entirely. This has been a major
+painpoints for TAU users.
+
+Unfortunately, compiler detection is very hard.  Projects like `SciPy`_ that depend 
+on a compiler's stdout stream for compiler detection have more or less failed in this
+since compiler messages are exceptionally difficult to parse.  `CMake`_ does a good
+job by invoking the compiler command and parsing strings out of a compiled object to
+detect compiler characteristcs, but that approach is complex and still breaks easily.
+
+The TAU Commander compiler knowledgebase associates a compiler command (`icc`)
+with characteristics like family (`Intel`) and role (`CC`).  Any compiler commands
+intercepted by TAU Commander are matched against the database to discover their
+characteristics, hence we do not need to invoke the compiler to identify it.
+
+.. _SciPy: http://www.scipy.org/
+.. _CMake: http://www.cmake.org/
+"""
 
 import os
 from tau import logger
@@ -48,10 +69,15 @@ LOGGER = logger.get_logger(__name__)
 class CompilerRole(KeyedRecord):
     """Information about a compiler's role.
     
+    A compiler role identifies how the compiler is used in the build process. All compilers
+    play at least one *role* in their compiler family.  Many compilers can play multiple 
+    roles, e.g. icpc can be a C++ compiler in the CXX role, a C compiler in the CC role, 
+    or even a linker.  TAU Commander must identify a compiler's role so it can configure TAU.
+    
     Attributes:
-        keyword: String identifying how the compiler is used in the build process, e.g. 'CXX'
-        language: Language corresponding to the compiler role, e.g. 'C++'
-        required: True if this role must be filled to compile TAU, False otherwise
+        keyword (str): Name of the compiler's role, e.g. 'CXX'.
+        language (str): Name of the programming language corresponding to the compiler role, e.g. 'C++'.
+        required (bool): True if this role must be filled to compile TAU, False otherwise.
     """
     
     __key__ = 'keyword'
@@ -62,8 +88,8 @@ class CompilerRole(KeyedRecord):
         self.required = required
 
     @classmethod
-    def required(cls):
-        """Yield all roles that must be filled to get TAU to compile."""
+    def tau_required(cls):
+        """Iterate over roles that must be filled to get TAU to compile."""
         for role in cls.all():
             if role.required:
                 yield role
@@ -72,13 +98,14 @@ class CompilerRole(KeyedRecord):
 class CompilerInfo(TrackedInstance):
     """Information about a compiler.
     
-    The compiler might not be installed in the system.  See InstalledCompiler.  
+    A compiler's basic information includes it's family (e.g. `Intel`) and role (e.g. CXX).
+    The compiler might not be installed in the system.  See :any:`InstalledCompiler`.  
     
     Attributes:
-        command: Command string without path or arguments, e.g. 'icpc'
-        family: CompilerFamily this compiler belongs to
-        role: CompilerRole describing this compiler's family role
-        short_descr: A short descriptive string for command line help
+        command (str): Command without path or arguments, e.g. 'icpc'
+        family (CompilerFamily): The family this compiler belongs to.
+        role (CompilerRole): This compiler's *primary* role in the family.
+        short_descr (str): A short description for command line help.
     """
 
     def __init__(self, command, family, role):
@@ -101,60 +128,66 @@ class CompilerInfo(TrackedInstance):
         contained in the passed command is returned.
         
         Examples:
-            find("gcc-4.7-x86_64") returns info for "gcc" from possible candidates ["gcc", "cc"]
+            find("gcc-4.7-x86_64") returns info for "gcc" from possible candidates ["gcc", "cc"].
         
         Args:
-            command: Absolute or relative path to a compiler command
+            command (str): Absolute or relative path to a compiler command.
 
         Returns:
-            A CompilerInfo object.
+            CompilerInfo: The matching compiler information.
             
         Raises:
-            KeyError: No compiler info matches the given command.
+            KeyError: No compiler information is known for the given command.
         """
         command = os.path.basename(command)
         for instance in cls.all():
             if instance.command == command:
                 return instance
         # Guess that the longest string is the best match
-        LOGGER.debug("No compiler info exactly matches %s, trying approximate match" % command)
-        candidates = filter(lambda instance: instance.command in command, cls.all())
+        LOGGER.debug("No compiler info exactly matches %s, trying approximate match", command)
+        candidates = [inst for inst in cls.all() if inst.command in command]
         if not candidates:
             raise KeyError
         match = max(candidates, key=len)
-        LOGGER.debug("Matched info for %s to %s" % (match, command))
+        LOGGER.debug("Matched info for %s to %s", match, command)
         return match
 
 
 class CompilerFamily(KeyedRecord):
     """Information about a compiler family.
     
+    A compiler's family creates associations between different compiler commands
+    and assigns compilers to roles.  All compiler commands within a family accept
+    similar arguments, and produce binary compatible object files.
+
     Attributes:
-        name: String identifying this family, e.g. "Intel".
-        version_flags: List of command line flags that show the compiler version.
-        include_path_flags: List of command line flags that add a directory to the compiler's include path. 
-        library_path_flags: List of command line flags that add a directory to the compiler's library path.
-        link_library_flags: List of command line flags that link a library.
-        show_wrapper_flags: List of command line flags that show the wrapped compiler's complete command line
-                            or None if this family does not wrap compilers.
+        name (str): Family name, e.g. "Intel".
+        version_flags (list): Command line flags that show the compiler version.
+        include_path_flags (list): Command line flags that add a directory to the compiler's include path. 
+        library_path_flags (list): Command line flags that add a directory to the compiler's library path.
+        link_library_flags (list): Command line flags that link a library.
+        show_wrapper_flags (list): Command line flags that show the wrapped compiler's complete command line.
     """
     
     __key__ = 'name'
     
+    # It is very dangerous to use lists as default values
+    # but we do it here anyway because we copy the lists.
+    # pylint: disable=dangerous-default-value
     def __init__(self, name,
                  version_flags=['--version'],
                  include_path_flags=['-I'], 
                  library_path_flags=['-L'], 
                  link_library_flags=['-l'],
-                 show_wrapper_flags=None):
+                 show_wrapper_flags=[]):
         self._info_by_command = {}
         self._info_by_role = {}
         self.name = name
-        self.version_flags = version_flags
-        self.include_path_flags = include_path_flags
-        self.library_path_flags = library_path_flags
-        self.link_library_flags = link_library_flags
-        self.show_wrapper_flags = show_wrapper_flags
+        self.version_flags = list(version_flags)
+        self.include_path_flags = list(include_path_flags)
+        self.library_path_flags = list(library_path_flags)
+        self.link_library_flags = list(link_library_flags)
+        self.show_wrapper_flags = list(show_wrapper_flags)
 
     @classmethod
     def all(cls):
@@ -168,6 +201,8 @@ class CompilerFamily(KeyedRecord):
         """
         preferred = cls.preferred()
         yield preferred
+        # Settle down pylint... the __instances__ member is created by the metaclass
+        # pylint: disable=no-member
         for instance in cls.__instances__.itervalues():
             if instance is not preferred:
                 yield instance
@@ -181,7 +216,7 @@ class CompilerFamily(KeyedRecord):
     @classmethod
     def family_names(cls):
         """Return an alphabetical list of all known compiler family names."""
-        return sorted(map(str, cls.all()))
+        return sorted([str(inst) for inst in cls.all()])
     
     def __contains__(self, item):
         """Tests if a command is in the family or a role has been filled.
@@ -213,11 +248,11 @@ class CompilerFamily(KeyedRecord):
         
         Commands should be ordered by preference.  For example, we prefer to build
         C++ codes with "c++" instead of "CC" so that case-insensitive file systems
-        (looking at you Mac OS) don't try to use a C compiler for C++ codes. 
+        (looking at you OS X) don't try to use a C compiler for C++ codes. 
         
         Args:
-            role: CompilerRole object specifying role these commands fill in the family
-            commands: Command strings without arguments
+            role (CompilerRole) Role these commands fill in the family.
+            *commands: Command strings without arguments.
         """ 
         assert isinstance(role, CompilerRole)
         for command in commands:

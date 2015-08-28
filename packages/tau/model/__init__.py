@@ -571,7 +571,7 @@ class Controller(object):
 class ByName(object):
     """Mixin for a model with a unique `name` attribute."""
     # Ignore missing members since this is a mixin class to be used with Controller
-    # pylint: disable=too-few-public-methods,no-member
+    # pylint: disable=no-member
     
     @classmethod
     def with_name(cls, name):

@@ -86,22 +86,22 @@ See 'tau help <subcommand>' for more information on <subcommand>.
 """  % {'command_descr': cli.get_commands_description()}
         
         parser.inst = arguments.get_parser(prog=COMMAND,
-                                     usage=usage_head,
-                                     description=SHORT_DESCRIPTION,
-                                     epilog=usage_foot)
+                                           usage=usage_head,
+                                           description=SHORT_DESCRIPTION,
+                                           epilog=usage_foot)
         parser.inst.add_argument('command',
-                            help="See subcommand descriptions below",
-                            metavar='<subcommand>')
+                                 help="See subcommand descriptions below",
+                                 metavar='<subcommand>')
         parser.inst.add_argument('options',
-                            help="Options to be passed to <subcommand>",
-                            metavar='[options]',
-                            nargs=arguments.REMAINDER)
+                                 help="Options to be passed to <subcommand>",
+                                 metavar='[options]',
+                                 nargs=arguments.REMAINDER)
         parser.inst.add_argument('-v', '--verbose',
-                            help="Set logging level to DEBUG",
-                            metavar='',
-                            const='DEBUG',
-                            default='INFO',
-                            action='store_const')
+                                 help="Set logging level to DEBUG",
+                                 metavar='',
+                                 const='DEBUG',
+                                 default='INFO',
+                                 action='store_const')
     return parser.inst
 
 
@@ -147,7 +147,7 @@ def main():
         LOGGER.debug('No shortcut found for %r', cmd)
 
     # Not sure what to do at this point, so advise the user and exit
-    LOGGER.info("Unknown command.  Calling 'tau help %s' to get advice.", cmd)
+    LOGGER.info("Unknown command.  Calling `tau help %s` to get advice.", cmd)
     return cli.execute_command(['help'], [cmd])
 
 # Command line execution

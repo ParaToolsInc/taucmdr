@@ -34,7 +34,7 @@ all: $(PACKAGE_REST_FILE) $(STATIC_FILES)
 	sphinx-build -b $(SPHINX_BUILDER) $(SOURCE_DIR) $(BUILD_DIR)
 
 $(PACKAGE_REST_FILE): $(SOURCE_FILES)
-	sphinx-apidoc -f -o $(SOURCE_DIR) $(PROJECT_DIR)
+	sphinx-apidoc -M -P -f -o $(SOURCE_DIR) $(PROJECT_DIR)
 
 clean:
 	rm -f $(filter-out $(SOURCE_FILES),$(wildcard $(SOURCE_DIR)*.rst))

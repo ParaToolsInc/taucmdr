@@ -40,10 +40,11 @@ you like.  Subcommand modules must set the following module attributes:
     * SHORT_DESCRIPTION (str): A one-line description of the subcommand. 
     * HELP (str): The subcommand's help page.  Should be long and detailed.
     * parser: A function that returns an argument parser for the command.
+    * main: The subprogram entry point.
     
-Subcommand modules may optionally declare the following module attributes:
+Subcommand modules may optionally set the following module attributes:
 
-    * GROUP (str): List this subcommand in a group named `GROUP` in help messages. 
+    * GROUP (str): List this subcommand in a group named `GROUP` in help messages.
 
 .. _git: https://git-scm.com/
 """
@@ -135,6 +136,7 @@ def get_commands(root=_COMMANDS_PACKAGE):
         dict: Strings mapping to dictionaries or modules.
         
     Example:
+    ::
         get_commands('tau.cli.commands.target') ==>
             {'__module__': <module 'tau.cli.commands.target' from '/home/jlinford/workspace/taucmdr/packages/tau/cli/commands/target/__init__.pyc'>,
              'create': {'__module__': <module 'tau.cli.commands.target.create' from '/home/jlinford/workspace/taucmdr/packages/tau/cli/commands/target/create.pyc'>},

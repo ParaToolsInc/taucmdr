@@ -125,7 +125,7 @@ def parse_compiler_flags(args):
             LOGGER.debug(err)
 
     # Check that all required compilers were found
-    for role in CompilerRole.required():
+    for role in CompilerRole.tau_required():
         if role.keyword not in compilers:
             raise ConfigurationError("%s compiler could not be found" % role.language,
                                      "See 'compiler arguments' under `%s --help`" % COMMAND)
