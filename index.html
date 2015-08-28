@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Get Started &mdash; TAU Commander Developer Documentation</title>
+    <title>Welcome &mdash; TAU Commander Developer Documentation</title>
     
     <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -26,29 +26,67 @@
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="_static/favicon.ico"/>
     <link rel="top" title="TAU Commander Developer Documentation" href="#" />
-    <link rel="next" title="TAU Commander Design" href="design.html" /> 
+    <link rel="next" title="TAU Commander Style Guide" href="style.html" /> 
   </head>
   <body role="document">
       <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="#">
           <span>TAU Commander Developer Documentation</span></a></h1>
-        <h2 class="heading"><span>Get Started</span></h2>
+        <h2 class="heading"><span>Welcome</span></h2>
       </div>
       <div class="topnav" role="navigation" aria-label="top navigation">
       
         <p>
         <a class="uplink" href="#">Contents</a>
         &#160;&#160;::&#160;&#160;
-        <a href="design.html">TAU Commander Design</a>&#160;&#160;»
+        <a href="style.html">TAU Commander Style Guide</a>&#160;&#160;»
         </p>
 
       </div>
       <div class="content">
         
         
-  <div class="section" id="get-started">
-<h1>Get Started<a class="headerlink" href="#get-started" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="welcome">
+<h1>Welcome<a class="headerlink" href="#welcome" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="who-is-this-document-for">
+<h2>Who is this document for?<a class="headerlink" href="#who-is-this-document-for" title="Permalink to this headline">¶</a></h2>
+<p>This documentation is intended for the lucky people developing TAU Commander.
+TAU Commander <strong>users</strong> should should visit <a class="reference external" href="http://www.taucommander.com/">the TAU Commander website</a>.</p>
+</div>
+<div class="section" id="why-this-document">
+<h2>Why this document?<a class="headerlink" href="#why-this-document" title="Permalink to this headline">¶</a></h2>
+<p>Hopefully reading this document will help you, the TAU Commander developer,
+contribute more to the project. For over two decades the
+<a class="reference external" href="http://tau.uoregon.edu/">TAU Performance System</a> has been developed mainly by single minded
+graduate students who couldn&#8217;t spare any thought for software design, safety,
+or maintainability.  This has created a &#8220;wet spaghetti&#8221; code base: TAU
+developers throw stuff at the wall to see what sticks. Our goal is to bring a
+little sanity back to the development cycle and take advantage of important
+software engineering lessons learned in the last two decades.</p>
+</div>
+<div class="section" id="the-tau-commandments">
+<h2>The TAU Commandments<a class="headerlink" href="#the-tau-commandments" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic simple">
+<li>Thou shalt read and obey the <a class="reference internal" href="style.html"><em>TAU Commander Style Guide</em></a>.</li>
+<li>Thou shalt read and obey the <a class="reference internal" href="design.html"><em>TAU Commander Design</em></a>.</li>
+<li>Thou shalt use <a class="reference external" href="http://www.pylint.org/">pylint</a> 1.4 or later as part of your development cycle.</li>
+<li>Thou shalt document your code according to the <a class="reference internal" href="style.html"><em>TAU Commander Style Guide</em></a>.</li>
+<li><strong>Never</strong> shalt thou develop on the master branch, for that is an abomination.</li>
+<li><strong>Never</strong> shalt thou merge broken code to the master branch.</li>
+<li><strong>Never</strong> shalt thou <em>just quickly fix this one thing because I have a hard deadline I forgot and now I really really really need this feature to be part of TAU Commander whatever the cost and oh God I broke it I broke it now everything is on fire</em>.</li>
+</ol>
+</div>
+</div>
+<div class="section" id="table-of-contents">
+<h1>Table of Contents<a class="headerlink" href="#table-of-contents" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="style.html">TAU Commander Style Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="style.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="style.html#file-header">File Header</a></li>
+<li class="toctree-l2"><a class="reference internal" href="style.html#code-style">Code Style</a></li>
+<li class="toctree-l2"><a class="reference internal" href="style.html#full-documentation-example">Full Documentation Example</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="design.html">TAU Commander Design</a></li>
 </ul>
 </div>
@@ -61,17 +99,6 @@
 <li><a class="reference internal" href="search.html"><span>Search Page</span></a></li>
 </ul>
 </div>
-<div class="section" id="modules">
-<h1>Modules<a class="headerlink" href="#modules" title="Permalink to this headline">¶</a></h1>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="modules.html">tau</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="tau.html">tau package</a></li>
-</ul>
-</li>
-</ul>
-</div>
-</div>
 
 
       </div>
@@ -80,7 +107,7 @@
         <p>
         <a class="uplink" href="#">Contents</a>
         &#160;&#160;::&#160;&#160;
-        <a href="design.html">TAU Commander Design</a>&#160;&#160;»
+        <a href="style.html">TAU Commander Style Guide</a>&#160;&#160;»
         </p>
 
       </div>
