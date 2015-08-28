@@ -1,13 +1,4 @@
-#"""
-#@file
-#@author John C. Linford (jlinford@paratools.com)
-#@version 1.0
-#
-#@brief
-#
-# This file is part of TAU Commander
-#
-#@section COPYRIGHT
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -33,29 +24,40 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#"""
+#
+"""MPI compiler detection.
+
+MPI compilers are a special case for several reasons including:
+    1) No binary compatibility guarantee among MPI compilers.
+    2) They're almost always wrappers, not actual compilers.
+    3) They almost always depend on system compilers.
+    
+We keep a separate knowledge base for MPI compilers to simplify compiler
+identification and because TAU doesn't require MPI for all configurations.
+"""
 
 from tau import logger
 from tau.cf.compiler import CompilerFamily, CompilerRole
 
 
-LOGGER = logger.getLogger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 
 class MpiCompilerFamily(CompilerFamily):
     """Information about an MPI compiler family.
     
     Subclassing CompilerFamily creates a second database of compiler family 
-    records and keep MPI compilers from mixing with host etc. compilers.
+    records and keeps MPI compilers from mixing with host etc. compilers.
     """
     
     def __init__(self, *args, **kwargs):
         if 'show_wrapper_flags' not in kwargs:
             kwargs['show_wrapper_flags'] = ['-show']
         super(MpiCompilerFamily,self).__init__(*args, **kwargs)
-    
+
     @classmethod
     def preferred(cls):
+        """Return the host's preferred MPI compiler family."""
         from tau.cf.target import host
         return host.preferred_mpi_compilers()
 

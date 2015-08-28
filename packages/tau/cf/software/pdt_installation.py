@@ -1,13 +1,4 @@
-#"""
-#@file
-#@author John C. Linford (jlinford@paratools.com)
-#@version 1.0
-#
-#@brief
-#
-# This file is part of TAU Commander
-#
-#@section COPYRIGHT
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -33,17 +24,21 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#"""
+#
+"""Program Database Toolkit (PDT) software installation management.
+
+TAU uses PDT for source instrumentation.
+"""
 
 import os
-from tau import logger
+from tau import logger, util
 from tau.cf.software import SoftwarePackageError
 from tau.cf.software.installation import AutotoolsInstallation
 from tau.cf.compiler import CXX_ROLE, GNU_COMPILERS, INTEL_COMPILERS, PGI_COMPILERS
 from tau.cf.target import TAU_ARCH_APPLE
 
 
-LOGGER = logger.getLogger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 SOURCES = {None: 'http://tau.uoregon.edu/pdt.tgz',
            # Why isn't this called pdt-x86_64.tgz ?? "lite" tells me nothing
@@ -97,8 +92,7 @@ COMMANDS = {None:
 
 
 class PdtInstallation(AutotoolsInstallation):
-    """
-    Encapsulates a PDT installation.
+    """Encapsulates a PDT installation.
     
     PDT doesn't actually use an Autotools configure script but the installation 
     proceedure is the same otherwise, so we reuse what we can from AutotoolsInstallation.
@@ -111,9 +105,12 @@ class PdtInstallation(AutotoolsInstallation):
         self.bin_path = os.path.join(self.arch_path, 'bin')
         self.lib_path = os.path.join(self.arch_path, 'lib')
 
-    def _verify(self):
-        commands = COMMANDS.get(self.arch, COMMANDS[None])
-        return super(PdtInstallation,self)._verify(commands=commands)
+    def _verify(self, commands=None, libraries=None):
+        try:
+            commands = COMMANDS[self.arch]
+        except KeyError:
+            commands = COMMANDS[None]
+        return super(PdtInstallation, self)._verify(commands, libraries)
 
     def configure(self, flags, env):
         family_flags = {GNU_COMPILERS.name: '-GNU', 
@@ -123,6 +120,6 @@ class PdtInstallation(AutotoolsInstallation):
         compiler_flag = family_flags.get(family.name, '')
         prefix_flag = '-prefix=%s' % self.install_prefix
         cmd = ['./configure', prefix_flag, compiler_flag]
-        LOGGER.info("Configuring PDT for %s compilers..." % family)
-        if self._safe_subprocess(cmd, cwd=self._src_path, stdout=False):
+        LOGGER.info("Configuring PDT for %s compilers...", family)
+        if util.create_subprocess(cmd, cwd=self._src_path, stdout=False):
             raise SoftwarePackageError('PDT configure failed')

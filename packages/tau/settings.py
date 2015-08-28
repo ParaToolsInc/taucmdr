@@ -1,13 +1,4 @@
-#"""
-#@file
-#@author John C. Linford (jlinford@paratools.com)
-#@version 1.0
-#
-#@brief
-#
-# This file is part of TAU Commander
-#
-#@section COPYRIGHT
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -33,28 +24,32 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#"""
+#
+"""TAU Commander settings.
+
+FIXME: settings needs a design review.
+"""
 
 from tau import logger
 from tau.model.setting import Setting
 
 
-LOGGER = logger.getLogger(__name__)
+LOGGER = logger.get_logger(__name__)
 
-_data = {}
+_DATA = {}
 
 
 def _load():
     for record in Setting.all():
         key = record['key']
         val = record['value']
-        _data[key] = val
-    LOGGER.debug("Loaded settings: %r" % _data)
+        _DATA[key] = val
+    LOGGER.debug("Loaded settings: %r", _DATA)
 
 
 def _save():
-    LOGGER.debug("Saving settings: %r" % _data)
-    for key, val in _data.iteritems():
+    LOGGER.debug("Saving settings: %r", _DATA)
+    for key, val in _DATA.iteritems():
         if Setting.exists({'key': key}):
             Setting.update({'value': val}, {'key': key})
         else:
@@ -65,16 +60,16 @@ def get(key):
     """
     Get the value of setting 'key' or None if not set
     """
-    if not _data:
+    if not _DATA:
         _load()
-    return _data.get(key, None)
+    return _DATA.get(key, None)
 
 
 def set(key, val):
     """
     Set setting 'key' to value 'val'
     """
-    _data[key] = val
+    _DATA[key] = val
     _save()
 
 

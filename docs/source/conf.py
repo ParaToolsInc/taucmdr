@@ -15,12 +15,21 @@
 import sys
 import os
 import shlex
+import tempfile
+
+# Since this file is execfile()d with the current directory set to its
+# containing dir, we can safely calculate the TAU_HOME.
+TAU_HOME = os.path.realpath(os.path.abspath(os.path.join('..', '..')))
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('../../packages'))
-sys.path.insert(0, os.path.abspath('../../packages/tau'))
+sys.path.insert(0, os.path.join(TAU_HOME, 'packages'))
+sys.path.insert(0, os.path.join(TAU_HOME, 'packages', 'tau'))
+
+# Set environment variables to let TAU Commander know we're using Sphinx
+os.environ['__TAU_HOME__'] = TAU_HOME
+os.environ['__TAU_SCRIPT__'] = 'sphinx'
 
 # -- General configuration ------------------------------------------------
 
@@ -37,6 +46,7 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
+    'sphinx.ext.napoleon'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -86,10 +96,10 @@ exclude_patterns = []
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
-#default_role = None
+#default_role = 'py:obj'
 
 # If true, '()' will be appended to :func: etc. cross-reference text.
-#add_function_parentheses = True
+add_function_parentheses = True
 
 # If true, the current module name will be prepended to all description
 # unit titles (such as .. function::).
@@ -112,11 +122,24 @@ pygments_style = 'sphinx'
 todo_include_todos = False
 
 
+# -- Napoleon (Google docstring parser) settings --------------------------
+
+napoleon_google_docstring = True
+napoleon_numpy_docstring = False
+napoleon_include_private_with_doc = True
+napoleon_include_special_with_doc = True
+napoleon_use_admonition_for_examples = False
+napoleon_use_admonition_for_notes = False
+napoleon_use_admonition_for_references = False
+napoleon_use_ivar = False
+napoleon_use_param = True
+napoleon_use_rtype = True
+
 # -- Options for HTML output ----------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'alabaster'
+html_theme = 'haiku'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -128,19 +151,19 @@ html_theme = 'alabaster'
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-#html_title = None
+html_title = 'TAU Commander Developer Documentation'
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
-#html_short_title = None
+#html_short_title = 'Developer Docs'
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-html_logo = 'taulogo-large.png'
+html_logo = '_static/taulogo-large.png'
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
-html_favicon = 'favicon.ico'
+html_favicon = '_static/favicon.ico'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

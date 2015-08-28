@@ -1,3 +1,5 @@
 modules.rst
-tau.rst
-tau.*.rst
+tau*.rst
+lockfile*.rst
+texttable*.rst
+tinydb*.rst

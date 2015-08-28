@@ -1,13 +1,4 @@
-#"""
-#@file
-#@author John C. Linford (jlinford@paratools.com)
-#@version 1.0
-#
-#@brief
-#
-# This file is part of TAU Commander
-#
-#@section COPYRIGHT
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -33,22 +24,26 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#"""
+#
+"""Project data model.
+
+A project collects multiple :any:`Target`, :any:`Application`, and :any:`Measurement`
+configurations in a single container.  Selecting one of each forms a new :any:`Experiment`.
+Each application of the :any:`Experiment` generates a new :any:`Trial` record along with
+some performance data (profiles, traces, etc.).
+"""
 
 import os
 import shutil
 from tau import USER_PREFIX
 from tau import logger, util, error
-from tau.controller import Controller, ByName
+from tau.model import Controller, ByName
 
-LOGGER = logger.getLogger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 
 class Project(Controller, ByName):
-
-    """
-    Project data model controller
-    """
+    """Project data controller."""
 
     attributes = {
         'name': {
@@ -90,7 +85,7 @@ class Project(Controller, ByName):
     def prefix(self):
         return os.path.join(self['prefix'], self['name'])
 
-    def onCreate(self):
+    def on_create(self):
         prefix = self.prefix()
         try:
             util.mkdirp(prefix)
@@ -98,10 +93,11 @@ class Project(Controller, ByName):
             raise error.ConfigurationError('Cannot create directory %r: %s' % (prefix, err),
                                            'Check that you have `write` access')
 
-    def onDelete(self):
+    def on_delete(self):
+        # pylint: disable=broad-except
         prefix = self.prefix()
         try:
             shutil.rmtree(prefix)
         except Exception as err:
             if os.path.exists(prefix):
-                LOGGER.error("Could not remove project data at '%s': %s" % (prefix, err))
+                LOGGER.error("Could not remove project data at '%s': %s", prefix, err)

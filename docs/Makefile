@@ -16,23 +16,25 @@ PROJECT_PACKAGE = tau
 PROJECT_DIR = $(HERE)/../packages/$(PROJECT_PACKAGE)/
 BUILD_DIR = $(HERE)/build/
 SOURCE_DIR = $(HERE)/source/
+STATIC_DIR = $(SOURCE_DIR)/_static/
 
 CONF_FILES = conf.py
-REST_FILES = index.rst design.rst
+REST_FILES = index.rst design.rst style.rst
 IMAGE_FILES = favicon.ico taulogo-large.png
 
 
-SOURCE_FILES = $(addprefix $(SOURCE_DIR), $(CONF_FILES) $(REST_FILES) $(IMAGE_FILES))
+SOURCE_FILES = $(addprefix $(SOURCE_DIR), $(CONF_FILES) $(REST_FILES))
+STATIC_FILES = $(addprefix $(STATIC_DIR), $(IMAGE_FILES))
 PACKAGE_REST_FILE = $(PROJECT_PACKAGE).rst
 
 
 .PHONY: all source clean
 
-all: $(PACKAGE_REST_FILE)
+all: $(PACKAGE_REST_FILE) $(STATIC_FILES)
 	sphinx-build -b $(SPHINX_BUILDER) $(SOURCE_DIR) $(BUILD_DIR)
 
 $(PACKAGE_REST_FILE): $(SOURCE_FILES)
-	sphinx-apidoc -f -o $(SOURCE_DIR) $(PROJECT_DIR)
+	sphinx-apidoc -M -P -f -o $(SOURCE_DIR) $(PROJECT_DIR)
 
 clean:
 	rm -f $(filter-out $(SOURCE_FILES),$(wildcard $(SOURCE_DIR)*.rst))

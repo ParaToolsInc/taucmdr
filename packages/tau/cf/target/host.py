@@ -1,13 +1,4 @@
-#"""
-#@file
-#@author John C. Linford (jlinford@paratools.com)
-#@version 1.0
-#
-#@brief
-#
-# This file is part of TAU Commander
-#
-#@section COPYRIGHT
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -33,7 +24,8 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#"""
+#
+"""Target host hardware and software detection and defaults."""
 
 import os
 import platform
@@ -44,196 +36,238 @@ from tau.cf.target import IBM_BGP_ARCH, IBM_BGQ_ARCH, CRAY_CNL_OS, IBM_CNK_OS
 from tau.cf.compiler.installed import InstalledCompilerFamily
  
 
-LOGGER = logger.getLogger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 
-_HOST_ARCH = None
 def architecture():
     """Detect the host's architecture.
         
     Mostly relies on Python's platform module but may also probe 
-    environment variables and files in cases where the arch isn't
-    immediately known to Python.
+    environment variables and file systems in cases where the arch 
+    isn't immediately known to Python.  These tests may be expensive
+    so the detected value is cached to improve performance. 
     
     Returns:
-        Architecture object.
+        Architecture: The matching architecture description.
         
     Raises:
-        ConfigurationError: Host architecture not yet supported.
+        ConfigurationError: Host architecture not supported.
     """
-    global _HOST_ARCH
-    if not _HOST_ARCH:
-        # TODO: Find a better way to detect BlueGene architectures
+    try:
+        inst = architecture.inst
+    except AttributeError:
         if os.path.exists("/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc-bgp-linux-gcc"):
-            _HOST_ARCH = IBM_BGP_ARCH
+            inst = IBM_BGP_ARCH
         elif os.path.exists("/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc64-bgq-linux-gcc"):
-            _HOST_ARCH = IBM_BGQ_ARCH
+            inst = IBM_BGQ_ARCH
         else:
             python_arch = platform.machine()
             try:
-                _HOST_ARCH = Architecture.find(python_arch)
+                inst = Architecture.find(python_arch)
             except KeyError:
                 raise ConfigurationError("Host architecture '%s' is not yet supported" % python_arch)
-    return _HOST_ARCH
+        architecture.inst = inst
+    return inst
+    
 
 
-_HOST_OS = None
 def operating_system():
     """Detect the host's operating system.
     
     Mostly relies on Python's platform module but may also probe 
-    environment variables and files in cases where the arch isn't
-    immediately known to Python.
+    environment variables and file systems in cases where the arch
+    isn't immediately known to Python.  These tests may be expensive
+    so the detected value is cached to improve performance.
     
     Returns:
-        OperatingSystem object.
+        OperatingSystem: The matching operating system description.
         
     Raises:
-        ConfigurationError: Host operating system not yet supported.
+        ConfigurationError: Host operating system not supported.
     """
-    global _HOST_OS
-    if not _HOST_OS:
+    try:
+        inst = operating_system.inst
+    except AttributeError:
         arch = architecture()
         if 'CRAYOS_VERSION' in os.environ or 'PE_ENV' in os.environ:
-            _HOST_OS = CRAY_CNL_OS
+            inst = CRAY_CNL_OS
         elif arch in [IBM_BGP_ARCH, IBM_BGQ_ARCH]:
-            _HOST_OS = IBM_CNK_OS
+            inst = IBM_CNK_OS
         else:
             python_os = platform.system()
             try:
-                _HOST_OS = OperatingSystem.find(python_os)
+                inst = OperatingSystem.find(python_os)
             except KeyError:
                 raise ConfigurationError("Host operating system '%s' is not yet supported" % python_os)
-    return _HOST_OS
+        operating_system.inst = inst
+    return inst
 
 
-_TAU_ARCH = None
 def tau_arch():
     """Detect the TAU architecture "magic keyword" that matches the host.
     
     Mostly relies on Python's platform module but may also probe 
-    environment variables and files in cases where the arch isn't
-    immediately known to Python.
+    environment variables and file systems in cases where the arch 
+    isn't immediately known to Python.  These tests may be expensive
+    so the detected value is cached to improve performance.
     
     Returns:
-        TauArch object.
+        TauArch: The matching tau architecture description.
         
     Raises:
-        ConfigurationError: Host architecture or operating system not yet supported.
+        ConfigurationError: Host architecture or operating system not supported.
     """
-    global _TAU_ARCH
-    if not _TAU_ARCH:
+    try:
+        inst = tau_arch.inst
+    except AttributeError:
         host_arch = architecture()
         host_os = operating_system()
         try:
-            _TAU_ARCH = TauArch.find(host_arch, host_os)
+            inst = TauArch.get(host_arch, host_os)
         except KeyError:
-            raise ConfigurationError("%s on %s is not yet supported" % (host_os, host_arch))
-    return _TAU_ARCH
+            raise ConfigurationError("%s on %s is not supported." % (host_os, host_arch))
+        tau_arch.inst = inst
+    return inst
 
 
-_HOST_PREFERRED_COMPILERS = None
 def preferred_compilers():
     """Get the preferred compiler family for the host architecture.
     
+    May probe environment variables and file systems in cases where the arch 
+    isn't immediately known to Python.  These tests may be expensive so the 
+    detected value is cached to improve performance.
+
     Returns:
-        A CompilerFamily object.
+        CompilerFamily: The host's preferred compiler family.
     """
-    global _HOST_PREFERRED_COMPILERS
-    if not _HOST_PREFERRED_COMPILERS:
+    try:
+        inst = preferred_compilers.inst
+    except AttributeError:
         from tau.cf.compiler import IBM_COMPILERS, GNU_COMPILERS, CRAY_COMPILERS 
         host_tau_arch = tau_arch()
         if host_tau_arch == 'craycnl':
             LOGGER.debug("Prefering Cray compiler wrappers")
-            _HOST_PREFERRED_COMPILERS = CRAY_COMPILERS
+            inst = CRAY_COMPILERS
         elif host_tau_arch in ['bgp', 'bgq']:
             LOGGER.debug("Prefering IBM compilers")
-            _HOST_PREFERRED_COMPILERS = IBM_COMPILERS
+            inst = IBM_COMPILERS
         else:
-            LOGGER.debug("No preferred compilers for '%s'" % host_tau_arch)
-            _HOST_PREFERRED_COMPILERS = GNU_COMPILERS
-    return _HOST_PREFERRED_COMPILERS
+            LOGGER.debug("No preferred compilers for '%s'", host_tau_arch)
+            inst = GNU_COMPILERS
+        preferred_compilers.inst = inst
+    return inst
 
 
-_HOST_PREFERRED_MPI_COMPILERS = None
 def preferred_mpi_compilers():
-    """Get the preferred compiler family for the host architecture.
+    """Get the preferred MPI compiler family for the host architecture.
     
+    May probe environment variables and file systems in cases where the arch 
+    isn't immediately known to Python.  These tests may be expensive so the 
+    detected value is cached to improve performance.
+
     Returns:
-        A CompilerFamily object.
+        MpiCompilerFamily: The host's preferred compiler family.
     """
-    global _HOST_PREFERRED_MPI_COMPILERS
-    if not _HOST_PREFERRED_MPI_COMPILERS:
+    try:
+        inst = preferred_mpi_compilers.inst
+    except AttributeError:
         from tau.cf.compiler.mpi import IBM_MPI_COMPILERS, CRAY_MPI_COMPILERS, SYSTEM_MPI_COMPILERS 
         host_tau_arch = tau_arch()
         if host_tau_arch == 'craycnl':
             LOGGER.debug("Prefering Cray MPI compilers")
-            _HOST_PREFERRED_MPI_COMPILERS = CRAY_MPI_COMPILERS
+            inst = CRAY_MPI_COMPILERS
         elif host_tau_arch in ['bgp', 'bgq']:
             LOGGER.debug("Prefering IBM MPI compilers")
-            _HOST_PREFERRED_MPI_COMPILERS = IBM_MPI_COMPILERS
+            inst = IBM_MPI_COMPILERS
         else:
-            LOGGER.debug("No preferred compilers for '%s'" % host_tau_arch)
-            _HOST_PREFERRED_MPI_COMPILERS = SYSTEM_MPI_COMPILERS
-    return _HOST_PREFERRED_MPI_COMPILERS
+            LOGGER.debug("No preferred MPI compilers for '%s'", host_tau_arch)
+            inst = SYSTEM_MPI_COMPILERS
+        preferred_mpi_compilers.inst = inst
+    return inst
 
 
-_HOST_DEFAULT_COMPILERS = None
 def default_compilers():
     """Get the default installed compilers for the host.
     
-    This is most likely the installation of the host's preferred compilers, but if those
-    compilers are not installed then it will be an installation of any known compiler family.
+    This is most likely the installation of the host's preferred compilers, 
+    (see :any:`preferred_compilers`) but if those compilers are not installed
+    then it will be an installation of any known compiler family. May probe 
+    environment variables and file systems in cases where the arch isn't 
+    immediately known to Python. These tests may be expensive so the detected 
+    value is cached to improve performance.
+    
+    Raises:
+        ConfigurationError: No recognized compilers are installed.
     
     Returns:
-        An InstalledCompilerFamily object.
+        InstalledCompilerFamily: The default compilers.
     """
-    global _HOST_DEFAULT_COMPILERS
-    if not _HOST_DEFAULT_COMPILERS:
+    try:
+        inst = default_compilers.inst
+    except AttributeError:
         from tau.cf.compiler import CompilerFamily
         LOGGER.debug("Detecting default host compilers")
         # CompilerFamily.all() returns the host's preferred compilers as the first element
         for family in CompilerFamily.all():
             try:
-                _HOST_DEFAULT_COMPILERS = InstalledCompilerFamily(family)
+                inst = InstalledCompilerFamily(family)
             except ConfigurationError as err:
                 LOGGER.debug(err)
             else:
-                LOGGER.debug("Found a %s compiler installation" % family.name)
-                return _HOST_DEFAULT_COMPILERS 
-        raise ConfigurationError("No recognized compilers installed.")
-    return _HOST_DEFAULT_COMPILERS
+                LOGGER.debug("Found a %s compiler installation", family.name)
+                default_compilers.inst = inst
+                break
+        else: 
+            raise ConfigurationError("No recognized compilers installed.")
+    return inst
 
 
-_HOST_DEFAULT_MPI_COMPILERS = None
 def default_mpi_compilers():
+    """Get the default installed MPI compilers for the host.
+    
+    This is most likely the installation of the host's preferred MPI compilers, 
+    (see :any:`preferred_mpi_compilers`) but if those compilers are not installed
+    then it will be an installation of any known compiler family. May probe 
+    environment variables and file systems in cases where the arch isn't 
+    immediately known to Python. These tests may be expensive so the detected 
+    value is cached to improve performance.
+    
+    Raises:
+        ConfigurationError: No recognized compilers are installed.
+    
+    Returns:
+        InstalledCompilerFamily: The default compilers.
     """
-    TODO: Docs
-    """
-    global _HOST_DEFAULT_MPI_COMPILERS
-    if not _HOST_DEFAULT_MPI_COMPILERS:
+    try:
+        inst = default_mpi_compilers.inst
+    except AttributeError:
         from tau.cf.compiler.mpi import MpiCompilerFamily
         LOGGER.debug("Detecting default MPI compilers")
         for family in MpiCompilerFamily.all():
             try:
-                _HOST_DEFAULT_MPI_COMPILERS = InstalledCompilerFamily(family)
+                inst = InstalledCompilerFamily(family)
             except ConfigurationError as err:
                 LOGGER.debug(err)
             else:
-                LOGGER.debug("Found a %s MPI compiler installation" % family.name)
-                return _HOST_DEFAULT_MPI_COMPILERS 
-        raise ConfigurationError("No recognized compilers installed.")
-    return _HOST_DEFAULT_MPI_COMPILERS
+                LOGGER.debug("Found a %s MPI compiler installation", family.name)
+                default_mpi_compilers.inst = inst
+                break
+        else: 
+            raise ConfigurationError("No recognized compilers installed.")
+    return inst
 
 
 def default_compiler(role):
     """Get the default compiler on this host for a given role.
     
+    Args:
+        role (CompilerRole): The role we need to fill.
+    
     Returns:
-        InstalledCompiler object
-        
+        InstalledCompiler: The installed compiler that can fill the role.
+
     Raises:
-        ConfigurationError: No compiler on this host can fill the role.
+        ConfigurationError: No installed compiler can fill the role.
     """
     try:
         return default_compilers().preferred(role)

@@ -1,13 +1,4 @@
-#"""
-#@file
-#@author John C. Linford (jlinford@paratools.com)
-#@version 1.0
-#
-#@brief
-#
-# This file is part of TAU Commander
-#
-#@section COPYRIGHT
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -33,37 +24,43 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#"""
+#
+"""Persistant record storage.
 
-# Sytem modules
+This implementation uses :py:class:`TinyDB` but could be extended to be the front end
+to any kind of storage system.
+"""
+
 import os
 from tinydb import TinyDB, where
 from tau import USER_PREFIX, SYSTEM_PREFIX
-from tau import logger, util, error
+from tau import logger, util
+from tau.error import InternalError
 
 
-LOGGER = logger.getLogger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 
-class StorageError(error.InternalError):
-
-    """
-    Indicates that there is a problem with storage
-    """
-    pass
+class StorageError(InternalError):
+    """Indicates that there is a problem with the storage system."""
 
 
 class Storage(object):
-
-    """
-    TODO: Classdocs
+    """Interface to a persistant record storage system.
+    
+    This implementation uses :py:class:`TinyDB` and supports transactional updates.
+    
+    Attributes:
+        database (TinyDB): Record database.
+    
+    Args:
+        prefix (str): Path to a directory to contain the TinyDB database file.
+        db_name (str): Name of the TinyDB database file.
     """
 
     def __init__(self, prefix, db_name='local.json'):
-        """
-        Create the local storage location
-        """
         self._transaction_count = 0
+        self._db_copy = None
         try:
             util.mkdirp(prefix)
         except:
@@ -71,156 +68,222 @@ class Storage(object):
                                'Check that you have `write` access')
         self.dbfile = os.path.join(prefix, db_name)
         try:
-            self.db = TinyDB(self.dbfile)
+            self.database = TinyDB(self.dbfile)
         except:
             raise StorageError("Cannot create '%s'" % self.dbfile, 
                                'Check that you have `write` access')
-        LOGGER.debug("Opened '%s' for read/write" % self.dbfile)
+        LOGGER.debug("Opened '%s' for read/write", self.dbfile)
 
     def __enter__(self):
-        """
-        Initiates the database transaction
-        """
+        """Initiates the database transaction."""
+        # Use protected methods to duplicate database in memory rather than on disk.
+        # pylint: disable=protected-access
         if self._transaction_count == 0:
-            self._db_copy = self.db._read()
+            self._db_copy = self.database._read()
         self._transaction_count += 1
         return self
 
-    def __exit__(self, type, value, traceback):
-        """
-        Finalizes the database transaction
-        """
+    def __exit__(self, ex_type, value, traceback):
+        """Finalizes the database transaction."""
+        # Use protected methods to duplicate database in memory rather than on disk.
+        # pylint: disable=protected-access
         self._transaction_count -= 1
-        if type and self._transaction_count == 0:
-            self.db._write(self._db_copy)
+        if ex_type and self._transaction_count == 0:
+            self.database._write(self._db_copy)
             self._db_copy = None
 
-    def _getQuery(self, keys, any):
+    @staticmethod
+    def _get_query(keys, match_any):
+        """Returns a query object from a dictionary of keys.
+        
+        Args:
+            keys (dict): data keys to query.
+            match_any (bool): If True then any key may match or if False then all keys must match.
+        
+        Returns:
+            Query: The query object. 
         """
-        Returns a query object from a dictionary of keys
-        """
-        operator = 'or' if any else 'and'
-
-        def _and(lhs, rhs): return (lhs & rhs)
-
-        def _or(lhs, rhs): return (lhs | rhs)
-        join = {'and': _and, 'or': _or}[operator]
-        iter = keys.iteritems()
-        key, val = iter.next()
+        def _and(lhs, rhs): 
+            return lhs & rhs
+        def _or(lhs, rhs): 
+            return lhs | rhs
+        join = _or if match_any else _and
+        itr = keys.iteritems()
+        key, val = itr.next()
         query = (where(key) == val)
-        for key, value in iter:
+        for key, value in itr:
             query = join(query, (where(key) == value))
         return query
 
-    def get(self, table_name, keys=None, any=False, eid=None):
+    def get(self, table_name, keys=None, match_any=False, eid=None):
+        """Find a record.
+        
+        Either `keys` or `eid` should be specified, not both.  If `keys` is given,
+        then every attribute listed in `keys` must have the given value. If `eid`
+        is given, return the record with that eid.  If neither is given, return None.
+        
+        Args:
+            table_name (str): Name of the table to search.
+            keys (dict): Fields to match.
+            eid (:py:class:`list`): Record identifier to match.
+            match_any (bool): If True then any key may match or if False then all keys must match.
+
+        Returns:
+            dict: Matching data record or None if no such record exists.
         """
-        Return the record with the specified keys or element id
-        """
-        table = self.db.table(table_name)
+        table = self.database.table(table_name)
         if eid is not None:
-            LOGGER.debug("%r: get(eid=%r)" % (table_name, eid))
+            LOGGER.debug("%r: get(eid=%r)", table_name, eid)
             return table.get(eid=eid)
         elif keys is not None:
-            LOGGER.debug("%r: get(keys=%r)" % (table_name, keys))
-            return table.get(self._getQuery(keys, any))
+            LOGGER.debug("%r: get(keys=%r)", table_name, keys)
+            return table.get(self._get_query(keys, match_any))
         else:
             return None
 
-    def search(self, table_name, keys=None, any=False):
+    def search(self, table_name, keys=None, match_any=False):
+        """Find multiple records.
+        
+        If `keys` is not specified then return all records.
+        
+        Args:
+            table_name (str): Name of the table to search.
+            keys (dict): Fields to match.
+            match_any (bool): If True then any key may match or if False then all keys must match.
+
+        Returns:
+            :py:class:`list`: Matching data records.
         """
-        Return a list of records from the specified table that 
-        match any one of the provided keys
-        """
-        table = self.db.table(table_name)
+        table = self.database.table(table_name)
         if keys:
-            LOGGER.debug("%r: search(keys=%r)" % (table_name, keys))
-            return table.search(self._getQuery(keys, any))
+            LOGGER.debug("%r: search(keys=%r)", table_name, keys)
+            return table.search(self._get_query(keys, match_any))
         else:
-            LOGGER.debug("%r: all()" % table_name)
+            LOGGER.debug("%r: all()", table_name)
             return table.all()
 
     def match(self, table_name, field, regex=None, test=None):
+        """Find records where 'field' matches 'regex'.
+        
+        Either `regex` or `test` may be specified, not both.  If `regex` is given,
+        then all records with `field` matching the regular expression are returned.
+        If test is given then all records with `field` set to a value that caues
+        `test` to return True are returned. If neither is given, return all records. 
+        
+        Args:
+            table_name (str): Name of the table to search.
+            field (string): Name of the data field to match.
+            regex (string): Regular expression string.
+            test: A callable expression returning a boolean value.  
+            
+        Returns:
+            :py:class:`list`: Matching data records.
         """
-        Return a list of records where 'field' matches 'regex'
-        """
-        table = self.db.table(table_name)
+        table = self.database.table(table_name)
         if test is not None:
-            LOGGER.debug('%r: search(where(%r).test(%r))' %
-                         (table_name, field, test))
+            LOGGER.debug('%r: search(where(%r).test(%r))', table_name, field, test)
             return table.search(where(field).test(test))
         elif regex is not None:
-            LOGGER.debug('%r: search(where(%r).matches(%r))' %
-                         (table_name, field, regex))
+            LOGGER.debug('%r: search(where(%r).matches(%r))', table_name, field, regex)
             return table.search(where(field).matches(regex))
         else:
-            LOGGER.debug("%r: search(where(%r).matches('.*'))" %
-                         (table_name, field))
+            LOGGER.debug("%r: search(where(%r).matches('.*'))", table_name, field)
             return table.search(where(field).matches('.*'))
 
-    def contains(self, table_name, keys=None, any=False, eids=None):
+    def contains(self, table_name, keys=None, match_any=False, eids=None):
+        """Check if the specified table contains at least one matching record.
+        
+        Just like :any:`Storage.search`, except only tests if the record exists without retrieving any data.
+        
+        Args:
+            table_name (str): Name of the table to search.
+            keys (dict): Attributes to match.
+            match_any (bool): If True then any key may match or if False then all keys must match.
+            eids (:py:class:`list`): Record identifiers to match.
+            
+        Returns:
+            bool: True if a record exists, False otherwise.          
         """
-        Return True if the specified table contains at least one 
-        record that matches the provided keys or element IDs
-        """
-        table = self.db.table(table_name)
+
+        table = self.database.table(table_name)
         if eids is not None:
-            LOGGER.debug("%r: contains(eids=%r)" % (table_name, eids))
+            LOGGER.debug("%r: contains(eids=%r)", table_name, eids)
             if isinstance(eids, list):
                 return table.contains(eids=eids)
             else:
                 return table.contains(eids=[eids])
         elif keys:
-            LOGGER.debug("%r: contains(keys=%r)" % (table_name, keys))
-            return table.contains(self._getQuery(keys, any))
+            LOGGER.debug("%r: contains(keys=%r)", table_name, keys)
+            return table.contains(self._get_query(keys, match_any))
         else:
             return False
 
     def insert(self, table_name, fields):
+        """Create a new record.
+        
+        Args:
+            table_name (str): Name of the table to operate on.
+            fields (dict): Data to record.
+            
+        Returns:
+            int: The new record's identifier.                 
         """
-        Create a new record in the specified table
-        """
-        LOGGER.debug("%r: Inserting %r" % (table_name, fields))
-        return self.db.table(table_name).insert(fields)
+        LOGGER.debug("%r: Inserting %r", table_name, fields)
+        return self.database.table(table_name).insert(fields)
 
-    def update(self, table_name, fields, keys=None, any=False, eids=None):
+    def update(self, table_name, fields, keys=None, match_any=False, eids=None):
+        """Update existing records.
+        
+        Args:
+            table_name (str): Name of the table to operate on.
+            fields (dict): Data to record.
+            keys (dict): Attributes to match.
+            match_any (bool): If True then any key may match or if False then all keys must match.
+            eids (:py:class:`list`): Record identifiers to match.
         """
-        Updates the record that matches keys to contain values from fields
-        """
-        table = self.db.table(table_name)
+        table = self.database.table(table_name)
         if eids is not None:
-            LOGGER.debug("%r: update(%r, eids=%r)" %
-                         (table_name, fields, eids))
+            LOGGER.debug("%s: update(%r, eids=%r)", table_name, fields, eids)
             if isinstance(eids, list):
-                return table.update(fields, eids=eids)
+                table.update(fields, eids=eids)
             else:
-                return table.update(fields, eids=[eids])
+                table.update(fields, eids=[eids])
         else:
-            LOGGER.debug("%r: update(%r, keys=%r)" %
-                         (table_name, fields, keys))
-            return table.update(fields, self._getQuery(keys, any))
+            LOGGER.debug("%s: update(%r, keys=%r)", table_name, fields, keys)
+            table.update(fields, self._get_query(keys, match_any))
 
-    def remove(self, table_name, keys=None, any=False, eids=None):
+    def remove(self, table_name, keys=None, match_any=False, eids=None):
+        """Delete records.
+        
+        Args:
+            table_name (str): Name of the table to operate on.
+            keys (dict): Attributes to match.
+            match_any (bool): If True then any key may match or if False then all keys must match.
+            eids (:py:class:`list`): Record identifiers to match.
         """
-        Remove all records that match keys or eids from table_name 
-        """
-        table = self.db.table(table_name)
+        table = self.database.table(table_name)
         if eids is not None:
-            LOGGER.debug("%r: remove(eids=%r)" % (table_name, eids))
+            LOGGER.debug("%s: remove(eids=%r)", table_name, eids)
             if isinstance(eids, list):
                 return table.remove(eids=eids)
             else:
                 return table.remove(eids=[eids])
         else:
-            LOGGER.debug("%r: remove(keys=%r)" % (table_name, keys))
-            return table.remove(self._getQuery(keys, any))
+            LOGGER.debug("%s: remove(keys=%r)", table_name, keys)
+            return table.remove(self._get_query(keys, match_any))
 
     def purge(self, table_name):
+        """Delete all records.
+
+        Args:
+            table_name (str): Name of the table to operate on.
         """
-        Removes all records from the table_name
-        """
-        LOGGER.debug("%r: purge()" % (table_name))
-        return self.db.table(table_name).purge()
+        LOGGER.debug("%s: purge()", table_name)
+        return self.database.table(table_name).purge()
 
 
-user_storage = Storage(USER_PREFIX, 'local.json')
-system_storage = Storage(SYSTEM_PREFIX, 'local.json')
+USER_STORAGE = Storage(USER_PREFIX)
+"""Storage: User-level project data storage."""
+
+SYSTEM_STORAGE = Storage(SYSTEM_PREFIX)
+"""Storage: System-level project data storage."""
