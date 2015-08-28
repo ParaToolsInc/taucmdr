@@ -19,7 +19,7 @@ SOURCE_DIR = $(HERE)/source/
 STATIC_DIR = $(SOURCE_DIR)/_static/
 
 CONF_FILES = conf.py
-REST_FILES = index.rst design.rst
+REST_FILES = index.rst design.rst style.rst
 IMAGE_FILES = favicon.ico taulogo-large.png
 
 
