@@ -1,13 +1,4 @@
-#"""
-#@file
-#@author John C. Linford (jlinford@paratools.com)
-#@version 1.0
-#
-#@brief
-#
-# This file is part of TAU Commander
-#
-#@section COPYRIGHT
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -33,7 +24,8 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#"""
+#
+"""``tau project edit`` subcommand."""
 
 from tau import logger, cli
 from tau.cli import arguments
@@ -49,88 +41,90 @@ COMMAND = cli.get_command(__name__)
 
 SHORT_DESCRIPTION = "Modify a project configuration."
 
-USAGE = """
-  %(command)s <project_name> [arguments]
-""" % {'command': COMMAND}
-
 HELP = """
 '%(command)s' page to be written.
 """ % {'command': COMMAND}
 
-_arguments = [(('--rename',),
-               {'help': "Rename the project configuration",
-                'metavar': '<new_name>',
-                'dest': 'new_name',
-                'default': arguments.SUPPRESS}),
-              (('--add',),
-               {'help': "Add target, application, or measurement configurations to the project",
-                'metavar': '<conf>',
-                'nargs': '+',
-                'default': arguments.SUPPRESS}),
-              (('--remove',),
-               {'help': "Remove target, application, or measurement configurations from the project",
-                'metavar': '<conf>',
-                'nargs': '+',
-                'default': arguments.SUPPRESS}),
-              (('--add-targets',),
-               {'help': "Add target configurations to the project",
-                'metavar': '<target>',
-                'nargs': '+',
-                'default': arguments.SUPPRESS}),
-              (('--add-applications',),
-               {'help': "Add application configurations to the project",
-                'metavar': '<application>',
-                'nargs': '+',
-                'default': arguments.SUPPRESS}),
-              (('--add-measurements',),
-               {'help': "Add measurement configurations to the project",
-                'metavar': '<measurement>',
-                'nargs': '+',
-                'default': arguments.SUPPRESS}),
-              (('--remove-targets',),
-               {'help': "Remove target configurations from the project",
-                'metavar': '<target>',
-                'nargs': '+',
-                'default': arguments.SUPPRESS}),
-              (('--remove-applications',),
-               {'help': "Remove application configurations from the project",
-                'metavar': '<application>',
-                'nargs': '+',
-                'default': arguments.SUPPRESS}),
-              (('--remove-measurements',),
-               {'help': "Remove measurement configurations from the project",
-                'metavar': '<measurement>',
-                'nargs': '+',
-                'default': arguments.SUPPRESS})]
 
-PARSER = arguments.get_parser_from_model(Project,
-                                      prog=COMMAND,
-                                      usage=USAGE,
-                                      description=SHORT_DESCRIPTION)
-for arg in _arguments:
-    flags, options = arg
-    PARSER.add_argument(*flags, **options)
-
-
-def get_usage():
-    return PARSER.format_help()
-
-
-def get_help():
-    return HELP
+def parser():
+    """Construct a command line argument parser.
+    
+    Constructing the parser may cause a lot of imports as :py:mod:`tau.cli` is explored.
+    To avoid possible circular imports we defer parser creation until afer all
+    modules are imported, hence this function.  The parser instance is maintained as
+    an attribute of the function, making it something like a C++ function static variable.
+    """
+    if not hasattr(parser, 'inst'):
+        usage_head = "%s <project_name> [arguments]" % COMMAND
+        parser.inst = arguments.get_parser_from_model(Project,
+                                                      prog=COMMAND,
+                                                      usage=usage_head,
+                                                      description=SHORT_DESCRIPTION)
+        parser.inst.add_argument('--rename',
+                                 help="Rename the project configuration",
+                                 metavar='<new_name>',
+                                 dest='new_name',
+                                 default=arguments.SUPPRESS)
+        parser.inst.add_argument('--add',
+                                 help="Add target, application, or measurement configurations to the project",
+                                 metavar='<conf>',
+                                 nargs='+',
+                                 default=arguments.SUPPRESS)
+        parser.inst.add_argument('--remove',
+                                 help="Remove target, application, or measurement configurations from the project",
+                                 metavar='<conf>',
+                                 nargs='+',
+                                 default=arguments.SUPPRESS)
+        parser.inst.add_argument('--add-targets',
+                                 help="Add target configurations to the project",
+                                 metavar='<target>',
+                                 nargs='+',
+                                 default=arguments.SUPPRESS)
+        parser.inst.add_argument('--add-applications',
+                                 help="Add application configurations to the project",
+                                 metavar='<application>',
+                                 nargs='+',
+                                 default=arguments.SUPPRESS)
+        parser.inst.add_argument('--add-measurements',
+                                 help="Add measurement configurations to the project",
+                                 metavar='<measurement>',
+                                 nargs='+',
+                                 default=arguments.SUPPRESS)
+        parser.inst.add_argument('--remove-targets',
+                                 help="Remove target configurations from the project",
+                                 metavar='<target>',
+                                 nargs='+',
+                                 default=arguments.SUPPRESS)
+        parser.inst.add_argument('--remove-applications',
+                                 help="Remove application configurations from the project",
+                                 metavar='<application>',
+                                 nargs='+',
+                                 default=arguments.SUPPRESS)
+        parser.inst.add_argument('--remove-measurements',
+                                 help="Remove measurement configurations from the project",
+                                 metavar='<measurement>',
+                                 nargs='+',
+                                 default=arguments.SUPPRESS)
+    return parser.inst
 
 
 def main(argv):
+    """Subcommand program entry point.
+    
+    Args:
+        argv (:py:class:`list`): Command line arguments.
+        
+    Returns:
+        int: Process return code: non-zero if a problem occurred, 0 otherwise
     """
-    Program entry point
-    """
-    args = PARSER.parse_args(args=argv)
-    LOGGER.debug('Arguments: %s' % args)
+    argparser = parser()
+    args = argparser.parse_args(args=argv)
+    LOGGER.debug('Arguments: %s', args)
 
     project_name = args.name
     project = Project.with_name(project_name)
     if not project:
-        PARSER.error("'%s' is not a project name. Type `tau project list` to see valid names." % project_name)
+        argparser.error("'%s' is not a project name. Type `%s` to see valid names." % (project_name, COMMAND))
 
     updates = dict(project.data)
     try:
@@ -149,27 +143,25 @@ def main(argv):
         for name in names:
             found = model.with_name(name)
             if not found:
-                PARSER.error('There is no %s named %r' %
-                             (model.model_name, name))
+                argparser.error("There is no %s named '%s'" % (model.model_name, name))
             dest.add(found.eid)
 
     for name in set(getattr(args, "add", [])):
-        t = Target.with_name(name)
-        a = Application.with_name(name)
-        m = Measurement.with_name(name)
-        tam = set([t, a, m]) - set([None])
+        tar = Target.with_name(name)
+        app = Application.with_name(name)
+        mes = Measurement.with_name(name)
+        tam = set([tar, app, mes]) - set([None])
         if len(tam) > 1:
-            PARSER.error('%r is ambiguous, please use --add-targets, --add-applications,'
-                         ' or --add-measurements to specify configuration type' % name)
+            argparser.error("'%s' is ambiguous. Use --add-targets, --add-applications,"
+                            " or --add-measurements to specify configuration type" % name)
         elif len(tam) == 0:
-            PARSER.error(
-                '%r is not a target, application, or measurement' % name)
-        elif t:
-            targets.add(t.eid)
-        elif a:
-            applications.add(a.eid)
-        elif m:
-            measurements.add(m.eid)
+            argparser.error("'%s' is not a target, application, or measurement" % name)
+        elif tar:
+            targets.add(tar.eid)
+        elif app:
+            applications.add(app.eid)
+        elif mes:
+            measurements.add(mes.eid)
 
     for attr, model, dest in [('remove_targets', Target, targets),
                               ('remove_applications',
@@ -179,32 +171,29 @@ def main(argv):
         for name in names:
             found = model.with_name(name)
             if not found:
-                PARSER.error('There is no %s named %r' %
-                             (model.model_name, name))
+                argparser.error('There is no %s named %r' % (model.model_name, name))
             dest.remove(found.eid)
 
     for name in set(getattr(args, "remove", [])):
-        t = Target.with_name(name)
-        a = Application.with_name(name)
-        m = Measurement.with_name(name)
-        tam = set([t, a, m]) - set([None])
+        tar = Target.with_name(name)
+        app = Application.with_name(name)
+        mes = Measurement.with_name(name)
+        tam = set([tar, app, mes]) - set([None])
         if len(tam) > 1:
-            PARSER.error('%r is ambiguous, please use --remove-targets, --remove-applications,'
-                         ' or --remove-measurements to specify configuration type' % name)
+            argparser.error("'%s' is ambiguous. Use --remove-targets, --remove-applications,"
+                            " or --remove-measurements to specify configuration type" % name)
         elif len(tam) == 0:
-            PARSER.error(
-                '%r is not a target, application, or measurement' % name)
-        elif t:
-            targets.remove(t.eid)
-        elif a:
-            applications.remove(a.eid)
-        elif m:
-            measurements.remove(m.eid)
+            argparser.error("'%s' is not a target, application, or measurement" % name)
+        elif tar:
+            targets.remove(tar.eid)
+        elif app:
+            applications.remove(app.eid)
+        elif mes:
+            measurements.remove(mes.eid)
 
     updates['targets'] = list(targets)
     updates['applications'] = list(applications)
     updates['measurements'] = list(measurements)
 
     Project.update(updates, {'name': project_name})
-
     return cli.execute_command(['project', 'list'], [updates['name']])

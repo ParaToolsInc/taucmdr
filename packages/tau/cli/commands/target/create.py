@@ -1,13 +1,4 @@
-#"""
-#@file
-#@author John C. Linford (jlinford@paratools.com)
-#@version 1.0
-#
-#@brief
-#
-# This file is part of TAU Commander
-#
-#@section COPYRIGHT
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -33,7 +24,8 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#"""
+#
+"""``tau target create`` subcommand."""
 
 from tau import logger, cli
 from tau.cli import arguments
@@ -53,40 +45,40 @@ COMMAND = cli.get_command(__name__)
 
 SHORT_DESCRIPTION = "Create a new target configuration."
 
-USAGE = """
-  %(command)s <target_name> [arguments]
-""" % {'command': COMMAND}
-
 HELP = """
 '%(command)s' page to be written.
 """ % {'command': COMMAND}
 
-PARSER = arguments.get_parser_from_model(Target,
-                                      prog=COMMAND,
-                                      usage=USAGE,
-                                      description=SHORT_DESCRIPTION)
-group = PARSER.get_group('compiler arguments')
-group.add_argument('--host-compilers',
-                   help="select all host compilers automatically from the given family",
-                   metavar='<family>',
-                   dest='host_family',
-                   default=host.preferred_compilers().name,
-                   choices=CompilerFamily.family_names())
-group = PARSER.get_group('Message Passing Interface (MPI) arguments')
-group.add_argument('--mpi-compilers', 
-                   help="select all MPI compilers automatically from the given family",
-                   metavar='<family>',
-                   dest='mpi_family',
-                   default=host.preferred_mpi_compilers().name,
-                   choices=MpiCompilerFamily.family_names())
 
-
-def get_usage():
-    return PARSER.format_help()
-
-
-def get_help():
-    return HELP
+def parser():
+    """Construct a command line argument parser.
+    
+    Constructing the parser may cause a lot of imports as :py:mod:`tau.cli` is explored.
+    To avoid possible circular imports we defer parser creation until afer all
+    modules are imported, hence this function.  The parser instance is maintained as
+    an attribute of the function, making it something like a C++ function static variable.
+    """
+    if not hasattr(parser, 'inst'):
+        usage_head = "%s <target_name> [arguments]" % COMMAND      
+        parser.inst = arguments.get_parser_from_model(Target,
+                                                      prog=COMMAND,
+                                                      usage=usage_head,
+                                                      description=SHORT_DESCRIPTION)
+        group = parser.inst.get_group('compiler arguments')
+        group.add_argument('--host-compilers',
+                           help="select all host compilers automatically from the given family",
+                           metavar='<family>',
+                           dest='host_family',
+                           default=host.preferred_compilers().name,
+                           choices=CompilerFamily.family_names())
+        group = parser.inst.get_group('Message Passing Interface (MPI) arguments')
+        group.add_argument('--mpi-compilers', 
+                           help="select all MPI compilers automatically from the given family",
+                           metavar='<family>',
+                           dest='mpi_family',
+                           default=host.preferred_mpi_compilers().name,
+                           choices=MpiCompilerFamily.family_names())
+    return parser.inst
 
 
 def parse_compiler_flags(args):
@@ -113,17 +105,17 @@ def parse_compiler_flags(args):
         try:
             family_comps = InstalledCompilerFamily(family_cls(family_arg))
         except KeyError:
-            PARSER.error("Invalid host compiler family: %s" % family_arg)
+            parser().error("Invalid compiler family: %s" % family_arg)
         for comp in family_comps:
-            LOGGER.debug("args.%s=%r" % (comp.info.role.keyword, comp.absolute_path))
+            LOGGER.debug("args.%s=%r", comp.info.role.keyword, comp.absolute_path)
             setattr(args, comp.info.role.keyword, comp.absolute_path)
  
     compiler_keys = set(CompilerRole.keys())
     all_keys = set(args.__dict__.keys())
     given_keys = compiler_keys & all_keys
     missing_keys = compiler_keys - given_keys
-    LOGGER.debug("Given compilers: %s" % given_keys)
-    LOGGER.debug("Missing compilers: %s" % missing_keys)
+    LOGGER.debug("Given compilers: %s", given_keys)
+    LOGGER.debug("Missing compilers: %s", missing_keys)
      
     compilers = dict([(key, InstalledCompiler(getattr(args, key))) for key in given_keys])
     for key in missing_keys:
@@ -148,7 +140,7 @@ def parse_compiler_flags(args):
                 try:
                     comp = compilers[role.keyword]
                 except KeyError:
-                    LOGGER.debug("Not probing %s: not found" % role)
+                    LOGGER.debug("Not probing %s: not found", role)
                 else:
                     probed.update(getattr(comp.wrapped, wrapped_attr))
             setattr(args, args_attr, list(probed))
@@ -157,24 +149,30 @@ def parse_compiler_flags(args):
 
 
 def main(argv):
+    """Subcommand program entry point.
+    
+    Args:
+        argv (:py:class:`list`): Command line arguments.
+        
+    Returns:
+        int: Process return code: non-zero if a problem occurred, 0 otherwise
     """
-    Program entry point
-    """
-    args = PARSER.parse_args(args=argv)
-    LOGGER.debug('Arguments: %s' % args)
+    args = parser().parse_args(args=argv)
+    LOGGER.debug('Arguments: %s', args)
     
     compilers = parse_compiler_flags(args)
-    LOGGER.debug('Arguments after parsing compiler flags: %s' % args)
+    LOGGER.debug('Arguments after parsing compiler flags: %s', args)
     fields = dict(args.__dict__)
 
     for keyword, comp in compilers.iteritems():
-        LOGGER.debug("%s=%s (%s)" % (keyword, comp.absolute_path, comp.info.short_descr))
+        LOGGER.debug("%s=%s (%s)", keyword, comp.absolute_path, comp.info.short_descr)
         record = Compiler.register(comp)
         fields[comp.info.role.keyword] = record.eid
 
     try:
         Target.create(fields)
     except UniqueAttributeError:
-        PARSER.error('A target named %r already exists' % args.name)
-    LOGGER.info('Created a new target named %r.' % args.name)
+        parser().error("A target named '%s' already exists" % args.name)
+
+    LOGGER.info("Created a new target named '%r'.", args.name)
     return cli.execute_command(['target', 'list'], [args.name])

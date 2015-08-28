@@ -1,13 +1,4 @@
-#"""
-#@file
-#@author John C. Linford (jlinford@paratools.com)
-#@version 1.0
-#
-#@brief
-#
-# This file is part of TAU Commander
-#
-#@section COPYRIGHT
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -33,7 +24,9 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#"""
+#
+"""``tau measurement delete`` subcommand."""
+
 
 from tau import logger, cli
 from tau.cli import arguments
@@ -46,42 +39,46 @@ COMMAND = cli.get_command(__name__)
 
 SHORT_DESCRIPTION = "Delete measurement configurations."
 
-USAGE = """
-  %(command)s <measurement_name> [arguments]
-""" % {'command': COMMAND}
-
 HELP = """
 '%(command)s' page to be written.
 """ % {'command': COMMAND}
 
-PARSER = arguments.get_parser(prog=COMMAND,
-                              usage=USAGE,
-                              description=SHORT_DESCRIPTION)
-PARSER.add_argument('name', 
-                    help="Name of measurement configuration to delete",
-                    metavar='<measurement_name>')
 
-
-def get_usage():
-    return PARSER.format_help()
-
-
-def get_help():
-    return HELP
+def parser():
+    """Construct a command line argument parser.
+    
+    Constructing the parser may cause a lot of imports as :py:mod:`tau.cli` is explored.
+    To avoid possible circular imports we defer parser creation until afer all
+    modules are imported, hence this function.  The parser instance is maintained as
+    an attribute of the function, making it something like a C++ function static variable.
+    """
+    if not hasattr(parser, 'inst'):
+        usage_head = "%s <measurement_name> [arguments]" % COMMAND
+        parser.inst = arguments.get_parser(prog=COMMAND,
+                                           usage=usage_head,
+                                           description=SHORT_DESCRIPTION)
+        parser.inst.add_argument('name', 
+                                 help="Name of measurement configuration to delete",
+                                 metavar='<measurement_name>')
+    return parser.inst
 
 
 def main(argv):
+    """Subcommand program entry point.
+    
+    Args:
+        argv (:py:class:`list`): Command line arguments.
+        
+    Returns:
+        int: Process return code: non-zero if a problem occurred, 0 otherwise
     """
-    Program entry point
-    """
-    args = PARSER.parse_args(args=argv)
-    LOGGER.debug('Arguments: %s' % args)
+    args = parser().parse_args(args=argv)
+    LOGGER.debug('Arguments: %s', args)
 
     name = args.name
     if not Measurement.exists({'name': name}):
-        PARSER.error(
-            "'%s' is not a measurement name. Type `tau measurement list` to see valid names." % name)
+        parser().error("'%s' is not a measurement name. Type `tau measurement list` to see valid names." % name)
     Measurement.delete({'name': name})
-    LOGGER.info('Deleted measurement %r' % name)
+    LOGGER.info("Deleted measurement '%s'", name)
 
     return cli.execute_command(['measurement', 'list'], [])

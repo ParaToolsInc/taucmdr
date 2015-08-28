@@ -1,13 +1,4 @@
-#"""
-#@file
-#@author John C. Linford (jlinford@paratools.com)
-#@version 1.0
-#
-#@brief
-#
-# This file is part of TAU Commander
-#
-#@section COPYRIGHT
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -33,7 +24,8 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#"""
+#
+"""``tau measurement edit`` subcommand."""
 
 from tau import logger, cli
 from tau.cli import arguments
@@ -46,46 +38,50 @@ COMMAND = cli.get_command(__name__)
 
 SHORT_DESCRIPTION = "Modify a measurement configuration."
 
-USAGE = """
-  %(command)s <measurement_name> [arguments]
-""" % {'command': COMMAND}
-
 HELP = """
 '%(command)s' page to be written.
 """ % {'command': COMMAND}
 
-PARSER = arguments.get_parser_from_model(Measurement,
-                                      use_defaults=False,
-                                      prog=COMMAND,
-                                      usage=USAGE,
-                                      description=SHORT_DESCRIPTION)
-PARSER.add_argument('--rename',
-                    help="Rename the measurement configuration",
-                    metavar='<new_name>', dest='new_name',
-                    default=arguments.SUPPRESS)
 
-
-def get_usage():
-    return PARSER.format_help()
-
-
-def get_help():
-    return HELP
+def parser():
+    """Construct a command line argument parser.
+    
+    Constructing the parser may cause a lot of imports as :py:mod:`tau.cli` is explored.
+    To avoid possible circular imports we defer parser creation until afer all
+    modules are imported, hence this function.  The parser instance is maintained as
+    an attribute of the function, making it something like a C++ function static variable.
+    """
+    if not hasattr(parser, 'inst'):
+        usage_head = "%s <measurement_name> [arguments]" % COMMAND
+        parser.inst = arguments.get_parser_from_model(Measurement,
+                                                      use_defaults=False,
+                                                      prog=COMMAND,
+                                                      usage=usage_head,
+                                                      description=SHORT_DESCRIPTION)
+        parser.inst.add_argument('--rename',
+                                 help="Rename the measurement configuration",
+                                 metavar='<new_name>', dest='new_name',
+                                 default=arguments.SUPPRESS)
+    return parser.inst
 
 
 def main(argv):
+    """Subcommand program entry point.
+    
+    Args:
+        argv (:py:class:`list`): Command line arguments.
+        
+    Returns:
+        int: Process return code: non-zero if a problem occurred, 0 otherwise
     """
-    Program entry point
-    """
-    args = PARSER.parse_args(args=argv)
-    LOGGER.debug('Arguments: %s' % args)
+    args = parser().parse_args(args=argv)
+    LOGGER.debug('Arguments: %s', args)
 
     name = args.name
     if not Measurement.exists({'name': name}):
-        PARSER.error(
-            "'%s' is not an measurement name. Type `tau measurement list` to see valid names." % name)
+        parser().error("'%s' is not a measurement name. Type `%s` to see valid names." % (name, COMMAND))
 
-    updates = args.__dict__
+    updates = dict(args.__dict__)
     try:
         new_name = args.new_name
     except AttributeError:
@@ -95,5 +91,4 @@ def main(argv):
         del updates['new_name']
 
     Measurement.update(updates, {'name': name})
-
     return cli.execute_command(['measurement', 'list'], [args.name])

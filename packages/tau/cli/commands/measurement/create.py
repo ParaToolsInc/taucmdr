@@ -1,13 +1,4 @@
-#"""
-#@file
-#@author John C. Linford (jlinford@paratools.com)
-#@version 1.0
-#
-#@brief
-#
-# This file is part of TAU Commander
-#
-#@section COPYRIGHT
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -33,7 +24,9 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#"""
+#
+"""``tau measurement create`` subcommand."""
+
 
 from tau import logger, cli
 from tau.cli import arguments
@@ -47,39 +40,44 @@ COMMAND = cli.get_command(__name__)
 
 SHORT_DESCRIPTION = "Create a new measurement configuration."
 
-USAGE = """
-  %(command)s <measurement_name> [arguments]
-""" % {'command': COMMAND}
-
 HELP = """
 '%(command)s' page to be written.
 """ % {'command': COMMAND}
 
-PARSER = arguments.get_parser_from_model(Measurement,
-                                      prog=COMMAND,
-                                      usage=USAGE,
-                                      description=SHORT_DESCRIPTION)
 
-
-def get_usage():
-    return PARSER.format_help()
-
-
-def get_help():
-    return HELP
+def parser():
+    """Construct a command line argument parser.
+    
+    Constructing the parser may cause a lot of imports as :py:mod:`tau.cli` is explored.
+    To avoid possible circular imports we defer parser creation until afer all
+    modules are imported, hence this function.  The parser instance is maintained as
+    an attribute of the function, making it something like a C++ function static variable.
+    """
+    if not hasattr(parser, 'inst'):
+        usage_head = "%s <measurement_name> [arguments]" % COMMAND
+        parser.inst = arguments.get_parser_from_model(Measurement,
+                                                      prog=COMMAND,
+                                                      usage=usage_head,
+                                                      description=SHORT_DESCRIPTION)
+    return parser.inst
 
 
 def main(argv):
+    """Subcommand program entry point.
+    
+    Args:
+        argv (:py:class:`list`): Command line arguments.
+        
+    Returns:
+        int: Process return code: non-zero if a problem occurred, 0 otherwise
     """
-    Program entry point
-    """
-    args = PARSER.parse_args(args=argv)
-    LOGGER.debug('Arguments: %s' % args)
+    args = parser().parse_args(args=argv)
+    LOGGER.debug('Arguments: %s', args)
 
     try:
         Measurement.create(args.__dict__)
     except UniqueAttributeError:
-        PARSER.error('A measurement named %r already exists' % args.name)
+        parser().error('A measurement named %r already exists' % args.name)
 
-    LOGGER.info('Created a new measurement named %r.' % args.name)
+    LOGGER.info('Created a new measurement named %r.', args.name)
     return cli.execute_command(['measurement', 'list'], [args.name])

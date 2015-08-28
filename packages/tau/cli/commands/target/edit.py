@@ -1,13 +1,4 @@
-#"""
-#@file
-#@author John C. Linford (jlinford@paratools.com)
-#@version 1.0
-#
-#@brief
-#
-# This file is part of TAU Commander
-#
-#@section COPYRIGHT
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -33,13 +24,16 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#"""
+#
+"""``tau target edit`` subcommand."""
 
 from tau import logger, cli
 from tau.cli import arguments
-from tau.error import ConfigurationError
 from tau.model.target import Target
-from tau.cf.compiler import CompilerFamily
+from tau.model.compiler import Compiler
+from tau.cf.compiler import CompilerFamily, CompilerRole
+from tau.cf.compiler.installed import InstalledCompiler, InstalledCompilerFamily
+from tau.cf.compiler.mpi import MpiCompilerFamily
 
 
 LOGGER = logger.get_logger(__name__)
@@ -48,123 +42,116 @@ COMMAND = cli.get_command(__name__)
 
 SHORT_DESCRIPTION = "Modify an existing target configuration."
 
-USAGE = """
-  %(command)s <target_name> [arguments]
-""" % {'command': COMMAND}
-
 HELP = """
 '%(command)s' page to be written.
 """ % {'command': COMMAND}
 
-PARSER = arguments.get_parser_from_model(Target,
-                                      use_defaults=False,
-                                      prog=COMMAND,
-                                      usage=USAGE,
-                                      description=SHORT_DESCRIPTION)
-PARSER.add_argument('--rename',
-                    help="Rename the target configuration",
-                    metavar='<new_name>', dest='new_name',
-                    default=arguments.SUPPRESS)
-group = PARSER.get_group('compiler arguments')
-group.add_argument('--compilers',
-                   help="Select all compilers automatically from the given family",
-                   metavar='<family>',
-                   dest='family',
-                   default=arguments.SUPPRESS,
-                   choices=sorted(CompilerFamily.all()))
 
-
-def get_usage():
-    return PARSER.format_help()
-
-
-def get_help():
-    return HELP
-
-
-def parse_compiler_flags(args, compilers):
-    """Parses compiler flags out of the command line arguments.
+def parser():
+    """Construct a command line argument parser.
     
+    Constructing the parser may cause a lot of imports as :py:mod:`tau.cli` is explored.
+    To avoid possible circular imports we defer parser creation until afer all
+    modules are imported, hence this function.  The parser instance is maintained as
+    an attribute of the function, making it something like a C++ function static variable.
+    """
+    if not hasattr(parser, 'inst'):
+        usage_head = "%s <target_name> [arguments]" % COMMAND
+        parser.inst = arguments.get_parser_from_model(Target,
+                                                      use_defaults=False,
+                                                      prog=COMMAND,
+                                                      usage=usage_head,
+                                                      description=SHORT_DESCRIPTION)
+        parser.inst.add_argument('--rename',
+                                 help="Rename the target configuration",
+                                 metavar='<new_name>', dest='new_name',
+                                 default=arguments.SUPPRESS)
+        group = parser.inst.get_group('compiler arguments')
+        group.add_argument('--host-compilers',
+                           help="select all host compilers automatically from the given family",
+                           metavar='<family>',
+                           dest='host_family',
+                           default=arguments.SUPPRESS,
+                           choices=CompilerFamily.family_names())
+        group = parser.inst.get_group('Message Passing Interface (MPI) arguments')
+        group.add_argument('--mpi-compilers', 
+                           help="select all MPI compilers automatically from the given family",
+                           metavar='<family>',
+                           dest='mpi_family',
+                           default=arguments.SUPPRESS,
+                           choices=MpiCompilerFamily.family_names())
+    return parser.inst
+
+
+def parse_compiler_flags(args):
+    """Parses host compiler flags out of the command line arguments.
+     
     Args:
         args: Argument namespace containing command line arguments
-        old_compilers: Dictionary mapping role keyword strings to InstalledCompiler objects.
-        
+         
     Returns:
-        List of InstalledCompiler objects.
-        
+        Dictionary of installed compilers by role keyword string.
+         
     Raises:
         ConfigurationError: Invalid command line arguments specified
     """
-    try:
-        family = InstalledCompiler.get_family(args.family)
-    except AttributeError:
-        # args.family missing, but that's OK since args.CC etc. are possibly given instead
-        pass
-    else:
-        compilers = {}
-        for comp in family:
-            key = comp.role.keyword
-            if key not in compilers:
-                compilers[key] = comp
-        return compilers.values()
-
-    languages = dict([(role.keyword, role.language) for role in CompilerRole.all()])
-    compiler_keys = set(languages.keys())
+    for family_attr, family_cls in [('host_family', CompilerFamily), ('mpi_family', MpiCompilerFamily)]:
+        try:
+            family_arg = getattr(args, family_attr)
+        except AttributeError as err:
+            # User didn't specify that argument, but that's OK
+            LOGGER.debug(err)
+            continue
+        else:
+            delattr(args, family_attr)
+        try:
+            family_comps = InstalledCompilerFamily(family_cls(family_arg))
+        except KeyError:
+            parser().error("Invalid compiler family: %s" % family_arg)
+        for comp in family_comps:
+            LOGGER.debug("args.%s=%r", comp.info.role.keyword, comp.absolute_path)
+            setattr(args, comp.info.role.keyword, comp.absolute_path)
+ 
+    compiler_keys = set(CompilerRole.keys())
     all_keys = set(args.__dict__.keys())
     given_keys = compiler_keys & all_keys
-    LOGGER.debug("Given keys: %s" % given_keys)
-
-    new_compilers = [InstalledCompiler(getattr(args, key)) for key in given_keys]
-    for comp in new_compilers:
-        compilers[comp.role.keyword] = comp
-
-    # Check that all compilers are from the same compiler family
-    # TODO: This is a TAU requirement.  When this is fixed in TAU we can remove this check
-    families = list(set([comp.family for comp in compilers.itervalues()]))
-    if len(families) != 1:
-        raise ConfigurationError("Compilers from different families specified: %s" % families,
-                                 "TAU requires all compilers to be from the same family")
-
-    # Check that each compiler is in the right role
-    for role, comp in compilers.iteritems():
-        if comp.role.keyword != role:
-            raise ConfigurationError("'%s' specified as %s compiler but it is a %s compiler" %
-                                     (comp.absolute_path, role.language, comp.role.language),
-                                     "See 'compiler arguments' under `%s --help`" % COMMAND)
-    return compilers.values()
+    LOGGER.debug("Given compilers: %s", given_keys)
+     
+    return dict([(key, InstalledCompiler(getattr(args, key))) for key in given_keys])
 
 
 def main(argv):
+    """Subcommand program entry point.
+    
+    Args:
+        argv (:py:class:`list`): Command line arguments.
+        
+    Returns:
+        int: Process return code: non-zero if a problem occurred, 0 otherwise
     """
-    Program entry point
-    """
-    args = PARSER.parse_args(args=argv)
-    LOGGER.debug('Arguments: %s' % args)
+    args = parser().parse_args(args=argv)
+    LOGGER.debug('Arguments: %s', args)
 
     name = args.name
-    found = Target.one(keys={'name': name})
-    if not found:
-        PARSER.error("'%s' is not an target name." % name)
+    if not Target.exists({'name': name}):
+        parser().error("'%s' is not an target name.  Type `%s` to see valid names." % (name, COMMAND))
 
-    updates = dict(args.__dict__)
-    # Target model doesn't define a 'family' attribute
-    try: del updates['family']
-    except KeyError: pass
+    compilers = parse_compiler_flags(args)
+    LOGGER.debug('Arguments after parsing compiler flags: %s', args)
+    fields = dict(args.__dict__)
+
+    for keyword, comp in compilers.iteritems():
+        LOGGER.debug("%s=%s (%s)", keyword, comp.absolute_path, comp.info.short_descr)
+        record = Compiler.register(comp)
+        fields[comp.info.role.keyword] = record.eid
 
     try:
-        name = args.new_name
+        new_name = args.new_name
     except AttributeError:
         pass
     else:
-        updates['name'] = name
-        del updates['new_name']
+        fields['name'] = new_name
+        del fields['new_name']
     
-    old_compilers = dict([(role.keyword, CompilerCommand.one(eid=found[role.keyword]).info())
-                          for role in CompilerRole.required()])
-    compilers = parse_compiler_flags(args, old_compilers)
-    for comp in compilers:
-        record = CompilerCommand.from_info(comp)
-        updates[comp.role.keyword] = record.eid
-
-    Target.update(updates, eids=found.eid)
+    Target.update(fields, {'name': name})
     return cli.execute_command(['target', 'list'], [name])

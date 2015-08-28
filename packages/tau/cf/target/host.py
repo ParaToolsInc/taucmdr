@@ -173,7 +173,7 @@ def preferred_mpi_compilers():
             LOGGER.debug("Prefering IBM MPI compilers")
             _HOST_PREFERRED_MPI_COMPILERS = IBM_MPI_COMPILERS
         else:
-            LOGGER.debug("No preferred compilers for '%s'" % host_tau_arch)
+            LOGGER.debug("No preferred MPI compilers for '%s'" % host_tau_arch)
             _HOST_PREFERRED_MPI_COMPILERS = SYSTEM_MPI_COMPILERS
     return _HOST_PREFERRED_MPI_COMPILERS
 

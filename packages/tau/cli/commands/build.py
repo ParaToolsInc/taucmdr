@@ -49,7 +49,7 @@ HELP = """
 def parser():
     """Construct a command line argument parser.
     
-    Constructing the parser may cause a lot of imports as :any:`tau.cli` is explored.
+    Constructing the parser may cause a lot of imports as :py:mod:`tau.cli` is explored.
     To avoid possible circular imports we defer parser creation until afer all
     modules are imported, hence this function.  The parser instance is maintained as
     an attribute of the function, making it something like a C++ function static variable.

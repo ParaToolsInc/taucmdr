@@ -32,7 +32,7 @@ subcommands, much like `git`_.  For example, the command line
 ``tau project create my_new_project`` invokes the `create` subcommand of the
 `project` subcommand with the arguments `my_new_project`. 
 
-Every package in :any:`tau.cli.commands` is a TAU Commander subcommand. Modules
+Every package in :py:mod:`tau.cli.commands` is a TAU Commander subcommand. Modules
 in the package are that subcommand's subcommands.  This can be nested as deep as
 you like.  Subcommand modules must set the following module attributes:
 

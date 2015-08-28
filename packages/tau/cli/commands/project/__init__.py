@@ -1,13 +1,4 @@
-#"""
-#@file
-#@author John C. Linford (jlinford@paratools.com)
-#@version 1.0
-#
-#@brief
-#
-# This file is part of TAU Commander
-#
-#@section COPYRIGHT
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -33,7 +24,9 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#"""
+#
+"""``tau project`` subcommand."""
+
 
 from tau import logger, cli
 from tau.cli import arguments
@@ -47,49 +40,51 @@ SHORT_DESCRIPTION = "Create and manage project configurations."
 
 GROUP = "configuration"
 
-USAGE = """
-  %(command)s <subcommand> [arguments]
-""" % {'command': COMMAND}
-
 HELP = """
 '%(command)s' page to be written.
 """ % {'command': COMMAND}
 
-USAGE_EPILOG = """
+
+def parser():
+    """Construct a command line argument parser.
+    
+    Constructing the parser may cause a lot of imports as :py:mod:`tau.cli` is explored.
+    To avoid possible circular imports we defer parser creation until afer all
+    modules are imported, hence this function.  The parser instance is maintained as
+    an attribute of the function, making it something like a C++ function static variable.
+    """
+    if not hasattr(parser, 'inst'):
+        usage_head = "%s <subcommand> [arguments]" % COMMAND       
+        usage_foot = """
 %(command_descr)s
 
 See '%(command)s <subcommand> --help' for more information on <subcommand>.
-""" % {'command': COMMAND,
-       'command_descr': cli.get_commands_description(__name__)}
-
-
-PARSER = arguments.get_parser(prog=COMMAND,
-                              usage=USAGE,
-                              description=SHORT_DESCRIPTION,
-                              epilog=USAGE_EPILOG)
-PARSER.add_argument('subcommand', 
-                    help="See 'subcommands' below",
-                    metavar='<subcommand>')
-PARSER.add_argument('options', 
-                    help="Arguments to be passed to <subcommand>",
-                    metavar='[arguments]',
-                    nargs=arguments.REMAINDER)
-
-
-def get_usage():
-    return PARSER.format_help()
-
-
-def get_help():
-    return HELP
+""" % {'command': COMMAND, 'command_descr': cli.get_commands_description(__name__)}
+        parser.inst = arguments.get_parser(prog=COMMAND,
+                                           usage=usage_head,
+                                           description=SHORT_DESCRIPTION,
+                                           epilog=usage_foot)
+        parser.inst.add_argument('subcommand', 
+                                 help="See 'subcommands' below",
+                                 metavar='<subcommand>')
+        parser.inst.add_argument('options', 
+                                 help="Arguments to be passed to <subcommand>",
+                                 metavar='[arguments]',
+                                 nargs=arguments.REMAINDER)
+    return parser.inst
 
 
 def main(argv):
+    """Subcommand program entry point.
+    
+    Args:
+        argv (:py:class:`list`): Command line arguments.
+        
+    Returns:
+        int: Process return code: non-zero if a problem occurred, 0 otherwise
     """
-    Program entry point
-    """
-    args = PARSER.parse_args(args=argv)
-    LOGGER.debug('Arguments: %s' % args)
+    args = parser().parse_args(args=argv)
+    LOGGER.debug('Arguments: %s', args)
 
     subcommand = args.subcommand
     options = args.options

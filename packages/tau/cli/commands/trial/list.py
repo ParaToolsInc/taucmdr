@@ -31,7 +31,7 @@
 import os
 from texttable import Texttable
 from pprint import pformat
-from tau import EXIT_FAILURE, EXIT_SUCCESS
+from tau import EXIT_SUCCESS, EXIT_WARNING, TAU_SCRIPT
 from tau import logger, util, cli
 from tau.cli import arguments
 from tau.model.experiment import Experiment
@@ -52,7 +52,7 @@ HELP = """
 def parser():
     """Construct a command line argument parser.
     
-    Constructing the parser may cause a lot of imports as :any:`tau.cli` is explored.
+    Constructing the parser may cause a lot of imports as :py:mod:`tau.cli` is explored.
     To avoid possible circular imports we defer parser creation until afer all
     modules are imported, hence this function.  The parser instance is maintained as
     an attribute of the function, making it something like a C++ function static variable.
@@ -94,7 +94,7 @@ def main(argv):
     selection = Experiment.get_selected()
     if not selection:
         print "No experiment configured. See `tau project select`\n"
-        return EXIT_FAILURE
+        return EXIT_WARNING
 
     longflag = args.long
     shortflag = args.short
@@ -110,16 +110,17 @@ def main(argv):
     else:
         found = []
         for num in numbers:
-            t = Trial.search({'number': num})
-            if t:
-                found.extend(t)
-            else:
+            record = Trial.search({'number': num})
+            if not record:
                 argparser.error("No trial number %d in the current experiment" % num)
+            found.extend(record)
 
     print '{:=<{}}\n'.format('== %s Trials ==' % selection.name(), logger.LINE_WIDTH)
     if not found:
-        print "No trials. Use 'tau <command>' or 'tau trial create <command>' to create a new trial\n"
-        return EXIT_FAILURE
+        script_name = os.path.basename(TAU_SCRIPT)
+        print ("No trials. Use `%s <command>` or `%s trial create <command>`"
+               " to create a new trial.\n" % (script_name, script_name))
+        return EXIT_WARNING
 
     table = Texttable(logger.LINE_WIDTH)
     cols = [('Number', 'c', 'number'),
@@ -132,10 +133,7 @@ def main(argv):
     headers = [header for header, _, _ in cols]
     rows = [headers]
     if longflag:
-        parts = []
-        for t in found:
-            parts.append(pformat(t.data))
-        listing = '\n'.join(parts)
+        listing = '\n'.join([pformat(record.data) for record in found])
     elif shortflag:
         parts = []
         trials_by_cmd = {}
@@ -143,24 +141,22 @@ def main(argv):
             trials_by_cmd.setdefault(trial['command'], []).append(trial)
         for key, val in trials_by_cmd.iteritems():
             count = len(val)
-            data_size = util.human_size(
-                sum([trial['data_size'] for trial in val]))
+            data_size = util.human_size(sum([trial['data_size'] for trial in val]))
             if count == 1:
-                msg = "  1 trial of '%s' (%s)." % (
-                    os.path.basename(key), data_size)
+                msg = "  1 trial of '%s' (%s)." % (os.path.basename(key), data_size)
             else:
-                msg = "  %d trials of '%s' (%s)." % (
-                    len(val), os.path.basename(key), data_size)
+                msg = "  %d trials of '%s' (%s)." % (len(val), os.path.basename(key), data_size)
             parts.append(msg + '  Use `tau trial list` to see details.')
         listing = '\n'.join(parts)
     else:
-        for t in found:
-            row = [t.get(attr, '') for _, _, attr in cols if attr]
+        for record in found:
+            row = [record.get(attr, '') for _, _, attr in cols if attr]
             row[1] = util.human_size(row[1])
             rows.append(row)
         table.set_cols_align([align for _, align, _ in cols])
         table.add_rows(rows)
         listing = table.draw()
 
-    print '\n'.join([listing, ''])
+    print listing
+    print
     return EXIT_SUCCESS

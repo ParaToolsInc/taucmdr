@@ -1,13 +1,4 @@
-#"""
-#@file
-#@author John C. Linford (jlinford@paratools.com)
-#@version 1.0
-#
-#@brief
-#
-# This file is part of TAU Commander
-#
-#@section COPYRIGHT
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -33,7 +24,8 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#"""
+#
+"""``tau project create`` subcommand."""
 
 from tau import logger, cli
 from tau.cli import arguments
@@ -50,64 +42,69 @@ COMMAND = cli.get_command(__name__)
 
 SHORT_DESCRIPTION = "Create a new project configuration."
 
-USAGE = """
-  %(command)s <project_name> [targets] [applications] [measurements] [arguments]
-""" % {'command': COMMAND}
-
 HELP = """
 '%(command)s' page to be written.
 """ % {'command': COMMAND}
 
-PARSER = arguments.get_parser_from_model(Project,
-                                      prog=COMMAND,
-                                      usage=USAGE,
-                                      description=SHORT_DESCRIPTION)
-PARSER.add_argument('impl_targets',
-                    help="Target configurations in this project",
-                    metavar='[targets]',
-                    nargs='*',
-                    default=arguments.SUPPRESS)
-PARSER.add_argument('impl_applications',
-                    help="Application configurations in this project",
-                    metavar='[applications]',
-                    nargs='*',
-                    default=arguments.SUPPRESS)
-PARSER.add_argument('impl_measurements',
-                    help="Measurement configurations in this project",
-                    metavar='[measurements]',
-                    nargs='*',
-                    default=arguments.SUPPRESS)
-PARSER.add_argument('--targets',
-                    help="Target configurations in this project",
-                    metavar='t',
-                    nargs='+',
-                    default=arguments.SUPPRESS)
-PARSER.add_argument('--applications',
-                    help="Application configurations in this project",
-                    metavar='a',
-                    nargs='+',
-                    default=arguments.SUPPRESS)
-PARSER.add_argument('--measurements',
-                    help="Measurement configurations in this project",
-                    metavar='m',
-                    nargs='+',
-                    default=arguments.SUPPRESS)
 
-
-def get_usage():
-    return PARSER.format_help()
-
-
-def get_help():
-    return HELP
+def parser():
+    """Construct a command line argument parser.
+    
+    Constructing the parser may cause a lot of imports as :py:mod:`tau.cli` is explored.
+    To avoid possible circular imports we defer parser creation until afer all
+    modules are imported, hence this function.  The parser instance is maintained as
+    an attribute of the function, making it something like a C++ function static variable.
+    """
+    if not hasattr(parser, 'inst'):
+        usage_head = "%s <project_name> [targets] [applications] [measurements] [arguments]" % COMMAND       
+        parser.inst = arguments.get_parser_from_model(Project,
+                                                      prog=COMMAND,
+                                                      usage=usage_head,
+                                                      description=SHORT_DESCRIPTION)
+        parser.inst.add_argument('impl_targets',
+                                 help="Target configurations in this project",
+                                 metavar='[targets]',
+                                 nargs='*',
+                                 default=arguments.SUPPRESS)
+        parser.inst.add_argument('impl_applications',
+                                 help="Application configurations in this project",
+                                 metavar='[applications]',
+                                 nargs='*',
+                                 default=arguments.SUPPRESS)
+        parser.inst.add_argument('impl_measurements',
+                                 help="Measurement configurations in this project",
+                                 metavar='[measurements]',
+                                 nargs='*',
+                                 default=arguments.SUPPRESS)
+        parser.inst.add_argument('--targets',
+                                 help="Target configurations in this project",
+                                 metavar='t',
+                                 nargs='+',
+                                 default=arguments.SUPPRESS)
+        parser.inst.add_argument('--applications',
+                                 help="Application configurations in this project",
+                                 metavar='a',
+                                 nargs='+',
+                                 default=arguments.SUPPRESS)
+        parser.inst.add_argument('--measurements',
+                                 help="Measurement configurations in this project",
+                                 metavar='m',
+                                 nargs='+',
+                                 default=arguments.SUPPRESS)
+    return parser.inst
 
 
 def main(argv):
+    """Subcommand program entry point.
+    
+    Args:
+        argv (:py:class:`list`): Command line arguments.
+        
+    Returns:
+        int: Process return code: non-zero if a problem occurred, 0 otherwise
     """
-    Program entry point
-    """
-    args = PARSER.parse_args(args=argv)
-    LOGGER.debug('Arguments: %s' % args)
+    args = parser().parse_args(args=argv)
+    LOGGER.debug('Arguments: %s', args)
 
     targets = set()
     applications = set()
@@ -119,27 +116,25 @@ def main(argv):
         for name in getattr(args, attr, []):
             found = model.with_name(name)
             if not found:
-                PARSER.error('There is no %s named %r' %
-                             (model.model_name, name))
+                parser().error("There is no %s named '%s'" % (model.model_name, name))
             dest.add(found.eid)
 
         for name in getattr(args, 'impl_' + attr, []):
-            t = Target.with_name(name)
-            a = Application.with_name(name)
-            m = Measurement.with_name(name)
-            tam = set([t, a, m]) - set([None])
+            tar = Target.with_name(name)
+            app = Application.with_name(name)
+            mes = Measurement.with_name(name)
+            tam = set([tar, app, mes]) - set([None])
             if len(tam) > 1:
-                PARSER.error('%r is ambiguous, please use --targets, --applications,'
-                             ' or --measurements to specify configuration type' % name)
+                parser().error("'%s' is ambiguous, please use --targets, --applications,"
+                               " or --measurements to specify configuration type" % name)
             elif len(tam) == 0:
-                PARSER.error(
-                    '%r is not a target, application, or measurement' % name)
-            elif t:
-                targets.add(t.eid)
-            elif a:
-                applications.add(a.eid)
-            elif m:
-                measurements.add(m.eid)
+                parser().error("'%s' is not a target, application, or measurement" % name)
+            elif tar:
+                targets.add(tar.eid)
+            elif app:
+                applications.add(app.eid)
+            elif mes:
+                measurements.add(mes.eid)
 
         try:
             delattr(args, 'impl_' + attr)
@@ -153,7 +148,7 @@ def main(argv):
     try:
         Project.create(args.__dict__)
     except UniqueAttributeError:
-        PARSER.error("A project named '%s' already exists." % args.name)
+        parser().error("A project named '%s' already exists." % args.name)
 
-    LOGGER.info('Created a new project named %r.' % args.name)
+    LOGGER.info("Created a new project named '%s'.", args.name)
     return cli.execute_command(['project', 'list'], [args.name])
