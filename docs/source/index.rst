@@ -6,7 +6,6 @@
 .. toctree::
    :maxdepth: 2
 
-   index
    design
    style
 
