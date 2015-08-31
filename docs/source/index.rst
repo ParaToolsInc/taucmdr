@@ -6,9 +6,6 @@
 Welcome
 =======
 
-Table of Contents
------------------
-
 .. toctree::
    :maxdepth: 2
 
@@ -45,7 +42,7 @@ The TAU Commandments
 4. Thou shalt document your code according to the :doc:`style`.
 5. **Never** shalt thou develop on the master branch, for that is an abomination.
 6. **Never** shalt thou merge broken code to the master branch.
-7. **Never** shalt thou *just quickly fix this one thing because I have a hard deadline I forgot and now I really really really need this feature to be part of TAU Commander whatever the cost and oh God I broke it I broke it now everything is on fire*.
+7. **Never** shalt thou *just quickly fix this one thing because I have a hard deadline I forgot and now I really really really need this feature to be part of TAU Commander whatever the cost and oh God I broke it I broke it and everything is on fire*.
 
 
 Indices and tables
