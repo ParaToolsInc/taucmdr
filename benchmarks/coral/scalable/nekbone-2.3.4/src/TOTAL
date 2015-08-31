@@ -1,5 +1,0 @@
-      include 'DXYZ'
-      include 'INPUT'
-      include 'MASS'
-      include 'PARALLEL'
-      include 'WZ'
