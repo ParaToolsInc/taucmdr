@@ -28,14 +28,25 @@ TAU Commander are:
   and reporting services that enhances the performance engineer's ability 
   to mine actionable information from software application performance data.
 
+Getting Started
+===============
+
+- Add TAU Commander to your PATH: `export PATH=/path/to/taucmdr/bin:$PATH`
+- Type `tau --help`.
+
+Developers
+==========
+
+TAU Commander developers should visit the [developer documentation](http://paratoolsinc.github.io/taucmdr/).
+
 Acknowledgements
 ================
 
 This work is supported by the United States Department of Energy under
 DoE SBIR grant DE-SC0009593.
 
-Badges
-======
+
+---------------------------------------------------------------------------
 
 [![Join the chat at https://gitter.im/jlinford/taucmdr](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/jlinford/taucmdr?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
