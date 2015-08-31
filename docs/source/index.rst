@@ -7,14 +7,13 @@
    :maxdepth: 2
 
    index
-   style
    design
+   style
 
 Welcome
 =======
 
-.. attention::
-   **For developers only**
+.. attention:: Welcome Developers!
    This documentation is intended for the lucky people developing TAU Commander.
    TAU Commander **users** should should visit `the TAU Commander website`_.
 
