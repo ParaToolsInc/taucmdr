@@ -137,6 +137,7 @@ def get_commands(root=_COMMANDS_PACKAGE):
         
     Example:
     ::
+
         get_commands('tau.cli.commands.target') ==>
             {'__module__': <module 'tau.cli.commands.target' from '/home/jlinford/workspace/taucmdr/packages/tau/cli/commands/target/__init__.pyc'>,
              'create': {'__module__': <module 'tau.cli.commands.target.create' from '/home/jlinford/workspace/taucmdr/packages/tau/cli/commands/target/create.pyc'>},
