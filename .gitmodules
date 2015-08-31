@@ -1,3 +1,0 @@
-[submodule "benchmarks/SNAP"]
-	path = benchmarks/SNAP
-	url = git@github.com:losalamos/SNAP.git

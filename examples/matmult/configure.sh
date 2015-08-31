@@ -15,6 +15,12 @@ tau target create ${target_name}-mpi
 user_name="`users`"
 
 
+if [[ $target_name == *"Paratools-SV"* ]]; then
+  echo "** making gcc target"
+  source /Users/srinathv/gnu5Bin/linkGccs.source
+  tau target create gcc5 --host-os Darwin --mpi-compilers System
+fi
+
 # Example applications
 tau application create "ex-matmult-serial"
 tau application create "ex-matmult-mpi" --mpi
@@ -36,10 +42,9 @@ tau project create "ex-matmult" \
   ex-profile ex-trace ex-sample p-keep no-io
 
 if [[ $target_name == *"Paratools-SV"* ]]; then
-  echo "** making gcc target and part of project"
+  echo "** making gcc part of project"
   source /Users/srinathv/gnu5Bin/linkGccs.source
-  tau target create gcc5 --compilers MPI
-  tau project edit ex-matmult --add-targets gcc5
+  tau project edit ex-matmult --add-targets gcc5 --add-application ex-matmult-mpi
 fi
 
 

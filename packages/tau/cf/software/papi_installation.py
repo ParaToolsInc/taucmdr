@@ -1,13 +1,4 @@
-#"""
-#@file
-#@author John C. Linford (jlinford@paratools.com)
-#@version 1.0
-#
-#@brief
-#
-# This file is part of TAU Commander
-#
-#@section COPYRIGHT
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -33,13 +24,18 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#"""
+#
+"""Binutils software installation management.
+
+PAPI is used to measure hardware performance counters.
+"""
 
 import os
 from tau import logger
 from tau.cf.software.installation import AutotoolsInstallation
+from tau.cf.compiler import CC_ROLE
 
-LOGGER = logger.getLogger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 SOURCES = {None: 'http://icl.cs.utk.edu/projects/papi/downloads/papi-5.4.1.tar.gz'}
 
@@ -47,25 +43,21 @@ LIBS = {None: ['libpapi.a']}
 
 
 class PapiInstallation(AutotoolsInstallation):
-    """Encapsulates a PAPI installation.
-    
-    PAPI is used to measure hardware performance counters.
-    """
+    """Encapsulates a PAPI installation."""
 
     def __init__(self, prefix, src, arch, compilers):
-        try:
-            cc_family = compilers.CC.wrapped.family
-        except AttributeError:
-            cc_family = compilers.CC.family
-        dst = os.path.join(arch, cc_family)
-        LOGGER.debug("src=%s, dst=%s" % (src, dst))
-        super(PapiInstallation,self).__init__('PAPI', prefix, src, dst, arch, compilers, SOURCES)
+        dst = os.path.join(arch, compilers[CC_ROLE].info.family.name)
+        LOGGER.debug("src=%s, dst=%s", src, dst)
+        super(PapiInstallation, self).__init__('PAPI', prefix, src, dst, arch, compilers, SOURCES)
 
-    def _verify(self):
-        libraries = LIBS.get(self.arch, LIBS[None])
-        return super(PapiInstallation,self)._verify(libraries=libraries)
+    def _verify(self, commands=None, libraries=None):
+        try:
+            libraries = LIBS[self.arch]
+        except KeyError:
+            libraries = LIBS[None]
+        return super(PapiInstallation, self)._verify(commands, libraries)
     
-    def _prepare_src(self):
+    def _prepare_src(self, reuse=True):
         # PAPI keeps its source in a subdirectory
-        prefix = super(PapiInstallation,self)._prepare_src()
+        prefix = super(PapiInstallation, self)._prepare_src(reuse)
         return os.path.join(prefix, 'src')

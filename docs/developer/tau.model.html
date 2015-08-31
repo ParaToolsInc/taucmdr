@@ -1,0 +1,1062 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tau.model package &mdash; TAU Commander Developer Documentation</title>
+    
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
+    <link rel="up" title="tau package" href="tau.html" />
+    <link rel="prev" title="tau.gui package" href="tau.gui.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="index.html">
+          <span>TAU Commander Developer Documentation</span></a></h1>
+        <h2 class="heading"><span>tau.model package</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="tau.gui.html">tau.gui package</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="module-tau.model">
+<span id="tau-model-package"></span><h1>tau.model package<a class="headerlink" href="#module-tau.model" title="Permalink to this headline">¶</a></h1>
+<p>TAU Commander data model.</p>
+<p>TAU Commander follows the <a class="reference external" href="https://en.wikipedia.org/wiki/Model-view-controller">Model-View-Controller (MVC)</a> design pattern.
+Modules in <a class="reference internal" href="#module-tau.model" title="tau.model"><code class="xref py py-mod docutils literal"><span class="pre">tau.model</span></code></a> define the data model by declaring subclasses of <a class="reference internal" href="#tau.model.Controller" title="tau.model.Controller"><code class="xref any py py-class docutils literal"><span class="pre">Controller</span></code></a>.
+These subclasses define a member dictionary <cite>attributes</cite> that describes the data model in the form:</p>
+<div class="highlight-python"><div class="highlight"><pre>&lt;attribute&gt;: {
+    property: value,
+    [[property: value], ...]
+}
+</pre></div>
+</div>
+<p>Importing <a class="reference internal" href="#module-tau.model" title="tau.model"><code class="xref py py-mod docutils literal"><span class="pre">tau.model</span></code></a> initializes the set <code class="xref py py-attr docutils literal"><span class="pre">references</span></code> in each subclass
+of <a class="reference internal" href="#tau.model.Controller" title="tau.model.Controller"><code class="xref any py py-class docutils literal"><span class="pre">Controller</span></code></a> to describe one-sided relationships.  For example:</p>
+<div class="highlight-python"><div class="highlight"><pre>Model_A:
+    attr_x: { &#39;model&#39;: &#39;Model_C&#39; }
+Model_B:
+    attr_y: { &#39;model&#39;: &#39;Model_C&#39; }
+Model_C:
+    references = set( (Model_A, &#39;attr_x&#39;), (Model_B, &#39;attr_y&#39;) )
+</pre></div>
+</div>
+<p>Importing <a class="reference internal" href="#module-tau.model" title="tau.model"><code class="xref py py-mod docutils literal"><span class="pre">tau.model</span></code></a> also initializes the dictionary <code class="xref py py-attr docutils literal"><span class="pre">associations</span></code> in
+each subclass of <a class="reference internal" href="#tau.model.Controller" title="tau.model.Controller"><code class="xref any py py-class docutils literal"><span class="pre">Controller</span></code></a> to describe two-sided relationships.  For example:</p>
+<div class="highlight-python"><div class="highlight"><pre>Model_A:
+    attr_x: {
+        model: Model_B
+        via: attr_k
+    }
+    associations = {attr_x: (Model_B, attr_k)}
+Model_B:
+    attr_k: {
+        model: Model_A
+    }
+    associations = {attr_k: (Model_A, attr_x)}
+</pre></div>
+</div>
+<dl class="class">
+<dt id="tau.model.ByName">
+<em class="property">class </em><code class="descclassname">tau.model.</code><code class="descname">ByName</code><a class="reference internal" href="_modules/tau/model.html#ByName"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.ByName" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Mixin for a model with a unique <cite>name</cite> attribute.</p>
+<dl class="classmethod">
+<dt id="tau.model.ByName.with_name">
+<em class="property">classmethod </em><code class="descname">with_name</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model.html#ByName.with_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.ByName.with_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the record with the given name.  See <a class="reference internal" href="#tau.model.Controller.one" title="tau.model.Controller.one"><code class="xref any py py-meth docutils literal"><span class="pre">Controller.one</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tau.model.Controller">
+<em class="property">class </em><code class="descclassname">tau.model.</code><code class="descname">Controller</code><span class="sig-paren">(</span><em>fields</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model.html#Controller"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.Controller" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>The &#8220;C&#8221; in <a class="reference external" href="https://en.wikipedia.org/wiki/Model-view-controller">MVC</a>.</p>
+<dl class="attribute">
+<dt id="tau.model.Controller.model_name">
+<code class="descname">model_name</code><a class="headerlink" href="#tau.model.Controller.model_name" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em></p>
+<p>The name of the model.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.Controller.attributes">
+<code class="descname">attributes</code><a class="headerlink" href="#tau.model.Controller.attributes" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>dict</em></p>
+<p>The model attributes.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.Controller.references">
+<code class="descname">references</code><a class="headerlink" href="#tau.model.Controller.references" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>set</em></p>
+<p>Set of tuples defining one-sided relationships.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.Controller.associations">
+<code class="descname">associations</code><a class="headerlink" href="#tau.model.Controller.associations" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>dict</em></p>
+<p>Dictionary of tuples keyed by attribute name defining two-sided relationships.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.Controller.eid">
+<code class="descname">eid</code><a class="headerlink" href="#tau.model.Controller.eid" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>int</em></p>
+<p>Unique identifier for the controlled data record, None if the data has not been recorded.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.Controller.data">
+<code class="descname">data</code><a class="headerlink" href="#tau.model.Controller.data" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>dict</em></p>
+<p>The controlled data.</p>
+</dd></dl>
+
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fields</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; A dictionary-like object with the optional <cite>eid</cite> attribute.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="tau.model.Controller._associate">
+<code class="descname">_associate</code><span class="sig-paren">(</span><em>foreign_cls</em>, <em>affected</em>, <em>attr</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model.html#Controller._associate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.Controller._associate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Associates the controlled record with another record.</p>
+<p>Associations are defined by the <a class="reference internal" href="#tau.model.Controller.associations" title="tau.model.Controller.associations"><code class="xref py py-attr docutils literal"><span class="pre">associations</span></code></a> and <a class="reference internal" href="#tau.model.Controller.references" title="tau.model.Controller.references"><code class="xref py py-attr docutils literal"><span class="pre">references</span></code></a>
+attributes of the <a class="reference internal" href="#tau.model.Controller" title="tau.model.Controller"><code class="xref any py py-class docutils literal"><span class="pre">Controller</span></code></a> class.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>foreign_cls</strong> (<a class="reference internal" href="#tau.model.Controller" title="tau.model.Controller"><em>Controller</em></a>) &#8211; Class definining the foreign record&#8217;s data model.</li>
+<li><strong>affected</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">list</span></code></a>) &#8211; Identifiers for the records that will be updated to
+associate with the controlled record.</li>
+<li><strong>attr</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The name of the associated foreign attribute.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.model.Controller._disassociate">
+<code class="descname">_disassociate</code><span class="sig-paren">(</span><em>affected</em>, <em>attr</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model.html#Controller._disassociate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.Controller._disassociate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Disassociates the controlled record from another record.</p>
+<p>Associations are defined by the <a class="reference internal" href="#tau.model.Controller.associations" title="tau.model.Controller.associations"><code class="xref py py-attr docutils literal"><span class="pre">associations</span></code></a> and <a class="reference internal" href="#tau.model.Controller.references" title="tau.model.Controller.references"><code class="xref py py-attr docutils literal"><span class="pre">references</span></code></a>
+attributes of the <a class="reference internal" href="#tau.model.Controller" title="tau.model.Controller"><code class="xref any py py-class docutils literal"><span class="pre">Controller</span></code></a> class.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>affected</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">list</span></code></a>) &#8211; Identifiers for the records that will be updated to
+associate with the controlled record.</li>
+<li><strong>attr</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The name of the associated foreign attribute.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="tau.model.Controller.all">
+<em class="property">classmethod </em><code class="descname">all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model.html#Controller.all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.Controller.all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of all records.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.model.Controller.compatible_with">
+<code class="descname">compatible_with</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model.html#Controller.compatible_with"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.Controller.compatible_with" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test the controlled record for compatibility with another record.</p>
+<p>FIXME: Compatilibity checking needs further design review.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> (<a class="reference internal" href="#tau.model.Controller" title="tau.model.Controller"><em>Controller</em></a>) &#8211; Controller subclass instance controlling the other record.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211;
+The two records are not compatible.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="tau.model.Controller.create">
+<em class="property">classmethod </em><code class="descname">create</code><span class="sig-paren">(</span><em>fields</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model.html#Controller.create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.Controller.create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store a new model record and update associations.</p>
+<p>Invokes the <cite>on_create</cite> callback <strong>after</strong> the data is recorded.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fields</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Data to record.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Controller subclass instance controlling the specified data.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#tau.model.Controller" title="tau.model.Controller">Controller</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="tau.model.Controller.delete">
+<em class="property">classmethod </em><code class="descname">delete</code><span class="sig-paren">(</span><em>keys=None</em>, <em>eids=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model.html#Controller.delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.Controller.delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete recorded data and update associations.</p>
+<p>Invokes the <cite>on_delete</cite> callback for each record <strong>before</strong> the record is deleted.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>keys</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Attributes to match.</li>
+<li><strong>eids</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">list</span></code></a>) &#8211; Record identifiers to match.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="tau.model.Controller.exists">
+<em class="property">classmethod </em><code class="descname">exists</code><span class="sig-paren">(</span><em>keys=None</em>, <em>eids=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model.html#Controller.exists"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.Controller.exists" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test if a record matching the given keys exists.</p>
+<p>Just like <a class="reference internal" href="#tau.model.Controller.search" title="tau.model.Controller.search"><code class="xref any py py-meth docutils literal"><span class="pre">Controller.search</span></code></a>, except only tests if the record exists without
+retrieving any data or allocating new controllers.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>keys</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Attributes to match.</li>
+<li><strong>eids</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">list</span></code></a>) &#8211; Record identifiers to match.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">True if a record exists for <strong>all</strong> values in <cite>keys</cite> or <cite>eids</cite>.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)">bool</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.model.Controller.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>key</em>, <em>default=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model.html#Controller.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.Controller.get" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="tau.model.Controller.match">
+<em class="property">classmethod </em><code class="descname">match</code><span class="sig-paren">(</span><em>field</em>, <em>regex=None</em>, <em>test=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model.html#Controller.match"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.Controller.match" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of records with <cite>field</cite> matching <cite>regex</cite> or <cite>test</cite>.</p>
+<p>Either <cite>regex</cite> or <cite>test</cite> may be specified, not both.  If <cite>regex</cite> is given,
+then all records with <cite>field</cite> matching the regular expression are returned.
+If test is given then all records with <cite>field</cite> set to a value that caues
+<cite>test</cite> to return True are returned. If neither is given, return all records.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>field</strong> (<a class="reference external" href="https://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Name of the data field to match.</li>
+<li><strong>regex</strong> (<a class="reference external" href="https://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Regular expression string.</li>
+<li><strong>test</strong> &#8211; A callable expression returning a boolean value.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">class:<cite>list</cite>: Controller subclass instances controlling the found records.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">:py</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.model.Controller.on_create">
+<code class="descname">on_create</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model.html#Controller.on_create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.Controller.on_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Callback to be invoked when a new data record is created.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.model.Controller.on_delete">
+<code class="descname">on_delete</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model.html#Controller.on_delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.Controller.on_delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Callback to be invoked when a data record is deleted.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.model.Controller.on_update">
+<code class="descname">on_update</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model.html#Controller.on_update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.Controller.on_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Callback to be invoked when a data record is updated.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="tau.model.Controller.one">
+<em class="property">classmethod </em><code class="descname">one</code><span class="sig-paren">(</span><em>keys=None</em>, <em>eid=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model.html#Controller.one"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.Controller.one" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a single record matching all of <cite>keys</cite> or element id <cite>eid</cite>.</p>
+<p>Either <cite>keys</cite> or <cite>eid</cite> should be specified, not both.  If <cite>keys</cite> is given,
+then every attribute listed in <cite>keys</cite> must have the given value. If <cite>eid</cite>
+is given, return the record with that eid.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>keys</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Attributes to match.</li>
+<li><strong>eid</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Record identifier to match.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Controller subclass instance controlling the found record or None if no such record exists.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#tau.model.Controller" title="tau.model.Controller">Controller</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.model.Controller.populate">
+<code class="descname">populate</code><span class="sig-paren">(</span><em>attribute=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model.html#Controller.populate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.Controller.populate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Merges associated record data into the controlled data.</p>
+<p class="rubric">Example</p>
+<p>Suppose we have the following records:</p>
+<div class="highlight-python"><div class="highlight"><pre>1: {&#39;name&#39;: &#39;Katie&#39;, &#39;friends&#39;: [2, 3]}
+2: {&#39;name&#39;: &#39;Ryan&#39;, &#39;friends&#39;: [1]}
+3: {&#39;name&#39;: &#39;John&#39;, &#39;friends&#39;: [1]}
+</pre></div>
+</div>
+<p>Populating record <code class="docutils literal"><span class="pre">1</span></code> produces this dictionary:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;Katie&#39;</span><span class="p">,</span>
+ <span class="s">&#39;friends&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">Controller</span><span class="p">({</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;Ryan&#39;</span><span class="p">,</span> <span class="s">&#39;friends&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">]}),</span>
+             <span class="n">Controller</span><span class="p">({</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;John&#39;</span><span class="p">,</span> <span class="s">&#39;friends&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">]})]}</span>
+</pre></div>
+</div>
+<p>Note that the referenced data records are returned as <a class="reference internal" href="#tau.model.Controller" title="tau.model.Controller"><code class="xref any py py-class docutils literal"><span class="pre">Controller</span></code></a>
+subclass instances.  This enables expressions like:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">friend</span> <span class="ow">in</span> <span class="n">katie</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="s">&#39;friends&#39;</span><span class="p">):</span>
+    <span class="k">print</span> <span class="s">&#39;Hello </span><span class="si">%s</span><span class="s">!  Here are some fresh cookies&#39;</span> <span class="o">%</span> <span class="n">friend</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>attribute</strong> (<em>Optional[str]</em>) &#8211; If given, return only the populated attribute.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Controlled data merged with associated records.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)">dict</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="tau.model.Controller.search">
+<em class="property">classmethod </em><code class="descname">search</code><span class="sig-paren">(</span><em>keys=None</em>, <em>eids=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model.html#Controller.search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.Controller.search" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of records matching all of <cite>keys</cite> or element id <cite>eid</cite>.</p>
+<p>Either <cite>keys</cite> or <cite>eids</cite> may be specified, not both.  If <cite>keys</cite> is given,
+then every attribute listed in <cite>keys</cite> must have the given value. If <cite>eids</cite>
+is given, return the records with those eids.  If neither is given,
+return all records.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>keys</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Attributes to match.</li>
+<li><strong>eids</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">list</span></code></a>) &#8211; Record identifiers to match.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">class:<cite>list</cite>: Controller subclass instances controlling the found records.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">:py</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="tau.model.Controller.update">
+<em class="property">classmethod </em><code class="descname">update</code><span class="sig-paren">(</span><em>fields</em>, <em>keys=None</em>, <em>eids=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model.html#Controller.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.Controller.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change recorded data and update associations.</p>
+<p>Invokes the <cite>on_update</cite> callback for each record <strong>after</strong> the records are updated.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fields</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; New data for existing records.</li>
+<li><strong>keys</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Attributes to match.</li>
+<li><strong>eids</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">list</span></code></a>) &#8211; Record identifiers to match.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="tau.model.ModelError">
+<em class="property">exception </em><code class="descclassname">tau.model.</code><code class="descname">ModelError</code><span class="sig-paren">(</span><em>model_cls</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model.html#ModelError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.ModelError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="tau.html#tau.error.InternalError" title="tau.error.InternalError"><code class="xref py py-class docutils literal"><span class="pre">tau.error.InternalError</span></code></a></p>
+<p>Indicates the given data does not match the specified model.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>model_cls</strong> (<a class="reference internal" href="#tau.model.Controller" title="tau.model.Controller"><em>Controller</em></a>) &#8211; Controller subclass definining the data model.</li>
+<li><strong>value</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; A message describing the error.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="exception">
+<dt id="tau.model.UniqueAttributeError">
+<em class="property">exception </em><code class="descclassname">tau.model.</code><code class="descname">UniqueAttributeError</code><span class="sig-paren">(</span><em>model_cls</em>, <em>unique</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model.html#UniqueAttributeError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.UniqueAttributeError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tau.model.ModelError" title="tau.model.ModelError"><code class="xref py py-class docutils literal"><span class="pre">tau.model.ModelError</span></code></a></p>
+<p>Indicates that duplicate values were given for a unique attribute.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>model_cls</strong> (<a class="reference internal" href="#tau.model.Controller" title="tau.model.Controller"><em>Controller</em></a>) &#8211; Controller subclass definining the data model.</li>
+<li><strong>unique</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Dictionary of unique attributes in the data model.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.model._construct_model">
+<code class="descclassname">tau.model.</code><code class="descname">_construct_model</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model.html#_construct_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model._construct_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Builds model relationships.</p>
+<p>Initializes controller classes and builds forward and reverse associations
+between data models.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Model controller classes indexed by model name.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)">dict</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-tau.model.application">
+<span id="tau-model-application-module"></span><h2>tau.model.application module<a class="headerlink" href="#module-tau.model.application" title="Permalink to this headline">¶</a></h2>
+<p>Application data model.</p>
+<p><a class="reference internal" href="#tau.model.application.Application" title="tau.model.application.Application"><code class="xref any py py-class docutils literal"><span class="pre">Application</span></code></a> fully describes the application configuration to be profiled,
+including the features the application uses, e.g. OpenMP, MPI, CUDA, etc.
+Each specific application <strong>configuration</strong> has its own application record.
+For example, if an application can operate with or without OpenMP then there
+are potentially two application records for the same application code: one
+specifying OpenMP is used and the other specifying OpenMP is not used.</p>
+<dl class="class">
+<dt id="tau.model.application.Application">
+<em class="property">class </em><code class="descclassname">tau.model.application.</code><code class="descname">Application</code><span class="sig-paren">(</span><em>fields</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/application.html#Application"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.application.Application" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tau.model.Controller" title="tau.model.Controller"><code class="xref py py-class docutils literal"><span class="pre">tau.model.Controller</span></code></a>, <a class="reference internal" href="#tau.model.ByName" title="tau.model.ByName"><code class="xref py py-class docutils literal"><span class="pre">tau.model.ByName</span></code></a></p>
+<p>Application data controller.</p>
+<dl class="attribute">
+<dt id="tau.model.application.Application.associations">
+<code class="descname">associations</code><em class="property"> = {'projects': (&lt;class 'tau.model.project.Project'&gt;, 'applications')}</em><a class="headerlink" href="#tau.model.application.Application.associations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.application.Application.attributes">
+<code class="descname">attributes</code><em class="property"> = {'cuda': {'default': False, 'argparse': {'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'nargs': '?', 'flags': ('--cuda',), 'metavar': 'yes/no', 'const': True}, 'compat': {'Target': {'cuda': 1}}, 'type': 'boolean', 'description': 'application uses NVIDIA CUDA'}, 'mpc': {'default': False, 'argparse': {'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'nargs': '?', 'flags': ('--mpc',), 'metavar': 'yes/no', 'const': True}, 'type': 'boolean', 'description': 'application uses MPC'}, 'name': {'argparse': {'metavar': '&lt;application_name&gt;'}, 'unique': True, 'type': 'string', 'description': 'application configuration name'}, 'openmp': {'default': False, 'argparse': {'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'nargs': '?', 'flags': ('--openmp',), 'metavar': 'yes/no', 'const': True}, 'type': 'boolean', 'description': 'application uses OpenMP'}, 'pthreads': {'default': False, 'argparse': {'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'nargs': '?', 'flags': ('--pthreads',), 'metavar': 'yes/no', 'const': True}, 'type': 'boolean', 'description': 'application uses pthreads'}, 'shmem': {'default': False, 'argparse': {'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'nargs': '?', 'flags': ('--shmem',), 'metavar': 'yes/no', 'const': True}, 'type': 'boolean', 'description': 'application uses SHMEM'}, 'projects': {'via': 'applications', 'description': 'projects using this application', 'collection': 'Project'}, 'mpi': {'default': False, 'argparse': {'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'nargs': '?', 'flags': ('--mpi',), 'metavar': 'yes/no', 'const': True}, 'compat': {'Measurement': {'mpi': 1}}, 'type': 'boolean', 'description': 'application uses MPI'}}</em><a class="headerlink" href="#tau.model.application.Application.attributes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.application.Application.model_name">
+<code class="descname">model_name</code><em class="property"> = 'Application'</em><a class="headerlink" href="#tau.model.application.Application.model_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.application.Application.references">
+<code class="descname">references</code><em class="property"> = set([(&lt;class 'tau.model.experiment.Experiment'&gt;, 'application')])</em><a class="headerlink" href="#tau.model.application.Application.references" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-tau.model.compiler">
+<span id="tau-model-compiler-module"></span><h2>tau.model.compiler module<a class="headerlink" href="#module-tau.model.compiler" title="Permalink to this headline">¶</a></h2>
+<p>Compiler data model.</p>
+<p>TAU only works reliablly when the same compiler is used to build both the application
+source code and TAU itself.  If the system compiler changes TAU can break entirely.
+This data tracks the system compilers so we can warn the user if they have changed.</p>
+<dl class="class">
+<dt id="tau.model.compiler.Compiler">
+<em class="property">class </em><code class="descclassname">tau.model.compiler.</code><code class="descname">Compiler</code><span class="sig-paren">(</span><em>fields</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/compiler.html#Compiler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.compiler.Compiler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tau.model.Controller" title="tau.model.Controller"><code class="xref py py-class docutils literal"><span class="pre">tau.model.Controller</span></code></a></p>
+<p>Compiler data controller.</p>
+<dl class="attribute">
+<dt id="tau.model.compiler.Compiler.associations">
+<code class="descname">associations</code><em class="property"> = {}</em><a class="headerlink" href="#tau.model.compiler.Compiler.associations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.compiler.Compiler.attributes">
+<code class="descname">attributes</code><em class="property"> = {'path': {'unique': True, 'required': True, 'type': 'string', 'description': 'absolute path to the compiler command'}, 'md5': {'required': True, 'type': 'string', 'description': 'checksum of the compiler command file'}}</em><a class="headerlink" href="#tau.model.compiler.Compiler.attributes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.model.compiler.Compiler.info">
+<code class="descname">info</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/compiler.html#Compiler.info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.compiler.Compiler.info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Probes the system for information on this compiler command.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Information about the installed compiler command.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="tau.cf.compiler.html#tau.cf.compiler.installed.InstalledCompiler" title="tau.cf.compiler.installed.InstalledCompiler">InstalledCompiler</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.compiler.Compiler.model_name">
+<code class="descname">model_name</code><em class="property"> = 'Compiler'</em><a class="headerlink" href="#tau.model.compiler.Compiler.model_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.compiler.Compiler.references">
+<code class="descname">references</code><em class="property"> = set([(&lt;class 'tau.model.target.Target'&gt;, 'FC'), (&lt;class 'tau.model.target.Target'&gt;, 'MPI_CC'), (&lt;class 'tau.model.target.Target'&gt;, 'CXX'), (&lt;class 'tau.model.target.Target'&gt;, 'MPI_FC'), (&lt;class 'tau.model.target.Target'&gt;, 'MPI_CXX'), (&lt;class 'tau.model.target.Target'&gt;, 'UPC'), (&lt;class 'tau.model.target.Target'&gt;, 'CC')])</em><a class="headerlink" href="#tau.model.compiler.Compiler.references" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="tau.model.compiler.Compiler.register">
+<em class="property">classmethod </em><code class="descname">register</code><span class="sig-paren">(</span><em>comp</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/compiler.html#Compiler.register"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.compiler.Compiler.register" title="Permalink to this definition">¶</a></dt>
+<dd><p>Records information about a compiler command in the database.</p>
+<p>If the given compiler has already been registered then do not update the database.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>comp</strong> (<a class="reference internal" href="tau.cf.compiler.html#tau.cf.compiler.installed.InstalledCompiler" title="tau.cf.compiler.installed.InstalledCompiler"><em>InstalledCompiler</em></a>) &#8211; Information about the installed compiler command.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Data controller for the installed compiler&#8217;s data.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#tau.model.compiler.Compiler" title="tau.model.compiler.Compiler">Compiler</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-tau.model.experiment">
+<span id="tau-model-experiment-module"></span><h2>tau.model.experiment module<a class="headerlink" href="#module-tau.model.experiment" title="Permalink to this headline">¶</a></h2>
+<p>Experiment data model.</p>
+<p>An Experiment uniquely groups a <a class="reference internal" href="#tau.model.target.Target" title="tau.model.target.Target"><code class="xref any py py-class docutils literal"><span class="pre">Target</span></code></a>, <a class="reference internal" href="#tau.model.application.Application" title="tau.model.application.Application"><code class="xref any py py-class docutils literal"><span class="pre">Application</span></code></a>, and <a class="reference internal" href="#tau.model.measurement.Measurement" title="tau.model.measurement.Measurement"><code class="xref any py py-class docutils literal"><span class="pre">Measurement</span></code></a>
+and will have zero or more <a class="reference internal" href="#tau.model.trial.Trial" title="tau.model.trial.Trial"><code class="xref any py py-class docutils literal"><span class="pre">Trial</span></code></a>. There is one selected experiment per project.
+The selected experiment will be used for application compilation and trial visualization.</p>
+<dl class="class">
+<dt id="tau.model.experiment.Experiment">
+<em class="property">class </em><code class="descclassname">tau.model.experiment.</code><code class="descname">Experiment</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tau.model.Controller" title="tau.model.Controller"><code class="xref py py-class docutils literal"><span class="pre">tau.model.Controller</span></code></a></p>
+<p>Experiment data controller.</p>
+<dl class="attribute">
+<dt id="tau.model.experiment.Experiment.associations">
+<code class="descname">associations</code><em class="property"> = {'project': (&lt;class 'tau.model.project.Project'&gt;, 'experiments'), 'trials': (&lt;class 'tau.model.trial.Trial'&gt;, 'experiment')}</em><a class="headerlink" href="#tau.model.experiment.Experiment.associations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.experiment.Experiment.attributes">
+<code class="descname">attributes</code><em class="property"> = {'project': {'model': 'Project', 'required': True, 'description': 'Project this experiment belongs to'}, 'application': {'model': 'Application', 'required': True, 'description': 'Application this experiment uses'}, 'target': {'model': 'Target', 'required': True, 'description': 'Target this experiment runs on'}, 'trials': {'via': 'experiment', 'description': 'Trials of this experiment', 'collection': 'Trial'}, 'measurement': {'model': 'Measurement', 'required': True, 'description': 'Measurement parameters for this experiment'}}</em><a class="headerlink" href="#tau.model.experiment.Experiment.attributes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.model.experiment.Experiment.configure">
+<code class="descname">configure</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.configure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.configure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets up the Experiment for a new trial.</p>
+<p>Installs or configures TAU and all its dependencies.  After calling this
+function, the experiment is ready to operate on the user&#8217;s application.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="tau.model.experiment.Experiment.get_selected">
+<em class="property">classmethod </em><code class="descname">get_selected</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.get_selected"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.get_selected" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the selected Experiment.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Controller for the currently selected experiment data.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#tau.model.experiment.Experiment" title="tau.model.experiment.Experiment">Experiment</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.model.experiment.Experiment.is_selected">
+<code class="descname">is_selected</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.is_selected"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.is_selected" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.model.experiment.Experiment.managed_build">
+<code class="descname">managed_build</code><span class="sig-paren">(</span><em>compiler_cmd</em>, <em>compiler_args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.managed_build"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.managed_build" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uses this experiment to perform a build operation.</p>
+<p>Checks that this experiment is compatible with the desired build operation,
+prepares the experiment, and performs the operation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>compiler_cmd</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The compiler command intercepted by TAU Commander.</li>
+<li><strong>compiler_args</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">list</span></code></a>) &#8211; Compiler command line arguments intercepted by TAU Commander.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211;
+The experiment is not configured to perform the desired build.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Build subprocess return code.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)">int</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.model.experiment.Experiment.managed_run">
+<code class="descname">managed_run</code><span class="sig-paren">(</span><em>application_cmd</em>, <em>application_args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.managed_run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.managed_run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uses this experiment to run an application command.</p>
+<p>Performs all relevent system preparation tasks to run the user&#8217;s application
+under the specified experimental configuration.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>application_cmd</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The application command intercepted by TAU Commander.</li>
+<li><strong>application_args</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">list</span></code></a>) &#8211; Application command line arguments intercepted by TAU Commander.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211;
+The experiment is not configured to perform the desired run.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Application subprocess return code.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)">int</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.experiment.Experiment.model_name">
+<code class="descname">model_name</code><em class="property"> = 'Experiment'</em><a class="headerlink" href="#tau.model.experiment.Experiment.model_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.model.experiment.Experiment.name">
+<code class="descname">name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.model.experiment.Experiment.on_create">
+<code class="descname">on_create</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.on_create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.on_create" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.model.experiment.Experiment.on_delete">
+<code class="descname">on_delete</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.on_delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.on_delete" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.model.experiment.Experiment.prefix">
+<code class="descname">prefix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.prefix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.prefix" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.experiment.Experiment.references">
+<code class="descname">references</code><em class="property"> = set([(&lt;class 'tau.model.trial.Trial'&gt;, 'experiment')])</em><a class="headerlink" href="#tau.model.experiment.Experiment.references" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.model.experiment.Experiment.select">
+<code class="descname">select</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.select"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.select" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.model.experiment.Experiment.show">
+<code class="descname">show</code><span class="sig-paren">(</span><em>tool_name=None</em>, <em>trial_numbers=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.show"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.show" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show experiment trial data.</p>
+<p>Shows the most recent trial or all trials with given numbers.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>tool_name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the visualization or data processing tool to use, e.g. <cite>pprof</cite>.</li>
+<li><strong>trial_numbers</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">list</span></code></a>) &#8211; Numbers of trials to show.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211;
+Invalid trial numbers or no trial data for this experiment.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-tau.model.measurement">
+<span id="tau-model-measurement-module"></span><h2>tau.model.measurement module<a class="headerlink" href="#module-tau.model.measurement" title="Permalink to this headline">¶</a></h2>
+<p>Measurement data model.</p>
+<p><a class="reference internal" href="#tau.model.measurement.Measurement" title="tau.model.measurement.Measurement"><code class="xref any py py-class docutils literal"><span class="pre">Measurement</span></code></a> completely describes the performance data measurements
+we wish to perform.  It is often the case that we do not wish to gather all
+the available data in a single run since overhead would be extreme.  Different
+measurements allow us to take different views of the application&#8217;s performance.</p>
+<dl class="class">
+<dt id="tau.model.measurement.Measurement">
+<em class="property">class </em><code class="descclassname">tau.model.measurement.</code><code class="descname">Measurement</code><span class="sig-paren">(</span><em>fields</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/measurement.html#Measurement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.measurement.Measurement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tau.model.Controller" title="tau.model.Controller"><code class="xref py py-class docutils literal"><span class="pre">tau.model.Controller</span></code></a>, <a class="reference internal" href="#tau.model.ByName" title="tau.model.ByName"><code class="xref py py-class docutils literal"><span class="pre">tau.model.ByName</span></code></a></p>
+<p>Measurement data controller.</p>
+<dl class="attribute">
+<dt id="tau.model.measurement.Measurement.associations">
+<code class="descname">associations</code><em class="property"> = {'projects': (&lt;class 'tau.model.project.Project'&gt;, 'measurements')}</em><a class="headerlink" href="#tau.model.measurement.Measurement.associations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.measurement.Measurement.attributes">
+<code class="descname">attributes</code><em class="property"> = {'profile': {'default': True, 'argparse': {'group': 'output format', 'nargs': '?', 'flags': ('--profile',), 'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'const': True, 'metavar': 'T/F'}, 'type': 'boolean', 'description': 'generate application profiles'}, 'metrics': {'default': ['TIME'], 'argparse': {'group': 'data', 'nargs': '+', 'flags': ('--metrics',), 'metavar': '&lt;METRIC&gt;'}, 'compat': {'Target': {'papi_source': 2}}, 'type': 'array', 'description': 'metrics to measure, e.g. TIME or PAPI_FP_INS'}, 'name': {'argparse': {'help': 'measurement configuration name', 'metavar': '&lt;measurement_name&gt;'}, 'unique': True, 'type': 'string', 'description': 'measurement configuration name'}, 'trace': {'default': False, 'argparse': {'group': 'output format', 'nargs': '?', 'flags': ('--trace',), 'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'const': True, 'metavar': 'T/F'}, 'type': 'boolean', 'description': 'generate application traces'}, 'callpath': {'default': 0, 'argparse': {'group': 'data', 'nargs': '?', 'flags': ('--callpath',), 'const': 2, 'type': &lt;type 'int'&gt;, 'metavar': 'depth'}, 'compat': {'Target': {'binutils_source': 2, 'libunwind_source': 2}}, 'type': 'integer', 'description': 'maximum depth for callpath recording'}, 'link_only': {'default': False, 'argparse': {'group': 'instrumentation', 'nargs': '?', 'flags': ('--link-only',), 'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'const': True, 'metavar': 'T/F'}, 'type': 'boolean', 'description': &quot;don't instrument, only link the TAU library to the application&quot;}, 'memory_usage': {'default': False, 'argparse': {'group': 'memory', 'nargs': '?', 'flags': ('--memory-usage',), 'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'const': True, 'metavar': 'T/F'}, 'type': 'boolean', 'description': 'measure memory consumption'}, 'mpi': {'default': False, 'argparse': {'group': 'library', 'nargs': '?', 'flags': ('--mpi',), 'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'const': True, 'metavar': 'T/F'}, 'compat': {'Application': {'mpi': 1}}, 'type': 'boolean', 'description': 'use MPI library wrapper to measure time spent in MPI methods'}, 'sample': {'default': False, 'argparse': {'group': 'instrumentation', 'nargs': '?', 'flags': ('--sample',), 'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'const': True, 'metavar': 'T/F'}, 'compat': {'Target': {'pdt_source': 3}}, 'type': 'boolean', 'description': 'use event-based sampling to gather performance data'}, 'keep_inst_files': {'default': False, 'argparse': {'group': 'instrumentation', 'nargs': '?', 'flags': ('--keep-inst-files',), 'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'const': True, 'metavar': 'T/F'}, 'type': 'boolean', 'description': &quot;don't remove instrumented files after compilation&quot;}, 'io': {'default': False, 'argparse': {'group': 'library', 'nargs': '?', 'flags': ('--io',), 'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'const': True, 'metavar': 'T/F'}, 'type': 'boolean', 'description': 'measure time spent in POSIX I/O calls'}, 'openmp': {'default': 'compiler_default', 'argparse': {'group': 'library', 'nargs': '?', 'choices': ['compiler_default', 'opari', 'ompt'], 'flags': ('--openmp',), 'const': 'opari', 'metavar': 'library'}, 'compat': {'Application': {'openmp': 1}}, 'type': 'string', 'description': 'use specified library to measure time spent in OpenMP directives'}, 'source_inst': {'default': 'automatic', 'argparse': {'group': 'instrumentation', 'nargs': '?', 'choices': ['automatic', 'manual', 'never'], 'flags': ('--source-inst',), 'const': 'auto', 'metavar': 'mode'}, 'compat': {'Target': {'pdt_source': 1}}, 'type': 'string', 'description': 'use hooks inserted into the application source code to gather performance data'}, 'reuse_inst_files': {'default': False, 'argparse': {'group': 'instrumentation', 'nargs': '?', 'flags': ('--reuse-inst-files',), 'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'const': True, 'metavar': 'T/F'}, 'type': 'boolean', 'description': 'reuse and preserve instrumented files after compilation'}, 'memory_alloc': {'default': False, 'argparse': {'group': 'memory', 'nargs': '?', 'flags': ('--memory-alloc',), 'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'const': True, 'metavar': 'T/F'}, 'type': 'boolean', 'description': 'record memory allocation and deallocation events'}, 'projects': {'via': 'measurements', 'description': 'projects using this measurement', 'collection': 'Project'}, 'compiler_inst': {'default': 'fallback', 'argparse': {'group': 'instrumentation', 'nargs': '?', 'choices': ['always', 'fallback', 'never'], 'flags': ('--compiler-inst',), 'const': 'always', 'metavar': 'mode'}, 'compat': {'Target': {'binutils_source': 2, 'libunwind_source': 2}}, 'type': 'string', 'description': 'use compiler-generated callbacks to gather performance data'}}</em><a class="headerlink" href="#tau.model.measurement.Measurement.attributes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.measurement.Measurement.model_name">
+<code class="descname">model_name</code><em class="property"> = 'Measurement'</em><a class="headerlink" href="#tau.model.measurement.Measurement.model_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.model.measurement.Measurement.on_create">
+<code class="descname">on_create</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/measurement.html#Measurement.on_create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.measurement.Measurement.on_create" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.measurement.Measurement.references">
+<code class="descname">references</code><em class="property"> = set([(&lt;class 'tau.model.experiment.Experiment'&gt;, 'measurement')])</em><a class="headerlink" href="#tau.model.measurement.Measurement.references" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-tau.model.project">
+<span id="tau-model-project-module"></span><h2>tau.model.project module<a class="headerlink" href="#module-tau.model.project" title="Permalink to this headline">¶</a></h2>
+<p>Project data model.</p>
+<p>A project collects multiple <a class="reference internal" href="#tau.model.target.Target" title="tau.model.target.Target"><code class="xref any py py-class docutils literal"><span class="pre">Target</span></code></a>, <a class="reference internal" href="#tau.model.application.Application" title="tau.model.application.Application"><code class="xref any py py-class docutils literal"><span class="pre">Application</span></code></a>, and <a class="reference internal" href="#tau.model.measurement.Measurement" title="tau.model.measurement.Measurement"><code class="xref any py py-class docutils literal"><span class="pre">Measurement</span></code></a>
+configurations in a single container.  Selecting one of each forms a new <a class="reference internal" href="#tau.model.experiment.Experiment" title="tau.model.experiment.Experiment"><code class="xref any py py-class docutils literal"><span class="pre">Experiment</span></code></a>.
+Each application of the <a class="reference internal" href="#tau.model.experiment.Experiment" title="tau.model.experiment.Experiment"><code class="xref any py py-class docutils literal"><span class="pre">Experiment</span></code></a> generates a new <a class="reference internal" href="#tau.model.trial.Trial" title="tau.model.trial.Trial"><code class="xref any py py-class docutils literal"><span class="pre">Trial</span></code></a> record along with
+some performance data (profiles, traces, etc.).</p>
+<dl class="class">
+<dt id="tau.model.project.Project">
+<em class="property">class </em><code class="descclassname">tau.model.project.</code><code class="descname">Project</code><span class="sig-paren">(</span><em>fields</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/project.html#Project"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.project.Project" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tau.model.Controller" title="tau.model.Controller"><code class="xref py py-class docutils literal"><span class="pre">tau.model.Controller</span></code></a>, <a class="reference internal" href="#tau.model.ByName" title="tau.model.ByName"><code class="xref py py-class docutils literal"><span class="pre">tau.model.ByName</span></code></a></p>
+<p>Project data controller.</p>
+<dl class="attribute">
+<dt id="tau.model.project.Project.associations">
+<code class="descname">associations</code><em class="property"> = {'experiments': (&lt;class 'tau.model.experiment.Experiment'&gt;, 'project'), 'applications': (&lt;class 'tau.model.application.Application'&gt;, 'projects'), 'measurements': (&lt;class 'tau.model.measurement.Measurement'&gt;, 'projects'), 'targets': (&lt;class 'tau.model.target.Target'&gt;, 'projects')}</em><a class="headerlink" href="#tau.model.project.Project.associations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.project.Project.attributes">
+<code class="descname">attributes</code><em class="property"> = {'name': {'argparse': {'metavar': '&lt;project_name&gt;'}, 'unique': True, 'type': 'string', 'description': 'project name'}, 'measurements': {'via': 'projects', 'description': 'measurements used by this project', 'collection': 'Measurement'}, 'applications': {'via': 'projects', 'description': 'applications used by this project', 'collection': 'Application'}, 'prefix': {'default': '/home/jlinford/.tau', 'argparse': {'flags': ('--home',), 'metavar': 'path'}, 'required': True, 'type': 'string', 'description': 'location for all files and experiment data related to this project'}, 'experiments': {'via': 'project', 'description': 'experiments formed from this project', 'collection': 'Experiment'}, 'targets': {'via': 'projects', 'description': 'targets used by this project', 'collection': 'Target'}}</em><a class="headerlink" href="#tau.model.project.Project.attributes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.project.Project.model_name">
+<code class="descname">model_name</code><em class="property"> = 'Project'</em><a class="headerlink" href="#tau.model.project.Project.model_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.model.project.Project.on_create">
+<code class="descname">on_create</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/project.html#Project.on_create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.project.Project.on_create" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.model.project.Project.on_delete">
+<code class="descname">on_delete</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/project.html#Project.on_delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.project.Project.on_delete" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.model.project.Project.prefix">
+<code class="descname">prefix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/project.html#Project.prefix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.project.Project.prefix" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.project.Project.references">
+<code class="descname">references</code><em class="property"> = set([(&lt;class 'tau.model.experiment.Experiment'&gt;, 'project')])</em><a class="headerlink" href="#tau.model.project.Project.references" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-tau.model.setting">
+<span id="tau-model-setting-module"></span><h2>tau.model.setting module<a class="headerlink" href="#module-tau.model.setting" title="Permalink to this headline">¶</a></h2>
+<p>TAU Commander settings.</p>
+<p>FIXME: Settings needs a design review.</p>
+<dl class="class">
+<dt id="tau.model.setting.Setting">
+<em class="property">class </em><code class="descclassname">tau.model.setting.</code><code class="descname">Setting</code><span class="sig-paren">(</span><em>fields</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/setting.html#Setting"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.setting.Setting" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tau.model.Controller" title="tau.model.Controller"><code class="xref py py-class docutils literal"><span class="pre">tau.model.Controller</span></code></a></p>
+<p>Setting data controller.</p>
+<dl class="attribute">
+<dt id="tau.model.setting.Setting.associations">
+<code class="descname">associations</code><em class="property"> = {}</em><a class="headerlink" href="#tau.model.setting.Setting.associations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.setting.Setting.attributes">
+<code class="descname">attributes</code><em class="property"> = {'value': {'type': 'string'}, 'key': {'unique': True, 'type': 'string'}}</em><a class="headerlink" href="#tau.model.setting.Setting.attributes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.setting.Setting.model_name">
+<code class="descname">model_name</code><em class="property"> = 'Setting'</em><a class="headerlink" href="#tau.model.setting.Setting.model_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.setting.Setting.references">
+<code class="descname">references</code><em class="property"> = set([])</em><a class="headerlink" href="#tau.model.setting.Setting.references" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-tau.model.target">
+<span id="tau-model-target-module"></span><h2>tau.model.target module<a class="headerlink" href="#module-tau.model.target" title="Permalink to this headline">¶</a></h2>
+<p>Target data model.</p>
+<p><a class="reference internal" href="#tau.model.target.Target" title="tau.model.target.Target"><code class="xref any py py-class docutils literal"><span class="pre">Target</span></code></a> fully describes the hardware and software environment that our
+experiments will be performed in.  The hardware architecture, available compilers,
+and system libraries are described in the target record.  There will be multiple
+target records for any physical computer system since each target record uniquely
+describes a specific set of system features.  For example, if both GNU and Intel
+compilers are installed then there will target configurations for each compiler family.</p>
+<dl class="class">
+<dt id="tau.model.target.Target">
+<em class="property">class </em><code class="descclassname">tau.model.target.</code><code class="descname">Target</code><span class="sig-paren">(</span><em>fields</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/target.html#Target"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.target.Target" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tau.model.Controller" title="tau.model.Controller"><code class="xref py py-class docutils literal"><span class="pre">tau.model.Controller</span></code></a>, <a class="reference internal" href="#tau.model.ByName" title="tau.model.ByName"><code class="xref py py-class docutils literal"><span class="pre">tau.model.ByName</span></code></a></p>
+<p>Target data controller.</p>
+<dl class="attribute">
+<dt id="tau.model.target.Target.associations">
+<code class="descname">associations</code><em class="property"> = {'projects': (&lt;class 'tau.model.project.Project'&gt;, 'targets')}</em><a class="headerlink" href="#tau.model.target.Target.associations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.target.Target.attributes">
+<code class="descname">attributes</code><em class="property"> = {'MPI_FC': {'argparse': {'group': 'Message Passing Interface (MPI)', 'flags': ('--mpi-fc',), 'metavar': '&lt;command&gt;'}, 'model': 'Compiler', 'required': False, 'description': 'MPI Fortran compiler command'}, 'libunwind_source': {'default': 'download', 'argparse': {'action': &lt;class 'tau.cli.arguments.ParsePackagePathAction'&gt;, 'group': 'software package', 'flags': ('--libunwind',), 'metavar': '(&lt;path&gt;|&lt;url&gt;|download|None)'}, 'type': 'string', 'description': 'path or URL to a libunwind installation or archive file'}, 'name': {'argparse': {'metavar': '&lt;target_name&gt;'}, 'unique': True, 'type': 'string', 'description': 'target configuration name'}, 'mpi_include_path': {'argparse': {'group': 'Message Passing Interface (MPI)', 'nargs': '+', 'flags': ('--mpi-include-path',), 'metavar': '&lt;path&gt;'}, 'type': 'array', 'description': 'paths to search for MPI header files when building MPI applications'}, 'CC': {'argparse': {'group': 'compiler', 'flags': ('--cc',), 'metavar': '&lt;command&gt;'}, 'model': 'Compiler', 'required': True, 'description': 'C compiler command'}, 'score-p_source': {'argparse': {'action': &lt;class 'tau.cli.arguments.ParsePackagePathAction'&gt;, 'group': 'software package', 'flags': ('--score-p',), 'metavar': '(&lt;path&gt;|&lt;url&gt;|download|None)'}, 'type': 'string', 'description': 'path or URL to a Score-P installation or archive file'}, 'papi_source': {'argparse': {'action': &lt;class 'tau.cli.arguments.ParsePackagePathAction'&gt;, 'group': 'software package', 'flags': ('--papi',), 'metavar': '(&lt;path&gt;|&lt;url&gt;|download|None)'}, 'type': 'string', 'description': 'path or URL to a PAPI installation or archive file'}, 'UPC': {'argparse': {'group': 'Universal Parallel C', 'flags': ('--upc',), 'metavar': '&lt;command&gt;'}, 'model': 'Compiler', 'required': False, 'description': 'Universal Parallel C compiler command'}, 'tau_source': {'default': 'download', 'argparse': {'action': &lt;class 'tau.cli.arguments.ParsePackagePathAction'&gt;, 'group': 'software package', 'flags': ('--tau',), 'metavar': '(&lt;path&gt;|&lt;url&gt;|download)'}, 'type': 'string', 'description': 'path or URL to a TAU installation or archive file'}, 'CXX': {'argparse': {'group': 'compiler', 'flags': ('--cxx',), 'metavar': '&lt;command&gt;'}, 'model': 'Compiler', 'required': True, 'description': 'C++ compiler command'}, 'pdt_source': {'default': 'download', 'argparse': {'action': &lt;class 'tau.cli.arguments.ParsePackagePathAction'&gt;, 'group': 'software package', 'flags': ('--pdt',), 'metavar': '(&lt;path&gt;|&lt;url&gt;|download|None)'}, 'type': 'string', 'description': 'path or URL to a PDT installation or archive file'}, 'FC': {'argparse': {'group': 'compiler', 'flags': ('--fc',), 'metavar': '&lt;command&gt;'}, 'model': 'Compiler', 'required': True, 'description': 'Fortran compiler command'}, 'MPI_CXX': {'argparse': {'group': 'Message Passing Interface (MPI)', 'flags': ('--mpi-cxx',), 'metavar': '&lt;command&gt;'}, 'model': 'Compiler', 'required': False, 'description': 'MPI C++ compiler command'}, 'mpi_library_path': {'argparse': {'group': 'Message Passing Interface (MPI)', 'nargs': '+', 'flags': ('--mpi-library-path',), 'metavar': '&lt;path&gt;'}, 'type': 'array', 'description': 'paths to search for MPI library files when building MPI applications'}, 'host_arch': {'default': 'x86_64', 'argparse': {'group': 'target system', 'flags': ('--host-arch',), 'metavar': '&lt;arch&gt;', 'choices': ['bgp', 'x86_64', 'knl', 'knc', 'bgq']}, 'required': True, 'type': 'string', 'description': 'host architecture'}, 'binutils_source': {'default': 'download', 'argparse': {'action': &lt;class 'tau.cli.arguments.ParsePackagePathAction'&gt;, 'group': 'software package', 'flags': ('--binutils',), 'metavar': '(&lt;path&gt;|&lt;url&gt;|download|None)'}, 'type': 'string', 'description': 'path or URL to a GNU binutils installation or archive file'}, 'cuda': {'argparse': {'action': &lt;class 'tau.cli.arguments.ParsePackagePathAction'&gt;, 'group': 'software package', 'flags': ('--cuda',), 'metavar': '&lt;path&gt;'}, 'type': 'string', 'description': 'path to NVIDIA CUDA installation'}, 'host_os': {'default': 'Linux', 'argparse': {'group': 'target system', 'flags': ('--host-os',), 'metavar': '&lt;os&gt;', 'choices': ['CNL', 'Darwin', 'CNK', 'Linux']}, 'required': True, 'type': 'string', 'description': 'host operating system'}, 'MPI_CC': {'argparse': {'group': 'Message Passing Interface (MPI)', 'flags': ('--mpi-cc',), 'metavar': '&lt;command&gt;'}, 'model': 'Compiler', 'required': False, 'description': 'MPI C compiler command'}, 'projects': {'via': 'targets', 'description': 'projects using this target', 'collection': 'Project'}, 'mpi_libraries': {'argparse': {'group': 'Message Passing Interface (MPI)', 'nargs': '+', 'flags': ('--mpi-libraries',), 'metavar': '&lt;flag&gt;'}, 'type': 'array', 'description': 'libraries to link to when building MPI applications'}}</em><a class="headerlink" href="#tau.model.target.Target.attributes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.model.target.Target.compilers">
+<code class="descname">compilers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/target.html#Target.compilers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.target.Target.compilers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get information about the compilers used by this target configuration.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Collection of installed compilers used by this target.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="tau.cf.compiler.html#tau.cf.compiler.installed.InstalledCompilerSet" title="tau.cf.compiler.installed.InstalledCompilerSet">InstalledCompilerSet</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.target.Target.model_name">
+<code class="descname">model_name</code><em class="property"> = 'Target'</em><a class="headerlink" href="#tau.model.target.Target.model_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.target.Target.references">
+<code class="descname">references</code><em class="property"> = set([(&lt;class 'tau.model.experiment.Experiment'&gt;, 'target')])</em><a class="headerlink" href="#tau.model.target.Target.references" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-tau.model.trial">
+<span id="tau-model-trial-module"></span><h2>tau.model.trial module<a class="headerlink" href="#module-tau.model.trial" title="Permalink to this headline">¶</a></h2>
+<p>Trial data model.</p>
+<p>Every application of an <a class="reference internal" href="#tau.model.experiment.Experiment" title="tau.model.experiment.Experiment"><code class="xref any py py-class docutils literal"><span class="pre">Experiment</span></code></a> produces a new <a class="reference internal" href="#tau.model.trial.Trial" title="tau.model.trial.Trial"><code class="xref any py py-class docutils literal"><span class="pre">Trial</span></code></a>.  The trial
+record completely describes the hardware and software environment that produced
+the performance data.</p>
+<dl class="class">
+<dt id="tau.model.trial.Trial">
+<em class="property">class </em><code class="descclassname">tau.model.trial.</code><code class="descname">Trial</code><span class="sig-paren">(</span><em>fields</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/trial.html#Trial"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.trial.Trial" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tau.model.Controller" title="tau.model.Controller"><code class="xref py py-class docutils literal"><span class="pre">tau.model.Controller</span></code></a></p>
+<p>Trial data controller.</p>
+<dl class="attribute">
+<dt id="tau.model.trial.Trial.associations">
+<code class="descname">associations</code><em class="property"> = {'experiment': (&lt;class 'tau.model.experiment.Experiment'&gt;, 'trials')}</em><a class="headerlink" href="#tau.model.trial.Trial.associations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.trial.Trial.attributes">
+<code class="descname">attributes</code><em class="property"> = {'environment': {'required': True, 'type': 'string', 'description': 'shell environment the trial was performed in'}, 'experiment': {'model': 'Experiment', 'required': True, 'description': &quot;this trial's experiment&quot;}, 'command': {'required': True, 'type': 'string', 'description': 'command line executed when performing the trial'}, 'end_time': {'type': 'datetime', 'description': 'date and time the trial ended'}, 'data_size': {'type': 'integer', 'description': 'the size in bytes of the trial data'}, 'begin_time': {'type': 'datetime', 'description': 'date and time the trial began'}, 'return_code': {'type': 'integer', 'description': 'return code of the command executed when performing the trial'}, 'number': {'required': True, 'type': 'integer', 'description': 'trial unique identifier'}, 'cwd': {'required': True, 'type': 'string', 'description': 'directory the trial was performed in'}}</em><a class="headerlink" href="#tau.model.trial.Trial.attributes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.trial.Trial.model_name">
+<code class="descname">model_name</code><em class="property"> = 'Trial'</em><a class="headerlink" href="#tau.model.trial.Trial.model_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.model.trial.Trial.on_create">
+<code class="descname">on_create</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/trial.html#Trial.on_create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.trial.Trial.on_create" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.model.trial.Trial.on_delete">
+<code class="descname">on_delete</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/trial.html#Trial.on_delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.trial.Trial.on_delete" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="tau.model.trial.Trial.perform">
+<em class="property">classmethod </em><code class="descname">perform</code><span class="sig-paren">(</span><em>expr</em>, <em>cmd</em>, <em>cwd</em>, <em>env</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/trial.html#Trial.perform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.trial.Trial.perform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs a trial of an experiment.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>expr</strong> (<a class="reference internal" href="#tau.model.experiment.Experiment" title="tau.model.experiment.Experiment"><em>Experiment</em></a>) &#8211; Experiment data.</li>
+<li><strong>cmd</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Command to profile, with command line arguments.</li>
+<li><strong>cwd</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Working directory to perform trial in.</li>
+<li><strong>env</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Environment variables to set before performing the trial.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.model.trial.Trial.prefix">
+<code class="descname">prefix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/trial.html#Trial.prefix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.trial.Trial.prefix" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.trial.Trial.references">
+<code class="descname">references</code><em class="property"> = set([])</em><a class="headerlink" href="#tau.model.trial.Trial.references" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="tau.model.trial.TrialError">
+<em class="property">exception </em><code class="descclassname">tau.model.trial.</code><code class="descname">TrialError</code><span class="sig-paren">(</span><em>value</em>, <em>hint='Try `tau --help`'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/trial.html#TrialError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.trial.TrialError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="tau.html#tau.error.ConfigurationError" title="tau.error.ConfigurationError"><code class="xref py py-class docutils literal"><span class="pre">tau.error.ConfigurationError</span></code></a></p>
+<p>Indicates there was an error while performing an experiment trial.</p>
+<dl class="attribute">
+<dt id="tau.model.trial.TrialError.message_fmt">
+<code class="descname">message_fmt</code><em class="property"> = &quot;\n%(value)s\n%(hint)s\n\nPlease check the selected configuration for errors or email '%(logfile)s' to  %(contact)s for assistance.\n&quot;</em><a class="headerlink" href="#tau.model.trial.TrialError.message_fmt" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="tau.gui.html">tau.gui package</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015 ParaTools, Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>

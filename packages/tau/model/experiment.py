@@ -1,13 +1,4 @@
-#"""
-#@file
-#@author John C. Linford (jlinford@paratools.com)
-#@version 1.0
-#
-#@brief
-#
-# This file is part of TAU Commander
-#
-#@section COPYRIGHT
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -33,29 +24,32 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#"""
+#
+"""Experiment data model.
+
+An Experiment uniquely groups a :any:`Target`, :any:`Application`, and :any:`Measurement` 
+and will have zero or more :any:`Trial`. There is one selected experiment per project.  
+The selected experiment will be used for application compilation and trial visualization. 
+"""
 
 import os
 import glob
 import shutil
-from tau import logger, settings, util
+import tau.settings
+from tau import logger, util
 from tau.error import ConfigurationError, InternalError
-from tau.controller import Controller
+from tau.model import Controller
 from tau.model.trial import Trial
-from tau.model.compiler_command import CompilerCommand
+from tau.model.compiler import Compiler
 from tau.cf.software.tau_installation import TauInstallation
 from tau.cf.compiler.installed import InstalledCompiler
 
-LOGGER = logger.getLogger(__name__)
+
+LOGGER = logger.get_logger(__name__)
 
 
 class Experiment(Controller):
-    """
-    Experiment data model controller
-    
-    An Experiment uniquely groups a Target, Application, and Measurement and
-    will have zero or more Trials. 
-    """
+    """Experiment data controller."""
 
     attributes = {
         'project': {
@@ -84,6 +78,10 @@ class Experiment(Controller):
             'description': "Trials of this experiment"
         },
     }
+    
+    def __init__(self, *args, **kwargs):
+        super(Experiment,self).__init__(*args, **kwargs)
+        self.tau = None
 
     def name(self):
         populated = self.populate()
@@ -93,19 +91,13 @@ class Experiment(Controller):
                                     populated['measurement']['name'])
 
     def prefix(self):
-        """
-        Storage location for all experiment data
-        """
         populated = self.populate()
         return os.path.join(populated['project'].prefix(),
                             populated['target']['name'],
                             populated['application']['name'],
                             populated['measurement']['name'])
 
-    def onCreate(self):
-        """
-        Initialize experiment storage
-        """
+    def on_create(self):
         prefix = self.prefix()
         try:
             util.mkdirp(prefix)
@@ -113,39 +105,33 @@ class Experiment(Controller):
             raise ConfigurationError('Cannot create directory %r' % prefix,
                                      'Check that you have `write` access')
 
-    def onDelete(self):
-        """
-        Clean up experiment storage
-        """
-        if self.isSelected():
-            settings.unset('experiment_id')
+    def on_delete(self):
+        # pylint: disable=broad-except
+        if self.is_selected():
+            tau.settings.unset('experiment_id')
         prefix = self.prefix()
         try:
             shutil.rmtree(prefix)
         except Exception as err:
             if os.path.exists(prefix):
-                LOGGER.error(
-                    "Could not remove experiment data at '%s': %s" % (prefix, err))
+                LOGGER.error("Could not remove experiment data at '%s': %s", prefix, err)
 
     def select(self):
-        """
-        Set this experiment as the "selected" experiment.
-        """
         if not self.eid:
             raise InternalError('Tried to select an experiment without an eid')
-        settings.set('experiment_id', self.eid)
+        tau.settings.set('experiment_id', self.eid)
 
-    def isSelected(self):
-        return self.eid and settings.get('experiment_id') == self.eid
+    def is_selected(self):
+        return self.eid and tau.settings.get('experiment_id') == self.eid
 
     @classmethod
-    def getSelected(cls):
+    def get_selected(cls):
         """Gets the selected Experiment.
         
         Returns:
-            An Experiment object for the currently selected experiment.
+            Experiment: Controller for the currently selected experiment data.
         """
-        experiment_id = settings.get('experiment_id')
+        experiment_id = tau.settings.get('experiment_id')
         if experiment_id:
             found = cls.one(eid=experiment_id)
             if not found:
@@ -156,10 +142,10 @@ class Experiment(Controller):
     def configure(self):
         """Sets up the Experiment for a new trial.
         
-        Installs new software as needed.
+        Installs or configures TAU and all its dependencies.  After calling this 
+        function, the experiment is ready to operate on the user's application.
         """
         populated = self.populate()
-        # TODO: Should install packages in a location where all projects can use
         prefix = populated['project']['prefix']
         target = populated['target']
         application = populated['application']
@@ -169,18 +155,18 @@ class Experiment(Controller):
         # Configure/build/install TAU if needed
         self.tau = TauInstallation(prefix, target['tau_source'], 
                                    target['host_arch'], target['host_os'], 
-                                   target.get_compilers(),
+                                   target.compilers(),
                                    verbose=verbose,
-                                   pdt_source=target['pdt_source'],
-                                   binutils_source=target['binutils_source'],
-                                   libunwind_source=target['libunwind_source'],
-                                   papi_source=target['papi_source'],
+                                   pdt_source=target.get('pdt_source', None),
+                                   binutils_source=target.get('binutils_source', None),
+                                   libunwind_source=target.get('libunwind_source', None),
+                                   papi_source=target.get('papi_source', None),
                                    openmp_support=application['openmp'],
                                    pthreads_support=application['pthreads'],
                                    mpi_support=application['mpi'],
-                                   mpi_include_path=target['mpi_include_path'],
-                                   mpi_library_path=target['mpi_library_path'],
-                                   mpi_linker_flags=target['mpi_linker_flags'],
+                                   mpi_include_path=target.get('mpi_include_path', []),
+                                   mpi_library_path=target.get('mpi_library_path', []),
+                                   mpi_libraries=target.get('mpi_libraries', []),
                                    cuda_support=application['cuda'],
                                    shmem_support=application['shmem'],
                                    mpc_support=application['mpc'],
@@ -208,65 +194,92 @@ class Experiment(Controller):
         with self.tau:
             self.tau.install()
 
-    def managedBuild(self, compiler_cmd, compiler_args):
+    def managed_build(self, compiler_cmd, compiler_args):
+        """Uses this experiment to perform a build operation.
+        
+        Checks that this experiment is compatible with the desired build operation,
+        prepares the experiment, and performs the operation.
+        
+        Args:
+            compiler_cmd (str): The compiler command intercepted by TAU Commander.
+            compiler_args (:py:class:`list`): Compiler command line arguments intercepted by TAU Commander.
+            
+        Raises:
+            ConfigurationError: The experiment is not configured to perform the desired build.
+        
+        Returns:
+            int: Build subprocess return code.
         """
-        TODO: Docs
-        """
-        LOGGER.debug("Managed build: %s" % ([compiler_cmd] + compiler_args))
+        LOGGER.debug("Managed build: %s", [compiler_cmd] + compiler_args)
         target = self.populate('target')
         given_compiler = InstalledCompiler(compiler_cmd)
-        given_compiler_eid = CompilerCommand.from_info(given_compiler).eid
-        target_compiler_eid = target[given_compiler.role.keyword]       
-
+        given_compiler_eid = Compiler.register(given_compiler).eid
+        target_compiler_eid = target[given_compiler.info.role.keyword]       
         # Confirm target supports compiler
         if given_compiler_eid != target_compiler_eid:
-            target_compiler = CompilerCommand.one(eid=target_compiler_eid).info()
+            target_compiler = Compiler.one(eid=target_compiler_eid).info()
             raise ConfigurationError("Target '%s' is configured with %s '%s', not %s '%s'" %
-                                     (target['name'], target_compiler.short_descr, target_compiler.absolute_path,
-                                      given_compiler.short_descr, given_compiler.absolute_path),
+                                     (target['name'], target_compiler.info.short_descr, target_compiler.absolute_path,
+                                      given_compiler.info.short_descr, given_compiler.absolute_path),
                                      "Select a different target or compile with '%s'" % 
                                      target_compiler.absolute_path)
         self.configure()
-        self.tau.compile(given_compiler, compiler_args)
+        return self.tau.compile(given_compiler, compiler_args)
         
-    def managedRun(self, application_cmd, application_args):
-        """
-        TODO: Docs
+    def managed_run(self, application_cmd, application_args):
+        """Uses this experiment to run an application command.
+        
+        Performs all relevent system preparation tasks to run the user's application
+        under the specified experimental configuration.
+        
+        Args:
+            application_cmd (str): The application command intercepted by TAU Commander.
+            application_args (:py:class:`list`): Application command line arguments intercepted by TAU Commander.
+            
+        Raises:
+            ConfigurationError: The experiment is not configured to perform the desired run.
+            
+        Returns:
+            int: Application subprocess return code.
         """
         command = util.which(application_cmd)
         if not command:
             raise ConfigurationError("Cannot find executable: %s" % application_cmd)
-        cwd = os.getcwd()
-
         self.configure()
         cmd, env = self.tau.get_application_command(application_cmd, application_args)
-        return Trial.perform(self, cmd, cwd, env)
+        return Trial.perform(self, cmd, os.getcwd(), env)
 
     def show(self, tool_name=None, trial_numbers=None):
-        """
-        Show most recent trial or all trials with given numbers
+        """Show experiment trial data.
+        
+        Shows the most recent trial or all trials with given numbers.
+        
+        Args:
+            tool_name (str): Name of the visualization or data processing tool to use, e.g. `pprof`.
+            trial_numbers (:py:class:`list`): Numbers of trials to show.
+            
+        Raises:
+            ConfigurationError: Invalid trial numbers or no trial data for this experiment.
         """
         self.configure()
         if trial_numbers:
             trials = []
-            for n in trial_numbers:
-                t = Trial.one({'experiment': self.eid, 'number': n})
-                if not t:
-                    raise ConfigurationError("No trial number %d in experiment %s" % (n, self.name()))
-                trials.append(t)
+            for num in trial_numbers:
+                found = Trial.one({'experiment': self.eid, 'number': num})
+                if not found:
+                    raise ConfigurationError("No trial number %d in experiment %s" % (num, self.name()))
+                trials.append(found)
         else:
             all_trials = self.populate('trials')
             if not all_trials:
-                trials = None
+                raise ConfigurationError("No trials in experiment %s" % self.name(),
+                                         "See `tau trial create --help`")
             else:
-                latest_date = all_trials[0]['begin_time']
-                for trial in all_trials:
-                    if trial['begin_time'] > latest_date:
-                        latest_date = trial['begin_time']
-                trials = [trial]
-        if not trials:
-            raise ConfigurationError("No trials in experiment %s" % self.name(),
-                                     "See `tau trial create --help`")
+                found = all_trials[0]
+                for trial in all_trials[1:]:
+                    if trial['begin_time'] > found['begin_time']:
+                        found = trial
+                trials = [found] 
         for trial in trials:
             prefix = trial.prefix()
             profiles = glob.glob(os.path.join(prefix, 'profile.*.*.*'))

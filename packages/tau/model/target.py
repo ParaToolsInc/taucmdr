@@ -1,13 +1,4 @@
-#"""
-#@file
-#@author John C. Linford (jlinford@paratools.com)
-#@version 1.0
-#
-#@brief
-#
-# This file is part of TAU Commander
-#
-#@section COPYRIGHT
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -33,22 +24,29 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#"""
+#
+"""Target data model.
 
-from tau.arguments import ParsePackagePathAction
-from tau.controller import Controller, ByName
+:any:`Target` fully describes the hardware and software environment that our
+experiments will be performed in.  The hardware architecture, available compilers,
+and system libraries are described in the target record.  There will be multiple
+target records for any physical computer system since each target record uniquely
+describes a specific set of system features.  For example, if both GNU and Intel
+compilers are installed then there will target configurations for each compiler family.
+"""
+
 from tau.error import InternalError
-from tau.cf.compiler.set import CompilerSet
-from tau.cf.compiler.role import ALL_ROLES, REQUIRED_ROLES
-from tau.cf import architecture
-from tau.cf.architecture import host
+from tau.cli.arguments import ParsePackagePathAction
+from tau.model import Controller, ByName
+from tau.cf.target import Architecture, OperatingSystem
+from tau.cf.target import host
+from tau.cf.compiler import CC_ROLE, CXX_ROLE, FC_ROLE, UPC_ROLE, CompilerRole
+from tau.cf.compiler.mpi import MPI_CC_ROLE, MPI_CXX_ROLE, MPI_FC_ROLE
+from tau.cf.compiler.installed import InstalledCompilerSet 
 
 
 class Target(Controller, ByName):
-
-    """
-    Target data model controller
-    """
+    """Target data controller."""
 
     attributes = {
         'projects': {
@@ -66,21 +64,21 @@ class Target(Controller, ByName):
             'type': 'string',
             'required': True,
             'description': 'host operating system',
-            'default': host.HOST_OS,
+            'default': host.operating_system().name,
             'argparse': {'flags': ('--host-os',),
                          'group': 'target system',
-                         'metavar': 'os',
-                         'choices': architecture.KNOWN_TARGET_OS}
+                         'metavar': '<os>',
+                         'choices': OperatingSystem.keys()}
         }, 
         'host_arch': {
             'type': 'string',
             'required': True,
             'description': 'host architecture',
-            'default': host.HOST_ARCH,
+            'default': host.architecture().name,
             'argparse': {'flags': ('--host-arch',),
                          'group': 'target system',
-                         'metavar': 'arch',
-                         'choices': architecture.KNOWN_TARGET_ARCH}
+                         'metavar': '<arch>',
+                         'choices': Architecture.keys()}
         },
         # TODO: Get TAU to support a proper host/device model for offloading, etc.
 #         'device_arch': {
@@ -91,98 +89,93 @@ class Target(Controller, ByName):
 #                          'group': 'target system',
 #                          'metavar': 'arch'}
 #         },
-        'CC': {
-            'model': 'CompilerCommand',
-            'required': True,
-            'description': 'C compiler command',
-            'default': host.HOST_DEFAULT_CC,
+        CC_ROLE.keyword: {
+            'model': 'Compiler',
+            'required': CC_ROLE.required,
+            'description': '%s compiler command' % CC_ROLE.language,
             'argparse': {'flags': ('--cc',),
                          'group': 'compiler',
                          'metavar': '<command>'}
         },
-        'CXX': {
-            'model': 'CompilerCommand',
-            'required': True,
-            'description': 'C++ compiler command',
-            'default': host.HOST_DEFAULT_CXX,
-            'argparse': {'flags': ('--cxx', '--c++'),
+        CXX_ROLE.keyword: {
+            'model': 'Compiler',
+            'required': CXX_ROLE.required,
+            'description': '%s compiler command' % CXX_ROLE.language,
+            'argparse': {'flags': ('--cxx',),
                          'group': 'compiler',
                          'metavar': '<command>'}
         },
-        'FC': {
-            'model': 'CompilerCommand',
-            'required': True,
-            'description': 'Fortran compiler command',
-            'default': host.HOST_DEFAULT_FC,
-            'argparse': {'flags': ('--fc', '--fortran'),
+        FC_ROLE.keyword: {
+            'model': 'Compiler',
+            'required': FC_ROLE.required,
+            'description': '%s compiler command' % FC_ROLE.language,
+            'argparse': {'flags': ('--fc',),
                          'group': 'compiler',
                          'metavar': '<command>'}
         },
-#         'F77': {
-#             'model': 'CompilerCommand',
-#             'description': 'FORTRAN77 compiler command',
-#             'argparse': {'flags': ('--f77',),
-#                          'group': 'compiler',
-#                          'metavar': '<command>'}
-#         },
-#         'F90': {
-#             'model': 'CompilerCommand',
-#             'description': 'Fortran90 compiler command',
-#             'argparse': {'flags': ('--f90',),
-#                          'group': 'compiler',
-#                          'metavar': '<command>'}
-#         },
-#         'UPC': {
-#             'model': 'CompilerCommand',
-#             'description': 'Universal Parallel C compiler command',
-#             'argparse': {'flags': ('--upc',),
-#                          'group': 'compiler',
-#                          'metavar': '<command>'}
-#         },
+        UPC_ROLE.keyword: {
+            'model': 'Compiler',
+            'required': UPC_ROLE.required,
+            'description': '%s compiler command' % UPC_ROLE.language,
+            'argparse': {'flags': ('--upc',),
+                         'group': 'Universal Parallel C',
+                         'metavar': '<command>'}
+        },
+        MPI_CC_ROLE.keyword: {
+            'model': 'Compiler',
+            'required': MPI_CC_ROLE.required,
+            'description': '%s compiler command' % MPI_CC_ROLE.language,
+            'argparse': {'flags': ('--mpi-cc',),
+                         'group': 'Message Passing Interface (MPI)',
+                         'metavar': '<command>'}
+        },
+        MPI_CXX_ROLE.keyword: {
+            'model': 'Compiler',
+            'required': MPI_CXX_ROLE.required,
+            'description': '%s compiler command' % MPI_CXX_ROLE.language,
+            'argparse': {'flags': ('--mpi-cxx',),
+                         'group': 'Message Passing Interface (MPI)',
+                         'metavar': '<command>'}
+        },
+        MPI_FC_ROLE.keyword: {
+            'model': 'Compiler',
+            'required': MPI_FC_ROLE.required,
+            'description': '%s compiler command' % MPI_FC_ROLE.language,
+            'argparse': {'flags': ('--mpi-fc',),
+                         'group': 'Message Passing Interface (MPI)',
+                         'metavar': '<command>'}
+        },
+        'mpi_include_path': {
+            'type': 'array',
+            'description': 'paths to search for MPI header files when building MPI applications',
+            'argparse': {'flags': ('--mpi-include-path',),
+                         'group': 'Message Passing Interface (MPI)',
+                         'metavar': '<path>',
+                         'nargs': '+'},
+        },
+        'mpi_library_path': {
+            'type': 'array',
+            'description': 'paths to search for MPI library files when building MPI applications',
+            'argparse': {'flags': ('--mpi-library-path',),
+                         'group': 'Message Passing Interface (MPI)',
+                         'metavar': '<path>',
+                         'nargs': '+'},
+        },
+        'mpi_libraries': {
+            'type': 'array',
+            'description': 'libraries to link to when building MPI applications',
+            'argparse': {'flags': ('--mpi-libraries',),
+                         'group': 'Message Passing Interface (MPI)',
+                         'metavar': '<flag>',
+                         'nargs': '+'},
+        },
         'cuda': {
             'type': 'string',
             'description': 'path to NVIDIA CUDA installation',
-            'default': None,
             'argparse': {'flags': ('--cuda',),
                          'group': 'software package',
                          'metavar': '<path>',
                          'action': ParsePackagePathAction},
-        },
-        'mpi_include_path': {
-            'type': 'array',
-            'default': None,
-            'description': 'paths to search for MPI header files when building MPI applications',
-            'argparse': {'flags': ('--mpi-include-paths',),
-                         'group': 'Message Passing Interface (MPI)',
-                         'metavar': '<path>',
-                         'action': ParsePackagePathAction},
-        },
-        'mpi_library_path': {
-            'type': 'array',
-            'default': None,
-            'description': 'paths to search for MPI library files when building MPI applications',
-            'argparse': {'flags': ('--mpi-library-paths',),
-                         'group': 'Message Passing Interface (MPI)',
-                         'metavar': '<path>',
-                         'action': ParsePackagePathAction},
-        },
-        'mpi_compiler_flags': {
-            'type': 'array',
-            'default': None,
-            'description': 'additional compiler flags required to build MPI applications',
-            'argparse': {'flags': ('--mpi-compiler-flags',),
-                         'group': 'Message Passing Interface (MPI)',
-                         'metavar': '<flag>',
-                         'nargs': '+'},
-        },
-        'mpi_linker_flags': {
-            'type': 'array',
-            'default': None,
-            'description': 'additional linker flags required to build MPI applications',
-            'argparse': {'flags': ('--mpi-linker-flags',),
-                         'group': 'Message Passing Interface (MPI)',
-                         'metavar': '<flag>',
-                         'nargs': '+'},
         },
         'tau_source': {
             'type': 'string',
@@ -223,7 +216,6 @@ class Target(Controller, ByName):
         'papi_source': {
             'type': 'string',
             'description': 'path or URL to a PAPI installation or archive file',
-            'default': None,
             'argparse': {'flags': ('--papi',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
@@ -232,7 +224,6 @@ class Target(Controller, ByName):
         'score-p_source': {
             'type': 'string',
             'description': 'path or URL to a Score-P installation or archive file',
-            'default': None,
             'argparse': {'flags': ('--score-p',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
@@ -240,22 +231,22 @@ class Target(Controller, ByName):
         }
     }
 
-    def get_compilers(self):
-        """Get Compiler objects for all compilers in this Target.
-        
+    def compilers(self):
+        """Get information about the compilers used by this target configuration.
+         
         Returns:
-            A CompilerSet with all required compilers set.
+            InstalledCompilerSet: Collection of installed compilers used by this target.
         """
         eids = []
         compilers = {}
-        for role in ALL_ROLES:
+        for role in CompilerRole.all():
             try:
                 compiler_command = self.populate(role.keyword)
             except KeyError:
                 continue
             compilers[role.keyword] = compiler_command.info()
-            eids.append(str(compiler_command.eid))
-        missing = [role.keyword for role in REQUIRED_ROLES if role.keyword not in compilers]
+            eids.append(compiler_command.eid)
+        missing = [role.keyword for role in CompilerRole.tau_required() if role.keyword not in compilers]
         if missing:
             raise InternalError("Target '%s' is missing required compilers: %s" % (self['name'], missing))
-        return CompilerSet('_'.join(eids), **compilers)
+        return InstalledCompilerSet('_'.join([str(x) for x in eids]), **compilers)

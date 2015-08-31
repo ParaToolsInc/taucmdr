@@ -1,13 +1,4 @@
-#"""
-#@file
-#@author John C. Linford (jlinford@paratools.com)
-#@version 1.0
-#
-#@brief
-#
-# This file is part of TAU Commander
-#
-#@section COPYRIGHT
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -33,59 +24,73 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#"""
+#
+"""TAU Commander package initialization.
+
+The first line of this file is the first thing to be executed whenever TAU Commander
+is invoked in any way. This module establishes global constants (as few as possible)
+and checks the Python version.  It must be kept as short and simple as possible.
+"""
 
 import os
 import sys
 
 
-# Exit codes
 EXIT_FAILURE = -100
-EXIT_WARNING = 100
-EXIT_SUCCESS = 0
+"""int: Process exit code indicating unrecoverable failure."""
 
-# Contact for bugs, etc.
+EXIT_WARNING = 100
+"""int: Process exit code indicating non-optimal condition on exit."""
+
+EXIT_SUCCESS = 0
+"""int: Process exit code indicating successful operation."""
+
 HELP_CONTACT = '<support@paratools.com>'
+"""str: E-mail address users should contact for help."""
 
 PROJECT_URL = 'http://www.taucommander.com/'
+"""str: URL of the TAU Commander project."""
 
-# Expected Python version
 MINIMUM_PYTHON_VERSION = (2, 7)
+"""tuple: Minimum required Python version for TAU Comamnder.
 
-# Check Python version before we do anything
+A tuple of at least (MAJOR, MINOR) directly comparible to :any:`sys.version_info`
+"""
+
 if sys.version_info < MINIMUM_PYTHON_VERSION:
-    version = '.'.join(map(str, sys.version_info[0:3]))
-    expected = '.'.join(map(str, MINIMUM_PYTHON_VERSION))
+    VERSION = '.'.join([str(x) for x in sys.version_info[0:3]])
+    EXPECTED = '.'.join([str(x) for x in MINIMUM_PYTHON_VERSION])
     sys.stderr.write("""%s
 %s
 %s
 Your Python version is %s but Python %s or later is required.
 Please update Python or contact %s for support.
-""" % (PROJECT_URL, sys.executable, sys.version, version, expected, HELP_CONTACT))
+""" % (PROJECT_URL, sys.executable, sys.version, VERSION, EXPECTED, HELP_CONTACT))
     sys.exit(EXIT_FAILURE)
 
-# TAU Commander home path
-try:
-    TAU_HOME = os.environ['__TAU_HOME__']
-except KeyError:
-    from tempfile import gettempdir
-    SYSTEM_PREFIX = gettempdir()
-    TAU_HOME = None
-else:
-    SYSTEM_PREFIX = os.path.realpath(os.path.join(TAU_HOME, '.system'))
+TAU_HOME = os.path.realpath(os.path.abspath(os.environ['__TAU_HOME__']))
+"""str: Absolute path to the top-level TAU Commander directory.
 
-# The script that launched TAU Commander
-try:
-    TAU_SCRIPT = os.environ['__TAU_SCRIPT__']
-except KeyError:
-    sys.stderr.write("""
-%(bar)s
-!
-! CRITICAL ERROR: __TAU_SCRIPT__ environment variable not set.
-!
-%(bar)s
-  """ % {'bar': '!' * 80})
-    sys.exit(EXIT_FAILURE)
+This directory contains at least `bin`, `docs`, and `packages` directories and is the root
+for system-level package installation paths. **Do not** change it once it is set.
+"""
 
-# User-level TAU files
+TAU_SCRIPT = os.environ['__TAU_SCRIPT__']
+"""str: Script that launched TAU Commander.
+
+Mainly used for help messages. **Do not** change it once it is set.
+"""
+
+SYSTEM_PREFIX = os.path.join(TAU_HOME, '.system')
+"""str: Absolute path to system-level TAU Commander files.
+
+System-level software package installation prefix and home for system-level projects.
+Do not** change it once it is set.
+"""
+
 USER_PREFIX = os.path.join(os.path.expanduser('~'), '.tau')
+"""str: Absolute path to user-level TAU Commander files.
+
+User-level software package installation prefix and home for user-level projects.
+**Do not** change it once it is set.
+"""

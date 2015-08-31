@@ -1,13 +1,4 @@
-#"""
-#@file
-#@author John C. Linford (jlinford@paratools.com)
-#@version 1.0
-#
-#@brief
-#
-# This file is part of TAU Commander
-#
-#@section COPYRIGHT
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -33,153 +24,293 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#"""
-#pylint: disable=too-many-instance-attributes
-#pylint: disable=too-few-public-methods
-#pylint: disable=too-many-arguments
+#
+"""Installed compiler detection.
+
+TAU Commander's compiler knowledgebase lists all compilers known to TAU Commander
+but only some of those will actually be available on any given system.  This
+module detects installed compilers and can invoke the installed compiler to 
+discover features that change from system to system.
+"""
 
 import os
 import hashlib
+import subprocess
 from tau import logger, util
-from tau.error import ConfigurationError
-from tau.cf.compiler import Compiler, KNOWN_FAMILIES
-from tau.cf.compiler.role import CC_ROLE, CXX_ROLE, FC_ROLE, REQUIRED_ROLES
-
-LOGGER = logger.getLogger(__name__)
+from tau.error import ConfigurationError, InternalError
+from tau.cf import KeyedRecord, KeyedRecordCreator
+from tau.cf.compiler import CompilerInfo, CompilerRole
 
 
-class InstalledCompiler(Compiler):
+LOGGER = logger.get_logger(__name__)
+
+
+class InstalledCompilerCreator(KeyedRecordCreator):
+    """Metaclass to create a new :any:`InstalledCompiler` instance.
+    
+    This metaclass greatly improves TAU Commander performance.
+    
+    InstalledCompiler instances are constructed with an absolute path
+    to an installed compiler command.  On initialization, the instance
+    invokes the compiler command to discover system-specific compiler
+    characteristics.  This can be very expensive, so we change the
+    instance creation proceedure to only probe the compiler when the 
+    compiler command has never been seen before.  This avoids dupliate
+    invocations in a case like::
+    
+        # `which icc` = '/path/to/icc'
+        a = InstalledCompiler('/path/to/icc')
+        b = InstalledCompiler('icc')    
+    
+    Without this metaclass, `a` and `b` would be different instances
+    assigned to the same compiler and `icc` would be probed twice. With
+    this metaclass, ``b is a == True`` and `icc` is only invoked once.
+    """
+    def __call__(cls,  *args, **kwargs):
+        try:
+            command = kwargs['command']
+        except KeyError:
+            command = args[0]
+        assert isinstance(command, basestring)
+        if os.path.isabs(command):
+            try:
+                return cls.__instances__[command]
+            except KeyError:
+                pass
+        absolute_path = util.which(command)
+        if not absolute_path:
+            raise ConfigurationError("'%s' missing or not executable." % command,
+                                     "Check spelling, loaded modules, PATH environment variable, and file permissions")
+        return KeyedRecordCreator.__call__(cls, absolute_path)
+
+
+
+class InstalledCompiler(KeyedRecord):
     """Information about an installed compiler command.
     
+    There are relatively few well known compilers, but a potentially infinite
+    number of commands that can invoke those compilers.  Additionally, an installed 
+    compiler command may be a wrapper around another command.  This class links a
+    command (e.g. icc, gcc-4.2, etc.) with a compiler command in the knowledgebase.
+    
     Attributes:
-        path: Absolute path to folder containing the compiler command
-        absolute_path: Absolute path to the compiler command
-        md5sum: The md5 checksum of the compiler binary
+        absolute_path (str): Absolute path to the compiler command.
+        command (str): Command that invokes the compiler, without path.
+        path (str): Absolute path to folder containing the compiler command.
+        info (CompilerInfo): Information about the compiler invoked by the compiler command.
     """
     
-    def __init__(self, compiler_cmd):
-        """Probes the system to initialize the InstalledCompiler object.
+    __metaclass__ = InstalledCompilerCreator
+    
+    __key__ = 'absolute_path'
+
+    def __init__(self, absolute_path):
+        """Probes the system to find an installed compiler.
         
-        Checks PATH and file permissions to see that compiler command is
-        present and executable.  Calculates the md5 checksum of the compiler
-        binary file so we can recognize if it changes.
+        May check PATH, file permissions, or other conditions in the system
+        to determine if a compiler command is present and executable.
+        
+        If this compiler command wraps another command, may also attempt to discover
+        information about the wrapped compiler as well.
+        
+        Args:
+            absolute_path (str): Absolute path to the compiler command.
         """
-        LOGGER.debug("Identifying compiler: %s" % compiler_cmd)
-        abspath = util.which(compiler_cmd)
-        if not abspath:
-            raise ConfigurationError("'%s' missing or not executable." % compiler_cmd,
-                                     "Check spelling, loaded modules, PATH environment variable, and file permissions")
-        if not util.file_accessible(abspath):
-            raise ConfigurationError("Compiler '%s' not readable." % abspath, 
-                                     "Check file permissions on '%s'" % abspath)
-        md5sum = hashlib.md5()
-        with open(abspath, 'r') as compiler_file:
-            md5sum.update(compiler_file.read())
-        # Executable found, initialize this object
-        super(InstalledCompiler,self).__init__(os.path.basename(compiler_cmd))
-        self.path = os.path.dirname(abspath)
-        self.absolute_path = os.path.join(self.path, self.command)
-        self.md5sum = md5sum.hexdigest()
-        from tau.cf.compiler.wrapped import WrappedCompiler
+        self._md5sum = None
+        self.absolute_path = absolute_path
+        self.path = os.path.dirname(absolute_path)
+        self.command = os.path.basename(absolute_path)
         try:
-            self.wrapped = WrappedCompiler(self)
-        except NotImplementedError:
+            self.info = CompilerInfo.find(self.command)
+        except KeyError:
+            raise RuntimeError("Unknown compiler command '%s'" % self.absolute_path)
+        if self.info.family.show_wrapper_flags:
+            LOGGER.debug("Probing wrapper compiler '%s' to discover wrapped compiler", self.absolute_path)
+            cmd = [self.absolute_path] + self.info.family.show_wrapper_flags
+            LOGGER.debug("Creating subprocess: %s", cmd)
+            try:
+                stdout = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+            except subprocess.CalledProcessError as err:
+                raise RuntimeError("%s failed with return code %d: %s" % (cmd, err.returncode, err.output))
+            else:
+                LOGGER.debug(stdout)
+                LOGGER.debug("%s returned 0", cmd)
+            args = stdout.split()
+            self.wrapped = WrappedCompiler(args[0])
+            try:
+                self.wrapped.parse_args(args[1:], self.info.family)
+            except IndexError:
+                raise RuntimeError("Unexpected output from '%s':\n%s" % (' '.join(cmd), stdout))
+        else:
             self.wrapped = None
 
-    def get_siblings(self):
-        """Gets all compilers in this compiler's family.
-        
-        Compiler commands in the same directory as this compiler's command are preferred
-        over other commands found in $PATH.
-        
-        Returns:
-            List of InstalledCompiler objects for the given family
-            The returned list will have at least one item for all roles in REQUIRED_ROLES.
-    
-        Raises:
-            ConfigurationError: Some required roles couldn't be filled.
-        """
-        LOGGER.debug("Identifying siblings of %s" % self.absolute_path)
-        missing_roles = list(set([role.keyword for role in REQUIRED_ROLES]) - set(self.role.keyword))
-        family = KNOWN_FAMILIES[self.family]
-        found = [self]
-        for comp in family:
-            if comp.role != self.role:
-                try:
-                    sibling = InstalledCompiler(os.path.join(self.path, comp.command))
-                except ConfigurationError as err:
-                    LOGGER.debug(err)
-                else:
-                    found.append(sibling)
-                    missing_roles.remove(sibling.role.keyword)
-        if missing_roles:
-            family = InstalledCompiler.get_family(self.family)
-            found.extend([comp for comp in family if comp.role != self.role])
-        return found
 
-    @staticmethod
-    def get_default(role):
-        """Gets the default compiler for the specified role.
+    def md5sum(self):
+        """Calculate the MD5 checksum of the installed compiler command executable.
+        
+        TAU is highly dependent on the compiler used to install TAU.  If that compiler
+        ever changes, or the user tries to "fake out" TAU Commander by renaming compiler
+        commands, then the user should be warned that the compiler has changed. 
+        
+        For now, we use the MD5 checksum of the compiler executable to identify the compiler.
+        This may need to change since compiler wrappers can throw this off.
+        
+        Returns:
+            str: The MD5 checksum in hex.
+        """
+        if not self._md5sum:
+            LOGGER.debug("Calculating MD5 of '%s'", self.absolute_path)
+            md5sum = hashlib.md5()
+            with open(self.absolute_path, 'r') as compiler_file:
+                md5sum.update(compiler_file.read())
+            self._md5sum = md5sum.hexdigest()
+        return self._md5sum
+
+
+
+class WrappedCompiler(InstalledCompiler):
+    """Information about the compiler wrapped by another compiler.
+    
+    It's very common to wrap one compiler command with another.  For example, MPI compilers are usually
+    just wrappers around system compilers than pass additional arguments to the wrapped compiler.
+    We use this class to detect those additional arguments and to set up new compiler wrappers
+    of our own.
+    
+    Attributes:
+        include_path (list): Paths to search for include files when compiling with the wrapped compiler.
+        library_path (list): Paths to search for libraries when linking with the wrapped compiler.
+        compiler_flags (list): Additional flags used when compiling with the wrapped compiler.
+        libraries (list): Additional libraries to link when linking with the wrapped compiler.
+    """
+    def __init__(self, absolute_path):
+        super(WrappedCompiler,self).__init__(absolute_path)
+        self.include_path = []
+        self.library_path = []
+        self.compiler_flags = []
+        self.libraries = []
+        
+    def parse_args(self, args, wrapper_family):
+        """Parse arguments passed to the wrapped compiler by the compiler wrapper.
         
         Args:
-            role: CompilerRole identifying compiler role to be filled.
-            
-        Returns:
-            InstalledCompiler object for the default compiler.
-            
-        Raises:
-            ConfigurationError: Default compiler cannot be found.
+            args (list): Command line arguments added to the wrapped compiler.
+            wrapper_family (CompilerFamily): The compiler wrapper's family.
         """
-        LOGGER.debug("'Getting default %s compiler for role '%s'" % (role.language, role.keyword))
-        # TODO: Check PATH, loaded modules, etc to determine default
-        # TORO: instead of just falling back to GNU all the time
-        defaults = {CC_ROLE.keyword: 'gcc',
-                    CXX_ROLE.keyword: 'g++',
-                    FC_ROLE.keyword: 'gfortran'}
-        try:
-            default_cmd = defaults[role.keyword]
-        except KeyError:
-            raise ConfigurationError("No default compiler %s compiler identified." % role.language)
-        return InstalledCompiler(default_cmd)
-    
-    @staticmethod
-    def get_family(family):
-        """Gets all installed compilers in a compiler family.
-    
-        Args:
-            family: A family name, e.g. 'Intel'
-             
-        Returns:
-            List of InstalledCompiler objects for the given family
-            The returned list will have at least one item for all roles in REQUIRED_ROLES.
-    
-        Raises:
-            ConfigurationError: Invalid compiler family or some required roles couldn't be filled.
-        """
-        LOGGER.debug("Discovering installed %s compilers" % family)
-        try:
-            family = KNOWN_FAMILIES[family]
-        except KeyError:
-            raise ConfigurationError("Invalid compiler family: %s" % family,
-                                     "Known families: " % KNOWN_FAMILIES.keys())
-        missing_roles = list(REQUIRED_ROLES)
-        missing_err = {}
-        found = []
-        for comp in family:
-            try:
-                installed = InstalledCompiler(comp.command)
-            except ConfigurationError as err:
-                # A compiler wasn't found in PATH, but that's OK because 
-                # another compiler may provide the missing role
-                LOGGER.debug("Skipping '%s': %s" % (comp.command, err))
-                missing_err[comp.role] = err
-                continue
+        def parse_flags(idx, flags, acc):
+            arg = args[idx]
+            for flag in flags:
+                if arg == flag:
+                    acc.append(args[idx+1])
+                    return 2
+                elif arg.startswith(flag):
+                    acc.append(arg[len(flag):])
+                    return 1
+            return 0
+        idx = 0
+        while idx < len(args):
+            for flags, acc in [(wrapper_family.include_path_flags, self.include_path),
+                               (wrapper_family.library_path_flags, self.library_path),
+                               (wrapper_family.link_library_flags, self.libraries)]:
+                consumed = parse_flags(idx, flags, acc)
+                if consumed:
+                    idx += consumed
+                    break
             else:
-                found.append(installed)
-                try: missing_roles.remove(comp.role)
-                except ValueError: pass
-        if missing_roles:
-            raise ConfigurationError("One or more compiler roles could not be filled:\n%s" %
-                                     util.pformat_dict(missing_err, indent=2),
-                                     "Update your PATH, load environment modules, or install missing compilers.")
-        return found
+                self.compiler_flags.append(args[idx])
+                idx += 1
+        LOGGER.debug("Wrapped compiler flags: %s", self.compiler_flags)
+        LOGGER.debug("Wrapped include path: %s", self.include_path)
+        LOGGER.debug("Wrapped library path: %s", self.library_path)
+        LOGGER.debug("Wrapped libraries: %s", self.libraries)
+
+
+class InstalledCompilerFamily(KeyedRecord):
+    """Information about an installed compiler family.
+    
+    Compiler families are usually installed at a common prefix but there is no
+    guarantee that all members of the family will be installed.  For example,
+    it is often the case that C and C++ compilers are installed but no Fortran
+    compiler is installed.  This class tracks which members of a compiler family
+    are actually installed on the system.
+    
+    Attributes:
+        family (CompilerFamily): The installed family.
+        commands (dict): InstalledCompiler instances indexed by command string. 
+    """
+    
+    __key__ = 'family'
+    
+    def __init__(self, family):
+        self.family = family
+        self.commands = {}
+        LOGGER.debug("Detecting %s compiler installation", family.name)
+        for info in family:
+            try:
+                comp = InstalledCompiler(info.command)
+            except ConfigurationError as err:
+                LOGGER.debug(err)
+            else:
+                self.commands[comp.info.command] = comp
+                LOGGER.debug("%s %s compiler is %s", family.name, comp.info.role.language, comp.absolute_path)
+
+    def __iter__(self):
+        """Yield one InstalledCompiler for each role filled by any compiler in this installation."""
+        for role in CompilerRole.all():
+            try:
+                yield self.preferred(role)
+            except KeyError:
+                pass
+    
+    def preferred(self, role):
+        """Return the preferred installed compiler for a given role.
+        
+        Since compiler can perform multiple roles we often have many commands
+        that could fit a given role, but only one *preferred* command for the
+        role.  For example, `icpc` can fill the CC or CXX roles but `icc` is
+        preferred over `icpc` for the CC role.
+        
+        Args:
+            role (CompilerRole): The compiler role to fill.
+        
+        Returns:
+            InstalledCompiler: The installed compiler for the role.
+            
+        Raises:
+            KeyError: No installed compiler can fill the role.
+        """
+        for info in self.family.members(role):
+            try:
+                return self.commands[info.command]
+            except KeyError:
+                continue
+        raise KeyError
+
+
+class InstalledCompilerSet(KeyedRecord):
+    """A collection of installed compilers, one per role if the role can be filled.
+    
+    To actually build a software package (or user's application) we must have exactly
+    one compiler in each required compiler role.
+    
+    Attributes:
+        uid: A unique identifier for this particular combination of compilers.
+        members: (CompilerRole, InstalledCompiler) dictionary containing members of this set
+    """
+    
+    __key__ = 'uid'
+    
+    def __init__(self, uid, **kwargs):
+        self.uid = uid
+        self.members = {}
+        all_roles = CompilerRole.keys()
+        for key, val in kwargs.iteritems():
+            if key not in all_roles:
+                raise InternalError("Invalid role: %s" % key)
+            role = CompilerRole.find(key)
+            self.members[role] = val
+
+    def __getitem__(self, role):
+        return self.members[role]
+
+
+

@@ -1,13 +1,4 @@
-#"""
-#@file
-#@author John C. Linford (jlinford@paratools.com)
-#@version 1.0
-#
-#@brief
-#
-# This file is part of TAU Commander
-#
-#@section COPYRIGHT
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -33,7 +24,12 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#"""
+#
+"""Binutils software installation management.
+
+GNU binutils provildes BFD, which TAU uses for symbol resolution during
+sampling, compiler-based instrumentation, and other measurement approaches.
+"""
 
 import os
 import sys
@@ -42,9 +38,10 @@ import shutil
 import fileinput
 from tau import logger, util
 from tau.cf.software.installation import AutotoolsInstallation
+from tau.cf.compiler import CC_ROLE
 
 
-LOGGER = logger.getLogger(__name__)
+LOGGER = logger.get_logger(__name__)
  
 SOURCES = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/binutils-2.23.2.tar.gz'}
 
@@ -52,23 +49,18 @@ LIBS = {None: ['libbfd.a']}
 
 
 class BinutilsInstallation(AutotoolsInstallation):
-    """Encapsulates a GNU binutils installation.
-    
-    GNU binutils provildes BFD, which is used for symbol resolution during
-    sampling, compiler-based instrumentation, and other measurement approaches.
-    """
+    """Encapsulates a GNU binutils installation."""
     
     def __init__(self, prefix, src, arch, compilers):
-        try:
-            cc_family = compilers.CC.wrapped.family
-        except AttributeError:
-            cc_family = compilers.CC.family
-        dst = os.path.join(arch, cc_family)
-        super(BinutilsInstallation,self).__init__('binutils', prefix, src, dst, arch, compilers, SOURCES)
+        dst = os.path.join(arch, compilers[CC_ROLE].info.family.name)
+        super(BinutilsInstallation, self).__init__('binutils', prefix, src, dst, arch, compilers, SOURCES)
 
-    def _verify(self):
-        libraries = LIBS.get(self.arch, LIBS[None])
-        return super(BinutilsInstallation,self)._verify(libraries=libraries)
+    def _verify(self, commands=None, libraries=None):
+        try:
+            libraries = LIBS[self.arch]
+        except KeyError:
+            libraries = LIBS[None]
+        return super(BinutilsInstallation, self)._verify(commands, libraries)
     
     def configure(self, flags, env):
         arch_flags = {'bgp': ['CFLAGS=-fPIC', 'CXXFLAGS=-fPIC',
@@ -88,8 +80,6 @@ class BinutilsInstallation(AutotoolsInstallation):
                       'arm_android': ['CFLAGS=-fPIC', 'CXXFLAGS=-fPIC',
                                       '--disable-nls', '--disable-werror',
                                       '--disable-largefile',
-                                      # TODO: Pass the right host arch, not
-                                      # TAU's magic host words
                                       '--host=%s' % self.arch],
                       'mic_linux': ['CFLAGS=-fPIC', 'CXXFLAGS=-fPIC',
                                     '--host=x86_64-k1om-linux',
@@ -102,7 +92,6 @@ class BinutilsInstallation(AutotoolsInstallation):
                                     'AR=sparc64-unknown-linux-gnu-ar',
                                     '--host=sparc64-unknown-linux-gnu',
                                     '--disable-nls', '--disable-werror'],
-                      # TODO: craycnl with MIC
                       None: ['CFLAGS=-fPIC', 'CXXFLAGS=-fPIC',
                              '--disable-nls', '--disable-werror']}
 
@@ -157,20 +146,20 @@ class BinutilsInstallation(AutotoolsInstallation):
 #                 --disable-nls --disable-werror > tau_configure.log 2>&1
 #               err=$?
 #             fi
-        return super(BinutilsInstallation,self).configure(flags, env)
+        return super(BinutilsInstallation, self).configure(flags, env)
     
     def make_install(self, flags, env, parallel=False):
-        super(BinutilsInstallation,self).make_install(flags, env, parallel)
+        super(BinutilsInstallation, self).make_install(flags, env, parallel)
 
         LOGGER.debug("Copying missing BFD headers")
         for hdr in glob.glob(os.path.join(self._src_path, 'bfd', '*.h')):
             shutil.copy(hdr, self.include_path)
-        for f in glob.glob(os.path.join(self._src_path, 'include', '*')):
+        for hdr in glob.glob(os.path.join(self._src_path, 'include', '*')):
             try:
-                shutil.copy(f, self.include_path)
+                shutil.copy(hdr, self.include_path)
             except:
-                dst = os.path.join(self.include_path, os.path.basename(f))
-                shutil.copytree(f, dst)
+                dst = os.path.join(self.include_path, os.path.basename(hdr))
+                shutil.copytree(hdr, dst)
 
         LOGGER.debug("Copying missing libiberty libraries")
         shutil.copy(os.path.join(self._src_path, 'libiberty', 'libiberty.a'), self.lib_path)
