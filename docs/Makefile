@@ -41,12 +41,14 @@ $(PACKAGE_REST_FILE): $(SOURCE_FILES)
 
 $(LOCAL_BRANCH): all
 	git add $(HERE)
-	git commit -m "Update $(LOCAL_BRANCH) via Makefile"
+	git commit -m "Update documentation on $(LOCAL_BRANCH) via Makefile"
 
 $(DOCS_BRANCH): $(LOCAL_BRANCH)
 	git checkout $(DOCS_BRANCH)
 	git checkout $(LOCAL_BRANCH) $(HERE)
-	git commit -m "Update $(DOCS_BRANCH) via Makefile"
+	git commit -m "Update documentation on $(DOCS_BRANCH) via Makefile"
+	git push
+	git checkout $(LOCAL_BRANCH)
 
 clean:
 	rm -f $(filter-out $(SOURCE_FILES),$(wildcard $(SOURCE_DIR)*.rst))
