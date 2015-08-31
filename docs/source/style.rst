@@ -1,5 +1,5 @@
-TAU Commander Style Guide
-=========================
+TAU Commander Code Style
+========================
 
 .. contents::
 

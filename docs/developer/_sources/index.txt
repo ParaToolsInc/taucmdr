@@ -24,12 +24,16 @@ developer's guide to bring a little sanity back to the development cycle and
 take advantage of important software engineering lessons learned in the last 
 two decades.
 
+**Remember:** Code with a pylint score less than **9** will not be accepted to 
+the master branch.
+
+
 The TAU Commandments
 --------------------
 
-1. Thou shalt read and obey the :doc:`style`.
-2. Thou shalt read and obey the :doc:`design`.
-3. Thou shalt use `pylint`_ 1.4 or later as part of your development cycle.
+1. Thou shalt use `pylint`_ 1.4 or later as part of your development cycle.
+2. Thou shalt follow the :doc:`design` for it is sacred.
+3. Thou shalt style thine code according to the :doc:`style`.
 4. Thou shalt document your code according to the :doc:`documentation`.
 5. **Never** shalt thou develop on the master branch, for that is an abomination.
 6. **Never** shalt thou merge broken code to the master branch.

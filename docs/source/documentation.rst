@@ -1,16 +1,16 @@
-TAU Commander Documentation Guide
-=================================
+TAU Commander Code Documentation
+================================
 
 .. contents::
 
 Introduction
 ------------
 
-Always document your code.  If you can, write the function's `docstring`_
-first, before you write the actual code. It's often the case that what your 
-code *actually does* is very different from what it was *intented to do*.  
-Documenting your code as you develop it will help you clarify in your own
-mind what the code is doing and help other developers know what you intended.
+**DOCUMENT YOUR CODE**
+
+If you can, write the function's `docstring`_ first, before you write the 
+actual code. This can help you clarify in your own mind what the code does and
+help you write code that *actually does* what it was *intented to do*.  
 
 Python has documentation built into the language and this makes it very easy to
 keep your code documented.  It also makes it easy to keep the project design
@@ -29,8 +29,10 @@ makefile to update these pages from the master branch.
 
 ::
 
-  cd docs
-  make update-github-pages
+  $ cd docs
+  $ make
+  # Check for errors
+  $ make update-github-pages
 
 You'll see the new documentation at http://paratoolsinc.github.io/taucmdr.
 
