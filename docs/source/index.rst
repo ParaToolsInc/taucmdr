@@ -3,19 +3,24 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+.. contents::
+   :maxdepth: 2
+
 .. toctree::
    :maxdepth: 2
 
-   index
    design
    style
 
 Welcome
 =======
 
-.. attention:: Welcome Developers!
-   This documentation is intended for the lucky people developing TAU Commander.
-   TAU Commander **users** should should visit `the TAU Commander website`_.
+.. important::
+   This documentation is intended for the lucky people **developing** 
+   TAU Commander.  If you are a TAU Commander **user** then you should 
+   visit `the TAU Commander website`_. If you're looking for information 
+   on the `TAU Performance System`_ (the heart of TAU Commander) then you 
+   should visit `the TAU project page <http://tau.uoregon.edu/>`.
 
 This document will help you, the TAU Commander developer, contribute to the 
 project. For over two decades the `TAU Performance System`_ has been developed 
