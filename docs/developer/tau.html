@@ -1,0 +1,1094 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tau package &mdash; TAU Commander Developer Documentation</title>
+    
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="index.html">
+          <span>TAU Commander Developer Documentation</span></a></h1>
+        <h2 class="heading"><span>tau package</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        <a class="uplink" href="index.html">Contents</a>
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="module-tau">
+<span id="tau-package"></span><h1>tau package<a class="headerlink" href="#module-tau" title="Permalink to this headline">¶</a></h1>
+<p>TAU Commander package initialization.</p>
+<p>The first line of this file is the first thing to be executed whenever TAU Commander
+is invoked in any way. This module establishes global constants (as few as possible)
+and checks the Python version.  It must be kept as short and simple as possible.</p>
+<dl class="data">
+<dt id="tau.EXIT_FAILURE">
+<code class="descclassname">tau.</code><code class="descname">EXIT_FAILURE</code><em class="property"> = -100</em><a class="headerlink" href="#tau.EXIT_FAILURE" title="Permalink to this definition">¶</a></dt>
+<dd><p>int: Process exit code indicating unrecoverable failure.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="tau.EXIT_SUCCESS">
+<code class="descclassname">tau.</code><code class="descname">EXIT_SUCCESS</code><em class="property"> = 0</em><a class="headerlink" href="#tau.EXIT_SUCCESS" title="Permalink to this definition">¶</a></dt>
+<dd><p>int: Process exit code indicating successful operation.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="tau.EXIT_WARNING">
+<code class="descclassname">tau.</code><code class="descname">EXIT_WARNING</code><em class="property"> = 100</em><a class="headerlink" href="#tau.EXIT_WARNING" title="Permalink to this definition">¶</a></dt>
+<dd><p>int: Process exit code indicating non-optimal condition on exit.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="tau.HELP_CONTACT">
+<code class="descclassname">tau.</code><code class="descname">HELP_CONTACT</code><em class="property"> = '&lt;support&#64;paratools.com&gt;'</em><a class="headerlink" href="#tau.HELP_CONTACT" title="Permalink to this definition">¶</a></dt>
+<dd><p>str: E-mail address users should contact for help.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="tau.MINIMUM_PYTHON_VERSION">
+<code class="descclassname">tau.</code><code class="descname">MINIMUM_PYTHON_VERSION</code><em class="property"> = (2, 7)</em><a class="headerlink" href="#tau.MINIMUM_PYTHON_VERSION" title="Permalink to this definition">¶</a></dt>
+<dd><p>tuple: Minimum required Python version for TAU Comamnder.</p>
+<p>A tuple of at least (MAJOR, MINOR) directly comparible to <a class="reference external" href="https://docs.python.org/library/sys.html#sys.version_info" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">sys.version_info</span></code></a></p>
+</dd></dl>
+
+<dl class="data">
+<dt id="tau.PROJECT_URL">
+<code class="descclassname">tau.</code><code class="descname">PROJECT_URL</code><em class="property"> = 'http://www.taucommander.com/'</em><a class="headerlink" href="#tau.PROJECT_URL" title="Permalink to this definition">¶</a></dt>
+<dd><p>str: URL of the TAU Commander project.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="tau.SYSTEM_PREFIX">
+<code class="descclassname">tau.</code><code class="descname">SYSTEM_PREFIX</code><em class="property"> = '/home/jlinford/workspace/taucmdr/.system'</em><a class="headerlink" href="#tau.SYSTEM_PREFIX" title="Permalink to this definition">¶</a></dt>
+<dd><p>str: Absolute path to system-level TAU Commander files.</p>
+<p>System-level software package installation prefix and home for system-level projects.
+Do not** change it once it is set.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="tau.TAU_HOME">
+<code class="descclassname">tau.</code><code class="descname">TAU_HOME</code><em class="property"> = '/home/jlinford/workspace/taucmdr'</em><a class="headerlink" href="#tau.TAU_HOME" title="Permalink to this definition">¶</a></dt>
+<dd><p>str: Absolute path to the top-level TAU Commander directory.</p>
+<p>This directory contains at least <cite>bin</cite>, <cite>docs</cite>, and <cite>packages</cite> directories and is the root
+for system-level package installation paths. <strong>Do not</strong> change it once it is set.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="tau.TAU_SCRIPT">
+<code class="descclassname">tau.</code><code class="descname">TAU_SCRIPT</code><em class="property"> = 'sphinx'</em><a class="headerlink" href="#tau.TAU_SCRIPT" title="Permalink to this definition">¶</a></dt>
+<dd><p>str: Script that launched TAU Commander.</p>
+<p>Mainly used for help messages. <strong>Do not</strong> change it once it is set.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="tau.USER_PREFIX">
+<code class="descclassname">tau.</code><code class="descname">USER_PREFIX</code><em class="property"> = '/home/jlinford/.tau'</em><a class="headerlink" href="#tau.USER_PREFIX" title="Permalink to this definition">¶</a></dt>
+<dd><p>str: Absolute path to user-level TAU Commander files.</p>
+<p>User-level software package installation prefix and home for user-level projects.
+<strong>Do not</strong> change it once it is set.</p>
+</dd></dl>
+
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tau.cf.html">tau.cf package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tau.cf.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tau.cf.compiler.html">tau.cf.compiler package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tau.cf.compiler.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.cf.compiler.html#module-tau.cf.compiler.installed">tau.cf.compiler.installed module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.cf.compiler.html#module-tau.cf.compiler.mpi">tau.cf.compiler.mpi module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="tau.cf.software.html">tau.cf.software package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tau.cf.software.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.cf.software.html#module-tau.cf.software.binutils_installation">tau.cf.software.binutils_installation module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.cf.software.html#module-tau.cf.software.installation">tau.cf.software.installation module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.cf.software.html#module-tau.cf.software.libunwind_installation">tau.cf.software.libunwind_installation module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.cf.software.html#module-tau.cf.software.papi_installation">tau.cf.software.papi_installation module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.cf.software.html#module-tau.cf.software.pdt_installation">tau.cf.software.pdt_installation module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.cf.software.html#module-tau.cf.software.tau_installation">tau.cf.software.tau_installation module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="tau.cf.target.html">tau.cf.target package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tau.cf.target.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.cf.target.html#module-tau.cf.target.device">tau.cf.target.device module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.cf.target.html#module-tau.cf.target.host">tau.cf.target.host module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tau.cli.html">tau.cli package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tau.cli.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tau.cli.commands.html">tau.cli.commands package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="tau.cli.commands.application.html">tau.cli.commands.application package</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.application.html#submodules">Submodules</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.application.html#module-tau.cli.commands.application.create">tau.cli.commands.application.create module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.application.html#module-tau.cli.commands.application.delete">tau.cli.commands.application.delete module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.application.html#module-tau.cli.commands.application.edit">tau.cli.commands.application.edit module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.application.html#module-tau.cli.commands.application.list">tau.cli.commands.application.list module</a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="tau.cli.commands.measurement.html">tau.cli.commands.measurement package</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.measurement.html#submodules">Submodules</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.measurement.html#module-tau.cli.commands.measurement.create">tau.cli.commands.measurement.create module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.measurement.html#module-tau.cli.commands.measurement.delete">tau.cli.commands.measurement.delete module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.measurement.html#module-tau.cli.commands.measurement.edit">tau.cli.commands.measurement.edit module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.measurement.html#module-tau.cli.commands.measurement.list">tau.cli.commands.measurement.list module</a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="tau.cli.commands.project.html">tau.cli.commands.project package</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.project.html#submodules">Submodules</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.project.html#module-tau.cli.commands.project.create">tau.cli.commands.project.create module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.project.html#module-tau.cli.commands.project.delete">tau.cli.commands.project.delete module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.project.html#module-tau.cli.commands.project.edit">tau.cli.commands.project.edit module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.project.html#module-tau.cli.commands.project.list">tau.cli.commands.project.list module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.project.html#module-tau.cli.commands.project.select">tau.cli.commands.project.select module</a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="tau.cli.commands.target.html">tau.cli.commands.target package</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.target.html#submodules">Submodules</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.create">tau.cli.commands.target.create module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.delete">tau.cli.commands.target.delete module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.edit">tau.cli.commands.target.edit module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list">tau.cli.commands.target.list module</a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="tau.cli.commands.trial.html">tau.cli.commands.trial package</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.trial.html#submodules">Submodules</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.create">tau.cli.commands.trial.create module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.delete">tau.cli.commands.trial.delete module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list">tau.cli.commands.trial.list module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.show">tau.cli.commands.trial.show module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.html#module-tau.cli.commands.build">tau.cli.commands.build module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.html#module-tau.cli.commands.dashboard">tau.cli.commands.dashboard module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.html#module-tau.cli.commands.help">tau.cli.commands.help module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tau.cli.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.cli.html#module-tau.cli.arguments">tau.cli.arguments module</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tau.gui.html">tau.gui package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tau.model.html">tau.model package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tau.model.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.model.html#module-tau.model.application">tau.model.application module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.model.html#module-tau.model.compiler">tau.model.compiler module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.model.html#module-tau.model.experiment">tau.model.experiment module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.model.html#module-tau.model.measurement">tau.model.measurement module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.model.html#module-tau.model.project">tau.model.project module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.model.html#module-tau.model.setting">tau.model.setting module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.model.html#module-tau.model.target">tau.model.target module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.model.html#module-tau.model.trial">tau.model.trial module</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-tau.error">
+<span id="tau-error-module"></span><h2>tau.error module<a class="headerlink" href="#module-tau.error" title="Permalink to this headline">¶</a></h2>
+<p>TAU Commander error handling.</p>
+<p>Only error base classes should be defined here.
+Error classes should be defined in their appropriate modules.</p>
+<dl class="exception">
+<dt id="tau.error.ConfigurationError">
+<em class="property">exception </em><code class="descclassname">tau.error.</code><code class="descname">ConfigurationError</code><span class="sig-paren">(</span><em>value</em>, <em>hint='Try `tau --help`'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/error.html#ConfigurationError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.error.ConfigurationError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tau.error.Error" title="tau.error.Error"><code class="xref py py-class docutils literal"><span class="pre">tau.error.Error</span></code></a></p>
+<p>Indicates that TAU Commander cannot succeed with the given parameters.</p>
+<dl class="attribute">
+<dt id="tau.error.ConfigurationError.message_fmt">
+<code class="descname">message_fmt</code><em class="property"> = '\n%(value)s\n%(hint)s\n\nTAU cannot proceed with the given inputs. \nPlease check the selected configuration for errors or contact %(contact)s for assistance.\n'</em><a class="headerlink" href="#tau.error.ConfigurationError.message_fmt" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="tau.error.Error">
+<em class="property">exception </em><code class="descclassname">tau.error.</code><code class="descname">Error</code><span class="sig-paren">(</span><em>value</em>, <em>hint='Contact &lt;support&#64;paratools.com&gt;'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/error.html#Error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.error.Error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/exceptions.html#exceptions.Exception" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">exceptions.Exception</span></code></a></p>
+<p>Base class for all errors in TAU Commander.</p>
+<dl class="attribute">
+<dt id="tau.error.Error.show_backtrace">
+<code class="descname">show_backtrace</code><a class="headerlink" href="#tau.error.Error.show_backtrace" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>bool</em></p>
+<p>Set to True to include a backtrace in the error message.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.error.Error.message_fmt">
+<code class="descname">message_fmt</code><a class="headerlink" href="#tau.error.Error.message_fmt" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em></p>
+<p>Format string for the error message.</p>
+</dd></dl>
+
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>value</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Message describing the error.</li>
+<li><strong>hint</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Message to help the user resolve this error.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="tau.error.Error.handle">
+<code class="descname">handle</code><span class="sig-paren">(</span><em>etype</em>, <em>value</em>, <em>tb</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/error.html#Error.handle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.error.Error.handle" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">message_fmt</code><em class="property"> = &quot;\nAn unexpected %(typename)s exception was raised:\n\n%(value)s\n\n%(backtrace)s\n\nPlease e-mail '%(logfile)s' to %(contact)s for assistance.\n&quot;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">show_backtrace</code><em class="property"> = False</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="tau.error.InternalError">
+<em class="property">exception </em><code class="descclassname">tau.error.</code><code class="descname">InternalError</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/error.html#InternalError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.error.InternalError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tau.error.Error" title="tau.error.Error"><code class="xref py py-class docutils literal"><span class="pre">tau.error.Error</span></code></a></p>
+<p>Indicates that an internal error has occurred.</p>
+<p>These are bad and really shouldn&#8217;t happen.</p>
+<dl class="attribute">
+<dt id="tau.error.InternalError.show_backtrace">
+<code class="descname">show_backtrace</code><em class="property"> = True</em><a class="headerlink" href="#tau.error.InternalError.show_backtrace" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.error.excepthook">
+<code class="descclassname">tau.error.</code><code class="descname">excepthook</code><span class="sig-paren">(</span><em>etype</em>, <em>value</em>, <em>tb</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/error.html#excepthook"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.error.excepthook" title="Permalink to this definition">¶</a></dt>
+<dd><p>Exception handler for any uncaught exception (except SystemExit).</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-tau.logger">
+<span id="tau-logger-module"></span><h2>tau.logger module<a class="headerlink" href="#module-tau.logger" title="Permalink to this headline">¶</a></h2>
+<p>TAU Commander logging.</p>
+<dl class="docutils">
+<dt>TAU Commander has two channels for communicating with the user:</dt>
+<dd><ol class="first last arabic simple">
+<li>sys.stdout via <a class="reference external" href="https://docs.python.org/reference/simple_stmts.html#print" title="(in Python v2.7)"><code class="docutils literal"><span class="pre">The</span> <span class="pre">print</span> <span class="pre">statement</span></code></a>.
+Use this for messages the user has requested, e.g. a project listing.</li>
+<li>sys.stdout and sys.stderr via <a class="reference internal" href="#module-tau.logger" title="tau.logger"><code class="xref any py py-mod docutils literal"><span class="pre">tau.logger</span></code></a>.
+Use this for status messages generated by TAU Commander.</li>
+</ol>
+</dd>
+</dl>
+<p>TAU Commander also logs all status messages at the highest reporting level to
+a rotating debug file in the user&#8217;s TAU Commander project prefix, typically &#8220;~/.tau&#8221;.</p>
+<dl class="data">
+<dt id="tau.logger.LINE_MARKER">
+<code class="descclassname">tau.logger.</code><code class="descname">LINE_MARKER</code><em class="property"> = '[TAU] '</em><a class="headerlink" href="#tau.logger.LINE_MARKER" title="Permalink to this definition">¶</a></dt>
+<dd><p>str: Marker for each line of output.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="tau.logger.LINE_WIDTH">
+<code class="descclassname">tau.logger.</code><code class="descname">LINE_WIDTH</code><em class="property"> = 174</em><a class="headerlink" href="#tau.logger.LINE_WIDTH" title="Permalink to this definition">¶</a></dt>
+<dd><p>Width of a line on the terminal.</p>
+<p>Uses system specific methods to determine console line width.  If the line
+width cannot be determined, the default is 80.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="tau.logger.LOG_FILE">
+<code class="descclassname">tau.logger.</code><code class="descname">LOG_FILE</code><em class="property"> = '/home/jlinford/.tau/debug_log'</em><a class="headerlink" href="#tau.logger.LOG_FILE" title="Permalink to this definition">¶</a></dt>
+<dd><p>str: Absolute path to a log file to receive all debugging output.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="tau.logger.LOG_LEVEL">
+<code class="descclassname">tau.logger.</code><code class="descname">LOG_LEVEL</code><em class="property"> = 'INFO'</em><a class="headerlink" href="#tau.logger.LOG_LEVEL" title="Permalink to this definition">¶</a></dt>
+<dd><p>str: The global logging level for stdout loggers and software packages.</p>
+<p>Don&#8217;t change directly. May be changed via <a class="reference internal" href="#tau.logger.set_log_level" title="tau.logger.set_log_level"><code class="xref any py py-func docutils literal"><span class="pre">set_log_level</span></code></a>.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="tau.logger.LogFormatter">
+<em class="property">class </em><code class="descclassname">tau.logger.</code><code class="descname">LogFormatter</code><span class="sig-paren">(</span><em>line_width</em>, <em>line_marker</em>, <em>printable_only=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/logger.html#LogFormatter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.logger.LogFormatter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/logging.html#logging.Formatter" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">logging.Formatter</span></code></a>, <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Custom log message formatter.</p>
+<p>Controls message formatting for all levels.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>line_width</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Maximum length of a message line before line is wrapped.</li>
+<li><strong>line_marker</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Prefix for every line of the message.</li>
+<li><strong>printable_only</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True, never send unprintable characters to <a class="reference external" href="https://docs.python.org/library/sys.html#sys.stdout" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">sys.stdout</span></code></a>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="tau.logger.LogFormatter.PRINTABLE_CHARS">
+<code class="descname">PRINTABLE_CHARS</code><em class="property"> = set(['\x0c', ' ', '$', '(', ',', '0', '4', '8', '&lt;', '&#64;', 'D', 'H', 'L', 'P', 'T', 'X', '\\', '`', 'd', 'h', 'l', 'p', 't', 'x', '|', '\x0b', '#', &quot;'&quot;, '+', '/', '3', '7', ';', '?', 'C', 'G', 'K', 'O', 'S', 'W', '[', '_', 'c', 'g', 'k', 'o', 's', 'w', '{', '\n', '&quot;', '&amp;', '*', '.', '2', '6', ':', '&gt;', 'B', 'F', 'J', 'N', 'R', 'V', 'Z', '^', 'b', 'f', 'j', 'n', 'r', 'v', 'z', '~', '\t', '\r', '!', '%', ')', '-', '1', '5', '9', '=', 'A', 'E', 'I', 'M', 'Q', 'U', 'Y', ']', 'a', 'e', 'i', 'm', 'q', 'u', 'y', '}'])</em><a class="headerlink" href="#tau.logger.LogFormatter.PRINTABLE_CHARS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.logger.LogFormatter.format">
+<code class="descname">format</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/logger.html#LogFormatter.format"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.logger.LogFormatter.format" title="Permalink to this definition">¶</a></dt>
+<dd><p>Formats a log record.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>record</strong> (<em>LogRecord</em>) &#8211; LogRecord instance to format.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The formatted record message.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)">str</a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">RuntimeError</span></code> &#8211;
+No format specified for a the record&#8217;s logging level.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="data">
+<dt id="tau.logger.TERM_SIZE">
+<code class="descclassname">tau.logger.</code><code class="descname">TERM_SIZE</code><em class="property"> = (180, 55)</em><a class="headerlink" href="#tau.logger.TERM_SIZE" title="Permalink to this definition">¶</a></dt>
+<dd><p>tuple: (width, height) tuple of detected terminal dimensions in characters.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.logger._get_term_size_env">
+<code class="descclassname">tau.logger.</code><code class="descname">_get_term_size_env</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/logger.html#_get_term_size_env"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.logger._get_term_size_env" title="Permalink to this definition">¶</a></dt>
+<dd><p>Discover the size of the user&#8217;s terminal via environment variables.</p>
+<p>The user may set the LINES and COLUMNS environment variables to control TAU Commander&#8217;s
+console dimension calculations.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(width, height) tuple giving the dimensions of the user&#8217;s terminal window in characters,
+or None if the size could not be determined.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#tuple" title="(in Python v2.7)">tuple</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.logger._get_term_size_posix">
+<code class="descclassname">tau.logger.</code><code class="descname">_get_term_size_posix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/logger.html#_get_term_size_posix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.logger._get_term_size_posix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Discover the size of the user&#8217;s terminal on a POSIX operating system (e.g. Linux).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(width, height) tuple giving the dimensions of the user&#8217;s terminal window in characters,
+or None if the size could not be determined.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#tuple" title="(in Python v2.7)">tuple</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.logger._get_term_size_tput">
+<code class="descclassname">tau.logger.</code><code class="descname">_get_term_size_tput</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/logger.html#_get_term_size_tput"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.logger._get_term_size_tput" title="Permalink to this definition">¶</a></dt>
+<dd><p>Discover the size of the user&#8217;s terminal via <a class="reference external" href="http://stackoverflow.com/questions/263890/how-do-i-find-the-width-height-of-a-terminal-window">tput</a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(width, height) tuple giving the dimensions of the user&#8217;s terminal window in characters,
+or None if the size could not be determined.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#tuple" title="(in Python v2.7)">tuple</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.logger._get_term_size_windows">
+<code class="descclassname">tau.logger.</code><code class="descname">_get_term_size_windows</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/logger.html#_get_term_size_windows"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.logger._get_term_size_windows" title="Permalink to this definition">¶</a></dt>
+<dd><p>Discover the size of the user&#8217;s terminal on Microsoft Windows.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(width, height) tuple giving the dimensions of the user&#8217;s terminal window in characters,
+or None if the size could not be determined.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#tuple" title="(in Python v2.7)">tuple</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.logger.get_logger">
+<code class="descclassname">tau.logger.</code><code class="descname">get_logger</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/logger.html#get_logger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.logger.get_logger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a customized logging object.</p>
+<p>Multiple calls to with the same name will always return a reference to the same Logger object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Dot-separated hierarchical name for the logger.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">An instance of <a class="reference external" href="https://docs.python.org/library/logging.html#logging.Logger" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">logging.Logger</span></code></a>.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">Logger</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.logger.get_terminal_size">
+<code class="descclassname">tau.logger.</code><code class="descname">get_terminal_size</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/logger.html#get_terminal_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.logger.get_terminal_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Discover the size of the user&#8217;s terminal.</p>
+<p>Several methods are attempted depending on the user&#8217;s OS.
+If no method succeeds then default to (80, 25).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(width, height) tuple giving the dimensions of the user&#8217;s terminal window in characters.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#tuple" title="(in Python v2.7)">tuple</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.logger.set_log_level">
+<code class="descclassname">tau.logger.</code><code class="descname">set_log_level</code><span class="sig-paren">(</span><em>level</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/logger.html#set_log_level"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.logger.set_log_level" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets <a class="reference internal" href="#tau.logger.LOG_LEVEL" title="tau.logger.LOG_LEVEL"><code class="xref any py py-data docutils literal"><span class="pre">LOG_LEVEL</span></code></a>, the output level for stdout logging objects.</p>
+<p>Changes to LOG_LEVEL may affect software package verbosity.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>level</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; A string identifying the logging level, e.g. &#8220;INFO&#8221;.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-tau.requisite">
+<span id="tau-requisite-module"></span><h2>tau.requisite module<a class="headerlink" href="#module-tau.requisite" title="Permalink to this headline">¶</a></h2>
+<p>FIXME: needs a design review.</p>
+</div>
+<div class="section" id="module-tau.settings">
+<span id="tau-settings-module"></span><h2>tau.settings module<a class="headerlink" href="#module-tau.settings" title="Permalink to this headline">¶</a></h2>
+<p>TAU Commander settings.</p>
+<p>FIXME: settings needs a design review.</p>
+<dl class="function">
+<dt id="tau.settings.get">
+<code class="descclassname">tau.settings.</code><code class="descname">get</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/settings.html#get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.settings.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the value of setting &#8216;key&#8217; or None if not set</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.settings.set">
+<code class="descclassname">tau.settings.</code><code class="descname">set</code><span class="sig-paren">(</span><em>key</em>, <em>val</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/settings.html#set"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.settings.set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set setting &#8216;key&#8217; to value &#8216;val&#8217;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.settings.unset">
+<code class="descclassname">tau.settings.</code><code class="descname">unset</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/settings.html#unset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.settings.unset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove setting &#8216;key&#8217; from the list of settings</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-tau.storage">
+<span id="tau-storage-module"></span><h2>tau.storage module<a class="headerlink" href="#module-tau.storage" title="Permalink to this headline">¶</a></h2>
+<p>Persistant record storage.</p>
+<p>This implementation uses <code class="xref py py-class docutils literal"><span class="pre">TinyDB</span></code> but could be extended to be the front end
+to any kind of storage system.</p>
+<dl class="data">
+<dt id="tau.storage.SYSTEM_STORAGE">
+<code class="descclassname">tau.storage.</code><code class="descname">SYSTEM_STORAGE</code><em class="property"> = &lt;tau.storage.Storage object at 0x3fcfad0&gt;</em><a class="headerlink" href="#tau.storage.SYSTEM_STORAGE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Storage: System-level project data storage.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="tau.storage.Storage">
+<em class="property">class </em><code class="descclassname">tau.storage.</code><code class="descname">Storage</code><span class="sig-paren">(</span><em>prefix</em>, <em>db_name='local.json'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#Storage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.Storage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Interface to a persistant record storage system.</p>
+<p>This implementation uses <code class="xref py py-class docutils literal"><span class="pre">TinyDB</span></code> and supports transactional updates.</p>
+<dl class="attribute">
+<dt id="tau.storage.Storage.database">
+<code class="descname">database</code><a class="headerlink" href="#tau.storage.Storage.database" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>TinyDB</em></p>
+<p>Record database.</p>
+</dd></dl>
+
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>prefix</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Path to a directory to contain the TinyDB database file.</li>
+<li><strong>db_name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the TinyDB database file.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="tau.storage.Storage.__enter__">
+<code class="descname">__enter__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#Storage.__enter__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.Storage.__enter__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initiates the database transaction.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.Storage.__exit__">
+<code class="descname">__exit__</code><span class="sig-paren">(</span><em>ex_type</em>, <em>value</em>, <em>traceback</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#Storage.__exit__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.Storage.__exit__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finalizes the database transaction.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.Storage.contains">
+<code class="descname">contains</code><span class="sig-paren">(</span><em>table_name</em>, <em>keys=None</em>, <em>match_any=False</em>, <em>eids=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#Storage.contains"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.Storage.contains" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the specified table contains at least one matching record.</p>
+<p>Just like <a class="reference internal" href="#tau.storage.Storage.search" title="tau.storage.Storage.search"><code class="xref any py py-meth docutils literal"><span class="pre">Storage.search</span></code></a>, except only tests if the record exists without retrieving any data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the table to search.</li>
+<li><strong>keys</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Attributes to match.</li>
+<li><strong>match_any</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True then any key may match or if False then all keys must match.</li>
+<li><strong>eids</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">list</span></code></a>) &#8211; Record identifiers to match.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">True if a record exists, False otherwise.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)">bool</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.Storage.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>table_name</em>, <em>keys=None</em>, <em>match_any=False</em>, <em>eid=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#Storage.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.Storage.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find a record.</p>
+<p>Either <cite>keys</cite> or <cite>eid</cite> should be specified, not both.  If <cite>keys</cite> is given,
+then every attribute listed in <cite>keys</cite> must have the given value. If <cite>eid</cite>
+is given, return the record with that eid.  If neither is given, return None.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the table to search.</li>
+<li><strong>keys</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Fields to match.</li>
+<li><strong>eid</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">list</span></code></a>) &#8211; Record identifier to match.</li>
+<li><strong>match_any</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True then any key may match or if False then all keys must match.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Matching data record or None if no such record exists.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)">dict</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.Storage.insert">
+<code class="descname">insert</code><span class="sig-paren">(</span><em>table_name</em>, <em>fields</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#Storage.insert"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.Storage.insert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new record.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the table to operate on.</li>
+<li><strong>fields</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Data to record.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The new record&#8217;s identifier.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)">int</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.Storage.match">
+<code class="descname">match</code><span class="sig-paren">(</span><em>table_name</em>, <em>field</em>, <em>regex=None</em>, <em>test=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#Storage.match"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.Storage.match" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find records where &#8216;field&#8217; matches &#8216;regex&#8217;.</p>
+<p>Either <cite>regex</cite> or <cite>test</cite> may be specified, not both.  If <cite>regex</cite> is given,
+then all records with <cite>field</cite> matching the regular expression are returned.
+If test is given then all records with <cite>field</cite> set to a value that caues
+<cite>test</cite> to return True are returned. If neither is given, return all records.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the table to search.</li>
+<li><strong>field</strong> (<a class="reference external" href="https://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Name of the data field to match.</li>
+<li><strong>regex</strong> (<a class="reference external" href="https://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Regular expression string.</li>
+<li><strong>test</strong> &#8211; A callable expression returning a boolean value.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">class:<cite>list</cite>: Matching data records.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">:py</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.Storage.purge">
+<code class="descname">purge</code><span class="sig-paren">(</span><em>table_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#Storage.purge"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.Storage.purge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete all records.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the table to operate on.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.Storage.remove">
+<code class="descname">remove</code><span class="sig-paren">(</span><em>table_name</em>, <em>keys=None</em>, <em>match_any=False</em>, <em>eids=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#Storage.remove"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.Storage.remove" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete records.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the table to operate on.</li>
+<li><strong>keys</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Attributes to match.</li>
+<li><strong>match_any</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True then any key may match or if False then all keys must match.</li>
+<li><strong>eids</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">list</span></code></a>) &#8211; Record identifiers to match.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.Storage.search">
+<code class="descname">search</code><span class="sig-paren">(</span><em>table_name</em>, <em>keys=None</em>, <em>match_any=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#Storage.search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.Storage.search" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find multiple records.</p>
+<p>If <cite>keys</cite> is not specified then return all records.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the table to search.</li>
+<li><strong>keys</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Fields to match.</li>
+<li><strong>match_any</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True then any key may match or if False then all keys must match.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">class:<cite>list</cite>: Matching data records.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">:py</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.Storage.update">
+<code class="descname">update</code><span class="sig-paren">(</span><em>table_name</em>, <em>fields</em>, <em>keys=None</em>, <em>match_any=False</em>, <em>eids=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#Storage.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.Storage.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update existing records.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the table to operate on.</li>
+<li><strong>fields</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Data to record.</li>
+<li><strong>keys</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Attributes to match.</li>
+<li><strong>match_any</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True then any key may match or if False then all keys must match.</li>
+<li><strong>eids</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">list</span></code></a>) &#8211; Record identifiers to match.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="tau.storage.StorageError">
+<em class="property">exception </em><code class="descclassname">tau.storage.</code><code class="descname">StorageError</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#StorageError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.StorageError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tau.error.InternalError" title="tau.error.InternalError"><code class="xref py py-class docutils literal"><span class="pre">tau.error.InternalError</span></code></a></p>
+<p>Indicates that there is a problem with the storage system.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="tau.storage.USER_STORAGE">
+<code class="descclassname">tau.storage.</code><code class="descname">USER_STORAGE</code><em class="property"> = &lt;tau.storage.Storage object at 0x3fcf8d0&gt;</em><a class="headerlink" href="#tau.storage.USER_STORAGE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Storage: User-level project data storage.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-tau.util">
+<span id="tau-util-module"></span><h2>tau.util module<a class="headerlink" href="#module-tau.util" title="Permalink to this headline">¶</a></h2>
+<p>Utility functions.</p>
+<p>Handles system manipulation and status tasks, e.g. subprocess management or file creation.</p>
+<dl class="function">
+<dt id="tau.util.archive_toplevel">
+<code class="descclassname">tau.util.</code><code class="descname">archive_toplevel</code><span class="sig-paren">(</span><em>archive</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#archive_toplevel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.archive_toplevel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the name of the top-level directory in an archive.</p>
+<dl class="docutils">
+<dt>Assumes that the archive file is rooted in a single top-level directory::</dt>
+<dd><dl class="first last docutils">
+<dt>foo</dt>
+<dd>/bar
+/baz</dd>
+</dl>
+</dd>
+</dl>
+<p>The top-level directory here is &#8220;foo&#8221;
+This routine will return stupid results for archives with multiple top-level elements.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>archive</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Path to archive file.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Directory name.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)">str</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.util.camelcase">
+<code class="descclassname">tau.util.</code><code class="descname">camelcase</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#camelcase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.camelcase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a string to CamelCase.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; String to convert.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><cite>name</cite> in CamelCase.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)">str</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.util.create_subprocess">
+<code class="descclassname">tau.util.</code><code class="descname">create_subprocess</code><span class="sig-paren">(</span><em>cmd</em>, <em>cwd=None</em>, <em>env=None</em>, <em>stdout=True</em>, <em>log=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#create_subprocess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.create_subprocess" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a subprocess.</p>
+<p>See <a class="reference external" href="https://docs.python.org/library/subprocess.html#subprocess.Popen" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">subprocess.Popen</span></code></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>cmd</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">list</span></code></a>) &#8211; Command and its command line arguments.</li>
+<li><strong>cwd</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Change directory to <cite>cwd</cite> if given, otherwise use <a class="reference external" href="https://docs.python.org/library/os.html#os.getcwd" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">os.getcwd</span></code></a>.</li>
+<li><strong>env</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Environment variables to set before launching cmd.</li>
+<li><strong>stdout</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True send subprocess stdout and stderr to this processes&#8217; stdout.</li>
+<li><strong>log</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True send subprocess stdout and stderr to the debug log.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Subprocess return code.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)">int</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.util.download">
+<code class="descclassname">tau.util.</code><code class="descname">download</code><span class="sig-paren">(</span><em>src</em>, <em>dest</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#download"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.download" title="Permalink to this definition">¶</a></dt>
+<dd><p>Downloads or copies files.</p>
+<p><cite>src</cite> may be a file path or URL.  The destination folder will be created
+if it doesn&#8217;t exist.  Download is via curl, wget, or Python&#8217;s urllib as appropriate.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>src</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Path or URL to source file.</li>
+<li><strong>dest</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Path to file copy or download destination.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">IOError</span></code> &#8211;
+File copy or download failed.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.util.extract">
+<code class="descclassname">tau.util.</code><code class="descname">extract</code><span class="sig-paren">(</span><em>archive</em>, <em>dest</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#extract"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.extract" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracts archive file to dest.</p>
+<p>Supports compressed and uncompressed tar archives. Destination folder will
+be created if it doesn&#8217;t exist.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>archive</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Path to archive file to extract.</li>
+<li><strong>dest</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Destination folder.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Full path to extracted files.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)">str</a></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">IOError</span></code> &#8211;
+Failed to extract archive.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.util.file_accessible">
+<code class="descclassname">tau.util.</code><code class="descname">file_accessible</code><span class="sig-paren">(</span><em>filepath</em>, <em>mode='r'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#file_accessible"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.file_accessible" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if a file is accessable.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>filepath</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Path to file to check.</li>
+<li><strong>mode</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; File access mode to test, e.g. &#8216;r&#8217; or &#8216;rw&#8217;</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">True if the file exists and can be opened in the specified mode, False otherwise.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.util.human_size">
+<code class="descclassname">tau.util.</code><code class="descname">human_size</code><span class="sig-paren">(</span><em>num</em>, <em>suffix='B'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#human_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.human_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a byte count to human readable units.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>num</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Number to convert.</li>
+<li><strong>suffix</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Unit suffix, e.g. &#8216;B&#8217; for bytes.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><cite>num</cite> as a human readable string.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)">str</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.util.is_url">
+<code class="descclassname">tau.util.</code><code class="descname">is_url</code><span class="sig-paren">(</span><em>url</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#is_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.is_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if <cite>url</cite> is a URL.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>url</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; String to check</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True if <cite>url</cite> is a URL, False otherwise.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)">bool</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.util.mkdirp">
+<code class="descclassname">tau.util.</code><code class="descname">mkdirp</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#mkdirp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.mkdirp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a directory and all its parents.</p>
+<p>Works just like <code class="docutils literal"><span class="pre">mkdir</span> <span class="pre">-p</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>*args</strong> &#8211; Paths to create</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.util.parse_bool">
+<code class="descclassname">tau.util.</code><code class="descname">parse_bool</code><span class="sig-paren">(</span><em>value</em>, <em>additional_true=None</em>, <em>additional_false=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#parse_bool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.parse_bool" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parses a boolean value.</p>
+<p>If <cite>value</cite> is castable to <a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">bool</span></code></a> then return <cite>value</cite> as a bool.
+Otherwise if <cite>value</cite> is a string try to interpret it as a bool:
+* [&#8216;1&#8217;, &#8216;t&#8217;, &#8216;y&#8217;, &#8216;true&#8217;, &#8216;yes&#8217;, &#8216;on&#8217;] ==&gt; True
+* [&#8216;0&#8217;, &#8216;f&#8217;, &#8216;n&#8217;, &#8216;false&#8217;, &#8216;no&#8217;, &#8216;off&#8217;] ==&gt; False</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>value</strong> &#8211; bool, int, or string to parse.</li>
+<li><strong>additional_true</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">list</span></code></a>) &#8211; optional additional string values that stand for True</li>
+<li><strong>additional_false</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">list</span></code></a>) &#8211; optional additional string values that stand for False</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">True if  <cite>value</cite> is true,
+False if <cite>value</cite> is false,
+None if <cite>value</cite> couldn&#8217;t be parsed.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)">bool</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.util.which">
+<code class="descclassname">tau.util.</code><code class="descname">which</code><span class="sig-paren">(</span><em>program</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#which"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.which" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the full path to a program command.</p>
+<p>Program must exist and be executable.
+Searches the system PATH and the current directory.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>program</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; program to find.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Full path to program or None if program can&#8217;t be found.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)">str</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        <a class="uplink" href="index.html">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015 ParaTools, Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>
