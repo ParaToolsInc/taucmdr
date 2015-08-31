@@ -3,12 +3,6 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-.. toctree::
-   :maxdepth: 2
-
-   design
-   style
-
 Welcome
 =======
 
@@ -42,12 +36,23 @@ The TAU Commandments
 7. **Never** shalt thou *just quickly fix this one thing because I have a hard deadline I forgot and now I really really really need this feature to be part of TAU Commander whatever the cost and oh God I broke it I broke it and everything is on fire*.
 
 
+Document Index
+==============
+
+.. toctree::
+   :maxdepth: 2
+
+   design
+   style
+   modules
+
 Indices and tables
 ==================
 
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
 
 .. _the TAU Commander website: http://www.taucommander.com/
 .. _TAU Performance System: http://tau.uoregon.edu/
