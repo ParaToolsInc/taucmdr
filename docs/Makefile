@@ -31,7 +31,7 @@ STATIC_FILES = $(addprefix $(STATIC_DIR), $(IMAGE_FILES))
 PACKAGE_REST_FILE = $(PROJECT_PACKAGE).rst
 
 
-.PHONY: all source clean
+.PHONY: all clean update-github-pages
 
 all: $(PACKAGE_REST_FILE) $(STATIC_FILES)
 	sphinx-build -b $(SPHINX_BUILDER) $(SOURCE_DIR) $(BUILD_DIR)
@@ -47,9 +47,14 @@ $(DOCS_BRANCH): $(LOCAL_BRANCH)
 	git checkout $(DOCS_BRANCH)
 	git checkout $(LOCAL_BRANCH) $(HERE)
 	git commit -m "Update documentation on $(DOCS_BRANCH) via Makefile"
+	git checkout $(LOCAL_BRANCH)
+
+update-github-pages: $(DOCS_BRANCH)
+	git checkout $(DOCS_BRANCH)
 	git push
 	git checkout $(LOCAL_BRANCH)
 
 clean:
 	rm -f $(filter-out $(SOURCE_FILES),$(wildcard $(SOURCE_DIR)*.rst))
 	rm -rf $(BUILD_DIR)
+
