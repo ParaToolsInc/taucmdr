@@ -34,8 +34,9 @@ class TrackedInstance(object):
     Each subclass tracks of its own instances separately.  Unliked :any:`KeyedRecordCreator`
     there is no restriction on the value of the class instance attributes.
     
-    Example
+    Example:
     ::
+
         class Foo(TrackedInstance):
             def __init__(self, x):
                 self.x = x
@@ -88,9 +89,9 @@ class KeyedRecordCreator(type):
     this metaclass guarantees we call ``__new__`` and ``__init__`` only once per class instance.
     
     To learn more about metaclasses:
-        * https://docs.python.org/2/reference/datamodel.html
-        * http://stackoverflow.com/questions/6760685/creating-a-singleton-in-python
-        * http://stackoverflow.com/questions/100003/what-is-a-metaclass-in-python
+    * https://docs.python.org/2/reference/datamodel.html
+    * http://stackoverflow.com/questions/6760685/creating-a-singleton-in-python
+    * http://stackoverflow.com/questions/100003/what-is-a-metaclass-in-python
     """
     def __new__(mcs, name, bases, dct):
         """Set ``__instances__`` attribute as soon as the class is created.
@@ -126,8 +127,9 @@ class KeyedRecord(object):
     Only one instance of a :any:`KeyedRecord` subclass exists per key.  Calling the constructor 
     with a previously used key will return the existing instance, unmodified.  
     
-    Example
+    Example:
     ::
+
         class Foo(KeyedRecord):
             def __init__(self, a):
                 self.a = a
