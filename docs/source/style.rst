@@ -107,21 +107,23 @@ When editing existing code, follow the existing code style.
 The project's pylintrc file will enforce most of these rules.
 
 The exceptions to `Google Python Style` are:
-  * Maximum line length is 120 characters.
-  * Multiple imports per line are OK, e.g. ``from tau import logger, error, util``.
-  * Exceptions should not be avoided.  Prefer `EAFP Style`_.
-  * Complex list comprehensions are OK.
+
+* Maximum line length is 120 characters.
+* Multiple imports per line are OK, e.g. ``from tau import logger, error, util``.
+* Exceptions should not be avoided.  Prefer `EAFP Style`_.
+* Complex list comprehensions are OK.
 
 The `Google Python Style`_ guide is duplicated here with modifications for these
 exceptions.  Credit goes to the original authors:
-  * Amit Patel
-  * Antoine Picard
-  * Eugene Jhong
-  * Gregory P. Smith
-  * Jeremy Hylton
-  * Matt Smart
-  * Mike Shields
-  * Shane Liebling
+
+* Amit Patel
+* Antoine Picard
+* Eugene Jhong
+* Gregory P. Smith
+* Jeremy Hylton
+* Matt Smart
+* Mike Shields
+* Shane Liebling
 
 
 Lint
@@ -952,6 +954,8 @@ however fine to use parentheses around tuples.
 
 **No:**
 
+::
+
     if (x):
         bar()
     if not(x):
@@ -1137,25 +1141,27 @@ it becomes a maintenance burden (applies to ``:``, ``#``, ``=``, etc.):
 
 ::
 
-      foo = 1000  # comment
-      long_name = 2  # comment that should not be aligned
+    foo = 1000  # comment
+    long_name = 2  # comment that should not be aligned
 
-      dictionary = {
-          'foo': 1,
-          'long_name': 2,
-      }
+    dictionary = {
+        'foo': 1,
+        'long_name': 2,
+    }
 
 
 **No:**
 
 ::
-      foo       = 1000  # comment
-      long_name = 2     # comment that should not be aligned
 
-      dictionary = {
-          'foo'      : 1,
-          'long_name': 2,
-      }
+    foo       = 1000  # comment
+    long_name = 2     # comment that should not be aligned
+
+    dictionary = {
+        'foo'      : 1,
+        'long_name': 2,
+    }
+
 
 Shebang Line
 ~~~~~~~~~~~~
