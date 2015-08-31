@@ -3,9 +3,6 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome
-=======
-
 .. toctree::
    :maxdepth: 2
 
@@ -13,14 +10,13 @@ Welcome
    style
    design
 
-Who is this document for?
--------------------------
+Welcome
+=======
 
-This documentation is intended for the lucky people developing TAU Commander.
-TAU Commander **users** should should visit `the TAU Commander website`_.
-
-Why this document?
-------------------
+.. attention::
+   **For developers only**
+   This documentation is intended for the lucky people developing TAU Commander.
+   TAU Commander **users** should should visit `the TAU Commander website`_.
 
 This document will help you, the TAU Commander developer, contribute to the 
 project. For over two decades the `TAU Performance System`_ has been developed 
