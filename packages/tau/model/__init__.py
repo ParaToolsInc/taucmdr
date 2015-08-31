@@ -304,10 +304,10 @@ class Controller(object):
         
         Args:
             keys (dict): Attributes to match.
-            eids (:py:class:`list`): Record identifiers to match.
+            eids (list): Record identifiers to match.
             
         Returns:
-            :py:class:`list`: Controller subclass instances controlling the found records. 
+            list: Controller subclass instances controlling the found records. 
         """
         if eids is not None:
             if isinstance(eids, list):
@@ -334,7 +334,7 @@ class Controller(object):
             test: A callable expression returning a boolean value.  
             
         Returns:
-            :py:class:`list`: Controller subclass instances controlling the found records. 
+            list: Controller subclass instances controlling the found records. 
         """
         return [cls(record) for record in USER_STORAGE.match(cls.model_name, field, regex, test)]
 
@@ -347,7 +347,7 @@ class Controller(object):
         
         Args:
             keys (dict): Attributes to match.
-            eids (:py:class:`list`): Record identifiers to match.
+            eids (list): Record identifiers to match.
             
         Returns:
             bool: True if a record exists for **all** values in `keys` or `eids`.          
@@ -391,7 +391,7 @@ class Controller(object):
         Args:
             fields (dict): New data for existing records.
             keys (dict): Attributes to match.
-            eids (:py:class:`list`): Record identifiers to match.
+            eids (list): Record identifiers to match.
         """
         if eids is not None:
             changing = cls.search(eids=eids)
@@ -415,8 +415,7 @@ class Controller(object):
                     added = new_foreign_keys - old_foreign_keys
                     deled = old_foreign_keys - new_foreign_keys
                     model._associate(foreign_model, added, via)
-                    model._disassociate(
-                        foreign_model.search(eids=list(deled)), via)
+                    model._disassociate(foreign_model.search(eids=list(deled)), via)
                     model.on_update()
 
     @classmethod
@@ -427,7 +426,7 @@ class Controller(object):
 
         Args:
             keys (dict): Attributes to match.
-            eids (:py:class:`list`): Record identifiers to match.
+            eids (list): Record identifiers to match.
         """
         if eids is not None:
             changing = cls.search(eids=eids)
@@ -464,7 +463,7 @@ class Controller(object):
         
         Args:
             foreign_cls (Controller): Class definining the foreign record's data model.
-            affected (:py:class:`list`): Identifiers for the records that will be updated to 
+            affected (list): Identifiers for the records that will be updated to 
                              associate with the controlled record.
             attr (str): The name of the associated foreign attribute.
         """ 
@@ -489,7 +488,7 @@ class Controller(object):
         attributes of the :any:`Controller` class.
         
         Args:
-            affected (:py:class:`list`): Identifiers for the records that will be updated to 
+            affected (list): Identifiers for the records that will be updated to 
                              associate with the controlled record.
             attr (str): The name of the associated foreign attribute.
         """ 

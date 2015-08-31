@@ -125,7 +125,7 @@ class Storage(object):
         Args:
             table_name (str): Name of the table to search.
             keys (dict): Fields to match.
-            eid (:py:class:`list`): Record identifier to match.
+            eid (list): Record identifier to match.
             match_any (bool): If True then any key may match or if False then all keys must match.
 
         Returns:
@@ -152,7 +152,7 @@ class Storage(object):
             match_any (bool): If True then any key may match or if False then all keys must match.
 
         Returns:
-            :py:class:`list`: Matching data records.
+            list: Matching data records.
         """
         table = self.database.table(table_name)
         if keys:
@@ -177,7 +177,7 @@ class Storage(object):
             test: A callable expression returning a boolean value.  
             
         Returns:
-            :py:class:`list`: Matching data records.
+            list: Matching data records.
         """
         table = self.database.table(table_name)
         if test is not None:
@@ -199,7 +199,7 @@ class Storage(object):
             table_name (str): Name of the table to search.
             keys (dict): Attributes to match.
             match_any (bool): If True then any key may match or if False then all keys must match.
-            eids (:py:class:`list`): Record identifiers to match.
+            eids (list): Record identifiers to match.
             
         Returns:
             bool: True if a record exists, False otherwise.          
@@ -239,7 +239,7 @@ class Storage(object):
             fields (dict): Data to record.
             keys (dict): Attributes to match.
             match_any (bool): If True then any key may match or if False then all keys must match.
-            eids (:py:class:`list`): Record identifiers to match.
+            eids (list): Record identifiers to match.
         """
         table = self.database.table(table_name)
         if eids is not None:
@@ -259,7 +259,7 @@ class Storage(object):
             table_name (str): Name of the table to operate on.
             keys (dict): Attributes to match.
             match_any (bool): If True then any key may match or if False then all keys must match.
-            eids (:py:class:`list`): Record identifiers to match.
+            eids (list): Record identifiers to match.
         """
         table = self.database.table(table_name)
         if eids is not None:

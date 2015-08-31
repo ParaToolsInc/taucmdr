@@ -72,7 +72,7 @@ def main(argv):
     """Subcommand program entry point.
     
     Args:
-        argv (:py:class:`list`): Command line arguments.
+        argv (list): Command line arguments.
         
     Returns:
         int: Process return code: non-zero if a problem occurred, 0 otherwise
