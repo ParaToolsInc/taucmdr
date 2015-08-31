@@ -3,4 +3,5 @@ packages
 commander
 examples
 docs/source
+docs/Makefile
 
