@@ -19,7 +19,7 @@ Welcome
    TAU Commander.  If you are a TAU Commander **user** then you should 
    visit `the TAU Commander website`_. If you're looking for information 
    on the `TAU Performance System`_ (the heart of TAU Commander) then you 
-   should visit `the TAU project page <http://tau.uoregon.edu/>`.
+   should visit `the TAU project page <http://tau.uoregon.edu/>`_.
 
 This document will help you, the TAU Commander developer, contribute to the 
 project. For over two decades the `TAU Performance System`_ has been developed 
