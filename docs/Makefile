@@ -10,6 +10,7 @@
 #
 HERE := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
+LOCAL_BRANCH = $(shell git rev-parse --abbrev-ref HEAD)
 DOCS_BRANCH = gh-pages
 
 SPHINX_BUILDER = html
@@ -38,11 +39,14 @@ all: $(PACKAGE_REST_FILE) $(STATIC_FILES)
 $(PACKAGE_REST_FILE): $(SOURCE_FILES)
 	sphinx-apidoc -M -P -f -o $(SOURCE_DIR) $(PROJECT_DIR)
 
-$(DOCS_BRANCH): all
+$(LOCAL_BRANCH): all
+	git add $(HERE)
+	git commit -m "Update $(LOCAL_BRANCH) via Makefile"
+
+$(DOCS_BRANCH): $(LOCAL_BRANCH)
 	git checkout $(DOCS_BRANCH)
-	git add .
+	git checkout $(LOCAL_BRANCH) $(HERE)
 	git commit -m "Update $(DOCS_BRANCH) via Makefile"
-	git push
 
 clean:
 	rm -f $(filter-out $(SOURCE_FILES),$(wildcard $(SOURCE_DIR)*.rst))
