@@ -56,7 +56,7 @@ the <cite>key</cite> keyword argument is not present, calls to the subclass cons
 pass the new key value as the first argument.</p>
 <p>Only one instance of a <a class="reference internal" href="#tau.cf.KeyedRecord" title="tau.cf.KeyedRecord"><code class="xref any py py-class docutils literal"><span class="pre">KeyedRecord</span></code></a> subclass exists per key.  Calling the constructor
 with a previously used key will return the existing instance, unmodified.</p>
-<p>Example</p>
+<p>Example:</p>
 <div class="highlight-python"><div class="highlight"><pre>class Foo(KeyedRecord):
     def __init__(self, a):
         self.a = a
@@ -133,15 +133,10 @@ exists for a given key argument.  Overridding <code class="docutils literal"><sp
 but then we can&#8217;t prevent <code class="docutils literal"><span class="pre">__init__</span></code> from being called on the returned class instance,
 i.e. the instance returned is reinitialized every time the it is retrieved.  Using
 this metaclass guarantees we call <code class="docutils literal"><span class="pre">__new__</span></code> and <code class="docutils literal"><span class="pre">__init__</span></code> only once per class instance.</p>
-<dl class="docutils">
-<dt>To learn more about metaclasses:</dt>
-<dd><ul class="first last simple">
-<li><a class="reference external" href="https://docs.python.org/2/reference/datamodel.html">https://docs.python.org/2/reference/datamodel.html</a></li>
-<li><a class="reference external" href="http://stackoverflow.com/questions/6760685/creating-a-singleton-in-python">http://stackoverflow.com/questions/6760685/creating-a-singleton-in-python</a></li>
-<li><a class="reference external" href="http://stackoverflow.com/questions/100003/what-is-a-metaclass-in-python">http://stackoverflow.com/questions/100003/what-is-a-metaclass-in-python</a></li>
-</ul>
-</dd>
-</dl>
+<p>To learn more about metaclasses:
+* <a class="reference external" href="https://docs.python.org/2/reference/datamodel.html">https://docs.python.org/2/reference/datamodel.html</a>
+* <a class="reference external" href="http://stackoverflow.com/questions/6760685/creating-a-singleton-in-python">http://stackoverflow.com/questions/6760685/creating-a-singleton-in-python</a>
+* <a class="reference external" href="http://stackoverflow.com/questions/100003/what-is-a-metaclass-in-python">http://stackoverflow.com/questions/100003/what-is-a-metaclass-in-python</a></p>
 <dl class="method">
 <dt id="tau.cf.KeyedRecordCreator.__call__">
 <code class="descname">__call__</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf.html#KeyedRecordCreator.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.KeyedRecordCreator.__call__" title="Permalink to this definition">¶</a></dt>
@@ -157,7 +152,7 @@ this metaclass guarantees we call <code class="docutils literal"><span class="pr
 <p>Base class for classes that need to keep track of their instances.</p>
 <p>Each subclass tracks of its own instances separately.  Unliked <a class="reference internal" href="#tau.cf.KeyedRecordCreator" title="tau.cf.KeyedRecordCreator"><code class="xref any py py-class docutils literal"><span class="pre">KeyedRecordCreator</span></code></a>
 there is no restriction on the value of the class instance attributes.</p>
-<p>Example</p>
+<p>Example:</p>
 <div class="highlight-python"><div class="highlight"><pre>class Foo(TrackedInstance):
     def __init__(self, x):
         self.x = x
