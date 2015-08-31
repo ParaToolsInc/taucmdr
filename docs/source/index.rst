@@ -30,7 +30,7 @@ The TAU Commandments
 1. Thou shalt read and obey the :doc:`style`.
 2. Thou shalt read and obey the :doc:`design`.
 3. Thou shalt use `pylint`_ 1.4 or later as part of your development cycle.
-4. Thou shalt document your code according to the :doc:`style`.
+4. Thou shalt document your code according to the :doc:`documentation`.
 5. **Never** shalt thou develop on the master branch, for that is an abomination.
 6. **Never** shalt thou merge broken code to the master branch.
 7. **Never** shalt thou *just quickly fix this one thing because I have a hard deadline I forgot and now I really really really need this feature to be part of TAU Commander whatever the cost and oh God I broke it I broke it and everything is on fire*.
@@ -44,6 +44,7 @@ Document Index
 
    design
    style
+   documentation
    modules
 
 Indices and tables
