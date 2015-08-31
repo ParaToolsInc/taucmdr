@@ -906,16 +906,20 @@ implicit line joining.
 
 Within comments, put long URLs on their own line if necessary.
 
+**Yes:**
+
 ::
 
-    Yes:  # See details at
-          # http://www.example.com/us/developer/documentation/api/content/v2.0/csv_file_name_extension_full_specification.html
+     # See details at
+     # http://www.example.com/us/developer/documentation/api/content/v2.0/csv_file_name_extension_full_specification.html
 
-.. code:: badcode
+**No:**
 
-    No:  # See details at
-         # http://www.example.com/us/developer/documentation/api/content/\
-         # v2.0/csv_file_name_extension_full_specification.html
+::
+
+    # See details at
+    # http://www.example.com/us/developer/documentation/api/content/\
+    # v2.0/csv_file_name_extension_full_specification.html
 
 Make note of the indentation of the elements in the line continuation
 examples above; see the `indentation <#Indentation>`__ section for
@@ -931,26 +935,28 @@ Do not use them in return statements or conditional statements unless
 using parentheses for implied line continuation. (See above.) It is
 however fine to use parentheses around tuples.
 
+**Yes:**
+
 ::
 
-    Yes: if foo:
-             bar()
-         while x:
-             x = bar()
-         if x and y:
-             bar()
-         if not x:
-             bar()
-         return foo
-         for (x, y) in dict.items(): ...
+    if foo:
+        bar()
+    while x:
+        x = bar()
+    if x and y:
+        bar()
+    if not x:
+        bar()
+    return foo
+    for (x, y) in dict.items(): ...
 
-.. code:: badcode
+**No:**
 
-    No:  if (x):
-             bar()
-         if not(x):
-             bar()
-         return (foo)
+    if (x):
+        bar()
+    if not(x):
+        bar()
+    return (foo)
 
 Indentation
 ~~~~~~~~~~~
@@ -964,48 +970,52 @@ per the examples in the `line length <#Line_length>`__ section; or using
 a hanging indent of 4 spaces, in which case there should be no argument
 on the first line.
 
+**Yes:**
+
 ::
 
-    Yes:   # Aligned with opening delimiter
-           foo = long_function_name(var_one, var_two,
-                                    var_three, var_four)
+    # Aligned with opening delimiter
+    foo = long_function_name(var_one, var_two,
+                             var_three, var_four)
 
-           # Aligned with opening delimiter in a dictionary
-           foo = {
-               long_dictionary_key: value1 +
-                                    value2,
-               ...
-           }
+    # Aligned with opening delimiter in a dictionary
+    foo = {
+        long_dictionary_key: value1 +
+                             value2,
+        ...
+    }
 
-           # 4-space hanging indent; nothing on first line
-           foo = long_function_name(
-               var_one, var_two, var_three,
-               var_four)
+    # 4-space hanging indent; nothing on first line
+    foo = long_function_name(
+        var_one, var_two, var_three,
+        var_four)
 
-           # 4-space hanging indent in a dictionary
-           foo = {
-               long_dictionary_key:
-                   long_dictionary_value,
-               ...
-           }
+    # 4-space hanging indent in a dictionary
+    foo = {
+        long_dictionary_key:
+            long_dictionary_value,
+        ...
+    }
 
-.. code:: badcode
+**No:**
 
-    No:    # Stuff on first line forbidden
-           foo = long_function_name(var_one, var_two,
-               var_three, var_four)
+::
 
-           # 2-space hanging indent forbidden
-           foo = long_function_name(
-             var_one, var_two, var_three,
-             var_four)
+    # Stuff on first line forbidden
+    foo = long_function_name(var_one, var_two,
+        var_three, var_four)
 
-           # No hanging indent in a dictionary
-           foo = {
-               long_dictionary_key:
-                   long_dictionary_value,
-                   ...
-           }
+    # 2-space hanging indent forbidden
+    foo = long_function_name(
+      var_one, var_two, var_three,
+      var_four)
+
+    # No hanging indent in a dictionary
+    foo = {
+        long_dictionary_key:
+            long_dictionary_value,
+            ...
+    }
 
 Blank Lines
 ~~~~~~~~~~~
@@ -1028,47 +1038,63 @@ punctuation.
 
 No whitespace inside parentheses, brackets or braces.
 
+**Yes:**
+
 ::
 
-    Yes: spam(ham[1], {eggs: 2}, [])
+    spam(ham[1], {eggs: 2}, [])
 
-.. code:: badcode
+**No:**
 
-    No:  spam( ham[ 1 ], { eggs: 2 }, [ ] )
+::
+
+    spam( ham[ 1 ], { eggs: 2 }, [ ] )
 
 No whitespace before a comma, semicolon, or colon. Do use whitespace
 after a comma, semicolon, or colon except at the end of the line.
 
+**Yes:**
+
 ::
 
-    Yes: if x == 4:
-             print x, y
-         x, y = y, x
+    if x == 4:
+        print x, y
+    x, y = y, x
 
-.. code:: badcode
+**No:**
 
-    No:  if x == 4 :
-             print x , y
-         x , y = y , x
+::
+
+    if x == 4 :
+        print x , y
+    x , y = y , x
 
 No whitespace before the open paren/bracket that starts an argument
 list, indexing or slicing.
 
-::
-
-    Yes: spam(1)
-
-.. code:: badcode
-
-    No:  spam (1)
+**Yes:**
 
 ::
 
-    Yes: dict['key'] = list[index]
+    spam(1)
 
-.. code:: badcode
+**No:**
 
-    No:  dict ['key'] = list [index]
+::
+
+    spam (1)
+
+**Yes:**
+
+::
+
+    dict['key'] = list[index]
+
+**No:**
+
+::
+
+    dict ['key'] = list [index]
 
 Surround binary operators with a single space on either side for
 assignment (``=``), comparisons
@@ -1077,31 +1103,40 @@ Booleans (``and, or, not``). Use your better judgment for the insertion
 of spaces around arithmetic operators but always be consistent about
 whitespace on either side of a binary operator.
 
+**Yes:**
+
 ::
 
-    Yes: x == 1
+    x == 1
 
-.. code:: badcode
+**No:**
 
-    No:  x<1
+::
+
+    x<1
 
 Don't use spaces around the '=' sign when used to indicate a keyword
 argument or a default parameter value.
 
+**Yes:**
+
 ::
 
-    Yes: def complex(real, imag=0.0): return magic(r=real, i=imag)
+    def complex(real, imag=0.0): return magic(r=real, i=imag)
 
-.. code:: badcode
+**No:**
 
-    No:  def complex(real, imag = 0.0): return magic(r = real, i = imag)
+::
+
+    def complex(real, imag = 0.0): return magic(r = real, i = imag)
 
 Don't use spaces to vertically align tokens on consecutive lines, since
 it becomes a maintenance burden (applies to ``:``, ``#``, ``=``, etc.):
 
+**Yes:**
+
 ::
 
-    Yes:
       foo = 1000  # comment
       long_name = 2  # comment that should not be aligned
 
@@ -1110,9 +1145,10 @@ it becomes a maintenance burden (applies to ``:``, ``#``, ``=``, etc.):
           'long_name': 2,
       }
 
-.. code:: badcode
 
-    No:
+**No:**
+
+::
       foo       = 1000  # comment
       long_name = 2     # comment that should not be aligned
 
@@ -1290,7 +1326,7 @@ On the other hand, never describe the code. Assume the person reading
 the code knows Python (though not what you're trying to do) better than
 you do.
 
-.. code:: badcode
+::
 
     # BAD COMMENT: Now go through the b array and make sure whenever i occurs
     # the next element is i+1
@@ -1302,31 +1338,35 @@ Classes
 If a class inherits from no other base classes, explicitly inherit from
 ``object``. This also applies to nested classes.
 
+**Yes:**
+
 ::
 
-    Yes: class SampleClass(object):
-             pass
+    class SampleClass(object):
+        pass
 
 
-         class OuterClass(object):
+    class OuterClass(object):
 
-             class InnerClass(object):
-                 pass
-
-
-         class ChildClass(ParentClass):
-             """Explicitly inherits from another class already."""
-
-.. code:: badcode
-
-    No: class SampleClass:
+        class InnerClass(object):
             pass
 
 
-        class OuterClass:
+    class ChildClass(ParentClass):
+        """Explicitly inherits from another class already."""
 
-            class InnerClass:
-                pass
+**No:**
+
+::
+
+    class SampleClass:
+        pass
+
+
+    class OuterClass:
+
+        class InnerClass:
+            pass
 
 Inheriting from ``object`` is needed to make properties work properly,
 and it will protect your code from one particular potential
@@ -1343,20 +1383,24 @@ Use the ``format`` method or the ``%`` operator for formatting strings,
 even when the parameters are all strings. Use your best judgement to
 decide between ``+`` and ``%`` (or ``format``) though.
 
+**Yes:**
+
 ::
 
-    Yes: x = a + b
-         x = '%s, %s!' % (imperative, expletive)
-         x = '{}, {}!'.format(imperative, expletive)
-         x = 'name: %s; score: %d' % (name, n)
-         x = 'name: {}; score: {}'.format(name, n)
+    x = a + b
+    x = '%s, %s!' % (imperative, expletive)
+    x = '{}, {}!'.format(imperative, expletive)
+    x = 'name: %s; score: %d' % (name, n)
+    x = 'name: {}; score: {}'.format(name, n)
 
-.. code:: badcode
+**No:**
 
-    No: x = '%s%s' % (a, b)  # use + in this case
-        x = '{}{}'.format(a, b)  # use + in this case
-        x = imperative + ', ' + expletive + '!'
-        x = 'name: ' + name + '; score: ' + str(n)
+::
+
+    x = '%s%s' % (a, b)  # use + in this case
+    x = '{}{}'.format(a, b)  # use + in this case
+    x = imperative + ', ' + expletive + '!'
+    x = 'name: ' + name + '; score: ' + str(n)
 
 Avoid using the ``+`` and ``+=`` operators to accumulate a string within
 a loop. Since strings are immutable, this creates unnecessary temporary
@@ -1364,39 +1408,44 @@ objects and results in quadratic rather than linear running time.
 Instead, add each substring to a list and ``''.join`` the list after the
 loop terminates (or, write each substring to a ``io.BytesIO`` buffer).
 
+**Yes:**
+
 ::
 
-    Yes: items = ['<table>']
-         for last_name, first_name in employee_list:
-             items.append('<tr><td>%s, %s</td></tr>' % (last_name, first_name))
-         items.append('</table>')
-         employee_table = ''.join(items)
+    items = ['<table>']
+    for last_name, first_name in employee_list:
+        items.append('<tr><td>%s, %s</td></tr>' % (last_name, first_name))
+    items.append('</table>')
+    employee_table = ''.join(items)
 
-.. code:: badcode
+**No:**
 
-    No: employee_table = '<table>'
-        for last_name, first_name in employee_list:
-            employee_table += '<tr><td>%s, %s</td></tr>' % (last_name, first_name)
-        employee_table += '</table>'
+::
+
+    employee_table = '<table>'
+    for last_name, first_name in employee_list:
+        employee_table += '<tr><td>%s, %s</td></tr>' % (last_name, first_name)
+    employee_table += '</table>'
 
 Be consistent with your choice of string quote character within a file.
 Pick ``'`` or ``"`` and stick with it. It is okay to use the other quote
 character on a string to avoid the need to ``\`` escape within the
 string. GPyLint enforces this.
 
+**Yes:**
+
 ::
 
-    Yes:
-      Python('Why are you hiding your eyes?')
-      Gollum("I'm scared of lint errors.")
-      Narrator('"Good!" thought a happy Python reviewer.')
+    Python('Why are you hiding your eyes?')
+    Gollum("I'm scared of lint errors.")
+    Narrator('"Good!" thought a happy Python reviewer.')
 
-.. code:: badcode
+**No:**
 
-    No:
-      Python("Why are you hiding your eyes?")
-      Gollum('The lint. It burns. It burns us.')
-      Gollum("Always the great lint. Watching. Watching.")
+::
+    Python("Why are you hiding your eyes?")
+    Gollum('The lint. It burns. It burns us.')
+    Gollum("Always the great lint. Watching. Watching.")
 
 Prefer ``"""`` for multi-line strings rather than ``'''``. Projects may
 choose to use ``'''`` for all non-docstring multi-line strings if and
@@ -1405,15 +1454,17 @@ only if they also use ``'`` for regular strings. Doc strings must use
 joining since multi-line strings do not flow with the indentation of the
 rest of the program:
 
+**Yes:**
+
 ::
 
-    Yes:
-      print ("This is much nicer.\n"
-             "Do it this way.\n")
+    print ("This is much nicer.\n"
+           "Do it this way.\n")
 
-.. code:: badcode
+**No:**
 
-      No:
+::
+
         print """This is pretty ugly.
     Don't do this.
     """
@@ -1504,18 +1555,23 @@ Imports formatting
 ~~~~~~~~~~~~~~~~~~
 
 
-Imports should be on separate lines.
+Imports should be on separate lines unless using the `from` keyword.
 
 E.g.:
 
+**Yes:**
+
 ::
 
-    Yes: import os
-         import sys
+    import os
+    import sys
+    from tau import logger, error
 
-.. code:: badcode
+**No:**
 
-    No:  import os, sys
+::
+
+    import os, sys
 
 Imports are always put at the top of the file, just after any module
 comments and doc strings and before module globals and constants.
@@ -1549,25 +1605,26 @@ never do so with ``try``/``except`` since the ``try`` and ``except``
 can't both fit on the same line, and you can only do so with an ``if``
 if there is no ``else``.
 
+**Yes:**
+
 ::
 
-    Yes:
+    if foo: bar(foo)
 
-      if foo: bar(foo)
 
-.. code:: badcode
+**No:**
 
-    No:
+::
 
-      if foo: bar(foo)
-      else:   baz(foo)
+    if foo: bar(foo)
+    else:   baz(foo)
 
-      try:               bar(foo)
-      except ValueError: baz(foo)
+    try:               bar(foo)
+    except ValueError: baz(foo)
 
-      try:
-          bar(foo)
-      except ValueError: baz(foo)
+    try:
+        bar(foo)
+    except ValueError: baz(foo)
 
 Access Control
 ~~~~~~~~~~~~~~
