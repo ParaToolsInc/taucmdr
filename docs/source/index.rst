@@ -6,24 +6,35 @@
 Welcome
 =======
 
+Table of Contents
+-----------------
+
+.. toctree::
+   :maxdepth: 2
+
+   index
+   style
+   design
+
 Who is this document for?
 -------------------------
 
 This documentation is intended for the lucky people developing TAU Commander.
 TAU Commander **users** should should visit `the TAU Commander website`_.
 
-
 Why this document?
 ------------------
 
-Hopefully reading this document will help you, the TAU Commander developer, 
-contribute more to the project. For over two decades the 
-`TAU Performance System`_ has been developed mainly by single minded 
-graduate students who couldn't spare any thought for software design, safety, 
-or maintainability.  This has created a "wet spaghetti" code base: TAU 
-developers throw stuff at the wall to see what sticks. Our goal is to bring a
-little sanity back to the development cycle and take advantage of important
-software engineering lessons learned in the last two decades.
+This document will help you, the TAU Commander developer, contribute to the 
+project. For over two decades the `TAU Performance System`_ has been developed 
+primarily by graduate students with extreme demands on their time so best 
+practices of software design, safety, and maintainability were largely ignored 
+in favor of getting results quickly.  This short term thinking ran up an
+enormous technical debt in TAU and created a "wet spaghetti" code base where 
+TAU developers throw stuff at the wall to see what sticks. The goal of this 
+developer's guide to bring a little sanity back to the development cycle and 
+take advantage of important software engineering lessons learned in the last 
+two decades.
 
 The TAU Commandments
 --------------------
@@ -35,17 +46,6 @@ The TAU Commandments
 5. **Never** shalt thou develop on the master branch, for that is an abomination.
 6. **Never** shalt thou merge broken code to the master branch.
 7. **Never** shalt thou *just quickly fix this one thing because I have a hard deadline I forgot and now I really really really need this feature to be part of TAU Commander whatever the cost and oh God I broke it I broke it now everything is on fire*.
-
-
-Table of Contents
-=================
-
-.. toctree::
-   :maxdepth: 2
-
-   welcome
-   style
-   design
 
 
 Indices and tables
