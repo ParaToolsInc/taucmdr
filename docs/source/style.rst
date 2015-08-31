@@ -63,6 +63,7 @@ you're setting a global variable of the form ``__some_name__`` you're
 probably doing something wrong.
 
 **Example of a Correct File Header**
+
 ::
 
   # -*- coding: utf-8 -*-
@@ -105,22 +106,24 @@ When writing new code, follow `Google Python Style`_ with a few exceptions.
 When editing existing code, follow the existing code style.
 The project's pylintrc file will enforce most of these rules.
 
-At a glance, the few exceptions to `Google Python Style` are:
-  * Maximum line length is 120 characters.
-  * Multiple imports per line are OK, e.g. ``from tau import logger, error, util``.
-  * try-catch-finally-else blocks are OK and shouldn't be deliberately avoided.
-  * Complex list comprehensions are OK.
+The exceptions to `Google Python Style` are:
+
+* Maximum line length is 120 characters.
+* Multiple imports per line are OK, e.g. ``from tau import logger, error, util``.
+* Exceptions should not be avoided.  Prefer `EAFP Style`_.
+* Complex list comprehensions are OK.
 
 The `Google Python Style`_ guide is duplicated here with modifications for these
 exceptions.  Credit goes to the original authors:
-  * Amit Patel
-  * Antoine Picard
-  * Eugene Jhong
-  * Gregory P. Smith
-  * Jeremy Hylton
-  * Matt Smart
-  * Mike Shields
-  * Shane Liebling
+
+* Amit Patel
+* Antoine Picard
+* Eugene Jhong
+* Gregory P. Smith
+* Jeremy Hylton
+* Matt Smart
+* Mike Shields
+* Shane Liebling
 
 
 Lint
@@ -236,7 +239,7 @@ Imports should be as follows:
 Exceptions
 ~~~~~~~~~~
 
-Exceptions are allowed but must be used carefully.
+Exceptions are allowed.  Prefer `EAFP Style`_.
 
 **Definition:** Exceptions are a means of breaking out of the normal flow of
 control of a code block to handle errors or other exceptional
@@ -266,13 +269,11 @@ cases when making library calls.
        class Error(Exception):
            pass
 
--  Never use catch-all ``except:`` statements, or catch ``Exception`` or
-   ``StandardError``, unless you are re-raising the exception or in the
-   outermost block in your thread (and printing an error message).
-   Python is very tolerant in this regard and ``except:`` will really
-   catch everything including misspelled names, sys.exit() calls, Ctrl+C
-   interrupts, unittest failures and all kinds of other exceptions that
-   you simply don't want to catch.
+-  Avoid catch-all ``except:`` statements, or catch ``Exception`` or
+   ``StandardError``.  Remember that Python is very tolerant in this 
+   regard and ``except:`` will really
+   catch everything including misspelled names, `sys.exit()` calls, Ctrl+C
+   interrupts, unittest failures and all kinds of other exceptions.
 -  Minimize the amount of code in a ``try``/``except`` block. The larger
    the body of the ``try``, the more likely that an exception will be
    raised by a line of code that you didn't expect to raise an
@@ -354,9 +355,10 @@ hard to read.
 **Decision:** Okay to use, up to a point.  If a loop makes things clearer
 then use a loop instead.
 
+**Yes:**
+
 ::
 
-    Yes:
       result = []
       for x in range(10):
           for y in range(5):
@@ -381,9 +383,9 @@ then use a loop instead.
 
       result = [(x, y) for x in range(10) for y in range(5) if x * y > 10]
 
-.. code:: badcode
+**No:**
 
-    No:
+::
 
       return ((x, y, z)
               for x in xrange(5)
@@ -415,19 +417,23 @@ iterator methods, too. Prefer these methods to methods that return
 lists, except that you should not mutate a container while iterating
 over it.
 
+**Yes:**
+
 ::
 
-    Yes:  for key in adict: ...
-          if key not in adict: ...
-          if obj in alist: ...
-          for line in afile: ...
-          for k, v in dict.iteritems(): ...
+    for key in adict: ...
+    if key not in adict: ...
+    if obj in alist: ...
+    for line in afile: ...
+    for k, v in dict.iteritems(): ...
 
-.. code:: badcode
+**No:**
 
-    No:   for key in adict.keys(): ...
-          if not adict.has_key(key): ...
-          for line in afile.readlines(): ...
+::
+
+    for key in adict.keys(): ...
+    if not adict.has_key(key): ...
+    for line in afile.readlines(): ...
 
 Generators
 ~~~~~~~~~~
@@ -514,20 +520,24 @@ item to a list), the default value is modified.
 Do not use mutable objects as default values in the function or method
 definition.
 
+**Yes:**
+
 ::
 
-    Yes: def foo(a, b=None):
-             if b is None:
-                 b = []
+    def foo(a, b=None):
+        if b is None:
+            b = []
 
-.. code:: badcode
+**No:**
 
-    No:  def foo(a, b=[]):
-             ...
-    No:  def foo(a, b=time.time()):  # The time the module was loaded???
-             ...
-    No:  def foo(a, b=FLAGS.my_thing):  # sys.argv has not yet been parsed...
-             ...
+::
+
+    def foo(a, b=[]):
+        ...
+    def foo(a, b=time.time()):  # The time the module was loaded???
+        ...
+    def foo(a, b=FLAGS.my_thing):  # sys.argv has not yet been parsed...
+        ...
 
 Properties
 ~~~~~~~~~~
@@ -564,51 +574,53 @@ not overridden. Thus one must make sure that accessor methods are called
 indirectly to ensure methods overridden in subclasses are called by the
 property (using the Template Method DP).
 
+**Yes:**
+
 ::
 
-    Yes: import math
+    import math
 
-         class Square(object):
-             """A square with two properties: a writable area and a read-only perimeter.
+    class Square(object):
+        """A square with two properties: a writable area and a read-only perimeter.
 
-             To use:
-             >>> sq = Square(3)
-             >>> sq.area
-             9
-             >>> sq.perimeter
-             12
-             >>> sq.area = 16
-             >>> sq.side
-             4
-             >>> sq.perimeter
-             16
-             """
+        To use:
+        >>> sq = Square(3)
+        >>> sq.area
+        9
+        >>> sq.perimeter
+        12
+        >>> sq.area = 16
+        >>> sq.side
+        4
+        >>> sq.perimeter
+        16
+        """
 
-             def __init__(self, side):
-                 self.side = side
+        def __init__(self, side):
+            self.side = side
 
-             def __get_area(self):
-                 """Calculates the 'area' property."""
-                 return self.side ** 2
+        def __get_area(self):
+            """Calculates the 'area' property."""
+            return self.side ** 2
 
-             def ___get_area(self):
-                 """Indirect accessor for 'area' property."""
-                 return self.__get_area()
+        def ___get_area(self):
+            """Indirect accessor for 'area' property."""
+            return self.__get_area()
 
-             def __set_area(self, area):
-                 """Sets the 'area' property."""
-                 self.side = math.sqrt(area)
+        def __set_area(self, area):
+            """Sets the 'area' property."""
+            self.side = math.sqrt(area)
 
-             def ___set_area(self, area):
-                 """Indirect setter for 'area' property."""
-                 self.__set_area(area)
+        def ___set_area(self, area):
+            """Indirect setter for 'area' property."""
+            self.__set_area(area)
 
-             area = property(___get_area, ___set_area,
-                             doc="""Gets or sets the area of the square.""")
+        area = property(___get_area, ___set_area,
+                        doc="""Gets or sets the area of the square.""")
 
-             @property
-             def perimeter(self):
-                 return self.side * 4
+        @property
+        def perimeter(self):
+            return self.side * 4
 
 True/False evaluations
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -647,27 +659,31 @@ that you should keep in mind though:
    a value which is known to be an integer (and is not the result of
    ``len()``) against the integer 0.
 
-   ::
+**Yes:**
 
-       Yes: if not users:
-                print 'no users'
+::
 
-            if foo == 0:
-                self.handle_zero()
+  if not users:
+      print 'no users'
 
-            if i % 10 == 0:
-                self.handle_multiple_of_ten()
+  if foo == 0:
+      self.handle_zero()
 
-   .. code:: badcode
+  if i % 10 == 0:
+      self.handle_multiple_of_ten()
 
-       No:  if len(users) == 0:
-                print 'no users'
+**No:**
 
-            if foo is not None and not foo:
-                self.handle_zero()
+::
 
-            if not i % 10:
-                self.handle_multiple_of_ten()
+  if len(users) == 0:
+      print 'no users'
+
+  if foo is not None and not foo:
+      self.handle_zero()
+
+  if not i % 10:
+      self.handle_multiple_of_ten()
 
 -  Note that ``'0'`` (i.e., ``0`` as string) evaluates to true.
 
@@ -686,23 +702,27 @@ that people find generally preferable.
 **Decision:** We do not use any Python version which does not support these
 features, so there is no reason not to use the new styles.
 
+**Yes:**
+
 ::
 
-    Yes: words = foo.split(':')
+    words = foo.split(':')
 
-         [x[1] for x in my_list if x[2] == 5]
+    [x[1] for x in my_list if x[2] == 5]
 
-         map(math.sqrt, data)    # Ok. No inlined lambda expression.
+    map(math.sqrt, data)    # Ok. No inlined lambda expression.
 
-         fn(*args, **kwargs)
+    fn(*args, **kwargs)
 
-.. code:: badcode
+**No:**
 
-    No:  words = string.split(foo, ':')
+::
 
-         map(lambda x: x[1], filter(lambda x: x[2] == 5, my_list))
+    words = string.split(foo, ':')
 
-         apply(fn, args, kwargs)
+    map(lambda x: x[1], filter(lambda x: x[2] == 5, my_list))
+
+    apply(fn, args, kwargs)
 
 Lexical Scoping
 ~~~~~~~~~~~~~~~
@@ -734,7 +754,7 @@ to experienced Lisp and Scheme (and Haskell and ML and …) programmers.
 **Cons:** Can lead to confusing bugs. Such as this example based on
 `PEP-0227 <http://www.python.org/dev/peps/pep-0227/>`__:
 
-.. code:: badcode
+::
 
     i = 4
     def foo(x):
@@ -888,16 +908,20 @@ implicit line joining.
 
 Within comments, put long URLs on their own line if necessary.
 
+**Yes:**
+
 ::
 
-    Yes:  # See details at
-          # http://www.example.com/us/developer/documentation/api/content/v2.0/csv_file_name_extension_full_specification.html
+     # See details at
+     # http://www.example.com/us/developer/documentation/api/content/v2.0/csv_file_name_extension_full_specification.html
 
-.. code:: badcode
+**No:**
 
-    No:  # See details at
-         # http://www.example.com/us/developer/documentation/api/content/\
-         # v2.0/csv_file_name_extension_full_specification.html
+::
+
+    # See details at
+    # http://www.example.com/us/developer/documentation/api/content/\
+    # v2.0/csv_file_name_extension_full_specification.html
 
 Make note of the indentation of the elements in the line continuation
 examples above; see the `indentation <#Indentation>`__ section for
@@ -913,26 +937,30 @@ Do not use them in return statements or conditional statements unless
 using parentheses for implied line continuation. (See above.) It is
 however fine to use parentheses around tuples.
 
+**Yes:**
+
 ::
 
-    Yes: if foo:
-             bar()
-         while x:
-             x = bar()
-         if x and y:
-             bar()
-         if not x:
-             bar()
-         return foo
-         for (x, y) in dict.items(): ...
+    if foo:
+        bar()
+    while x:
+        x = bar()
+    if x and y:
+        bar()
+    if not x:
+        bar()
+    return foo
+    for (x, y) in dict.items(): ...
 
-.. code:: badcode
+**No:**
 
-    No:  if (x):
-             bar()
-         if not(x):
-             bar()
-         return (foo)
+::
+
+    if (x):
+        bar()
+    if not(x):
+        bar()
+    return (foo)
 
 Indentation
 ~~~~~~~~~~~
@@ -946,48 +974,52 @@ per the examples in the `line length <#Line_length>`__ section; or using
 a hanging indent of 4 spaces, in which case there should be no argument
 on the first line.
 
+**Yes:**
+
 ::
 
-    Yes:   # Aligned with opening delimiter
-           foo = long_function_name(var_one, var_two,
-                                    var_three, var_four)
+    # Aligned with opening delimiter
+    foo = long_function_name(var_one, var_two,
+                             var_three, var_four)
 
-           # Aligned with opening delimiter in a dictionary
-           foo = {
-               long_dictionary_key: value1 +
-                                    value2,
-               ...
-           }
+    # Aligned with opening delimiter in a dictionary
+    foo = {
+        long_dictionary_key: value1 +
+                             value2,
+        ...
+    }
 
-           # 4-space hanging indent; nothing on first line
-           foo = long_function_name(
-               var_one, var_two, var_three,
-               var_four)
+    # 4-space hanging indent; nothing on first line
+    foo = long_function_name(
+        var_one, var_two, var_three,
+        var_four)
 
-           # 4-space hanging indent in a dictionary
-           foo = {
-               long_dictionary_key:
-                   long_dictionary_value,
-               ...
-           }
+    # 4-space hanging indent in a dictionary
+    foo = {
+        long_dictionary_key:
+            long_dictionary_value,
+        ...
+    }
 
-.. code:: badcode
+**No:**
 
-    No:    # Stuff on first line forbidden
-           foo = long_function_name(var_one, var_two,
-               var_three, var_four)
+::
 
-           # 2-space hanging indent forbidden
-           foo = long_function_name(
-             var_one, var_two, var_three,
-             var_four)
+    # Stuff on first line forbidden
+    foo = long_function_name(var_one, var_two,
+        var_three, var_four)
 
-           # No hanging indent in a dictionary
-           foo = {
-               long_dictionary_key:
-                   long_dictionary_value,
-                   ...
-           }
+    # 2-space hanging indent forbidden
+    foo = long_function_name(
+      var_one, var_two, var_three,
+      var_four)
+
+    # No hanging indent in a dictionary
+    foo = {
+        long_dictionary_key:
+            long_dictionary_value,
+            ...
+    }
 
 Blank Lines
 ~~~~~~~~~~~
@@ -1010,47 +1042,63 @@ punctuation.
 
 No whitespace inside parentheses, brackets or braces.
 
+**Yes:**
+
 ::
 
-    Yes: spam(ham[1], {eggs: 2}, [])
+    spam(ham[1], {eggs: 2}, [])
 
-.. code:: badcode
+**No:**
 
-    No:  spam( ham[ 1 ], { eggs: 2 }, [ ] )
+::
+
+    spam( ham[ 1 ], { eggs: 2 }, [ ] )
 
 No whitespace before a comma, semicolon, or colon. Do use whitespace
 after a comma, semicolon, or colon except at the end of the line.
 
+**Yes:**
+
 ::
 
-    Yes: if x == 4:
-             print x, y
-         x, y = y, x
+    if x == 4:
+        print x, y
+    x, y = y, x
 
-.. code:: badcode
+**No:**
 
-    No:  if x == 4 :
-             print x , y
-         x , y = y , x
+::
+
+    if x == 4 :
+        print x , y
+    x , y = y , x
 
 No whitespace before the open paren/bracket that starts an argument
 list, indexing or slicing.
 
-::
-
-    Yes: spam(1)
-
-.. code:: badcode
-
-    No:  spam (1)
+**Yes:**
 
 ::
 
-    Yes: dict['key'] = list[index]
+    spam(1)
 
-.. code:: badcode
+**No:**
 
-    No:  dict ['key'] = list [index]
+::
+
+    spam (1)
+
+**Yes:**
+
+::
+
+    dict['key'] = list[index]
+
+**No:**
+
+::
+
+    dict ['key'] = list [index]
 
 Surround binary operators with a single space on either side for
 assignment (``=``), comparisons
@@ -1059,49 +1107,61 @@ Booleans (``and, or, not``). Use your better judgment for the insertion
 of spaces around arithmetic operators but always be consistent about
 whitespace on either side of a binary operator.
 
+**Yes:**
+
 ::
 
-    Yes: x == 1
+    x == 1
 
-.. code:: badcode
+**No:**
 
-    No:  x<1
+::
+
+    x<1
 
 Don't use spaces around the '=' sign when used to indicate a keyword
 argument or a default parameter value.
 
+**Yes:**
+
 ::
 
-    Yes: def complex(real, imag=0.0): return magic(r=real, i=imag)
+    def complex(real, imag=0.0): return magic(r=real, i=imag)
 
-.. code:: badcode
+**No:**
 
-    No:  def complex(real, imag = 0.0): return magic(r = real, i = imag)
+::
+
+    def complex(real, imag = 0.0): return magic(r = real, i = imag)
 
 Don't use spaces to vertically align tokens on consecutive lines, since
 it becomes a maintenance burden (applies to ``:``, ``#``, ``=``, etc.):
 
+**Yes:**
+
 ::
 
-    Yes:
-      foo = 1000  # comment
-      long_name = 2  # comment that should not be aligned
+    foo = 1000  # comment
+    long_name = 2  # comment that should not be aligned
 
-      dictionary = {
-          'foo': 1,
-          'long_name': 2,
-      }
+    dictionary = {
+        'foo': 1,
+        'long_name': 2,
+    }
 
-.. code:: badcode
 
-    No:
-      foo       = 1000  # comment
-      long_name = 2     # comment that should not be aligned
+**No:**
 
-      dictionary = {
-          'foo'      : 1,
-          'long_name': 2,
-      }
+::
+
+    foo       = 1000  # comment
+    long_name = 2     # comment that should not be aligned
+
+    dictionary = {
+        'foo'      : 1,
+        'long_name': 2,
+    }
+
 
 Shebang Line
 ~~~~~~~~~~~~
@@ -1272,7 +1332,7 @@ On the other hand, never describe the code. Assume the person reading
 the code knows Python (though not what you're trying to do) better than
 you do.
 
-.. code:: badcode
+::
 
     # BAD COMMENT: Now go through the b array and make sure whenever i occurs
     # the next element is i+1
@@ -1284,31 +1344,35 @@ Classes
 If a class inherits from no other base classes, explicitly inherit from
 ``object``. This also applies to nested classes.
 
+**Yes:**
+
 ::
 
-    Yes: class SampleClass(object):
-             pass
+    class SampleClass(object):
+        pass
 
 
-         class OuterClass(object):
+    class OuterClass(object):
 
-             class InnerClass(object):
-                 pass
-
-
-         class ChildClass(ParentClass):
-             """Explicitly inherits from another class already."""
-
-.. code:: badcode
-
-    No: class SampleClass:
+        class InnerClass(object):
             pass
 
 
-        class OuterClass:
+    class ChildClass(ParentClass):
+        """Explicitly inherits from another class already."""
 
-            class InnerClass:
-                pass
+**No:**
+
+::
+
+    class SampleClass:
+        pass
+
+
+    class OuterClass:
+
+        class InnerClass:
+            pass
 
 Inheriting from ``object`` is needed to make properties work properly,
 and it will protect your code from one particular potential
@@ -1325,20 +1389,24 @@ Use the ``format`` method or the ``%`` operator for formatting strings,
 even when the parameters are all strings. Use your best judgement to
 decide between ``+`` and ``%`` (or ``format``) though.
 
+**Yes:**
+
 ::
 
-    Yes: x = a + b
-         x = '%s, %s!' % (imperative, expletive)
-         x = '{}, {}!'.format(imperative, expletive)
-         x = 'name: %s; score: %d' % (name, n)
-         x = 'name: {}; score: {}'.format(name, n)
+    x = a + b
+    x = '%s, %s!' % (imperative, expletive)
+    x = '{}, {}!'.format(imperative, expletive)
+    x = 'name: %s; score: %d' % (name, n)
+    x = 'name: {}; score: {}'.format(name, n)
 
-.. code:: badcode
+**No:**
 
-    No: x = '%s%s' % (a, b)  # use + in this case
-        x = '{}{}'.format(a, b)  # use + in this case
-        x = imperative + ', ' + expletive + '!'
-        x = 'name: ' + name + '; score: ' + str(n)
+::
+
+    x = '%s%s' % (a, b)  # use + in this case
+    x = '{}{}'.format(a, b)  # use + in this case
+    x = imperative + ', ' + expletive + '!'
+    x = 'name: ' + name + '; score: ' + str(n)
 
 Avoid using the ``+`` and ``+=`` operators to accumulate a string within
 a loop. Since strings are immutable, this creates unnecessary temporary
@@ -1346,39 +1414,44 @@ objects and results in quadratic rather than linear running time.
 Instead, add each substring to a list and ``''.join`` the list after the
 loop terminates (or, write each substring to a ``io.BytesIO`` buffer).
 
+**Yes:**
+
 ::
 
-    Yes: items = ['<table>']
-         for last_name, first_name in employee_list:
-             items.append('<tr><td>%s, %s</td></tr>' % (last_name, first_name))
-         items.append('</table>')
-         employee_table = ''.join(items)
+    items = ['<table>']
+    for last_name, first_name in employee_list:
+        items.append('<tr><td>%s, %s</td></tr>' % (last_name, first_name))
+    items.append('</table>')
+    employee_table = ''.join(items)
 
-.. code:: badcode
+**No:**
 
-    No: employee_table = '<table>'
-        for last_name, first_name in employee_list:
-            employee_table += '<tr><td>%s, %s</td></tr>' % (last_name, first_name)
-        employee_table += '</table>'
+::
+
+    employee_table = '<table>'
+    for last_name, first_name in employee_list:
+        employee_table += '<tr><td>%s, %s</td></tr>' % (last_name, first_name)
+    employee_table += '</table>'
 
 Be consistent with your choice of string quote character within a file.
 Pick ``'`` or ``"`` and stick with it. It is okay to use the other quote
 character on a string to avoid the need to ``\`` escape within the
 string. GPyLint enforces this.
 
+**Yes:**
+
 ::
 
-    Yes:
-      Python('Why are you hiding your eyes?')
-      Gollum("I'm scared of lint errors.")
-      Narrator('"Good!" thought a happy Python reviewer.')
+    Python('Why are you hiding your eyes?')
+    Gollum("I'm scared of lint errors.")
+    Narrator('"Good!" thought a happy Python reviewer.')
 
-.. code:: badcode
+**No:**
 
-    No:
-      Python("Why are you hiding your eyes?")
-      Gollum('The lint. It burns. It burns us.')
-      Gollum("Always the great lint. Watching. Watching.")
+::
+    Python("Why are you hiding your eyes?")
+    Gollum('The lint. It burns. It burns us.')
+    Gollum("Always the great lint. Watching. Watching.")
 
 Prefer ``"""`` for multi-line strings rather than ``'''``. Projects may
 choose to use ``'''`` for all non-docstring multi-line strings if and
@@ -1387,15 +1460,17 @@ only if they also use ``'`` for regular strings. Doc strings must use
 joining since multi-line strings do not flow with the indentation of the
 rest of the program:
 
+**Yes:**
+
 ::
 
-    Yes:
-      print ("This is much nicer.\n"
-             "Do it this way.\n")
+    print ("This is much nicer.\n"
+           "Do it this way.\n")
 
-.. code:: badcode
+**No:**
 
-      No:
+::
+
         print """This is pretty ugly.
     Don't do this.
     """
@@ -1486,18 +1561,23 @@ Imports formatting
 ~~~~~~~~~~~~~~~~~~
 
 
-Imports should be on separate lines.
+Imports should be on separate lines unless using the `from` keyword.
 
 E.g.:
 
+**Yes:**
+
 ::
 
-    Yes: import os
-         import sys
+    import os
+    import sys
+    from tau import logger, error
 
-.. code:: badcode
+**No:**
 
-    No:  import os, sys
+::
+
+    import os, sys
 
 Imports are always put at the top of the file, just after any module
 comments and doc strings and before module globals and constants.
@@ -1531,25 +1611,26 @@ never do so with ``try``/``except`` since the ``try`` and ``except``
 can't both fit on the same line, and you can only do so with an ``if``
 if there is no ``else``.
 
+**Yes:**
+
 ::
 
-    Yes:
+    if foo: bar(foo)
 
-      if foo: bar(foo)
 
-.. code:: badcode
+**No:**
 
-    No:
+::
 
-      if foo: bar(foo)
-      else:   baz(foo)
+    if foo: bar(foo)
+    else:   baz(foo)
 
-      try:               bar(foo)
-      except ValueError: baz(foo)
+    try:               bar(foo)
+    except ValueError: baz(foo)
 
-      try:
-          bar(foo)
-      except ValueError: baz(foo)
+    try:
+        bar(foo)
+    except ValueError: baz(foo)
 
 Access Control
 ~~~~~~~~~~~~~~
@@ -1572,7 +1653,17 @@ Naming
 ~~~~~~
 
 
-``module_name, package_name, ClassName,         method_name, ExceptionName,         function_name, GLOBAL_CONSTANT_NAME,         global_var_name, instance_var_name, function_parameter_name,         local_var_name.``
+* ``module_name``
+* ``package_name``
+* ``ClassName``
+* ``method_name``
+* ``ExceptionName``
+* ``function_name``
+* ``GLOBAL_CONSTANT_NAME``
+* ``global_var_name``
+* ``instance_var_name``
+* ``function_parameter_name``
+* ``local_var_name``
 
 Names to Avoid
 
@@ -1597,73 +1688,8 @@ Naming Convention
    names. Although there are many existing modules named CapWords.py,
    this is now discouraged because it's confusing when the module
    happens to be named after a class. ("wait -- did I write
-   ``import StringIO`` or ``from StringIO import         StringIO``?")
+   ``import StringIO`` or ``from StringIO import StringIO``?")
 
-Guidelines derived from Guido's Recommendations
-
-Type
-
-Public
-
-Internal
-
-Packages
-
-``lower_with_under``
-
-Modules
-
-``lower_with_under``
-
-``_lower_with_under``
-
-Classes
-
-``CapWords``
-
-``_CapWords``
-
-Exceptions
-
-``CapWords``
-
-Functions
-
-``lower_with_under()``
-
-``_lower_with_under()``
-
-Global/Class Constants
-
-``CAPS_WITH_UNDER``
-
-``_CAPS_WITH_UNDER``
-
-Global/Class Variables
-
-``lower_with_under``
-
-``_lower_with_under``
-
-Instance Variables
-
-``lower_with_under``
-
-``_lower_with_under (protected) or __lower_with_under (private)``
-
-Method Names
-
-``lower_with_under()``
-
-``_lower_with_under() (protected) or __lower_with_under() (private)``
-
-Function/Method Parameters
-
-``lower_with_under``
-
-Local Variables
-
-``lower_with_under``
 
 Main
 ~~~~
@@ -1980,5 +2006,6 @@ Example::
 .. _docstrings: https://www.python.org/dev/peps/pep-0257/
 .. _Sphinx: http://sphinx-doc.org/
 .. _reStructuredText: http://docutils.sourceforge.net/rst.html
+.. _EAFP Style: <http://stackoverflow.com/a/1835844>
 
 
