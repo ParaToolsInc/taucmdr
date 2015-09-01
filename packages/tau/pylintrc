@@ -93,7 +93,7 @@ reports=yes
 # respectively contain the number of errors / warnings messages and the total
 # number of statements analyzed. This is used by the global evaluation report
 # (RP0004).
-evaluation=10.0 - ((float(5 * error + warning + refactor + convention) / statement) * 10)
+evaluation=10.0 - ((float(5 * warning + refactor + convention) / statement) * 10) - (1.25*error)
 
 # Add a comment according to your evaluation note. This is used by the global
 # evaluation report (RP0004).
