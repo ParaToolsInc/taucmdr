@@ -538,6 +538,8 @@ class TauInstallation(Installation):
             tags.append('mpi')
         if self.source_inst == 'never':
             tags.append('pdt')
+        if self.measure_openmp != 'opari':
+            tags.append('opari')
         LOGGER.debug("Incompatible tags: %s", tags)
         return set(tags)
 
