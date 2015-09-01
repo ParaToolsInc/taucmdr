@@ -75,6 +75,7 @@
 
 <span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">cli</span>
 <span class="kn">from</span> <span class="nn">tau.cli</span> <span class="kn">import</span> <span class="n">arguments</span>
+<span class="kn">from</span> <span class="nn">tau.cli.commands.project</span> <span class="kn">import</span> <span class="nb">list</span> <span class="k">as</span> <span class="n">project_list</span>
 <span class="kn">from</span> <span class="nn">tau.model.project</span> <span class="kn">import</span> <span class="n">Project</span>
 <span class="kn">from</span> <span class="nn">tau.model.target</span> <span class="kn">import</span> <span class="n">Target</span>
 <span class="kn">from</span> <span class="nn">tau.model.application</span> <span class="kn">import</span> <span class="n">Application</span>
@@ -170,7 +171,8 @@
     <span class="n">project_name</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">name</span>
     <span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">with_name</span><span class="p">(</span><span class="n">project_name</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">project</span><span class="p">:</span>
-        <span class="n">argparser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;&#39;</span><span class="si">%s</span><span class="s">&#39; is not a project name. Type `</span><span class="si">%s</span><span class="s">` to see valid names.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">project_name</span><span class="p">,</span> <span class="n">COMMAND</span><span class="p">))</span>
+        <span class="n">argparser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;&#39;</span><span class="si">%s</span><span class="s">&#39; is not a project name. Type `</span><span class="si">%s</span><span class="s">` to see valid names.&quot;</span> <span class="o">%</span> 
+                        <span class="p">(</span><span class="n">project_name</span><span class="p">,</span> <span class="n">project_list</span><span class="o">.</span><span class="n">COMMAND</span><span class="p">))</span>
 
     <span class="n">updates</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">project</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>

@@ -186,14 +186,13 @@
         <span class="p">},</span>
         <span class="s">&#39;openmp&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;string&#39;</span><span class="p">,</span>
-            <span class="s">&#39;default&#39;</span><span class="p">:</span> <span class="s">&#39;compiler_default&#39;</span><span class="p">,</span>
+            <span class="s">&#39;default&#39;</span><span class="p">:</span> <span class="s">&#39;none&#39;</span><span class="p">,</span>
             <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">&#39;use specified library to measure time spent in OpenMP directives&#39;</span><span class="p">,</span>
             <span class="s">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&#39;--openmp&#39;</span><span class="p">,),</span>
                          <span class="s">&#39;group&#39;</span><span class="p">:</span> <span class="s">&#39;library&#39;</span><span class="p">,</span>
                          <span class="s">&#39;metavar&#39;</span><span class="p">:</span> <span class="s">&#39;library&#39;</span><span class="p">,</span>
-                         <span class="s">&#39;nargs&#39;</span><span class="p">:</span> <span class="s">&#39;?&#39;</span><span class="p">,</span>
-                         <span class="s">&#39;const&#39;</span><span class="p">:</span> <span class="s">&#39;opari&#39;</span><span class="p">,</span>
-                         <span class="s">&#39;choices&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s">&#39;compiler_default&#39;</span><span class="p">,</span> <span class="s">&#39;opari&#39;</span><span class="p">,</span> <span class="s">&#39;ompt&#39;</span><span class="p">]},</span>
+                         <span class="s">&#39;nargs&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                         <span class="s">&#39;choices&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s">&#39;none&#39;</span><span class="p">,</span> <span class="s">&#39;opari&#39;</span><span class="p">,</span> <span class="s">&#39;ompt&#39;</span><span class="p">]},</span>
             <span class="s">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;Application&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;openmp&#39;</span><span class="p">:</span> <span class="n">requisite</span><span class="o">.</span><span class="n">Required</span><span class="p">}},</span>
         <span class="p">},</span>
         <span class="s">&#39;callpath&#39;</span><span class="p">:</span> <span class="p">{</span>

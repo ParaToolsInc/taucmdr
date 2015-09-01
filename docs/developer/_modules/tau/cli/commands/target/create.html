@@ -220,7 +220,7 @@
     <span class="k">except</span> <span class="n">UniqueAttributeError</span><span class="p">:</span>
         <span class="n">parser</span><span class="p">()</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;A target named &#39;</span><span class="si">%s</span><span class="s">&#39; already exists&quot;</span> <span class="o">%</span> <span class="n">args</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
 
-    <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Created a new target named &#39;</span><span class="si">%r</span><span class="s">&#39;.&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+    <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Created a new target named &#39;</span><span class="si">%s</span><span class="s">&#39;.&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">cli</span><span class="o">.</span><span class="n">execute_command</span><span class="p">([</span><span class="s">&#39;target&#39;</span><span class="p">,</span> <span class="s">&#39;list&#39;</span><span class="p">],</span> <span class="p">[</span><span class="n">args</span><span class="o">.</span><span class="n">name</span><span class="p">])</span></div>
 </pre></div>
 
