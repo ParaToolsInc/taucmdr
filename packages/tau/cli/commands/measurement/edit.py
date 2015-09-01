@@ -77,18 +77,18 @@ def main(argv):
     args = parser().parse_args(args=argv)
     LOGGER.debug('Arguments: %s', args)
 
-    name = args.name
-    if not Measurement.exists({'name': name}):
-        parser().error("'%s' is not a measurement name. Type `%s` to see valid names." % (name, COMMAND))
+    old_name = args.name
+    if not Measurement.exists({'name': old_name}):
+        parser().error("'%s' is not a measurement name. Type `%s` to see valid names." % (old_name, COMMAND))
 
     updates = dict(args.__dict__)
     try:
-        new_name = args.new_name
+        name = args.new_name
     except AttributeError:
-        pass
+        name = old_name
     else:
-        updates['name'] = new_name
+        updates['name'] = name
         del updates['new_name']
 
-    Measurement.update(updates, {'name': name})
-    return cli.execute_command(['measurement', 'list'], [args.name])
+    Measurement.update(updates, {'name': old_name})
+    return cli.execute_command(['measurement', 'list'], [name])
