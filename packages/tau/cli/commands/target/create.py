@@ -174,5 +174,5 @@ def main(argv):
     except UniqueAttributeError:
         parser().error("A target named '%s' already exists" % args.name)
 
-    LOGGER.info("Created a new target named '%r'.", args.name)
+    LOGGER.info("Created a new target named '%s'.", args.name)
     return cli.execute_command(['target', 'list'], [args.name])

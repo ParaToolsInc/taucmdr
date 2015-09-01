@@ -79,5 +79,5 @@ def main(argv):
     except UniqueAttributeError:
         parser().error('A measurement named %r already exists' % args.name)
 
-    LOGGER.info('Created a new measurement named %r.', args.name)
+    LOGGER.info('Created a new measurement named %s.', args.name)
     return cli.execute_command(['measurement', 'list'], [args.name])
