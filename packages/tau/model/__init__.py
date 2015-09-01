@@ -581,7 +581,8 @@ class Controller(object):
         Returns:
             dict: Dictionary of tables containing records.
             
-        Example::
+        Example:
+        ::
             
             {
              'Brewery': {100: {'address': '4615 Hollins Ferry Rd, Halethorpe, MD 21227',
