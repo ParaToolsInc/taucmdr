@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>tau.cli.commands.application.create &mdash; TAU Commander Developer Documentation</title>
+    <title>tau.cli.commands.project.export &mdash; TAU Commander Developer Documentation</title>
     
     <link rel="stylesheet" href="../../../../../_static/haiku.css" type="text/css" />
     <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
@@ -26,12 +26,12 @@
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../../../../_static/favicon.ico"/>
     <link rel="top" title="TAU Commander Developer Documentation" href="../../../../../index.html" />
-    <link rel="up" title="tau.cli.commands.application" href="../application.html" /> 
+    <link rel="up" title="tau.cli.commands.project" href="../project.html" /> 
   </head>
   <body role="document">
       <div class="header" role="banner"><img class="rightlogo" src="../../../../../_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="../../../../../index.html">
           <span>TAU Commander Developer Documentation</span></a></h1>
-        <h2 class="heading"><span>tau.cli.commands.application.create</span></h2>
+        <h2 class="heading"><span>tau.cli.commands.project.export</span></h2>
       </div>
       <div class="topnav" role="navigation" aria-label="top navigation">
       
@@ -43,7 +43,7 @@
       <div class="content">
         
         
-  <h1>Source code for tau.cli.commands.application.create</h1><div class="highlight"><pre>
+  <h1>Source code for tau.cli.commands.project.export</h1><div class="highlight"><pre>
 <span class="c"># -*- coding: utf-8 -*-</span>
 <span class="c">#</span>
 <span class="c"># Copyright (c) 2015, ParaTools, Inc.</span>
@@ -71,26 +71,27 @@
 <span class="c"># OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE</span>
 <span class="c"># OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</span>
 <span class="c">#</span>
-<span class="sd">&quot;&quot;&quot;``tau application create`` subcommand.&quot;&quot;&quot;</span>
+<span class="sd">&quot;&quot;&quot;``tau project export`` subcommand.&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">cli</span>
+<span class="kn">from</span> <span class="nn">pprint</span> <span class="kn">import</span> <span class="n">pprint</span>
+<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">cli</span> 
+<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">EXIT_SUCCESS</span>
 <span class="kn">from</span> <span class="nn">tau.cli</span> <span class="kn">import</span> <span class="n">arguments</span>
-<span class="kn">from</span> <span class="nn">tau.model</span> <span class="kn">import</span> <span class="n">UniqueAttributeError</span>
-<span class="kn">from</span> <span class="nn">tau.model.application</span> <span class="kn">import</span> <span class="n">Application</span>
+<span class="kn">from</span> <span class="nn">tau.model.project</span> <span class="kn">import</span> <span class="n">Project</span>
 
 
 <span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
 
 <span class="n">COMMAND</span> <span class="o">=</span> <span class="n">cli</span><span class="o">.</span><span class="n">get_command</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
 
-<span class="n">SHORT_DESCRIPTION</span> <span class="o">=</span> <span class="s">&quot;Create a new application configuration.&quot;</span>
+<span class="n">SHORT_DESCRIPTION</span> <span class="o">=</span> <span class="s">&quot;Export project configurations.&quot;</span>
 
 <span class="n">HELP</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
 <span class="s">&#39;</span><span class="si">%(command)s</span><span class="s">&#39; page to be written.</span>
 <span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;command&#39;</span><span class="p">:</span> <span class="n">COMMAND</span><span class="p">}</span>
 
 
-<div class="viewcode-block" id="parser"><a class="viewcode-back" href="../../../../../tau.cli.commands.application.html#tau.cli.commands.application.create.parser">[docs]</a><span class="k">def</span> <span class="nf">parser</span><span class="p">():</span>
+<div class="viewcode-block" id="parser"><a class="viewcode-back" href="../../../../../tau.cli.commands.project.html#tau.cli.commands.project.export.parser">[docs]</a><span class="k">def</span> <span class="nf">parser</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Construct a command line argument parser.</span>
 <span class="sd">    </span>
 <span class="sd">    Constructing the parser may cause a lot of imports as :py:mod:`tau.cli` is explored.</span>
@@ -99,15 +100,18 @@
 <span class="sd">    an attribute of the function, making it something like a C++ function static variable.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">parser</span><span class="p">,</span> <span class="s">&#39;inst&#39;</span><span class="p">):</span>
-        <span class="n">usage_head</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s"> &lt;application_name&gt; [arguments]&quot;</span> <span class="o">%</span> <span class="n">COMMAND</span>
-        <span class="n">parser</span><span class="o">.</span><span class="n">inst</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">get_parser_from_model</span><span class="p">(</span><span class="n">Application</span><span class="p">,</span>
-                                                      <span class="n">prog</span><span class="o">=</span><span class="n">COMMAND</span><span class="p">,</span>
-                                                      <span class="n">usage</span><span class="o">=</span><span class="n">usage_head</span><span class="p">,</span>
-                                                      <span class="n">description</span><span class="o">=</span><span class="n">SHORT_DESCRIPTION</span><span class="p">)</span>
+        <span class="n">usage_head</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s"> project_name [project_name ...]&quot;</span> <span class="o">%</span> <span class="n">COMMAND</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">inst</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">get_parser</span><span class="p">(</span><span class="n">prog</span><span class="o">=</span><span class="n">COMMAND</span><span class="p">,</span>
+                                           <span class="n">usage</span><span class="o">=</span><span class="n">usage_head</span><span class="p">,</span>
+                                           <span class="n">description</span><span class="o">=</span><span class="n">SHORT_DESCRIPTION</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">inst</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;names&#39;</span><span class="p">,</span> 
+                                 <span class="n">help</span><span class="o">=</span><span class="s">&quot;Names of project to export&quot;</span><span class="p">,</span>
+                                 <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;project_name&#39;</span><span class="p">,</span>
+                                 <span class="n">nargs</span><span class="o">=</span><span class="s">&#39;+&#39;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">parser</span><span class="o">.</span><span class="n">inst</span>
 
 </div>
-<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../../../../tau.cli.commands.application.html#tau.cli.commands.application.create.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../../../../tau.cli.commands.project.html#tau.cli.commands.project.export.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Subcommand program entry point.</span>
 <span class="sd">    </span>
 <span class="sd">    Args:</span>
@@ -116,16 +120,19 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        int: Process return code: non-zero if a problem occurred, 0 otherwise</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="p">()</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">argv</span><span class="p">)</span>
+    <span class="n">argparser</span> <span class="o">=</span> <span class="n">parser</span><span class="p">()</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">argparser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">argv</span><span class="p">)</span>
     <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Arguments: </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
 
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">Application</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">__dict__</span><span class="p">)</span>
-    <span class="k">except</span> <span class="n">UniqueAttributeError</span><span class="p">:</span>
-        <span class="n">parser</span><span class="p">()</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;An application named &#39;</span><span class="si">%s</span><span class="s">&#39; already exists&quot;</span> <span class="o">%</span> <span class="n">args</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-
-    <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Created a new application named &#39;</span><span class="si">%s</span><span class="s">&#39;.&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">cli</span><span class="o">.</span><span class="n">execute_command</span><span class="p">([</span><span class="s">&#39;application&#39;</span><span class="p">,</span> <span class="s">&#39;list&#39;</span><span class="p">],</span> <span class="p">[</span><span class="n">args</span><span class="o">.</span><span class="n">name</span><span class="p">])</span></div>
+    <span class="n">projects</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">args</span><span class="o">.</span><span class="n">names</span><span class="p">:</span> 
+        <span class="n">found</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">with_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">found</span><span class="p">:</span>
+            <span class="n">argparser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;&#39;</span><span class="si">%s</span><span class="s">&#39; is not a project name.&quot;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+        <span class="n">projects</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">found</span><span class="p">)</span>
+    <span class="n">pprint</span><span class="p">(</span><span class="n">Project</span><span class="o">.</span><span class="n">export_records</span><span class="p">(</span><span class="n">eids</span><span class="o">=</span><span class="p">[</span><span class="n">proj</span><span class="o">.</span><span class="n">eid</span> <span class="k">for</span> <span class="n">proj</span> <span class="ow">in</span> <span class="n">projects</span><span class="p">]))</span>
+    
+    <span class="k">return</span> <span class="n">EXIT_SUCCESS</span></div>
 </pre></div>
 
       </div>
