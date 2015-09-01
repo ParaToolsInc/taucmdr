@@ -29,6 +29,7 @@
 
 from tau import logger, cli
 from tau.cli import arguments
+from tau.cli.commands.project import list as project_list
 from tau.model.project import Project
 from tau.model.target import Target
 from tau.model.application import Application
@@ -124,7 +125,8 @@ def main(argv):
     project_name = args.name
     project = Project.with_name(project_name)
     if not project:
-        argparser.error("'%s' is not a project name. Type `%s` to see valid names." % (project_name, COMMAND))
+        argparser.error("'%s' is not a project name. Type `%s` to see valid names." % 
+                        (project_name, project_list.COMMAND))
 
     updates = dict(project.data)
     try:

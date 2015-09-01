@@ -387,7 +387,7 @@ class Controller(object):
         Returns:
             Controller: Controller subclass instance controlling the found record or None if no such record exists. 
         """
-        LOGGER.debug("Searching '%s' for keys=%r, eid=%r", cls.model_name, keys, eid)
+        LOGGER.debug("%s.one(keys=%s, eid=%s)", cls.model_name, keys, eid)
         found = USER_STORAGE.get(cls.model_name, keys=keys, eid=eid)
         return cls(found) if found else None
 
@@ -413,6 +413,7 @@ class Controller(object):
         Returns:
             list: Controller subclass instances controlling the found records. 
         """
+        LOGGER.debug("%s.search(keys=%s, eids=%s)", cls.model_name, keys, eids)
         if keys is None and eids is None:
             return cls.all()
         elif eids:
@@ -442,6 +443,7 @@ class Controller(object):
         Returns:
             list: Controller subclass instances controlling the found records. 
         """
+        LOGGER.debug("%s.match(field=%s, regex=%s, test=%s)", cls.model_name, field, regex, test)
         return [cls(record) for record in USER_STORAGE.match(cls.model_name, field, regex, test)]
 
     @classmethod
@@ -486,6 +488,7 @@ class Controller(object):
                     foreign_keys = model.data[attr]
                 model._associate(foreign_model, foreign_keys, via)
             model.on_create()
+            LOGGER.debug("Created new %s record", cls.model_name)
             return model
 
     @classmethod
@@ -499,9 +502,12 @@ class Controller(object):
             keys (dict): Attributes to match.
             eids (list): Record identifiers to match.
         """
+        LOGGER.debug("%s.update(fields=%s, keys=%s, eids=%s)", cls.model_name, fields, keys, eids)
         with USER_STORAGE as storage:
+            # Get the list of affected records **before** updating the data so foreign keys are correct
+            changing = cls.search(keys, eids)
             storage.update(cls.model_name, cls._validate(fields, enforce_required=False), keys=keys, eids=eids)
-            for model in cls.search(keys, eids):
+            for model in changing:
                 for attr, foreign in cls.associations.iteritems():
                     try:
                         new_foreign_keys = set(fields[attr])
@@ -512,8 +518,8 @@ class Controller(object):
                     except KeyError:
                         old_foreign_keys = set()
                     foreign_model, via = foreign
-                    added = new_foreign_keys - old_foreign_keys
-                    deled = old_foreign_keys - new_foreign_keys
+                    added = list(new_foreign_keys - old_foreign_keys)
+                    deled = list(old_foreign_keys - new_foreign_keys)
                     model._associate(foreign_model, added, via)
                     model._disassociate(foreign_model.search(eids=list(deled)), via)
                     model.on_update()
@@ -528,6 +534,7 @@ class Controller(object):
             keys (dict): Attributes to match.
             eids (list): Record identifiers to match.
         """
+        LOGGER.debug("%s.delete(keys=%s, eids=%s)", cls.model_name, keys, eids)
         with USER_STORAGE as storage:
             for model in cls.search(keys, eids):
                 # pylint complains because `model` is changing on every iteration so we'll have
@@ -620,19 +627,19 @@ class Controller(object):
                              associate with the controlled record.
             attr (str): The name of the associated foreign attribute.
         """ 
+        if not len(affected): 
+            return
         LOGGER.debug("Adding %s to '%s' in %s(eids=%s)", self.eid, attr, foreign_cls.model_name, affected)
         with USER_STORAGE as storage:
             for key in affected:
                 model = foreign_cls.one(eid=key)
                 if not model:
-                    raise ModelError(
-                        foreign_cls, "No record with ID '%s'" % key)
+                    raise ModelError(foreign_cls, "No record with ID '%s'" % key)
                 if 'model' in model.attributes[attr]:
                     updated = self.eid
                 elif 'collection' in model.attributes[attr]:
                     updated = list(set(model[attr] + [self.eid]))
-                storage.update(
-                    foreign_cls.model_name, {attr: updated}, eids=key)
+                storage.update(foreign_cls.model_name, {attr: updated}, eids=key)
 
     def _disassociate(self, affected, attr):
         """Disassociates the controlled record from another record.
@@ -645,6 +652,8 @@ class Controller(object):
                              associate with the controlled record.
             attr (str): The name of the associated foreign attribute.
         """ 
+        if not len(affected):
+            return
         LOGGER.debug("Removing %s from '%s' in %r", self.eid, attr, affected)
         with USER_STORAGE as storage:
             for model in affected:
