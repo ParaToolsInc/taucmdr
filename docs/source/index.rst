@@ -40,8 +40,8 @@ The TAU Commandments
 7. **Never** shalt thou *just quickly fix this one thing because I have a hard deadline I forgot and now I really really really need this feature to be part of TAU Commander whatever the cost and oh God I broke it I broke it and everything is on fire*.
 
 
-Document Index
-==============
+Table of Contents
+=================
 
 .. toctree::
    :maxdepth: 2
@@ -49,14 +49,21 @@ Document Index
    design
    style
    documentation
-   modules
-
-Indices and tables
-==================
 
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+
+
+Modules
+=======
+
+.. toctree::
+   :maxdepth: 4
+
+   modules
+
 
 
 .. _the TAU Commander website: http://www.taucommander.com/

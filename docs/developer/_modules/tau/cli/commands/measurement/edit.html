@@ -123,21 +123,21 @@
     <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="p">()</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">argv</span><span class="p">)</span>
     <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Arguments: </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
 
-    <span class="n">name</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">name</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">Measurement</span><span class="o">.</span><span class="n">exists</span><span class="p">({</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">}):</span>
-        <span class="n">parser</span><span class="p">()</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;&#39;</span><span class="si">%s</span><span class="s">&#39; is not a measurement name. Type `</span><span class="si">%s</span><span class="s">` to see valid names.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">COMMAND</span><span class="p">))</span>
+    <span class="n">old_name</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">name</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">Measurement</span><span class="o">.</span><span class="n">exists</span><span class="p">({</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="n">old_name</span><span class="p">}):</span>
+        <span class="n">parser</span><span class="p">()</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;&#39;</span><span class="si">%s</span><span class="s">&#39; is not a measurement name. Type `</span><span class="si">%s</span><span class="s">` to see valid names.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">old_name</span><span class="p">,</span> <span class="n">COMMAND</span><span class="p">))</span>
 
     <span class="n">updates</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">__dict__</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">new_name</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">new_name</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">new_name</span>
     <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
-        <span class="k">pass</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">old_name</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">updates</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_name</span>
+        <span class="n">updates</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span>
         <span class="k">del</span> <span class="n">updates</span><span class="p">[</span><span class="s">&#39;new_name&#39;</span><span class="p">]</span>
 
-    <span class="n">Measurement</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">updates</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">})</span>
-    <span class="k">return</span> <span class="n">cli</span><span class="o">.</span><span class="n">execute_command</span><span class="p">([</span><span class="s">&#39;measurement&#39;</span><span class="p">,</span> <span class="s">&#39;list&#39;</span><span class="p">],</span> <span class="p">[</span><span class="n">args</span><span class="o">.</span><span class="n">name</span><span class="p">])</span></div>
+    <span class="n">Measurement</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">updates</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="n">old_name</span><span class="p">})</span>
+    <span class="k">return</span> <span class="n">cli</span><span class="o">.</span><span class="n">execute_command</span><span class="p">([</span><span class="s">&#39;measurement&#39;</span><span class="p">,</span> <span class="s">&#39;list&#39;</span><span class="p">],</span> <span class="p">[</span><span class="n">name</span><span class="p">])</span></div>
 </pre></div>
 
       </div>
