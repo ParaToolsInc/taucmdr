@@ -421,17 +421,15 @@ class TauInstallation(Installation):
                   '-mpilibrary=%s' % mpilibrary if mpilibrary else ''
                   ] if flag]
         if self.openmp_support:
-            if self.measure_openmp == 'compiler_default':
-                flags.append('-openmp')
-            elif self.measure_openmp == 'ompt':
+            flags.append('-openmp')
+            if self.measure_openmp == 'ompt':
                 if self.compilers[CC_ROLE].info.family == INTEL_COMPILERS:
                     flags.append('-ompt')
                 else:
+                    # TODO: Shouldn't this be checked in model `compatible_with`?
                     raise ConfigurationError('OMPT for OpenMP measurement only works with Intel compilers')
             elif self.measure_openmp == 'opari':
                 flags.append('-opari')
-            else:
-                raise InternalError('Unknown OpenMP measurement: %s' % self.measure_openmp)
         cmd = ['./configure'] + flags
         LOGGER.info("Configuring TAU...")
         if util.create_subprocess(cmd, cwd=self._src_path, stdout=False):

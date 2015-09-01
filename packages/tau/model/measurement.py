@@ -140,14 +140,13 @@ class Measurement(Controller, ByName):
         },
         'openmp': {
             'type': 'string',
-            'default': 'compiler_default',
+            'default': 'none',
             'description': 'use specified library to measure time spent in OpenMP directives',
             'argparse': {'flags': ('--openmp',),
                          'group': 'library',
                          'metavar': 'library',
-                         'nargs': '?',
-                         'const': 'opari',
-                         'choices': ['compiler_default', 'opari', 'ompt']},
+                         'nargs': 1,
+                         'choices': ['none', 'opari', 'ompt']},
             'compat': {'Application': {'openmp': requisite.Required}},
         },
         'callpath': {
