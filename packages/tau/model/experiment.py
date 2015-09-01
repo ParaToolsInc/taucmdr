@@ -120,6 +120,7 @@ class Experiment(Controller):
         if not self.eid:
             raise InternalError('Tried to select an experiment without an eid')
         tau.settings.set('experiment_id', self.eid)
+        self.configure()
 
     def is_selected(self):
         return self.eid and tau.settings.get('experiment_id') == self.eid
