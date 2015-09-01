@@ -33,6 +33,14 @@ tau.cli.commands.project.edit module
     :undoc-members:
     :show-inheritance:
 
+tau.cli.commands.project.export module
+--------------------------------------
+
+.. automodule:: tau.cli.commands.project.export
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 tau.cli.commands.project.list module
 ------------------------------------
 

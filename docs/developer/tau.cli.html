@@ -110,9 +110,9 @@ you like.  Subcommand modules must set the following module attributes:</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>module_name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of a module.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">class:<cite>list</cite>: Strings that identify the command.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Strings that identify the command.</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">:py</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list">list</a></td>
 </tr>
 </tbody>
 </table>
@@ -127,8 +127,8 @@ you like.  Subcommand modules must set the following module attributes:</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>cmd</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">list</span></code></a>) &#8211; List of strings identifying the command, i.e. from <a class="reference internal" href="#tau.cli._command_as_list" title="tau.cli._command_as_list"><code class="xref any py py-func docutils literal"><span class="pre">_command_as_list</span></code></a>.</li>
-<li><strong>cmd_args</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">list</span></code></a>) &#8211; Command line arguments to be parsed by command.</li>
+<li><strong>cmd</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; List of strings identifying the command, i.e. from <a class="reference internal" href="#tau.cli._command_as_list" title="tau.cli._command_as_list"><code class="xref any py py-func docutils literal"><span class="pre">_command_as_list</span></code></a>.</li>
+<li><strong>cmd_args</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Command line arguments to be parsed by command.</li>
 <li><strong>parent_module</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Dot-seperated name of the command&#8217;s parent.</li>
 </ul>
 </td>
@@ -246,6 +246,7 @@ command module.  Other strings map to subcommands of the command.</p>
 <li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.project.html#module-tau.cli.commands.project.create">tau.cli.commands.project.create module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.project.html#module-tau.cli.commands.project.delete">tau.cli.commands.project.delete module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.project.html#module-tau.cli.commands.project.edit">tau.cli.commands.project.edit module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.project.html#module-tau.cli.commands.project.export">tau.cli.commands.project.export module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.project.html#module-tau.cli.commands.project.list">tau.cli.commands.project.list module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.project.html#module-tau.cli.commands.project.select">tau.cli.commands.project.select module</a></li>
 </ul>
@@ -286,7 +287,7 @@ command module.  Other strings map to subcommands of the command.</p>
 <p>Extensions to <a class="reference external" href="https://docs.python.org/library/argparse.html#module-argparse" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">argparse</span></code></a> to support the TAU Commander command line interface.</p>
 <dl class="class">
 <dt id="tau.cli.arguments.ArgparseHelpFormatter">
-<em class="property">class </em><code class="descclassname">tau.cli.arguments.</code><code class="descname">ArgparseHelpFormatter</code><span class="sig-paren">(</span><em>prog</em>, <em>indent_increment=2</em>, <em>max_help_position=30</em>, <em>width=174</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/arguments.html#ArgparseHelpFormatter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.arguments.ArgparseHelpFormatter" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.cli.arguments.</code><code class="descname">ArgparseHelpFormatter</code><span class="sig-paren">(</span><em>prog</em>, <em>indent_increment=2</em>, <em>max_help_position=30</em>, <em>width=100</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/arguments.html#ArgparseHelpFormatter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.arguments.ArgparseHelpFormatter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/argparse.html#argparse.RawDescriptionHelpFormatter" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">argparse.RawDescriptionHelpFormatter</span></code></a></p>
 <p>Custom help string formatter for argument parser.</p>
 <p>Provide proper help message alignment, line width, and formatting.

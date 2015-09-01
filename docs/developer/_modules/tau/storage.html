@@ -171,7 +171,7 @@
 <span class="sd">        Args:</span>
 <span class="sd">            table_name (str): Name of the table to search.</span>
 <span class="sd">            keys (dict): Fields to match.</span>
-<span class="sd">            eid (:py:class:`list`): Record identifier to match.</span>
+<span class="sd">            eid (list): Record identifier to match.</span>
 <span class="sd">            match_any (bool): If True then any key may match or if False then all keys must match.</span>
 
 <span class="sd">        Returns:</span>
@@ -198,7 +198,7 @@
 <span class="sd">            match_any (bool): If True then any key may match or if False then all keys must match.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            :py:class:`list`: Matching data records.</span>
+<span class="sd">            list: Matching data records.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">keys</span><span class="p">:</span>
@@ -223,7 +223,7 @@
 <span class="sd">            test: A callable expression returning a boolean value.  </span>
 <span class="sd">            </span>
 <span class="sd">        Returns:</span>
-<span class="sd">            :py:class:`list`: Matching data records.</span>
+<span class="sd">            list: Matching data records.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">test</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
@@ -245,7 +245,7 @@
 <span class="sd">            table_name (str): Name of the table to search.</span>
 <span class="sd">            keys (dict): Attributes to match.</span>
 <span class="sd">            match_any (bool): If True then any key may match or if False then all keys must match.</span>
-<span class="sd">            eids (:py:class:`list`): Record identifiers to match.</span>
+<span class="sd">            eids (list): Record identifiers to match.</span>
 <span class="sd">            </span>
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: True if a record exists, False otherwise.          </span>
@@ -285,7 +285,7 @@
 <span class="sd">            fields (dict): Data to record.</span>
 <span class="sd">            keys (dict): Attributes to match.</span>
 <span class="sd">            match_any (bool): If True then any key may match or if False then all keys must match.</span>
-<span class="sd">            eids (:py:class:`list`): Record identifiers to match.</span>
+<span class="sd">            eids (list): Record identifiers to match.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">eids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
@@ -305,7 +305,7 @@
 <span class="sd">            table_name (str): Name of the table to operate on.</span>
 <span class="sd">            keys (dict): Attributes to match.</span>
 <span class="sd">            match_any (bool): If True then any key may match or if False then all keys must match.</span>
-<span class="sd">            eids (:py:class:`list`): Record identifiers to match.</span>
+<span class="sd">            eids (list): Record identifiers to match.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">eids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
