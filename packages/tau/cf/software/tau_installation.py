@@ -579,8 +579,8 @@ class TauInstallation(Installation):
             LOGGER.debug("Found approximate match with TAU makefile %s", makefile)
             return makefile
         LOGGER.debug("No TAU makefile approximately matches tags '%s'", config_tags)
-        raise SoftwarePackageError("TAU Makefile not found for tags '%s' in '%s'", 
-                                   ', '.join(config_tags), self.install_prefix)
+        raise SoftwarePackageError("TAU Makefile not found for tags '%s' in '%s'" % 
+                                   (', '.join(config_tags), self.install_prefix))
 
     def compiletime_config(self, opts=None, env=None):
         """Configures environment for compilation with TAU.
