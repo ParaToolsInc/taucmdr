@@ -190,7 +190,7 @@ class Experiment(Controller):
                                    measure_mpc=None,  # TODO
                                    measure_memory_usage=measurement['memory_usage'],
                                    measure_memory_alloc=measurement['memory_alloc'],
-                                   measure_callpath=measurement['callpath'])
+                                   callpath_depth=measurement['callpath'])
         with self.tau:
             self.tau.install()
 
