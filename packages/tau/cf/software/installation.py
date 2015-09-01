@@ -53,7 +53,7 @@ def parallel_make_flags(nprocs=None):
     """
     if not nprocs:
         nprocs = multiprocessing.cpu_count() - 1
-    return ['-j', nprocs]
+    return ['-j', str(nprocs)]
 
 
 class Installation(object):
