@@ -25,18 +25,20 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""``tau target delete`` subcommand."""
+"""``tau project export`` subcommand."""
 
-from tau import logger, cli
+from pprint import pprint
+from tau import logger, cli 
+from tau import EXIT_SUCCESS
 from tau.cli import arguments
-from tau.model.application import Application
+from tau.model.project import Project
 
 
 LOGGER = logger.get_logger(__name__)
 
 COMMAND = cli.get_command(__name__)
 
-SHORT_DESCRIPTION = "Delete application configurations."
+SHORT_DESCRIPTION = "Export project configurations."
 
 HELP = """
 '%(command)s' page to be written.
@@ -52,15 +54,14 @@ def parser():
     an attribute of the function, making it something like a C++ function static variable.
     """
     if not hasattr(parser, 'inst'):
-        usage_head = "%s <application_name> [arguments]" % COMMAND       
-        usage_foot = "WARNING: Deleting an application configuration will remove it from all projects"
+        usage_head = "%s project_name [project_name ...]" % COMMAND
         parser.inst = arguments.get_parser(prog=COMMAND,
                                            usage=usage_head,
-                                           description=SHORT_DESCRIPTION,
-                                           epilog=usage_foot)
-        parser.inst.add_argument('name', 
-                                 help="Name of application configuration to delete",
-                                 metavar='<application_name>')
+                                           description=SHORT_DESCRIPTION)
+        parser.inst.add_argument('names', 
+                                 help="Names of project to export",
+                                 metavar='project_name',
+                                 nargs='+')
     return parser.inst
 
 
@@ -73,13 +74,16 @@ def main(argv):
     Returns:
         int: Process return code: non-zero if a problem occurred, 0 otherwise
     """
-    args = parser().parse_args(args=argv)
+    argparser = parser()
+    args = argparser.parse_args(args=argv)
     LOGGER.debug('Arguments: %s', args)
 
-    name = args.name
-    if not Application.exists({'name': name}):
-        parser().error("'%s' is not a application name. Type `tau application list` to see valid names." % name)
-    Application.delete({'name': name})
-    LOGGER.info("Deleted application '%s'", name)
-
-    return cli.execute_command(['application', 'list'], [])
+    projects = []
+    for name in args.names: 
+        found = Project.with_name(name)
+        if not found:
+            argparser.error("'%s' is not a project name." % name)
+        projects.append(found)
+    pprint(Project.export_records(eids=[proj.eid for proj in projects]))
+    
+    return EXIT_SUCCESS

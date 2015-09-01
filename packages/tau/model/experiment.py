@@ -202,7 +202,7 @@ class Experiment(Controller):
         
         Args:
             compiler_cmd (str): The compiler command intercepted by TAU Commander.
-            compiler_args (:py:class:`list`): Compiler command line arguments intercepted by TAU Commander.
+            compiler_args (list): Compiler command line arguments intercepted by TAU Commander.
             
         Raises:
             ConfigurationError: The experiment is not configured to perform the desired build.
@@ -234,7 +234,7 @@ class Experiment(Controller):
         
         Args:
             application_cmd (str): The application command intercepted by TAU Commander.
-            application_args (:py:class:`list`): Application command line arguments intercepted by TAU Commander.
+            application_args (list): Application command line arguments intercepted by TAU Commander.
             
         Raises:
             ConfigurationError: The experiment is not configured to perform the desired run.
@@ -256,7 +256,7 @@ class Experiment(Controller):
         
         Args:
             tool_name (str): Name of the visualization or data processing tool to use, e.g. `pprof`.
-            trial_numbers (:py:class:`list`): Numbers of trials to show.
+            trial_numbers (list): Numbers of trials to show.
             
         Raises:
             ConfigurationError: Invalid trial numbers or no trial data for this experiment.

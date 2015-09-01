@@ -35,31 +35,134 @@ These subclasses define a member dictionary `attributes` that describes the data
         property: value,
         [[property: value], ...]
     }
+    
+Attribute properties can be anything you wish as long as it's not one of these special properties:
 
-Importing :py:mod:`tau.model` initializes the set :py:attr:`references` in each subclass
-of :any:`Controller` to describe one-sided relationships.  For example::
+* ``type`` (str): The attribute must be of the specified type.
+* ``required`` (bool): The attribute must be specified in the data record. 
+* ``model`` (str): The attribute creates an association with another data model.
+* ``collection`` (str): The attribute creates an association with another data model.
+* ``via`` (str): The attribute associates with another model "via" the specified attribute.
 
-    Model_A:
-        attr_x: { 'model': 'Model_C' }
-    Model_B:
-        attr_y: { 'model': 'Model_C' }
-    Model_C:
-        references = set( (Model_A, 'attr_x'), (Model_B, 'attr_y') )
+Models may have **associations** and **references**.  An association creates a relationship between
+an attribute of this model and an attribute of another (a.k.a foreign) model.  If the associated
+attribute changes then the foreign model will update its associated attribute.  A reference indicates
+that this model is being referened by one or more attributes of a foreign model.  If a record of the
+referenced model changes then the referencing model, i.e. the foreign model, will update all referencing 
+attributes. Associations and references are constructed when :py:mod:`tau.model` is imported.  This 
+module initializes the set :py:attr:`references` and the dictionary :py:attr:`associations`in each 
+subclass of :any:`Controller` to describe these relationships.
 
-Importing :py:mod:`tau.model` also initializes the dictionary :py:attr:`associations` in
-each subclass of :any:`Controller` to describe two-sided relationships.  For example::
+Examples:
 
-    Model_A:
-        attr_x: {
-            model: Model_B
-            via: attr_k
+    *One-sided relationship*
+    ::
+
+        class Pet(Controller):
+            attributes = {'name': {'type': 'string'}, 'hungry': {'type': 'bool'}}
+        
+        class Person(Controller):
+            attributes = {'name': {'type': 'string'}, 'pet': {'model': 'Pet'}}
+            
+    We've related a Person to a Pet but not a Pet to a Person.  That is, we can query a Person 
+    to get information about their Pet, but we can't query a Pet to get information about their Person.  
+    If a Pet record changes then the Person record that referenced the Pet record is notified of the 
+    change. If a Person record changes then nothing happens to Pet.  The Pet and Person classes codify
+    this relationship as:
+    
+        * Pet.references = set( (Person, 'pet') )
+        * Pet.associations = {}
+        * Person.references = set() 
+        * Person.associations = {}
+    
+    Some example data for this model::
+    
+        {
+         'Pet': {1: {'name': 'Fluffy', 'hungry': True}},
+         'Person': {0: {'name': 'Bob', 'pet': 1}} 
         }
-        associations = {attr_x: (Model_B, attr_k)}
-    Model_B:
-        attr_k: {
-            model: Model_A
+                      
+    *One-to-one relationship*
+    ::
+    
+        class Husband(Controller):
+            attributes = {'name': {'type': 'string'}, 'wife': {'model': 'Wife'}}
+            
+        class Wife(Controller):
+            attributes = {'name': {'type': 'string'}, 'husband': {'model': 'Husband'}}
+    
+    We've related a Husband to a Wife.  The Husband may have only one Wife and the Wife may have
+    only one Husband.  We can query a Husband to get information about their Wife and we can query a
+    Wife to get information about their Husband.  If a Husband/Wife record changes then the Wife/Husband 
+    record that referenced the Husband/Wife record is notified of the change.  The Husband and Wife classes
+    codify this relationship as:
+    
+        * Husband.references = set( (Wife, 'husband') )
+        * Husband.associations = {}
+        * Wife.references = set( (Husband, 'wife') )
+        * Wife.associations = {}  
+    
+    Example data::
+    
+        {
+         'Husband': {2: {'name': 'Filbert', 'wife': 1}},
+         'Wife': {1: {'name': 'Matilda', 'husband': 2}}
         }
-        associations = {attr_k: (Model_A, attr_x)}
+    
+    *One-to-many relationship*
+    ::
+    
+        class Brewery(Controller):
+            attributes = {'address': {'type': 'string'}, 
+                          'brews': {'collection': 'Beer', 
+                                    'via': 'origin'}}
+            
+        class Beer(Controller):
+            attributes = {'origin': {'model': 'Brewery'}, 
+                          'color': {'type': 'string'}, 
+                          'ibu': {'type': 'int'}}
+            
+    We've related one Brewery to many Beers.  A Beer has only one Brewery but a Brewery has zero or
+    more Beers.  The `brews` attribute has a `via` property along with a `collection` property to specify 
+    which attribute of Beer relates Beer to Brewery, i.e. you may want a model to have multiple 
+    one-to-many relationship with another model.  The Brewery and Beer classes codify this relationship as:
+    
+        * Brewery.references = set()
+        * Brewery.associations = {'brews': (Beer, 'origin')}
+        * Beer.references = set()
+        * Beer.associations = {'origin': (Brewery, 'brews')}
+        
+    Example data::
+    
+        {
+         'Brewery': {100: {'address': '4615 Hollins Ferry Rd, Halethorpe, MD 21227',
+                           'brews': [10, 12, 14]}},
+         'Beer': {10: {'origin': 100, 'color': 'gold', 'ibu': 45},
+                  12: {'origin': 100, 'color': 'dark', 'ibu': 15},
+                  14: {'origin': 100, 'color': 'pale', 'ibu': 30}}
+        }
+    
+    *Many-to-many relationship*
+    ::
+    
+        class Actor(Controller):
+            attributes = {'home_town': {'type': 'string'},
+                          'appears_in': {'collection': 'Movie',
+                                         'via': 'cast'}}
+                                         
+        class Movie(Controller):
+            attributes = {'title': {'type': 'string'},
+                          'cast': {'collection': 'Actor',
+                                   'via': 'appears_in'}}
+                                   
+    An Actor may appear in many Movies and a Movie may have many Actors.  Changing the `cast` of a Movie
+    notifies Actor and changing the movies an Actor `apppears_in` notifies Movie.  This relationship is
+    codified as:
+    
+        * Actor.references = set()
+        * Actor.associations = {'appears_in': (Movies, 'cast')}
+        * Movie.references = set()
+        * Movie.associations = {'cast': (Actor, 'appears_in')}
     
 .. _Model-View-Controller (MVC): https://en.wikipedia.org/wiki/Model-view-controller
 """
@@ -101,13 +204,13 @@ class UniqueAttributeError(ModelError):
 
 
 class Controller(object):
-    """The "C" in MVC_.
+    """The "C" in `MVC`_.
 
     Attributes:
         model_name (str): The name of the model.
         attributes (dict): The model attributes.
-        references (set): Set of tuples defining one-sided relationships.  
-        associations (dict): Dictionary of tuples keyed by attribute name defining two-sided relationships.
+        references (set): (Controller, str) tuples listing foreign models referencing this model.  
+        associations (dict): (Controller, str) tuples keyed by attribute name defining attribute associations.
         eid (int): Unique identifier for the controlled data record, None if the data has not been recorded.
         data (dict): The controlled data.
 
@@ -297,19 +400,22 @@ class Controller(object):
     def search(cls, keys=None, eids=None):
         """Return a list of records matching all of `keys` or element id `eid`.
         
-        Either `keys` or `eids` may be specified, not both.  If `keys` is given,
+        Either `keys` or `eids` may be specified, not both.  If `keys` is not empty
         then every attribute listed in `keys` must have the given value. If `eids`
-        is given, return the records with those eids.  If neither is given, 
-        return all records. 
+        is not empty then return the records with those eids. If either `keys` or 
+        `eids` is empty, return an empty list.  If no arguments are given then
+        return all records.
         
         Args:
             keys (dict): Attributes to match.
-            eids (:py:class:`list`): Record identifiers to match.
+            eids (list): Record identifiers to match.
             
         Returns:
-            :py:class:`list`: Controller subclass instances controlling the found records. 
+            list: Controller subclass instances controlling the found records. 
         """
-        if eids is not None:
+        if keys is None and eids is None:
+            return cls.all()
+        elif eids:
             if isinstance(eids, list):
                 return [cls.one(eid=i) for i in eids]
             else:
@@ -317,7 +423,7 @@ class Controller(object):
         elif keys:
             return [cls(record) for record in USER_STORAGE.search(cls.model_name, keys=keys)]
         else:
-            return cls.all()
+            return []
 
     @classmethod
     def match(cls, field, regex=None, test=None):
@@ -334,7 +440,7 @@ class Controller(object):
             test: A callable expression returning a boolean value.  
             
         Returns:
-            :py:class:`list`: Controller subclass instances controlling the found records. 
+            list: Controller subclass instances controlling the found records. 
         """
         return [cls(record) for record in USER_STORAGE.match(cls.model_name, field, regex, test)]
 
@@ -347,7 +453,7 @@ class Controller(object):
         
         Args:
             keys (dict): Attributes to match.
-            eids (:py:class:`list`): Record identifiers to match.
+            eids (list): Record identifiers to match.
             
         Returns:
             bool: True if a record exists for **all** values in `keys` or `eids`.          
@@ -391,17 +497,11 @@ class Controller(object):
         Args:
             fields (dict): New data for existing records.
             keys (dict): Attributes to match.
-            eids (:py:class:`list`): Record identifiers to match.
+            eids (list): Record identifiers to match.
         """
-        if eids is not None:
-            changing = cls.search(eids=eids)
-        elif keys is not None:
-            changing = cls.search(keys)
-        else:
-            raise InternalError('Controller.update() requires either keys or eids')
         with USER_STORAGE as storage:
             storage.update(cls.model_name, cls._validate(fields, enforce_required=False), keys=keys, eids=eids)
-            for model in changing:
+            for model in cls.search(keys, eids):
                 for attr, foreign in cls.associations.iteritems():
                     try:
                         new_foreign_keys = set(fields[attr])
@@ -415,8 +515,7 @@ class Controller(object):
                     added = new_foreign_keys - old_foreign_keys
                     deled = old_foreign_keys - new_foreign_keys
                     model._associate(foreign_model, added, via)
-                    model._disassociate(
-                        foreign_model.search(eids=list(deled)), via)
+                    model._disassociate(foreign_model.search(eids=list(deled)), via)
                     model.on_update()
 
     @classmethod
@@ -427,16 +526,10 @@ class Controller(object):
 
         Args:
             keys (dict): Attributes to match.
-            eids (:py:class:`list`): Record identifiers to match.
+            eids (list): Record identifiers to match.
         """
-        if eids is not None:
-            changing = cls.search(eids=eids)
-        elif keys is not None:
-            changing = cls.search(keys)
-        else:
-            raise InternalError('Controller.delete() requires either keys or eids')
         with USER_STORAGE as storage:
-            for model in changing:
+            for model in cls.search(keys, eids):
                 # pylint complains because `model` is changing on every iteration so we'll have
                 # a different lambda function `test` on each iteration.  This is exactly what
                 # we want so we disble the warning. 
@@ -446,16 +539,75 @@ class Controller(object):
                 for attr, foreign in cls.associations.iteritems():
                     foreign_model, via = foreign
                     affected = foreign_model.search(eids=model[attr])
-                    LOGGER.debug("Deleting %s(eid=%s) affects '%s' in '%s'", 
-                                 cls.model_name, model.eid, via, affected)
+                    LOGGER.debug("Deleting %s(eid=%s) affects '%s' in '%s'", cls.model_name, model.eid, via, affected)
                     model._disassociate(affected, via)
                 for foreign_model, via in cls.references:
                     affected = foreign_model.match(via, test=test)
-                    LOGGER.debug("Deleting %s(eid=%s) affects '%s'", 
-                                 cls.model_name, model.eid, affected)
+                    LOGGER.debug("Deleting %s(eid=%s) affects '%s'", cls.model_name, model.eid, affected)
                     model._disassociate(affected, via)
             storage.remove(cls.model_name, keys=keys, eids=eids)
 
+    @staticmethod
+    def import_records(data):
+        """Import data records.
+        
+        TODO: Docs
+        """
+        eid_map = {}
+        with USER_STORAGE:
+            for model_name, model_records in data.iteritems():
+                for eid, data in model_records.iteritems():
+                    eid_map[eid] = MODELS[model_name].create(data)
+        
+    @classmethod
+    def export_records(cls, keys=None, eids=None):
+        """Export data records.
+        
+        Constructs a dictionary containing records matching `keys` or `eids` and all their
+        associated records.  Association fields (`model` and `collection`) are **not** updated
+        and may contain eids of undefined records. 
+
+        Args:
+            keys (dict): Attributes to match.
+            eids (list): Record identifiers to match.
+
+        Returns:
+            dict: Dictionary of tables containing records.
+            
+        Example::
+            
+            {
+             'Brewery': {100: {'address': '4615 Hollins Ferry Rd, Halethorpe, MD 21227',
+                               'brews': [10, 12, 14]}},
+             'Beer': {10: {'origin': 100, 'color': 'gold', 'ibu': 45},
+                      12: {'origin': 100, 'color': 'dark', 'ibu': 15},
+                      14: {'origin': 100, 'color': 'pale', 'ibu': 30}}
+            }
+        
+            Beer.export_records(eids=[10])
+            
+            {
+             'Brewery': {100: {'address': '4615 Hollins Ferry Rd, Halethorpe, MD 21227',
+                               'brews': [10, 12, 14]}},
+             'Beer': {10: {'origin': 100, 'color': 'gold', 'ibu': 45}}
+            }
+
+        """
+        def export_record(record, root):
+            if isinstance(record, cls) and record is not root:
+                return
+            data = all_data.setdefault(record.model_name, {})
+            if record.eid not in data:
+                data[record.eid] = record.data
+                for attr, foreign in record.associations.iteritems():
+                    for foreign_record in foreign[0].search(eids=record[attr]):
+                        export_record(foreign_record, root)
+        all_data = {}
+        for record in cls.search(keys, eids):
+            export_record(record, record)
+        return all_data
+          
+    
     def _associate(self, foreign_cls, affected, attr):
         """Associates the controlled record with another record.
         
@@ -464,7 +616,7 @@ class Controller(object):
         
         Args:
             foreign_cls (Controller): Class definining the foreign record's data model.
-            affected (:py:class:`list`): Identifiers for the records that will be updated to 
+            affected (list): Identifiers for the records that will be updated to 
                              associate with the controlled record.
             attr (str): The name of the associated foreign attribute.
         """ 
@@ -489,7 +641,7 @@ class Controller(object):
         attributes of the :any:`Controller` class.
         
         Args:
-            affected (:py:class:`list`): Identifiers for the records that will be updated to 
+            affected (list): Identifiers for the records that will be updated to 
                              associate with the controlled record.
             attr (str): The name of the associated foreign attribute.
         """ 
@@ -601,8 +753,10 @@ def _get_props_model_name(props):
 def _construct_model():
     """Builds model relationships.
     
-    Initializes controller classes and builds forward and reverse associations
-    between data models.
+    Initializes controller classes and builds associations and references between data models.
+    
+    Raises:
+        ModelError: A data model is invalid. 
     
     Returns:
         dict: Model controller classes indexed by model name. 
@@ -634,13 +788,11 @@ def _construct_model():
                 try:
                     via_props = foreign_cls.attributes[via]
                 except KeyError:
-                    raise ModelError(cls, "Found 'via' on undefined attribute '%s.%s'" %
-                                     (foreign_name, via))
+                    raise ModelError(cls, "Found 'via' on undefined attribute '%s.%s'" % (foreign_name, via))
                 try:
                     via_attr_model_name = _get_props_model_name(via_props)
                 except KeyError:
-                    raise ModelError(cls, "Found 'via' on non-model attribute '%s.%s'" %
-                                     (foreign_name, via))
+                    raise ModelError(cls, "Found 'via' on non-model attribute '%s.%s'" % (foreign_name, via))
                 if via_attr_model_name != cls_name:
                     raise ModelError(cls, "Attribute %s.%s referenced by 'via' in '%s' "
                                      "does not define 'collection' or 'model' of type '%s'" %

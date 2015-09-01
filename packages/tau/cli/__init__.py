@@ -112,7 +112,7 @@ def _command_as_list(module_name):
         module_name (str): Name of a module.
 
     Returns:
-        :py:class:`list`: Strings that identify the command.
+        list: Strings that identify the command.
     """
     parts = module_name.split('.')
     for part in _COMMANDS_PACKAGE.split('.'):
@@ -206,8 +206,8 @@ def execute_command(cmd, cmd_args=None, parent_module=None):
     """Import the command module and run its main routine.
     
     Args:
-        cmd (:py:class:`list`): List of strings identifying the command, i.e. from :any:`_command_as_list`.
-        cmd_args (:py:class:`list`): Command line arguments to be parsed by command.
+        cmd (list): List of strings identifying the command, i.e. from :any:`_command_as_list`.
+        cmd_args (list): Command line arguments to be parsed by command.
         parent_module (str): Dot-seperated name of the command's parent.
         
     Raises:

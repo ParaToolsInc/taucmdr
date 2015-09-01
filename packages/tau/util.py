@@ -222,7 +222,7 @@ def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True):
     See :any:`subprocess.Popen`.
     
     Args:
-        cmd (:py:class:`list`): Command and its command line arguments.
+        cmd (list): Command and its command line arguments.
         cwd (str): Change directory to `cwd` if given, otherwise use :any:`os.getcwd`.
         env (dict): Environment variables to set before launching cmd.
         stdout (bool): If True send subprocess stdout and stderr to this processes' stdout.
@@ -287,8 +287,8 @@ def parse_bool(value, additional_true=None, additional_false=None):
     
     Args:
         value: bool, int, or string to parse.
-        additional_true (:py:class:`list`): optional additional string values that stand for True
-        additional_false (:py:class:`list`): optional additional string values that stand for False
+        additional_true (list): optional additional string values that stand for True
+        additional_false (list): optional additional string values that stand for False
         
     Returns:
         bool: True if  `value` is true,

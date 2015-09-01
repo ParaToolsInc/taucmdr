@@ -175,7 +175,7 @@ class KeyedRecord(object):
         """Get the name of the key field in all instances.
         
         Returns:
-            :py:class:`list`: All instance keys.
+            list: All instance keys.
         """ 
         return cls.__instances__.keys()
     
