@@ -706,7 +706,7 @@ class Controller(object):
                                          oattr, self.model_name, other.model_name, rule)
                             if rule == requisite.Required:
                                 raise ConfigurationError("%s required by %s but not set in %s " % 
-                                                         oattr, self.model_name, other.model_name)
+                                                         (oattr, self.model_name, other.model_name))
                             elif rule == requisite.Recommended:
                                 LOGGER.warning("%s is recommended for %s by the %s model",
                                                oattr, self.model_name, other.model_name)
