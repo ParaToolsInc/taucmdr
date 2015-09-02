@@ -596,7 +596,7 @@ class TauInstallation(Installation):
             tuple: (opts, env) updated to support TAU.
         """
         opts, env = super(TauInstallation, self).compiletime_config(opts, env)
-        if self.sample:
+        if self.sample or self.compiler_inst != 'never':
             opts.append('-g')
         try:
             tau_opts = env['TAU_OPTIONS'].split(' ')
