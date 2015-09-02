@@ -582,6 +582,29 @@ class TauInstallation(Installation):
         raise SoftwarePackageError("TAU Makefile not found for tags '%s' in '%s'" % 
                                    (', '.join(config_tags), self.install_prefix))
 
+    @staticmethod
+    def _sanitize_environment(env):
+        """Unsets any TAU environment variables that were set by the user.
+        
+        A user's preexisting TAU configuration may conflict with the configuration
+        specified by the TAU Commander project.  This routine lets us work in a
+        clean environment without disrupting the user's shell environment.
+        
+        Args:
+            env (dict): Environment variables.
+            
+        Returns:
+            dict: `env` without TAU environment variables.
+        """
+        is_tau_var = lambda key: key.startswith('TAU_') or key in ['PROFILEDIR', 'TRACEDIR']
+        dirt = dict([item for item in env if is_tau_var(item[0])])
+        if dirt:
+            LOGGER.warning("Preexisting TAU environment variables detected:\n"
+                           "%s\n"
+                           "These variables will be ignored.",
+                           '\n'.join(["%s=%s" % item for item in dirt.iteritems()]))
+        return dict([item for item in env if item[0] not in dirt])
+    
     def compiletime_config(self, opts=None, env=None):
         """Configures environment for compilation with TAU.
 
@@ -596,6 +619,7 @@ class TauInstallation(Installation):
             tuple: (opts, env) updated to support TAU.
         """
         opts, env = super(TauInstallation, self).compiletime_config(opts, env)
+        env = self._sanitize_environment(env)
         if self.sample or self.compiler_inst != 'never':
             opts.append('-g')
         try:
@@ -648,6 +672,7 @@ class TauInstallation(Installation):
             tuple: (opts, env) updated to support TAU.
         """
         opts, env = super(TauInstallation, self).runtime_config(opts, env)
+        env = self._sanitize_environment(env)
         env['TAU_VERBOSE'] = str(int(self.verbose))
         env['TAU_PROFILE'] = str(int(self.profile))
         env['TAU_TRACE'] = str(int(self.trace))
