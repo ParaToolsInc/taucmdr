@@ -698,6 +698,8 @@ class TauInstallation(Installation):
         opts, env = self.compiletime_config()
         compiler_cmd = self.get_compiler_command(compiler)
         cmd = [compiler_cmd] + opts + compiler_args
+        tau_env_opts = ['%s=%s' % item for item in env.iteritems() if item[0].startswith('TAU_')]
+        LOGGER.info('\n'.join(tau_env_opts))
         LOGGER.info(' '.join(cmd))
         retval = util.create_subprocess(cmd, env=env, stdout=True)
         if retval != 0:
