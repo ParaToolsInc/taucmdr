@@ -597,13 +597,11 @@ class TauInstallation(Installation):
             dict: `env` without TAU environment variables.
         """
         is_tau_var = lambda key: key.startswith('TAU_') or key in ['PROFILEDIR', 'TRACEDIR']
-        dirt = dict([item for item in env if is_tau_var(item[0])])
+        dirt = dict([item for item in env.iteritems() if is_tau_var(item[0])])
         if dirt:
-            LOGGER.warning("Preexisting TAU environment variables detected:\n"
-                           "%s\n"
-                           "These variables will be ignored.",
-                           '\n'.join(["%s=%s" % item for item in dirt.iteritems()]))
-        return dict([item for item in env if item[0] not in dirt])
+            LOGGER.info("\nIgnoring preexisting TAU environment variables:\n%s\n",
+                        '\n'.join(["%s=%s" % item for item in dirt.iteritems()]))
+        return dict([item for item in env.iteritems() if item[0] not in dirt])
     
     def compiletime_config(self, opts=None, env=None):
         """Configures environment for compilation with TAU.
