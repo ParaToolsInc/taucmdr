@@ -216,7 +216,8 @@ def get_parser_from_model(model, use_defaults=True, prog=None, usage=None, descr
     are specified as keyword arguments.
     
     Examples:
-        Given this model attribute::
+        Given this model attribute:
+        ::
         
             'openmp': {
                 'type': 'boolean', 
@@ -258,15 +259,15 @@ def get_parser_from_model(model, use_defaults=True, prog=None, usage=None, descr
             options = dict(props['argparse'])
         except KeyError:
             continue
-        try:
-            default = props['default']
-        except KeyError:
-            options['default'] = argparse.SUPPRESS
+        if use_defaults:
+            default = props.get('default', argparse.SUPPRESS) 
         else:
-            if use_defaults:
-                options['default'] = default
-            else:
-                options['default'] = argparse.SUPPRESS
+            default = argparse.SUPPRESS
+        if isinstance(default, list):
+            default = ' '.join(default)
+        else:
+            default = str(default)
+        options['default'] = default
         try:
             options['help'] = props['description']
         except KeyError:
