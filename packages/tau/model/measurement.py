@@ -128,7 +128,7 @@ class Measurement(Controller, ByName):
         },
         'mpi': {
             'type': 'boolean',
-            'default': False,
+            'default': True,
             'description': 'use MPI library wrapper to measure time spent in MPI methods',
             'argparse': {'flags': ('--mpi',),
                          'group': 'library',
@@ -198,7 +198,7 @@ class Measurement(Controller, ByName):
         'metrics': {
             'type': 'array',
             'default': ['TIME'],
-            'description': 'metrics to measure, e.g. TIME or PAPI_FP_INS',
+            'description': 'performance metrics to gather, e.g. TIME, PAPI_FP_INS',
             'argparse': {'flags': ('--metrics',),
                          'group': 'data',
                          'metavar': '<METRIC>',
