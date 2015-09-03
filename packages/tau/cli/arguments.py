@@ -67,7 +67,7 @@ class MutableGroupArgumentParser(argparse.ArgumentParser):
         return self.add_argument_group(title=title)
 
     def format_help(self):
-        """Format an argument's help string."""
+        """Format command line help string."""
         # We're changing the behavior of the superclass so we need to access protected members in this function
         # pylint: disable=protected-access
         formatter = self._get_formatter()
@@ -132,7 +132,11 @@ class ArgparseHelpFormatter(argparse.RawDescriptionHelpFormatter):
             if action.default is not argparse.SUPPRESS:
                 defaulting_nargs = [argparse.OPTIONAL, argparse.ZERO_OR_MORE]
                 if action.option_strings or action.nargs in defaulting_nargs:
-                    helpstr += '\n%s' % indent + '- default: %(default)s'
+                    if isinstance(action.default, list):
+                        default_str = ', '.join(action.default)
+                    else:
+                        default_str = str(action.default)
+                    helpstr += '\n%s' % indent + '- default: %s' % default_str
         return helpstr
 
 
@@ -260,14 +264,9 @@ def get_parser_from_model(model, use_defaults=True, prog=None, usage=None, descr
         except KeyError:
             continue
         if use_defaults:
-            default = props.get('default', argparse.SUPPRESS) 
+            options['default'] = props.get('default', argparse.SUPPRESS) 
         else:
-            default = argparse.SUPPRESS
-        if isinstance(default, list):
-            default = ' '.join(default)
-        else:
-            default = str(default)
-        options['default'] = default
+            options['default'] = argparse.SUPPRESS
         try:
             options['help'] = props['description']
         except KeyError:
