@@ -976,6 +976,7 @@ class Controller(object):
 
             Suppose we have this data:
             ::
+            
                 Programmer.attributes = {
                     'hungry': {
                         'type': 'boolean',
@@ -994,11 +995,13 @@ class Controller(object):
                 
             These expressions raise :any:`ConfigurationError`:
             ::
+            
                 bob.check_compatibility(world_o_cheese)   # Because have_cheese == False
                 bob.check_compatibility(keith)            # Because steals_food == True
             
             These expressions generate warning messages:
             ::
+            
                 bob.check_compatibility(cheese_wizzard)   # Because chedder != Wisconsin
                 bob.check_compatibility(louis)            # Because holding_long_meeting == True
                 
