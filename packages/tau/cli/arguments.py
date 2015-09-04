@@ -143,22 +143,29 @@ class ArgparseHelpFormatter(argparse.RawDescriptionHelpFormatter):
 class ParsePackagePathAction(argparse.Action):
     """Argument parser action for software package paths.
     
-    This action checks that an argument's value is one of these valid cases:
-        1) The path to an existing software package installation,
-        2) The path to an archive file containing the software package,
-        3) A URL to an archive file containing the software package,
-        4) The magic word "download".
-        
-    Args:
-        parser (str): Argument parser object this group belongs to.
-        namespace (object): Namespace to receive parsed value via setattr.
-        flag (str): Value parsed from the command line
-        option_string (str): FIXME: Not used
+    This action checks that an argument's value is one of these cases:
+    1) The path to an existing software package installation.
+    2) The path to an archive file containing the software package.
+    3) A URL to an archive file containing the software package.
+    4) The magic word "download" or value that parses to True via :any:`tau.util.parse_bool`.
+    5) A value that parses to False via :any:`parse_bool`.
     """
+    # pylint: disable=too-few-public-methods
 
-    def __call__(self, parser, namespace, flag, option_string=None):
-        flag_as_bool = util.parse_bool(flag)
-        if flag_as_bool == True or flag.lower() == 'download':
+    def __call__(self, parser, namespace, flag, unused_option_string=None):
+        """Sets the `self.dest` attribute in `namespace` to the parsed value of `flag`.
+        
+        If `flag` parses to a boolean True value then the attribute value is 'download'.
+        If `flag` parses to a boolean False value then the attribute value is ``None``.
+        Otherwise the attribute value is the value of `flag`.
+            
+        Args:
+            parser (str): Argument parser object this group belongs to.
+            namespace (object): Namespace to receive parsed value via setattr.
+            flag (str): Value parsed from the command line.
+        """
+        flag_as_bool = util.parse_bool(flag, additional_true=['download'])
+        if flag_as_bool == True:
             value = 'download'
         elif flag_as_bool == False:
             value = None
@@ -175,16 +182,21 @@ class ParseBooleanAction(argparse.Action):
     """Argument parser action for boolean values.
     
     Essentially a wrapper around :any:`tau.util.parse_bool`.
-
-    Args:
-        parser (str): Argument parser object this group belongs to.
-        namespace (object): Namespace to receive parsed value via setattr.
-        flag (str): Value parsed from the command line
-        option_string (str): FIXME: Not used
     """
+    # pylint: disable=too-few-public-methods
 
-    def __call__(self, parser, namespace, value, option_string=None):
-        bool_value = util.parse_bool(value)
+    def __call__(self, parser, namespace, flag, unused_option_string=None):
+        """Sets the `self.dest` attribute in `namespace` to the parsed value of `flag`.
+        
+        If `flag` parses to a boolean via :any:`tau.util.parse_bool` then the 
+        attribute value is that boolean value.
+            
+        Args:
+            parser (str): Argument parser object this group belongs to.
+            namespace (object): Namespace to receive parsed value via setattr.
+            flag (str): Value parsed from the command line/
+        """
+        bool_value = util.parse_bool(flag)
         if bool_value == None:
             raise argparse.ArgumentError(self, 'Boolean value required')
         setattr(namespace, self.dest, bool_value)
