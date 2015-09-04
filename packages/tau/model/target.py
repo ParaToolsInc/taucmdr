@@ -48,189 +48,6 @@ from tau.cf.compiler.installed import InstalledCompilerSet
 class Target(Controller, ByName):
     """Target data controller."""
 
-    attributes = {
-        'projects': {
-            'collection': 'Project',
-            'via': 'targets',
-            'description': 'projects using this target'
-        },
-        'name': {
-            'type': 'string',
-            'unique': True,
-            'description': 'target configuration name',
-            'argparse': {'metavar': '<target_name>'}
-        },
-        'host_os': {
-            'type': 'string',
-            'required': True,
-            'description': 'host operating system',
-            'default': host.operating_system().name,
-            'argparse': {'flags': ('--host-os',),
-                         'group': 'target system',
-                         'metavar': '<os>',
-                         'choices': OperatingSystem.keys()}
-        }, 
-        'host_arch': {
-            'type': 'string',
-            'required': True,
-            'description': 'host architecture',
-            'default': host.architecture().name,
-            'argparse': {'flags': ('--host-arch',),
-                         'group': 'target system',
-                         'metavar': '<arch>',
-                         'choices': Architecture.keys()}
-        },
-        # TODO: Get TAU to support a proper host/device model for offloading, etc.
-#         'device_arch': {
-#             'type': 'string',
-#             'description': 'coprocessor architecture',
-#             'default': None,
-#             'argparse': {'flags': ('--device-arch',),
-#                          'group': 'target system',
-#                          'metavar': 'arch'}
-#         },
-        CC_ROLE.keyword: {
-            'model': 'Compiler',
-            'required': CC_ROLE.required,
-            'description': '%s compiler command' % CC_ROLE.language,
-            'argparse': {'flags': ('--cc',),
-                         'group': 'compiler',
-                         'metavar': '<command>'}
-        },
-        CXX_ROLE.keyword: {
-            'model': 'Compiler',
-            'required': CXX_ROLE.required,
-            'description': '%s compiler command' % CXX_ROLE.language,
-            'argparse': {'flags': ('--cxx',),
-                         'group': 'compiler',
-                         'metavar': '<command>'}
-        },
-        FC_ROLE.keyword: {
-            'model': 'Compiler',
-            'required': FC_ROLE.required,
-            'description': '%s compiler command' % FC_ROLE.language,
-            'argparse': {'flags': ('--fc',),
-                         'group': 'compiler',
-                         'metavar': '<command>'}
-        },
-        UPC_ROLE.keyword: {
-            'model': 'Compiler',
-            'required': UPC_ROLE.required,
-            'description': '%s compiler command' % UPC_ROLE.language,
-            'argparse': {'flags': ('--upc',),
-                         'group': 'Universal Parallel C',
-                         'metavar': '<command>'}
-        },
-        MPI_CC_ROLE.keyword: {
-            'model': 'Compiler',
-            'required': MPI_CC_ROLE.required,
-            'description': '%s compiler command' % MPI_CC_ROLE.language,
-            'argparse': {'flags': ('--mpi-cc',),
-                         'group': 'Message Passing Interface (MPI)',
-                         'metavar': '<command>'}
-        },
-        MPI_CXX_ROLE.keyword: {
-            'model': 'Compiler',
-            'required': MPI_CXX_ROLE.required,
-            'description': '%s compiler command' % MPI_CXX_ROLE.language,
-            'argparse': {'flags': ('--mpi-cxx',),
-                         'group': 'Message Passing Interface (MPI)',
-                         'metavar': '<command>'}
-        },
-        MPI_FC_ROLE.keyword: {
-            'model': 'Compiler',
-            'required': MPI_FC_ROLE.required,
-            'description': '%s compiler command' % MPI_FC_ROLE.language,
-            'argparse': {'flags': ('--mpi-fc',),
-                         'group': 'Message Passing Interface (MPI)',
-                         'metavar': '<command>'}
-        },
-        'mpi_include_path': {
-            'type': 'array',
-            'description': 'paths to search for MPI header files when building MPI applications',
-            'argparse': {'flags': ('--mpi-include-path',),
-                         'group': 'Message Passing Interface (MPI)',
-                         'metavar': '<path>',
-                         'nargs': '+'},
-        },
-        'mpi_library_path': {
-            'type': 'array',
-            'description': 'paths to search for MPI library files when building MPI applications',
-            'argparse': {'flags': ('--mpi-library-path',),
-                         'group': 'Message Passing Interface (MPI)',
-                         'metavar': '<path>',
-                         'nargs': '+'},
-        },
-        'mpi_libraries': {
-            'type': 'array',
-            'description': 'libraries to link to when building MPI applications',
-            'argparse': {'flags': ('--mpi-libraries',),
-                         'group': 'Message Passing Interface (MPI)',
-                         'metavar': '<flag>',
-                         'nargs': '+'},
-        },
-        'cuda': {
-            'type': 'string',
-            'description': 'path to NVIDIA CUDA installation',
-            'argparse': {'flags': ('--cuda',),
-                         'group': 'software package',
-                         'metavar': '<path>',
-                         'action': ParsePackagePathAction},
-        },
-        'tau_source': {
-            'type': 'string',
-            'description': 'path or URL to a TAU installation or archive file',
-            'default': 'download',
-            'argparse': {'flags': ('--tau',),
-                         'group': 'software package',
-                         'metavar': '(<path>|<url>|download)',
-                         'action': ParsePackagePathAction}
-        },
-        'pdt_source': {
-            'type': 'string',
-            'description': 'path or URL to a PDT installation or archive file',
-            'default': 'download',
-            'argparse': {'flags': ('--pdt',),
-                         'group': 'software package',
-                         'metavar': '(<path>|<url>|download|None)',
-                         'action': ParsePackagePathAction},
-        },
-        'binutils_source': {
-            'type': 'string',
-            'description': 'path or URL to a GNU binutils installation or archive file',
-            'default': 'download',
-            'argparse': {'flags': ('--binutils',),
-                         'group': 'software package',
-                         'metavar': '(<path>|<url>|download|None)',
-                         'action': ParsePackagePathAction}
-        },
-        'libunwind_source': {
-            'type': 'string',
-            'description': 'path or URL to a libunwind installation or archive file',
-            'default': 'download',
-            'argparse': {'flags': ('--libunwind',),
-                         'group': 'software package',
-                         'metavar': '(<path>|<url>|download|None)',
-                         'action': ParsePackagePathAction}
-        },
-        'papi_source': {
-            'type': 'string',
-            'description': 'path or URL to a PAPI installation or archive file',
-            'argparse': {'flags': ('--papi',),
-                         'group': 'software package',
-                         'metavar': '(<path>|<url>|download|None)',
-                         'action': ParsePackagePathAction}
-        },
-        'score-p_source': {
-            'type': 'string',
-            'description': 'path or URL to a Score-P installation or archive file',
-            'argparse': {'flags': ('--score-p',),
-                         'group': 'software package',
-                         'metavar': '(<path>|<url>|download|None)',
-                         'action': ParsePackagePathAction}
-        }
-    }
-
     def compilers(self):
         """Get information about the compilers used by this target configuration.
          
@@ -250,3 +67,187 @@ class Target(Controller, ByName):
         if missing:
             raise InternalError("Target '%s' is missing required compilers: %s" % (self['name'], missing))
         return InstalledCompilerSet('_'.join([str(x) for x in eids]), **compilers)
+
+
+Target.attributes = {
+    'projects': {
+        'collection': 'Project',
+        'via': 'targets',
+        'description': 'projects using this target'
+    },
+    'name': {
+        'type': 'string',
+        'unique': True,
+        'description': 'target configuration name',
+        'argparse': {'metavar': '<target_name>'}
+    },
+    'host_os': {
+        'type': 'string',
+        'required': True,
+        'description': 'host operating system',
+        'default': host.operating_system().name,
+        'argparse': {'flags': ('--host-os',),
+                     'group': 'target system',
+                     'metavar': '<os>',
+                     'choices': OperatingSystem.keys()}
+    },
+    'host_arch': {
+        'type': 'string',
+        'required': True,
+        'description': 'host architecture',
+        'default': host.architecture().name,
+        'argparse': {'flags': ('--host-arch',),
+                     'group': 'target system',
+                     'metavar': '<arch>',
+                     'choices': Architecture.keys()}
+    },
+    CC_ROLE.keyword: {
+        'model': 'Compiler',
+        'required': CC_ROLE.required,
+        'description': '%s compiler command' % CC_ROLE.language,
+        'argparse': {'flags': ('--cc',),
+                     'group': 'compiler',
+                     'metavar': '<command>'}
+    },
+    CXX_ROLE.keyword: {
+        'model': 'Compiler',
+        'required': CXX_ROLE.required,
+        'description': '%s compiler command' % CXX_ROLE.language,
+        'argparse': {'flags': ('--cxx',),
+                     'group': 'compiler',
+                     'metavar': '<command>'}
+    },
+    FC_ROLE.keyword: {
+        'model': 'Compiler',
+        'required': FC_ROLE.required,
+        'description': '%s compiler command' % FC_ROLE.language,
+        'argparse': {'flags': ('--fc',),
+                     'group': 'compiler',
+                     'metavar': '<command>'}
+    },
+    UPC_ROLE.keyword: {
+        'model': 'Compiler',
+        'required': UPC_ROLE.required,
+        'description': '%s compiler command' % UPC_ROLE.language,
+        'argparse': {'flags': ('--upc',),
+                     'group': 'Universal Parallel C',
+                     'metavar': '<command>'}
+    },
+    MPI_CC_ROLE.keyword: {
+        'model': 'Compiler',
+        'required': MPI_CC_ROLE.required,
+        'description': '%s compiler command' % MPI_CC_ROLE.language,
+        'argparse': {'flags': ('--mpi-cc',),
+                     'group': 'Message Passing Interface (MPI)',
+                     'metavar': '<command>'}
+    },
+    MPI_CXX_ROLE.keyword: {
+        'model': 'Compiler',
+        'required': MPI_CXX_ROLE.required,
+        'description': '%s compiler command' % MPI_CXX_ROLE.language,
+        'argparse': {'flags': ('--mpi-cxx',),
+                     'group': 'Message Passing Interface (MPI)',
+                     'metavar': '<command>'}
+    },
+    MPI_FC_ROLE.keyword: {
+        'model': 'Compiler',
+        'required': MPI_FC_ROLE.required,
+        'description': '%s compiler command' % MPI_FC_ROLE.language,
+        'argparse': {'flags': ('--mpi-fc',),
+                     'group': 'Message Passing Interface (MPI)',
+                     'metavar': '<command>'}
+    },
+    'mpi_include_path': {
+        'type': 'array',
+        'description': 'paths to search for MPI header files when building MPI applications',
+        'argparse': {'flags': ('--mpi-include-path',),
+                     'group': 'Message Passing Interface (MPI)',
+                     'metavar': '<path>',
+                     'nargs': '+'},
+        'compat': {bool: (Target.require(MPI_CC_ROLE.keyword),
+                          Target.require(MPI_CXX_ROLE.keyword),
+                          Target.require(MPI_FC_ROLE.keyword))}
+    },
+    'mpi_library_path': {
+        'type': 'array',
+        'description': 'paths to search for MPI library files when building MPI applications',
+        'argparse': {'flags': ('--mpi-library-path',),
+                     'group': 'Message Passing Interface (MPI)',
+                     'metavar': '<path>',
+                     'nargs': '+'},
+        'compat': {bool: (Target.require(MPI_CC_ROLE.keyword),
+                          Target.require(MPI_CXX_ROLE.keyword),
+                          Target.require(MPI_FC_ROLE.keyword))}
+    },
+    'mpi_libraries': {
+        'type': 'array',
+        'description': 'libraries to link to when building MPI applications',
+        'argparse': {'flags': ('--mpi-libraries',),
+                     'group': 'Message Passing Interface (MPI)',
+                     'metavar': '<flag>',
+                     'nargs': '+'},
+        'compat': {bool: (Target.require(MPI_CC_ROLE.keyword),
+                          Target.require(MPI_CXX_ROLE.keyword),
+                          Target.require(MPI_FC_ROLE.keyword))}
+    },
+    'cuda': {
+        'type': 'string',
+        'description': 'path to NVIDIA CUDA installation',
+        'argparse': {'flags': ('--cuda',),
+                     'group': 'software package',
+                     'metavar': '<path>',
+                     'action': ParsePackagePathAction},
+    },
+    'tau_source': {
+        'type': 'string',
+        'description': 'path or URL to a TAU installation or archive file',
+        'default': 'download',
+        'argparse': {'flags': ('--tau',),
+                     'group': 'software package',
+                     'metavar': '(<path>|<url>|download)',
+                     'action': ParsePackagePathAction}
+    },
+    'pdt_source': {
+        'type': 'string',
+        'description': 'path or URL to a PDT installation or archive file',
+        'default': 'download',
+        'argparse': {'flags': ('--pdt',),
+                     'group': 'software package',
+                     'metavar': '(<path>|<url>|download|None)',
+                     'action': ParsePackagePathAction},
+    },
+    'binutils_source': {
+        'type': 'string',
+        'description': 'path or URL to a GNU binutils installation or archive file',
+        'default': 'download',
+        'argparse': {'flags': ('--binutils',),
+                     'group': 'software package',
+                     'metavar': '(<path>|<url>|download|None)',
+                     'action': ParsePackagePathAction}
+    },
+    'libunwind_source': {
+        'type': 'string',
+        'description': 'path or URL to a libunwind installation or archive file',
+        'default': 'download',
+        'argparse': {'flags': ('--libunwind',),
+                     'group': 'software package',
+                     'metavar': '(<path>|<url>|download|None)',
+                     'action': ParsePackagePathAction}
+    },
+    'papi_source': {
+        'type': 'string',
+        'description': 'path or URL to a PAPI installation or archive file',
+        'argparse': {'flags': ('--papi',),
+                     'group': 'software package',
+                     'metavar': '(<path>|<url>|download|None)',
+                     'action': ParsePackagePathAction}
+    },
+    'score-p_source': {
+        'type': 'string',
+        'description': 'path or URL to a Score-P installation or archive file',
+        'argparse': {'flags': ('--score-p',),
+                     'group': 'software package',
+                     'metavar': '(<path>|<url>|download|None)',
+                     'action': ParsePackagePathAction}
+    }
+}

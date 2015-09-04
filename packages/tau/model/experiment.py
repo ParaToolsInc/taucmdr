@@ -51,34 +51,6 @@ LOGGER = logger.get_logger(__name__)
 class Experiment(Controller):
     """Experiment data controller."""
 
-    attributes = {
-        'project': {
-            'model': 'Project',
-            'required': True,
-            'description': "Project this experiment belongs to"
-        },
-        'target': {
-            'model': 'Target',
-            'required': True,
-            'description': "Target this experiment runs on"
-        },
-        'application': {
-            'model': 'Application',
-            'required': True,
-            'description': "Application this experiment uses"
-        },
-        'measurement': {
-            'model': 'Measurement',
-            'required': True,
-            'description': "Measurement parameters for this experiment"
-        },
-        'trials': {
-            'collection': 'Trial',
-            'via': 'experiment',
-            'description': "Trials of this experiment"
-        },
-    }
-    
     def __init__(self, *args, **kwargs):
         super(Experiment,self).__init__(*args, **kwargs)
         self.tau = None
@@ -288,3 +260,34 @@ class Experiment(Controller):
                 profiles = glob.glob(os.path.join(prefix, 'MULTI__*'))
             if profiles:
                 self.tau.show_profile(prefix, tool_name)
+
+
+
+Experiment.attributes = {
+    'project': {
+        'model': 'Project',
+        'required': True,
+        'description': "Project this experiment belongs to"
+    },
+    'target': {
+        'model': 'Target',
+        'required': True,
+        'description': "Target this experiment runs on"
+    },
+    'application': {
+        'model': 'Application',
+        'required': True,
+        'description': "Application this experiment uses"
+    },
+    'measurement': {
+        'model': 'Measurement',
+        'required': True,
+        'description': "Measurement parameters for this experiment"
+    },
+    'trials': {
+        'collection': 'Trial',
+        'via': 'experiment',
+        'description': "Trials of this experiment"
+    },
+}
+

@@ -169,8 +169,9 @@ Examples:
 
 import sys
 import json
+import operator
 from pkgutil import walk_packages
-from tau import logger, requisite, util
+from tau import logger, util
 from tau.error import InternalError, ConfigurationError
 from tau.storage import USER_STORAGE
 
@@ -231,6 +232,9 @@ class Controller(object):
 
     def __getitem__(self, key):
         return self.data[key]
+    
+    def __contains__(self, key):
+        return key in self.data
 
     def get(self, key, default=None):
         return self.data.get(key, default)
@@ -240,12 +244,45 @@ class Controller(object):
     
     @classmethod
     def __class_init__(cls):
+        def err(msg):
+            raise ModelError(cls, "%s: %s" % (model_attr_name, msg))
         if not hasattr(cls, 'model_name'):
             cls.model_name = cls.__name__
         if not hasattr(cls, 'associations'):
             cls.associations = {}
         if not hasattr(cls, 'references'):
             cls.references = set()
+        for attr, props in cls.attributes.iteritems():
+            model_attr_name = cls.model_name + "." + attr
+            if 'collection' in props and not 'via' in props:
+                err("collection does not define 'via'")
+            try:
+                unique = props['unique']
+            except KeyError:
+                pass
+            else:
+                if not isinstance(unique, bool):
+                    err("invalid value for 'unique'")
+            try:
+                description = props['description']
+            except KeyError:
+                LOGGER.debug("%s: no 'description'", model_attr_name)
+            else:
+                if not isinstance(description, basestring):
+                    err("invalid value for 'description'")
+#             try:
+#                 compat = props['compat']
+#             except KeyError:
+#                 pass
+#             else:
+#                 for action, model_conditions in compat.iteritems():
+#                     if action not in ['require', 'recommend', 'discourage', 'exclude']:
+#                         err("Invalid action in 'compat': %s" % action)
+#                     for model_name, conditions in model_conditions.iteritems():
+#                         model = MODELS[model_name]
+#                         for attr_name in conditions:
+#                             if attr_name not in model.attributes:
+#                                 err("In 'compat', model '%s' has no attribute '%s'" % (model_name, attr_name))
 
     @classmethod
     def _validate(cls, data, enforce_required=True):
@@ -309,12 +346,15 @@ class Controller(object):
 
     def on_create(self):
         """Callback to be invoked when a new data record is created.""" 
+        self.check_compatibility(self)
 
     def on_update(self): 
         """Callback to be invoked when a data record is updated."""
+        self.check_compatibility(self)
 
     def on_delete(self): 
         """Callback to be invoked when a data record is deleted."""
+        pass
 
     def populate(self, attribute=None):
         """Merges associated record data into the controlled data.
@@ -343,6 +383,9 @@ class Controller(object):
             
         Returns:
             dict: Controlled data merged with associated records.
+            
+        Raises:
+            KeyError: `attribute` is undefined in the populated record. 
         """
         if not self._populated:
             LOGGER.debug("Populating %r", self)
@@ -675,60 +718,144 @@ class Controller(object):
                     else:
                         storage.update(
                             model.model_name, {attr: update}, eids=model.eid)
+    
+    @classmethod
+    def _construct_enforcer(cls, args, op, callback, attr_incorrect_fmt, attr_undefined_fmt):
+        rhs_attr = args[0]
+        try:
+            checked_value = args[1]
+        except IndexError:
+            if not attr_undefined_fmt:
+                raise ModelError("%s: Invalid 'compat' property: no checked value and"
+                                 " no message format for undefined attribute" % cls.model_name)
+            else:
+                def enforcer(lhs, lhs_attr, lhs_value, rhs):
+                    if isinstance(rhs, cls) and rhs_attr not in rhs:
+                        fields = {'lhs_attr': lhs_attr,
+                                  'lhs_value': lhs_value,
+                                  'lhs_name': lhs.model_name.lower(),
+                                  'rhs_attr': rhs_attr,
+                                  'rhs_name': cls.model_name.lower()}
+                        callback(attr_undefined_fmt % fields)
+        else:
+            if callable(checked_value):
+                def enforcer(lhs, lhs_attr, lhs_value, rhs):
+                    if isinstance(rhs, cls):
+                        checked_value(lhs, lhs_attr, lhs_value, rhs, rhs_attr)
+            else:
+                def enforcer(lhs, lhs_attr, lhs_value, rhs):
+                    if isinstance(rhs, cls):
+                        fields = {'lhs_attr': lhs_attr,
+                                  'lhs_value': lhs_value,
+                                  'lhs_name': lhs.model_name.lower(),
+                                  'rhs_attr': rhs_attr,
+                                  'rhs_name': cls.model_name.lower()}
+                        try:
+                            rhs_value = rhs[rhs_attr]
+                        except KeyError:
+                            if attr_undefined_fmt:
+                                callback(attr_undefined_fmt % fields)
+                        else:
+                            if op(rhs_value, checked_value):
+                                fields['rhs_value'] = rhs_value
+                                callback(attr_incorrect_fmt % fields)
+        return enforcer
 
-    def compatible_with(self, other):
+    @classmethod
+    def require(cls, *args):
+        def callback(msg):
+            raise ConfigurationError(msg)
+        attr_undefined_fmt = ("%(lhs_attr)s = %(lhs_value)s in %(lhs_name)s requires"
+                              " %(rhs_attr)s be defined in %(rhs_name)s")
+        attr_incorrect_fmt = ("%(lhs_attr)s = %(lhs_value)s in %(lhs_name)s requires"
+                              " %(rhs_attr)s = %(rhs_value)s in %(rhs_name)s")
+        return cls._construct_enforcer(args, operator.ne, callback, attr_incorrect_fmt, attr_undefined_fmt)
+
+    @classmethod
+    def encourage(cls, *args):
+        attr_undefined_fmt = ("%(lhs_attr)s = %(lhs_value)s in %(lhs_name)s recommends"
+                              " %(rhs_attr)s be defined in %(rhs_name)s")
+        attr_incorrect_fmt = ("%(lhs_attr)s = %(lhs_value)s in %(lhs_name)s recommends"
+                              " %(rhs_attr)s = %(rhs_value)s in %(rhs_name)s")
+        return cls._construct_enforcer(args, operator.ne, LOGGER.warning, attr_incorrect_fmt, attr_undefined_fmt)
+
+    @classmethod
+    def discourage(cls, *args):
+        attr_incorrect_fmt = ("%(lhs_attr)s = %(lhs_value)s in %(lhs_name)s discourages"
+                              " %(rhs_attr)s = %(rhs_value)s in %(rhs_name)s")
+        return cls._construct_enforcer(args, operator.eq, LOGGER.warning, attr_incorrect_fmt, None)
+
+    @classmethod
+    def exclude(cls, *args):
+        def callback(msg):
+            raise ConfigurationError(msg)
+        attr_incorrect_fmt = ("%(lhs_attr)s = %(lhs_value)s in %(lhs_name)s disallows"
+                              " %(rhs_attr)s = %(rhs_value)s in %(rhs_name)s")
+        return cls._construct_enforcer(args, operator.eq, callback, attr_incorrect_fmt, None)
+        
+
+    def check_compatibility(self, rhs):
         """Test the controlled record for compatibility with another record.
         
-        FIXME: Compatilibity checking needs further design review.
+        Operations combining data from multiple records (e.g. selecting a project configuration)
+        must know that the records are mutually compatible.  This routine checks the 'compat'
+        property of each attribute (if set) to enforce compatibility.  'compat' is a dictionary
+        of compatibility `action`s mapped to dictionaries of model attributes keyed by the
+        model name, i.e. ``compat[action][model_name][attribute_name] = value``
+        ::
         
+            {
+            action: {model_name: {attribute_name: value,
+                                  [attribute_name: value ...]}
+                     [model_name: {attribute_name: value}] }
+            }
+
+        `action` may be one of:
+        * 'require': All attributes must have values equal to the listed values.
+          If any attributes does not have the listed value then the records 
+          are not compatible.
+        * 'recommend': All attributes *should* have values equal to the listed values.
+          A warning message will be generated for every attribute that doesn't have
+          the recommended value.
+        * 'discourage': The logical negation of 'recommend'.  All attributes *should not* 
+          have values equal to the listed values. A warning message will be generated for 
+          every attribute that doesn't have the recommended value.
+        * 'exclude': The logical negation of 'require'. All attributes must not have 
+          values equal to the listed values. If any attribute has the listed value then 
+          the records are not compatible.
+          
+        `value` is either a literal value to test against or a callable.  If it is callable
+        it must accept these arguments:
+        * `lhs`: The left hand side of the compatibility check, i.e. `self`.
+        * `lhs_attr`: The attribute of `lhs` defining the `compat` property.
+        * `rhs`: The right hand sde of the compatibility check, i.e. `rhs` of this function.
+        * `rhs_attr`: The attribute of `rhs` listed in `compat`.
+        * `given`: The given value of `rhs_attr`.
+
+        Note that `rhs` may be `self` to perform self-consistency checks, e.g. prevent
+        mutually exclusive attributes from being set in the same record.
+
         Args:
-            other (Controller): Controller subclass instance controlling the other record.
+            rhs (Controller): Controller for the data record to check compatibility.
             
         Raises:
             ConfigurationError: The two records are not compatible.
-        """ 
-        for fields in self.attributes.itervalues():
+        """
+        as_tuple = lambda x: x if isinstance(x, tuple) else (x,)
+        for attr, props in self.attributes.iteritems():
             try:
-                compat = fields['compat']
+                compat = props['compat']
             except KeyError:
                 continue
-            for model, attr in compat.iteritems():
-                if model == other.model_name:
-                    for oattr, rule in attr.iteritems():
-                        LOGGER.debug("%s is oattr, while %s is self.data for %s",
-                                     oattr, self.data, self.model_name)
-                        LOGGER.debug("%s is oattr, while %s is other.data for %s", 
-                                     oattr, other.data, other.model_name)
-                        try:
-                            self_oattr = util.parse_bool(self.data[oattr], 
-                                                         additional_true=['fallback', 'always'], 
-                                                         additional_false=['never'])
-                            other_oattr = util.parse_bool(other.data[oattr], 
-                                                          additional_true=['fallback', 'always'], 
-                                                          additional_false=['never'])
-                        except KeyError:
-                            continue
-                        if self_oattr and other_oattr:
-                            LOGGER.debug("%s is turned on in %s and on in %s",
-                                         oattr, self.model_name, other.model_name)
-                        if self_oattr and (not other_oattr):
-                            LOGGER.debug("%s is turned on in %s and off in %s with rule %s", 
-                                         oattr, self.model_name, other.model_name, rule)
-                            if rule == requisite.Required:
-                                raise ConfigurationError("%s required by %s but not set in %s " % 
-                                                         (oattr, self.model_name, other.model_name))
-                            elif rule == requisite.Recommended:
-                                LOGGER.warning("%s is recommended for %s by the %s model",
-                                               oattr, self.model_name, other.model_name)
-                        if other_oattr and not self_oattr:
-                            LOGGER.debug("%s is turned off in %s and on %s", 
-                                         oattr, self.model_name, other.model_name)
-                            LOGGER.debug("%s is self.data[oattr] and %s is other.data[oattr] for oattr = %s",
-                                         self_oattr, other_oattr, oattr)
-                        if not self_oattr and not other_oattr:
-                            LOGGER.debug("%s is turned off in %s and off %s",
-                                         oattr, self.model_name, other.model_name)
-
+            try:
+                attr_value = self[attr]
+            except KeyError:
+                continue
+            for checked_values, conditions in compat.iteritems():
+                if attr_value in as_tuple(checked_values):
+                    for condition in as_tuple(conditions):
+                        condition(self, attr, attr_value, rhs)
+                      
 
 class ByName(object):
     """Mixin for a model with a unique `name` attribute."""
@@ -760,7 +887,7 @@ def _get_props_model_name(props):
         return props['collection']
     
 
-def _construct_model():
+def _construct_model(models):
     """Builds model relationships.
     
     Initializes controller classes and builds associations and references between data models.
@@ -771,7 +898,6 @@ def _construct_model():
     Returns:
         dict: Model controller classes indexed by model name. 
     """
-    models = dict([(cls.__name__, cls) for cls in _yield_model_classes()])
     for cls_name, cls in models.iteritems():
         cls.__class_init__()
         for attr, props in cls.attributes.iteritems():
@@ -815,6 +941,7 @@ def _construct_model():
                     if existing != forward:
                         raise ModelError(cls, "Conflicting associations on attribute '%s': "
                                          "%r vs. %r" % (attr, existing, forward))
-    return models
 
-MODELS = _construct_model()
+MODELS = dict([(_.__name__, _) for _ in _yield_model_classes()])
+_construct_model(MODELS)
+

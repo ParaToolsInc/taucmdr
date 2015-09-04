@@ -39,53 +39,18 @@ from tau import USER_PREFIX
 from tau import logger, util, error
 from tau.model import Controller, ByName
 
+
 LOGGER = logger.get_logger(__name__)
 
 
 class Project(Controller, ByName):
     """Project data controller."""
 
-    attributes = {
-        'name': {
-            'type': 'string',
-            'unique': True,
-            'description': 'project name',
-            'argparse': {'metavar': '<project_name>'}
-        },
-        'targets': {
-            'collection': 'Target',
-            'via': 'projects',
-            'description': 'targets used by this project'
-        },
-        'applications': {
-            'collection': 'Application',
-            'via': 'projects',
-            'description': 'applications used by this project'
-        },
-        'measurements': {
-            'collection': 'Measurement',
-            'via': 'projects',
-            'description': 'measurements used by this project'
-        },
-        'experiments': {
-            'collection': 'Experiment',
-            'via': 'project',
-            'description': 'experiments formed from this project'
-        },
-        'prefix': {
-            'type': 'string',
-            'required': True,
-            'default': USER_PREFIX,
-            'description': 'location for all files and experiment data related to this project',
-            'argparse': {'flags': ('--home',),
-                         'metavar': 'path'}
-        },
-    }
-
     def prefix(self):
         return os.path.join(self['prefix'], self['name'])
 
     def on_create(self):
+        super(Project,self).on_create()
         prefix = self.prefix()
         try:
             util.mkdirp(prefix)
@@ -95,9 +60,49 @@ class Project(Controller, ByName):
 
     def on_delete(self):
         # pylint: disable=broad-except
+        super(Project,self).on_delete()
         prefix = self.prefix()
         try:
             shutil.rmtree(prefix)
         except Exception as err:
             if os.path.exists(prefix):
                 LOGGER.error("Could not remove project data at '%s': %s", prefix, err)
+
+
+Project.attributes = {
+    'name': {
+        'type': 'string',
+        'unique': True,
+        'description': 'project name',
+        'argparse': {'metavar': '<project_name>'}
+    },
+    'targets': {
+        'collection': 'Target',
+        'via': 'projects',
+        'description': 'targets used by this project'
+    },
+    'applications': {
+        'collection': 'Application',
+        'via': 'projects',
+        'description': 'applications used by this project'
+    },
+    'measurements': {
+        'collection': 'Measurement',
+        'via': 'projects',
+        'description': 'measurements used by this project'
+    },
+    'experiments': {
+        'collection': 'Experiment',
+        'via': 'project',
+        'description': 'experiments formed from this project'
+    },
+    'prefix': {
+        'type': 'string',
+        'required': True,
+        'default': USER_PREFIX,
+        'description': 'location for all files and experiment data related to this project',
+        'argparse': {'flags': ('--home',),
+                     'metavar': 'path'}
+    },
+}
+
