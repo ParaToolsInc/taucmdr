@@ -256,7 +256,7 @@ Measurement.attributes = {
                      'group': 'data',
                      'metavar': '<METRIC>',
                      'nargs': '+'},
-        'compat': {lambda x: bool(len([met for met in x if 'PAPI' in met])): 
+        'compat': {lambda metrics: bool(len([met for met in metrics if 'PAPI' in met])): 
                    Target.exclude('papi_source', None)}
     },
     'keep_inst_files': {

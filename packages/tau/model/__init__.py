@@ -720,126 +720,303 @@ class Controller(object):
                             model.model_name, {attr: update}, eids=model.eid)
     
     @classmethod
-    def _construct_enforcer(cls, args, op, callback, attr_incorrect_fmt, attr_undefined_fmt):
+    def construct_condition(cls, args, attr_defined=None, attr_undefined=None, attr_eq=None, attr_ne=None):
+        """Constructs a compatibility condition, see :any:`check_compatibility`.
+        
+        The returned condition is a callable that accepts four arguments:
+        * lhs (Controller): The left-hand side of the `check_compatibility` operation.
+        * lhs_attr (str): Name of the attribute that defines the 'compat' property.
+        * lhs_value: The value in the controlled data record of the attribute that defines the 'compat' property.
+        * rhs (Controller): Controller of the data record we are checking against.
+        
+        The `condition` callable raises a :any:`ConfigurationError` if the compared attributes 
+        are fatally incompatibile, i.e. the user's operation is guaranteed to fail with the chosen 
+        records. It may emit log messages to indicate that the records are not perfectly compatible 
+        but that the user's operation is still likely to succeed with the chosen records.
+        
+        See :any:`require`, :any:`encourage`, :any:`discourage`, :any:`exclude` for common conditions.
+        
+        args[0] specifies a model attribute to check.  If args[1] is given, it is a value to
+        compare the specified attribute against or a callback function as described below.
+        
+        The remaining arguments are callback functions accepting these arguments:
+        * lhs (Controller): The controller invoking `check_compatibility`.
+        * lhs_attr (str): Name of the attribute that defines the 'compat' property.
+        * lhs_value: Value of the attribute that defines the 'compat' property.
+        * rhs (Controller): Controller we are checking against (argument to `check_compatibility`).
+        * rhs_attr (str): The right-hand side attribute we are checking for compatibility.
+        
+        To enable complex conditions, args[1] may be a callback function.  In this case,
+        args[1] must check attribute existance and value correctness and throw the appropriate
+        exception and/or emit log messages.  See :py:func:`tau.model.measurement.intel_only` 
+        for an example of such a callback function.
+        
+        Args:
+            args (tuple): Attribute name in args[0] and, optionally, attribute value in args[1].
+            attr_defined: Callback function to be invoked when the attribute is defined.
+            attr_undefined: Callback function to be invoked when the attribute is undefined.
+            attr_eq: Callback function to be invoked when the attribute is equal to args[1].
+            attr_ne: Callback function to be invoked when the attribute is not equal to args[1].
+
+        Returns:
+            Callable condition object for use with :any:`check_compatibility`.
+        """ 
         rhs_attr = args[0]
         try:
             checked_value = args[1]
         except IndexError:
-            if not attr_undefined_fmt:
-                raise ModelError("%s: Invalid 'compat' property: no checked value and"
-                                 " no message format for undefined attribute" % cls.model_name)
-            else:
-                def enforcer(lhs, lhs_attr, lhs_value, rhs):
-                    if isinstance(rhs, cls) and rhs_attr not in rhs:
-                        fields = {'lhs_attr': lhs_attr,
-                                  'lhs_value': lhs_value,
-                                  'lhs_name': lhs.model_name.lower(),
-                                  'rhs_attr': rhs_attr,
-                                  'rhs_name': cls.model_name.lower()}
-                        callback(attr_undefined_fmt % fields)
+            def condition(lhs, lhs_attr, lhs_value, rhs):
+                if isinstance(rhs, cls):
+                    if rhs_attr in rhs:
+                        if attr_defined:
+                            attr_defined(lhs, lhs_attr, lhs_value, rhs, rhs_attr)
+                    else:
+                        if attr_undefined:
+                            attr_undefined(lhs, lhs_attr, lhs_value, rhs, rhs_attr)
         else:
             if callable(checked_value):
-                def enforcer(lhs, lhs_attr, lhs_value, rhs):
-                    if isinstance(rhs, cls):
+                def condition(lhs, lhs_attr, lhs_value, rhs):
+                    if isinstance(rhs, cls): 
                         checked_value(lhs, lhs_attr, lhs_value, rhs, rhs_attr)
             else:
-                def enforcer(lhs, lhs_attr, lhs_value, rhs):
+                def condition(lhs, lhs_attr, lhs_value, rhs):
                     if isinstance(rhs, cls):
-                        fields = {'lhs_attr': lhs_attr,
-                                  'lhs_value': lhs_value,
-                                  'lhs_name': lhs.model_name.lower(),
-                                  'rhs_attr': rhs_attr,
-                                  'rhs_name': cls.model_name.lower()}
                         try:
                             rhs_value = rhs[rhs_attr]
                         except KeyError:
-                            if attr_undefined_fmt:
-                                callback(attr_undefined_fmt % fields)
+                            if attr_undefined:
+                                attr_undefined(lhs, lhs_attr, lhs_value, rhs, rhs_attr)
                         else:
-                            if op(rhs_value, checked_value):
-                                fields['rhs_value'] = rhs_value
-                                callback(attr_incorrect_fmt % fields)
-        return enforcer
+                            if attr_eq:
+                                if rhs_value == checked_value:
+                                    attr_eq(lhs, lhs_attr, lhs_value, rhs, rhs_attr)
+                            elif attr_ne:
+                                if rhs_value != checked_value:
+                                    attr_ne(lhs, lhs_attr, lhs_value, rhs, rhs_attr)
+                            elif attr_defined:
+                                attr_defined(lhs, lhs_attr, lhs_value, rhs, rhs_attr)
+        return condition
 
     @classmethod
     def require(cls, *args):
-        def callback(msg):
-            raise ConfigurationError(msg)
-        attr_undefined_fmt = ("%(lhs_attr)s = %(lhs_value)s in %(lhs_name)s requires"
-                              " %(rhs_attr)s be defined in %(rhs_name)s")
-        attr_incorrect_fmt = ("%(lhs_attr)s = %(lhs_value)s in %(lhs_name)s requires"
-                              " %(rhs_attr)s = %(rhs_value)s in %(rhs_name)s")
-        return cls._construct_enforcer(args, operator.ne, callback, attr_incorrect_fmt, attr_undefined_fmt)
+        """Constructs a compatibility condition to enforce required conditions.
+        
+        The condition will raise a :any:`ConfigurationError` if the specified attribute is
+        undefined or not equal to the specified value (if given).
+        
+        Args:
+            *args: Corresponds to `args` in :any:`construct_condition`. 
+        
+        Returns:
+            Callable condition object for use with :any:`check_compatibility`
+            
+        Examples:
+            'have_cheese' must be True::
+            
+                CheeseShop.require('have_cheese', True)
+             
+            'have_cheese' must be set to any value::
+                
+                CheeseShop.require('have_cheese')
+            
+            The value of 'have_cheese' will be checked for correctness by 'cheese_callback'::
+            
+                CheeseShop.require('have_cheese', cheese_callback)
+        """ 
+        def attr_undefined(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
+            lhs_name = lhs.model_name.lower()
+            rhs_name = rhs.model_name.lower()
+            raise ConfigurationError("%s = %s in %s requires %s be defined in %s" % 
+                                     (lhs_attr, lhs_value, lhs_name, rhs_attr, rhs_name))
+        def attr_ne(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
+            lhs_name = lhs.model_name.lower()
+            rhs_name = rhs.model_name.lower()
+            rhs_value = rhs[rhs_attr]
+            raise ConfigurationError("%s = %s in %s requires %s = %s in %s" % 
+                                     (lhs_attr, lhs_value, lhs_name, rhs_attr, rhs_value, rhs_name))
+        return cls.construct_condition(args, attr_undefined=attr_undefined, attr_ne=attr_ne)
 
     @classmethod
     def encourage(cls, *args):
-        attr_undefined_fmt = ("%(lhs_attr)s = %(lhs_value)s in %(lhs_name)s recommends"
-                              " %(rhs_attr)s be defined in %(rhs_name)s")
-        attr_incorrect_fmt = ("%(lhs_attr)s = %(lhs_value)s in %(lhs_name)s recommends"
-                              " %(rhs_attr)s = %(rhs_value)s in %(rhs_name)s")
-        return cls._construct_enforcer(args, operator.ne, LOGGER.warning, attr_incorrect_fmt, attr_undefined_fmt)
+        """Constructs a compatibility condition to make recommendations.
+        
+        The condition will emit warnings messages if the specified attribute is
+        undefined or not equal to the specified value (if given).
+        
+        Args:
+            *args: Corresponds to `args` in :any:`construct_condition`. 
+        
+        Returns:
+            Callable condition object for use with :any:`check_compatibility`
+            
+        Examples:
+            'have_cheese' should be True::
+            
+                CheeseShop.encourage('have_cheese', True)
+             
+            'have_cheese' should be set to any value::
+                
+                CheeseShop.encourage('have_cheese')
+            
+            The value of 'have_cheese' will be checked for correctness by 'cheese_callback'::
+            
+                CheeseShop.encourage('have_cheese', cheese_callback)
+        """
+        def attr_undefined(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
+            lhs_name = lhs.model_name.lower()
+            rhs_name = rhs.model_name.lower()
+            LOGGER.warning("%s = %s in %s recommends %s be defined in %s",
+                           lhs_attr, lhs_value, lhs_name, rhs_attr, rhs_name)
+        def attr_ne(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
+            lhs_name = lhs.model_name.lower()
+            rhs_name = rhs.model_name.lower()
+            rhs_value = rhs[rhs_attr]
+            LOGGER.warning("%s = %s in %s recommends %s = %s in %s",
+                           lhs_attr, lhs_value, lhs_name, rhs_attr, rhs_value, rhs_name)
+        return cls.construct_condition(args, attr_undefined=attr_undefined, attr_ne=attr_ne)
 
     @classmethod
     def discourage(cls, *args):
-        attr_incorrect_fmt = ("%(lhs_attr)s = %(lhs_value)s in %(lhs_name)s discourages"
-                              " %(rhs_attr)s = %(rhs_value)s in %(rhs_name)s")
-        return cls._construct_enforcer(args, operator.eq, LOGGER.warning, attr_incorrect_fmt, None)
+        """Constructs a compatibility condition to make recommendations.
+        
+        The condition will emit warnings messages if the specified attribute is
+        defined or equal to the specified value (if given).
+        
+        Args:
+            *args: Corresponds to `args` in :any:`construct_condition`. 
+        
+        Returns:
+            Callable condition object for use with :any:`check_compatibility`
+            
+        Examples:
+            'have_cheese' should not be True::
+            
+                CheeseShop.discourage('have_cheese', True)
+             
+            'have_cheese' should not be set to any value::
+                
+                CheeseShop.discourage('have_cheese')
+            
+            The value of 'have_cheese' will be checked for correctness by 'cheese_callback'::
+            
+                CheeseShop.discourage('have_cheese', cheese_callback)
+        """
+        def attr_defined(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
+            lhs_name = lhs.model_name.lower()
+            rhs_name = rhs.model_name.lower()
+            LOGGER.warning("%s = %s in %s recommends %s be undefined in %s",
+                           lhs_attr, lhs_value, lhs_name, rhs_attr, rhs_name)
+        def attr_eq(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
+            lhs_name = lhs.model_name.lower()
+            rhs_name = rhs.model_name.lower()
+            rhs_value = rhs[rhs_attr]
+            LOGGER.warning("%s = %s in %s recommends against %s = %s in %s",
+                           lhs_attr, lhs_value, lhs_name, rhs_attr, rhs_value, rhs_name)
+        return cls.construct_condition(args, attr_defined=attr_defined, attr_eq=attr_eq)
 
     @classmethod
     def exclude(cls, *args):
-        def callback(msg):
-            raise ConfigurationError(msg)
-        attr_incorrect_fmt = ("%(lhs_attr)s = %(lhs_value)s in %(lhs_name)s disallows"
-                              " %(rhs_attr)s = %(rhs_value)s in %(rhs_name)s")
-        return cls._construct_enforcer(args, operator.eq, callback, attr_incorrect_fmt, None)
+        """Constructs a compatibility condition to enforce required conditions.
         
+        The condition will raise a :any:`ConfigurationError` if the specified attribute is
+        defined or equal to the specified value (if given).
+        
+        Args:
+            *args: Corresponds to `args` in :any:`construct_condition`. 
+        
+        Returns:
+            Callable condition object for use with :any:`check_compatibility`
+            
+        Examples:
+            'have_cheese' must be True::
+            
+                CheeseShop.require('have_cheese', True)
+             
+            'have_cheese' must be set to any value::
+                
+                CheeseShop.require('have_cheese')
+            
+            The value of 'have_cheese' will be checked for correctness by 'cheese_callback'::
+            
+                CheeseShop.require('have_cheese', cheese_callback)
+        """
+        def attr_defined(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
+            lhs_name = lhs.model_name.lower()
+            rhs_name = rhs.model_name.lower()
+            raise ConfigurationError("%s = %s in %s requires %s be undefined in %s" %
+                                     (lhs_attr, lhs_value, lhs_name, rhs_attr, rhs_name))
+        def attr_eq(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
+            lhs_name = lhs.model_name.lower()
+            rhs_name = rhs.model_name.lower()
+            rhs_value = rhs[rhs_attr]
+            raise ConfigurationError("%s = %s in %s is incompatible with %s = %s in %s" %
+                                     (lhs_attr, lhs_value, lhs_name, rhs_attr, rhs_value, rhs_name))
+        return cls.construct_condition(args, attr_defined=attr_defined, attr_eq=attr_eq)        
 
     def check_compatibility(self, rhs):
         """Test the controlled record for compatibility with another record.
         
         Operations combining data from multiple records (e.g. selecting a project configuration)
         must know that the records are mutually compatible.  This routine checks the 'compat'
-        property of each attribute (if set) to enforce compatibility.  'compat' is a dictionary
-        of compatibility `action`s mapped to dictionaries of model attributes keyed by the
-        model name, i.e. ``compat[action][model_name][attribute_name] = value``
+        property of each attribute (if set) to enforce compatibility.  'compat' is a dictionary.
+        The keys of 'compat' are values or callables and the values are tuples of compatibility
+        conditions.  If the attribute with the 'compat' property is one of the key values then 
+        the conditions are checked.  The general form of 'compat' is:
         ::
         
             {
-            action: {model_name: {attribute_name: value,
-                                  [attribute_name: value ...]}
-                     [model_name: {attribute_name: value}] }
+            (value|callable): (condition, [condition, ...]),
+            [(value|callable): (condition, [condition, ...]), ...]
             }
-
-        `action` may be one of:
-        * 'require': All attributes must have values equal to the listed values.
-          If any attributes does not have the listed value then the records 
-          are not compatible.
-        * 'recommend': All attributes *should* have values equal to the listed values.
-          A warning message will be generated for every attribute that doesn't have
-          the recommended value.
-        * 'discourage': The logical negation of 'recommend'.  All attributes *should not* 
-          have values equal to the listed values. A warning message will be generated for 
-          every attribute that doesn't have the recommended value.
-        * 'exclude': The logical negation of 'require'. All attributes must not have 
-          values equal to the listed values. If any attribute has the listed value then 
-          the records are not compatible.
-          
-        `value` is either a literal value to test against or a callable.  If it is callable
-        it must accept these arguments:
-        * `lhs`: The left hand side of the compatibility check, i.e. `self`.
-        * `lhs_attr`: The attribute of `lhs` defining the `compat` property.
-        * `rhs`: The right hand sde of the compatibility check, i.e. `rhs` of this function.
-        * `rhs_attr`: The attribute of `rhs` listed in `compat`.
-        * `given`: The given value of `rhs_attr`.
-
-        Note that `rhs` may be `self` to perform self-consistency checks, e.g. prevent
-        mutually exclusive attributes from being set in the same record.
-
+            
+        Use tuples to join multiple conditions.  If only one condition is needed then you do
+        not need to use a tuple.
+        
+        `value` may either be a literal value (e.g. True or "oranges") or a callable accepting
+        one argument and returning either True or False.  The attribute's value is passed to the
+        callable to determine if the listed conditions should be checked.  If `value` is a literal
+        then the listed conditions are checked when the attribute's value matches `value`.     
+        
+        See :any:`require`, :any:`encourage`, :any:`discourage`, :any:`exclude` for common conditions.
+        
         Args:
             rhs (Controller): Controller for the data record to check compatibility.
             
         Raises:
             ConfigurationError: The two records are not compatible.
+
+        Examples:
+
+            Suppose we have this data:
+            ::
+                Programmer.attributes = {
+                    'hungry': {
+                        'type': 'boolean',
+                        'compat': {True: (CheeseShop.require('have_cheese', True),
+                                          CheeseShop.encourage('chedder', 'Wisconsin'),
+                                          ProgramManager.discourage('holding_long_meeting', True),
+                                          Roommate.exclude('steals_food', True)}
+                    }
+                }
+
+                bob = Programmer({'hungry': True})
+                world_o_cheese = CheeseShop({'have_cheese': False, 'chedder': 'Wisconsin'})
+                cheese_wizzard = CheeseShop({'have_cheese': True, 'chedder': 'California'})
+                louis = ProgramManager({'holding_long_meeting': True})
+                keith = Roommate({'steals_food': True})
+                
+            These expressions raise :any:`ConfigurationError`:
+            ::
+                bob.check_compatibility(world_o_cheese)   # Because have_cheese == False
+                bob.check_compatibility(keith)            # Because steals_food == True
+            
+            These expressions generate warning messages:
+            ::
+                bob.check_compatibility(cheese_wizzard)   # Because chedder != Wisconsin
+                bob.check_compatibility(louis)            # Because holding_long_meeting == True
+                
+            If ``bob['hungry'] == False`` or if the 'hungry' attribute were not set then all 
+            the above expressions do nothing.
         """
         as_tuple = lambda x: x if isinstance(x, tuple) else (x,)
         for attr, props in self.attributes.iteritems():
@@ -851,8 +1028,8 @@ class Controller(object):
                 attr_value = self[attr]
             except KeyError:
                 continue
-            for checked_values, conditions in compat.iteritems():
-                if attr_value in as_tuple(checked_values):
+            for value, conditions in compat.iteritems():
+                if (callable(value) and value(attr_value)) or attr_value == value: 
                     for condition in as_tuple(conditions):
                         condition(self, attr, attr_value, rhs)
                       
