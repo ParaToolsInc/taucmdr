@@ -45,7 +45,7 @@ class Measurement(Controller, ByName):
     """Measurement data controller."""      
     
     def on_create(self):
-        super(Measurement,self).on_create()
+        super(Measurement, self).on_create()
         def get_flag(key):
             return self.attributes[key]['argparse']['flags'][0]
         
@@ -64,6 +64,20 @@ class Measurement(Controller, ByName):
 
 
 def intel_only(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
+    """Compatibility checking callback.
+    
+    Guarantees that OMPT can only be used when Intel compilers are specified.
+    
+    Args:
+        lhs (Controller): The controller invoking `check_compatibility`.
+        lhs_attr (str): Name of the attribute that defines the 'compat' property.
+        lhs_value: Value of the attribute that defines the 'compat' property.
+        rhs (Controller): Controller we are checking against (argument to `check_compatibility`).
+        rhs_attr (str): The right-hand side attribute we are checking for compatibility.
+        
+    Raises:
+        ConfigurationError: OMPT selected when non-Intel compilers specified in target configuration.
+    """
     lhs_name = lhs.model_name.lower()
     rhs_name = rhs.model_name.lower()
     msg = "%s = %s in %s requires %s in %s to be an Intel compiler" % (lhs_attr, lhs_value, lhs_name, 
