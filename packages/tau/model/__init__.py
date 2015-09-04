@@ -711,10 +711,10 @@ class Controller(object):
         """Constructs a compatibility condition, see :any:`check_compatibility`.
         
         The returned condition is a callable that accepts four arguments:
-        * lhs (Controller): The left-hand side of the `check_compatibility` operation.
-        * lhs_attr (str): Name of the attribute that defines the 'compat' property.
-        * lhs_value: The value in the controlled data record of the attribute that defines the 'compat' property.
-        * rhs (Controller): Controller of the data record we are checking against.
+            * lhs (Controller): The left-hand side of the `check_compatibility` operation.
+            * lhs_attr (str): Name of the attribute that defines the 'compat' property.
+            * lhs_value: The value in the controlled data record of the attribute that defines the 'compat' property.
+            * rhs (Controller): Controller of the data record we are checking against.
         
         The `condition` callable raises a :any:`ConfigurationError` if the compared attributes 
         are fatally incompatibile, i.e. the user's operation is guaranteed to fail with the chosen 
@@ -727,11 +727,11 @@ class Controller(object):
         compare the specified attribute against or a callback function as described below.
         
         The remaining arguments are callback functions accepting these arguments:
-        * lhs (Controller): The controller invoking `check_compatibility`.
-        * lhs_attr (str): Name of the attribute that defines the 'compat' property.
-        * lhs_value: Value of the attribute that defines the 'compat' property.
-        * rhs (Controller): Controller we are checking against (argument to `check_compatibility`).
-        * rhs_attr (str): The right-hand side attribute we are checking for compatibility.
+            * lhs (Controller): The controller invoking `check_compatibility`.
+            * lhs_attr (str): Name of the attribute that defines the 'compat' property.
+            * lhs_value: Value of the attribute that defines the 'compat' property.
+            * rhs (Controller): Controller we are checking against (argument to `check_compatibility`).
+            * rhs_attr (str): The right-hand side attribute we are checking for compatibility.
         
         To enable complex conditions, args[1] may be a callback function.  In this case,
         args[1] must check attribute existance and value correctness and throw the appropriate
@@ -915,17 +915,17 @@ class Controller(object):
             Callable condition object for use with :any:`check_compatibility`
             
         Examples:
-            'have_cheese' must be True::
+            'yellow_cheese' must not be 'American'::
             
-                CheeseShop.require('have_cheese', True)
+                CheeseShop.exclude('yellow_cheese', 'American')
              
-            'have_cheese' must be set to any value::
+            'blue_cheese' must not be set to any value::
                 
-                CheeseShop.require('have_cheese')
+                CheeseShop.exclude('blue_cheese')
             
             The value of 'have_cheese' will be checked for correctness by 'cheese_callback'::
             
-                CheeseShop.require('have_cheese', cheese_callback)
+                CheeseShop.exclude('have_cheese', cheese_callback)
         """
         def attr_defined(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
             lhs_name = lhs.model_name.lower()
