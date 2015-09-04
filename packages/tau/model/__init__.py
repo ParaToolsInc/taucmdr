@@ -270,19 +270,6 @@ class Controller(object):
             else:
                 if not isinstance(description, basestring):
                     err("invalid value for 'description'")
-#             try:
-#                 compat = props['compat']
-#             except KeyError:
-#                 pass
-#             else:
-#                 for action, model_conditions in compat.iteritems():
-#                     if action not in ['require', 'recommend', 'discourage', 'exclude']:
-#                         err("Invalid action in 'compat': %s" % action)
-#                     for model_name, conditions in model_conditions.iteritems():
-#                         model = MODELS[model_name]
-#                         for attr_name in conditions:
-#                             if attr_name not in model.attributes:
-#                                 err("In 'compat', model '%s' has no attribute '%s'" % (model_name, attr_name))
 
     @classmethod
     def _validate(cls, data, enforce_required=True):
@@ -718,7 +705,7 @@ class Controller(object):
                     else:
                         storage.update(
                             model.model_name, {attr: update}, eids=model.eid)
-    
+                      
     @classmethod
     def construct_condition(cls, args, attr_defined=None, attr_undefined=None, attr_eq=None, attr_ne=None):
         """Constructs a compatibility condition, see :any:`check_compatibility`.
@@ -760,8 +747,10 @@ class Controller(object):
 
         Returns:
             Callable condition object for use with :any:`check_compatibility`.
-        """ 
+        """
         rhs_attr = args[0]
+        if rhs_attr not in cls.attributes:
+            raise ModelError("Invalid compatibility check: %s has no attribute named %s" % cls.model_name, rhs_attr)
         try:
             checked_value = args[1]
         except IndexError:
@@ -1032,7 +1021,7 @@ class Controller(object):
                 if (callable(value) and value(attr_value)) or attr_value == value: 
                     for condition in as_tuple(conditions):
                         condition(self, attr, attr_value, rhs)
-                      
+
 
 class ByName(object):
     """Mixin for a model with a unique `name` attribute."""
@@ -1057,13 +1046,6 @@ def _yield_model_classes():
         yield model_class       
 
 
-def _get_props_model_name(props):
-    try:
-        return props['model']
-    except KeyError:
-        return props['collection']
-    
-
 def _construct_model(models):
     """Builds model relationships.
     
@@ -1075,6 +1057,11 @@ def _construct_model(models):
     Returns:
         dict: Model controller classes indexed by model name. 
     """
+    def _get_props_model_name(props):
+        try:
+            return props['model']
+        except KeyError:
+            return props['collection']
     for cls_name, cls in models.iteritems():
         cls.__class_init__()
         for attr, props in cls.attributes.iteritems():
