@@ -749,8 +749,6 @@ class Controller(object):
             Callable condition object for use with :any:`check_compatibility`.
         """
         rhs_attr = args[0]
-        if rhs_attr not in cls.attributes:
-            raise ModelError("Invalid compatibility check: %s has no attribute named %s" % cls.model_name, rhs_attr)
         try:
             checked_value = args[1]
         except IndexError:
