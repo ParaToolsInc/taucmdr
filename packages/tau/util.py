@@ -278,7 +278,7 @@ def human_size(num, suffix='B'):
 
 
 def parse_bool(value, additional_true=None, additional_false=None):
-    """Parses a string to a boolean value.
+    """Parses a value to a boolean value.
     
     If `value` is a string try to interpret it as a bool:
     * ['1', 't', 'y', 'true', 'yes', 'on'] ==> True
@@ -286,7 +286,7 @@ def parse_bool(value, additional_true=None, additional_false=None):
     Otherwise raise TypeError.
     
     Args:
-        value (str): string to parse to a boolean.
+        value: value to parse to a boolean.
         additional_true (list): optional additional string values that stand for True.
         additional_false (list): optional additional string values that stand for False.
         
@@ -308,7 +308,9 @@ def parse_bool(value, additional_true=None, additional_false=None):
             return True
         elif value in false_values:
             return False
-    raise TypeError
+        else:
+            raise TypeError
+    return bool(value)
 
 def is_url(url):
     """Check if `url` is a URL.
