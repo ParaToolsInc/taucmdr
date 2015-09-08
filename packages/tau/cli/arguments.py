@@ -164,17 +164,20 @@ class ParsePackagePathAction(argparse.Action):
             namespace (object): Namespace to receive parsed value via setattr.
             flag (str): Value parsed from the command line.
         """
-        flag_as_bool = util.parse_bool(flag, additional_true=['download'])
-        if flag_as_bool == True:
-            value = 'download'
-        elif flag_as_bool == False:
-            value = None
-        elif util.is_url(flag):
-            value = flag
+        try:
+            flag_as_bool = util.parse_bool(flag, additional_true=['download'])
+        except TypeError:
+            if util.is_url(flag):
+                value = flag
+            else:
+                value = os.path.abspath(os.path.expanduser(flag))
+                if not os.path.isdir(value) or not util.file_accessible(value):
+                    raise argparse.ArgumentError(self, "Boolean, 'download', valid path, or URL required: %s" % flag)
         else:
-            value = os.path.abspath(os.path.expanduser(flag))
-            if not os.path.isdir(value) and not util.file_accessible(value):
-                raise argparse.ArgumentError(self, "Boolean, 'download', valid path, or URL required: %s" % flag)
+            if flag_as_bool == True:
+                value = 'download'
+            elif flag_as_bool == False:
+                value = None
         setattr(namespace, self.dest, value)
 
 
@@ -196,10 +199,10 @@ class ParseBooleanAction(argparse.Action):
             namespace (object): Namespace to receive parsed value via setattr.
             flag (str): Value parsed from the command line/
         """
-        bool_value = util.parse_bool(flag)
-        if bool_value == None:
+        try:
+            setattr(namespace, self.dest, util.parse_bool(flag))
+        except TypeError:
             raise argparse.ArgumentError(self, 'Boolean value required')
-        setattr(namespace, self.dest, bool_value)
 
 
 def get_parser(prog=None, usage=None, description=None, epilog=None):

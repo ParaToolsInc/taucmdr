@@ -278,40 +278,37 @@ def human_size(num, suffix='B'):
 
 
 def parse_bool(value, additional_true=None, additional_false=None):
-    """Parses a boolean value.
+    """Parses a string to a boolean value.
     
-    If `value` is castable to :any:`bool` then return `value` as a bool.
-    Otherwise if `value` is a string try to interpret it as a bool:
+    If `value` is a string try to interpret it as a bool:
     * ['1', 't', 'y', 'true', 'yes', 'on'] ==> True
     * ['0', 'f', 'n', 'false', 'no', 'off'] ==> False
+    Otherwise raise TypeError.
     
     Args:
-        value: bool, int, or string to parse.
-        additional_true (list): optional additional string values that stand for True
-        additional_false (list): optional additional string values that stand for False
+        value (str): string to parse to a boolean.
+        additional_true (list): optional additional string values that stand for True.
+        additional_false (list): optional additional string values that stand for False.
         
     Returns:
-        bool: True if  `value` is true,
-              False if `value` is false,
-              None if `value` couldn't be parsed.
+        bool: True if  `value` is true, False if `value` is false.
+        
+    Raises:
+        ValueError: `value` does not parse.
     """
     true_values = ['1', 't', 'y', 'true', 'yes', 'on']
-    false_values = ['0', 'f', 'n', 'false', 'no', 'off']
+    false_values = ['0', 'f', 'n', 'false', 'no', 'off', 'none']
     if additional_true:
         true_values.extend(additional_true)
     if additional_false:
         false_values.extend(additional_false)
-    try:
-        return bool(value)
-    except TypeError:
-        if isinstance(value, basestring):
-            value = value.lower()
-            if value in true_values:
-                return True
-            elif value in false_values:
-                return False
-        else:
-            return None
+    if isinstance(value, basestring):
+        value = value.lower()
+        if value in true_values:
+            return True
+        elif value in false_values:
+            return False
+    raise TypeError
 
 def is_url(url):
     """Check if `url` is a URL.

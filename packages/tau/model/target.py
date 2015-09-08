@@ -35,7 +35,7 @@ describes a specific set of system features.  For example, if both GNU and Intel
 compilers are installed then there will target configurations for each compiler family.
 """
 
-from tau.error import InternalError
+from tau.error import InternalError, ConfigurationError
 from tau.cli.arguments import ParsePackagePathAction
 from tau.model import Controller, ByName
 from tau.cf.target import Architecture, OperatingSystem
@@ -47,6 +47,11 @@ from tau.cf.compiler.installed import InstalledCompilerSet
 
 class Target(Controller, ByName):
     """Target data controller."""
+    
+    def on_create(self):
+        super(Target, self).on_create()
+        if not self['tau_source']:
+            raise ConfigurationError("A TAU installation or source code must be provided.")
 
     def compilers(self):
         """Get information about the compilers used by this target configuration.
