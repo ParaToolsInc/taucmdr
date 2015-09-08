@@ -272,8 +272,8 @@ class Controller(object):
                     err("invalid value for 'description'")
 
     @classmethod
-    def _validate(cls, data, enforce_required=True):
-        """Validates the given data against the model.
+    def _validate(cls, data):
+        """Validates data against the model.
         
         Args:
             data (dict): Data to validate, may be None.
@@ -300,7 +300,7 @@ class Controller(object):
                 validated[attr] = data[attr]
             except KeyError:
                 if 'required' in props:
-                    if props['required'] and enforce_required:
+                    if props['required']:
                         raise ModelError(cls, "'%s' is required but was not defined" % attr)
                 elif 'default' in props:
                     validated[attr] = props['default']
@@ -536,7 +536,10 @@ class Controller(object):
         with USER_STORAGE as storage:
             # Get the list of affected records **before** updating the data so foreign keys are correct
             changing = cls.search(keys, eids)
-            storage.update(cls.model_name, cls._validate(fields, enforce_required=False), keys=keys, eids=eids)
+            for attr in fields:
+                if not attr in cls.attributes:
+                    raise ModelError(cls, "Model '%s' has no attribute named '%s'" % (cls.model_name, attr))
+            storage.update(cls.model_name, fields, keys=keys, eids=eids)
             for model in changing:
                 for attr, foreign in cls.associations.iteritems():
                     try:
