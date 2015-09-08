@@ -145,13 +145,12 @@ def main(argv):
         record = Compiler.register(comp)
         fields[comp.info.role.keyword] = record.eid
 
+    updates = dict(args.__dict__)
     try:
-        new_name = args.new_name
+        updates['name'] = args.new_name
     except AttributeError:
         pass
     else:
-        fields['name'] = new_name
-        del fields['new_name']
-    
-    Target.update(fields, {'name': name})
-    return cli.execute_command(['target', 'list'], [name])
+        del updates['name']
+    Target.update(updates, {'name': name})
+    return cli.execute_command(['target', 'list'], [updates['name']])

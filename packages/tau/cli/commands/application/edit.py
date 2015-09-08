@@ -86,12 +86,10 @@ def main(argv):
 
     updates = dict(args.__dict__)
     try:
-        new_name = args.new_name
+        updates['name'] = args.new_name
     except AttributeError:
         pass
     else:
-        updates['name'] = new_name
         del updates['new_name']
-
     Application.update(updates, {'name': name})
-    return cli.execute_command(['application', 'list'], [args.name])
+    return cli.execute_command(['application', 'list'], [updates['name']])
