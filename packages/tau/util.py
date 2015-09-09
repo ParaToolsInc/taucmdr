@@ -270,6 +270,8 @@ def human_size(num, suffix='B'):
     Returns: 
         str: `num` as a human readable string. 
     """
+    if not num:
+        num = 0
     for unit in ['', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi']:
         if abs(num) < 1024.0:
             return "%3.1f%s%s" % (num, unit, suffix)
