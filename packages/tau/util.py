@@ -50,7 +50,7 @@ def mkdirp(*args):
     Works just like ``mkdir -p``.
     
     Args:
-        *args: Paths to create
+        *args: Paths to create.
     """
     for path in args:
         try:
@@ -117,7 +117,7 @@ def download(src, dest):
         shutil.copy(src, dest)
     else:
         LOGGER.debug("Downloading '%s' to '%s'", src, dest)
-        LOGGER.info("Downloading '%s'",  src)
+        LOGGER.info("Downloading '%s'", src)
         mkdirp(os.path.dirname(dest))
         curl = which('curl')
         wget = which('wget')
@@ -188,7 +188,7 @@ def extract(archive, dest):
     with tarfile.open(archive) as fin:
         fin.extractall(dest)
     if not os.path.isdir(full_dest):
-        raise IOError("Failed to create '%s' by extracting '%s'" % (full_dest, archive))
+        raise IOError("Extracting '%s' does not create '%s'" % (archive, full_dest))
     LOGGER.debug("Created '%s'", full_dest)
     return full_dest
 
