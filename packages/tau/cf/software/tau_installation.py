@@ -432,7 +432,7 @@ class TauInstallation(Installation):
                 flags.append('-opari')
         cmd = ['./configure'] + flags
         LOGGER.info("Configuring TAU...")
-        if util.create_subprocess(cmd, cwd=self._src_path, stdout=False):
+        if util.create_subprocess(cmd, cwd=self.src_prefix, stdout=False):
             raise SoftwarePackageError('TAU configure failed')
     
     def make_install(self):
@@ -445,7 +445,7 @@ class TauInstallation(Installation):
         """
         cmd = ['make', 'install'] + parallel_make_flags()
         LOGGER.info('Compiling and installing TAU...')
-        if util.create_subprocess(cmd, cwd=self._src_path, stdout=False):
+        if util.create_subprocess(cmd, cwd=self.src_prefix, stdout=False):
             raise SoftwarePackageError('TAU compilation/installation failed')
     
     def install(self, force_reinstall=False):
@@ -457,7 +457,7 @@ class TauInstallation(Installation):
             force_reinstall (bool): Set to True to force reinstall even if TAU is already installed and working.
             
         Raises:
-            SofwarePackageError: TAU failed installation or did not pass verification after it was installed.
+            SoftwarePackageError: TAU failed installation or did not pass verification after it was installed.
         """
         self._check_dependencies()
 
