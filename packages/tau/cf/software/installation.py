@@ -30,7 +30,7 @@
 import os
 import sys
 import shutil
-import base64
+import hashlib
 import multiprocessing
 from lockfile import LockFile, NotLocked
 from tau import logger, util
@@ -118,8 +118,9 @@ class Installation(object):
             else:
                 self.src = src
             self.src_prefix = None
-            b64str = base64.urlsafe_b64encode(self.src)
-            self.install_prefix = os.path.join(prefix, name, dst, b64str)
+            md5sum = hashlib.md5()
+            md5sum.update(self.src)
+            self.install_prefix = os.path.join(prefix, name, dst, md5sum.hexdigest())
         self.include_path = os.path.join(self.install_prefix, 'include')
         self.bin_path = os.path.join(self.install_prefix, 'bin')
         self.lib_path = os.path.join(self.install_prefix, 'lib')
