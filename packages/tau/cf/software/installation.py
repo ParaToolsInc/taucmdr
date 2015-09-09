@@ -84,6 +84,7 @@ class Installation(object):
         """Initializes the installation object.
         
         To set up a new installation, pass `src` as a URL, file path, or the special keyword 'download'.
+        Attributes `src` and `src_prefix` will be set to the appropriate paths.
         
         To set up an interface to an existing installation, pass ``src=/path/to/existing/installation``. 
         Attributes `src` and `src_prefix` will be set to None.
@@ -116,8 +117,8 @@ class Installation(object):
                 self.src = sources.get(arch, sources[None])
             else:
                 self.src = src
+            self.src_prefix = None
             b64str = base64.urlsafe_b64encode(self.src)
-            self.src_prefix = os.path.join(self.archive_prefix, b64str)
             self.install_prefix = os.path.join(prefix, name, dst, b64str)
         self.include_path = os.path.join(self.install_prefix, 'include')
         self.bin_path = os.path.join(self.install_prefix, 'bin')
@@ -145,12 +146,10 @@ class Installation(object):
         
         Acquires package source code archive file via download or file copy,
         unpacks the archive, and verifies that required paths exist.
+        Sets `self.src_prefix` to the directory containing the package source files.
         
         Args:
             reuse (bool): If True, attempt to reuse old archives and source files.
-        
-        Returns:
-            str: Name (not path) of the directory containing the package source files.
 
         Raises:
             ConfigurationError: The source code couldn't be copied or downloaded.
@@ -173,7 +172,8 @@ class Installation(object):
             LOGGER.info("Cannot read %s archive file '%s': %s", self.name, downloaded, err)
             if reuse:
                 LOGGER.info("Trying to download a fresh copy of '%s'", self.src)
-                return self._prepare_src(reuse=False)
+                self._prepare_src(reuse=False)
+                return
             else:
                 raise ConfigurationError("Cannot read %s archive file '%s': %s" % (self.name, downloaded, err))
         src_prefix = os.path.join(self.archive_prefix, topdir)
@@ -186,7 +186,7 @@ class Installation(object):
             except IOError as err:
                 raise ConfigurationError("Cannot extract source archive '%s': %s" % (downloaded, err),
                                          "Check that the file or directory is accessable")
-        return topdir            
+        self.src_prefix = src_prefix
 
     def _verify(self, commands=None, libraries=None):
         """Check if the installation is valid.
@@ -312,6 +312,7 @@ class AutotoolsInstallation(Installation):
         Raises:
             SoftwarePackageError: Configuration failed.
         """
+        assert self.src_prefix
         LOGGER.debug("Configuring %s at '%s'", self.name, self.src_prefix)
         flags = list(flags)
 
@@ -343,6 +344,7 @@ class AutotoolsInstallation(Installation):
         Raises:
             SoftwarePackageError: Compilation failed.
         """
+        assert self.src_prefix
         LOGGER.debug("Making %s at '%s'", self.name, self.src_prefix)
         flags = list(flags)
         if parallel:
@@ -367,6 +369,7 @@ class AutotoolsInstallation(Installation):
         Raises:
             SoftwarePackageError: Configuration failed.
         """
+        assert self.src_prefix
         LOGGER.debug("Installing %s at '%s' to '%s'", self.name, self.src_prefix, self.install_prefix)
         flags = list(flags)
         if parallel:

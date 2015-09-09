@@ -48,8 +48,11 @@ class PapiInstallation(AutotoolsInstallation):
     def __init__(self, prefix, src, arch, compilers):
         dst = os.path.join(arch, compilers[CC_ROLE].info.family.name)
         super(PapiInstallation, self).__init__('PAPI', prefix, src, dst, arch, compilers, SOURCES)
-        self.src_prefix = os.path.join(self.src_prefix, 'src')
 
     def _verify(self, commands=None, libraries=None):
         libraries = LIBS.get(self.arch, LIBS[None])
         return super(PapiInstallation, self)._verify(commands, libraries)
+
+    def _prepare_src(self, reuse=True):
+        super(PapiInstallation, self)._prepare_src(reuse)
+        self.src_prefix = os.path.join(self.src_prefix, 'src')
