@@ -629,8 +629,6 @@ class TauInstallation(Installation):
         tau_opts.append('-optRevert')
         if self.verbose:
             tau_opts.append('-optVerbose')
-        else:
-            tau_opts.append('-optQuiet')
         if self.compiler_inst == 'always':
             tau_opts.append('-optCompInst')
         elif self.compiler_inst == 'never':
