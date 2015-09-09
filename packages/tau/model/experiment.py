@@ -126,8 +126,7 @@ class Experiment(Controller):
         verbose=(logger.LOG_LEVEL == 'DEBUG')
         
         # Configure/build/install TAU if needed
-        self.tau = TauInstallation(prefix, target['tau_source'], 
-                                   target['host_arch'], target['host_os'], 
+        self.tau = TauInstallation(prefix, target['tau_source'], target['host_arch'], target['host_os'], 
                                    target.compilers(),
                                    verbose=verbose,
                                    pdt_source=target.get('pdt_source', None),

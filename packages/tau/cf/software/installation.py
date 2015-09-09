@@ -30,6 +30,7 @@
 import os
 import sys
 import shutil
+import base64
 import multiprocessing
 from lockfile import LockFile, NotLocked
 from tau import logger, util
@@ -82,14 +83,10 @@ class Installation(object):
     def __init__(self, name, prefix, src, dst, arch, compilers, sources):
         """Initializes the installation object.
         
-        To set up a new installation, pass ``prefix=/path/to/directory`` and
-        ``src=/path/to/source_archive_file`` or ``src='download'``.  `prefix` will be 
-        created if it does not exist.  `src` may be a URL, file path, or the
-        special keyword 'download'
+        To set up a new installation, pass `src` as a URL, file path, or the special keyword 'download'.
         
-        To set up an interface to an existing installation, pass ``prefix=None``
-        and ``src=/path/to/existing/installation``. Attributes `src` and 
-        `src_prefix` will be set to None.
+        To set up an interface to an existing installation, pass ``src=/path/to/existing/installation``. 
+        Attributes `src` and `src_prefix` will be set to None.
         
         Args:
             name (str): Human readable name of the software package, e.g. 'TAU'.
@@ -119,9 +116,9 @@ class Installation(object):
                 self.src = sources.get(arch, sources[None])
             else:
                 self.src = src
-            topdir = self._prepare_src()
-            self.src_prefix = os.path.join(self.archive_prefix, topdir)
-            self.install_prefix = os.path.join(prefix, name, dst, topdir)
+            b64str = base64.urlsafe_b64encode(self.src)
+            self.src_prefix = os.path.join(self.archive_prefix, b64str)
+            self.install_prefix = os.path.join(prefix, name, dst, b64str)
         self.include_path = os.path.join(self.install_prefix, 'include')
         self.bin_path = os.path.join(self.install_prefix, 'bin')
         self.lib_path = os.path.join(self.install_prefix, 'lib')
@@ -412,6 +409,8 @@ class AutotoolsInstallation(Installation):
         if os.path.isdir(self.install_prefix): 
             LOGGER.info("Cleaning %s installation prefix '%s'", self.name, self.install_prefix)
             shutil.rmtree(self.install_prefix, ignore_errors=True)
+            
+        self._prepare_src()
 
         # Environment variables are shared between the subprocesses
         # created for `configure` ; `make` ; `make install`
