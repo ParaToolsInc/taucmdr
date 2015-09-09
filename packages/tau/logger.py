@@ -190,7 +190,7 @@ class LogFormatter(logging.Formatter, object):
         self.line_width = line_width
         self.line_marker = self._colored(line_marker, 'red')
         self._text_wrapper = textwrap.TextWrapper(width=line_width,
-                                                  subsequent_indent=line_marker + '    ',
+                                                  subsequent_indent=self.line_marker + '    ',
                                                   break_long_words=False,
                                                   break_on_hyphens=False,
                                                   drop_whitespace=False)
