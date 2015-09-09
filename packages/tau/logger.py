@@ -45,6 +45,7 @@ import textwrap
 import socket
 import platform
 import string
+from termcolor import termcolor
 from datetime import datetime
 from logging import handlers
 from tau import USER_PREFIX
@@ -182,11 +183,12 @@ class LogFormatter(logging.Formatter, object):
     
     PRINTABLE_CHARS = set(string.printable)
     
-    def __init__(self, line_width, line_marker, printable_only=False):
+    def __init__(self, line_width, line_marker, printable_only=False, allow_colors=True):
         super(LogFormatter, self).__init__()
-        self.line_width = line_width
-        self.line_marker = line_marker
         self.printable_only = printable_only
+        self.allow_colors = allow_colors
+        self.line_width = line_width
+        self.line_marker = self._colored(line_marker, 'red')
         self._text_wrapper = textwrap.TextWrapper(width=line_width,
                                                   subsequent_indent=line_marker + '    ',
                                                   break_long_words=False,
@@ -197,6 +199,12 @@ class LogFormatter(logging.Formatter, object):
                          logging.WARNING: lambda r: self._msgbox(r, '*'),
                          logging.INFO: lambda r: '\n'.join(self._textwrap_message(r)),
                          logging.DEBUG: self._debug_message}
+        
+    def _colored(self, text, *color_args):
+        if self.allow_colors and color_args:
+            return termcolor.colored(text, *color_args)
+        else:
+            return text
 
     def format(self, record):
         """Formats a log record.
@@ -217,8 +225,8 @@ class LogFormatter(logging.Formatter, object):
 
     def _msgbox(self, record, marker):
         width = self.line_width - len(self.line_marker)
-        hline = self.line_marker + marker * width
-        parts = [hline, self.line_marker, '%s%s' % (self.line_marker, record.levelname)]
+        hline = self.line_marker + self._colored(marker * width, 'red')
+        parts = [hline, self.line_marker, '%s%s' % (self.line_marker, self._colored(record.levelname, 'cyan'))]
         parts.extend(self._textwrap_message(record))
         parts.append(hline)
         return '\n'.join(parts)
@@ -227,7 +235,7 @@ class LogFormatter(logging.Formatter, object):
         message = record.getMessage()
         if self.printable_only and (not set(message).issubset(self.PRINTABLE_CHARS)):
             message = "<<UNPRINTABLE>>"
-        return '[%s %s:%s] %s' % (record.levelname, record.name, record.lineno, message)
+        return '[%s %s:%s] %s' % (self._colored(record.levelname, 'cyan'), record.name, record.lineno, message)
 
     def _textwrap_message(self, record):
         parts = []
@@ -299,7 +307,7 @@ if not len(_ROOT_LOGGER.handlers):
         else:
             raise
     _FILE_HANDLER = handlers.TimedRotatingFileHandler(LOG_FILE, when='D', interval=1, backupCount=3)
-    _FILE_HANDLER.setFormatter(LogFormatter(line_width=120, line_marker=LINE_MARKER))
+    _FILE_HANDLER.setFormatter(LogFormatter(line_width=120, line_marker=LINE_MARKER, allow_colors=False))
     _FILE_HANDLER.setLevel(logging.DEBUG)
 
     _STDOUT_HANDLER = logging.StreamHandler(sys.stdout)
