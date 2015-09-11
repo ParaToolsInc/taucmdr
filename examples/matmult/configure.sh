@@ -11,6 +11,7 @@ set +x
 # Example targets
 target_name="ex-`echo $HOSTNAME | cut -d. -f1`"
 tau target create "$target_name"
+tau target create ${target_name}-mpi
 user_name="`users`"
 
 
@@ -36,6 +37,7 @@ tau measurement create "no-io" --io=F
 # Set up example project
 tau project create "ex-matmult" \
   $target_name \
+  ${target_name}-mpi \
   ex-matmult-serial ex-matmult-openmp ex-matmult-openmp-mpi \
   ex-profile ex-trace ex-sample p-keep no-io
 
