@@ -189,7 +189,7 @@ class LogFormatter(logging.Formatter, object):
         self.allow_colors = allow_colors
         self.line_width = line_width
         self.line_marker = self._colored(line_marker, 'red')
-        self._text_wrapper = textwrap.TextWrapper(width=line_width,
+        self._text_wrapper = textwrap.TextWrapper(width=self.line_width-len(self.line_marker),
                                                   subsequent_indent=self.line_marker + '    ',
                                                   break_long_words=False,
                                                   break_on_hyphens=False,
@@ -226,7 +226,7 @@ class LogFormatter(logging.Formatter, object):
     def _msgbox(self, record, marker):
         width = self.line_width - len(self.line_marker)
         hline = self.line_marker + self._colored(marker * width, 'red')
-        parts = [hline, self.line_marker, '%s%s' % (self.line_marker, self._colored(record.levelname, 'cyan'))]
+        parts = [hline, self.line_marker, self.line_marker + self._colored(record.levelname, 'cyan')]
         parts.extend(self._textwrap_message(record))
         parts.append(hline)
         return '\n'.join(parts)
@@ -242,7 +242,7 @@ class LogFormatter(logging.Formatter, object):
         for line in record.getMessage().split('\n'):
             if not self.printable_only or set(line).issubset(self.PRINTABLE_CHARS):
                 message = self._text_wrapper.fill(line)
-            parts.append('%s%s' % (self.line_marker, message))
+            parts.append(self.line_marker + message)
         return parts
 
 

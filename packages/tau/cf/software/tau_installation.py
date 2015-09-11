@@ -465,7 +465,8 @@ class TauInstallation(Installation):
             try:
                 return self._verify()
             except SoftwarePackageError as err:
-                raise SoftwarePackageError("%s is missing or broken: %s" % (self.name, err),
+                raise SoftwarePackageError("%s installation at '%s' is missing or broken: %s" % 
+                                           (self.name, self.install_prefix, err),
                                            "Specify source code path or URL to enable broken package reinstallation.")
         elif not force_reinstall:
             try:

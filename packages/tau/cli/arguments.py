@@ -171,8 +171,8 @@ class ParsePackagePathAction(argparse.Action):
                 value = flag
             else:
                 value = os.path.abspath(os.path.expanduser(flag))
-                if not os.path.isdir(value) or not util.file_accessible(value):
-                    raise argparse.ArgumentError(self, "Boolean, 'download', valid path, or URL required: %s" % flag)
+                if not (os.path.isdir(value) or util.file_accessible(value)):
+                    raise argparse.ArgumentError(self, "Boolean, 'download', valid path, or URL required: %s" % value)
         else:
             if flag_as_bool == True:
                 value = 'download'
