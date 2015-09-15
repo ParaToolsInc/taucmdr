@@ -219,6 +219,38 @@ class LogFormatter(logging.Formatter, object):
             raise RuntimeError('Unknown record level (name: %s)' % record.levelname)
 
     def _colored(self, text, *color_args):
+        """Insert ANSII color formatting via `termcolor`_.
+        
+        Text colors:
+            * grey
+            * red
+            * green
+            * yellow
+            * blue
+            * magenta
+            * cyan
+            * white
+        
+        Text highlights:
+            * on_grey
+            * on_red
+            * on_green
+            * on_yellow
+            * on_blue
+            * on_magenta
+            * on_cyan
+            * on_white
+
+        Attributes:
+            * bold
+            * dark
+            * underline
+            * blink
+            * reverse
+            * concealed
+        
+        .. _termcolor: http://pypi.python.org/pypi/termcolor
+        """
         if self.allow_colors and color_args:
             return termcolor.colored(text, *color_args)
         else:
