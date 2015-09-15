@@ -35,86 +35,94 @@ are potentially two application records for the same application code: one
 specifying OpenMP is used and the other specifying OpenMP is not used.
 """
 
-from tau import requisite
-from tau.cli.arguments import ParseBooleanAction
+
 from tau.model import Controller, ByName
+from tau.cli.arguments import ParseBooleanAction
 
 
 class Application(Controller, ByName):
     """Application data controller."""
+    pass
 
-    attributes = {
-        'projects': { 
-            'collection': 'Project',
-            'via': 'applications',
-            'description': 'projects using this application'
-        },
-        'name': {
-            'type': 'string',
-            'description': 'application configuration name',
-            'unique': True,
-            'argparse': {'metavar': '<application_name>'}
-        },
-        'openmp': {
-            'type': 'boolean', 
-            'description': 'application uses OpenMP',
-            'default': False, 
-            'argparse': {'flags': ('--openmp',),
-                         'metavar': 'yes/no',
-                         'nargs': '?',
-                         'const': True,
-                         'action': ParseBooleanAction},
-        },
-        'pthreads': {
-            'type': 'boolean',
-            'description': 'application uses pthreads',
-            'default': False,
-            'argparse': {'flags': ('--pthreads',),
-                         'metavar': 'yes/no',
-                         'nargs': '?',
-                         'const': True,
-                         'action': ParseBooleanAction}
-        },
-        'mpi': {
-            'type': 'boolean',
-            'default': False,
-            'description': 'application uses MPI',
-            'argparse': {'flags': ('--mpi',),
-                         'metavar': 'yes/no',
-                         'nargs': '?',
-                         'const': True,
-                         'action': ParseBooleanAction},
-            'compat': {'Measurement': {'mpi': requisite.Required}}
-        },
-        'cuda': {
-            'type': 'boolean',
-            'default': False,
-            'description': 'application uses NVIDIA CUDA',
-            'argparse': {'flags': ('--cuda',),
-                         'metavar': 'yes/no',
-                         'nargs': '?',
-                         'const': True,
-                         'action': ParseBooleanAction},
-            'compat': {'Target': {'cuda': requisite.Required}}
-        },
-        'shmem': {
-            'type': 'boolean',
-            'default': False,
-            'description': 'application uses SHMEM',
-            'argparse': {'flags': ('--shmem',),
-                         'metavar': 'yes/no',
-                         'nargs': '?',
-                         'const': True,
-                         'action': ParseBooleanAction},
-        },
-        'mpc': {
-            'type': 'boolean',
-            'default': False,
-            'description': 'application uses MPC',
-            'argparse': {'flags': ('--mpc',),
-                         'metavar': 'yes/no',
-                         'nargs': '?',
-                         'const': True,
-                         'action': ParseBooleanAction}
-        }
+
+# Prevent circular imports by importing controllers from other models 
+# only after defining our own controller.  
+from tau.model.target import Target
+from tau.model.measurement import Measurement
+
+
+Application.attributes = {
+    'projects': { 
+        'collection': 'Project',
+        'via': 'applications',
+        'description': 'projects using this application'
+    },
+    'name': {
+        'type': 'string',
+        'description': 'application configuration name',
+        'unique': True,
+        'argparse': {'metavar': '<application_name>'}
+    },
+    'openmp': {
+        'type': 'boolean', 
+        'description': 'application uses OpenMP',
+        'default': False, 
+        'argparse': {'flags': ('--openmp',),
+                     'metavar': 'yes/no',
+                     'nargs': '?',
+                     'const': True,
+                     'action': ParseBooleanAction},
+    },
+    'pthreads': {
+        'type': 'boolean',
+        'description': 'application uses pthreads',
+        'default': False,
+        'argparse': {'flags': ('--pthreads',),
+                     'metavar': 'yes/no',
+                     'nargs': '?',
+                     'const': True,
+                     'action': ParseBooleanAction}
+    },
+    'mpi': {
+        'type': 'boolean',
+        'default': False,
+        'description': 'application uses MPI',
+        'argparse': {'flags': ('--mpi',),
+                     'metavar': 'yes/no',
+                     'nargs': '?',
+                     'const': True,
+                     'action': ParseBooleanAction},
+        'compat': {True: Measurement.encourage('mpi', True)}
+    },
+    'cuda': {
+        'type': 'boolean',
+        'default': False,
+        'description': 'application uses NVIDIA CUDA',
+        'argparse': {'flags': ('--cuda',),
+                     'metavar': 'yes/no',
+                     'nargs': '?',
+                     'const': True,
+                     'action': ParseBooleanAction},
+        'compat': {True: Target.require('cuda')}
+    },
+    'shmem': {
+        'type': 'boolean',
+        'default': False,
+        'description': 'application uses SHMEM',
+        'argparse': {'flags': ('--shmem',),
+                     'metavar': 'yes/no',
+                     'nargs': '?',
+                     'const': True,
+                     'action': ParseBooleanAction},
+    },
+    'mpc': {
+        'type': 'boolean',
+        'default': False,
+        'description': 'application uses MPC',
+        'argparse': {'flags': ('--mpc',),
+                     'metavar': 'yes/no',
+                     'nargs': '?',
+                     'const': True,
+                     'action': ParseBooleanAction}
     }
+}

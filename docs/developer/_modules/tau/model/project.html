@@ -85,53 +85,18 @@
 <span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">util</span><span class="p">,</span> <span class="n">error</span>
 <span class="kn">from</span> <span class="nn">tau.model</span> <span class="kn">import</span> <span class="n">Controller</span><span class="p">,</span> <span class="n">ByName</span>
 
+
 <span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="Project"><a class="viewcode-back" href="../../../tau.model.html#tau.model.project.Project">[docs]</a><span class="k">class</span> <span class="nc">Project</span><span class="p">(</span><span class="n">Controller</span><span class="p">,</span> <span class="n">ByName</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Project data controller.&quot;&quot;&quot;</span>
 
-    <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;string&#39;</span><span class="p">,</span>
-            <span class="s">&#39;unique&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
-            <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">&#39;project name&#39;</span><span class="p">,</span>
-            <span class="s">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;metavar&#39;</span><span class="p">:</span> <span class="s">&#39;&lt;project_name&gt;&#39;</span><span class="p">}</span>
-        <span class="p">},</span>
-        <span class="s">&#39;targets&#39;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s">&#39;collection&#39;</span><span class="p">:</span> <span class="s">&#39;Target&#39;</span><span class="p">,</span>
-            <span class="s">&#39;via&#39;</span><span class="p">:</span> <span class="s">&#39;projects&#39;</span><span class="p">,</span>
-            <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">&#39;targets used by this project&#39;</span>
-        <span class="p">},</span>
-        <span class="s">&#39;applications&#39;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s">&#39;collection&#39;</span><span class="p">:</span> <span class="s">&#39;Application&#39;</span><span class="p">,</span>
-            <span class="s">&#39;via&#39;</span><span class="p">:</span> <span class="s">&#39;projects&#39;</span><span class="p">,</span>
-            <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">&#39;applications used by this project&#39;</span>
-        <span class="p">},</span>
-        <span class="s">&#39;measurements&#39;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s">&#39;collection&#39;</span><span class="p">:</span> <span class="s">&#39;Measurement&#39;</span><span class="p">,</span>
-            <span class="s">&#39;via&#39;</span><span class="p">:</span> <span class="s">&#39;projects&#39;</span><span class="p">,</span>
-            <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">&#39;measurements used by this project&#39;</span>
-        <span class="p">},</span>
-        <span class="s">&#39;experiments&#39;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s">&#39;collection&#39;</span><span class="p">:</span> <span class="s">&#39;Experiment&#39;</span><span class="p">,</span>
-            <span class="s">&#39;via&#39;</span><span class="p">:</span> <span class="s">&#39;project&#39;</span><span class="p">,</span>
-            <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">&#39;experiments formed from this project&#39;</span>
-        <span class="p">},</span>
-        <span class="s">&#39;prefix&#39;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;string&#39;</span><span class="p">,</span>
-            <span class="s">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
-            <span class="s">&#39;default&#39;</span><span class="p">:</span> <span class="n">USER_PREFIX</span><span class="p">,</span>
-            <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">&#39;location for all files and experiment data related to this project&#39;</span><span class="p">,</span>
-            <span class="s">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&#39;--home&#39;</span><span class="p">,),</span>
-                         <span class="s">&#39;metavar&#39;</span><span class="p">:</span> <span class="s">&#39;path&#39;</span><span class="p">}</span>
-        <span class="p">},</span>
-    <span class="p">}</span>
-
 <div class="viewcode-block" id="Project.prefix"><a class="viewcode-back" href="../../../tau.model.html#tau.model.project.Project.prefix">[docs]</a>    <span class="k">def</span> <span class="nf">prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s">&#39;prefix&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">])</span>
 </div>
 <div class="viewcode-block" id="Project.on_create"><a class="viewcode-back" href="../../../tau.model.html#tau.model.project.Project.on_create">[docs]</a>    <span class="k">def</span> <span class="nf">on_create</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Project</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">on_create</span><span class="p">()</span>
         <span class="n">prefix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">()</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">util</span><span class="o">.</span><span class="n">mkdirp</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span>
@@ -141,12 +106,51 @@
 </div>
 <div class="viewcode-block" id="Project.on_delete"><a class="viewcode-back" href="../../../tau.model.html#tau.model.project.Project.on_delete">[docs]</a>    <span class="k">def</span> <span class="nf">on_delete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c"># pylint: disable=broad-except</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Project</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">on_delete</span><span class="p">()</span>
         <span class="n">prefix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">()</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">prefix</span><span class="p">):</span>
-                <span class="n">LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;Could not remove project data at &#39;</span><span class="si">%s</span><span class="s">&#39;: </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span></div></div>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;Could not remove project data at &#39;</span><span class="si">%s</span><span class="s">&#39;: </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
+
+</div></div>
+<span class="n">Project</span><span class="o">.</span><span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;string&#39;</span><span class="p">,</span>
+        <span class="s">&#39;unique&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+        <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">&#39;project name&#39;</span><span class="p">,</span>
+        <span class="s">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;metavar&#39;</span><span class="p">:</span> <span class="s">&#39;&lt;project_name&gt;&#39;</span><span class="p">}</span>
+    <span class="p">},</span>
+    <span class="s">&#39;targets&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s">&#39;collection&#39;</span><span class="p">:</span> <span class="s">&#39;Target&#39;</span><span class="p">,</span>
+        <span class="s">&#39;via&#39;</span><span class="p">:</span> <span class="s">&#39;projects&#39;</span><span class="p">,</span>
+        <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">&#39;targets used by this project&#39;</span>
+    <span class="p">},</span>
+    <span class="s">&#39;applications&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s">&#39;collection&#39;</span><span class="p">:</span> <span class="s">&#39;Application&#39;</span><span class="p">,</span>
+        <span class="s">&#39;via&#39;</span><span class="p">:</span> <span class="s">&#39;projects&#39;</span><span class="p">,</span>
+        <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">&#39;applications used by this project&#39;</span>
+    <span class="p">},</span>
+    <span class="s">&#39;measurements&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s">&#39;collection&#39;</span><span class="p">:</span> <span class="s">&#39;Measurement&#39;</span><span class="p">,</span>
+        <span class="s">&#39;via&#39;</span><span class="p">:</span> <span class="s">&#39;projects&#39;</span><span class="p">,</span>
+        <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">&#39;measurements used by this project&#39;</span>
+    <span class="p">},</span>
+    <span class="s">&#39;experiments&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s">&#39;collection&#39;</span><span class="p">:</span> <span class="s">&#39;Experiment&#39;</span><span class="p">,</span>
+        <span class="s">&#39;via&#39;</span><span class="p">:</span> <span class="s">&#39;project&#39;</span><span class="p">,</span>
+        <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">&#39;experiments formed from this project&#39;</span>
+    <span class="p">},</span>
+    <span class="s">&#39;prefix&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;string&#39;</span><span class="p">,</span>
+        <span class="s">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+        <span class="s">&#39;default&#39;</span><span class="p">:</span> <span class="n">USER_PREFIX</span><span class="p">,</span>
+        <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">&#39;location for all files and experiment data related to this project&#39;</span><span class="p">,</span>
+        <span class="s">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&#39;--home&#39;</span><span class="p">,),</span>
+                     <span class="s">&#39;metavar&#39;</span><span class="p">:</span> <span class="s">&#39;path&#39;</span><span class="p">}</span>
+    <span class="p">},</span>
+<span class="p">}</span>
 </pre></div>
 
       </div>
