@@ -1,0 +1,1177 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tau.model &mdash; TAU Commander Developer Documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+    <link rel="top" title="TAU Commander Developer Documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><img class="rightlogo" src="../../_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="../../index.html">
+          <span>TAU Commander Developer Documentation</span></a></h1>
+        <h2 class="heading"><span>tau.model</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        <a class="uplink" href="../../index.html">Contents</a>
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <h1>Source code for tau.model</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="c">#</span>
+<span class="c"># Copyright (c) 2015, ParaTools, Inc.</span>
+<span class="c"># All rights reserved.</span>
+<span class="c">#</span>
+<span class="c"># Redistribution and use in source and binary forms, with or without</span>
+<span class="c"># modification, are permitted provided that the following conditions are met:</span>
+<span class="c"># (1) Redistributions of source code must retain the above copyright notice,</span>
+<span class="c">#     this list of conditions and the following disclaimer.</span>
+<span class="c"># (2) Redistributions in binary form must reproduce the above copyright notice,</span>
+<span class="c">#     this list of conditions and the following disclaimer in the documentation</span>
+<span class="c">#     and/or other materials provided with the distribution.</span>
+<span class="c"># (3) Neither the name of ParaTools, Inc. nor the names of its contributors may</span>
+<span class="c">#     be used to endorse or promote products derived from this software without</span>
+<span class="c">#     specific prior written permission.</span>
+<span class="c">#</span>
+<span class="c"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
+<span class="c"># AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</span>
+<span class="c"># IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE</span>
+<span class="c"># DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE</span>
+<span class="c"># FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL</span>
+<span class="c"># DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR</span>
+<span class="c"># SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER</span>
+<span class="c"># CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,</span>
+<span class="c"># OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE</span>
+<span class="c"># OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</span>
+<span class="c">#</span>
+<span class="sd">&quot;&quot;&quot;TAU Commander data model.</span>
+
+<span class="sd">TAU Commander follows the `Model-View-Controller (MVC)`_ design pattern.</span>
+<span class="sd">Modules in :py:mod:`tau.model` define the data model by declaring subclasses of :any:`Controller`. </span>
+<span class="sd">These subclasses define a member dictionary `attributes` that describes the data model in the form::</span>
+
+<span class="sd">    &lt;attribute&gt;: {</span>
+<span class="sd">        property: value,</span>
+<span class="sd">        [[property: value], ...]</span>
+<span class="sd">    }</span>
+<span class="sd">    </span>
+<span class="sd">Attribute properties can be anything you wish as long as it&#39;s not one of these special properties:</span>
+
+<span class="sd">* ``type`` (str): The attribute must be of the specified type.</span>
+<span class="sd">* ``required`` (bool): The attribute must be specified in the data record. </span>
+<span class="sd">* ``model`` (str): The attribute creates an association with another data model.</span>
+<span class="sd">* ``collection`` (str): The attribute creates an association with another data model.</span>
+<span class="sd">* ``via`` (str): The attribute associates with another model &quot;via&quot; the specified attribute.</span>
+
+<span class="sd">Models may have **associations** and **references**.  An association creates a relationship between</span>
+<span class="sd">an attribute of this model and an attribute of another (a.k.a foreign) model.  If the associated</span>
+<span class="sd">attribute changes then the foreign model will update its associated attribute.  A reference indicates</span>
+<span class="sd">that this model is being referened by one or more attributes of a foreign model.  If a record of the</span>
+<span class="sd">referenced model changes then the referencing model, i.e. the foreign model, will update all referencing </span>
+<span class="sd">attributes. Associations and references are constructed when :py:mod:`tau.model` is imported.  This </span>
+<span class="sd">module initializes the set :py:attr:`references` and the dictionary :py:attr:`associations`in each </span>
+<span class="sd">subclass of :any:`Controller` to describe these relationships.</span>
+
+<span class="sd">Examples:</span>
+
+<span class="sd">    *One-sided relationship*</span>
+<span class="sd">    ::</span>
+
+<span class="sd">        class Pet(Controller):</span>
+<span class="sd">            attributes = {&#39;name&#39;: {&#39;type&#39;: &#39;string&#39;}, &#39;hungry&#39;: {&#39;type&#39;: &#39;bool&#39;}}</span>
+<span class="sd">        </span>
+<span class="sd">        class Person(Controller):</span>
+<span class="sd">            attributes = {&#39;name&#39;: {&#39;type&#39;: &#39;string&#39;}, &#39;pet&#39;: {&#39;model&#39;: &#39;Pet&#39;}}</span>
+<span class="sd">            </span>
+<span class="sd">    We&#39;ve related a Person to a Pet but not a Pet to a Person.  That is, we can query a Person </span>
+<span class="sd">    to get information about their Pet, but we can&#39;t query a Pet to get information about their Person.  </span>
+<span class="sd">    If a Pet record changes then the Person record that referenced the Pet record is notified of the </span>
+<span class="sd">    change. If a Person record changes then nothing happens to Pet.  The Pet and Person classes codify</span>
+<span class="sd">    this relationship as:</span>
+<span class="sd">    </span>
+<span class="sd">        * Pet.references = set( (Person, &#39;pet&#39;) )</span>
+<span class="sd">        * Pet.associations = {}</span>
+<span class="sd">        * Person.references = set() </span>
+<span class="sd">        * Person.associations = {}</span>
+<span class="sd">    </span>
+<span class="sd">    Some example data for this model::</span>
+<span class="sd">    </span>
+<span class="sd">        {</span>
+<span class="sd">         &#39;Pet&#39;: {1: {&#39;name&#39;: &#39;Fluffy&#39;, &#39;hungry&#39;: True}},</span>
+<span class="sd">         &#39;Person&#39;: {0: {&#39;name&#39;: &#39;Bob&#39;, &#39;pet&#39;: 1}} </span>
+<span class="sd">        }</span>
+<span class="sd">                      </span>
+<span class="sd">    *One-to-one relationship*</span>
+<span class="sd">    ::</span>
+<span class="sd">    </span>
+<span class="sd">        class Husband(Controller):</span>
+<span class="sd">            attributes = {&#39;name&#39;: {&#39;type&#39;: &#39;string&#39;}, &#39;wife&#39;: {&#39;model&#39;: &#39;Wife&#39;}}</span>
+<span class="sd">            </span>
+<span class="sd">        class Wife(Controller):</span>
+<span class="sd">            attributes = {&#39;name&#39;: {&#39;type&#39;: &#39;string&#39;}, &#39;husband&#39;: {&#39;model&#39;: &#39;Husband&#39;}}</span>
+<span class="sd">    </span>
+<span class="sd">    We&#39;ve related a Husband to a Wife.  The Husband may have only one Wife and the Wife may have</span>
+<span class="sd">    only one Husband.  We can query a Husband to get information about their Wife and we can query a</span>
+<span class="sd">    Wife to get information about their Husband.  If a Husband/Wife record changes then the Wife/Husband </span>
+<span class="sd">    record that referenced the Husband/Wife record is notified of the change.  The Husband and Wife classes</span>
+<span class="sd">    codify this relationship as:</span>
+<span class="sd">    </span>
+<span class="sd">        * Husband.references = set( (Wife, &#39;husband&#39;) )</span>
+<span class="sd">        * Husband.associations = {}</span>
+<span class="sd">        * Wife.references = set( (Husband, &#39;wife&#39;) )</span>
+<span class="sd">        * Wife.associations = {}  </span>
+<span class="sd">    </span>
+<span class="sd">    Example data::</span>
+<span class="sd">    </span>
+<span class="sd">        {</span>
+<span class="sd">         &#39;Husband&#39;: {2: {&#39;name&#39;: &#39;Filbert&#39;, &#39;wife&#39;: 1}},</span>
+<span class="sd">         &#39;Wife&#39;: {1: {&#39;name&#39;: &#39;Matilda&#39;, &#39;husband&#39;: 2}}</span>
+<span class="sd">        }</span>
+<span class="sd">    </span>
+<span class="sd">    *One-to-many relationship*</span>
+<span class="sd">    ::</span>
+<span class="sd">    </span>
+<span class="sd">        class Brewery(Controller):</span>
+<span class="sd">            attributes = {&#39;address&#39;: {&#39;type&#39;: &#39;string&#39;}, </span>
+<span class="sd">                          &#39;brews&#39;: {&#39;collection&#39;: &#39;Beer&#39;, </span>
+<span class="sd">                                    &#39;via&#39;: &#39;origin&#39;}}</span>
+<span class="sd">            </span>
+<span class="sd">        class Beer(Controller):</span>
+<span class="sd">            attributes = {&#39;origin&#39;: {&#39;model&#39;: &#39;Brewery&#39;}, </span>
+<span class="sd">                          &#39;color&#39;: {&#39;type&#39;: &#39;string&#39;}, </span>
+<span class="sd">                          &#39;ibu&#39;: {&#39;type&#39;: &#39;int&#39;}}</span>
+<span class="sd">            </span>
+<span class="sd">    We&#39;ve related one Brewery to many Beers.  A Beer has only one Brewery but a Brewery has zero or</span>
+<span class="sd">    more Beers.  The `brews` attribute has a `via` property along with a `collection` property to specify </span>
+<span class="sd">    which attribute of Beer relates Beer to Brewery, i.e. you may want a model to have multiple </span>
+<span class="sd">    one-to-many relationship with another model.  The Brewery and Beer classes codify this relationship as:</span>
+<span class="sd">    </span>
+<span class="sd">        * Brewery.references = set()</span>
+<span class="sd">        * Brewery.associations = {&#39;brews&#39;: (Beer, &#39;origin&#39;)}</span>
+<span class="sd">        * Beer.references = set()</span>
+<span class="sd">        * Beer.associations = {&#39;origin&#39;: (Brewery, &#39;brews&#39;)}</span>
+<span class="sd">        </span>
+<span class="sd">    Example data::</span>
+<span class="sd">    </span>
+<span class="sd">        {</span>
+<span class="sd">         &#39;Brewery&#39;: {100: {&#39;address&#39;: &#39;4615 Hollins Ferry Rd, Halethorpe, MD 21227&#39;,</span>
+<span class="sd">                           &#39;brews&#39;: [10, 12, 14]}},</span>
+<span class="sd">         &#39;Beer&#39;: {10: {&#39;origin&#39;: 100, &#39;color&#39;: &#39;gold&#39;, &#39;ibu&#39;: 45},</span>
+<span class="sd">                  12: {&#39;origin&#39;: 100, &#39;color&#39;: &#39;dark&#39;, &#39;ibu&#39;: 15},</span>
+<span class="sd">                  14: {&#39;origin&#39;: 100, &#39;color&#39;: &#39;pale&#39;, &#39;ibu&#39;: 30}}</span>
+<span class="sd">        }</span>
+<span class="sd">    </span>
+<span class="sd">    *Many-to-many relationship*</span>
+<span class="sd">    ::</span>
+<span class="sd">    </span>
+<span class="sd">        class Actor(Controller):</span>
+<span class="sd">            attributes = {&#39;home_town&#39;: {&#39;type&#39;: &#39;string&#39;},</span>
+<span class="sd">                          &#39;appears_in&#39;: {&#39;collection&#39;: &#39;Movie&#39;,</span>
+<span class="sd">                                         &#39;via&#39;: &#39;cast&#39;}}</span>
+<span class="sd">                                         </span>
+<span class="sd">        class Movie(Controller):</span>
+<span class="sd">            attributes = {&#39;title&#39;: {&#39;type&#39;: &#39;string&#39;},</span>
+<span class="sd">                          &#39;cast&#39;: {&#39;collection&#39;: &#39;Actor&#39;,</span>
+<span class="sd">                                   &#39;via&#39;: &#39;appears_in&#39;}}</span>
+<span class="sd">                                   </span>
+<span class="sd">    An Actor may appear in many Movies and a Movie may have many Actors.  Changing the `cast` of a Movie</span>
+<span class="sd">    notifies Actor and changing the movies an Actor `apppears_in` notifies Movie.  This relationship is</span>
+<span class="sd">    codified as:</span>
+<span class="sd">    </span>
+<span class="sd">        * Actor.references = set()</span>
+<span class="sd">        * Actor.associations = {&#39;appears_in&#39;: (Movies, &#39;cast&#39;)}</span>
+<span class="sd">        * Movie.references = set()</span>
+<span class="sd">        * Movie.associations = {&#39;cast&#39;: (Actor, &#39;appears_in&#39;)}</span>
+<span class="sd">    </span>
+<span class="sd">.. _Model-View-Controller (MVC): https://en.wikipedia.org/wiki/Model-view-controller</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">operator</span>
+<span class="kn">from</span> <span class="nn">pkgutil</span> <span class="kn">import</span> <span class="n">walk_packages</span>
+<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">util</span>
+<span class="kn">from</span> <span class="nn">tau.error</span> <span class="kn">import</span> <span class="n">InternalError</span><span class="p">,</span> <span class="n">ConfigurationError</span>
+<span class="kn">from</span> <span class="nn">tau.storage</span> <span class="kn">import</span> <span class="n">USER_STORAGE</span>
+
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="ModelError"><a class="viewcode-back" href="../../tau.model.html#tau.model.ModelError">[docs]</a><span class="k">class</span> <span class="nc">ModelError</span><span class="p">(</span><span class="n">InternalError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Indicates the given data does not match the specified model.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        model_cls (Controller): Controller subclass definining the data model.</span>
+<span class="sd">        value (str): A message describing the error.  </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_cls</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ModelError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="s">&quot;Error in model &#39;</span><span class="si">%s</span><span class="s">&#39;:</span><span class="se">\n</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">model_cls</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_cls</span> <span class="o">=</span> <span class="n">model_cls</span>
+
+</div>
+<div class="viewcode-block" id="UniqueAttributeError"><a class="viewcode-back" href="../../tau.model.html#tau.model.UniqueAttributeError">[docs]</a><span class="k">class</span> <span class="nc">UniqueAttributeError</span><span class="p">(</span><span class="n">ModelError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Indicates that duplicate values were given for a unique attribute.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        model_cls (Controller): Controller subclass definining the data model.</span>
+<span class="sd">        unique (dict): Dictionary of unique attributes in the data model.  </span>
+<span class="sd">    &quot;&quot;&quot;</span> 
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_cls</span><span class="p">,</span> <span class="n">unique</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">UniqueAttributeError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">model_cls</span><span class="p">,</span> <span class="s">&#39;A record with one of </span><span class="si">%r</span><span class="s"> already exists&#39;</span> <span class="o">%</span> <span class="n">unique</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="Controller"><a class="viewcode-back" href="../../tau.model.html#tau.model.Controller">[docs]</a><span class="k">class</span> <span class="nc">Controller</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The &quot;C&quot; in `MVC`_.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        model_name (str): The name of the model.</span>
+<span class="sd">        attributes (dict): The model attributes.</span>
+<span class="sd">        references (set): (Controller, str) tuples listing foreign models referencing this model.  </span>
+<span class="sd">        associations (dict): (Controller, str) tuples keyed by attribute name defining attribute associations.</span>
+<span class="sd">        eid (int): Unique identifier for the controlled data record, None if the data has not been recorded.</span>
+<span class="sd">        data (dict): The controlled data.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        fields (dict): A dictionary-like object with the optional `eid` attribute.</span>
+<span class="sd">    </span>
+<span class="sd">    .. _MVC: https://en.wikipedia.org/wiki/Model-view-controller</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c"># Class methods may access the protected members of the class instances. </span>
+    <span class="c"># pylint: disable=protected-access</span>
+    <span class="c"># Some class members don&#39;t exist until tau.model is imported.</span>
+    <span class="c"># pylint: disable=no-member</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fields</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_populated</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eid</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">fields</span><span class="p">,</span> <span class="s">&#39;eid&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate</span><span class="p">(</span><span class="n">fields</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+    
+    <span class="k">def</span> <span class="nf">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span>
+
+<div class="viewcode-block" id="Controller.get"><a class="viewcode-back" href="../../tau.model.html#tau.model.Controller.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">))</span>
+    
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">__class_init__</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">err</span><span class="p">(</span><span class="n">msg</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">ModelError</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">model_attr_name</span><span class="p">,</span> <span class="n">msg</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="s">&#39;model_name&#39;</span><span class="p">):</span>
+            <span class="n">cls</span><span class="o">.</span><span class="n">model_name</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">__name__</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="s">&#39;associations&#39;</span><span class="p">):</span>
+            <span class="n">cls</span><span class="o">.</span><span class="n">associations</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="s">&#39;references&#39;</span><span class="p">):</span>
+            <span class="n">cls</span><span class="o">.</span><span class="n">references</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">props</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="n">model_attr_name</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">model_name</span> <span class="o">+</span> <span class="s">&quot;.&quot;</span> <span class="o">+</span> <span class="n">attr</span>
+            <span class="k">if</span> <span class="s">&#39;collection&#39;</span> <span class="ow">in</span> <span class="n">props</span> <span class="ow">and</span> <span class="ow">not</span> <span class="s">&#39;via&#39;</span> <span class="ow">in</span> <span class="n">props</span><span class="p">:</span>
+                <span class="n">err</span><span class="p">(</span><span class="s">&quot;collection does not define &#39;via&#39;&quot;</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">unique</span> <span class="o">=</span> <span class="n">props</span><span class="p">[</span><span class="s">&#39;unique&#39;</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">unique</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+                    <span class="n">err</span><span class="p">(</span><span class="s">&quot;invalid value for &#39;unique&#39;&quot;</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">description</span> <span class="o">=</span> <span class="n">props</span><span class="p">[</span><span class="s">&#39;description&#39;</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">: no &#39;description&#39;&quot;</span><span class="p">,</span> <span class="n">model_attr_name</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">description</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>
+                    <span class="n">err</span><span class="p">(</span><span class="s">&quot;invalid value for &#39;description&#39;&quot;</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_validate</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Validates data against the model.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            data (dict): Data to validate, may be None.</span>
+<span class="sd">            enforce_required (bool): Set to False to allow required attributes to be unset in data.</span>
+<span class="sd">                                     Useful when updating an existing record since we don&#39;t have to</span>
+<span class="sd">                                     completely duplicate the existing record just to update one field.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Dictionary of validated data, may be None.</span>
+<span class="sd">            </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ModelError: The given data doesn&#39;t fit the model.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#LOGGER.debug(&quot;Validating data for %s: %s&quot; % (cls.__name__, data))</span>
+        <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">attributes</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">ModelError</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="s">&quot;Model &#39;</span><span class="si">%s</span><span class="s">&#39; has no attribute named &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span> <span class="n">key</span><span class="p">))</span>
+        <span class="n">validated</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">props</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="c"># Check required fields and defaults</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">validated</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s">&#39;required&#39;</span> <span class="ow">in</span> <span class="n">props</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">props</span><span class="p">[</span><span class="s">&#39;required&#39;</span><span class="p">]:</span>
+                        <span class="k">raise</span> <span class="n">ModelError</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="s">&quot;&#39;</span><span class="si">%s</span><span class="s">&#39; is required but was not defined&quot;</span> <span class="o">%</span> <span class="n">attr</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="s">&#39;default&#39;</span> <span class="ow">in</span> <span class="n">props</span><span class="p">:</span>
+                    <span class="n">validated</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span> <span class="o">=</span> <span class="n">props</span><span class="p">[</span><span class="s">&#39;default&#39;</span><span class="p">]</span>
+            <span class="c"># Check collections</span>
+            <span class="k">if</span> <span class="s">&#39;collection&#39;</span> <span class="ow">in</span> <span class="n">props</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="p">[])</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">value</span><span class="p">:</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="n">ModelError</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="s">&quot;Value supplied for &#39;</span><span class="si">%s</span><span class="s">&#39; is not a list: </span><span class="si">%r</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">eid</span> <span class="ow">in</span> <span class="n">value</span><span class="p">:</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="nb">int</span><span class="p">(</span><span class="n">eid</span><span class="p">)</span>
+                        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                            <span class="k">raise</span> <span class="n">ModelError</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="s">&quot;Invalid non-integer ID &#39;</span><span class="si">%s</span><span class="s">&#39; in &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">eid</span><span class="p">,</span> <span class="n">attr</span><span class="p">))</span>
+                <span class="n">validated</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="c"># Check model associations</span>
+            <span class="k">elif</span> <span class="s">&#39;model&#39;</span> <span class="ow">in</span> <span class="n">props</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">!=</span> <span class="n">value</span><span class="p">:</span>
+                            <span class="k">raise</span> <span class="ne">ValueError</span>
+                    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="n">ModelError</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="s">&quot;Invalid non-integer ID &#39;</span><span class="si">%s</span><span class="s">&#39; in &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">attr</span><span class="p">))</span>
+                    <span class="n">validated</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="c">#LOGGER.debug(&quot;Validated %s data: %s&quot; % (cls.__name__, validated))</span>
+        <span class="k">return</span> <span class="n">validated</span>
+
+<div class="viewcode-block" id="Controller.on_create"><a class="viewcode-back" href="../../tau.model.html#tau.model.Controller.on_create">[docs]</a>    <span class="k">def</span> <span class="nf">on_create</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Callback to be invoked when a new data record is created.&quot;&quot;&quot;</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_compatibility</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Controller.on_update"><a class="viewcode-back" href="../../tau.model.html#tau.model.Controller.on_update">[docs]</a>    <span class="k">def</span> <span class="nf">on_update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> 
+        <span class="sd">&quot;&quot;&quot;Callback to be invoked when a data record is updated.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_compatibility</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Controller.on_delete"><a class="viewcode-back" href="../../tau.model.html#tau.model.Controller.on_delete">[docs]</a>    <span class="k">def</span> <span class="nf">on_delete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> 
+        <span class="sd">&quot;&quot;&quot;Callback to be invoked when a data record is deleted.&quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="Controller.populate"><a class="viewcode-back" href="../../tau.model.html#tau.model.Controller.populate">[docs]</a>    <span class="k">def</span> <span class="nf">populate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Merges associated record data into the controlled data.</span>
+<span class="sd">        </span>
+<span class="sd">        Example:</span>
+<span class="sd">            Suppose we have the following records::</span>
+<span class="sd">            </span>
+<span class="sd">                1: {&#39;name&#39;: &#39;Katie&#39;, &#39;friends&#39;: [2, 3]}</span>
+<span class="sd">                2: {&#39;name&#39;: &#39;Ryan&#39;, &#39;friends&#39;: [1]}</span>
+<span class="sd">                3: {&#39;name&#39;: &#39;John&#39;, &#39;friends&#39;: [1]}</span>
+<span class="sd">                </span>
+<span class="sd">            Populating record ``1`` produces this dictionary::</span>
+<span class="sd">            </span>
+<span class="sd">                {&#39;name&#39;: &#39;Katie&#39;,</span>
+<span class="sd">                 &#39;friends&#39;: [Controller({&#39;name&#39;: &#39;Ryan&#39;, &#39;friends&#39;: [1]}),</span>
+<span class="sd">                             Controller({&#39;name&#39;: &#39;John&#39;, &#39;friends&#39;: [1]})]}</span>
+<span class="sd">                             </span>
+<span class="sd">            Note that the referenced data records are returned as :any:`Controller`</span>
+<span class="sd">            subclass instances.  This enables expressions like::</span>
+<span class="sd">            </span>
+<span class="sd">                for friend in katie.populate(&#39;friends&#39;):</span>
+<span class="sd">                    print &#39;Hello %s!  Here are some fresh cookies&#39; % friend[&#39;name&#39;]</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            attribute (Optional[str]): If given, return only the populated attribute.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Controlled data merged with associated records.</span>
+<span class="sd">            </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            KeyError: `attribute` is undefined in the populated record. </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_populated</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Populating </span><span class="si">%r</span><span class="s">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_populated</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">props</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">foreign_model</span> <span class="o">=</span> <span class="n">MODELS</span><span class="p">[</span><span class="n">props</span><span class="p">[</span><span class="s">&#39;model&#39;</span><span class="p">]]</span>
+                <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">foreign_model</span> <span class="o">=</span> <span class="n">MODELS</span><span class="p">[</span><span class="n">props</span><span class="p">[</span><span class="s">&#39;collection&#39;</span><span class="p">]]</span>
+                    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                        <span class="k">continue</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_populated</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span> <span class="o">=</span> <span class="n">foreign_model</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">eids</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">attr</span><span class="p">])</span>
+                        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">props</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;required&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">):</span>
+                                <span class="k">raise</span> <span class="n">ModelError</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&quot;&#39;</span><span class="si">%s</span><span class="s">&#39; is required but was not defined&quot;</span> <span class="o">%</span> <span class="n">attr</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_populated</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span> <span class="o">=</span> <span class="n">foreign_model</span><span class="o">.</span><span class="n">one</span><span class="p">(</span><span class="n">eid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">attr</span><span class="p">])</span>
+                    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">props</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;required&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">):</span>
+                            <span class="k">raise</span> <span class="n">ModelError</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&quot;&#39;</span><span class="si">%s</span><span class="s">&#39; is required but was not defined&quot;</span> <span class="o">%</span> <span class="n">attr</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">attribute</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_populated</span><span class="p">[</span><span class="n">attribute</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_populated</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Controller.one"><a class="viewcode-back" href="../../tau.model.html#tau.model.Controller.one">[docs]</a>    <span class="k">def</span> <span class="nf">one</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">eid</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a single record matching all of `keys` or element id `eid`.</span>
+<span class="sd">        </span>
+<span class="sd">        Either `keys` or `eid` should be specified, not both.  If `keys` is given,</span>
+<span class="sd">        then every attribute listed in `keys` must have the given value. If `eid`</span>
+<span class="sd">        is given, return the record with that eid. </span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            keys (dict): Attributes to match.</span>
+<span class="sd">            eid (int): Record identifier to match.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Controller: Controller subclass instance controlling the found record or None if no such record exists. </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">.one(keys=</span><span class="si">%s</span><span class="s">, eid=</span><span class="si">%s</span><span class="s">)&quot;</span><span class="p">,</span> <span class="n">cls</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">eid</span><span class="p">)</span>
+        <span class="n">found</span> <span class="o">=</span> <span class="n">USER_STORAGE</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="n">keys</span><span class="p">,</span> <span class="n">eid</span><span class="o">=</span><span class="n">eid</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="p">(</span><span class="n">found</span><span class="p">)</span> <span class="k">if</span> <span class="n">found</span> <span class="k">else</span> <span class="bp">None</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Controller.all"><a class="viewcode-back" href="../../tau.model.html#tau.model.Controller.all">[docs]</a>    <span class="k">def</span> <span class="nf">all</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a list of all records.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">cls</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">USER_STORAGE</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">model_name</span><span class="p">)]</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Controller.search"><a class="viewcode-back" href="../../tau.model.html#tau.model.Controller.search">[docs]</a>    <span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">eids</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a list of records matching all of `keys` or element id `eid`.</span>
+<span class="sd">        </span>
+<span class="sd">        Either `keys` or `eids` may be specified, not both.  If `keys` is not empty</span>
+<span class="sd">        then every attribute listed in `keys` must have the given value. If `eids`</span>
+<span class="sd">        is not empty then return the records with those eids. If either `keys` or </span>
+<span class="sd">        `eids` is empty, return an empty list.  If no arguments are given then</span>
+<span class="sd">        return all records.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            keys (dict): Attributes to match.</span>
+<span class="sd">            eids (list): Record identifiers to match.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            list: Controller subclass instances controlling the found records. </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">.search(keys=</span><span class="si">%s</span><span class="s">, eids=</span><span class="si">%s</span><span class="s">)&quot;</span><span class="p">,</span> <span class="n">cls</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">eids</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">keys</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">eids</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">eids</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eids</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="k">return</span> <span class="p">[</span><span class="n">cls</span><span class="o">.</span><span class="n">one</span><span class="p">(</span><span class="n">eid</span><span class="o">=</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">eids</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">[</span><span class="n">cls</span><span class="o">.</span><span class="n">one</span><span class="p">(</span><span class="n">eid</span><span class="o">=</span><span class="n">eids</span><span class="p">)]</span>
+        <span class="k">elif</span> <span class="n">keys</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">cls</span><span class="p">(</span><span class="n">record</span><span class="p">)</span> <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">USER_STORAGE</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="n">keys</span><span class="p">)]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Controller.match"><a class="viewcode-back" href="../../tau.model.html#tau.model.Controller.match">[docs]</a>    <span class="k">def</span> <span class="nf">match</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">test</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a list of records with `field` matching `regex` or `test`.</span>
+<span class="sd">        </span>
+<span class="sd">        Either `regex` or `test` may be specified, not both.  If `regex` is given,</span>
+<span class="sd">        then all records with `field` matching the regular expression are returned.</span>
+<span class="sd">        If test is given then all records with `field` set to a value that caues</span>
+<span class="sd">        `test` to return True are returned. If neither is given, return all records. </span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            field (string): Name of the data field to match.</span>
+<span class="sd">            regex (string): Regular expression string.</span>
+<span class="sd">            test: A callable expression returning a boolean value.  </span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            list: Controller subclass instances controlling the found records. </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">.match(field=</span><span class="si">%s</span><span class="s">, regex=</span><span class="si">%s</span><span class="s">, test=</span><span class="si">%s</span><span class="s">)&quot;</span><span class="p">,</span> <span class="n">cls</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">regex</span><span class="p">,</span> <span class="n">test</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">cls</span><span class="p">(</span><span class="n">record</span><span class="p">)</span> <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">USER_STORAGE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">regex</span><span class="p">,</span> <span class="n">test</span><span class="p">)]</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Controller.exists"><a class="viewcode-back" href="../../tau.model.html#tau.model.Controller.exists">[docs]</a>    <span class="k">def</span> <span class="nf">exists</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">eids</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test if a record matching the given keys exists.</span>
+<span class="sd">        </span>
+<span class="sd">        Just like :any:`Controller.search`, except only tests if the record exists without</span>
+<span class="sd">        retrieving any data or allocating new controllers.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            keys (dict): Attributes to match.</span>
+<span class="sd">            eids (list): Record identifiers to match.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if a record exists for **all** values in `keys` or `eids`.          </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">USER_STORAGE</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="n">keys</span><span class="p">,</span> <span class="n">eids</span><span class="o">=</span><span class="n">eids</span><span class="p">)</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Controller.create"><a class="viewcode-back" href="../../tau.model.html#tau.model.Controller.create">[docs]</a>    <span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">fields</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Store a new model record and update associations.</span>
+<span class="sd">        </span>
+<span class="sd">        Invokes the `on_create` callback **after** the data is recorded. </span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            fields (dict): Data to record.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Controller: Controller subclass instance controlling the specified data. </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">cls</span><span class="p">(</span><span class="n">fields</span><span class="p">)</span>
+        <span class="n">unique</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">attr</span><span class="p">,</span> <span class="n">model</span><span class="p">[</span><span class="n">attr</span><span class="p">])</span> <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">props</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()</span> <span class="k">if</span> <span class="s">&#39;unique&#39;</span> <span class="ow">in</span> <span class="n">props</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">USER_STORAGE</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="n">unique</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">UniqueAttributeError</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">unique</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">USER_STORAGE</span> <span class="k">as</span> <span class="n">storage</span><span class="p">:</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">eid</span> <span class="o">=</span> <span class="n">storage</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">foreign</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">associations</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+                <span class="n">foreign_model</span><span class="p">,</span> <span class="n">via</span> <span class="o">=</span> <span class="n">foreign</span>
+                <span class="k">if</span> <span class="s">&#39;model&#39;</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="n">attr</span><span class="p">]:</span>
+                    <span class="n">foreign_keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">attr</span><span class="p">]]</span>
+                <span class="k">elif</span> <span class="s">&#39;collection&#39;</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="n">attr</span><span class="p">]:</span>
+                    <span class="n">foreign_keys</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">_associate</span><span class="p">(</span><span class="n">foreign_model</span><span class="p">,</span> <span class="n">foreign_keys</span><span class="p">,</span> <span class="n">via</span><span class="p">)</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">on_create</span><span class="p">()</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Created new </span><span class="si">%s</span><span class="s"> record&quot;</span><span class="p">,</span> <span class="n">cls</span><span class="o">.</span><span class="n">model_name</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">model</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Controller.update"><a class="viewcode-back" href="../../tau.model.html#tau.model.Controller.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">fields</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">eids</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Change recorded data and update associations.</span>
+<span class="sd">        </span>
+<span class="sd">        Invokes the `on_update` callback for each record **after** the records are updated.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            fields (dict): New data for existing records.</span>
+<span class="sd">            keys (dict): Attributes to match.</span>
+<span class="sd">            eids (list): Record identifiers to match.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">.update(fields=</span><span class="si">%s</span><span class="s">, keys=</span><span class="si">%s</span><span class="s">, eids=</span><span class="si">%s</span><span class="s">)&quot;</span><span class="p">,</span> <span class="n">cls</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span> <span class="n">fields</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">eids</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">USER_STORAGE</span> <span class="k">as</span> <span class="n">storage</span><span class="p">:</span>
+            <span class="c"># Get the list of affected records **before** updating the data so foreign keys are correct</span>
+            <span class="n">changing</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">eids</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">attributes</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">ModelError</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="s">&quot;Model &#39;</span><span class="si">%s</span><span class="s">&#39; has no attribute named &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span> <span class="n">attr</span><span class="p">))</span>
+            <span class="n">storage</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span> <span class="n">fields</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="n">keys</span><span class="p">,</span> <span class="n">eids</span><span class="o">=</span><span class="n">eids</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">changing</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">foreign</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">associations</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">new_foreign_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">fields</span><span class="p">[</span><span class="n">attr</span><span class="p">])</span>
+                    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                        <span class="k">continue</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">old_foreign_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="n">attr</span><span class="p">])</span>
+                    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                        <span class="n">old_foreign_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+                    <span class="n">foreign_model</span><span class="p">,</span> <span class="n">via</span> <span class="o">=</span> <span class="n">foreign</span>
+                    <span class="n">added</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">new_foreign_keys</span> <span class="o">-</span> <span class="n">old_foreign_keys</span><span class="p">)</span>
+                    <span class="n">deled</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">old_foreign_keys</span> <span class="o">-</span> <span class="n">new_foreign_keys</span><span class="p">)</span>
+                    <span class="n">model</span><span class="o">.</span><span class="n">_associate</span><span class="p">(</span><span class="n">foreign_model</span><span class="p">,</span> <span class="n">added</span><span class="p">,</span> <span class="n">via</span><span class="p">)</span>
+                    <span class="n">model</span><span class="o">.</span><span class="n">_disassociate</span><span class="p">(</span><span class="n">foreign_model</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">eids</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">deled</span><span class="p">)),</span> <span class="n">via</span><span class="p">)</span>
+                    <span class="n">model</span><span class="o">.</span><span class="n">on_update</span><span class="p">()</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Controller.delete"><a class="viewcode-back" href="../../tau.model.html#tau.model.Controller.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">eids</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Delete recorded data and update associations.</span>
+<span class="sd">        </span>
+<span class="sd">        Invokes the `on_delete` callback for each record **before** the record is deleted.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            keys (dict): Attributes to match.</span>
+<span class="sd">            eids (list): Record identifiers to match.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">.delete(keys=</span><span class="si">%s</span><span class="s">, eids=</span><span class="si">%s</span><span class="s">)&quot;</span><span class="p">,</span> <span class="n">cls</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">eids</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">USER_STORAGE</span> <span class="k">as</span> <span class="n">storage</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">eids</span><span class="p">):</span>
+                <span class="c"># pylint complains because `model` is changing on every iteration so we&#39;ll have</span>
+                <span class="c"># a different lambda function `test` on each iteration.  This is exactly what</span>
+                <span class="c"># we want so we disble the warning. </span>
+                <span class="c"># pylint: disable=cell-var-from-loop</span>
+                <span class="n">test</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">eid</span> <span class="ow">in</span> <span class="n">x</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="n">model</span><span class="o">.</span><span class="n">eid</span> <span class="o">==</span> <span class="n">x</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">on_delete</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">foreign</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">associations</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+                    <span class="n">foreign_model</span><span class="p">,</span> <span class="n">via</span> <span class="o">=</span> <span class="n">foreign</span>
+                    <span class="n">affected</span> <span class="o">=</span> <span class="n">foreign_model</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">eids</span><span class="o">=</span><span class="n">model</span><span class="p">[</span><span class="n">attr</span><span class="p">])</span>
+                    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Deleting </span><span class="si">%s</span><span class="s">(eid=</span><span class="si">%s</span><span class="s">) affects &#39;</span><span class="si">%s</span><span class="s">&#39; in &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span><span class="p">,</span> <span class="n">cls</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">eid</span><span class="p">,</span> <span class="n">via</span><span class="p">,</span> <span class="n">affected</span><span class="p">)</span>
+                    <span class="n">model</span><span class="o">.</span><span class="n">_disassociate</span><span class="p">(</span><span class="n">affected</span><span class="p">,</span> <span class="n">via</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">foreign_model</span><span class="p">,</span> <span class="n">via</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">references</span><span class="p">:</span>
+                    <span class="n">affected</span> <span class="o">=</span> <span class="n">foreign_model</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">via</span><span class="p">,</span> <span class="n">test</span><span class="o">=</span><span class="n">test</span><span class="p">)</span>
+                    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Deleting </span><span class="si">%s</span><span class="s">(eid=</span><span class="si">%s</span><span class="s">) affects &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span><span class="p">,</span> <span class="n">cls</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">eid</span><span class="p">,</span> <span class="n">affected</span><span class="p">)</span>
+                    <span class="n">model</span><span class="o">.</span><span class="n">_disassociate</span><span class="p">(</span><span class="n">affected</span><span class="p">,</span> <span class="n">via</span><span class="p">)</span>
+            <span class="n">storage</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="n">keys</span><span class="p">,</span> <span class="n">eids</span><span class="o">=</span><span class="n">eids</span><span class="p">)</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Controller.import_records"><a class="viewcode-back" href="../../tau.model.html#tau.model.Controller.import_records">[docs]</a>    <span class="k">def</span> <span class="nf">import_records</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Import data records.</span>
+<span class="sd">        </span>
+<span class="sd">        TODO: Docs</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">eid_map</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">with</span> <span class="n">USER_STORAGE</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">model_records</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">eid</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">model_records</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+                    <span class="n">eid_map</span><span class="p">[</span><span class="n">eid</span><span class="p">]</span> <span class="o">=</span> <span class="n">MODELS</span><span class="p">[</span><span class="n">model_name</span><span class="p">]</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        </div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Controller.export_records"><a class="viewcode-back" href="../../tau.model.html#tau.model.Controller.export_records">[docs]</a>    <span class="k">def</span> <span class="nf">export_records</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">eids</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Export data records.</span>
+<span class="sd">        </span>
+<span class="sd">        Constructs a dictionary containing records matching `keys` or `eids` and all their</span>
+<span class="sd">        associated records.  Association fields (`model` and `collection`) are **not** updated</span>
+<span class="sd">        and may contain eids of undefined records. </span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            keys (dict): Attributes to match.</span>
+<span class="sd">            eids (list): Record identifiers to match.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Dictionary of tables containing records.</span>
+<span class="sd">            </span>
+<span class="sd">        Example:</span>
+<span class="sd">        ::</span>
+<span class="sd">            </span>
+<span class="sd">            {</span>
+<span class="sd">             &#39;Brewery&#39;: {100: {&#39;address&#39;: &#39;4615 Hollins Ferry Rd, Halethorpe, MD 21227&#39;,</span>
+<span class="sd">                               &#39;brews&#39;: [10, 12, 14]}},</span>
+<span class="sd">             &#39;Beer&#39;: {10: {&#39;origin&#39;: 100, &#39;color&#39;: &#39;gold&#39;, &#39;ibu&#39;: 45},</span>
+<span class="sd">                      12: {&#39;origin&#39;: 100, &#39;color&#39;: &#39;dark&#39;, &#39;ibu&#39;: 15},</span>
+<span class="sd">                      14: {&#39;origin&#39;: 100, &#39;color&#39;: &#39;pale&#39;, &#39;ibu&#39;: 30}}</span>
+<span class="sd">            }</span>
+<span class="sd">        </span>
+<span class="sd">            Beer.export_records(eids=[10])</span>
+<span class="sd">            </span>
+<span class="sd">            {</span>
+<span class="sd">             &#39;Brewery&#39;: {100: {&#39;address&#39;: &#39;4615 Hollins Ferry Rd, Halethorpe, MD 21227&#39;,</span>
+<span class="sd">                               &#39;brews&#39;: [10, 12, 14]}},</span>
+<span class="sd">             &#39;Beer&#39;: {10: {&#39;origin&#39;: 100, &#39;color&#39;: &#39;gold&#39;, &#39;ibu&#39;: 45}}</span>
+<span class="sd">            }</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">export_record</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">root</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">cls</span><span class="p">)</span> <span class="ow">and</span> <span class="n">record</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">root</span><span class="p">:</span>
+                <span class="k">return</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">all_data</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span> <span class="p">{})</span>
+            <span class="k">if</span> <span class="n">record</span><span class="o">.</span><span class="n">eid</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                <span class="n">data</span><span class="p">[</span><span class="n">record</span><span class="o">.</span><span class="n">eid</span><span class="p">]</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">data</span>
+                <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">foreign</span> <span class="ow">in</span> <span class="n">record</span><span class="o">.</span><span class="n">associations</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+                    <span class="k">for</span> <span class="n">foreign_record</span> <span class="ow">in</span> <span class="n">foreign</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">eids</span><span class="o">=</span><span class="n">record</span><span class="p">[</span><span class="n">attr</span><span class="p">]):</span>
+                        <span class="n">export_record</span><span class="p">(</span><span class="n">foreign_record</span><span class="p">,</span> <span class="n">root</span><span class="p">)</span>
+        <span class="n">all_data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">eids</span><span class="p">):</span>
+            <span class="n">export_record</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">record</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">all_data</span>
+          
+    </div>
+<div class="viewcode-block" id="Controller._associate"><a class="viewcode-back" href="../../tau.model.html#tau.model.Controller._associate">[docs]</a>    <span class="k">def</span> <span class="nf">_associate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">foreign_cls</span><span class="p">,</span> <span class="n">affected</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Associates the controlled record with another record.</span>
+<span class="sd">        </span>
+<span class="sd">        Associations are defined by the :py:attr:`associations` and :py:attr:`references` </span>
+<span class="sd">        attributes of the :any:`Controller` class.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            foreign_cls (Controller): Class definining the foreign record&#39;s data model.</span>
+<span class="sd">            affected (list): Identifiers for the records that will be updated to </span>
+<span class="sd">                             associate with the controlled record.</span>
+<span class="sd">            attr (str): The name of the associated foreign attribute.</span>
+<span class="sd">        &quot;&quot;&quot;</span> 
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">affected</span><span class="p">):</span> 
+            <span class="k">return</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Adding </span><span class="si">%s</span><span class="s"> to &#39;</span><span class="si">%s</span><span class="s">&#39; in </span><span class="si">%s</span><span class="s">(eids=</span><span class="si">%s</span><span class="s">)&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eid</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">foreign_cls</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span> <span class="n">affected</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">USER_STORAGE</span> <span class="k">as</span> <span class="n">storage</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">affected</span><span class="p">:</span>
+                <span class="n">model</span> <span class="o">=</span> <span class="n">foreign_cls</span><span class="o">.</span><span class="n">one</span><span class="p">(</span><span class="n">eid</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">model</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">ModelError</span><span class="p">(</span><span class="n">foreign_cls</span><span class="p">,</span> <span class="s">&quot;No record with ID &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="n">key</span><span class="p">)</span>
+                <span class="k">if</span> <span class="s">&#39;model&#39;</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="n">attr</span><span class="p">]:</span>
+                    <span class="n">updated</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eid</span>
+                <span class="k">elif</span> <span class="s">&#39;collection&#39;</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="n">attr</span><span class="p">]:</span>
+                    <span class="n">updated</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">eid</span><span class="p">]))</span>
+                <span class="n">storage</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">foreign_cls</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span> <span class="p">{</span><span class="n">attr</span><span class="p">:</span> <span class="n">updated</span><span class="p">},</span> <span class="n">eids</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Controller._disassociate"><a class="viewcode-back" href="../../tau.model.html#tau.model.Controller._disassociate">[docs]</a>    <span class="k">def</span> <span class="nf">_disassociate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">affected</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Disassociates the controlled record from another record.</span>
+<span class="sd">        </span>
+<span class="sd">        Associations are defined by the :py:attr:`associations` and :py:attr:`references` </span>
+<span class="sd">        attributes of the :any:`Controller` class.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            affected (list): Identifiers for the records that will be updated to </span>
+<span class="sd">                             associate with the controlled record.</span>
+<span class="sd">            attr (str): The name of the associated foreign attribute.</span>
+<span class="sd">        &quot;&quot;&quot;</span> 
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">affected</span><span class="p">):</span>
+            <span class="k">return</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Removing </span><span class="si">%s</span><span class="s"> from &#39;</span><span class="si">%s</span><span class="s">&#39; in </span><span class="si">%r</span><span class="s">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eid</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">affected</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">USER_STORAGE</span> <span class="k">as</span> <span class="n">storage</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">affected</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s">&#39;model&#39;</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="n">attr</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="s">&#39;required&#39;</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="n">attr</span><span class="p">]:</span>
+                        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Empty required attr &#39;</span><span class="si">%s</span><span class="s">&#39;: deleting </span><span class="si">%s</span><span class="s">(eid=</span><span class="si">%s</span><span class="s">)&quot;</span><span class="p">,</span> 
+                                     <span class="n">attr</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">eid</span><span class="p">)</span>
+                        <span class="n">model</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">eids</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">eid</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">storage</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                            <span class="n">model</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span> <span class="p">{</span><span class="n">attr</span><span class="p">:</span> <span class="bp">None</span><span class="p">},</span> <span class="n">eids</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">eid</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="s">&#39;collection&#39;</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="n">attr</span><span class="p">]:</span>
+                    <span class="n">update</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="n">attr</span><span class="p">])</span> <span class="o">-</span> <span class="nb">set</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">eid</span><span class="p">]))</span>
+                    <span class="k">if</span> <span class="s">&#39;required&#39;</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">update</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Empty required attr &#39;</span><span class="si">%s</span><span class="s">&#39;: deleting </span><span class="si">%s</span><span class="s">(eid=</span><span class="si">%s</span><span class="s">)&quot;</span><span class="p">,</span>
+                                     <span class="n">attr</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">eid</span><span class="p">)</span>
+                        <span class="n">model</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">eids</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">eid</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">storage</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                            <span class="n">model</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span> <span class="p">{</span><span class="n">attr</span><span class="p">:</span> <span class="n">update</span><span class="p">},</span> <span class="n">eids</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">eid</span><span class="p">)</span>
+                      </div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Controller.construct_condition"><a class="viewcode-back" href="../../tau.model.html#tau.model.Controller.construct_condition">[docs]</a>    <span class="k">def</span> <span class="nf">construct_condition</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">attr_defined</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">attr_undefined</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">attr_eq</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">attr_ne</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructs a compatibility condition, see :any:`check_compatibility`.</span>
+<span class="sd">        </span>
+<span class="sd">        The returned condition is a callable that accepts four arguments:</span>
+<span class="sd">            * lhs (Controller): The left-hand side of the `check_compatibility` operation.</span>
+<span class="sd">            * lhs_attr (str): Name of the attribute that defines the &#39;compat&#39; property.</span>
+<span class="sd">            * lhs_value: The value in the controlled data record of the attribute that defines the &#39;compat&#39; property.</span>
+<span class="sd">            * rhs (Controller): Controller of the data record we are checking against.</span>
+<span class="sd">        </span>
+<span class="sd">        The `condition` callable raises a :any:`ConfigurationError` if the compared attributes </span>
+<span class="sd">        are fatally incompatibile, i.e. the user&#39;s operation is guaranteed to fail with the chosen </span>
+<span class="sd">        records. It may emit log messages to indicate that the records are not perfectly compatible </span>
+<span class="sd">        but that the user&#39;s operation is still likely to succeed with the chosen records.</span>
+<span class="sd">        </span>
+<span class="sd">        See :any:`require`, :any:`encourage`, :any:`discourage`, :any:`exclude` for common conditions.</span>
+<span class="sd">        </span>
+<span class="sd">        args[0] specifies a model attribute to check.  If args[1] is given, it is a value to</span>
+<span class="sd">        compare the specified attribute against or a callback function as described below.</span>
+<span class="sd">        </span>
+<span class="sd">        The remaining arguments are callback functions accepting these arguments:</span>
+<span class="sd">            * lhs (Controller): The controller invoking `check_compatibility`.</span>
+<span class="sd">            * lhs_attr (str): Name of the attribute that defines the &#39;compat&#39; property.</span>
+<span class="sd">            * lhs_value: Value of the attribute that defines the &#39;compat&#39; property.</span>
+<span class="sd">            * rhs (Controller): Controller we are checking against (argument to `check_compatibility`).</span>
+<span class="sd">            * rhs_attr (str): The right-hand side attribute we are checking for compatibility.</span>
+<span class="sd">        </span>
+<span class="sd">        To enable complex conditions, args[1] may be a callback function.  In this case,</span>
+<span class="sd">        args[1] must check attribute existance and value correctness and throw the appropriate</span>
+<span class="sd">        exception and/or emit log messages.  See :py:func:`tau.model.measurement.intel_only` </span>
+<span class="sd">        for an example of such a callback function.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            args (tuple): Attribute name in args[0] and, optionally, attribute value in args[1].</span>
+<span class="sd">            attr_defined: Callback function to be invoked when the attribute is defined.</span>
+<span class="sd">            attr_undefined: Callback function to be invoked when the attribute is undefined.</span>
+<span class="sd">            attr_eq: Callback function to be invoked when the attribute is equal to args[1].</span>
+<span class="sd">            attr_ne: Callback function to be invoked when the attribute is not equal to args[1].</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Callable condition object for use with :any:`check_compatibility`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rhs_attr</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">checked_value</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+            <span class="k">def</span> <span class="nf">condition</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">rhs</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rhs</span><span class="p">,</span> <span class="n">cls</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">rhs_attr</span> <span class="ow">in</span> <span class="n">rhs</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">attr_defined</span><span class="p">:</span>
+                            <span class="n">attr_defined</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">rhs</span><span class="p">,</span> <span class="n">rhs_attr</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">attr_undefined</span><span class="p">:</span>
+                            <span class="n">attr_undefined</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">rhs</span><span class="p">,</span> <span class="n">rhs_attr</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">checked_value</span><span class="p">):</span>
+                <span class="k">def</span> <span class="nf">condition</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">rhs</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rhs</span><span class="p">,</span> <span class="n">cls</span><span class="p">):</span> 
+                        <span class="n">checked_value</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">rhs</span><span class="p">,</span> <span class="n">rhs_attr</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">def</span> <span class="nf">condition</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">rhs</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rhs</span><span class="p">,</span> <span class="n">cls</span><span class="p">):</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="n">rhs_value</span> <span class="o">=</span> <span class="n">rhs</span><span class="p">[</span><span class="n">rhs_attr</span><span class="p">]</span>
+                        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">attr_undefined</span><span class="p">:</span>
+                                <span class="n">attr_undefined</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">rhs</span><span class="p">,</span> <span class="n">rhs_attr</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">attr_eq</span><span class="p">:</span>
+                                <span class="k">if</span> <span class="n">rhs_value</span> <span class="o">==</span> <span class="n">checked_value</span><span class="p">:</span>
+                                    <span class="n">attr_eq</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">rhs</span><span class="p">,</span> <span class="n">rhs_attr</span><span class="p">)</span>
+                            <span class="k">elif</span> <span class="n">attr_ne</span><span class="p">:</span>
+                                <span class="k">if</span> <span class="n">rhs_value</span> <span class="o">!=</span> <span class="n">checked_value</span><span class="p">:</span>
+                                    <span class="n">attr_ne</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">rhs</span><span class="p">,</span> <span class="n">rhs_attr</span><span class="p">)</span>
+                            <span class="k">elif</span> <span class="n">attr_defined</span><span class="p">:</span>
+                                <span class="n">attr_defined</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">rhs</span><span class="p">,</span> <span class="n">rhs_attr</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">condition</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Controller.require"><a class="viewcode-back" href="../../tau.model.html#tau.model.Controller.require">[docs]</a>    <span class="k">def</span> <span class="nf">require</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructs a compatibility condition to enforce required conditions.</span>
+<span class="sd">        </span>
+<span class="sd">        The condition will raise a :any:`ConfigurationError` if the specified attribute is</span>
+<span class="sd">        undefined or not equal to the specified value (if given).</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            *args: Corresponds to `args` in :any:`construct_condition`. </span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Callable condition object for use with :any:`check_compatibility`</span>
+<span class="sd">            </span>
+<span class="sd">        Examples:</span>
+<span class="sd">            &#39;have_cheese&#39; must be True::</span>
+<span class="sd">            </span>
+<span class="sd">                CheeseShop.require(&#39;have_cheese&#39;, True)</span>
+<span class="sd">             </span>
+<span class="sd">            &#39;have_cheese&#39; must be set to any value::</span>
+<span class="sd">                </span>
+<span class="sd">                CheeseShop.require(&#39;have_cheese&#39;)</span>
+<span class="sd">            </span>
+<span class="sd">            The value of &#39;have_cheese&#39; will be checked for correctness by &#39;cheese_callback&#39;::</span>
+<span class="sd">            </span>
+<span class="sd">                CheeseShop.require(&#39;have_cheese&#39;, cheese_callback)</span>
+<span class="sd">        &quot;&quot;&quot;</span> 
+        <span class="k">def</span> <span class="nf">attr_undefined</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">rhs</span><span class="p">,</span> <span class="n">rhs_attr</span><span class="p">):</span>
+            <span class="n">lhs_name</span> <span class="o">=</span> <span class="n">lhs</span><span class="o">.</span><span class="n">model_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="n">rhs_name</span> <span class="o">=</span> <span class="n">rhs</span><span class="o">.</span><span class="n">model_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> = </span><span class="si">%s</span><span class="s"> in </span><span class="si">%s</span><span class="s"> requires </span><span class="si">%s</span><span class="s"> be defined in </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> 
+                                     <span class="p">(</span><span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">lhs_name</span><span class="p">,</span> <span class="n">rhs_attr</span><span class="p">,</span> <span class="n">rhs_name</span><span class="p">))</span>
+        <span class="k">def</span> <span class="nf">attr_ne</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">rhs</span><span class="p">,</span> <span class="n">rhs_attr</span><span class="p">):</span>
+            <span class="n">lhs_name</span> <span class="o">=</span> <span class="n">lhs</span><span class="o">.</span><span class="n">model_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="n">rhs_name</span> <span class="o">=</span> <span class="n">rhs</span><span class="o">.</span><span class="n">model_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="n">rhs_value</span> <span class="o">=</span> <span class="n">rhs</span><span class="p">[</span><span class="n">rhs_attr</span><span class="p">]</span>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> = </span><span class="si">%s</span><span class="s"> in </span><span class="si">%s</span><span class="s"> requires </span><span class="si">%s</span><span class="s"> = </span><span class="si">%s</span><span class="s"> in </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> 
+                                     <span class="p">(</span><span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">lhs_name</span><span class="p">,</span> <span class="n">rhs_attr</span><span class="p">,</span> <span class="n">rhs_value</span><span class="p">,</span> <span class="n">rhs_name</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">construct_condition</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">attr_undefined</span><span class="o">=</span><span class="n">attr_undefined</span><span class="p">,</span> <span class="n">attr_ne</span><span class="o">=</span><span class="n">attr_ne</span><span class="p">)</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Controller.encourage"><a class="viewcode-back" href="../../tau.model.html#tau.model.Controller.encourage">[docs]</a>    <span class="k">def</span> <span class="nf">encourage</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructs a compatibility condition to make recommendations.</span>
+<span class="sd">        </span>
+<span class="sd">        The condition will emit warnings messages if the specified attribute is</span>
+<span class="sd">        undefined or not equal to the specified value (if given).</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            *args: Corresponds to `args` in :any:`construct_condition`. </span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Callable condition object for use with :any:`check_compatibility`</span>
+<span class="sd">            </span>
+<span class="sd">        Examples:</span>
+<span class="sd">            &#39;have_cheese&#39; should be True::</span>
+<span class="sd">            </span>
+<span class="sd">                CheeseShop.encourage(&#39;have_cheese&#39;, True)</span>
+<span class="sd">             </span>
+<span class="sd">            &#39;have_cheese&#39; should be set to any value::</span>
+<span class="sd">                </span>
+<span class="sd">                CheeseShop.encourage(&#39;have_cheese&#39;)</span>
+<span class="sd">            </span>
+<span class="sd">            The value of &#39;have_cheese&#39; will be checked for correctness by &#39;cheese_callback&#39;::</span>
+<span class="sd">            </span>
+<span class="sd">                CheeseShop.encourage(&#39;have_cheese&#39;, cheese_callback)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">attr_undefined</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">rhs</span><span class="p">,</span> <span class="n">rhs_attr</span><span class="p">):</span>
+            <span class="n">lhs_name</span> <span class="o">=</span> <span class="n">lhs</span><span class="o">.</span><span class="n">model_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="n">rhs_name</span> <span class="o">=</span> <span class="n">rhs</span><span class="o">.</span><span class="n">model_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> = </span><span class="si">%s</span><span class="s"> in </span><span class="si">%s</span><span class="s"> recommends </span><span class="si">%s</span><span class="s"> be defined in </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span>
+                           <span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">lhs_name</span><span class="p">,</span> <span class="n">rhs_attr</span><span class="p">,</span> <span class="n">rhs_name</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">attr_ne</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">rhs</span><span class="p">,</span> <span class="n">rhs_attr</span><span class="p">):</span>
+            <span class="n">lhs_name</span> <span class="o">=</span> <span class="n">lhs</span><span class="o">.</span><span class="n">model_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="n">rhs_name</span> <span class="o">=</span> <span class="n">rhs</span><span class="o">.</span><span class="n">model_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="n">rhs_value</span> <span class="o">=</span> <span class="n">rhs</span><span class="p">[</span><span class="n">rhs_attr</span><span class="p">]</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> = </span><span class="si">%s</span><span class="s"> in </span><span class="si">%s</span><span class="s"> recommends </span><span class="si">%s</span><span class="s"> = </span><span class="si">%s</span><span class="s"> in </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span>
+                           <span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">lhs_name</span><span class="p">,</span> <span class="n">rhs_attr</span><span class="p">,</span> <span class="n">rhs_value</span><span class="p">,</span> <span class="n">rhs_name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">construct_condition</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">attr_undefined</span><span class="o">=</span><span class="n">attr_undefined</span><span class="p">,</span> <span class="n">attr_ne</span><span class="o">=</span><span class="n">attr_ne</span><span class="p">)</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Controller.discourage"><a class="viewcode-back" href="../../tau.model.html#tau.model.Controller.discourage">[docs]</a>    <span class="k">def</span> <span class="nf">discourage</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructs a compatibility condition to make recommendations.</span>
+<span class="sd">        </span>
+<span class="sd">        The condition will emit warnings messages if the specified attribute is</span>
+<span class="sd">        defined or equal to the specified value (if given).</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            *args: Corresponds to `args` in :any:`construct_condition`. </span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Callable condition object for use with :any:`check_compatibility`</span>
+<span class="sd">            </span>
+<span class="sd">        Examples:</span>
+<span class="sd">            &#39;have_cheese&#39; should not be True::</span>
+<span class="sd">            </span>
+<span class="sd">                CheeseShop.discourage(&#39;have_cheese&#39;, True)</span>
+<span class="sd">             </span>
+<span class="sd">            &#39;have_cheese&#39; should not be set to any value::</span>
+<span class="sd">                </span>
+<span class="sd">                CheeseShop.discourage(&#39;have_cheese&#39;)</span>
+<span class="sd">            </span>
+<span class="sd">            The value of &#39;have_cheese&#39; will be checked for correctness by &#39;cheese_callback&#39;::</span>
+<span class="sd">            </span>
+<span class="sd">                CheeseShop.discourage(&#39;have_cheese&#39;, cheese_callback)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">attr_defined</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">rhs</span><span class="p">,</span> <span class="n">rhs_attr</span><span class="p">):</span>
+            <span class="n">lhs_name</span> <span class="o">=</span> <span class="n">lhs</span><span class="o">.</span><span class="n">model_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="n">rhs_name</span> <span class="o">=</span> <span class="n">rhs</span><span class="o">.</span><span class="n">model_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> = </span><span class="si">%s</span><span class="s"> in </span><span class="si">%s</span><span class="s"> recommends </span><span class="si">%s</span><span class="s"> be undefined in </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span>
+                           <span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">lhs_name</span><span class="p">,</span> <span class="n">rhs_attr</span><span class="p">,</span> <span class="n">rhs_name</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">attr_eq</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">rhs</span><span class="p">,</span> <span class="n">rhs_attr</span><span class="p">):</span>
+            <span class="n">lhs_name</span> <span class="o">=</span> <span class="n">lhs</span><span class="o">.</span><span class="n">model_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="n">rhs_name</span> <span class="o">=</span> <span class="n">rhs</span><span class="o">.</span><span class="n">model_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="n">rhs_value</span> <span class="o">=</span> <span class="n">rhs</span><span class="p">[</span><span class="n">rhs_attr</span><span class="p">]</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> = </span><span class="si">%s</span><span class="s"> in </span><span class="si">%s</span><span class="s"> recommends against </span><span class="si">%s</span><span class="s"> = </span><span class="si">%s</span><span class="s"> in </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span>
+                           <span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">lhs_name</span><span class="p">,</span> <span class="n">rhs_attr</span><span class="p">,</span> <span class="n">rhs_value</span><span class="p">,</span> <span class="n">rhs_name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">construct_condition</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">attr_defined</span><span class="o">=</span><span class="n">attr_defined</span><span class="p">,</span> <span class="n">attr_eq</span><span class="o">=</span><span class="n">attr_eq</span><span class="p">)</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Controller.exclude"><a class="viewcode-back" href="../../tau.model.html#tau.model.Controller.exclude">[docs]</a>    <span class="k">def</span> <span class="nf">exclude</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructs a compatibility condition to enforce required conditions.</span>
+<span class="sd">        </span>
+<span class="sd">        The condition will raise a :any:`ConfigurationError` if the specified attribute is</span>
+<span class="sd">        defined or equal to the specified value (if given).</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            *args: Corresponds to `args` in :any:`construct_condition`. </span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Callable condition object for use with :any:`check_compatibility`</span>
+<span class="sd">            </span>
+<span class="sd">        Examples:</span>
+<span class="sd">            &#39;yellow_cheese&#39; must not be &#39;American&#39;::</span>
+<span class="sd">            </span>
+<span class="sd">                CheeseShop.exclude(&#39;yellow_cheese&#39;, &#39;American&#39;)</span>
+<span class="sd">             </span>
+<span class="sd">            &#39;blue_cheese&#39; must not be set to any value::</span>
+<span class="sd">                </span>
+<span class="sd">                CheeseShop.exclude(&#39;blue_cheese&#39;)</span>
+<span class="sd">            </span>
+<span class="sd">            The value of &#39;have_cheese&#39; will be checked for correctness by &#39;cheese_callback&#39;::</span>
+<span class="sd">            </span>
+<span class="sd">                CheeseShop.exclude(&#39;have_cheese&#39;, cheese_callback)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">attr_defined</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">rhs</span><span class="p">,</span> <span class="n">rhs_attr</span><span class="p">):</span>
+            <span class="n">lhs_name</span> <span class="o">=</span> <span class="n">lhs</span><span class="o">.</span><span class="n">model_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="n">rhs_name</span> <span class="o">=</span> <span class="n">rhs</span><span class="o">.</span><span class="n">model_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> = </span><span class="si">%s</span><span class="s"> in </span><span class="si">%s</span><span class="s"> requires </span><span class="si">%s</span><span class="s"> be undefined in </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+                                     <span class="p">(</span><span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">lhs_name</span><span class="p">,</span> <span class="n">rhs_attr</span><span class="p">,</span> <span class="n">rhs_name</span><span class="p">))</span>
+        <span class="k">def</span> <span class="nf">attr_eq</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">rhs</span><span class="p">,</span> <span class="n">rhs_attr</span><span class="p">):</span>
+            <span class="n">lhs_name</span> <span class="o">=</span> <span class="n">lhs</span><span class="o">.</span><span class="n">model_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="n">rhs_name</span> <span class="o">=</span> <span class="n">rhs</span><span class="o">.</span><span class="n">model_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="n">rhs_value</span> <span class="o">=</span> <span class="n">rhs</span><span class="p">[</span><span class="n">rhs_attr</span><span class="p">]</span>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> = </span><span class="si">%s</span><span class="s"> in </span><span class="si">%s</span><span class="s"> is incompatible with </span><span class="si">%s</span><span class="s"> = </span><span class="si">%s</span><span class="s"> in </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span>
+                                     <span class="p">(</span><span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">lhs_name</span><span class="p">,</span> <span class="n">rhs_attr</span><span class="p">,</span> <span class="n">rhs_value</span><span class="p">,</span> <span class="n">rhs_name</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">construct_condition</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">attr_defined</span><span class="o">=</span><span class="n">attr_defined</span><span class="p">,</span> <span class="n">attr_eq</span><span class="o">=</span><span class="n">attr_eq</span><span class="p">)</span>        
+</div>
+<div class="viewcode-block" id="Controller.check_compatibility"><a class="viewcode-back" href="../../tau.model.html#tau.model.Controller.check_compatibility">[docs]</a>    <span class="k">def</span> <span class="nf">check_compatibility</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rhs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test the controlled record for compatibility with another record.</span>
+<span class="sd">        </span>
+<span class="sd">        Operations combining data from multiple records (e.g. selecting a project configuration)</span>
+<span class="sd">        must know that the records are mutually compatible.  This routine checks the &#39;compat&#39;</span>
+<span class="sd">        property of each attribute (if set) to enforce compatibility.  &#39;compat&#39; is a dictionary.</span>
+<span class="sd">        The keys of &#39;compat&#39; are values or callables and the values are tuples of compatibility</span>
+<span class="sd">        conditions.  If the attribute with the &#39;compat&#39; property is one of the key values then </span>
+<span class="sd">        the conditions are checked.  The general form of &#39;compat&#39; is:</span>
+<span class="sd">        ::</span>
+<span class="sd">        </span>
+<span class="sd">            {</span>
+<span class="sd">            (value|callable): (condition, [condition, ...]),</span>
+<span class="sd">            [(value|callable): (condition, [condition, ...]), ...]</span>
+<span class="sd">            }</span>
+<span class="sd">            </span>
+<span class="sd">        Use tuples to join multiple conditions.  If only one condition is needed then you do</span>
+<span class="sd">        not need to use a tuple.</span>
+<span class="sd">        </span>
+<span class="sd">        `value` may either be a literal value (e.g. True or &quot;oranges&quot;) or a callable accepting</span>
+<span class="sd">        one argument and returning either True or False.  The attribute&#39;s value is passed to the</span>
+<span class="sd">        callable to determine if the listed conditions should be checked.  If `value` is a literal</span>
+<span class="sd">        then the listed conditions are checked when the attribute&#39;s value matches `value`.     </span>
+<span class="sd">        </span>
+<span class="sd">        See :any:`require`, :any:`encourage`, :any:`discourage`, :any:`exclude` for common conditions.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            rhs (Controller): Controller for the data record to check compatibility.</span>
+<span class="sd">            </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ConfigurationError: The two records are not compatible.</span>
+
+<span class="sd">        Examples:</span>
+
+<span class="sd">            Suppose we have this data:</span>
+<span class="sd">            ::</span>
+<span class="sd">            </span>
+<span class="sd">                Programmer.attributes = {</span>
+<span class="sd">                    &#39;hungry&#39;: {</span>
+<span class="sd">                        &#39;type&#39;: &#39;boolean&#39;,</span>
+<span class="sd">                        &#39;compat&#39;: {True: (CheeseShop.require(&#39;have_cheese&#39;, True),</span>
+<span class="sd">                                          CheeseShop.encourage(&#39;chedder&#39;, &#39;Wisconsin&#39;),</span>
+<span class="sd">                                          ProgramManager.discourage(&#39;holding_long_meeting&#39;, True),</span>
+<span class="sd">                                          Roommate.exclude(&#39;steals_food&#39;, True)}</span>
+<span class="sd">                    }</span>
+<span class="sd">                }</span>
+
+<span class="sd">                bob = Programmer({&#39;hungry&#39;: True})</span>
+<span class="sd">                world_o_cheese = CheeseShop({&#39;have_cheese&#39;: False, &#39;chedder&#39;: &#39;Wisconsin&#39;})</span>
+<span class="sd">                cheese_wizzard = CheeseShop({&#39;have_cheese&#39;: True, &#39;chedder&#39;: &#39;California&#39;})</span>
+<span class="sd">                louis = ProgramManager({&#39;holding_long_meeting&#39;: True})</span>
+<span class="sd">                keith = Roommate({&#39;steals_food&#39;: True})</span>
+<span class="sd">                </span>
+<span class="sd">            These expressions raise :any:`ConfigurationError`:</span>
+<span class="sd">            ::</span>
+<span class="sd">            </span>
+<span class="sd">                bob.check_compatibility(world_o_cheese)   # Because have_cheese == False</span>
+<span class="sd">                bob.check_compatibility(keith)            # Because steals_food == True</span>
+<span class="sd">            </span>
+<span class="sd">            These expressions generate warning messages:</span>
+<span class="sd">            ::</span>
+<span class="sd">            </span>
+<span class="sd">                bob.check_compatibility(cheese_wizzard)   # Because chedder != Wisconsin</span>
+<span class="sd">                bob.check_compatibility(louis)            # Because holding_long_meeting == True</span>
+<span class="sd">                </span>
+<span class="sd">            If ``bob[&#39;hungry&#39;] == False`` or if the &#39;hungry&#39; attribute were not set then all </span>
+<span class="sd">            the above expressions do nothing.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">as_tuple</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="k">else</span> <span class="p">(</span><span class="n">x</span><span class="p">,)</span>
+        <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">props</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">compat</span> <span class="o">=</span> <span class="n">props</span><span class="p">[</span><span class="s">&#39;compat&#39;</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">attr_value</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">for</span> <span class="n">value</span><span class="p">,</span> <span class="n">conditions</span> <span class="ow">in</span> <span class="n">compat</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nb">callable</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="ow">and</span> <span class="n">value</span><span class="p">(</span><span class="n">attr_value</span><span class="p">))</span> <span class="ow">or</span> <span class="n">attr_value</span> <span class="o">==</span> <span class="n">value</span><span class="p">:</span> 
+                    <span class="k">for</span> <span class="n">condition</span> <span class="ow">in</span> <span class="n">as_tuple</span><span class="p">(</span><span class="n">conditions</span><span class="p">):</span>
+                        <span class="n">condition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">attr_value</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="ByName"><a class="viewcode-back" href="../../tau.model.html#tau.model.ByName">[docs]</a><span class="k">class</span> <span class="nc">ByName</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Mixin for a model with a unique `name` attribute.&quot;&quot;&quot;</span>
+    <span class="c"># Ignore missing members since this is a mixin class to be used with Controller</span>
+    <span class="c"># pylint: disable=no-member</span>
+    
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="ByName.with_name"><a class="viewcode-back" href="../../tau.model.html#tau.model.ByName.with_name">[docs]</a>    <span class="k">def</span> <span class="nf">with_name</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the record with the given name.  See :any:`Controller.one`&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">one</span><span class="p">({</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">})</span>
+
+</div></div>
+<span class="k">def</span> <span class="nf">_yield_model_classes</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">module_name</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">walk_packages</span><span class="p">(</span><span class="n">__path__</span><span class="p">,</span> <span class="n">__name__</span> <span class="o">+</span> <span class="s">&#39;.&#39;</span><span class="p">):</span>
+        <span class="nb">__import__</span><span class="p">(</span><span class="n">module_name</span><span class="p">)</span>
+        <span class="n">module_dict</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">module_name</span><span class="p">]</span><span class="o">.</span><span class="n">__dict__</span>
+        <span class="n">model_class_name</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">camelcase</span><span class="p">(</span><span class="n">module_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">model_class</span> <span class="o">=</span> <span class="n">module_dict</span><span class="p">[</span><span class="n">model_class_name</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InternalError</span><span class="p">(</span><span class="s">&quot;module &#39;</span><span class="si">%s</span><span class="s">&#39; does not define class &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">module_name</span><span class="p">,</span> <span class="n">model_class_name</span><span class="p">))</span>
+        <span class="k">yield</span> <span class="n">model_class</span>       
+
+
+<div class="viewcode-block" id="_construct_model"><a class="viewcode-back" href="../../tau.model.html#tau.model._construct_model">[docs]</a><span class="k">def</span> <span class="nf">_construct_model</span><span class="p">(</span><span class="n">models</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Builds model relationships.</span>
+<span class="sd">    </span>
+<span class="sd">    Initializes controller classes and builds associations and references between data models.</span>
+<span class="sd">    </span>
+<span class="sd">    Raises:</span>
+<span class="sd">        ModelError: A data model is invalid. </span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: Model controller classes indexed by model name. </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">_get_props_model_name</span><span class="p">(</span><span class="n">props</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">props</span><span class="p">[</span><span class="s">&#39;model&#39;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">props</span><span class="p">[</span><span class="s">&#39;collection&#39;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">cls_name</span><span class="p">,</span> <span class="n">cls</span> <span class="ow">in</span> <span class="n">models</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">__class_init__</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">props</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="n">via</span> <span class="o">=</span> <span class="n">props</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;via&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">foreign_name</span> <span class="o">=</span> <span class="n">_get_props_model_name</span><span class="p">(</span><span class="n">props</span><span class="p">)</span> 
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">via</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">raise</span> <span class="n">ModelError</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="s">&quot;Attribute &#39;</span><span class="si">%s</span><span class="s">&#39; defines &#39;via&#39; property &quot;</span>
+                                 <span class="s">&quot;but not &#39;model&#39; or &#39;collection&#39;&quot;</span> <span class="o">%</span> <span class="n">attr</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">foreign_cls</span> <span class="o">=</span> <span class="n">models</span><span class="p">[</span><span class="n">foreign_name</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">ModelError</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="s">&quot;Invalid model name in attribute &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="n">attr</span><span class="p">)</span>
+            <span class="n">foreign_cls</span><span class="o">.</span><span class="n">__class_init__</span><span class="p">()</span>
+    
+            <span class="n">forward</span> <span class="o">=</span> <span class="p">(</span><span class="n">foreign_cls</span><span class="p">,</span> <span class="n">via</span><span class="p">)</span>
+            <span class="n">reverse</span> <span class="o">=</span> <span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">via</span><span class="p">:</span>
+                <span class="n">foreign_cls</span><span class="o">.</span><span class="n">references</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">reverse</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">foreign_cls</span><span class="o">.</span><span class="n">associations</span><span class="p">[</span><span class="n">via</span><span class="p">]</span> <span class="o">=</span> <span class="n">reverse</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">via_props</span> <span class="o">=</span> <span class="n">foreign_cls</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="n">via</span><span class="p">]</span>
+                <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">ModelError</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="s">&quot;Found &#39;via&#39; on undefined attribute &#39;</span><span class="si">%s</span><span class="s">.</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">foreign_name</span><span class="p">,</span> <span class="n">via</span><span class="p">))</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">via_attr_model_name</span> <span class="o">=</span> <span class="n">_get_props_model_name</span><span class="p">(</span><span class="n">via_props</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">ModelError</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="s">&quot;Found &#39;via&#39; on non-model attribute &#39;</span><span class="si">%s</span><span class="s">.</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">foreign_name</span><span class="p">,</span> <span class="n">via</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">via_attr_model_name</span> <span class="o">!=</span> <span class="n">cls_name</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">ModelError</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="s">&quot;Attribute </span><span class="si">%s</span><span class="s">.</span><span class="si">%s</span><span class="s"> referenced by &#39;via&#39; in &#39;</span><span class="si">%s</span><span class="s">&#39; &quot;</span>
+                                     <span class="s">&quot;does not define &#39;collection&#39; or &#39;model&#39; of type &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span>
+                                     <span class="p">(</span><span class="n">foreign_name</span><span class="p">,</span> <span class="n">via</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">cls_name</span><span class="p">))</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">existing</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">associations</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span>
+                <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                    <span class="n">cls</span><span class="o">.</span><span class="n">associations</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span> <span class="o">=</span> <span class="n">forward</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">existing</span> <span class="o">!=</span> <span class="n">forward</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="n">ModelError</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="s">&quot;Conflicting associations on attribute &#39;</span><span class="si">%s</span><span class="s">&#39;: &quot;</span>
+                                         <span class="s">&quot;</span><span class="si">%r</span><span class="s"> vs. </span><span class="si">%r</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">existing</span><span class="p">,</span> <span class="n">forward</span><span class="p">))</span>
+</div>
+<span class="n">MODELS</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">_</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">_yield_model_classes</span><span class="p">()])</span>
+<span class="n">_construct_model</span><span class="p">(</span><span class="n">MODELS</span><span class="p">)</span>
+</pre></div>
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        <a class="uplink" href="../../index.html">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015 ParaTools, Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>

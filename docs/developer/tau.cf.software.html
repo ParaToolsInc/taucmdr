@@ -224,20 +224,6 @@ installation files, source file, and compilation files.</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="tau.cf.software.installation.Installation.src_prefix">
-<code class="descname">src_prefix</code><a class="headerlink" href="#tau.cf.software.installation.Installation.src_prefix" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>str</em></p>
-<p>Directory containing a subdirectory containing source code.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="tau.cf.software.installation.Installation.install_prefix">
-<code class="descname">install_prefix</code><a class="headerlink" href="#tau.cf.software.installation.Installation.install_prefix" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>str</em></p>
-<p>Unique installation location.</p>
-</dd></dl>
-
-<dl class="attribute">
 <dt id="tau.cf.software.installation.Installation.src">
 <code class="descname">src</code><a class="headerlink" href="#tau.cf.software.installation.Installation.src" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>str</em></p>
@@ -258,6 +244,27 @@ keyword &#8216;download&#8217;.</p>
 <code class="descname">compilers</code><a class="headerlink" href="#tau.cf.software.installation.Installation.compilers" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>InstalledCompilerSet</em></p>
 <p>Compilers to use if software must be compiled.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.cf.software.installation.Installation.archive_prefix">
+<code class="descname">archive_prefix</code><a class="headerlink" href="#tau.cf.software.installation.Installation.archive_prefix" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em></p>
+<p>Directory containing package source code archive file.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.cf.software.installation.Installation.src_prefix">
+<code class="descname">src_prefix</code><a class="headerlink" href="#tau.cf.software.installation.Installation.src_prefix" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em></p>
+<p>Directory containing package source code.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.cf.software.installation.Installation.install_prefix">
+<code class="descname">install_prefix</code><a class="headerlink" href="#tau.cf.software.installation.Installation.install_prefix" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em></p>
+<p>Directory containing installed package files.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -297,21 +304,17 @@ keyword &#8216;download&#8217;.</p>
 <dt id="tau.cf.software.installation.Installation._prepare_src">
 <code class="descname">_prepare_src</code><span class="sig-paren">(</span><em>reuse=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/installation.html#Installation._prepare_src"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.installation.Installation._prepare_src" title="Permalink to this definition">¶</a></dt>
 <dd><p>Prepares source code for installation.</p>
-<p>Sets self._src_path to the path to the fresh, clean source code.</p>
+<p>Acquires package source code archive file via download or file copy,
+unpacks the archive, and verifies that required paths exist.
+Sets <cite>self.src_prefix</cite> to the directory containing the package source files.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>reuse</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True, attempt to reuse old source files.</p>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>reuse</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True, attempt to reuse old archives and source files.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
-<li><code class="xref py py-exc docutils literal"><span class="pre">SofwarePackageError</span></code> &#8211;
-No source code provided for this software package.</li>
-<li><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211;
-The source code couldn&#8217;t be copied or downloaded.</li>
-</ul>
-</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211;
+The source code couldn&#8217;t be copied or downloaded.</td>
 </tr>
 </tbody>
 </table>
@@ -717,7 +720,7 @@ appear in the makefile name or tau_exec command line.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>force_reinstall</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; Set to True to force reinstall even if TAU is already installed and working.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">SofwarePackageError</span></code> &#8211;
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">SoftwarePackageError</span></code> &#8211;
 TAU failed installation or did not pass verification after it was installed.</td>
 </tr>
 </tbody>

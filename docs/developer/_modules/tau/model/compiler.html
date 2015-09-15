@@ -84,22 +84,9 @@
 
 <span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
  
+ 
 <div class="viewcode-block" id="Compiler"><a class="viewcode-back" href="../../../tau.model.html#tau.model.compiler.Compiler">[docs]</a><span class="k">class</span> <span class="nc">Compiler</span><span class="p">(</span><span class="n">Controller</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Compiler data controller.&quot;&quot;&quot;</span>
-
-    <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s">&#39;path&#39;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;string&#39;</span><span class="p">,</span>
-            <span class="s">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
-            <span class="s">&#39;unique&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
-            <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">&quot;absolute path to the compiler command&quot;</span>
-        <span class="p">},</span>
-        <span class="s">&#39;md5&#39;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;string&#39;</span><span class="p">,</span>
-            <span class="s">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
-            <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">&quot;checksum of the compiler command file&quot;</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
 
 <div class="viewcode-block" id="Compiler.info"><a class="viewcode-back" href="../../../tau.model.html#tau.model.compiler.Compiler.info">[docs]</a>    <span class="k">def</span> <span class="nf">info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Probes the system for information on this compiler command.</span>
@@ -134,7 +121,22 @@
             <span class="k">if</span> <span class="n">md5sum</span> <span class="o">!=</span> <span class="n">found</span><span class="p">[</span><span class="s">&#39;md5&#39;</span><span class="p">]:</span>
                 <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> &#39;</span><span class="si">%s</span><span class="s">&#39; has changed!  MD5 sum was </span><span class="si">%s</span><span class="s">, but now it&#39;s </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> 
                                <span class="n">comp</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">short_descr</span><span class="p">,</span> <span class="n">comp</span><span class="o">.</span><span class="n">command</span><span class="p">,</span> <span class="n">found</span><span class="p">[</span><span class="s">&#39;md5&#39;</span><span class="p">],</span> <span class="n">md5sum</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">found</span></div></div>
+        <span class="k">return</span> <span class="n">found</span>
+
+</div></div>
+<span class="n">Compiler</span><span class="o">.</span><span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;path&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;string&#39;</span><span class="p">,</span>
+        <span class="s">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+        <span class="s">&#39;unique&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+        <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">&quot;absolute path to the compiler command&quot;</span>
+    <span class="p">},</span>
+    <span class="s">&#39;md5&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;string&#39;</span><span class="p">,</span>
+        <span class="s">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+        <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">&quot;checksum of the compiler command file&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
 </pre></div>
 
       </div>
