@@ -621,39 +621,39 @@ class TauInstallation(Installation):
         """
         opts, env = super(TauInstallation, self).compiletime_config(opts, env)
         env = self._sanitize_environment(env)
+        if self.pdt:
+            opts, env = self.pdt.compiletime_config(opts, env)
+        if self.binutils:
+            opts, env = self.binutils.compiletime_config(opts, env)
+        if self.papi:
+            opts, env = self.papi.compiletime_config(opts, env)
+        if self.libunwind:
+            opts, env = self.libunwind.compiletime_config(opts, env)
+        try:
+            tau_opts = set(env['TAU_OPTIONS'].split(' '))
+        except KeyError:
+            tau_opts = set()
+        tau_opts.add('-optRevert')
+        if self.verbose:
+            tau_opts.add('-optVerbose')
+        if self.compiler_inst == 'always':
+            tau_opts.add('-optCompInst')
+        elif self.compiler_inst == 'never':
+            tau_opts.add('-optNoCompInst')
+        elif self.compiler_inst == 'fallback':
+            tau_opts.add('-optRevert')
+        if self.link_only:
+            tau_opts.add('-optLinkOnly')
+        if self.keep_inst_files:
+            tau_opts.add('-optKeepFiles')
+        if self.reuse_inst_files:
+            tau_opts.add('-optReuseFiles')
+        if self.io_inst:
+            tau_opts.add('-optTrackIO')
         if self.sample or self.compiler_inst != 'never':
             opts.append('-g')
-        try:
-            tau_opts = env['TAU_OPTIONS'].split(' ')
-        except KeyError:
-            tau_opts = []       
-        tau_opts.append('-optRevert')
-        if self.verbose:
-            tau_opts.append('-optVerbose')
-        if self.compiler_inst == 'always':
-            tau_opts.append('-optCompInst')
-        elif self.compiler_inst == 'never':
-            tau_opts.append('-optNoCompInst')
-        elif self.compiler_inst == 'fallback':
-            tau_opts.append('-optRevert')
-        if self.link_only:
-            tau_opts.append('-optLinkOnly')
-        if self.keep_inst_files:
-            tau_opts.append('-optKeepFiles')
-        if self.reuse_inst_files:
-            tau_opts.append('-optReuseFiles')
-        if self.io_inst:
-            tau_opts.append('-optTrackIO')
         env['TAU_MAKEFILE'] = self.get_makefile()
         env['TAU_OPTIONS'] = ' '.join(tau_opts)
-        if self.pdt:
-            self.pdt.compiletime_config(opts, env)
-        if self.binutils:
-            self.binutils.compiletime_config(opts, env)
-        if self.papi:
-            self.papi.compiletime_config(opts, env)
-        if self.libunwind:
-            self.libunwind.compiletime_config(opts, env)
         return list(set(opts)), env
 
 
