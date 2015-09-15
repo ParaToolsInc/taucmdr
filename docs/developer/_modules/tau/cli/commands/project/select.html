@@ -221,8 +221,7 @@
     
     <span class="k">for</span> <span class="n">lhs</span> <span class="ow">in</span> <span class="p">[</span><span class="n">targ</span><span class="p">,</span> <span class="n">app</span><span class="p">,</span> <span class="n">meas</span><span class="p">]:</span>
         <span class="k">for</span> <span class="n">rhs</span> <span class="ow">in</span> <span class="p">[</span><span class="n">targ</span><span class="p">,</span> <span class="n">app</span><span class="p">,</span> <span class="n">meas</span><span class="p">]:</span>
-            <span class="k">if</span> <span class="n">lhs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">rhs</span><span class="p">:</span>
-                <span class="n">lhs</span><span class="o">.</span><span class="n">compatible_with</span><span class="p">(</span><span class="n">rhs</span><span class="p">)</span>
+            <span class="n">lhs</span><span class="o">.</span><span class="n">check_compatibility</span><span class="p">(</span><span class="n">rhs</span><span class="p">)</span>
 
     <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;project&#39;</span><span class="p">:</span> <span class="n">project</span><span class="o">.</span><span class="n">eid</span><span class="p">,</span>
             <span class="s">&#39;target&#39;</span><span class="p">:</span> <span class="n">target_eid</span><span class="p">,</span>

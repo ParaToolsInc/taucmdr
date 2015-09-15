@@ -35,14 +35,6 @@ tau.logger module
     :undoc-members:
     :show-inheritance:
 
-tau.requisite module
---------------------
-
-.. automodule:: tau.requisite
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 tau.settings module
 -------------------
 
