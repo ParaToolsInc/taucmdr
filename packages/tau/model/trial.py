@@ -46,16 +46,13 @@ LOGGER = logger.get_logger(__name__)
 
 class TrialError(ConfigurationError):
     """Indicates there was an error while performing an experiment trial."""
-
-    message_fmt = """
-%(value)s
-%(hint)s
-
-Please check the selected configuration for errors or email '%(logfile)s' to  %(contact)s for assistance.
-"""
-    def __init__(self, value, hint="Try `tau --help`"):
-        super(TrialError, self).__init__(value, hint)
-
+    message_fmt = ("\n"
+                   "%(value)s\n"
+                   "\n"
+                   "%(hints)s\n"
+                   "\n"
+                   "Please check the selected configuration for errors or"
+                   " email '%(logfile)s' to  %(contact)s for assistance.")
 
 
 class Trial(Controller):

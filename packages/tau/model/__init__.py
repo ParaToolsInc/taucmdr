@@ -180,28 +180,30 @@ LOGGER = logger.get_logger(__name__)
 
 
 class ModelError(InternalError):
-    """Indicates the given data does not match the specified model.
-    
-    Args:
-        model_cls (Controller): Controller subclass definining the data model.
-        value (str): A message describing the error.  
-    """
+    """Indicates the given data does not match the specified model."""
 
     def __init__(self, model_cls, value):
+        """Initialize the error instance.
+        
+        Args:
+            model_cls (Controller): Controller subclass definining the data model.
+            value (str): A message describing the error.  
+        """
         super(ModelError, self).__init__("Error in model '%s':\n%s" % (model_cls.model_name, value))
         self.model_cls = model_cls
 
 
 class UniqueAttributeError(ModelError):
-    """Indicates that duplicate values were given for a unique attribute.
-    
-    Args:
-        model_cls (Controller): Controller subclass definining the data model.
-        unique (dict): Dictionary of unique attributes in the data model.  
-    """ 
+    """Indicates that duplicate values were given for a unique attribute.""" 
 
     def __init__(self, model_cls, unique):
-        super(UniqueAttributeError, self).__init__(model_cls, 'A record with one of %r already exists' % unique)
+        """Initialize the error instance.
+        
+        Args:
+            model_cls (Controller): Controller subclass definining the data model.
+            unique (dict): Dictionary of unique attributes in the data model.  
+        """
+        super(UniqueAttributeError, self).__init__(model_cls, "A record with one of %r already exists" % unique)
 
 
 class Controller(object):

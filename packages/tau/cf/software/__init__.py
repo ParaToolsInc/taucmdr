@@ -33,12 +33,9 @@ from tau.error import ConfigurationError
 class SoftwarePackageError(ConfigurationError):
     """Indicates there was an error in an external software package."""
 
-    message_fmt = """
-%(value)s
-%(hint)s
-
-Please check the selected configuration for errors or email '%(logfile)s' to  %(contact)s for assistance.
-"""
-
-    def __init__(self, value, hint="Try `tau --help`"):
-        super(SoftwarePackageError, self).__init__(value, hint)
+    message_fmt = ("\n"
+                   "%(value)s\n"
+                   "\n"
+                   "%(hints)s\n"
+                   "\n"
+                   "Please check the selected configuration or email '%(logfile)s' to  %(contact)s for assistance.")
