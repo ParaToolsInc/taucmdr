@@ -89,7 +89,7 @@ class Error(Exception):
         self.message_fields['backtrace'] = backtrace
         message = self.message_fmt % self.message_fields
         LOGGER.critical(message)
-        return EXIT_FAILURE
+        sys.exit(EXIT_FAILURE)
 
 
 class InternalError(Error):
@@ -154,5 +154,6 @@ def excepthook(etype, value, tb):
                                      'logfile': logger.LOG_FILE,
                                      'backtrace': ''.join(traceback.format_exception(etype, value, tb))}
             LOGGER.critical(message)
+            sys.exit(EXIT_FAILURE)
 
 sys.excepthook = excepthook

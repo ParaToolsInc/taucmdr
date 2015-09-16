@@ -48,7 +48,7 @@ import string
 from termcolor import termcolor
 from datetime import datetime
 from logging import handlers
-from tau import USER_PREFIX
+from tau import USER_PREFIX, EXIT_FAILURE, EXIT_WARNING
 
 
 def get_terminal_size():
@@ -180,6 +180,8 @@ class LogFormatter(logging.Formatter, object):
         line_marker (str): Prefix for every line of the message.
         printable_only (bool): If True, never send unprintable characters to :any:`sys.stdout`.
     """
+    # Allow invalid function names to define member functions named after logging levels.
+    # pylint: disable=invalid-name
     
     PRINTABLE_CHARS = set(string.printable)
     
@@ -195,11 +197,24 @@ class LogFormatter(logging.Formatter, object):
                                                   break_long_words=False,
                                                   break_on_hyphens=False,
                                                   drop_whitespace=False)
-        self._formats = {logging.CRITICAL: lambda r: self._msgbox(r, '!'),
-                         logging.ERROR: lambda r: self._msgbox(r, '!'),
-                         logging.WARNING: lambda r: self._msgbox(r, '*'),
-                         logging.INFO: lambda r: '\n'.join(self._textwrap_message(r)),
-                         logging.DEBUG: self._debug_message}
+    def CRITICAL(self, record):
+        return self._msgbox(record, 'X')
+        
+    def ERROR(self, record):
+        return self._msgbox(record, '!')
+    
+    def WARNING(self, record):
+        return self._msgbox(record, '*')
+    
+    def INFO(self, record):
+        return '\n'.join(self._textwrap_message(record))
+    
+    def DEBUG(self, record):
+        message = record.getMessage()
+        if self.printable_only and (not set(message).issubset(self.PRINTABLE_CHARS)):
+            message = "<<UNPRINTABLE>>"
+        marker = self._colored("[%s %s:%s]" % (record.levelname, record.name, record.lineno), 'yellow')
+        return '%s %s' % (marker, message)
         
     def format(self, record):
         """Formats a log record.
@@ -214,8 +229,8 @@ class LogFormatter(logging.Formatter, object):
             RuntimeError: No format specified for a the record's logging level.
         """
         try:
-            return self._formats[record.levelno](record)
-        except KeyError:
+            return getattr(self, record.levelname)(record)
+        except AttributeError:
             raise RuntimeError('Unknown record level (name: %s)' % record.levelname)
 
     def _colored(self, text, *color_args):
@@ -259,17 +274,10 @@ class LogFormatter(logging.Formatter, object):
     def _msgbox(self, record, marker):
         width = self.line_width
         hline = self._colored(marker * width, 'red')
-        parts = list(self._textwrap([hline, ' ', self._colored(record.levelname, 'cyan')]))
+        parts = list(self._textwrap([hline, '', self._colored(record.levelname, 'cyan'), '']))
         parts.extend(self._textwrap_message(record))
-        parts.extend(self._textwrap([hline]))
+        parts.extend(self._textwrap(['', hline]))
         return '\n'.join(parts)
-    
-    def _debug_message(self, record):
-        message = record.getMessage()
-        if self.printable_only and (not set(message).issubset(self.PRINTABLE_CHARS)):
-            message = "<<UNPRINTABLE>>"
-        marker = self._colored("[%s %s:%s]" % (record.levelname, record.name, record.lineno), 'yellow')
-        return '%s %s' % (marker, message)
 
     def _textwrap_message(self, record):
         for line in record.getMessage().split('\n'):
