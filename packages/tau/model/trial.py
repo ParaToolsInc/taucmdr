@@ -158,7 +158,7 @@ class Trial(Controller):
             env (dict): Environment variables to set before performing the trial.
         """
         def banner(mark, name, time):
-            headline = '{:=<{}}'.format('== %s %s (%s) ==' % (mark, name, time), logger.LINE_WIDTH)
+            headline = '\n{:=<{}}\n'.format('== %s %s (%s) ==' % (mark, name, time), logger.LINE_WIDTH)
             LOGGER.info(headline)
 
         cmd_str = ' '.join(cmd)
