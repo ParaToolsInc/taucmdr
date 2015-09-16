@@ -138,9 +138,14 @@ class Trial(Controller):
             if profiles:
                 LOGGER.info("Trial produced %d profile files.", len(profiles))
             elif retval != 0:
-                raise TrialError("Program died without producing performance data")
+                raise TrialError("Program died without producing performance data.",
+                                 "Verify that the right input parameters were specified.",
+                                 "Check the program output for error messages.",
+                                 "Does the selected application configuration correctly describe this program?",
+                                 "Does the selected measurement configuration specifiy the right measurement methods?",
+                                 "Does the selected target configuration match the runtime environment?")
             else:
-                raise TrialError("Application completed successfuly but did not produce any performance data")
+                raise TrialError("Application completed successfuly but did not produce any performance data.")
         return retval
 
     @classmethod
