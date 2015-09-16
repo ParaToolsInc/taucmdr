@@ -33,8 +33,7 @@ from tau.error import ConfigurationError
 class SoftwarePackageError(ConfigurationError):
     """Indicates there was an error in an external software package."""
 
-    message_fmt = ("\n"
-                   "%(value)s\n"
+    message_fmt = ("%(value)s\n"
                    "\n"
                    "%(hints)s\n"
                    "\n"

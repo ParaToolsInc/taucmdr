@@ -46,8 +46,7 @@ LOGGER = logger.get_logger(__name__)
 
 class TrialError(ConfigurationError):
     """Indicates there was an error while performing an experiment trial."""
-    message_fmt = ("\n"
-                   "%(value)s\n"
+    message_fmt = ("%(value)s\n"
                    "\n"
                    "%(hints)s\n"
                    "\n"

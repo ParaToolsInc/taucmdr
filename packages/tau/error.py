@@ -50,8 +50,7 @@ class Error(Exception):
     """
     show_backtrace = False
 
-    message_fmt = ("\n"
-                   "An unexpected %(typename)s exception was raised:\n"
+    message_fmt = ("An unexpected %(typename)s exception was raised:\n"
                    "\n"
                    "%(value)s\n"
                    "\n"
@@ -107,8 +106,7 @@ class ConfigurationError(Error):
     settings that are incompatible with the application.
     """
 
-    message_fmt = ("\n"
-                   "%(value)s\n"
+    message_fmt = ("%(value)s\n"
                    "\n"
                    "%(hints)s\n"
                    "\n"
@@ -138,8 +136,7 @@ def excepthook(etype, value, tb):
         try:
             sys.exit(value.handle(etype, value, tb))
         except AttributeError:
-            message_fmt = ("\n"
-                           "An unexpected %(typename)s exception was raised:\n"
+            message_fmt = ("An unexpected %(typename)s exception was raised:\n"
                            "\n"
                            "%(value)s\n"
                            "\n"
