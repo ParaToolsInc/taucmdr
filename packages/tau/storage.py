@@ -41,10 +41,6 @@ from tau.error import InternalError
 LOGGER = logger.get_logger(__name__)
 
 
-class StorageError(InternalError):
-    """Indicates that there is a problem with the storage system."""
-
-
 class Storage(object):
     """Interface to a persistant record storage system.
     
@@ -64,14 +60,14 @@ class Storage(object):
         try:
             util.mkdirp(prefix)
         except:
-            raise StorageError("Cannot create directory '%s'" % prefix, 
-                               'Check that you have `write` access')
+            raise InternalError("Cannot create directory '%s'" % prefix, 
+                               "Check that you have `write` access")
         self.dbfile = os.path.join(prefix, db_name)
         try:
             self.database = TinyDB(self.dbfile)
         except:
-            raise StorageError("Cannot create '%s'" % self.dbfile, 
-                               'Check that you have `write` access')
+            raise InternalError("Cannot create '%s'" % self.dbfile, 
+                                "Check that you have `write` access")
         LOGGER.debug("Opened '%s' for read/write", self.dbfile)
 
     def __enter__(self):

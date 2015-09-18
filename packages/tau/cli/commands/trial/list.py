@@ -141,7 +141,7 @@ def main(argv):
             trials_by_cmd.setdefault(trial['command'], []).append(trial)
         for key, val in trials_by_cmd.iteritems():
             count = len(val)
-            data_size = util.human_size(sum([trial['data_size'] for trial in val]))
+            data_size = util.human_size(sum([trial.get('data_size', 0) for trial in val]))
             if count == 1:
                 msg = "  1 trial of '%s' (%s)." % (os.path.basename(key), data_size)
             else:

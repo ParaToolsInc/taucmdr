@@ -67,7 +67,7 @@ class MutableGroupArgumentParser(argparse.ArgumentParser):
         return self.add_argument_group(title=title)
 
     def format_help(self):
-        """Format an argument's help string."""
+        """Format command line help string."""
         # We're changing the behavior of the superclass so we need to access protected members in this function
         # pylint: disable=protected-access
         formatter = self._get_formatter()
@@ -132,38 +132,52 @@ class ArgparseHelpFormatter(argparse.RawDescriptionHelpFormatter):
             if action.default is not argparse.SUPPRESS:
                 defaulting_nargs = [argparse.OPTIONAL, argparse.ZERO_OR_MORE]
                 if action.option_strings or action.nargs in defaulting_nargs:
-                    helpstr += '\n%s' % indent + '- default: %(default)s'
+                    if isinstance(action.default, list):
+                        default_str = ', '.join(action.default)
+                    else:
+                        default_str = str(action.default)
+                    helpstr += '\n%s' % indent + '- default: %s' % default_str
         return helpstr
 
 
 class ParsePackagePathAction(argparse.Action):
     """Argument parser action for software package paths.
     
-    This action checks that an argument's value is one of these valid cases:
-        1) The path to an existing software package installation,
-        2) The path to an archive file containing the software package,
-        3) A URL to an archive file containing the software package,
-        4) The magic word "download".
-        
-    Args:
-        parser (str): Argument parser object this group belongs to.
-        namespace (object): Namespace to receive parsed value via setattr.
-        flag (str): Value parsed from the command line
-        option_string (str): FIXME: Not used
+    This action checks that an argument's value is one of these cases:
+    1) The path to an existing software package installation.
+    2) The path to an archive file containing the software package.
+    3) A URL to an archive file containing the software package.
+    4) The magic word "download" or value that parses to True via :any:`tau.util.parse_bool`.
+    5) A value that parses to False via :any:`parse_bool`.
     """
+    # pylint: disable=too-few-public-methods
 
-    def __call__(self, parser, namespace, flag, option_string=None):
-        flag_as_bool = util.parse_bool(flag)
-        if flag_as_bool == True or flag.lower() == 'download':
-            value = 'download'
-        elif flag_as_bool == False:
-            value = None
-        elif util.is_url(flag):
-            value = flag
+    def __call__(self, parser, namespace, flag, unused_option_string=None):
+        """Sets the `self.dest` attribute in `namespace` to the parsed value of `flag`.
+        
+        If `flag` parses to a boolean True value then the attribute value is 'download'.
+        If `flag` parses to a boolean False value then the attribute value is ``None``.
+        Otherwise the attribute value is the value of `flag`.
+            
+        Args:
+            parser (str): Argument parser object this group belongs to.
+            namespace (object): Namespace to receive parsed value via setattr.
+            flag (str): Value parsed from the command line.
+        """
+        try:
+            flag_as_bool = util.parse_bool(flag, additional_true=['download'])
+        except TypeError:
+            if util.is_url(flag):
+                value = flag
+            else:
+                value = os.path.abspath(os.path.expanduser(flag))
+                if not (os.path.isdir(value) or util.file_accessible(value)):
+                    raise argparse.ArgumentError(self, "Boolean, 'download', valid path, or URL required: %s" % value)
         else:
-            value = os.path.abspath(os.path.expanduser(flag))
-            if not os.path.isdir(value) and not util.file_accessible(value):
-                raise argparse.ArgumentError(self, "Boolean, 'download', valid path, or URL required: %s" % flag)
+            if flag_as_bool == True:
+                value = 'download'
+            elif flag_as_bool == False:
+                value = None
         setattr(namespace, self.dest, value)
 
 
@@ -171,19 +185,24 @@ class ParseBooleanAction(argparse.Action):
     """Argument parser action for boolean values.
     
     Essentially a wrapper around :any:`tau.util.parse_bool`.
-
-    Args:
-        parser (str): Argument parser object this group belongs to.
-        namespace (object): Namespace to receive parsed value via setattr.
-        flag (str): Value parsed from the command line
-        option_string (str): FIXME: Not used
     """
+    # pylint: disable=too-few-public-methods
 
-    def __call__(self, parser, namespace, value, option_string=None):
-        bool_value = util.parse_bool(value)
-        if bool_value == None:
+    def __call__(self, parser, namespace, flag, unused_option_string=None):
+        """Sets the `self.dest` attribute in `namespace` to the parsed value of `flag`.
+        
+        If `flag` parses to a boolean via :any:`tau.util.parse_bool` then the 
+        attribute value is that boolean value.
+            
+        Args:
+            parser (str): Argument parser object this group belongs to.
+            namespace (object): Namespace to receive parsed value via setattr.
+            flag (str): Value parsed from the command line/
+        """
+        try:
+            setattr(namespace, self.dest, util.parse_bool(flag))
+        except TypeError:
             raise argparse.ArgumentError(self, 'Boolean value required')
-        setattr(namespace, self.dest, bool_value)
 
 
 def get_parser(prog=None, usage=None, description=None, epilog=None):
@@ -216,7 +235,8 @@ def get_parser_from_model(model, use_defaults=True, prog=None, usage=None, descr
     are specified as keyword arguments.
     
     Examples:
-        Given this model attribute::
+        Given this model attribute:
+        ::
         
             'openmp': {
                 'type': 'boolean', 
@@ -258,15 +278,10 @@ def get_parser_from_model(model, use_defaults=True, prog=None, usage=None, descr
             options = dict(props['argparse'])
         except KeyError:
             continue
-        try:
-            default = props['default']
-        except KeyError:
-            options['default'] = argparse.SUPPRESS
+        if use_defaults:
+            options['default'] = props.get('default', argparse.SUPPRESS) 
         else:
-            if use_defaults:
-                options['default'] = default
-            else:
-                options['default'] = argparse.SUPPRESS
+            options['default'] = argparse.SUPPRESS
         try:
             options['help'] = props['description']
         except KeyError:

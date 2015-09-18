@@ -38,22 +38,9 @@ from tau.model import Controller
 
 LOGGER = logger.get_logger(__name__)
  
+ 
 class Compiler(Controller):
     """Compiler data controller."""
-
-    attributes = {
-        'path': {
-            'type': 'string',
-            'required': True,
-            'unique': True,
-            'description': "absolute path to the compiler command"
-        },
-        'md5': {
-            'type': 'string',
-            'required': True,
-            'description': "checksum of the compiler command file"
-        }
-    }
 
     def info(self):
         """Probes the system for information on this compiler command.
@@ -89,3 +76,19 @@ class Compiler(Controller):
                 LOGGER.warning("%s '%s' has changed!  MD5 sum was %s, but now it's %s", 
                                comp.info.short_descr, comp.command, found['md5'], md5sum)
         return found
+
+
+Compiler.attributes = {
+    'path': {
+        'type': 'string',
+        'required': True,
+        'unique': True,
+        'description': "absolute path to the compiler command"
+    },
+    'md5': {
+        'type': 'string',
+        'required': True,
+        'description': "checksum of the compiler command file"
+    }
+}
+

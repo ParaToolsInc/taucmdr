@@ -175,8 +175,7 @@ def main(argv):
     
     for lhs in [targ, app, meas]:
         for rhs in [targ, app, meas]:
-            if lhs is not rhs:
-                lhs.compatible_with(rhs)
+            lhs.check_compatibility(rhs)
 
     data = {'project': project.eid,
             'target': target_eid,

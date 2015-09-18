@@ -56,10 +56,7 @@ class BinutilsInstallation(AutotoolsInstallation):
         super(BinutilsInstallation, self).__init__('binutils', prefix, src, dst, arch, compilers, SOURCES)
 
     def _verify(self, commands=None, libraries=None):
-        try:
-            libraries = LIBS[self.arch]
-        except KeyError:
-            libraries = LIBS[None]
+        libraries = LIBS.get(self.arch, LIBS[None])
         return super(BinutilsInstallation, self)._verify(commands, libraries)
     
     def configure(self, flags, env):
@@ -152,9 +149,9 @@ class BinutilsInstallation(AutotoolsInstallation):
         super(BinutilsInstallation, self).make_install(flags, env, parallel)
 
         LOGGER.debug("Copying missing BFD headers")
-        for hdr in glob.glob(os.path.join(self._src_path, 'bfd', '*.h')):
+        for hdr in glob.glob(os.path.join(self.src_prefix, 'bfd', '*.h')):
             shutil.copy(hdr, self.include_path)
-        for hdr in glob.glob(os.path.join(self._src_path, 'include', '*')):
+        for hdr in glob.glob(os.path.join(self.src_prefix, 'include', '*')):
             try:
                 shutil.copy(hdr, self.include_path)
             except:
@@ -162,8 +159,8 @@ class BinutilsInstallation(AutotoolsInstallation):
                 shutil.copytree(hdr, dst)
 
         LOGGER.debug("Copying missing libiberty libraries")
-        shutil.copy(os.path.join(self._src_path, 'libiberty', 'libiberty.a'), self.lib_path)
-        shutil.copy(os.path.join(self._src_path, 'opcodes', 'libopcodes.a'), self.lib_path)
+        shutil.copy(os.path.join(self.src_prefix, 'libiberty', 'libiberty.a'), self.lib_path)
+        shutil.copy(os.path.join(self.src_prefix, 'opcodes', 'libopcodes.a'), self.lib_path)
 
         LOGGER.debug("Fixing BFD header")
         for line in fileinput.input(os.path.join(self.include_path, 'bfd.h'), inplace=1):

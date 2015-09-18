@@ -157,22 +157,22 @@ def main(argv):
             pass
         else:
             article = 'an' if desc[0] in 'aeiou' else 'a'
-            hint = '%r is %s %s.\n%s.' % (cmd, article, desc, hint)
+            hint = "'%s' is %s %s.\n%s." % (cmd, article, desc, hint)
             raise UnknownCommandError(cmd, hint)
 
         # Get the filetype and try to be helpful.
         filetype, encoding = _guess_filetype(cmd)
-        LOGGER.debug("%r has filetype (%s, %s)", cmd, filetype, encoding)
+        LOGGER.debug("'%s' has filetype (%s, %s)", cmd, filetype, encoding)
         if filetype:
             filetype, subtype = filetype.split('/')
             try:
                 type_hints = _MIME_HINTS[filetype]
             except KeyError:
-                hint = "TAU doesn't recognize %r.\nSee 'tau --help' and use the appropriate subcommand." % cmd
+                hint = "TAU doesn't recognize '%s'.\nSee 'tau --help' and use the appropriate subcommand." % cmd
             else:
                 desc, hint = _fuzzy_index(type_hints, subtype)
                 article = 'an' if desc[0] in 'aeiou' else 'a'
-                hint = '%r is %s %s.\n%s.' % (cmd, article, desc, hint)
+                hint = "'%s' is %s %s.\n%s." % (cmd, article, desc, hint)
             raise UnknownCommandError(cmd, hint)
         else:
             raise UnknownCommandError(cmd)

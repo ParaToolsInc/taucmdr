@@ -342,7 +342,7 @@ a rotating debug file in the user&#8217;s TAU Commander project prefix, typicall
 
 <dl class="data">
 <dt id="tau.logger.LINE_WIDTH">
-<code class="descclassname">tau.logger.</code><code class="descname">LINE_WIDTH</code><em class="property"> = 129</em><a class="headerlink" href="#tau.logger.LINE_WIDTH" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.logger.</code><code class="descname">LINE_WIDTH</code><em class="property"> = 151</em><a class="headerlink" href="#tau.logger.LINE_WIDTH" title="Permalink to this definition">¶</a></dt>
 <dd><p>Width of a line on the terminal.</p>
 <p>Uses system specific methods to determine console line width.  If the line
 width cannot be determined, the default is 80.</p>
@@ -363,7 +363,7 @@ width cannot be determined, the default is 80.</p>
 
 <dl class="class">
 <dt id="tau.logger.LogFormatter">
-<em class="property">class </em><code class="descclassname">tau.logger.</code><code class="descname">LogFormatter</code><span class="sig-paren">(</span><em>line_width</em>, <em>line_marker</em>, <em>printable_only=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/logger.html#LogFormatter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.logger.LogFormatter" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.logger.</code><code class="descname">LogFormatter</code><span class="sig-paren">(</span><em>line_width</em>, <em>line_marker</em>, <em>printable_only=False</em>, <em>allow_colors=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/logger.html#LogFormatter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.logger.LogFormatter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/logging.html#logging.Formatter" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">logging.Formatter</span></code></a>, <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
 <p>Custom log message formatter.</p>
 <p>Controls message formatting for all levels.</p>
@@ -410,7 +410,7 @@ No format specified for a the record&#8217;s logging level.</td>
 
 <dl class="data">
 <dt id="tau.logger.TERM_SIZE">
-<code class="descclassname">tau.logger.</code><code class="descname">TERM_SIZE</code><em class="property"> = (135, 68)</em><a class="headerlink" href="#tau.logger.TERM_SIZE" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.logger.</code><code class="descname">TERM_SIZE</code><em class="property"> = (157, 99)</em><a class="headerlink" href="#tau.logger.TERM_SIZE" title="Permalink to this definition">¶</a></dt>
 <dd><p>tuple: (width, height) tuple of detected terminal dimensions in characters.</p>
 </dd></dl>
 
@@ -537,10 +537,6 @@ If no method succeeds then default to (80, 25).</p>
 </dd></dl>
 
 </div>
-<div class="section" id="module-tau.requisite">
-<span id="tau-requisite-module"></span><h2>tau.requisite module<a class="headerlink" href="#module-tau.requisite" title="Permalink to this headline">¶</a></h2>
-<p>FIXME: needs a design review.</p>
-</div>
 <div class="section" id="module-tau.settings">
 <span id="tau-settings-module"></span><h2>tau.settings module<a class="headerlink" href="#module-tau.settings" title="Permalink to this headline">¶</a></h2>
 <p>TAU Commander settings.</p>
@@ -571,7 +567,7 @@ If no method succeeds then default to (80, 25).</p>
 to any kind of storage system.</p>
 <dl class="data">
 <dt id="tau.storage.SYSTEM_STORAGE">
-<code class="descclassname">tau.storage.</code><code class="descname">SYSTEM_STORAGE</code><em class="property"> = &lt;tau.storage.Storage object at 0x4a78510&gt;</em><a class="headerlink" href="#tau.storage.SYSTEM_STORAGE" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.storage.</code><code class="descname">SYSTEM_STORAGE</code><em class="property"> = &lt;tau.storage.Storage object at 0x3bb3850&gt;</em><a class="headerlink" href="#tau.storage.SYSTEM_STORAGE" title="Permalink to this definition">¶</a></dt>
 <dd><p>Storage: System-level project data storage.</p>
 </dd></dl>
 
@@ -814,7 +810,7 @@ If test is given then all records with <cite>field</cite> set to a value that ca
 
 <dl class="data">
 <dt id="tau.storage.USER_STORAGE">
-<code class="descclassname">tau.storage.</code><code class="descname">USER_STORAGE</code><em class="property"> = &lt;tau.storage.Storage object at 0x4a78310&gt;</em><a class="headerlink" href="#tau.storage.USER_STORAGE" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.storage.</code><code class="descname">USER_STORAGE</code><em class="property"> = &lt;tau.storage.Storage object at 0x3bb3690&gt;</em><a class="headerlink" href="#tau.storage.USER_STORAGE" title="Permalink to this definition">¶</a></dt>
 <dd><p>Storage: User-level project data storage.</p>
 </dd></dl>
 
@@ -1024,7 +1020,7 @@ Failed to extract archive.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>*args</strong> &#8211; Paths to create</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>*args</strong> &#8211; Paths to create.</td>
 </tr>
 </tbody>
 </table>
@@ -1033,28 +1029,30 @@ Failed to extract archive.</p>
 <dl class="function">
 <dt id="tau.util.parse_bool">
 <code class="descclassname">tau.util.</code><code class="descname">parse_bool</code><span class="sig-paren">(</span><em>value</em>, <em>additional_true=None</em>, <em>additional_false=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#parse_bool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.parse_bool" title="Permalink to this definition">¶</a></dt>
-<dd><p>Parses a boolean value.</p>
-<p>If <cite>value</cite> is castable to <a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">bool</span></code></a> then return <cite>value</cite> as a bool.
-Otherwise if <cite>value</cite> is a string try to interpret it as a bool:
+<dd><p>Parses a value to a boolean value.</p>
+<p>If <cite>value</cite> is a string try to interpret it as a bool:
 * [&#8216;1&#8217;, &#8216;t&#8217;, &#8216;y&#8217;, &#8216;true&#8217;, &#8216;yes&#8217;, &#8216;on&#8217;] ==&gt; True
-* [&#8216;0&#8217;, &#8216;f&#8217;, &#8216;n&#8217;, &#8216;false&#8217;, &#8216;no&#8217;, &#8216;off&#8217;] ==&gt; False</p>
+* [&#8216;0&#8217;, &#8216;f&#8217;, &#8216;n&#8217;, &#8216;false&#8217;, &#8216;no&#8217;, &#8216;off&#8217;] ==&gt; False
+Otherwise raise TypeError.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>value</strong> &#8211; bool, int, or string to parse.</li>
-<li><strong>additional_true</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; optional additional string values that stand for True</li>
-<li><strong>additional_false</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; optional additional string values that stand for False</li>
+<li><strong>value</strong> &#8211; value to parse to a boolean.</li>
+<li><strong>additional_true</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; optional additional string values that stand for True.</li>
+<li><strong>additional_false</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; optional additional string values that stand for False.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">True if  <cite>value</cite> is true,
-False if <cite>value</cite> is false,
-None if <cite>value</cite> couldn&#8217;t be parsed.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">True if  <cite>value</cite> is true, False if <cite>value</cite> is false.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)">bool</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)">bool</a></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211;
+<cite>value</cite> does not parse.</p>
 </td>
 </tr>
 </tbody>

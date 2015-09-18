@@ -432,7 +432,7 @@ class TauInstallation(Installation):
                 flags.append('-opari')
         cmd = ['./configure'] + flags
         LOGGER.info("Configuring TAU...")
-        if util.create_subprocess(cmd, cwd=self._src_path, stdout=False):
+        if util.create_subprocess(cmd, cwd=self.src_prefix, stdout=False):
             raise SoftwarePackageError('TAU configure failed')
     
     def make_install(self):
@@ -445,7 +445,7 @@ class TauInstallation(Installation):
         """
         cmd = ['make', 'install'] + parallel_make_flags()
         LOGGER.info('Compiling and installing TAU...')
-        if util.create_subprocess(cmd, cwd=self._src_path, stdout=False):
+        if util.create_subprocess(cmd, cwd=self.src_prefix, stdout=False):
             raise SoftwarePackageError('TAU compilation/installation failed')
     
     def install(self, force_reinstall=False):
@@ -457,7 +457,7 @@ class TauInstallation(Installation):
             force_reinstall (bool): Set to True to force reinstall even if TAU is already installed and working.
             
         Raises:
-            SofwarePackageError: TAU failed installation or did not pass verification after it was installed.
+            SoftwarePackageError: TAU failed installation or did not pass verification after it was installed.
         """
         self._check_dependencies()
 
@@ -465,7 +465,8 @@ class TauInstallation(Installation):
             try:
                 return self._verify()
             except SoftwarePackageError as err:
-                raise SoftwarePackageError("%s is missing or broken: %s" % (self.name, err),
+                raise SoftwarePackageError("%s installation at '%s' is missing or broken: %s" % 
+                                           (self.name, self.install_prefix, err),
                                            "Specify source code path or URL to enable broken package reinstallation.")
         elif not force_reinstall:
             try:
@@ -538,6 +539,8 @@ class TauInstallation(Installation):
             tags.append('pdt')
         if self.measure_openmp != 'opari':
             tags.append('opari')
+        if not self.openmp_support:
+            tags.append('openmp')
         LOGGER.debug("Incompatible tags: %s", tags)
         return set(tags)
 
@@ -582,6 +585,27 @@ class TauInstallation(Installation):
         raise SoftwarePackageError("TAU Makefile not found for tags '%s' in '%s'" % 
                                    (', '.join(config_tags), self.install_prefix))
 
+    @staticmethod
+    def _sanitize_environment(env):
+        """Unsets any TAU environment variables that were set by the user.
+        
+        A user's preexisting TAU configuration may conflict with the configuration
+        specified by the TAU Commander project.  This routine lets us work in a
+        clean environment without disrupting the user's shell environment.
+        
+        Args:
+            env (dict): Environment variables.
+            
+        Returns:
+            dict: `env` without TAU environment variables.
+        """
+        is_tau_var = lambda key: key.startswith('TAU_') or key in ['PROFILEDIR', 'TRACEDIR']
+        dirt = dict([item for item in env.iteritems() if is_tau_var(item[0])])
+        if dirt:
+            LOGGER.info("\nIgnoring preexisting TAU environment variables:\n%s\n",
+                        '\n'.join(["%s=%s" % item for item in dirt.iteritems()]))
+        return dict([item for item in env.iteritems() if item[0] not in dirt])
+    
     def compiletime_config(self, opts=None, env=None):
         """Configures environment for compilation with TAU.
 
@@ -596,41 +620,40 @@ class TauInstallation(Installation):
             tuple: (opts, env) updated to support TAU.
         """
         opts, env = super(TauInstallation, self).compiletime_config(opts, env)
-        if self.sample:
-            opts.append('-g')
+        env = self._sanitize_environment(env)
+        if self.pdt:
+            opts, env = self.pdt.compiletime_config(opts, env)
+        if self.binutils:
+            opts, env = self.binutils.compiletime_config(opts, env)
+        if self.papi:
+            opts, env = self.papi.compiletime_config(opts, env)
+        if self.libunwind:
+            opts, env = self.libunwind.compiletime_config(opts, env)
         try:
-            tau_opts = env['TAU_OPTIONS'].split(' ')
+            tau_opts = set(env['TAU_OPTIONS'].split(' '))
         except KeyError:
-            tau_opts = []       
-        tau_opts.append('-optRevert')
+            tau_opts = set()
+        tau_opts.add('-optRevert')
         if self.verbose:
-            tau_opts.append('-optVerbose')
-        else:
-            tau_opts.append('-optQuiet')
+            tau_opts.add('-optVerbose')
         if self.compiler_inst == 'always':
-            tau_opts.append('-optCompInst')
+            tau_opts.add('-optCompInst')
         elif self.compiler_inst == 'never':
-            tau_opts.append('-optNoCompInst')
+            tau_opts.add('-optNoCompInst')
         elif self.compiler_inst == 'fallback':
-            tau_opts.append('-optRevert')
+            tau_opts.add('-optRevert')
         if self.link_only:
-            tau_opts.append('-optLinkOnly')
+            tau_opts.add('-optLinkOnly')
         if self.keep_inst_files:
-            tau_opts.append('-optKeepFiles')
+            tau_opts.add('-optKeepFiles')
         if self.reuse_inst_files:
-            tau_opts.append('-optReuseFiles')
+            tau_opts.add('-optReuseFiles')
         if self.io_inst:
-            tau_opts.append('-optTrackIO')
+            tau_opts.add('-optTrackIO')
+        if self.sample or self.compiler_inst != 'never':
+            opts.append('-g')
         env['TAU_MAKEFILE'] = self.get_makefile()
         env['TAU_OPTIONS'] = ' '.join(tau_opts)
-        if self.pdt:
-            self.pdt.compiletime_config(opts, env)
-        if self.binutils:
-            self.binutils.compiletime_config(opts, env)
-        if self.papi:
-            self.papi.compiletime_config(opts, env)
-        if self.libunwind:
-            self.libunwind.compiletime_config(opts, env)
         return list(set(opts)), env
 
 
@@ -648,6 +671,7 @@ class TauInstallation(Installation):
             tuple: (opts, env) updated to support TAU.
         """
         opts, env = super(TauInstallation, self).runtime_config(opts, env)
+        env = self._sanitize_environment(env)
         env['TAU_VERBOSE'] = str(int(self.verbose))
         env['TAU_PROFILE'] = str(int(self.profile))
         env['TAU_TRACE'] = str(int(self.trace))
@@ -698,6 +722,8 @@ class TauInstallation(Installation):
         opts, env = self.compiletime_config()
         compiler_cmd = self.get_compiler_command(compiler)
         cmd = [compiler_cmd] + opts + compiler_args
+        tau_env_opts = ['%s=%s' % item for item in env.iteritems() if item[0].startswith('TAU_')]
+        LOGGER.info('\n'.join(tau_env_opts))
         LOGGER.info(' '.join(cmd))
         retval = util.create_subprocess(cmd, env=env, stdout=True)
         if retval != 0:

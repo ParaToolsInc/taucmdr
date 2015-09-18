@@ -47,17 +47,12 @@ class PapiInstallation(AutotoolsInstallation):
 
     def __init__(self, prefix, src, arch, compilers):
         dst = os.path.join(arch, compilers[CC_ROLE].info.family.name)
-        LOGGER.debug("src=%s, dst=%s", src, dst)
         super(PapiInstallation, self).__init__('PAPI', prefix, src, dst, arch, compilers, SOURCES)
 
     def _verify(self, commands=None, libraries=None):
-        try:
-            libraries = LIBS[self.arch]
-        except KeyError:
-            libraries = LIBS[None]
+        libraries = LIBS.get(self.arch, LIBS[None])
         return super(PapiInstallation, self)._verify(commands, libraries)
-    
+
     def _prepare_src(self, reuse=True):
-        # PAPI keeps its source in a subdirectory
-        prefix = super(PapiInstallation, self)._prepare_src(reuse)
-        return os.path.join(prefix, 'src')
+        super(PapiInstallation, self)._prepare_src(reuse)
+        self.src_prefix = os.path.join(self.src_prefix, 'src')

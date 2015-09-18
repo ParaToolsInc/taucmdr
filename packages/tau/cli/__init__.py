@@ -68,23 +68,22 @@ _COMMANDS_PACKAGE = __name__ + '.commands'
 
 class UnknownCommandError(ConfigurationError):
     """Indicates that a specified command is unknown."""
-    message_fmt = """
-%(value)r is not a valid TAU command.
-
-%(hint)s"""
-    def __init__(self, value, hint="Try 'tau --help'."):
-        super(UnknownCommandError, self).__init__(value, hint)
+    message_fmt = ("\n"
+                   "%(value)r is not a valid TAU command.\n"
+                   "\n"
+                   "%(hints)s\n")
 
 
 class AmbiguousCommandError(ConfigurationError):
     """Indicates that a specified partial command is ambiguous."""
-    message_fmt = """
-Command '%(value)s' is ambiguous: %(matches)s
-
-%(hint)s"""
-    def __init__(self, value, matches, hint="Try 'tau --help'."):
-        super(AmbiguousCommandError, self).__init__(value, hint)
-        self.message_fields['matches'] = ', '.join(matches)
+    message_fmt = ("\n"
+                   "Command '%(value)s' is ambiguous.\n"
+                   "\n"
+                   "%(hints)s\n")
+    def __init__(self, value, matches, *hints):
+        parts = ["Did you mean `%s %s`?" % (SCRIPT_COMMAND, match) for match in matches]
+        parts.append("Try `%s --help`" % SCRIPT_COMMAND)
+        super(AmbiguousCommandError, self).__init__(value, *hints + tuple(parts))
 
 
 def get_command(module_name):

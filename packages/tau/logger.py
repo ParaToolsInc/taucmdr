@@ -45,9 +45,10 @@ import textwrap
 import socket
 import platform
 import string
+from termcolor import termcolor
 from datetime import datetime
 from logging import handlers
-from tau import USER_PREFIX
+from tau import USER_PREFIX, EXIT_FAILURE, EXIT_WARNING
 
 
 def get_terminal_size():
@@ -179,25 +180,42 @@ class LogFormatter(logging.Formatter, object):
         line_marker (str): Prefix for every line of the message.
         printable_only (bool): If True, never send unprintable characters to :any:`sys.stdout`.
     """
+    # Allow invalid function names to define member functions named after logging levels.
+    # pylint: disable=invalid-name
     
     PRINTABLE_CHARS = set(string.printable)
     
-    def __init__(self, line_width, line_marker, printable_only=False):
+    def __init__(self, line_width, line_marker, printable_only=False, allow_colors=True):
         super(LogFormatter, self).__init__()
-        self.line_width = line_width
-        self.line_marker = line_marker
         self.printable_only = printable_only
-        self._text_wrapper = textwrap.TextWrapper(width=line_width,
-                                                  subsequent_indent=line_marker + '    ',
+        self.allow_colors = allow_colors
+        self.line_width = line_width
+        self.line_marker = self._colored(line_marker, 'red')
+        self._text_wrapper = textwrap.TextWrapper(width=self.line_width+len(self.line_marker),
+                                                  initial_indent=self.line_marker,
+                                                  subsequent_indent=self.line_marker + '    ',
                                                   break_long_words=False,
                                                   break_on_hyphens=False,
                                                   drop_whitespace=False)
-        self._formats = {logging.CRITICAL: lambda r: self._msgbox(r, '!'),
-                         logging.ERROR: lambda r: self._msgbox(r, '!'),
-                         logging.WARNING: lambda r: self._msgbox(r, '*'),
-                         logging.INFO: lambda r: '\n'.join(self._textwrap_message(r)),
-                         logging.DEBUG: self._debug_message}
-
+    def CRITICAL(self, record):
+        return self._msgbox(record, 'X')
+        
+    def ERROR(self, record):
+        return self._msgbox(record, '!')
+    
+    def WARNING(self, record):
+        return self._msgbox(record, '*')
+    
+    def INFO(self, record):
+        return '\n'.join(self._textwrap_message(record))
+    
+    def DEBUG(self, record):
+        message = record.getMessage()
+        if self.printable_only and (not set(message).issubset(self.PRINTABLE_CHARS)):
+            message = "<<UNPRINTABLE>>"
+        marker = self._colored("[%s %s:%s]" % (record.levelname, record.name, record.lineno), 'yellow')
+        return '%s %s' % (marker, message)
+        
     def format(self, record):
         """Formats a log record.
         
@@ -211,31 +229,70 @@ class LogFormatter(logging.Formatter, object):
             RuntimeError: No format specified for a the record's logging level.
         """
         try:
-            return self._formats[record.levelno](record)
-        except KeyError:
+            return getattr(self, record.levelname)(record)
+        except AttributeError:
             raise RuntimeError('Unknown record level (name: %s)' % record.levelname)
 
+    def _colored(self, text, *color_args):
+        """Insert ANSII color formatting via `termcolor`_.
+        
+        Text colors:
+            * grey
+            * red
+            * green
+            * yellow
+            * blue
+            * magenta
+            * cyan
+            * white
+        
+        Text highlights:
+            * on_grey
+            * on_red
+            * on_green
+            * on_yellow
+            * on_blue
+            * on_magenta
+            * on_cyan
+            * on_white
+
+        Attributes:
+            * bold
+            * dark
+            * underline
+            * blink
+            * reverse
+            * concealed
+        
+        .. _termcolor: http://pypi.python.org/pypi/termcolor
+        """
+        if self.allow_colors and color_args:
+            return termcolor.colored(text, *color_args)
+        else:
+            return text
+
     def _msgbox(self, record, marker):
-        width = self.line_width - len(self.line_marker)
-        hline = self.line_marker + marker * width
-        parts = [hline, self.line_marker, '%s%s' % (self.line_marker, record.levelname)]
+        width = self.line_width
+        hline = self._colored(marker * width, 'red')
+        parts = list(self._textwrap([hline, '', self._colored(record.levelname, 'cyan'), '']))
         parts.extend(self._textwrap_message(record))
-        parts.append(hline)
+        parts.extend(self._textwrap(['', hline]))
         return '\n'.join(parts)
-    
-    def _debug_message(self, record):
-        message = record.getMessage()
-        if self.printable_only and (not set(message).issubset(self.PRINTABLE_CHARS)):
-            message = "<<UNPRINTABLE>>"
-        return '[%s %s:%s] %s' % (record.levelname, record.name, record.lineno, message)
 
     def _textwrap_message(self, record):
-        parts = []
         for line in record.getMessage().split('\n'):
             if not self.printable_only or set(line).issubset(self.PRINTABLE_CHARS):
-                message = self._text_wrapper.fill(line)
-            parts.append('%s%s' % (self.line_marker, message))
-        return parts
+                if line:
+                    yield self._text_wrapper.fill(line)
+                else:
+                    yield self.line_marker
+
+    def _textwrap(self, lines):
+        for line in lines:
+            if line:
+                yield self._text_wrapper.fill(line)
+            else:
+                yield self.line_marker
 
 
 def get_logger(name):
@@ -299,7 +356,7 @@ if not len(_ROOT_LOGGER.handlers):
         else:
             raise
     _FILE_HANDLER = handlers.TimedRotatingFileHandler(LOG_FILE, when='D', interval=1, backupCount=3)
-    _FILE_HANDLER.setFormatter(LogFormatter(line_width=120, line_marker=LINE_MARKER))
+    _FILE_HANDLER.setFormatter(LogFormatter(line_width=120, line_marker=LINE_MARKER, allow_colors=False))
     _FILE_HANDLER.setLevel(logging.DEBUG)
 
     _STDOUT_HANDLER = logging.StreamHandler(sys.stdout)

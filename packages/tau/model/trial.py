@@ -46,64 +46,16 @@ LOGGER = logger.get_logger(__name__)
 
 class TrialError(ConfigurationError):
     """Indicates there was an error while performing an experiment trial."""
-
-    message_fmt = """
-%(value)s
-%(hint)s
-
-Please check the selected configuration for errors or email '%(logfile)s' to  %(contact)s for assistance.
-"""
-    def __init__(self, value, hint="Try `tau --help`"):
-        super(TrialError, self).__init__(value, hint)
-
+    message_fmt = ("%(value)s\n"
+                   "\n"
+                   "%(hints)s\n"
+                   "\n"
+                   "Please check the selected configuration for errors or"
+                   " email '%(logfile)s' to  %(contact)s for assistance.")
 
 
 class Trial(Controller):
     """Trial data controller."""
-
-    attributes = {
-        'number': {
-            'type': 'integer',
-            'required': True,
-            'description': 'trial unique identifier'
-        },
-        'experiment': {
-            'model': 'Experiment',
-            'required': True,
-            'description': "this trial's experiment"
-        },
-        'command': {
-            'type': 'string',
-            'required': True,
-            'description': "command line executed when performing the trial"
-        },
-        'cwd': {
-            'type': 'string',
-            'required': True,
-            'description': "directory the trial was performed in",
-        },
-        'environment': {
-            'type': 'string',
-            'required': True,
-            'description': "shell environment the trial was performed in"
-        },
-        'begin_time': {
-            'type': 'datetime',
-            'description': "date and time the trial began"
-        },
-        'end_time': {
-            'type': 'datetime',
-            'description': "date and time the trial ended"
-        },
-        'return_code': {
-            'type': 'integer',
-            'description': "return code of the command executed when performing the trial"
-        },
-        'data_size': {
-            'type': 'integer',
-            'description': "the size in bytes of the trial data"
-        },
-    }
 
     def prefix(self):
         experiment = self.populate('experiment')
@@ -125,6 +77,75 @@ class Trial(Controller):
         except Exception as err:
             if os.path.exists(prefix):
                 LOGGER.error("Could not remove trial data at '%s': %s", prefix, err)
+                
+    @classmethod
+    def _next_trial_number(cls, expr):
+        trials = expr.populate('trials')
+        for i, j in enumerate(sorted([trial['number'] for trial in trials])):
+            if i != j:
+                return i
+        return len(trials)
+    
+    def profile_files(self):
+        """Get this trial's profile files.
+        
+        Returns paths to profile files (profile.X.Y.Z).  If the trial produced 
+        MULTI__ directories then paths to every profile below every MULTI__ 
+        directory are returned. 
+        
+        Returns:
+            list: Paths to profile files.
+        """
+        list_profiles = lambda path: glob.glob(os.path.join(path, 'profile.*.*.*'))
+        prefix = self.prefix()
+        profiles = []
+        for multi_dir in glob.iglob(os.path.join(prefix, 'MULTI__*')):
+            profiles.extend(list_profiles(multi_dir))
+        profiles.extend(list_profiles(prefix))
+        return profiles
+    
+    def execute_command(self, expr, cmd, cwd, env):
+        """Execute a command as part of an experiment trial.
+        
+        Creates a new subprocess for the command and checks for TAU data files
+        when the subprocess exits.
+        
+        Args:
+            expr (Experiment): Experiment data.
+            cmd (str): Command to profile, with command line arguments.
+            cwd (str): Working directory to perform trial in.
+            env (dict): Environment variables to set before performing the trial.
+            
+        Returns:
+            int: Subprocess return code.
+        """
+        cmd_str = ' '.join(cmd)
+        LOGGER.info(cmd_str)
+        try:
+            retval = util.create_subprocess(cmd, cwd=cwd, env=env)
+        except OSError as err:
+            target = expr.populate('target')
+            errno_hint = {errno.EPERM: "Check filesystem permissions",
+                          errno.ENOENT: "Check paths and command line arguments",
+                          errno.ENOEXEC: "Check that this host supports '%s'" % target['host_arch']}
+            raise TrialError("Couldn't execute %s: %s" % (cmd_str, err), errno_hint.get(err.errno, None))
+        if retval:
+            LOGGER.warning("Return code %d from '%s'", retval, cmd_str)
+        measurement = expr.populate('measurement')
+        if measurement['profile']:
+            profiles = self.profile_files()
+            if profiles:
+                LOGGER.info("Trial produced %d profile files.", len(profiles))
+            elif retval != 0:
+                raise TrialError("Program died without producing performance data.",
+                                 "Verify that the right input parameters were specified.",
+                                 "Check the program output for error messages.",
+                                 "Does the selected application configuration correctly describe this program?",
+                                 "Does the selected measurement configuration specifiy the right measurement methods?",
+                                 "Does the selected target configuration match the runtime environment?")
+            else:
+                raise TrialError("Application completed successfuly but did not produce any performance data.")
+        return retval
 
     @classmethod
     def perform(cls, expr, cmd, cwd, env):
@@ -137,19 +158,12 @@ class Trial(Controller):
             env (dict): Environment variables to set before performing the trial.
         """
         def banner(mark, name, time):
-            headline = '{:=<{}}'.format('== %s %s (%s) ==' % (mark, name, time), logger.LINE_WIDTH)
+            headline = '\n{:=<{}}\n'.format('== %s %s (%s) ==' % (mark, name, time), logger.LINE_WIDTH)
             LOGGER.info(headline)
 
-        measurement = expr.populate('measurement')
         cmd_str = ' '.join(cmd)
         begin_time = str(datetime.utcnow())
-        trials = expr.populate('trials')
-        for i, j in enumerate(sorted([trial['number'] for trial in trials])):
-            if i != j:
-                trial_number = i
-                break
-        else:
-            trial_number = len(trials)
+        trial_number = cls._next_trial_number(expr)
         LOGGER.debug("New trial number is %d", trial_number)
 
         banner('BEGIN', expr.name(), begin_time)
@@ -160,72 +174,71 @@ class Trial(Controller):
                   'environment': 'FIXME',
                   'begin_time': begin_time}
         trial = cls.create(fields)
-        prefix = trial.prefix()
         
-        # Check for existing profile files
-        if measurement['profile']:
-            profiles = glob.glob(os.path.join(cwd, 'profile.*.*.*'))
-            if profiles:
-                LOGGER.warning("Profile files found in '%s'! They will be deleted.", cwd)
-                for pfile in profiles:
-                    try: 
-                        os.remove(pfile)
-                    except: 
-                        continue
-            multi_dirs = glob.glob(os.path.join(cwd, 'MULTI__*'))
-            if multi_dirs:
-                LOGGER.warning("Profile directories found in '%s'! They will be deleted.", cwd)
-                for pdir in multi_dirs:
-                    shutil.rmtree(pdir, ignore_errors=True)
-        # TODO: Check for existing trace files
+        # Tell TAU to send profiles and traces to the trial prefix
+        prefix = trial.prefix()
+        env['PROFILEDIR'] = prefix
+        env['TRACEDIR'] = prefix
 
         try:
-            LOGGER.info(cmd_str)
-            try:
-                retval = util.create_subprocess(cmd, cwd=cwd, env=env)
-            except OSError as err:
-                target = expr.populate('target')
-                errno_hint = {errno.EPERM: "Check filesystem permissions",
-                              errno.ENOENT: "Check paths and command line arguments",
-                              errno.ENOEXEC: "Check that this compute node supports "
-                                             "the '%s' architecture" % target['host_arch']}
-                raise TrialError("Couldn't execute %s: %s" % (cmd_str, err), errno_hint.get(err.errno, None))
-            if retval:
-                LOGGER.warning("Nonzero return code '%d' from '%s'", retval, cmd_str)
-
-            if measurement['profile']:
-                profiles = glob.glob(os.path.join(cwd, 'profile.*.*.*'))
-                multi_profiles = glob.glob(os.path.join(cwd, 'MULTI__*'))
-
-                if profiles:
-                    LOGGER.info("Found %d profile files. Adding to trial...", len(profiles))
-                    for pfile in profiles:
-                        shutil.move(pfile, prefix)
-                        LOGGER.debug("'%s' => '%s'", pfile, prefix)
-                elif multi_profiles:
-                    LOGGER.info("Found %d multi_profile directories. Adding to trial...", len(multi_profiles))
-                    for dirs in multi_profiles:
-                        shutil.move(dirs, prefix)
-                        LOGGER.debug("'%s' => '%s'", dirs, prefix)
-                elif retval != 0:
-                    raise TrialError("Program died without producing performance data")
-                else:
-                    raise TrialError("Application completed successfuly but "
-                                     "did not produce any performance data")
-
-            # TODO: Handle traces
+            retval = trial.execute_command(expr, cmd, cwd, env)
         except:
             cls.delete(eids=[trial.eid])
+            end_time = str(datetime.utcnow())
             raise
         else:
-            # Trial successful, update record and record state
-            end_time = str(datetime.utcnow())
-            data_size = sum(os.path.getsize(os.path.join(prefix, f))
-                            for f in os.listdir(prefix))
+            data_size = sum(os.path.getsize(os.path.join(prefix, f)) for f in os.listdir(prefix))
             shutil.copy(storage.USER_STORAGE.dbfile, prefix)
+            end_time = str(datetime.utcnow())
             cls.update({'end_time': end_time,
                         'return_code': retval,
                         'data_size': data_size}, eids=[trial.eid])
+        finally:
             banner('END', expr.name(), end_time)
-
         return retval
+
+
+Trial.attributes = {
+    'number': {
+        'type': 'integer',
+        'required': True,
+        'description': 'trial unique identifier'
+    },
+    'experiment': {
+        'model': 'Experiment',
+        'required': True,
+        'description': "this trial's experiment"
+    },
+    'command': {
+        'type': 'string',
+        'required': True,
+        'description': "command line executed when performing the trial"
+    },
+    'cwd': {
+        'type': 'string',
+        'required': True,
+        'description': "directory the trial was performed in",
+    },
+    'environment': {
+        'type': 'string',
+        'required': True,
+        'description': "shell environment the trial was performed in"
+    },
+    'begin_time': {
+        'type': 'datetime',
+        'description': "date and time the trial began"
+    },
+    'end_time': {
+        'type': 'datetime',
+        'description': "date and time the trial ended"
+    },
+    'return_code': {
+        'type': 'integer',
+        'description': "return code of the command executed when performing the trial"
+    },
+    'data_size': {
+        'type': 'integer',
+        'description': "the size in bytes of the trial data"
+    },
+}
+

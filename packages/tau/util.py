@@ -50,7 +50,7 @@ def mkdirp(*args):
     Works just like ``mkdir -p``.
     
     Args:
-        *args: Paths to create
+        *args: Paths to create.
     """
     for path in args:
         try:
@@ -117,7 +117,7 @@ def download(src, dest):
         shutil.copy(src, dest)
     else:
         LOGGER.debug("Downloading '%s' to '%s'", src, dest)
-        LOGGER.info("Downloading '%s'",  src)
+        LOGGER.info("Downloading '%s'", src)
         mkdirp(os.path.dirname(dest))
         curl = which('curl')
         wget = which('wget')
@@ -188,7 +188,7 @@ def extract(archive, dest):
     with tarfile.open(archive) as fin:
         fin.extractall(dest)
     if not os.path.isdir(full_dest):
-        raise IOError("Failed to create '%s' by extracting '%s'" % (full_dest, archive))
+        raise IOError("Extracting '%s' does not create '%s'" % (archive, full_dest))
     LOGGER.debug("Created '%s'", full_dest)
     return full_dest
 
@@ -270,6 +270,8 @@ def human_size(num, suffix='B'):
     Returns: 
         str: `num` as a human readable string. 
     """
+    if not num:
+        num = 0
     for unit in ['', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi']:
         if abs(num) < 1024.0:
             return "%3.1f%s%s" % (num, unit, suffix)
@@ -278,40 +280,39 @@ def human_size(num, suffix='B'):
 
 
 def parse_bool(value, additional_true=None, additional_false=None):
-    """Parses a boolean value.
+    """Parses a value to a boolean value.
     
-    If `value` is castable to :any:`bool` then return `value` as a bool.
-    Otherwise if `value` is a string try to interpret it as a bool:
+    If `value` is a string try to interpret it as a bool:
     * ['1', 't', 'y', 'true', 'yes', 'on'] ==> True
     * ['0', 'f', 'n', 'false', 'no', 'off'] ==> False
+    Otherwise raise TypeError.
     
     Args:
-        value: bool, int, or string to parse.
-        additional_true (list): optional additional string values that stand for True
-        additional_false (list): optional additional string values that stand for False
+        value: value to parse to a boolean.
+        additional_true (list): optional additional string values that stand for True.
+        additional_false (list): optional additional string values that stand for False.
         
     Returns:
-        bool: True if  `value` is true,
-              False if `value` is false,
-              None if `value` couldn't be parsed.
+        bool: True if  `value` is true, False if `value` is false.
+        
+    Raises:
+        ValueError: `value` does not parse.
     """
     true_values = ['1', 't', 'y', 'true', 'yes', 'on']
-    false_values = ['0', 'f', 'n', 'false', 'no', 'off']
+    false_values = ['0', 'f', 'n', 'false', 'no', 'off', 'none']
     if additional_true:
         true_values.extend(additional_true)
     if additional_false:
         false_values.extend(additional_false)
-    try:
-        return bool(value)
-    except TypeError:
-        if isinstance(value, basestring):
-            value = value.lower()
-            if value in true_values:
-                return True
-            elif value in false_values:
-                return False
+    if isinstance(value, basestring):
+        value = value.lower()
+        if value in true_values:
+            return True
+        elif value in false_values:
+            return False
         else:
-            return None
+            raise TypeError
+    return bool(value)
 
 def is_url(url):
     """Check if `url` is a URL.

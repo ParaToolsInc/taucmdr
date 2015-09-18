@@ -169,8 +169,9 @@ Examples:
 
 import sys
 import json
+import operator
 from pkgutil import walk_packages
-from tau import logger, requisite, util
+from tau import logger, util
 from tau.error import InternalError, ConfigurationError
 from tau.storage import USER_STORAGE
 
@@ -179,28 +180,30 @@ LOGGER = logger.get_logger(__name__)
 
 
 class ModelError(InternalError):
-    """Indicates the given data does not match the specified model.
-    
-    Args:
-        model_cls (Controller): Controller subclass definining the data model.
-        value (str): A message describing the error.  
-    """
+    """Indicates the given data does not match the specified model."""
 
     def __init__(self, model_cls, value):
+        """Initialize the error instance.
+        
+        Args:
+            model_cls (Controller): Controller subclass definining the data model.
+            value (str): A message describing the error.  
+        """
         super(ModelError, self).__init__("Error in model '%s':\n%s" % (model_cls.model_name, value))
         self.model_cls = model_cls
 
 
 class UniqueAttributeError(ModelError):
-    """Indicates that duplicate values were given for a unique attribute.
-    
-    Args:
-        model_cls (Controller): Controller subclass definining the data model.
-        unique (dict): Dictionary of unique attributes in the data model.  
-    """ 
+    """Indicates that duplicate values were given for a unique attribute.""" 
 
     def __init__(self, model_cls, unique):
-        super(UniqueAttributeError, self).__init__(model_cls, 'A record with one of %r already exists' % unique)
+        """Initialize the error instance.
+        
+        Args:
+            model_cls (Controller): Controller subclass definining the data model.
+            unique (dict): Dictionary of unique attributes in the data model.  
+        """
+        super(UniqueAttributeError, self).__init__(model_cls, "A record with one of %r already exists" % unique)
 
 
 class Controller(object):
@@ -231,6 +234,9 @@ class Controller(object):
 
     def __getitem__(self, key):
         return self.data[key]
+    
+    def __contains__(self, key):
+        return key in self.data
 
     def get(self, key, default=None):
         return self.data.get(key, default)
@@ -240,16 +246,36 @@ class Controller(object):
     
     @classmethod
     def __class_init__(cls):
+        def err(msg):
+            raise ModelError(cls, "%s: %s" % (model_attr_name, msg))
         if not hasattr(cls, 'model_name'):
             cls.model_name = cls.__name__
         if not hasattr(cls, 'associations'):
             cls.associations = {}
         if not hasattr(cls, 'references'):
             cls.references = set()
+        for attr, props in cls.attributes.iteritems():
+            model_attr_name = cls.model_name + "." + attr
+            if 'collection' in props and not 'via' in props:
+                err("collection does not define 'via'")
+            try:
+                unique = props['unique']
+            except KeyError:
+                pass
+            else:
+                if not isinstance(unique, bool):
+                    err("invalid value for 'unique'")
+            try:
+                description = props['description']
+            except KeyError:
+                LOGGER.debug("%s: no 'description'", model_attr_name)
+            else:
+                if not isinstance(description, basestring):
+                    err("invalid value for 'description'")
 
     @classmethod
-    def _validate(cls, data, enforce_required=True):
-        """Validates the given data against the model.
+    def _validate(cls, data):
+        """Validates data against the model.
         
         Args:
             data (dict): Data to validate, may be None.
@@ -276,7 +302,7 @@ class Controller(object):
                 validated[attr] = data[attr]
             except KeyError:
                 if 'required' in props:
-                    if props['required'] and enforce_required:
+                    if props['required']:
                         raise ModelError(cls, "'%s' is required but was not defined" % attr)
                 elif 'default' in props:
                     validated[attr] = props['default']
@@ -309,12 +335,15 @@ class Controller(object):
 
     def on_create(self):
         """Callback to be invoked when a new data record is created.""" 
+        self.check_compatibility(self)
 
     def on_update(self): 
         """Callback to be invoked when a data record is updated."""
+        self.check_compatibility(self)
 
     def on_delete(self): 
         """Callback to be invoked when a data record is deleted."""
+        pass
 
     def populate(self, attribute=None):
         """Merges associated record data into the controlled data.
@@ -343,6 +372,9 @@ class Controller(object):
             
         Returns:
             dict: Controlled data merged with associated records.
+            
+        Raises:
+            KeyError: `attribute` is undefined in the populated record. 
         """
         if not self._populated:
             LOGGER.debug("Populating %r", self)
@@ -506,7 +538,10 @@ class Controller(object):
         with USER_STORAGE as storage:
             # Get the list of affected records **before** updating the data so foreign keys are correct
             changing = cls.search(keys, eids)
-            storage.update(cls.model_name, cls._validate(fields, enforce_required=False), keys=keys, eids=eids)
+            for attr in fields:
+                if not attr in cls.attributes:
+                    raise ModelError(cls, "Model '%s' has no attribute named '%s'" % (cls.model_name, attr))
+            storage.update(cls.model_name, fields, keys=keys, eids=eids)
             for model in changing:
                 for attr, foreign in cls.associations.iteritems():
                     try:
@@ -675,59 +710,323 @@ class Controller(object):
                     else:
                         storage.update(
                             model.model_name, {attr: update}, eids=model.eid)
-
-    def compatible_with(self, other):
-        """Test the controlled record for compatibility with another record.
+                      
+    @classmethod
+    def construct_condition(cls, args, attr_defined=None, attr_undefined=None, attr_eq=None, attr_ne=None):
+        """Constructs a compatibility condition, see :any:`check_compatibility`.
         
-        FIXME: Compatilibity checking needs further design review.
+        The returned condition is a callable that accepts four arguments:
+            * lhs (Controller): The left-hand side of the `check_compatibility` operation.
+            * lhs_attr (str): Name of the attribute that defines the 'compat' property.
+            * lhs_value: The value in the controlled data record of the attribute that defines the 'compat' property.
+            * rhs (Controller): Controller of the data record we are checking against.
+        
+        The `condition` callable raises a :any:`ConfigurationError` if the compared attributes 
+        are fatally incompatibile, i.e. the user's operation is guaranteed to fail with the chosen 
+        records. It may emit log messages to indicate that the records are not perfectly compatible 
+        but that the user's operation is still likely to succeed with the chosen records.
+        
+        See :any:`require`, :any:`encourage`, :any:`discourage`, :any:`exclude` for common conditions.
+        
+        args[0] specifies a model attribute to check.  If args[1] is given, it is a value to
+        compare the specified attribute against or a callback function as described below.
+        
+        The remaining arguments are callback functions accepting these arguments:
+            * lhs (Controller): The controller invoking `check_compatibility`.
+            * lhs_attr (str): Name of the attribute that defines the 'compat' property.
+            * lhs_value: Value of the attribute that defines the 'compat' property.
+            * rhs (Controller): Controller we are checking against (argument to `check_compatibility`).
+            * rhs_attr (str): The right-hand side attribute we are checking for compatibility.
+        
+        To enable complex conditions, args[1] may be a callback function.  In this case,
+        args[1] must check attribute existance and value correctness and throw the appropriate
+        exception and/or emit log messages.  See :py:func:`tau.model.measurement.intel_only` 
+        for an example of such a callback function.
         
         Args:
-            other (Controller): Controller subclass instance controlling the other record.
+            args (tuple): Attribute name in args[0] and, optionally, attribute value in args[1].
+            attr_defined: Callback function to be invoked when the attribute is defined.
+            attr_undefined: Callback function to be invoked when the attribute is undefined.
+            attr_eq: Callback function to be invoked when the attribute is equal to args[1].
+            attr_ne: Callback function to be invoked when the attribute is not equal to args[1].
+
+        Returns:
+            Callable condition object for use with :any:`check_compatibility`.
+        """
+        rhs_attr = args[0]
+        try:
+            checked_value = args[1]
+        except IndexError:
+            def condition(lhs, lhs_attr, lhs_value, rhs):
+                if isinstance(rhs, cls):
+                    if rhs_attr in rhs:
+                        if attr_defined:
+                            attr_defined(lhs, lhs_attr, lhs_value, rhs, rhs_attr)
+                    else:
+                        if attr_undefined:
+                            attr_undefined(lhs, lhs_attr, lhs_value, rhs, rhs_attr)
+        else:
+            if callable(checked_value):
+                def condition(lhs, lhs_attr, lhs_value, rhs):
+                    if isinstance(rhs, cls): 
+                        checked_value(lhs, lhs_attr, lhs_value, rhs, rhs_attr)
+            else:
+                def condition(lhs, lhs_attr, lhs_value, rhs):
+                    if isinstance(rhs, cls):
+                        try:
+                            rhs_value = rhs[rhs_attr]
+                        except KeyError:
+                            if attr_undefined:
+                                attr_undefined(lhs, lhs_attr, lhs_value, rhs, rhs_attr)
+                        else:
+                            if attr_eq:
+                                if rhs_value == checked_value:
+                                    attr_eq(lhs, lhs_attr, lhs_value, rhs, rhs_attr)
+                            elif attr_ne:
+                                if rhs_value != checked_value:
+                                    attr_ne(lhs, lhs_attr, lhs_value, rhs, rhs_attr)
+                            elif attr_defined:
+                                attr_defined(lhs, lhs_attr, lhs_value, rhs, rhs_attr)
+        return condition
+
+    @classmethod
+    def require(cls, *args):
+        """Constructs a compatibility condition to enforce required conditions.
+        
+        The condition will raise a :any:`ConfigurationError` if the specified attribute is
+        undefined or not equal to the specified value (if given).
+        
+        Args:
+            *args: Corresponds to `args` in :any:`construct_condition`. 
+        
+        Returns:
+            Callable condition object for use with :any:`check_compatibility`
+            
+        Examples:
+            'have_cheese' must be True::
+            
+                CheeseShop.require('have_cheese', True)
+             
+            'have_cheese' must be set to any value::
+                
+                CheeseShop.require('have_cheese')
+            
+            The value of 'have_cheese' will be checked for correctness by 'cheese_callback'::
+            
+                CheeseShop.require('have_cheese', cheese_callback)
+        """ 
+        def attr_undefined(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
+            lhs_name = lhs.model_name.lower()
+            rhs_name = rhs.model_name.lower()
+            raise ConfigurationError("%s = %s in %s requires %s be defined in %s" % 
+                                     (lhs_attr, lhs_value, lhs_name, rhs_attr, rhs_name))
+        def attr_ne(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
+            lhs_name = lhs.model_name.lower()
+            rhs_name = rhs.model_name.lower()
+            rhs_value = rhs[rhs_attr]
+            raise ConfigurationError("%s = %s in %s requires %s = %s in %s" % 
+                                     (lhs_attr, lhs_value, lhs_name, rhs_attr, rhs_value, rhs_name))
+        return cls.construct_condition(args, attr_undefined=attr_undefined, attr_ne=attr_ne)
+
+    @classmethod
+    def encourage(cls, *args):
+        """Constructs a compatibility condition to make recommendations.
+        
+        The condition will emit warnings messages if the specified attribute is
+        undefined or not equal to the specified value (if given).
+        
+        Args:
+            *args: Corresponds to `args` in :any:`construct_condition`. 
+        
+        Returns:
+            Callable condition object for use with :any:`check_compatibility`
+            
+        Examples:
+            'have_cheese' should be True::
+            
+                CheeseShop.encourage('have_cheese', True)
+             
+            'have_cheese' should be set to any value::
+                
+                CheeseShop.encourage('have_cheese')
+            
+            The value of 'have_cheese' will be checked for correctness by 'cheese_callback'::
+            
+                CheeseShop.encourage('have_cheese', cheese_callback)
+        """
+        def attr_undefined(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
+            lhs_name = lhs.model_name.lower()
+            rhs_name = rhs.model_name.lower()
+            LOGGER.warning("%s = %s in %s recommends %s be defined in %s",
+                           lhs_attr, lhs_value, lhs_name, rhs_attr, rhs_name)
+        def attr_ne(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
+            lhs_name = lhs.model_name.lower()
+            rhs_name = rhs.model_name.lower()
+            rhs_value = rhs[rhs_attr]
+            LOGGER.warning("%s = %s in %s recommends %s = %s in %s",
+                           lhs_attr, lhs_value, lhs_name, rhs_attr, rhs_value, rhs_name)
+        return cls.construct_condition(args, attr_undefined=attr_undefined, attr_ne=attr_ne)
+
+    @classmethod
+    def discourage(cls, *args):
+        """Constructs a compatibility condition to make recommendations.
+        
+        The condition will emit warnings messages if the specified attribute is
+        defined or equal to the specified value (if given).
+        
+        Args:
+            *args: Corresponds to `args` in :any:`construct_condition`. 
+        
+        Returns:
+            Callable condition object for use with :any:`check_compatibility`
+            
+        Examples:
+            'have_cheese' should not be True::
+            
+                CheeseShop.discourage('have_cheese', True)
+             
+            'have_cheese' should not be set to any value::
+                
+                CheeseShop.discourage('have_cheese')
+            
+            The value of 'have_cheese' will be checked for correctness by 'cheese_callback'::
+            
+                CheeseShop.discourage('have_cheese', cheese_callback)
+        """
+        def attr_defined(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
+            lhs_name = lhs.model_name.lower()
+            rhs_name = rhs.model_name.lower()
+            LOGGER.warning("%s = %s in %s recommends %s be undefined in %s",
+                           lhs_attr, lhs_value, lhs_name, rhs_attr, rhs_name)
+        def attr_eq(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
+            lhs_name = lhs.model_name.lower()
+            rhs_name = rhs.model_name.lower()
+            rhs_value = rhs[rhs_attr]
+            LOGGER.warning("%s = %s in %s recommends against %s = %s in %s",
+                           lhs_attr, lhs_value, lhs_name, rhs_attr, rhs_value, rhs_name)
+        return cls.construct_condition(args, attr_defined=attr_defined, attr_eq=attr_eq)
+
+    @classmethod
+    def exclude(cls, *args):
+        """Constructs a compatibility condition to enforce required conditions.
+        
+        The condition will raise a :any:`ConfigurationError` if the specified attribute is
+        defined or equal to the specified value (if given).
+        
+        Args:
+            *args: Corresponds to `args` in :any:`construct_condition`. 
+        
+        Returns:
+            Callable condition object for use with :any:`check_compatibility`
+            
+        Examples:
+            'yellow_cheese' must not be 'American'::
+            
+                CheeseShop.exclude('yellow_cheese', 'American')
+             
+            'blue_cheese' must not be set to any value::
+                
+                CheeseShop.exclude('blue_cheese')
+            
+            The value of 'have_cheese' will be checked for correctness by 'cheese_callback'::
+            
+                CheeseShop.exclude('have_cheese', cheese_callback)
+        """
+        def attr_defined(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
+            lhs_name = lhs.model_name.lower()
+            rhs_name = rhs.model_name.lower()
+            raise ConfigurationError("%s = %s in %s requires %s be undefined in %s" %
+                                     (lhs_attr, lhs_value, lhs_name, rhs_attr, rhs_name))
+        def attr_eq(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
+            lhs_name = lhs.model_name.lower()
+            rhs_name = rhs.model_name.lower()
+            rhs_value = rhs[rhs_attr]
+            raise ConfigurationError("%s = %s in %s is incompatible with %s = %s in %s" %
+                                     (lhs_attr, lhs_value, lhs_name, rhs_attr, rhs_value, rhs_name))
+        return cls.construct_condition(args, attr_defined=attr_defined, attr_eq=attr_eq)        
+
+    def check_compatibility(self, rhs):
+        """Test the controlled record for compatibility with another record.
+        
+        Operations combining data from multiple records (e.g. selecting a project configuration)
+        must know that the records are mutually compatible.  This routine checks the 'compat'
+        property of each attribute (if set) to enforce compatibility.  'compat' is a dictionary.
+        The keys of 'compat' are values or callables and the values are tuples of compatibility
+        conditions.  If the attribute with the 'compat' property is one of the key values then 
+        the conditions are checked.  The general form of 'compat' is:
+        ::
+        
+            {
+            (value|callable): (condition, [condition, ...]),
+            [(value|callable): (condition, [condition, ...]), ...]
+            }
+            
+        Use tuples to join multiple conditions.  If only one condition is needed then you do
+        not need to use a tuple.
+        
+        `value` may either be a literal value (e.g. True or "oranges") or a callable accepting
+        one argument and returning either True or False.  The attribute's value is passed to the
+        callable to determine if the listed conditions should be checked.  If `value` is a literal
+        then the listed conditions are checked when the attribute's value matches `value`.     
+        
+        See :any:`require`, :any:`encourage`, :any:`discourage`, :any:`exclude` for common conditions.
+        
+        Args:
+            rhs (Controller): Controller for the data record to check compatibility.
             
         Raises:
             ConfigurationError: The two records are not compatible.
-        """ 
-        for fields in self.attributes.itervalues():
+
+        Examples:
+
+            Suppose we have this data:
+            ::
+            
+                Programmer.attributes = {
+                    'hungry': {
+                        'type': 'boolean',
+                        'compat': {True: (CheeseShop.require('have_cheese', True),
+                                          CheeseShop.encourage('chedder', 'Wisconsin'),
+                                          ProgramManager.discourage('holding_long_meeting', True),
+                                          Roommate.exclude('steals_food', True)}
+                    }
+                }
+
+                bob = Programmer({'hungry': True})
+                world_o_cheese = CheeseShop({'have_cheese': False, 'chedder': 'Wisconsin'})
+                cheese_wizzard = CheeseShop({'have_cheese': True, 'chedder': 'California'})
+                louis = ProgramManager({'holding_long_meeting': True})
+                keith = Roommate({'steals_food': True})
+                
+            These expressions raise :any:`ConfigurationError`:
+            ::
+            
+                bob.check_compatibility(world_o_cheese)   # Because have_cheese == False
+                bob.check_compatibility(keith)            # Because steals_food == True
+            
+            These expressions generate warning messages:
+            ::
+            
+                bob.check_compatibility(cheese_wizzard)   # Because chedder != Wisconsin
+                bob.check_compatibility(louis)            # Because holding_long_meeting == True
+                
+            If ``bob['hungry'] == False`` or if the 'hungry' attribute were not set then all 
+            the above expressions do nothing.
+        """
+        as_tuple = lambda x: x if isinstance(x, tuple) else (x,)
+        for attr, props in self.attributes.iteritems():
             try:
-                compat = fields['compat']
+                compat = props['compat']
             except KeyError:
                 continue
-            for model, attr in compat.iteritems():
-                if model == other.model_name:
-                    for oattr, rule in attr.iteritems():
-                        LOGGER.debug("%s is oattr, while %s is self.data for %s",
-                                     oattr, self.data, self.model_name)
-                        LOGGER.debug("%s is oattr, while %s is other.data for %s", 
-                                     oattr, other.data, other.model_name)
-                        try:
-                            self_oattr = util.parse_bool(self.data[oattr], 
-                                                         additional_true=['fallback', 'always'], 
-                                                         additional_false=['never'])
-                            other_oattr = util.parse_bool(other.data[oattr], 
-                                                          additional_true=['fallback', 'always'], 
-                                                          additional_false=['never'])
-                        except KeyError:
-                            continue
-                        if self_oattr and other_oattr:
-                            LOGGER.debug("%s is turned on in %s and on in %s",
-                                         oattr, self.model_name, other.model_name)
-                        if self_oattr and (not other_oattr):
-                            LOGGER.debug("%s is turned on in %s and off in %s with rule %s", 
-                                         oattr, self.model_name, other.model_name, rule)
-                            if rule == requisite.Required:
-                                raise ConfigurationError("%s required by %s but not set in %s " % 
-                                                         (oattr, self.model_name, other.model_name))
-                            elif rule == requisite.Recommended:
-                                LOGGER.warning("%s is recommended for %s by the %s model",
-                                               oattr, self.model_name, other.model_name)
-                        if other_oattr and not self_oattr:
-                            LOGGER.debug("%s is turned off in %s and on %s", 
-                                         oattr, self.model_name, other.model_name)
-                            LOGGER.debug("%s is self.data[oattr] and %s is other.data[oattr] for oattr = %s",
-                                         self_oattr, other_oattr, oattr)
-                        if not self_oattr and not other_oattr:
-                            LOGGER.debug("%s is turned off in %s and off %s",
-                                         oattr, self.model_name, other.model_name)
+            try:
+                attr_value = self[attr]
+            except KeyError:
+                continue
+            for value, conditions in compat.iteritems():
+                if (callable(value) and value(attr_value)) or attr_value == value: 
+                    for condition in as_tuple(conditions):
+                        condition(self, attr, attr_value, rhs)
 
 
 class ByName(object):
@@ -753,14 +1052,7 @@ def _yield_model_classes():
         yield model_class       
 
 
-def _get_props_model_name(props):
-    try:
-        return props['model']
-    except KeyError:
-        return props['collection']
-    
-
-def _construct_model():
+def _construct_model(models):
     """Builds model relationships.
     
     Initializes controller classes and builds associations and references between data models.
@@ -771,7 +1063,11 @@ def _construct_model():
     Returns:
         dict: Model controller classes indexed by model name. 
     """
-    models = dict([(cls.__name__, cls) for cls in _yield_model_classes()])
+    def _get_props_model_name(props):
+        try:
+            return props['model']
+        except KeyError:
+            return props['collection']
     for cls_name, cls in models.iteritems():
         cls.__class_init__()
         for attr, props in cls.attributes.iteritems():
@@ -815,6 +1111,7 @@ def _construct_model():
                     if existing != forward:
                         raise ModelError(cls, "Conflicting associations on attribute '%s': "
                                          "%r vs. %r" % (attr, existing, forward))
-    return models
 
-MODELS = _construct_model()
+MODELS = dict([(_.__name__, _) for _ in _yield_model_classes()])
+_construct_model(MODELS)
+
