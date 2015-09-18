@@ -208,7 +208,7 @@ Target.attributes = {
         'model': 'Compiler',
         'required': SHMEM_CXX_ROLE.required,
         'description': '%s compiler command' % SHMEM_CXX_ROLE.language,
-        'argparse': {'flags': ('--mpi-cxx',),
+        'argparse': {'flags': ('--shmem-cxx',),
                      'group': 'Symmetric Hierarchical Memory (SHMEM)',
                      'metavar': '<command>'}
     },
@@ -216,14 +216,14 @@ Target.attributes = {
         'model': 'Compiler',
         'required': SHMEM_FC_ROLE.required,
         'description': '%s compiler command' % SHMEM_FC_ROLE.language,
-        'argparse': {'flags': ('--mpi-fc',),
+        'argparse': {'flags': ('--shmem-fc',),
                      'group': 'Symmetric Hierarchical Memory (SHMEM)',
                      'metavar': '<command>'}
     },
     'shmem_include_path': {
         'type': 'array',
         'description': 'paths to search for SHMEM header files when building SHMEM applications',
-        'argparse': {'flags': ('--mpi-include-path',),
+        'argparse': {'flags': ('--shmem-include-path',),
                      'group': 'Symmetric Hierarchical Memory (SHMEM)',
                      'metavar': '<path>',
                      'nargs': '+'},
@@ -231,7 +231,7 @@ Target.attributes = {
     'shmem_library_path': {
         'type': 'array',
         'description': 'paths to search for SHMEM library files when building SHMEM applications',
-        'argparse': {'flags': ('--mpi-library-path',),
+        'argparse': {'flags': ('--shmem-library-path',),
                      'group': 'Symmetric Hierarchical Memory (SHMEM)',
                      'metavar': '<path>',
                      'nargs': '+'},
@@ -239,7 +239,7 @@ Target.attributes = {
     'shmem_libraries': {
         'type': 'array',
         'description': 'libraries to link to when building SHMEM applications',
-        'argparse': {'flags': ('--mpi-libraries',),
+        'argparse': {'flags': ('--shmem-libraries',),
                      'group': 'Symmetric Hierarchical Memory (SHMEM)',
                      'metavar': '<flag>',
                      'nargs': '+'},
