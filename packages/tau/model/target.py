@@ -42,6 +42,7 @@ from tau.cf.target import Architecture, OperatingSystem
 from tau.cf.target import host
 from tau.cf.compiler import CC_ROLE, CXX_ROLE, FC_ROLE, UPC_ROLE, CompilerRole
 from tau.cf.compiler.mpi import MPI_CC_ROLE, MPI_CXX_ROLE, MPI_FC_ROLE
+from tau.cf.compiler.shmem import SHMEM_CC_ROLE, SHMEM_CXX_ROLE, SHMEM_FC_ROLE
 from tau.cf.compiler.installed import InstalledCompilerSet 
 
 
@@ -166,6 +167,54 @@ class Target(Controller, ByName):
             'description': 'libraries to link to when building MPI applications',
             'argparse': {'flags': ('--mpi-libraries',),
                          'group': 'Message Passing Interface (MPI)',
+                         'metavar': '<flag>',
+                         'nargs': '+'},
+        },
+        SHMEM_CC_ROLE.keyword: {
+            'model': 'Compiler',
+            'required': SHMEM_CC_ROLE.required,
+            'description': '%s compiler command' % SHMEM_CC_ROLE.language,
+            'argparse': {'flags': ('--shmem-cc',),
+                         'group': 'Symmetric Hierarchical Memory (SHMEM)',
+                         'metavar': '<command>'}
+        },
+        SHMEM_CXX_ROLE.keyword: {
+            'model': 'Compiler',
+            'required': SHMEM_CXX_ROLE.required,
+            'description': '%s compiler command' % SHMEM_CXX_ROLE.language,
+            'argparse': {'flags': ('--mpi-cxx',),
+                         'group': 'Symmetric Hierarchical Memory (SHMEM)',
+                         'metavar': '<command>'}
+        },
+        SHMEM_FC_ROLE.keyword: {
+            'model': 'Compiler',
+            'required': SHMEM_FC_ROLE.required,
+            'description': '%s compiler command' % SHMEM_FC_ROLE.language,
+            'argparse': {'flags': ('--mpi-fc',),
+                         'group': 'Symmetric Hierarchical Memory (SHMEM)',
+                         'metavar': '<command>'}
+        },
+        'shmem_include_path': {
+            'type': 'array',
+            'description': 'paths to search for SHMEM header files when building SHMEM applications',
+            'argparse': {'flags': ('--mpi-include-path',),
+                         'group': 'Symmetric Hierarchical Memory (SHMEM)',
+                         'metavar': '<path>',
+                         'nargs': '+'},
+        },
+        'shmem_library_path': {
+            'type': 'array',
+            'description': 'paths to search for SHMEM library files when building SHMEM applications',
+            'argparse': {'flags': ('--mpi-library-path',),
+                         'group': 'Symmetric Hierarchical Memory (SHMEM)',
+                         'metavar': '<path>',
+                         'nargs': '+'},
+        },
+        'shmem_libraries': {
+            'type': 'array',
+            'description': 'libraries to link to when building SHMEM applications',
+            'argparse': {'flags': ('--mpi-libraries',),
+                         'group': 'Symmetric Hierarchical Memory (SHMEM)',
                          'metavar': '<flag>',
                          'nargs': '+'},
         },
