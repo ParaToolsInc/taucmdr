@@ -68,16 +68,14 @@ _COMMANDS_PACKAGE = __name__ + '.commands'
 
 class UnknownCommandError(ConfigurationError):
     """Indicates that a specified command is unknown."""
-    message_fmt = ("\n"
-                   "%(value)r is not a valid TAU command.\n"
+    message_fmt = ("%(value)r is not a valid TAU command.\n"
                    "\n"
                    "%(hints)s\n")
 
 
 class AmbiguousCommandError(ConfigurationError):
     """Indicates that a specified partial command is ambiguous."""
-    message_fmt = ("\n"
-                   "Command '%(value)s' is ambiguous.\n"
+    message_fmt = ("Command '%(value)s' is ambiguous.\n"
                    "\n"
                    "%(hints)s\n")
     def __init__(self, value, matches, *hints):
