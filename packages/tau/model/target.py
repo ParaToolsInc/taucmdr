@@ -42,12 +42,13 @@ from tau.cf.target import Architecture, OperatingSystem
 from tau.cf.target import host
 from tau.cf.compiler import CC_ROLE, CXX_ROLE, FC_ROLE, UPC_ROLE, CompilerRole
 from tau.cf.compiler.mpi import MPI_CC_ROLE, MPI_CXX_ROLE, MPI_FC_ROLE
+from tau.cf.compiler.shmem import SHMEM_CC_ROLE, SHMEM_CXX_ROLE, SHMEM_FC_ROLE
 from tau.cf.compiler.installed import InstalledCompilerSet 
 
 
 class Target(Controller, ByName):
     """Target data controller."""
-    
+
     def on_create(self):
         super(Target, self).on_create()
         if not self['tau_source']:
@@ -194,6 +195,54 @@ Target.attributes = {
         'compat': {bool: (Target.require(MPI_CC_ROLE.keyword),
                           Target.require(MPI_CXX_ROLE.keyword),
                           Target.require(MPI_FC_ROLE.keyword))}
+    },
+    SHMEM_CC_ROLE.keyword: {
+        'model': 'Compiler',
+        'required': SHMEM_CC_ROLE.required,
+        'description': '%s compiler command' % SHMEM_CC_ROLE.language,
+        'argparse': {'flags': ('--shmem-cc',),
+                     'group': 'Symmetric Hierarchical Memory (SHMEM)',
+                     'metavar': '<command>'}
+    },
+    SHMEM_CXX_ROLE.keyword: {
+        'model': 'Compiler',
+        'required': SHMEM_CXX_ROLE.required,
+        'description': '%s compiler command' % SHMEM_CXX_ROLE.language,
+        'argparse': {'flags': ('--shmem-cxx',),
+                     'group': 'Symmetric Hierarchical Memory (SHMEM)',
+                     'metavar': '<command>'}
+    },
+    SHMEM_FC_ROLE.keyword: {
+        'model': 'Compiler',
+        'required': SHMEM_FC_ROLE.required,
+        'description': '%s compiler command' % SHMEM_FC_ROLE.language,
+        'argparse': {'flags': ('--shmem-fc',),
+                     'group': 'Symmetric Hierarchical Memory (SHMEM)',
+                     'metavar': '<command>'}
+    },
+    'shmem_include_path': {
+        'type': 'array',
+        'description': 'paths to search for SHMEM header files when building SHMEM applications',
+        'argparse': {'flags': ('--shmem-include-path',),
+                     'group': 'Symmetric Hierarchical Memory (SHMEM)',
+                     'metavar': '<path>',
+                     'nargs': '+'},
+    },
+    'shmem_library_path': {
+        'type': 'array',
+        'description': 'paths to search for SHMEM library files when building SHMEM applications',
+        'argparse': {'flags': ('--shmem-library-path',),
+                     'group': 'Symmetric Hierarchical Memory (SHMEM)',
+                     'metavar': '<path>',
+                     'nargs': '+'},
+    },
+    'shmem_libraries': {
+        'type': 'array',
+        'description': 'libraries to link to when building SHMEM applications',
+        'argparse': {'flags': ('--shmem-libraries',),
+                     'group': 'Symmetric Hierarchical Memory (SHMEM)',
+                     'metavar': '<flag>',
+                     'nargs': '+'},
     },
     'cuda': {
         'type': 'string',
