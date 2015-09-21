@@ -48,7 +48,7 @@ EXIT_SUCCESS = 0
 HELP_CONTACT = '<support@paratools.com>'
 """str: E-mail address users should contact for help."""
 
-PROJECT_URL = 'http://www.taucommander.com/'
+TAUCMDR_URL = 'http://www.taucommander.com/'
 """str: URL of the TAU Commander project."""
 
 MINIMUM_PYTHON_VERSION = (2, 7)
@@ -65,7 +65,7 @@ if sys.version_info < MINIMUM_PYTHON_VERSION:
 %s
 Your Python version is %s but Python %s or later is required.
 Please update Python or contact %s for support.
-""" % (PROJECT_URL, sys.executable, sys.version, VERSION, EXPECTED, HELP_CONTACT))
+""" % (TAUCMDR_URL, sys.executable, sys.version, VERSION, EXPECTED, HELP_CONTACT))
     sys.exit(EXIT_FAILURE)
 
 TAU_HOME = os.path.realpath(os.path.abspath(os.environ['__TAU_HOME__']))
@@ -84,13 +84,16 @@ Mainly used for help messages. **Do not** change it once it is set.
 SYSTEM_PREFIX = os.path.join(TAU_HOME, '.system')
 """str: Absolute path to system-level TAU Commander files.
 
-System-level software package installation prefix and home for system-level projects.
-Do not** change it once it is set.
+System-level storage prefix.
+**Do not** change it once it is set.
 """
 
 USER_PREFIX = os.path.join(os.path.expanduser('~'), '.tau')
 """str: Absolute path to user-level TAU Commander files.
 
-User-level software package installation prefix and home for user-level projects.
+User-level storage prefix.
 **Do not** change it once it is set.
 """
+
+PROJECT_DIR = '.tau'
+"""str: Name of the directory containing TAU Commander project files."""

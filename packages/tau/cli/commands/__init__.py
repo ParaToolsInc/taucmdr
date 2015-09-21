@@ -33,7 +33,7 @@ Instead, process arguments in the appropriate subcommand.
 
 import os
 import sys
-from tau import PROJECT_URL, TAU_SCRIPT
+from tau import TAUCMDR_URL, TAU_SCRIPT
 from tau import cli, logger
 from tau.cli import UnknownCommandError, arguments
 from tau.cli.commands import build, trial
@@ -43,7 +43,7 @@ LOGGER = logger.get_logger(__name__)
 
 COMMAND = os.path.basename(TAU_SCRIPT)
 
-SHORT_DESCRIPTION = "TAU Commander [ %s ]" % PROJECT_URL
+SHORT_DESCRIPTION = "TAU Commander [ %s ]" % TAUCMDR_URL
 
 HELP = """
 '%(command)s' page to be written.

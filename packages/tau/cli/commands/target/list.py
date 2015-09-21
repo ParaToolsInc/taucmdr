@@ -98,7 +98,7 @@ def main(argv):
 
     print '{:=<{}}\n'.format('== Targets (%s) ==' % USER_PREFIX, logger.LINE_WIDTH)
     if not found:
-        print "No targets. See `%s --help`" % COMMAND
+        print "No targets. See `%s --help`.\n" % COMMAND
         return EXIT_WARNING
     
     table = Texttable(logger.LINE_WIDTH)

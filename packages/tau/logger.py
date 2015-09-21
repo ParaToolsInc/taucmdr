@@ -48,7 +48,7 @@ import string
 from termcolor import termcolor
 from datetime import datetime
 from logging import handlers
-from tau import USER_PREFIX, EXIT_FAILURE, EXIT_WARNING
+from tau import USER_PREFIX
 
 
 def get_terminal_size():
@@ -281,11 +281,10 @@ class LogFormatter(logging.Formatter, object):
 
     def _textwrap_message(self, record):
         for line in record.getMessage().split('\n'):
-            if not self.printable_only or set(line).issubset(self.PRINTABLE_CHARS):
-                if line:
-                    yield self._text_wrapper.fill(line)
-                else:
-                    yield self.line_marker
+            if line and (not self.printable_only or set(line).issubset(self.PRINTABLE_CHARS)):
+                yield self._text_wrapper.fill(line)
+            else:
+                yield self.line_marker
 
     def _textwrap(self, lines):
         for line in lines:
