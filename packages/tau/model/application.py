@@ -73,6 +73,16 @@ Application.attributes = {
                      'const': True,
                      'action': ParseBooleanAction},
     },
+    'opencl': {
+        'type': 'boolean', 
+        'description': 'application uses OpenCL',
+        'default': False, 
+        'argparse': {'flags': ('--opencl',),
+                     'metavar': 'yes/no',
+                     'nargs': '?',
+                     'const': True,
+                     'action': ParseBooleanAction},
+    },
     'pthreads': {
         'type': 'boolean',
         'description': 'application uses pthreads',

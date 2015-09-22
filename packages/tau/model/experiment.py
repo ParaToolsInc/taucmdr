@@ -140,6 +140,9 @@ class Experiment(Controller):
                                    mpi_library_path=target.get('mpi_library_path', []),
                                    mpi_libraries=target.get('mpi_libraries', []),
                                    cuda_support=application['cuda'],
+                                   cuda_prefix=target.get('cuda', None),
+                                   opencl_support=application['opencl'],
+                                   opencl_prefix=target.get('opencl', None),
                                    shmem_support=application['shmem'],
                                    mpc_support=application['mpc'],
                                    # Instrumentation methods and options            
@@ -156,6 +159,7 @@ class Experiment(Controller):
                                    metrics=measurement['metrics'],
                                    measure_mpi=measurement['mpi'],
                                    measure_openmp=measurement['openmp'],
+                                   measure_opencl=measurement['opencl'],
                                    measure_pthreads=None,  # TODO
                                    measure_cuda=None,  # Todo
                                    measure_shmem=None,  # TODO

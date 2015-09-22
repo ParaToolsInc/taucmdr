@@ -246,8 +246,16 @@ Target.attributes = {
     },
     'cuda': {
         'type': 'string',
-        'description': 'path to NVIDIA CUDA installation',
+        'description': 'path to NVIDIA CUDA installation (enables OpenCL support)',
         'argparse': {'flags': ('--cuda',),
+                     'group': 'software package',
+                     'metavar': '<path>',
+                     'action': ParsePackagePathAction},
+    },
+    'opencl': {
+        'type': 'string',
+        'description': 'path to OpenCL libraries and headers',
+        'argparse': {'flags': ('--opencl',),
                      'group': 'software package',
                      'metavar': '<path>',
                      'action': ParsePackagePathAction},

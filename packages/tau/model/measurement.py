@@ -218,6 +218,20 @@ Measurement.attributes = {
                     Target.require(CXX_ROLE.keyword, intel_only),
                     Target.require(FC_ROLE.keyword, intel_only))}
     },
+    'opencl': {
+        'type': 'boolean',
+        'default': True,
+        'description': 'record OpenCL events',
+        'argparse': {'flags': ('--opencl',),
+                     'group': 'library',
+                     'metavar': 'T/F',
+                     'nargs': '?',
+                     'const': True,
+                     'action': ParseBooleanAction},
+        'compat': {True:
+                   (Target.require('opencl'),
+                    Application.require('opencl'))}
+    },
     'callpath': {
         'type': 'integer',
         'default': 0,
