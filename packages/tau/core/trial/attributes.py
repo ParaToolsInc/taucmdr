@@ -29,54 +29,48 @@
 
 from tau.core.experiment.controller import Experiment
 
-# pylint: disable=invalid-name
 
-number = {
-    'type': 'integer',
-    'required': True,
-    'description': 'trial unique identifier'
+ATTRIBUTES = {
+    'number': {
+        'type': 'integer',
+        'required': True,
+        'description': 'trial unique identifier'
+    },
+    'experiment': {
+        'model': Experiment,
+        'required': True,
+        'description': "this trial's experiment"
+    },
+    'command': {
+        'type': 'string',
+        'required': True,
+        'description': "command line executed when performing the trial"
+    },
+    'cwd': {
+        'type': 'string',
+        'required': True,
+        'description': "directory the trial was performed in",
+    },
+    'environment': {
+        'type': 'string',
+        'required': True,
+        'description': "shell environment the trial was performed in"
+    },
+    'begin_time': {
+        'type': 'datetime',
+        'description': "date and time the trial began"
+    },
+    'end_time': {
+        'type': 'datetime',
+        'description': "date and time the trial ended"
+    },
+    'return_code': {
+        'type': 'integer',
+        'description': "return code of the command executed when performing the trial"
+    },
+    'data_size': {
+        'type': 'integer',
+        'description': "the size in bytes of the trial data"
+    }
 }
 
-experiment = {
-    'model': Experiment,
-    'required': True,
-    'description': "this trial's experiment"
-}
-
-command = {
-    'type': 'string',
-    'required': True,
-    'description': "command line executed when performing the trial"
-}
-
-cwd = {
-    'type': 'string',
-    'required': True,
-    'description': "directory the trial was performed in",
-}
-
-environment = {
-    'type': 'string',
-    'required': True,
-    'description': "shell environment the trial was performed in"
-}
-
-begin_time = {
-    'type': 'datetime',
-    'description': "date and time the trial began"
-}
-
-end_time = {
-    'type': 'datetime',
-    'description': "date and time the trial ended"
-}
-
-return_code = {
-    'type': 'integer',
-    'description': "return code of the command executed when performing the trial"
-}
-
-data_size = {
-    'type': 'integer',
-    'description': "the size in bytes of the trial data"
-}

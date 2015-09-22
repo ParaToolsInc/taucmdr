@@ -75,8 +75,7 @@ class Controller(object):
         cls.references = set()
         attrs_module_name = '.'.join(module_name_parts[:-1] + ['attributes'])
         __import__(attrs_module_name)
-        cls.attributes = {key: val for key, val in vars(sys.modules[attrs_module_name]).iteritems()
-                          if not key.startswith('_') and isinstance(val, dict)}
+        cls.attributes = sys.modules[attrs_module_name].ATTRIBUTES
         for attr, props in cls.attributes.iteritems():
             model_attr_name = cls.model_name + "." + attr
             if 'collection' in props and not 'via' in props:

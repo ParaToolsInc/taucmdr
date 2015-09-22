@@ -27,103 +27,94 @@
 #
 """Application data model attributes."""
 
-# pylint: disable=invalid-name
-
 from tau.cli.arguments import ParseBooleanAction
 from tau.core.project.controller import Project
 from tau.core.target.controller import Target
 from tau.core.measurement.controller import Measurement
 
-
-projects = { 
-    'collection': Project,
-    'via': 'applications',
-    'description': 'projects using this application'
-}
-
-name = {
-    'type': 'string',
-    'description': 'application configuration name',
-    'unique': True,
-    'argparse': {'metavar': '<application_name>'}
-}
-
-openmp = {
-    'type': 'boolean', 
-    'description': 'application uses OpenMP',
-    'default': False, 
-    'argparse': {'flags': ('--openmp',),
-                 'metavar': 'yes/no',
-                 'nargs': '?',
-                 'const': True,
-                 'action': ParseBooleanAction},
-}
-
-pthreads = {
-    'type': 'boolean',
-    'description': 'application uses pthreads',
-    'default': False,
-    'argparse': {'flags': ('--pthreads',),
-                 'metavar': 'yes/no',
-                 'nargs': '?',
-                 'const': True,
-                 'action': ParseBooleanAction}
-}
-
-mpi = {
-    'type': 'boolean',
-    'default': False,
-    'description': 'application uses MPI',
-    'argparse': {'flags': ('--mpi',),
-                 'metavar': 'yes/no',
-                 'nargs': '?',
-                 'const': True,
-                 'action': ParseBooleanAction},
-    'compat': {True: Measurement.encourage('mpi', True)}
-}
-
-cuda = {
-    'type': 'boolean',
-    'default': False,
-    'description': 'application uses NVIDIA CUDA',
-    'argparse': {'flags': ('--cuda',),
-                 'metavar': 'yes/no',
-                 'nargs': '?',
-                 'const': True,
-                 'action': ParseBooleanAction},
-    'compat': {True: Target.require('cuda')}
-}
-
-opencl = {
-    'type': 'boolean',
-    'default': False,
-    'description': 'application uses OpenCL',
-    'argparse': {'flags': ('--opencl',),
-                 'metavar': 'yes/no',
-                 'nargs': '?',
-                 'const': True,
-                 'action': ParseBooleanAction},
-    'compat': {True: Target.require('opencl')}
-}
-
-shmem = {
-    'type': 'boolean',
-    'default': False,
-    'description': 'application uses SHMEM',
-    'argparse': {'flags': ('--shmem',),
-                 'metavar': 'yes/no',
-                 'nargs': '?',
-                 'const': True,
-                 'action': ParseBooleanAction},
-}
-
-mpc = {
-    'type': 'boolean',
-    'default': False,
-    'description': 'application uses MPC',
-    'argparse': {'flags': ('--mpc',),
-                 'metavar': 'yes/no',
-                 'nargs': '?',
-                 'const': True,
-                 'action': ParseBooleanAction}
+ATTRIBUTES = {
+    'projects': {
+        'collection': Project,
+        'via': 'applications',
+        'description': 'projects using this application'
+    },
+    'name': {
+        'type': 'string',
+        'description': 'application configuration name',
+        'unique': True,
+        'argparse': {'metavar': '<application_name>'}
+    },
+    'openmp': {
+        'type': 'boolean', 
+        'description': 'application uses OpenMP',
+        'default': False, 
+        'argparse': {'flags': ('--openmp',),
+                     'metavar': 'yes/no',
+                     'nargs': '?',
+                     'const': True,
+                     'action': ParseBooleanAction},
+    },
+    'pthreads': {
+        'type': 'boolean',
+        'description': 'application uses pthreads',
+        'default': False,
+        'argparse': {'flags': ('--pthreads',),
+                     'metavar': 'yes/no',
+                     'nargs': '?',
+                     'const': True,
+                     'action': ParseBooleanAction}
+    },
+    'mpi': {
+        'type': 'boolean',
+        'default': False,
+        'description': 'application uses MPI',
+        'argparse': {'flags': ('--mpi',),
+                     'metavar': 'yes/no',
+                     'nargs': '?',
+                     'const': True,
+                     'action': ParseBooleanAction},
+        'compat': {True: Measurement.encourage('mpi', True)}
+    },
+    'cuda': {
+        'type': 'boolean',
+        'default': False,
+        'description': 'application uses NVIDIA CUDA',
+        'argparse': {'flags': ('--cuda',),
+                     'metavar': 'yes/no',
+                     'nargs': '?',
+                     'const': True,
+                     'action': ParseBooleanAction},
+        'compat': {True: Target.require('cuda')}
+    },
+    'opencl': {
+        'type': 'boolean',
+        'default': False,
+        'description': 'application uses OpenCL',
+        'argparse': {'flags': ('--opencl',),
+                     'metavar': 'yes/no',
+                     'nargs': '?',
+                     'const': True,
+                     'action': ParseBooleanAction},
+        'compat': {True: Target.require('opencl')}
+    },
+    'shmem': {
+        'type': 'boolean',
+        'default': False,
+        'description': 'application uses SHMEM',
+        'argparse': {'flags': ('--shmem',),
+                     'metavar': 'yes/no',
+                     'nargs': '?',
+                     'const': True,
+                     'action': ParseBooleanAction},
+    },
+    'mpc': {
+        'type': 'boolean',
+        'default': False,
+        'description': 'application uses MPC',
+        'argparse': {'flags': ('--mpc',),
+                     'metavar': 'yes/no',
+                     'nargs': '?',
+                     'const': True,
+                     'action': ParseBooleanAction}
+    }
 }

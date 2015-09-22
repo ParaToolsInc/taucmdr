@@ -27,13 +27,12 @@
 #
 """Setting data model attributes."""
 
-# pylint: disable=invalid-name
-
-key = {
-    'type': 'string',
-    'unique': True
-}
-
-value = {
-    'type': 'string'
+ATTRIBUTES = {
+    'key': {
+        'type': 'string',
+        'unique': True
+    },
+    'value': {
+        'type': 'string'
+    }
 }

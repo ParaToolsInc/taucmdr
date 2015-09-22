@@ -27,18 +27,16 @@
 #
 """Compiler data model attributes."""
 
-# pylint: disable=invalid-name
-
-
-path = {
-    'type': 'string',
-    'required': True,
-    'unique': True,
-    'description': "absolute path to the compiler command"
-}
-
-md5 = {
-    'type': 'string',
-    'required': True,
-    'description': "checksum of the compiler command file"
+ATTRIBUTES = {
+    'path': {
+        'type': 'string',
+        'required': True,
+        'unique': True,
+        'description': "absolute path to the compiler command"
+    },
+    'md5': {
+        'type': 'string',
+        'required': True,
+        'description': "checksum of the compiler command file"
+    }
 }

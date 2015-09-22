@@ -27,41 +27,36 @@
 #
 """Experiment data model attributes."""
 
-# pylint: disable=invalid-name
-
 from tau.core.project.controller import Project
 from tau.core.target.controller import Target
 from tau.core.application.controller import Application
 from tau.core.measurement.controller import Measurement
 from tau.core.trial.controller import Trial
 
-
-project = {
-    'model': Project,
-    'required': True,
-    'description': "Project this experiment belongs to"
-}
-
-target = {
-    'model': Target,
-    'required': True,
-    'description': "Target this experiment runs on"
-}
-
-application = {
-    'model': Application,
-    'required': True,
-    'description': "Application this experiment uses"
-}
-
-measurement = {
-    'model': Measurement,
-    'required': True,
-    'description': "Measurement parameters for this experiment"
-}
-
-trials = {
-    'collection': Trial,
-    'via': 'experiment',
-    'description': "Trials of this experiment"
+ATTRIBUTES = {
+    'project': {
+        'model': Project,
+        'required': True,
+        'description': "Project this experiment belongs to"
+    },
+    'target': {
+        'model': Target,
+        'required': True,
+        'description': "Target this experiment runs on"
+    },
+    'application': {
+        'model': Application,
+        'required': True,
+        'description': "Application this experiment uses"
+    },
+    'measurement': {
+        'model': Measurement,
+        'required': True,
+        'description': "Measurement parameters for this experiment"
+    },
+    'trials': {
+        'collection': Trial,
+        'via': 'experiment',
+        'description': "Trials of this experiment"
+    }
 }
