@@ -189,7 +189,8 @@ class LogFormatter(logging.Formatter, object):
         self.allow_colors = allow_colors
         self.line_width = line_width
         self.line_marker = self._colored(line_marker, 'red')
-        self._text_wrapper = textwrap.TextWrapper(width=self.line_width-len(self.line_marker),
+        self._text_wrapper = textwrap.TextWrapper(width=self.line_width+len(self.line_marker),
+                                                  initial_indent=self.line_marker,
                                                   subsequent_indent=self.line_marker + '    ',
                                                   break_long_words=False,
                                                   break_on_hyphens=False,
@@ -200,12 +201,6 @@ class LogFormatter(logging.Formatter, object):
                          logging.INFO: lambda r: '\n'.join(self._textwrap_message(r)),
                          logging.DEBUG: self._debug_message}
         
-    def _colored(self, text, *color_args):
-        if self.allow_colors and color_args:
-            return termcolor.colored(text, *color_args)
-        else:
-            return text
-
     def format(self, record):
         """Formats a log record.
         
@@ -223,27 +218,41 @@ class LogFormatter(logging.Formatter, object):
         except KeyError:
             raise RuntimeError('Unknown record level (name: %s)' % record.levelname)
 
+    def _colored(self, text, *color_args):
+        if self.allow_colors and color_args:
+            return termcolor.colored(text, *color_args)
+        else:
+            return text
+
     def _msgbox(self, record, marker):
-        width = self.line_width - len(self.line_marker)
-        hline = self.line_marker + self._colored(marker * width, 'red')
-        parts = [hline, self.line_marker, self.line_marker + self._colored(record.levelname, 'cyan')]
+        width = self.line_width
+        hline = self._colored(marker * width, 'red')
+        parts = list(self._textwrap([hline, ' ', self._colored(record.levelname, 'cyan')]))
         parts.extend(self._textwrap_message(record))
-        parts.append(hline)
+        parts.extend(self._textwrap([hline]))
         return '\n'.join(parts)
     
     def _debug_message(self, record):
         message = record.getMessage()
         if self.printable_only and (not set(message).issubset(self.PRINTABLE_CHARS)):
             message = "<<UNPRINTABLE>>"
-        return '[%s %s:%s] %s' % (self._colored(record.levelname, 'cyan'), record.name, record.lineno, message)
+        marker = self._colored("[%s %s:%s]" % (record.levelname, record.name, record.lineno), 'yellow')
+        return '%s %s' % (marker, message)
 
     def _textwrap_message(self, record):
-        parts = []
         for line in record.getMessage().split('\n'):
             if not self.printable_only or set(line).issubset(self.PRINTABLE_CHARS):
-                message = self._text_wrapper.fill(line)
-            parts.append(self.line_marker + message)
-        return parts
+                if line:
+                    yield self._text_wrapper.fill(line)
+                else:
+                    yield self.line_marker
+
+    def _textwrap(self, lines):
+        for line in lines:
+            if line:
+                yield self._text_wrapper.fill(line)
+            else:
+                yield self.line_marker
 
 
 def get_logger(name):
