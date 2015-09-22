@@ -25,35 +25,16 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""Application data model.
+"""Application data model attributes."""
 
-:any:`Application` fully describes the application configuration to be profiled, 
-including the features the application uses, e.g. OpenMP, MPI, CUDA, etc.
-Each specific application **configuration** has its own application record.  
-For example, if an application can operate with or without OpenMP then there 
-are potentially two application records for the same application code: one 
-specifying OpenMP is used and the other specifying OpenMP is not used.
-"""
-
-
-from tau.model import Controller, ByName
 from tau.cli.arguments import ParseBooleanAction
+from tau.core.project.controller import Project
+from tau.core.target.controller import Target
+from tau.core.measurement.controller import Measurement
 
-
-class Application(Controller, ByName):
-    """Application data controller."""
-    pass
-
-
-# Prevent circular imports by importing controllers from other models 
-# only after defining our own controller.  
-from tau.model.target import Target
-from tau.model.measurement import Measurement
-
-
-Application.attributes = {
-    'projects': { 
-        'collection': 'Project',
+ATTRIBUTES = {
+    'projects': {
+        'collection': Project,
         'via': 'applications',
         'description': 'projects using this application'
     },
@@ -114,6 +95,17 @@ Application.attributes = {
                      'const': True,
                      'action': ParseBooleanAction},
         'compat': {True: Target.require('cuda')}
+    },
+    'opencl': {
+        'type': 'boolean',
+        'default': False,
+        'description': 'application uses OpenCL',
+        'argparse': {'flags': ('--opencl',),
+                     'metavar': 'yes/no',
+                     'nargs': '?',
+                     'const': True,
+                     'action': ParseBooleanAction},
+        'compat': {True: Target.require('opencl')}
     },
     'shmem': {
         'type': 'boolean',

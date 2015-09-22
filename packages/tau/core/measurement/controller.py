@@ -25,56 +25,30 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""TAU Commander settings.
+"""Measurement data model controller."""
 
-FIXME: settings needs a design review.
-"""
-
-from tau import logger
-from tau.core.setting.controller import Setting
+from tau.error import ConfigurationError
+from tau.core.controller import Controller, ByName
 
 
-LOGGER = logger.get_logger(__name__)
+class Measurement(Controller, ByName):
+    """Measurement data controller."""      
+    
+    def on_create(self):
+        super(Measurement, self).on_create()
+        def get_flag(key):
+            return self.attributes[key]['argparse']['flags'][0]  # pylint: disable=no-member
 
-_DATA = {}
+        if not (self['profile'] or self['trace']):
+            profile_flag = get_flag('profile')
+            trace_flag = get_flag('trace')
+            raise ConfigurationError("Profiling, tracing, or both must be enabled",
+                                     "Specify %s or %s or both" % (profile_flag, trace_flag))
+        
+        if self['source_inst'] == 'never' and self['compiler_inst'] == 'never' and not self['sample']:
+            source_inst_flag = get_flag('source_inst')
+            compiler_inst_flag = get_flag('compiler_inst')
+            sample_flag = get_flag('sample')
+            raise ConfigurationError("At least one instrumentation method must be used",
+                                     "Specify %s, %s, or %s" % (source_inst_flag, compiler_inst_flag, sample_flag))
 
-
-def _load():
-    for record in Setting.all():
-        key = record['key']
-        val = record['value']
-        _DATA[key] = val
-    LOGGER.debug("Loaded settings: %r", _DATA)
-
-
-def _save():
-    LOGGER.debug("Saving settings: %r", _DATA)
-    for key, val in _DATA.iteritems():
-        if Setting.exists({'key': key}):
-            Setting.update({'value': val}, {'key': key})
-        else:
-            Setting.create({'key': key, 'value': val})
-
-
-def get(key):
-    """
-    Get the value of setting 'key' or None if not set
-    """
-    if not _DATA:
-        _load()
-    return _DATA.get(key, None)
-
-
-def set(key, val):
-    """
-    Set setting 'key' to value 'val'
-    """
-    _DATA[key] = val
-    _save()
-
-
-def unset(key):
-    """
-    Remove setting 'key' from the list of settings
-    """
-    Setting.delete({'key': key})

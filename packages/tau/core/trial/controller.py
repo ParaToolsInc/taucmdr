@@ -25,21 +25,17 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""Trial data model.
-
-Every application of an :any:`Experiment` produces a new :any:`Trial`.  The trial
-record completely describes the hardware and software environment that produced
-the performance data.
-"""
+"""Trial data model controller."""
 
 import os
 import glob
 import shutil
 import errno
 from datetime import datetime
-from tau import logger, util, storage
+from tau import logger, util
 from tau.error import ConfigurationError
-from tau.model import Controller
+from tau.core.controller import Controller
+from tau.storage import USER_STORAGE
 
 LOGGER = logger.get_logger(__name__)
 
@@ -188,7 +184,7 @@ class Trial(Controller):
             raise
         else:
             data_size = sum(os.path.getsize(os.path.join(prefix, f)) for f in os.listdir(prefix))
-            shutil.copy(storage.USER_STORAGE.dbfile, prefix)
+            shutil.copy(USER_STORAGE.dbfile, prefix)
             end_time = str(datetime.utcnow())
             cls.update({'end_time': end_time,
                         'return_code': retval,
@@ -196,49 +192,3 @@ class Trial(Controller):
         finally:
             banner('END', expr.name(), end_time)
         return retval
-
-
-Trial.attributes = {
-    'number': {
-        'type': 'integer',
-        'required': True,
-        'description': 'trial unique identifier'
-    },
-    'experiment': {
-        'model': 'Experiment',
-        'required': True,
-        'description': "this trial's experiment"
-    },
-    'command': {
-        'type': 'string',
-        'required': True,
-        'description': "command line executed when performing the trial"
-    },
-    'cwd': {
-        'type': 'string',
-        'required': True,
-        'description': "directory the trial was performed in",
-    },
-    'environment': {
-        'type': 'string',
-        'required': True,
-        'description': "shell environment the trial was performed in"
-    },
-    'begin_time': {
-        'type': 'datetime',
-        'description': "date and time the trial began"
-    },
-    'end_time': {
-        'type': 'datetime',
-        'description': "date and time the trial ended"
-    },
-    'return_code': {
-        'type': 'integer',
-        'description': "return code of the command executed when performing the trial"
-    },
-    'data_size': {
-        'type': 'integer',
-        'description': "the size in bytes of the trial data"
-    },
-}
-

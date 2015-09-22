@@ -25,56 +25,41 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""TAU Commander settings.
+"""Project data model controller."""
 
-FIXME: settings needs a design review.
-"""
 
-from tau import logger
-from tau.core.setting.controller import Setting
+
+import os
+import shutil
+from tau import logger, util, error
+from tau.core.controller import Controller, ByName
 
 
 LOGGER = logger.get_logger(__name__)
 
-_DATA = {}
 
+class Project(Controller, ByName):
+    """Project data controller."""
 
-def _load():
-    for record in Setting.all():
-        key = record['key']
-        val = record['value']
-        _DATA[key] = val
-    LOGGER.debug("Loaded settings: %r", _DATA)
+    def prefix(self):
+        return os.path.join(self['prefix'], self['name'])
 
+    def on_create(self):
+        super(Project,self).on_create()
+        prefix = self.prefix()
+        try:
+            util.mkdirp(prefix)
+        except Exception as err:
+            raise error.ConfigurationError('Cannot create directory %r: %s' % (prefix, err),
+                                           'Check that you have `write` access')
 
-def _save():
-    LOGGER.debug("Saving settings: %r", _DATA)
-    for key, val in _DATA.iteritems():
-        if Setting.exists({'key': key}):
-            Setting.update({'value': val}, {'key': key})
-        else:
-            Setting.create({'key': key, 'value': val})
+    def on_delete(self):
+        # pylint: disable=broad-except
+        super(Project,self).on_delete()
+        prefix = self.prefix()
+        try:
+            shutil.rmtree(prefix)
+        except Exception as err:
+            if os.path.exists(prefix):
+                LOGGER.error("Could not remove project data at '%s': %s", prefix, err)
 
-
-def get(key):
-    """
-    Get the value of setting 'key' or None if not set
-    """
-    if not _DATA:
-        _load()
-    return _DATA.get(key, None)
-
-
-def set(key, val):
-    """
-    Set setting 'key' to value 'val'
-    """
-    _DATA[key] = val
-    _save()
-
-
-def unset(key):
-    """
-    Remove setting 'key' from the list of settings
-    """
-    Setting.delete({'key': key})

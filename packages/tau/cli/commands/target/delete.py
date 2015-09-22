@@ -29,7 +29,7 @@
 
 from tau import logger, cli
 from tau.cli import arguments
-from tau.model.target import Target
+from tau.core.target.controller import Target
 
 
 LOGGER = logger.get_logger(__name__)

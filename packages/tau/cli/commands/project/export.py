@@ -31,7 +31,7 @@ from pprint import pprint
 from tau import logger, cli 
 from tau import EXIT_SUCCESS
 from tau.cli import arguments
-from tau.model.project import Project
+from tau.core.project.controller import Project
 
 
 LOGGER = logger.get_logger(__name__)

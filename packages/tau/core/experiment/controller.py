@@ -25,12 +25,8 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""Experiment data model.
+"""Experiment data model controller."""
 
-An Experiment uniquely groups a :any:`Target`, :any:`Application`, and :any:`Measurement` 
-and will have zero or more :any:`Trial`. There is one selected experiment per project.  
-The selected experiment will be used for application compilation and trial visualization. 
-"""
 
 import os
 import glob
@@ -38,9 +34,9 @@ import shutil
 import tau.settings
 from tau import logger, util
 from tau.error import ConfigurationError, InternalError
-from tau.model import Controller
-from tau.model.trial import Trial
-from tau.model.compiler import Compiler
+from tau.core.controller import Controller
+from tau.core.trial.controller import Trial
+from tau.core.compiler.controller import Compiler
 from tau.cf.software.tau_installation import TauInstallation
 from tau.cf.compiler.installed import InstalledCompiler
 
@@ -52,7 +48,7 @@ class Experiment(Controller):
     """Experiment data controller."""
 
     def __init__(self, *args, **kwargs):
-        super(Experiment,self).__init__(*args, **kwargs)
+        super(Experiment, self).__init__(*args, **kwargs)
         self.tau = None
 
     def name(self):
@@ -123,7 +119,7 @@ class Experiment(Controller):
         target = populated['target']
         application = populated['application']
         measurement = populated['measurement']
-        verbose=(logger.LOG_LEVEL == 'DEBUG')
+        verbose = (logger.LOG_LEVEL == 'DEBUG')
         
         # Configure/build/install TAU if needed
         self.tau = TauInstallation(prefix, target['tau_source'], target['host_arch'], target['host_os'], 
@@ -263,34 +259,4 @@ class Experiment(Controller):
                 profiles = glob.glob(os.path.join(prefix, 'MULTI__*'))
             if profiles:
                 self.tau.show_profile(prefix, tool_name)
-
-
-
-Experiment.attributes = {
-    'project': {
-        'model': 'Project',
-        'required': True,
-        'description': "Project this experiment belongs to"
-    },
-    'target': {
-        'model': 'Target',
-        'required': True,
-        'description': "Target this experiment runs on"
-    },
-    'application': {
-        'model': 'Application',
-        'required': True,
-        'description': "Application this experiment uses"
-    },
-    'measurement': {
-        'model': 'Measurement',
-        'required': True,
-        'description': "Measurement parameters for this experiment"
-    },
-    'trials': {
-        'collection': 'Trial',
-        'via': 'experiment',
-        'description': "Trials of this experiment"
-    },
-}
 

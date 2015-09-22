@@ -25,51 +25,14 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""Project data model.
+"""Project data model attributes."""
 
-A project collects multiple :any:`Target`, :any:`Application`, and :any:`Measurement`
-configurations in a single container.  Selecting one of each forms a new :any:`Experiment`.
-Each application of the :any:`Experiment` generates a new :any:`Trial` record along with
-some performance data (profiles, traces, etc.).
-"""
+from tau.core.target.controller import Target
+from tau.core.application.controller import Application
+from tau.core.measurement.controller import Measurement
+from tau.core.experiment.controller import Experiment
 
-import os
-import shutil
-from tau import USER_PREFIX
-from tau import logger, util, error
-from tau.model import Controller, ByName
-
-
-LOGGER = logger.get_logger(__name__)
-
-
-class Project(Controller, ByName):
-    """Project data controller."""
-
-    def prefix(self):
-        return os.path.join(self['prefix'], self['name'])
-
-    def on_create(self):
-        super(Project,self).on_create()
-        prefix = self.prefix()
-        try:
-            util.mkdirp(prefix)
-        except Exception as err:
-            raise error.ConfigurationError('Cannot create directory %r: %s' % (prefix, err),
-                                           'Check that you have `write` access')
-
-    def on_delete(self):
-        # pylint: disable=broad-except
-        super(Project,self).on_delete()
-        prefix = self.prefix()
-        try:
-            shutil.rmtree(prefix)
-        except Exception as err:
-            if os.path.exists(prefix):
-                LOGGER.error("Could not remove project data at '%s': %s", prefix, err)
-
-
-Project.attributes = {
+ATTRIBUTES = {
     'name': {
         'type': 'string',
         'unique': True,
@@ -77,32 +40,30 @@ Project.attributes = {
         'argparse': {'metavar': '<project_name>'}
     },
     'targets': {
-        'collection': 'Target',
+        'collection': Target,
         'via': 'projects',
         'description': 'targets used by this project'
     },
     'applications': {
-        'collection': 'Application',
+        'collection': Application,
         'via': 'projects',
         'description': 'applications used by this project'
     },
     'measurements': {
-        'collection': 'Measurement',
+        'collection': Measurement,
         'via': 'projects',
         'description': 'measurements used by this project'
     },
     'experiments': {
-        'collection': 'Experiment',
+        'collection': Experiment,
         'via': 'project',
         'description': 'experiments formed from this project'
     },
     'prefix': {
         'type': 'string',
         'required': True,
-        'default': USER_PREFIX,
         'description': 'location for all files and experiment data related to this project',
         'argparse': {'flags': ('--home',),
                      'metavar': 'path'}
-    },
+    }
 }
-

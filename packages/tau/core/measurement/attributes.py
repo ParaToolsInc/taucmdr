@@ -25,42 +25,20 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""Measurement data model.
+"""Measurement data model attributes."""
 
-:any:`Measurement` completely describes the performance data measurements
-we wish to perform.  It is often the case that we do not wish to gather all
-the available data in a single run since overhead would be extreme.  Different
-measurements allow us to take different views of the application's performance.
-"""
+# pylint: disable=invalid-name
+
 
 from tau.cli.arguments import ParseBooleanAction
-from tau.model import Controller, ByName
 from tau.error import ConfigurationError
+from tau.core.target.controller import Target
+from tau.core.application.controller import Application
+from tau.core.measurement.controller import Measurement
+from tau.core.project.controller import Project
 from tau.cf.compiler import CC_ROLE, CXX_ROLE, FC_ROLE, INTEL_COMPILERS
 from tau.cf.compiler.installed import InstalledCompiler
 from tau.cf.compiler.mpi import MPI_CC_ROLE, MPI_CXX_ROLE, MPI_FC_ROLE
-      
-
-class Measurement(Controller, ByName):
-    """Measurement data controller."""      
-    
-    def on_create(self):
-        super(Measurement, self).on_create()
-        def get_flag(key):
-            return self.attributes[key]['argparse']['flags'][0]
-        
-        if not (self['profile'] or self['trace']):
-            profile_flag = get_flag('profile')
-            trace_flag = get_flag('trace')
-            raise ConfigurationError("Profiling, tracing, or both must be enabled",
-                                     "Specify %s or %s or both" % (profile_flag, trace_flag))
-        
-        if self['source_inst'] == 'never' and self['compiler_inst'] == 'never' and not self['sample']:
-            source_inst_flag = get_flag('source_inst')
-            compiler_inst_flag = get_flag('compiler_inst')
-            sample_flag = get_flag('sample')
-            raise ConfigurationError("At least one instrumentation method must be used",
-                                     "Specify %s, %s, or %s" % (source_inst_flag, compiler_inst_flag, sample_flag))
 
 
 def intel_only(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
@@ -92,15 +70,9 @@ def intel_only(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
         raise ConfigurationError("%s but it is a %s compiler" % (msg, given_family),
                                  "OMPT for OpenMP measurement only works with Intel compilers")
 
-
-# Prevent circular imports by importing controllers from other models 
-# only after defining our own controller.  
-from tau.model.target import Target
-from tau.model.application import Application
-
-Measurement.attributes = {
+ATTRIBUTES = {
     'projects': {
-        'collection': 'Project',
+        'collection': Project,
         'via': 'measurements',
         'description': "projects using this measurement"
     },
@@ -110,7 +82,7 @@ Measurement.attributes = {
         'description': "measurement configuration name",
         'argparse': {'help': 'measurement configuration name',
                      'metavar': '<measurement_name>'},
-
+    
     },
     'profile': {
         'type': 'boolean',
@@ -218,19 +190,29 @@ Measurement.attributes = {
                     Target.require(CXX_ROLE.keyword, intel_only),
                     Target.require(FC_ROLE.keyword, intel_only))}
     },
+    'cuda': {
+        'type': 'boolean',
+        'default': True,
+        'description': 'measure cuda events via the CUPTI interface',
+        'argparse': {'flags': ('--cuda',),
+                     'group': 'library',
+                     'metavar': 'T/F',
+                     'nargs': '?',
+                     'const': True,
+                     'action': ParseBooleanAction},
+        'compat': {True: Target.require('cuda')}
+    },
     'opencl': {
         'type': 'boolean',
         'default': True,
-        'description': 'record OpenCL events',
+        'description': 'measure OpenCL events',
         'argparse': {'flags': ('--opencl',),
                      'group': 'library',
                      'metavar': 'T/F',
                      'nargs': '?',
                      'const': True,
                      'action': ParseBooleanAction},
-        'compat': {True:
-                   (Target.require('opencl'),
-                    Application.require('opencl'))}
+        'compat': {True: Target.require('opencl')}
     },
     'callpath': {
         'type': 'integer',
@@ -310,6 +292,5 @@ Measurement.attributes = {
                      'const': True,
                      'action': ParseBooleanAction},
         'compat': {True: Measurement.exclude('source_inst', 'never')}
-    },
+    }
 }
-

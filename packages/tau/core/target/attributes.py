@@ -25,59 +25,18 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""Target data model.
+"""Target data model attributes."""
 
-:any:`Target` fully describes the hardware and software environment that our
-experiments will be performed in.  The hardware architecture, available compilers,
-and system libraries are described in the target record.  There will be multiple
-target records for any physical computer system since each target record uniquely
-describes a specific set of system features.  For example, if both GNU and Intel
-compilers are installed then there will target configurations for each compiler family.
-"""
-
-from tau.error import InternalError, ConfigurationError
+from tau.core.project.controller import Project
+from tau.core.target.controller import Target
+from tau.core.compiler.controller import Compiler
 from tau.cli.arguments import ParsePackagePathAction
-from tau.model import Controller, ByName
-from tau.cf.target import Architecture, OperatingSystem
-from tau.cf.target import host
-from tau.cf.compiler import CC_ROLE, CXX_ROLE, FC_ROLE, UPC_ROLE, CompilerRole
-from tau.cf.compiler.mpi import MPI_CC_ROLE, MPI_CXX_ROLE, MPI_FC_ROLE
-from tau.cf.compiler.shmem import SHMEM_CC_ROLE, SHMEM_CXX_ROLE, SHMEM_FC_ROLE
-from tau.cf.compiler.installed import InstalledCompilerSet 
+from tau.cf.target import host, Architecture, OperatingSystem
 
 
-class Target(Controller, ByName):
-    """Target data controller."""
-
-    def on_create(self):
-        super(Target, self).on_create()
-        if not self['tau_source']:
-            raise ConfigurationError("A TAU installation or source code must be provided.")
-
-    def compilers(self):
-        """Get information about the compilers used by this target configuration.
-         
-        Returns:
-            InstalledCompilerSet: Collection of installed compilers used by this target.
-        """
-        eids = []
-        compilers = {}
-        for role in CompilerRole.all():
-            try:
-                compiler_command = self.populate(role.keyword)
-            except KeyError:
-                continue
-            compilers[role.keyword] = compiler_command.info()
-            eids.append(compiler_command.eid)
-        missing = [role.keyword for role in CompilerRole.tau_required() if role.keyword not in compilers]
-        if missing:
-            raise InternalError("Target '%s' is missing required compilers: %s" % (self['name'], missing))
-        return InstalledCompilerSet('_'.join([str(x) for x in eids]), **compilers)
-
-
-Target.attributes = {
+ATTRIBUTES = {
     'projects': {
-        'collection': 'Project',
+        'collection': Project,
         'via': 'targets',
         'description': 'projects using this target'
     },
@@ -107,58 +66,58 @@ Target.attributes = {
                      'metavar': '<arch>',
                      'choices': Architecture.keys()}
     },
-    CC_ROLE.keyword: {
-        'model': 'Compiler',
-        'required': CC_ROLE.required,
-        'description': '%s compiler command' % CC_ROLE.language,
+    'CC': {
+        'model': Compiler,
+        'required': True,
+        'description': 'C compiler command',
         'argparse': {'flags': ('--cc',),
                      'group': 'compiler',
                      'metavar': '<command>'}
     },
-    CXX_ROLE.keyword: {
-        'model': 'Compiler',
-        'required': CXX_ROLE.required,
-        'description': '%s compiler command' % CXX_ROLE.language,
+    'CXX': {
+        'model': Compiler,
+        'required': True,
+        'description': 'C++ compiler command',
         'argparse': {'flags': ('--cxx',),
                      'group': 'compiler',
                      'metavar': '<command>'}
     },
-    FC_ROLE.keyword: {
-        'model': 'Compiler',
-        'required': FC_ROLE.required,
-        'description': '%s compiler command' % FC_ROLE.language,
+    'FC': {
+        'model': Compiler,
+        'required': True,
+        'description': 'Fortran compiler command',
         'argparse': {'flags': ('--fc',),
                      'group': 'compiler',
                      'metavar': '<command>'}
     },
-    UPC_ROLE.keyword: {
-        'model': 'Compiler',
-        'required': UPC_ROLE.required,
-        'description': '%s compiler command' % UPC_ROLE.language,
+    'UPC': {
+        'model': Compiler,
+        'required': False,
+        'description': 'Universal Parallel C compiler command',
         'argparse': {'flags': ('--upc',),
                      'group': 'Universal Parallel C',
                      'metavar': '<command>'}
     },
-    MPI_CC_ROLE.keyword: {
-        'model': 'Compiler',
-        'required': MPI_CC_ROLE.required,
-        'description': '%s compiler command' % MPI_CC_ROLE.language,
+    'MPI_CC': {
+        'model': Compiler,
+        'required': False,
+        'description': 'MPI C compiler command',
         'argparse': {'flags': ('--mpi-cc',),
                      'group': 'Message Passing Interface (MPI)',
                      'metavar': '<command>'}
     },
-    MPI_CXX_ROLE.keyword: {
-        'model': 'Compiler',
-        'required': MPI_CXX_ROLE.required,
-        'description': '%s compiler command' % MPI_CXX_ROLE.language,
+    'MPI_CXX': {
+        'model': Compiler,
+        'required': False,
+        'description': 'MPI C++ compiler command',
         'argparse': {'flags': ('--mpi-cxx',),
                      'group': 'Message Passing Interface (MPI)',
                      'metavar': '<command>'}
     },
-    MPI_FC_ROLE.keyword: {
-        'model': 'Compiler',
-        'required': MPI_FC_ROLE.required,
-        'description': '%s compiler command' % MPI_FC_ROLE.language,
+    'MPI_FC': {
+        'model': Compiler,
+        'required': False,
+        'description': 'MPI Fortran compiler command',
         'argparse': {'flags': ('--mpi-fc',),
                      'group': 'Message Passing Interface (MPI)',
                      'metavar': '<command>'}
@@ -170,9 +129,9 @@ Target.attributes = {
                      'group': 'Message Passing Interface (MPI)',
                      'metavar': '<path>',
                      'nargs': '+'},
-        'compat': {bool: (Target.require(MPI_CC_ROLE.keyword),
-                          Target.require(MPI_CXX_ROLE.keyword),
-                          Target.require(MPI_FC_ROLE.keyword))}
+        'compat': {bool: (Target.require("MPI_CC"),
+                          Target.require("MPI_CXX"),
+                          Target.require("MPI_FC"))}
     },
     'mpi_library_path': {
         'type': 'array',
@@ -181,9 +140,9 @@ Target.attributes = {
                      'group': 'Message Passing Interface (MPI)',
                      'metavar': '<path>',
                      'nargs': '+'},
-        'compat': {bool: (Target.require(MPI_CC_ROLE.keyword),
-                          Target.require(MPI_CXX_ROLE.keyword),
-                          Target.require(MPI_FC_ROLE.keyword))}
+        'compat': {bool: (Target.require("MPI_CC"),
+                          Target.require("MPI_CXX"),
+                          Target.require("MPI_FC"))}
     },
     'mpi_libraries': {
         'type': 'array',
@@ -192,30 +151,30 @@ Target.attributes = {
                      'group': 'Message Passing Interface (MPI)',
                      'metavar': '<flag>',
                      'nargs': '+'},
-        'compat': {bool: (Target.require(MPI_CC_ROLE.keyword),
-                          Target.require(MPI_CXX_ROLE.keyword),
-                          Target.require(MPI_FC_ROLE.keyword))}
+        'compat': {bool: (Target.require("MPI_CC"),
+                          Target.require("MPI_CXX"),
+                          Target.require("MPI_FC"))}
     },
-    SHMEM_CC_ROLE.keyword: {
-        'model': 'Compiler',
-        'required': SHMEM_CC_ROLE.required,
-        'description': '%s compiler command' % SHMEM_CC_ROLE.language,
+    'SHMEM_CC': {
+        'model': Compiler,
+        'required': False,
+        'description': 'SHMEM C compiler command',
         'argparse': {'flags': ('--shmem-cc',),
                      'group': 'Symmetric Hierarchical Memory (SHMEM)',
                      'metavar': '<command>'}
     },
-    SHMEM_CXX_ROLE.keyword: {
-        'model': 'Compiler',
-        'required': SHMEM_CXX_ROLE.required,
-        'description': '%s compiler command' % SHMEM_CXX_ROLE.language,
+    'SHMEM_CXX': {
+        'model': Compiler,
+        'required': False,
+        'description': 'SHMEM C++ compiler command',
         'argparse': {'flags': ('--shmem-cxx',),
                      'group': 'Symmetric Hierarchical Memory (SHMEM)',
                      'metavar': '<command>'}
     },
-    SHMEM_FC_ROLE.keyword: {
-        'model': 'Compiler',
-        'required': SHMEM_FC_ROLE.required,
-        'description': '%s compiler command' % SHMEM_FC_ROLE.language,
+    'SHMEM_FC': {
+        'model': Compiler,
+        'required': False,
+        'description': 'SHMEM Fortran compiler command',
         'argparse': {'flags': ('--shmem-fc',),
                      'group': 'Symmetric Hierarchical Memory (SHMEM)',
                      'metavar': '<command>'}
@@ -304,7 +263,7 @@ Target.attributes = {
                      'metavar': '(<path>|<url>|download|None)',
                      'action': ParsePackagePathAction}
     },
-    'score-p_source': {
+    'scorep_source': {
         'type': 'string',
         'description': 'path or URL to a Score-P installation or archive file',
         'argparse': {'flags': ('--score-p',),

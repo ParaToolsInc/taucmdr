@@ -30,8 +30,8 @@
 
 from tau import logger, cli
 from tau.cli import arguments
-from tau.model import UniqueAttributeError
-from tau.model.measurement import Measurement
+from tau.error import UniqueAttributeError
+from tau.core.measurement.controller import Measurement
 
 
 LOGGER = logger.get_logger(__name__)

@@ -25,56 +25,18 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""TAU Commander settings.
+"""Compiler data model attributes."""
 
-FIXME: settings needs a design review.
-"""
-
-from tau import logger
-from tau.core.setting.controller import Setting
-
-
-LOGGER = logger.get_logger(__name__)
-
-_DATA = {}
-
-
-def _load():
-    for record in Setting.all():
-        key = record['key']
-        val = record['value']
-        _DATA[key] = val
-    LOGGER.debug("Loaded settings: %r", _DATA)
-
-
-def _save():
-    LOGGER.debug("Saving settings: %r", _DATA)
-    for key, val in _DATA.iteritems():
-        if Setting.exists({'key': key}):
-            Setting.update({'value': val}, {'key': key})
-        else:
-            Setting.create({'key': key, 'value': val})
-
-
-def get(key):
-    """
-    Get the value of setting 'key' or None if not set
-    """
-    if not _DATA:
-        _load()
-    return _DATA.get(key, None)
-
-
-def set(key, val):
-    """
-    Set setting 'key' to value 'val'
-    """
-    _DATA[key] = val
-    _save()
-
-
-def unset(key):
-    """
-    Remove setting 'key' from the list of settings
-    """
-    Setting.delete({'key': key})
+ATTRIBUTES = {
+    'path': {
+        'type': 'string',
+        'required': True,
+        'unique': True,
+        'description': "absolute path to the compiler command"
+    },
+    'md5': {
+        'type': 'string',
+        'required': True,
+        'description': "checksum of the compiler command file"
+    }
+}

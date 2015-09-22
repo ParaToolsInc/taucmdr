@@ -30,7 +30,7 @@
 from tau import EXIT_FAILURE
 from tau import logger, cli
 from tau.cli import arguments
-from tau.model.experiment import Experiment
+from tau.core.experiment.controller import Experiment
 
 
 LOGGER = logger.get_logger(__name__)
