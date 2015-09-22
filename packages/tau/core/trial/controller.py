@@ -34,7 +34,7 @@ import errno
 from datetime import datetime
 from tau import logger, util
 from tau.error import ConfigurationError
-from tau.controller import Controller
+from tau.core.controller import Controller
 from tau.storage import USER_STORAGE
 
 LOGGER = logger.get_logger(__name__)

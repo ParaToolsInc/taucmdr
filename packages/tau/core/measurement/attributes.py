@@ -32,10 +32,10 @@
 
 from tau.cli.arguments import ParseBooleanAction
 from tau.error import ConfigurationError
-from tau.schema.target.controller import Target
-from tau.schema.application.controller import Application
-from tau.schema.measurement.controller import Measurement
-from tau.schema.project.controller import Project
+from tau.core.target.controller import Target
+from tau.core.application.controller import Application
+from tau.core.measurement.controller import Measurement
+from tau.core.project.controller import Project
 from tau.cf.compiler import CC_ROLE, CXX_ROLE, FC_ROLE, INTEL_COMPILERS
 from tau.cf.compiler.installed import InstalledCompiler
 from tau.cf.compiler.mpi import MPI_CC_ROLE, MPI_CXX_ROLE, MPI_FC_ROLE
@@ -198,6 +198,32 @@ openmp = {
                 Target.require(CC_ROLE.keyword, intel_only),
                 Target.require(CXX_ROLE.keyword, intel_only),
                 Target.require(FC_ROLE.keyword, intel_only))}
+}
+
+cuda = {
+    'type': 'boolean',
+    'default': True,
+    'description': 'measure cuda events via the CUPTI interface',
+    'argparse': {'flags': ('--cuda',),
+                 'group': 'library',
+                 'metavar': 'T/F',
+                 'nargs': '?',
+                 'const': True,
+                 'action': ParseBooleanAction},
+    'compat': {True: Target.require('cuda')}
+}
+
+opencl = {
+    'type': 'boolean',
+    'default': True,
+    'description': 'measure OpenCL events',
+    'argparse': {'flags': ('--opencl',),
+                 'group': 'library',
+                 'metavar': 'T/F',
+                 'nargs': '?',
+                 'const': True,
+                 'action': ParseBooleanAction},
+    'compat': {True: Target.require('opencl')}
 }
 
 callpath = {

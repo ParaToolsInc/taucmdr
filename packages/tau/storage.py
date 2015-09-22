@@ -116,4 +116,5 @@ class Storage(AbstractDatabase):
     def purge(self, table_name):
         return self._apply('purge', table_name)
 
-USER_STORAGE = Storage(SYSTEM_PREFIX, USER_PREFIX)
+#USER_STORAGE = Storage(SYSTEM_PREFIX, USER_PREFIX)
+USER_STORAGE = JsonDatabase(os.path.join(USER_PREFIX, 'local.json'))

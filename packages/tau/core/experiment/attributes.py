@@ -25,51 +25,43 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""Project data model attributes."""
+"""Experiment data model attributes."""
 
 # pylint: disable=invalid-name
 
-from tau.schema.target.controller import Target
-from tau.schema.application.controller import Application
-from tau.schema.measurement.controller import Measurement
-from tau.schema.experiment.controller import Experiment
+from tau.core.project.controller import Project
+from tau.core.target.controller import Target
+from tau.core.application.controller import Application
+from tau.core.measurement.controller import Measurement
+from tau.core.trial.controller import Trial
 
-name = {
-    'type': 'string',
-    'unique': True,
-    'description': 'project name',
-    'argparse': {'metavar': '<project_name>'}
-}
 
-targets = {
-    'collection': Target,
-    'via': 'projects',
-    'description': 'targets used by this project'
-}
-
-applications = {
-    'collection': Application,
-    'via': 'projects',
-    'description': 'applications used by this project'
-}
-
-measurements = {
-    'collection': Measurement,
-    'via': 'projects',
-    'description': 'measurements used by this project'
-}
-
-experiments = {
-    'collection': Experiment,
-    'via': 'project',
-    'description': 'experiments formed from this project'
-}
-
-prefix = {
-    'type': 'string',
+project = {
+    'model': Project,
     'required': True,
-    'description': 'location for all files and experiment data related to this project',
-    'argparse': {'flags': ('--home',),
-                 'metavar': 'path'}
-},
+    'description': "Project this experiment belongs to"
+}
 
+target = {
+    'model': Target,
+    'required': True,
+    'description': "Target this experiment runs on"
+}
+
+application = {
+    'model': Application,
+    'required': True,
+    'description': "Application this experiment uses"
+}
+
+measurement = {
+    'model': Measurement,
+    'required': True,
+    'description': "Measurement parameters for this experiment"
+}
+
+trials = {
+    'collection': Trial,
+    'via': 'experiment',
+    'description': "Trials of this experiment"
+}

@@ -25,41 +25,12 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""Project data model controller."""
+"""Application data model controller."""
 
 
-
-import os
-import shutil
-from tau import logger, util, error
-from tau.controller import Controller, ByName
+from tau.core.controller import Controller, ByName
 
 
-LOGGER = logger.get_logger(__name__)
-
-
-class Project(Controller, ByName):
-    """Project data controller."""
-
-    def prefix(self):
-        return os.path.join(self['prefix'], self['name'])
-
-    def on_create(self):
-        super(Project,self).on_create()
-        prefix = self.prefix()
-        try:
-            util.mkdirp(prefix)
-        except Exception as err:
-            raise error.ConfigurationError('Cannot create directory %r: %s' % (prefix, err),
-                                           'Check that you have `write` access')
-
-    def on_delete(self):
-        # pylint: disable=broad-except
-        super(Project,self).on_delete()
-        prefix = self.prefix()
-        try:
-            shutil.rmtree(prefix)
-        except Exception as err:
-            if os.path.exists(prefix):
-                LOGGER.error("Could not remove project data at '%s': %s", prefix, err)
-
+class Application(Controller, ByName):
+    """Application data controller."""
+    pass

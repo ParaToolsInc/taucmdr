@@ -27,7 +27,7 @@
 #
 """Setting data model controller."""
 
-from tau.controller import Controller
+from tau.core.controller import Controller
 
 
 class Setting(Controller):

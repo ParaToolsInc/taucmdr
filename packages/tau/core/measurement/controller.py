@@ -25,40 +25,30 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""Target data model controller."""
+"""Measurement data model controller."""
+
+from tau.error import ConfigurationError
+from tau.core.controller import Controller, ByName
 
 
-from tau.error import InternalError, ConfigurationError
-from tau.controller import Controller, ByName
-from tau.cf.compiler import CompilerRole
-from tau.cf.compiler.installed import InstalledCompilerSet 
-
-
-class Target(Controller, ByName):
-    """Target data controller."""
-
+class Measurement(Controller, ByName):
+    """Measurement data controller."""      
+    
     def on_create(self):
-        super(Target, self).on_create()
-        if not self['tau_source']:
-            raise ConfigurationError("A TAU installation or source code must be provided.")
+        super(Measurement, self).on_create()
+        def get_flag(key):
+            return self.attributes[key]['argparse']['flags'][0]  # pylint: disable=no-member
 
-    def compilers(self):
-        """Get information about the compilers used by this target configuration.
-         
-        Returns:
-            InstalledCompilerSet: Collection of installed compilers used by this target.
-        """
-        eids = []
-        compilers = {}
-        for role in CompilerRole.all():
-            try:
-                compiler_command = self.populate(role.keyword)
-            except KeyError:
-                continue
-            compilers[role.keyword] = compiler_command.info()
-            eids.append(compiler_command.eid)
-        missing = [role.keyword for role in CompilerRole.tau_required() if role.keyword not in compilers]
-        if missing:
-            raise InternalError("Target '%s' is missing required compilers: %s" % (self['name'], missing))
-        return InstalledCompilerSet('_'.join([str(x) for x in eids]), **compilers)
+        if not (self['profile'] or self['trace']):
+            profile_flag = get_flag('profile')
+            trace_flag = get_flag('trace')
+            raise ConfigurationError("Profiling, tracing, or both must be enabled",
+                                     "Specify %s or %s or both" % (profile_flag, trace_flag))
+        
+        if self['source_inst'] == 'never' and self['compiler_inst'] == 'never' and not self['sample']:
+            source_inst_flag = get_flag('source_inst')
+            compiler_inst_flag = get_flag('compiler_inst')
+            sample_flag = get_flag('sample')
+            raise ConfigurationError("At least one instrumentation method must be used",
+                                     "Specify %s, %s, or %s" % (source_inst_flag, compiler_inst_flag, sample_flag))
 

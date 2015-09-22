@@ -25,10 +25,10 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""TAU Commander data schema.
+"""TAU Commander core data management system.
 
 TAU Commander follows the `Model-View-Controller (MVC)`_ design pattern.
-Packages in :py:mod:`tau.schema` define the data model by declaring subclasses of :any:`Controller`. 
+Packages in :py:mod:`tau.core` define the data model by declaring subclasses of :any:`Controller`. 
 These subclasses have a member dictionary `attributes` that describes the data model in the form::
 
     <attribute>: {
@@ -51,9 +51,7 @@ that this model is being referened by one or more attributes of a foreign model.
 referenced model changes then the referencing model, i.e. the foreign model, will update all referencing 
 attributes. 
 
-Associations, references, and attributes are constructed when :py:mod:`tau.schema`  is imported.  
-This module initializes the set :py:attr:`references`, the dictionary :py:attr:`associations`, and the
-dictionary :py:attr:`attributes` in each subclass of :any:`Controller`.
+Associations, references, and attributes are constructed when :py:mod:`tau.core`  is imported.
 
 Examples:
 
@@ -170,96 +168,26 @@ Examples:
 """
 
 import sys
-import json
-import operator
-from pprint import pprint
 from pkgutil import walk_packages
-from tau import logger, util
-from tau.error import InternalError, ConfigurationError, ModelError, UniqueAttributeError
-from tau.controller import Controller
-from tau.storage import USER_STORAGE
+from tau.error import InternalError
+from tau.core.controller import Controller
 
 
-LOGGER = logger.get_logger(__name__)
-
-
-def _model_classes():
-    for _, module_name, _ in walk_packages(__path__):
-        if '.' in module_name:
-            continue
-        module_name = __name__ + '.' + module_name
+for _, module_name, ispkg in walk_packages(__path__, __name__ + '.'):
+    if ispkg:
         controller_module_name = module_name + '.controller'
         attributes_module_name = module_name + '.attributes'
         __import__(module_name)
         __import__(controller_module_name)
         __import__(attributes_module_name)
-        for val in vars(sys.modules[controller_module_name]).itervalues():
+        for cls in vars(sys.modules[controller_module_name]).itervalues():
             try:
-                found_subclass = val is not Controller and issubclass(val, Controller)
+                found_subclass = cls is not Controller and issubclass(cls, Controller)
             except TypeError:
-                continue 
+                # In case cls isn't a class
+                continue
             if found_subclass:
-                cls = val
+                cls.__construct_relationships__()
                 break
         else:
             raise InternalError("Module '%s' does not define a subclass of Controller" % controller_module_name)
-        yield cls
-
-
-def _construct_model():
-    """Builds model relationships.
-    
-    Initializes controller classes and builds associations and references between data models.
-    
-    Raises:
-        ModelError: A data model is invalid. 
-    
-    Returns:
-        dict: Model controller classes indexed by model name. 
-    """
-    def _get_props_model(props):
-        try:
-            return props['model']
-        except KeyError:
-            return props['collection']
-    
-    for cls in _model_classes():
-        for attr, props in cls.attributes.iteritems():
-            via = props.get('via', None)
-            try:
-                foreign_cls = _get_props_model(props) 
-            except KeyError:
-                if not via:
-                    continue
-                raise ModelError(cls, "Attribute '%s' defines 'via' property but not 'model' or 'collection'" % attr)
-            foreign_cls.__class_init__()
-    
-            forward = (foreign_cls, via)
-            reverse = (cls, attr)
-            if not via:
-                foreign_cls.references.add(reverse)
-            else:
-                foreign_cls.associations[via] = reverse
-                try:
-                    via_props = foreign_cls.attributes[via]
-                except KeyError:
-                    raise ModelError(cls, "Found 'via' on undefined attribute '%s.%s'" % (foreign_cls.model_name, via))
-                try:
-                    via_attr_model = _get_props_model(via_props)
-                except KeyError:
-                    raise ModelError(cls, "Found 'via' on non-model attribute '%s.%s'" % (foreign_cls.model_name, via))
-                if via_attr_model is not cls:
-                    raise ModelError(cls, "Attribute %s.%s referenced by 'via' in '%s' "
-                                     "does not define 'collection' or 'model' of type '%s'" %
-                                     (foreign_cls.model_name, via, attr, cls.model_name))
-                try:
-                    existing = cls.associations[attr]
-                except KeyError:
-                    cls.associations[attr] = forward
-                else:
-                    if existing != forward:
-                        raise ModelError(cls, "Conflicting associations on attribute '%s': "
-                                         "%r vs. %r" % (attr, existing, forward))
-
-#_construct_model()
-

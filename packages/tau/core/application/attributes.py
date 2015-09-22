@@ -30,9 +30,9 @@
 # pylint: disable=invalid-name
 
 from tau.cli.arguments import ParseBooleanAction
-from tau.schema.project.controller import Project
-from tau.schema.target.controller import Target
-from tau.schema.measurement.controller import Measurement
+from tau.core.project.controller import Project
+from tau.core.target.controller import Target
+from tau.core.measurement.controller import Measurement
 
 
 projects = { 
@@ -92,6 +92,18 @@ cuda = {
                  'const': True,
                  'action': ParseBooleanAction},
     'compat': {True: Target.require('cuda')}
+}
+
+opencl = {
+    'type': 'boolean',
+    'default': False,
+    'description': 'application uses OpenCL',
+    'argparse': {'flags': ('--opencl',),
+                 'metavar': 'yes/no',
+                 'nargs': '?',
+                 'const': True,
+                 'action': ParseBooleanAction},
+    'compat': {True: Target.require('opencl')}
 }
 
 shmem = {

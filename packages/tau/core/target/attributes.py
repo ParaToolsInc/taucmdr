@@ -29,8 +29,9 @@
 
 # pylint: disable=invalid-name
 
-from tau.schema.project.controller import Project
-from tau.schema.target.controller import Target
+from tau.core.project.controller import Project
+from tau.core.target.controller import Target
+from tau.core.compiler.controller import Compiler
 from tau.cli.arguments import ParsePackagePathAction
 from tau.cf.target import host, Architecture, OperatingSystem
 
@@ -71,7 +72,7 @@ host_arch = {
 }
 
 CC = {
-    'model': 'Compiler',
+    'model': Compiler,
     'required': True,
     'description': 'C compiler command',
     'argparse': {'flags': ('--cc',),
@@ -80,7 +81,7 @@ CC = {
 }
 
 CXX = {
-    'model': 'Compiler',
+    'model': Compiler,
     'required': True,
     'description': 'C++ compiler command',
     'argparse': {'flags': ('--cxx',),
@@ -89,7 +90,7 @@ CXX = {
 }
 
 FC = {
-    'model': 'Compiler',
+    'model': Compiler,
     'required': True,
     'description': 'Fortran compiler command',
     'argparse': {'flags': ('--fc',),
@@ -98,7 +99,7 @@ FC = {
 }
 
 UPC = {
-    'model': 'Compiler',
+    'model': Compiler,
     'required': False,
     'description': 'Universal Parallel C compiler command',
     'argparse': {'flags': ('--upc',),
@@ -107,7 +108,7 @@ UPC = {
 }
 
 MPI_CC = {
-    'model': 'Compiler',
+    'model': Compiler,
     'required': False,
     'description': 'MPI C compiler command',
     'argparse': {'flags': ('--mpi-cc',),
@@ -116,7 +117,7 @@ MPI_CC = {
 }
 
 MPI_CXX = {
-    'model': 'Compiler',
+    'model': Compiler,
     'required': False,
     'description': 'MPI C++ compiler command',
     'argparse': {'flags': ('--mpi-cxx',),
@@ -125,7 +126,7 @@ MPI_CXX = {
 }
 
 MPI_FC = {
-    'model': 'Compiler',
+    'model': Compiler,
     'required': False,
     'description': 'MPI Fortran compiler command',
     'argparse': {'flags': ('--mpi-fc',),
@@ -170,7 +171,7 @@ mpi_libraries = {
 }
 
 SHMEM_CC = {
-    'model': 'Compiler',
+    'model': Compiler,
     'required': False,
     'description': 'SHMEM C compiler command',
     'argparse': {'flags': ('--shmem-cc',),
@@ -179,7 +180,7 @@ SHMEM_CC = {
 }
 
 SHMEM_CXX = {
-    'model': 'Compiler',
+    'model': Compiler,
     'required': False,
     'description': 'SHMEM C++ compiler command',
     'argparse': {'flags': ('--shmem-cxx',),
@@ -188,7 +189,7 @@ SHMEM_CXX = {
 }
 
 SHMEM_FC = {
-    'model': 'Compiler',
+    'model': Compiler,
     'required': False,
     'description': 'SHMEM Fortran compiler command',
     'argparse': {'flags': ('--shmem-fc',),

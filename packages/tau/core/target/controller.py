@@ -25,43 +25,40 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""Experiment data model attributes."""
-
-# pylint: disable=invalid-name
-
-from tau.schema.project.controller import Project
-from tau.schema.target.controller import Target
-from tau.schema.application.controller import Application
-from tau.schema.measurement.controller import Measurement
-from tau.schema.trial.controller import Trial
+"""Target data model controller."""
 
 
-project = {
-    'model': Project,
-    'required': True,
-    'description': "Project this experiment belongs to"
-}
+from tau.error import InternalError, ConfigurationError
+from tau.core.controller import Controller, ByName
+from tau.cf.compiler import CompilerRole
+from tau.cf.compiler.installed import InstalledCompilerSet 
 
-target = {
-    'model': Target,
-    'required': True,
-    'description': "Target this experiment runs on"
-}
 
-application = {
-    'model': Application,
-    'required': True,
-    'description': "Application this experiment uses"
-}
+class Target(Controller, ByName):
+    """Target data controller."""
 
-measurement = {
-    'model': Measurement,
-    'required': True,
-    'description': "Measurement parameters for this experiment"
-}
+    def on_create(self):
+        super(Target, self).on_create()
+        if not self['tau_source']:
+            raise ConfigurationError("A TAU installation or source code must be provided.")
 
-trials = {
-    'collection': Trial,
-    'via': 'experiment',
-    'description': "Trials of this experiment"
-}
+    def compilers(self):
+        """Get information about the compilers used by this target configuration.
+         
+        Returns:
+            InstalledCompilerSet: Collection of installed compilers used by this target.
+        """
+        eids = []
+        compilers = {}
+        for role in CompilerRole.all():
+            try:
+                compiler_command = self.populate(role.keyword)
+            except KeyError:
+                continue
+            compilers[role.keyword] = compiler_command.info()
+            eids.append(compiler_command.eid)
+        missing = [role.keyword for role in CompilerRole.tau_required() if role.keyword not in compilers]
+        if missing:
+            raise InternalError("Target '%s' is missing required compilers: %s" % (self['name'], missing))
+        return InstalledCompilerSet('_'.join([str(x) for x in eids]), **compilers)
+

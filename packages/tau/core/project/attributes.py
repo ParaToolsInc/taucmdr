@@ -25,30 +25,50 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""Measurement data model controller."""
+"""Project data model attributes."""
 
-from tau.error import ConfigurationError
-from tau.controller import Controller, ByName
+# pylint: disable=invalid-name
 
+from tau.core.target.controller import Target
+from tau.core.application.controller import Application
+from tau.core.measurement.controller import Measurement
+from tau.core.experiment.controller import Experiment
 
-class Measurement(Controller, ByName):
-    """Measurement data controller."""      
-    
-    def on_create(self):
-        super(Measurement, self).on_create()
-        def get_flag(key):
-            return self.attributes[key]['argparse']['flags'][0]  # pylint: disable=no-member
+name = {
+    'type': 'string',
+    'unique': True,
+    'description': 'project name',
+    'argparse': {'metavar': '<project_name>'}
+}
 
-        if not (self['profile'] or self['trace']):
-            profile_flag = get_flag('profile')
-            trace_flag = get_flag('trace')
-            raise ConfigurationError("Profiling, tracing, or both must be enabled",
-                                     "Specify %s or %s or both" % (profile_flag, trace_flag))
-        
-        if self['source_inst'] == 'never' and self['compiler_inst'] == 'never' and not self['sample']:
-            source_inst_flag = get_flag('source_inst')
-            compiler_inst_flag = get_flag('compiler_inst')
-            sample_flag = get_flag('sample')
-            raise ConfigurationError("At least one instrumentation method must be used",
-                                     "Specify %s, %s, or %s" % (source_inst_flag, compiler_inst_flag, sample_flag))
+targets = {
+    'collection': Target,
+    'via': 'projects',
+    'description': 'targets used by this project'
+}
 
+applications = {
+    'collection': Application,
+    'via': 'projects',
+    'description': 'applications used by this project'
+}
+
+measurements = {
+    'collection': Measurement,
+    'via': 'projects',
+    'description': 'measurements used by this project'
+}
+
+experiments = {
+    'collection': Experiment,
+    'via': 'project',
+    'description': 'experiments formed from this project'
+}
+
+prefix = {
+    'type': 'string',
+    'required': True,
+    'description': 'location for all files and experiment data related to this project',
+    'argparse': {'flags': ('--home',),
+                 'metavar': 'path'}
+}

@@ -34,9 +34,9 @@ import shutil
 import tau.settings
 from tau import logger, util
 from tau.error import ConfigurationError, InternalError
-from tau.controller import Controller
-from tau.schema.trial.controller import Trial
-from tau.schema.compiler.controller import Compiler
+from tau.core.controller import Controller
+from tau.core.trial.controller import Trial
+from tau.core.compiler.controller import Compiler
 from tau.cf.software.tau_installation import TauInstallation
 from tau.cf.compiler.installed import InstalledCompiler
 

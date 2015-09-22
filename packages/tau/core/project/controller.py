@@ -25,56 +25,41 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""Trial data model attributes."""
+"""Project data model controller."""
 
-# pylint: disable=invalid-name
 
-number = {
-    'type': 'integer',
-    'required': True,
-    'description': 'trial unique identifier'
-}
 
-experiment = {
-    'model': 'Experiment',
-    'required': True,
-    'description': "this trial's experiment"
-}
+import os
+import shutil
+from tau import logger, util, error
+from tau.core.controller import Controller, ByName
 
-command = {
-    'type': 'string',
-    'required': True,
-    'description': "command line executed when performing the trial"
-}
 
-cwd = {
-    'type': 'string',
-    'required': True,
-    'description': "directory the trial was performed in",
-}
+LOGGER = logger.get_logger(__name__)
 
-environment = {
-    'type': 'string',
-    'required': True,
-    'description': "shell environment the trial was performed in"
-}
 
-begin_time = {
-    'type': 'datetime',
-    'description': "date and time the trial began"
-}
+class Project(Controller, ByName):
+    """Project data controller."""
 
-end_time = {
-    'type': 'datetime',
-    'description': "date and time the trial ended"
-}
+    def prefix(self):
+        return os.path.join(self['prefix'], self['name'])
 
-return_code = {
-    'type': 'integer',
-    'description': "return code of the command executed when performing the trial"
-}
+    def on_create(self):
+        super(Project,self).on_create()
+        prefix = self.prefix()
+        try:
+            util.mkdirp(prefix)
+        except Exception as err:
+            raise error.ConfigurationError('Cannot create directory %r: %s' % (prefix, err),
+                                           'Check that you have `write` access')
 
-data_size = {
-    'type': 'integer',
-    'description': "the size in bytes of the trial data"
-}
+    def on_delete(self):
+        # pylint: disable=broad-except
+        super(Project,self).on_delete()
+        prefix = self.prefix()
+        try:
+            shutil.rmtree(prefix)
+        except Exception as err:
+            if os.path.exists(prefix):
+                LOGGER.error("Could not remove project data at '%s': %s", prefix, err)
+

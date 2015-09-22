@@ -129,7 +129,7 @@ class ModelError(InternalError):
             model_cls (Controller): Controller subclass definining the data model.
             value (str): A message describing the error.  
         """
-        super(ModelError, self).__init__("Error in model '%s':\n%s" % (model_cls.model_name, value))
+        super(ModelError, self).__init__("%s: %s" % (model_cls.model_name, value))
         self.model_cls = model_cls
 
 
