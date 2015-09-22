@@ -36,9 +36,8 @@ from tau.core.target.controller import Target
 from tau.core.application.controller import Application
 from tau.core.measurement.controller import Measurement
 from tau.core.project.controller import Project
-from tau.cf.compiler import CC_ROLE, CXX_ROLE, FC_ROLE, INTEL_COMPILERS
+from tau.cf.compiler import INTEL_COMPILERS
 from tau.cf.compiler.installed import InstalledCompiler
-from tau.cf.compiler.mpi import MPI_CC_ROLE, MPI_CXX_ROLE, MPI_FC_ROLE
 
 
 def intel_only(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
@@ -169,9 +168,9 @@ ATTRIBUTES = {
                      'const': True,
                      'action': ParseBooleanAction},
         'compat': {True:
-                   (Target.require(MPI_CC_ROLE.keyword),
-                    Target.require(MPI_CXX_ROLE.keyword),
-                    Target.require(MPI_FC_ROLE.keyword))}
+                   (Target.require('MPI_CC'),
+                    Target.require('MPI_CXX'),
+                    Target.require('MPI_FC'))}
     },
     'openmp': {
         'type': 'string',
@@ -186,9 +185,9 @@ ATTRIBUTES = {
                    Application.require('openmp', True),
                    'ompt':
                    (Application.require('openmp', True),
-                    Target.require(CC_ROLE.keyword, intel_only),
-                    Target.require(CXX_ROLE.keyword, intel_only),
-                    Target.require(FC_ROLE.keyword, intel_only))}
+                    Target.require('CC_ROLE', intel_only),
+                    Target.require('CXX_ROLE', intel_only),
+                    Target.require('FC_ROLE', intel_only))}
     },
     'cuda': {
         'type': 'boolean',
@@ -204,7 +203,7 @@ ATTRIBUTES = {
     },
     'opencl': {
         'type': 'boolean',
-        'default': True,
+        'default': False,
         'description': 'measure OpenCL events',
         'argparse': {'flags': ('--opencl',),
                      'group': 'library',
