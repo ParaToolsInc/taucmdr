@@ -138,6 +138,9 @@ class TauInstallation(Installation):
                  mpi_library_path,
                  mpi_libraries,
                  cuda_support,
+                 cuda_prefix,
+                 opencl_support,
+                 opencl_prefix,
                  shmem_support,
                  mpc_support,
                  # Instrumentation methods and options
@@ -154,6 +157,7 @@ class TauInstallation(Installation):
                  metrics,
                  measure_mpi,
                  measure_openmp,
+                 measure_opencl,
                  measure_pthreads,
                  measure_cuda,
                  measure_shmem,
@@ -224,12 +228,15 @@ class TauInstallation(Installation):
         self.libunwind_source = libunwind_source
         self.papi_source = papi_source
         self.openmp_support = openmp_support
+        self.opencl_support = opencl_support
+        self.opencl_prefix = opencl_prefix
         self.pthreads_support = pthreads_support 
         self.mpi_support = mpi_support
         self.mpi_include_path = mpi_include_path
         self.mpi_library_path = mpi_library_path
         self.mpi_libraries = mpi_libraries
         self.cuda_support = cuda_support
+        self.cuda_prefix = cuda_prefix
         self.shmem_support = shmem_support
         self.mpc_support = mpc_support
         self.source_inst = source_inst
@@ -244,6 +251,7 @@ class TauInstallation(Installation):
         self.metrics = metrics
         self.measure_mpi = measure_mpi
         self.measure_openmp = measure_openmp
+        self.measure_opencl = measure_opencl
         self.measure_pthreads = measure_pthreads
         self.measure_cuda = measure_cuda
         self.measure_shmem = measure_shmem
@@ -418,16 +426,14 @@ class TauInstallation(Installation):
                   '-mpi' if self.mpi_support else '',
                   '-mpiinc=%s' % mpiinc if mpiinc else '',
                   '-mpilib=%s' % mpilib if mpilib else '',
-                  '-mpilibrary=%s' % mpilibrary if mpilibrary else ''
+                  '-mpilibrary=%s' % mpilibrary if mpilibrary else '',
+                  '-cuda=%s' % self.cuda_prefix if self.cuda_prefix else '',
+                  '-opencl=%s' % self.opencl_prefix if self.opencl_prefix else ''
                   ] if flag]
         if self.openmp_support:
             flags.append('-openmp')
             if self.measure_openmp == 'ompt':
-                if self.compilers[CC_ROLE].info.family == INTEL_COMPILERS:
-                    flags.append('-ompt')
-                else:
-                    # TODO: Shouldn't this be checked in model `compatible_with`?
-                    raise ConfigurationError('OMPT for OpenMP measurement only works with Intel compilers')
+                flags.append('-ompt')
             elif self.measure_openmp == 'opari':
                 flags.append('-opari')
         cmd = ['./configure'] + flags
@@ -519,7 +525,7 @@ class TauInstallation(Installation):
         if self.mpi_support:
             tags.append('mpi')
         if self.cuda_support:
-            tags.append('cuda')
+            tags.append('cupti')
         if self.shmem_support:
             tags.append('shmem')
         if self.mpc_support:
@@ -683,6 +689,10 @@ class TauInstallation(Installation):
             opts.append('-v')
         if self.sample:
             opts.append('-ebs')
+        if self.measure_cuda:
+            opts.append('-cupti')
+        if self.measure_opencl:
+            opts.append('-opencl')
         env['TAU_METRICS'] = os.pathsep.join(self.metrics)
         return list(set(opts)), env
 
