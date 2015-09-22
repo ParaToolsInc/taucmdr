@@ -34,8 +34,8 @@ from pprint import pformat
 from tau import EXIT_SUCCESS, EXIT_WARNING, TAU_SCRIPT
 from tau import logger, util, cli
 from tau.cli import arguments
-from tau.model.experiment import Experiment
-from tau.model.trial import Trial
+from tau.schema.experiment.controller import Experiment
+from tau.schema.trial.controller import Trial
 
 
 LOGGER = logger.get_logger(__name__)

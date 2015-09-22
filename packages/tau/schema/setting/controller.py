@@ -25,23 +25,11 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""TAU Commander settings.
+"""Setting data model controller."""
 
-FIXME: Settings needs a design review.
-"""
-
-from tau.model import Controller
+from tau.controller import Controller
 
 
 class Setting(Controller):
     """Setting data controller."""
-
-    attributes = {
-        'key': {
-            'type': 'string',
-            'unique': True
-        },
-        'value': {
-            'type': 'string'
-        }
-    }
+    pass

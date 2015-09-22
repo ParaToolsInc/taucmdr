@@ -25,56 +25,56 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""TAU Commander settings.
+"""Trial data model attributes."""
 
-FIXME: settings needs a design review.
-"""
+# pylint: disable=invalid-name
 
-from tau import logger
-from tau.schema.setting.controller import Setting
+number = {
+    'type': 'integer',
+    'required': True,
+    'description': 'trial unique identifier'
+}
 
+experiment = {
+    'model': 'Experiment',
+    'required': True,
+    'description': "this trial's experiment"
+}
 
-LOGGER = logger.get_logger(__name__)
+command = {
+    'type': 'string',
+    'required': True,
+    'description': "command line executed when performing the trial"
+}
 
-_DATA = {}
+cwd = {
+    'type': 'string',
+    'required': True,
+    'description': "directory the trial was performed in",
+}
 
+environment = {
+    'type': 'string',
+    'required': True,
+    'description': "shell environment the trial was performed in"
+}
 
-def _load():
-    for record in Setting.all():
-        key = record['key']
-        val = record['value']
-        _DATA[key] = val
-    LOGGER.debug("Loaded settings: %r", _DATA)
+begin_time = {
+    'type': 'datetime',
+    'description': "date and time the trial began"
+}
 
+end_time = {
+    'type': 'datetime',
+    'description': "date and time the trial ended"
+}
 
-def _save():
-    LOGGER.debug("Saving settings: %r", _DATA)
-    for key, val in _DATA.iteritems():
-        if Setting.exists({'key': key}):
-            Setting.update({'value': val}, {'key': key})
-        else:
-            Setting.create({'key': key, 'value': val})
+return_code = {
+    'type': 'integer',
+    'description': "return code of the command executed when performing the trial"
+}
 
-
-def get(key):
-    """
-    Get the value of setting 'key' or None if not set
-    """
-    if not _DATA:
-        _load()
-    return _DATA.get(key, None)
-
-
-def set(key, val):
-    """
-    Set setting 'key' to value 'val'
-    """
-    _DATA[key] = val
-    _save()
-
-
-def unset(key):
-    """
-    Remove setting 'key' from the list of settings
-    """
-    Setting.delete({'key': key})
+data_size = {
+    'type': 'integer',
+    'description': "the size in bytes of the trial data"
+}

@@ -25,20 +25,16 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""Compiler data model.
+"""Compiler data model controller."""
 
-TAU only works reliablly when the same compiler is used to build both the application
-source code and TAU itself.  If the system compiler changes TAU can break entirely.
-This data tracks the system compilers so we can warn the user if they have changed.
-"""
 
 from tau import logger
-from tau.model import Controller
+from tau.controller import Controller
 
 
 LOGGER = logger.get_logger(__name__)
- 
- 
+
+
 class Compiler(Controller):
     """Compiler data controller."""
 
@@ -77,18 +73,4 @@ class Compiler(Controller):
                                comp.info.short_descr, comp.command, found['md5'], md5sum)
         return found
 
-
-Compiler.attributes = {
-    'path': {
-        'type': 'string',
-        'required': True,
-        'unique': True,
-        'description': "absolute path to the compiler command"
-    },
-    'md5': {
-        'type': 'string',
-        'required': True,
-        'description': "checksum of the compiler command file"
-    }
-}
 

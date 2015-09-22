@@ -25,56 +25,12 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""TAU Commander settings.
+"""Application data model.
 
-FIXME: settings needs a design review.
+:any:`Application` fully describes the application configuration to be profiled, 
+including the features the application uses, e.g. OpenMP, MPI, CUDA, etc.
+Each specific application **configuration** has its own application record.  
+For example, if an application can operate with or without OpenMP then there 
+are potentially two application records for the same application code: one 
+specifying OpenMP is used and the other specifying OpenMP is not used.
 """
-
-from tau import logger
-from tau.schema.setting.controller import Setting
-
-
-LOGGER = logger.get_logger(__name__)
-
-_DATA = {}
-
-
-def _load():
-    for record in Setting.all():
-        key = record['key']
-        val = record['value']
-        _DATA[key] = val
-    LOGGER.debug("Loaded settings: %r", _DATA)
-
-
-def _save():
-    LOGGER.debug("Saving settings: %r", _DATA)
-    for key, val in _DATA.iteritems():
-        if Setting.exists({'key': key}):
-            Setting.update({'value': val}, {'key': key})
-        else:
-            Setting.create({'key': key, 'value': val})
-
-
-def get(key):
-    """
-    Get the value of setting 'key' or None if not set
-    """
-    if not _DATA:
-        _load()
-    return _DATA.get(key, None)
-
-
-def set(key, val):
-    """
-    Set setting 'key' to value 'val'
-    """
-    _DATA[key] = val
-    _save()
-
-
-def unset(key):
-    """
-    Remove setting 'key' from the list of settings
-    """
-    Setting.delete({'key': key})

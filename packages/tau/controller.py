@@ -25,7 +25,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""TAU Commander data model.
+"""TAU Commander data model controller base class.
 
 TAU Commander follows the `Model-View-Controller (MVC)`_ design pattern.
 Modules in :py:mod:`tau.model` define the data model by declaring subclasses of :any:`Controller`. 
@@ -169,41 +169,12 @@ Examples:
 
 import sys
 import json
-import operator
-from pkgutil import walk_packages
-from tau import logger, util
-from tau.error import InternalError, ConfigurationError
+from tau import logger
+from tau.error import ConfigurationError, ModelError, UniqueAttributeError
 from tau.storage import USER_STORAGE
 
 
 LOGGER = logger.get_logger(__name__)
-
-
-class ModelError(InternalError):
-    """Indicates the given data does not match the specified model."""
-
-    def __init__(self, model_cls, value):
-        """Initialize the error instance.
-        
-        Args:
-            model_cls (Controller): Controller subclass definining the data model.
-            value (str): A message describing the error.  
-        """
-        super(ModelError, self).__init__("Error in model '%s':\n%s" % (model_cls.model_name, value))
-        self.model_cls = model_cls
-
-
-class UniqueAttributeError(ModelError):
-    """Indicates that duplicate values were given for a unique attribute.""" 
-
-    def __init__(self, model_cls, unique):
-        """Initialize the error instance.
-        
-        Args:
-            model_cls (Controller): Controller subclass definining the data model.
-            unique (dict): Dictionary of unique attributes in the data model.  
-        """
-        super(UniqueAttributeError, self).__init__(model_cls, "A record with one of %r already exists" % unique)
 
 
 class Controller(object):
@@ -227,6 +198,71 @@ class Controller(object):
     # Some class members don't exist until tau.model is imported.
     # pylint: disable=no-member
     
+    @classmethod
+    def __class_init__(cls):
+        def get_props_model(props):
+            try:
+                return props['model']
+            except KeyError:
+                return props['collection']
+            
+        def check_attribute(attr, props):
+            model_attr_name = cls.model_name + "." + attr
+            if 'collection' in props and not 'via' in props:
+                raise ModelError(cls, "%s: collection does not define 'via'" % model_attr_name)
+            if not isinstance(props.get('unique', False), bool):
+                raise ModelError(cls, "%s: invalid value for 'unique'" % model_attr_name)
+            if not isinstance(props.get('description', ''), basestring):
+                raise ModelError(cls, "%s: invalid value for 'description'" % model_attr_name)
+            
+        def construct_relationship(attr, props):
+            via = props.get('via', None)
+            try:
+                foreign_cls = get_props_model(props) 
+            except KeyError:
+                if not via:
+                    continue
+                raise ModelError(cls, "Attribute '%s' defines 'via' property but not 'model' or 'collection'" % attr)
+            foreign_cls.__class_init__()
+    
+            forward = (foreign_cls, via)
+            reverse = (cls, attr)
+            if not via:
+                foreign_cls.references.add(reverse)
+            else:
+                foreign_cls.associations[via] = reverse
+                try:
+                    via_props = foreign_cls.attributes[via]
+                except KeyError:
+                    raise ModelError(cls, "Found 'via' on undefined attribute '%s.%s'" % (foreign_cls.model_name, via))
+                try:
+                    via_attr_model = _get_props_model(via_props)
+                except KeyError:
+                    raise ModelError(cls, "Found 'via' on non-model attribute '%s.%s'" % (foreign_cls.model_name, via))
+                if via_attr_model is not cls:
+                    raise ModelError(cls, "Attribute %s.%s referenced by 'via' in '%s' "
+                                     "does not define 'collection' or 'model' of type '%s'" %
+                                     (foreign_cls.model_name, via, attr, cls.model_name))
+                try:
+                    existing = cls.associations[attr]
+                except KeyError:
+                    cls.associations[attr] = forward
+                else:
+                    if existing != forward:
+                        raise ModelError(cls, "Conflicting associations on attribute '%s': "
+                                         "%r vs. %r" % (attr, existing, forward))
+
+        cls.model_name = cls.__name__
+        cls.associations = {}
+        cls.references = set()
+        attrs_module_name = cls.__module__.replace('.controller', '.attributes')
+        cls.attributes = {key: val for key, val in vars(sys.modules[attrs_module_name]).iteritems()
+                          if not key.startswith('_') and isinstance(val, dict)}
+        for attr, props in cls.attributes.iteritems():
+            check_attribute(attr, props)
+    
+
+    
     def __init__(self, fields):
         self._populated = None
         self.eid = getattr(fields, 'eid', None)
@@ -244,35 +280,6 @@ class Controller(object):
     def __repr__(self):
         return json.dumps(repr(self.data))
     
-    @classmethod
-    def __class_init__(cls):
-        def err(msg):
-            raise ModelError(cls, "%s: %s" % (model_attr_name, msg))
-        if not hasattr(cls, 'model_name'):
-            cls.model_name = cls.__name__
-        if not hasattr(cls, 'associations'):
-            cls.associations = {}
-        if not hasattr(cls, 'references'):
-            cls.references = set()
-        for attr, props in cls.attributes.iteritems():
-            model_attr_name = cls.model_name + "." + attr
-            if 'collection' in props and not 'via' in props:
-                err("collection does not define 'via'")
-            try:
-                unique = props['unique']
-            except KeyError:
-                pass
-            else:
-                if not isinstance(unique, bool):
-                    err("invalid value for 'unique'")
-            try:
-                description = props['description']
-            except KeyError:
-                LOGGER.debug("%s: no 'description'", model_attr_name)
-            else:
-                if not isinstance(description, basestring):
-                    err("invalid value for 'description'")
-
     @classmethod
     def _validate(cls, data):
         """Validates data against the model.
@@ -381,10 +388,10 @@ class Controller(object):
             self._populated = dict(self.data)
             for attr, props in self.attributes.iteritems():
                 try:
-                    foreign_model = MODELS[props['model']]
+                    foreign_model = props['model']
                 except KeyError:
                     try:
-                        foreign_model = MODELS[props['collection']]
+                        foreign_model = props['collection']
                     except KeyError:
                         continue
                     else:
@@ -595,11 +602,7 @@ class Controller(object):
         
         TODO: Docs
         """
-        eid_map = {}
-        with USER_STORAGE:
-            for model_name, model_records in data.iteritems():
-                for eid, data in model_records.iteritems():
-                    eid_map[eid] = MODELS[model_name].create(data)
+        
         
     @classmethod
     def export_records(cls, keys=None, eids=None):
@@ -1039,79 +1042,4 @@ class ByName(object):
         """Return the record with the given name.  See :any:`Controller.one`"""
         return cls.one({'name': name})
 
-
-def _yield_model_classes():
-    for _, module_name, _ in walk_packages(__path__, __name__ + '.'):
-        __import__(module_name)
-        module_dict = sys.modules[module_name].__dict__
-        model_class_name = util.camelcase(module_name.split('.')[-1])
-        try:
-            model_class = module_dict[model_class_name]
-        except KeyError:
-            raise InternalError("module '%s' does not define class '%s'" % (module_name, model_class_name))
-        yield model_class       
-
-
-def _construct_model(models):
-    """Builds model relationships.
-    
-    Initializes controller classes and builds associations and references between data models.
-    
-    Raises:
-        ModelError: A data model is invalid. 
-    
-    Returns:
-        dict: Model controller classes indexed by model name. 
-    """
-    def _get_props_model_name(props):
-        try:
-            return props['model']
-        except KeyError:
-            return props['collection']
-    for cls_name, cls in models.iteritems():
-        cls.__class_init__()
-        for attr, props in cls.attributes.iteritems():
-            via = props.get('via', None)
-            try:
-                foreign_name = _get_props_model_name(props) 
-            except KeyError:
-                if not via:
-                    continue
-                raise ModelError(cls, "Attribute '%s' defines 'via' property "
-                                 "but not 'model' or 'collection'" % attr)
-            try:
-                foreign_cls = models[foreign_name]
-            except KeyError:
-                raise ModelError(cls, "Invalid model name in attribute '%s'" % attr)
-            foreign_cls.__class_init__()
-    
-            forward = (foreign_cls, via)
-            reverse = (cls, attr)
-            if not via:
-                foreign_cls.references.add(reverse)
-            else:
-                foreign_cls.associations[via] = reverse
-                try:
-                    via_props = foreign_cls.attributes[via]
-                except KeyError:
-                    raise ModelError(cls, "Found 'via' on undefined attribute '%s.%s'" % (foreign_name, via))
-                try:
-                    via_attr_model_name = _get_props_model_name(via_props)
-                except KeyError:
-                    raise ModelError(cls, "Found 'via' on non-model attribute '%s.%s'" % (foreign_name, via))
-                if via_attr_model_name != cls_name:
-                    raise ModelError(cls, "Attribute %s.%s referenced by 'via' in '%s' "
-                                     "does not define 'collection' or 'model' of type '%s'" %
-                                     (foreign_name, via, attr, cls_name))
-                try:
-                    existing = cls.associations[attr]
-                except KeyError:
-                    cls.associations[attr] = forward
-                else:
-                    if existing != forward:
-                        raise ModelError(cls, "Conflicting associations on attribute '%s': "
-                                         "%r vs. %r" % (attr, existing, forward))
-
-MODELS = dict([(_.__name__, _) for _ in _yield_model_classes()])
-_construct_model(MODELS)
 

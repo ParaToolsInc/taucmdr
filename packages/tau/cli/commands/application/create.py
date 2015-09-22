@@ -29,8 +29,8 @@
 
 from tau import logger, cli
 from tau.cli import arguments
-from tau.model import UniqueAttributeError
-from tau.model.application import Application
+from tau.error import UniqueAttributeError
+from tau.schema.application.controller import Application
 
 
 LOGGER = logger.get_logger(__name__)

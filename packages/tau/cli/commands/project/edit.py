@@ -30,10 +30,10 @@
 from tau import logger, cli
 from tau.cli import arguments
 from tau.cli.commands.project import list as project_list
-from tau.model.project import Project
-from tau.model.target import Target
-from tau.model.application import Application
-from tau.model.measurement import Measurement
+from tau.schema.project.controller import Project
+from tau.schema.target.controller import Target
+from tau.schema.application.controller import Application
+from tau.schema.measurement.controller import Measurement
 
 
 LOGGER = logger.get_logger(__name__)

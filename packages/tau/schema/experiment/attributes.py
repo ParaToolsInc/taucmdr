@@ -25,56 +25,43 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""TAU Commander settings.
+"""Experiment data model attributes."""
 
-FIXME: settings needs a design review.
-"""
+# pylint: disable=invalid-name
 
-from tau import logger
-from tau.schema.setting.controller import Setting
-
-
-LOGGER = logger.get_logger(__name__)
-
-_DATA = {}
+from tau.schema.project.controller import Project
+from tau.schema.target.controller import Target
+from tau.schema.application.controller import Application
+from tau.schema.measurement.controller import Measurement
+from tau.schema.trial.controller import Trial
 
 
-def _load():
-    for record in Setting.all():
-        key = record['key']
-        val = record['value']
-        _DATA[key] = val
-    LOGGER.debug("Loaded settings: %r", _DATA)
+project = {
+    'model': Project,
+    'required': True,
+    'description': "Project this experiment belongs to"
+}
 
+target = {
+    'model': Target,
+    'required': True,
+    'description': "Target this experiment runs on"
+}
 
-def _save():
-    LOGGER.debug("Saving settings: %r", _DATA)
-    for key, val in _DATA.iteritems():
-        if Setting.exists({'key': key}):
-            Setting.update({'value': val}, {'key': key})
-        else:
-            Setting.create({'key': key, 'value': val})
+application = {
+    'model': Application,
+    'required': True,
+    'description': "Application this experiment uses"
+}
 
+measurement = {
+    'model': Measurement,
+    'required': True,
+    'description': "Measurement parameters for this experiment"
+}
 
-def get(key):
-    """
-    Get the value of setting 'key' or None if not set
-    """
-    if not _DATA:
-        _load()
-    return _DATA.get(key, None)
-
-
-def set(key, val):
-    """
-    Set setting 'key' to value 'val'
-    """
-    _DATA[key] = val
-    _save()
-
-
-def unset(key):
-    """
-    Remove setting 'key' from the list of settings
-    """
-    Setting.delete({'key': key})
+trials = {
+    'collection': Trial,
+    'via': 'experiment',
+    'description': "Trials of this experiment"
+}

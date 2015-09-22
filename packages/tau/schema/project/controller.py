@@ -25,19 +25,14 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""Project data model.
+"""Project data model controller."""
 
-A project collects multiple :any:`Target`, :any:`Application`, and :any:`Measurement`
-configurations in a single container.  Selecting one of each forms a new :any:`Experiment`.
-Each application of the :any:`Experiment` generates a new :any:`Trial` record along with
-some performance data (profiles, traces, etc.).
-"""
+
 
 import os
 import shutil
-from tau import USER_PREFIX
 from tau import logger, util, error
-from tau.model import Controller, ByName
+from tau.controller import Controller, ByName
 
 
 LOGGER = logger.get_logger(__name__)
@@ -67,42 +62,4 @@ class Project(Controller, ByName):
         except Exception as err:
             if os.path.exists(prefix):
                 LOGGER.error("Could not remove project data at '%s': %s", prefix, err)
-
-
-Project.attributes = {
-    'name': {
-        'type': 'string',
-        'unique': True,
-        'description': 'project name',
-        'argparse': {'metavar': '<project_name>'}
-    },
-    'targets': {
-        'collection': 'Target',
-        'via': 'projects',
-        'description': 'targets used by this project'
-    },
-    'applications': {
-        'collection': 'Application',
-        'via': 'projects',
-        'description': 'applications used by this project'
-    },
-    'measurements': {
-        'collection': 'Measurement',
-        'via': 'projects',
-        'description': 'measurements used by this project'
-    },
-    'experiments': {
-        'collection': 'Experiment',
-        'via': 'project',
-        'description': 'experiments formed from this project'
-    },
-    'prefix': {
-        'type': 'string',
-        'required': True,
-        'default': USER_PREFIX,
-        'description': 'location for all files and experiment data related to this project',
-        'argparse': {'flags': ('--home',),
-                     'metavar': 'path'}
-    },
-}
 

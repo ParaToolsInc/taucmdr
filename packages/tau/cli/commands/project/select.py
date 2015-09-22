@@ -31,11 +31,11 @@
 from tau import logger, cli
 from tau.cli import arguments
 from tau.error import InternalError
-from tau.model.project import Project
-from tau.model.target import Target
-from tau.model.application import Application
-from tau.model.measurement import Measurement
-from tau.model.experiment import Experiment
+from tau.schema.project.controller import Project
+from tau.schema.target.controller import Target
+from tau.schema.application.controller import Application
+from tau.schema.measurement.controller import Measurement
+from tau.schema.experiment.controller import Experiment
 
 
 LOGGER = logger.get_logger(__name__)

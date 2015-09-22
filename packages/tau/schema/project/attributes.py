@@ -25,56 +25,51 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""TAU Commander settings.
+"""Project data model attributes."""
 
-FIXME: settings needs a design review.
-"""
+# pylint: disable=invalid-name
 
-from tau import logger
-from tau.schema.setting.controller import Setting
+from tau.schema.target.controller import Target
+from tau.schema.application.controller import Application
+from tau.schema.measurement.controller import Measurement
+from tau.schema.experiment.controller import Experiment
 
+name = {
+    'type': 'string',
+    'unique': True,
+    'description': 'project name',
+    'argparse': {'metavar': '<project_name>'}
+}
 
-LOGGER = logger.get_logger(__name__)
+targets = {
+    'collection': Target,
+    'via': 'projects',
+    'description': 'targets used by this project'
+}
 
-_DATA = {}
+applications = {
+    'collection': Application,
+    'via': 'projects',
+    'description': 'applications used by this project'
+}
 
+measurements = {
+    'collection': Measurement,
+    'via': 'projects',
+    'description': 'measurements used by this project'
+}
 
-def _load():
-    for record in Setting.all():
-        key = record['key']
-        val = record['value']
-        _DATA[key] = val
-    LOGGER.debug("Loaded settings: %r", _DATA)
+experiments = {
+    'collection': Experiment,
+    'via': 'project',
+    'description': 'experiments formed from this project'
+}
 
+prefix = {
+    'type': 'string',
+    'required': True,
+    'description': 'location for all files and experiment data related to this project',
+    'argparse': {'flags': ('--home',),
+                 'metavar': 'path'}
+},
 
-def _save():
-    LOGGER.debug("Saving settings: %r", _DATA)
-    for key, val in _DATA.iteritems():
-        if Setting.exists({'key': key}):
-            Setting.update({'value': val}, {'key': key})
-        else:
-            Setting.create({'key': key, 'value': val})
-
-
-def get(key):
-    """
-    Get the value of setting 'key' or None if not set
-    """
-    if not _DATA:
-        _load()
-    return _DATA.get(key, None)
-
-
-def set(key, val):
-    """
-    Set setting 'key' to value 'val'
-    """
-    _DATA[key] = val
-    _save()
-
-
-def unset(key):
-    """
-    Remove setting 'key' from the list of settings
-    """
-    Setting.delete({'key': key})
