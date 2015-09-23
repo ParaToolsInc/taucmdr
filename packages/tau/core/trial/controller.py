@@ -34,8 +34,7 @@ import errno
 from datetime import datetime
 from tau import logger, util
 from tau.error import ConfigurationError
-from tau.core.controller import Controller
-from tau.core.storage import USER_STORAGE
+from tau.core.mvc import Controller
 
 LOGGER = logger.get_logger(__name__)
 
@@ -184,7 +183,6 @@ class Trial(Controller):
             raise
         else:
             data_size = sum(os.path.getsize(os.path.join(prefix, f)) for f in os.listdir(prefix))
-            shutil.copy(USER_STORAGE.dbfile, prefix)
             end_time = str(datetime.utcnow())
             cls.update({'end_time': end_time,
                         'return_code': retval,

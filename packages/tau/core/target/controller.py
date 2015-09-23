@@ -29,9 +29,9 @@
 
 
 from tau.error import InternalError, ConfigurationError
-from tau.core.controller import Controller, ByName
+from tau.core.mvc import Controller, ByName
 from tau.cf.compiler import CompilerRole
-from tau.cf.compiler.installed import InstalledCompilerSet 
+from tau.cf.compiler.installed import InstalledCompilerSet
 
 
 class Target(Controller, ByName):

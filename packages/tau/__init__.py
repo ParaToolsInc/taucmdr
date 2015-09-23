@@ -80,20 +80,3 @@ TAU_SCRIPT = os.environ['__TAU_SCRIPT__']
 
 Mainly used for help messages. **Do not** change it once it is set.
 """
-
-SYSTEM_PREFIX = os.path.join(TAU_HOME, '.system')
-"""str: Absolute path to system-level TAU Commander files.
-
-System-level storage prefix.
-**Do not** change it once it is set.
-"""
-
-USER_PREFIX = os.path.join(os.path.expanduser('~'), '.tau')
-"""str: Absolute path to user-level TAU Commander files.
-
-User-level storage prefix.
-**Do not** change it once it is set.
-"""
-
-PROJECT_DIR = '.tau'
-"""str: Name of the directory containing TAU Commander project files."""

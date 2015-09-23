@@ -65,5 +65,9 @@ ATTRIBUTES = {
         'description': 'location for all files and experiment data related to this project',
         'argparse': {'flags': ('--home',),
                      'metavar': 'path'}
+    },
+    'selected': {
+        'model': Experiment,
+        'description': 'the currently selected experiment configuration'
     }
 }

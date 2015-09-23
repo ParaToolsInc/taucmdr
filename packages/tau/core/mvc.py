@@ -25,19 +25,201 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""TAU Commander data model core components.
+"""TAU Commander core software architecture.
 
-See :any:`tau.core` for details.
+TAU Commander follows the `Model-View-Controller (MVC)`_ architectural pattern. 
+Packages in :py:mod:`tau.core` define models and controllers.  The `model` module 
+declares the model attributes as a dictionary named `ATTRIBUTES` in the form::
+
+    <attribute>: {
+        property: value,
+        [[property: value], ...]
+    }
+
+Attribute properties can be anything you wish, including these special properties:
+
+* ``type`` (str): The attribute is of the specified type.
+* ``required`` (bool): The attribute must be specified in the data record. 
+* ``model`` (str): The attribute associates this model with another data model.
+* ``collection`` (str): The attribute associates this model with another data model.
+* ``via`` (str): The attribute associates with another model "via" the specified attribute.
+
+The `controller` module declares the controller as a subclass of :any:`Controller`.  Controller
+class objects are not bound to any particular data record and so can be used to create, update,
+and delete records.  Controller class instances **are** bound to a single data record.
+
+Models may have **associations** and **references**.  An association creates a relationship between
+an attribute of this model and an attribute of another (a.k.a foreign) model.  If the associated
+attribute changes then the foreign model will update its associated attribute.  A reference indicates
+that this model is being referened by one or more attributes of a foreign model.  If a record of the
+referenced model changes then the referencing model, i.e. the foreign model, will update all referencing 
+attributes. 
+
+Associations, references, and attributes are constructed when :py:mod:`tau.core`  is imported.
+
+Examples:
+
+    *One-sided relationship*
+    ::
+
+        class Pet(Controller):
+            attributes = {'name': {'type': 'string'}, 'hungry': {'type': 'bool'}}
+        
+        class Person(Controller):
+            attributes = {'name': {'type': 'string'}, 'pet': {'model': 'Pet'}}
+            
+    We've related a Person to a Pet but not a Pet to a Person.  That is, we can query a Person 
+    to get information about their Pet, but we can't query a Pet to get information about their Person.  
+    If a Pet record changes then the Person record that referenced the Pet record is notified of the 
+    change. If a Person record changes then nothing happens to Pet.  The Pet and Person classes codify
+    this relationship as:
+    
+        * Pet.references = set( (Person, 'pet') )
+        * Pet.associations = {}
+        * Person.references = set() 
+        * Person.associations = {}
+    
+    Some example data for this model::
+    
+        {
+         'Pet': {1: {'name': 'Fluffy', 'hungry': True}},
+         'Person': {0: {'name': 'Bob', 'pet': 1}} 
+        }
+                      
+    *One-to-one relationship*
+    ::
+    
+        class Husband(Controller):
+            attributes = {'name': {'type': 'string'}, 'wife': {'model': 'Wife'}}
+            
+        class Wife(Controller):
+            attributes = {'name': {'type': 'string'}, 'husband': {'model': 'Husband'}}
+    
+    We've related a Husband to a Wife.  The Husband may have only one Wife and the Wife may have
+    only one Husband.  We can query a Husband to get information about their Wife and we can query a
+    Wife to get information about their Husband.  If a Husband/Wife record changes then the Wife/Husband 
+    record that referenced the Husband/Wife record is notified of the change.  The Husband and Wife classes
+    codify this relationship as:
+    
+        * Husband.references = set( (Wife, 'husband') )
+        * Husband.associations = {}
+        * Wife.references = set( (Husband, 'wife') )
+        * Wife.associations = {}  
+    
+    Example data::
+    
+        {
+         'Husband': {2: {'name': 'Filbert', 'wife': 1}},
+         'Wife': {1: {'name': 'Matilda', 'husband': 2}}
+        }
+    
+    *One-to-many relationship*
+    ::
+    
+        class Brewery(Controller):
+            attributes = {'address': {'type': 'string'}, 
+                          'brews': {'collection': 'Beer', 
+                                    'via': 'origin'}}
+            
+        class Beer(Controller):
+            attributes = {'origin': {'model': 'Brewery'}, 
+                          'color': {'type': 'string'}, 
+                          'ibu': {'type': 'int'}}
+            
+    We've related one Brewery to many Beers.  A Beer has only one Brewery but a Brewery has zero or
+    more Beers.  The `brews` attribute has a `via` property along with a `collection` property to specify 
+    which attribute of Beer relates Beer to Brewery, i.e. you may want a model to have multiple 
+    one-to-many relationship with another model.  The Brewery and Beer classes codify this relationship as:
+    
+        * Brewery.references = set()
+        * Brewery.associations = {'brews': (Beer, 'origin')}
+        * Beer.references = set()
+        * Beer.associations = {'origin': (Brewery, 'brews')}
+        
+    Example data::
+    
+        {
+         'Brewery': {100: {'address': '4615 Hollins Ferry Rd, Halethorpe, MD 21227',
+                           'brews': [10, 12, 14]}},
+         'Beer': {10: {'origin': 100, 'color': 'gold', 'ibu': 45},
+                  12: {'origin': 100, 'color': 'dark', 'ibu': 15},
+                  14: {'origin': 100, 'color': 'pale', 'ibu': 30}}
+        }
+    
+    *Many-to-many relationship*
+    ::
+    
+        class Actor(Controller):
+            attributes = {'home_town': {'type': 'string'},
+                          'appears_in': {'collection': 'Movie',
+                                         'via': 'cast'}}
+                                         
+        class Movie(Controller):
+            attributes = {'title': {'type': 'string'},
+                          'cast': {'collection': 'Actor',
+                                   'via': 'appears_in'}}
+                                   
+    An Actor may appear in many Movies and a Movie may have many Actors.  Changing the `cast` of a Movie
+    notifies Actor and changing the movies an Actor `apppears_in` notifies Movie.  This relationship is
+    codified as:
+    
+        * Actor.references = set()
+        * Actor.associations = {'appears_in': (Movies, 'cast')}
+        * Movie.references = set()
+        * Movie.associations = {'cast': (Actor, 'appears_in')}
+    
+.. _Model-View-Controller (MVC): https://en.wikipedia.org/wiki/Model-view-controller
 """
 
 import sys
 import json
 from tau import logger, util
-from tau.error import ConfigurationError, ModelError, UniqueAttributeError, InternalError
-from tau.core.storage import USER_STORAGE
+from tau.error import ConfigurationError, InternalError
+from tau.core import storage
 
 
 LOGGER = logger.get_logger(__name__)
+
+
+class ModelError(InternalError):
+    """Indicates an error in model data or the model itself."""
+
+    def __init__(self, model_cls, value):
+        """Initialize the error instance.
+        
+        Args:
+            model_cls (Controller): Controller subclass definining the data model.
+            value (str): A message describing the error.  
+        """
+        super(ModelError, self).__init__("%s: %s" % (model_cls.model_name, value))
+        self.model_cls = model_cls
+
+
+class UniqueAttributeError(ModelError):
+    """Indicates that duplicate values were given for a unique attribute.""" 
+
+    def __init__(self, model_cls, unique):
+        """Initialize the error instance.
+        
+        Args:
+            model_cls (Controller): Controller subclass definining the data model.
+            unique (dict): Dictionary of unique attributes in the data model.  
+        """
+        super(UniqueAttributeError, self).__init__(model_cls, "A record with one of %r already exists" % unique)
+
+
+class NoStorageError(ConfigurationError):
+    """Indicates that the controller couldn't find a storage backend."""
+    
+    def __init__(self, model_cls, value):
+        """Initialize the error instance.
+        
+        Args:
+            model_cls (Controller): Controller subclass definining the data model.
+            value (str): A message describing the error.  
+        """
+        super(NoStorageError, self).__init__("%s: %s" % (model_cls.model_name, value))
+        self.model_cls = model_cls
 
 
 class Controller(object):
@@ -61,7 +243,14 @@ class Controller(object):
         """Initializes the controller class object.
         
         Initializes class members that define relationships and model attributes and
-        checks the model attributes for correctness.
+        checks the model attributes for correctness.  A `Metaclass`_ would be more 
+        "pythonic" but it doesn't work in this case since we must import the `model` 
+        module to initialize the controller.  The model properties may be references
+        to model controllers (including it's own controller) so is a possibility of
+        circular import unless the class object is fully constructed before we import
+        the `model` module.
+        
+        .. _Metaclass: http://docs.python.org/2/reference/datamodel.html
         """
         if hasattr(cls, 'attributes'):
             return
@@ -151,7 +340,7 @@ class Controller(object):
         self._populated = None
         self.eid = getattr(fields, 'eid', None)
         self.data = self._validate(fields)
-
+        
     def __getitem__(self, key):
         return self.data[key]
     
@@ -163,6 +352,20 @@ class Controller(object):
 
     def __repr__(self):
         return json.dumps(repr(self.data))
+    
+    @classmethod
+    def storage(cls):
+        return storage.user_storage().database
+    
+    @classmethod
+    def _storage(cls):
+        try:
+            return cls._storage_inst
+        except AttributeError:
+            cls._storage_inst = cls.storage()
+            if not cls._storage_inst:
+                raise NoStorageError(cls, "Cannot connect to storage system")
+            return cls._storage_inst
     
     @classmethod
     def _validate(cls, data):
@@ -309,13 +512,13 @@ class Controller(object):
             Controller: Controller subclass instance controlling the found record or None if no such record exists. 
         """
         LOGGER.debug("%s.one(keys=%s, eid=%s)", cls.model_name, keys, eid)
-        found = USER_STORAGE.get(cls.model_name, keys=keys, eid=eid)
+        found = cls._storage().get(cls.model_name, keys=keys, eid=eid)
         return cls(found) if found else None
 
     @classmethod
     def all(cls):
         """Return a list of all records."""
-        return [cls(result) for result in USER_STORAGE.search(cls.model_name)]
+        return [cls(result) for result in cls._storage().search(cls.model_name)]
 
     @classmethod
     def search(cls, keys=None, eids=None):
@@ -343,7 +546,7 @@ class Controller(object):
             else:
                 return [cls.one(eid=eids)]
         elif keys:
-            return [cls(record) for record in USER_STORAGE.search(cls.model_name, keys=keys)]
+            return [cls(record) for record in cls._storage().search(cls.model_name, keys=keys)]
         else:
             return []
 
@@ -365,7 +568,7 @@ class Controller(object):
             list: Controller subclass instances controlling the found records. 
         """
         LOGGER.debug("%s.match(field=%s, regex=%s, test=%s)", cls.model_name, field, regex, test)
-        return [cls(record) for record in USER_STORAGE.match(cls.model_name, field, regex, test)]
+        return [cls(record) for record in cls._storage().match(cls.model_name, field, regex, test)]
 
     @classmethod
     def exists(cls, keys=None, eids=None):
@@ -381,7 +584,7 @@ class Controller(object):
         Returns:
             bool: True if a record exists for **all** values in `keys` or `eids`.          
         """
-        return USER_STORAGE.contains(cls.model_name, keys=keys, eids=eids)
+        return cls._storage().contains(cls.model_name, keys=keys, eids=eids)
 
     @classmethod
     def create(cls, fields):
@@ -397,9 +600,9 @@ class Controller(object):
         """
         model = cls(fields)
         unique = dict([(attr, model[attr]) for attr, props in cls.attributes.iteritems() if 'unique' in props])
-        if USER_STORAGE.contains(cls.model_name, keys=unique, match_any=True):
+        if cls._storage().contains(cls.model_name, keys=unique, match_any=True):
             raise UniqueAttributeError(cls, unique)
-        with USER_STORAGE as storage:
+        with cls._storage() as storage:
             model.eid = storage.insert(cls.model_name, model.data)
             for attr, foreign in cls.associations.iteritems():
                 foreign_model, via = foreign
@@ -424,7 +627,7 @@ class Controller(object):
             eids (list): Record identifiers to match.
         """
         LOGGER.debug("%s.update(fields=%s, keys=%s, eids=%s)", cls.model_name, fields, keys, eids)
-        with USER_STORAGE as storage:
+        with cls._storage() as storage:
             # Get the list of affected records **before** updating the data so foreign keys are correct
             changing = cls.search(keys, eids)
             for attr in fields:
@@ -449,6 +652,37 @@ class Controller(object):
                     model.on_update()
 
     @classmethod
+    def unset(cls, fields, keys=None, eids=None):
+        """Unset recorded data fields and update associations.
+        
+        Invokes the `on_update` callback for each record **after** the records are updated.
+
+        Args:
+            fields (list): Names of fields to unset.
+            keys (dict): Attributes to match.
+            eids (list): Record identifiers to match.
+        """
+        LOGGER.debug("%s.unset(fields=%s, keys=%s, eids=%s)", cls.model_name, fields, keys, eids)
+        with cls._storage() as storage:
+            # Get the list of affected records **before** updating the data so foreign keys are correct
+            changing = cls.search(keys, eids)
+            for attr in fields:
+                if not attr in cls.attributes:
+                    raise ModelError(cls, "Model '%s' has no attribute named '%s'" % (cls.model_name, attr))
+            storage.unset(cls.model_name, fields, keys=keys, eids=eids)
+            for model in changing:
+                for attr, foreign in cls.associations.iteritems():
+                    if attr not in fields:
+                        continue
+                    try:
+                        old_foreign_keys = model[attr]
+                    except KeyError:
+                        old_foreign_keys = []
+                    foreign_model, via = foreign
+                    model._disassociate(foreign_model.search(eids=old_foreign_keys), via)
+                    model.on_update()
+
+    @classmethod
     def delete(cls, keys=None, eids=None):
         """Delete recorded data and update associations.
         
@@ -459,7 +693,7 @@ class Controller(object):
             eids (list): Record identifiers to match.
         """
         LOGGER.debug("%s.delete(keys=%s, eids=%s)", cls.model_name, keys, eids)
-        with USER_STORAGE as storage:
+        with cls._storage() as storage:
             for model in cls.search(keys, eids):
                 # pylint complains because `model` is changing on every iteration so we'll have
                 # a different lambda function `test` on each iteration.  This is exactly what
@@ -551,7 +785,7 @@ class Controller(object):
         if not len(affected): 
             return
         LOGGER.debug("Adding %s to '%s' in %s(eids=%s)", self.eid, attr, foreign_cls.model_name, affected)
-        with USER_STORAGE as storage:
+        with self._storage() as storage:
             for key in affected:
                 model = foreign_cls.one(eid=key)
                 if not model:
@@ -576,7 +810,7 @@ class Controller(object):
         if not len(affected):
             return
         LOGGER.debug("Removing %s from '%s' in %r", self.eid, attr, affected)
-        with USER_STORAGE as storage:
+        with self._storage() as storage:
             for model in affected:
                 if 'model' in model.attributes[attr]:
                     if 'required' in model.attributes[attr]:
@@ -584,8 +818,7 @@ class Controller(object):
                                      attr, model.model_name, model.eid)
                         model.delete(eids=model.eid)
                     else:
-                        storage.update(
-                            model.model_name, {attr: None}, eids=model.eid)
+                        storage.update(model.model_name, {attr: None}, eids=model.eid)
                 elif 'collection' in model.attributes[attr]:
                     update = list(set(model[attr]) - set([self.eid]))
                     if 'required' in model.attributes[attr] and len(update) == 0:
@@ -593,8 +826,7 @@ class Controller(object):
                                      attr, model.model_name, model.eid)
                         model.delete(eids=model.eid)
                     else:
-                        storage.update(
-                            model.model_name, {attr: update}, eids=model.eid)
+                        storage.update(model.model_name, {attr: update}, eids=model.eid)
 
     @classmethod
     def construct_condition(cls, args, attr_defined=None, attr_undefined=None, attr_eq=None, attr_ne=None):

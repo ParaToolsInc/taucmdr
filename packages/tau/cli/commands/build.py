@@ -101,7 +101,7 @@ def main(argv):
     args = parser().parse_args(args=argv)
     LOGGER.debug('Arguments: %s', args)
 
-    selection = Experiment.get_selected()
+    selection = None #Experiment.get_selected()
     if not selection:
         raise ConfigurationError("Nothing selected.", "See `tau project select`")
     return selection.managed_build(args.cmd, args.cmd_args)

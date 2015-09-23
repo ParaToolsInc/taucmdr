@@ -32,7 +32,7 @@
 import os
 import shutil
 from tau import logger, util, error
-from tau.core.controller import Controller, ByName
+from tau.core.mvc import Controller, ByName
 
 
 LOGGER = logger.get_logger(__name__)
@@ -40,7 +40,7 @@ LOGGER = logger.get_logger(__name__)
 
 class Project(Controller, ByName):
     """Project data controller."""
-
+    
     def prefix(self):
         return os.path.join(self['prefix'], self['name'])
 
@@ -62,4 +62,19 @@ class Project(Controller, ByName):
         except Exception as err:
             if os.path.exists(prefix):
                 LOGGER.error("Could not remove project data at '%s': %s", prefix, err)
+
+    @classmethod
+    def get_selected(cls):
+        """Gets the selected Experiment.
+        
+        Returns:
+            Experiment: Controller for the currently selected experiment data.
+        """
+        experiment_id = self.populate('project')['selected']
+        if experiment_id:
+            found = cls.one(eid=experiment_id)
+            if not found:
+                raise InternalError('Invalid experiment ID: %r' % experiment_id)
+            return found
+        return None
 

@@ -77,7 +77,7 @@ def main(argv):
     args = parser().parse_args(args=argv)
     LOGGER.debug('Arguments: %s', args)
 
-    selection = Experiment.get_selected()
+    selection = None #Experiment.get_selected()
     if not selection:
         raise ConfigurationError("No experiment configured.", "See `tau project select`")
 

@@ -31,90 +31,123 @@ TODO: Docs
 """
 
 import os
-from tau import logger
-from tau import PROJECT_DIR, SYSTEM_PREFIX, USER_PREFIX
+from tau import logger, TAU_HOME
+from tau.error import ConfigurationError
 from tau.core.database import JsonDatabase, AbstractDatabase
+
 
 LOGGER = logger.get_logger(__name__)
 
+SYSTEM_PREFIX = os.path.join(TAU_HOME, '.system')
+"""str: Absolute path to system-level TAU Commander files."""
 
-class Storage(AbstractDatabase):
-    """TAU Commander's hirarchical storage system.
+USER_PREFIX = os.path.join(os.path.expanduser('~'), '.tau')
+"""str: Absolute path to user-level TAU Commander files."""
+
+PROJECT_DIR = '.tau'
+"""str: Name of the directory containing TAU Commander project files."""
+
+
+class Storage(object):
+    """Storage location for records and files.
     
-    Manages project records, software packages, and performance data in three repositories:
-        * System: Globally readable, likely only writable by the system administrator.
-          Ideal location for software installations.
-        * User: User readable and writable.  Ideal location for configuration records 
-          (i.e. Application) and fallback location for software installation.
-        * Project: User readable and writable.  Location for project configurations and
-          application performance data. 
+    Pairs a database instance with a file system path.
     """
     
-    def __init__(self, system_prefix, user_prefix):
-        self.system_prefix = system_prefix
-        self.user_prefix = user_prefix
-        self.system_database = JsonDatabase(os.path.join(system_prefix, 'system.json'))
-        self.user_database = JsonDatabase(os.path.join(user_prefix, 'user.json'))
+    def __init__(self, prefix, database):
+        self.prefix = prefix
+        self.database = database
 
-    @property
-    def project_database(self):
-        """Gets the project database.
         
-        Walks up the filesystem tree until a project directory is located.
-        
-        Returns:
-            AbstractDatabase: A database object for project-level record storage
-                              or None if the project directory was not found.
-        """
-        # pylint: disable=no-member,attribute-defined-outside-init
-        try:
-            return self._project_database
-        except AttributeError:
-            root = os.getcwd()
-            lastroot = None
-            while root != lastroot:
-                dbfile = os.path.join(root, PROJECT_DIR, 'project.json')
-                if os.path.exists(dbfile) and dbfile not in (self.user_database.dbfile, self.system_database.dbfile):
-                    LOGGER.debug("Located project database at '%s'", dbfile)
-                    self._project_database = JsonDatabase(dbfile)
-                lastroot = root
-                root = os.path.dirname(root)
-            self._project_database = None
-        return self._project_database
+def system_storage():
+    """System-level record and file storage.
     
-    def _apply(self, func, *args, **kwargs):
-        found = None
-        if self.project_database:
-            found = getattr(self.project_database, func)(*args, **kwargs)
-        if found is None:
-            found = getattr(self.user_database, func)(*args, **kwargs)
-        if found is None:
-            found = getattr(self.system_database, func)(*args, **kwargs)
-        return found
+    System-level records are globally readable and writable, depending on the user's 
+    system access level.  System-level is a good place for software package installations
+    and some system-specific records, i.e. compiler configurations.
+    
+    If the system-level database does not exist then we will attempt to create it. If it
+    can't be created then this function issues a warning and returns None.
+    
+    Returns:
+        Storage: System-level storage or None if no system-level database exists and it
+                 cannot be created.
+    """      
+    try:
+        return system_storage.instance
+    except AttributeError:
+        try:
+            database = JsonDatabase(os.path.join(SYSTEM_PREFIX, 'system.json'))
+        except ConfigurationError as err:
+            LOGGER.warning(err)
+            system_storage.instance = None
+        else:
+            system_storage.instance = Storage(SYSTEM_PREFIX, database)
+        return system_storage.instance
 
-    def get(self, table_name, keys=None, match_any=False, eid=None):
-        return self._apply('get', table_name, keys=keys, match_any=match_any, eid=eid)
-        
-    def search(self, table_name, keys=None, match_any=False):
-        return self._apply('search', table_name, keys=keys, match_any=match_any)
-        
-    def match(self, table_name, field, regex=None, test=None):
-        return self._apply('match', table_name, field, regex=regex, test=test)
 
-    def contains(self, table_name, keys=None, match_any=False, eids=None):
-        return self._apply('contains', table_name, keys=keys, match_any=match_any, eids=eids)
+def user_storage():
+    """User-level record and file storage.
+    
+    User-level records are readable and writable by (at least) the user.  User-level is
+    where software is installed when the user doesn't have write access to the system-level
+    filesystem prefix.  It's also a good place for user-specific records, i.e. preferences
+    or encrypted login credentials.
+    
+    If the user-level database does not exist then we will attempt to create it. If it
+    can't be created then this function issues a warning and returns None.
+    
+    Returns:
+        Storage: User-level storage or None if no user-level database exists and it
+                 cannot be created.
+    """      
+    try:
+        return user_storage.instance
+    except AttributeError:
+        try:
+            database = JsonDatabase(os.path.join(USER_PREFIX, 'user.json'))
+        except ConfigurationError as err:
+            LOGGER.warning(err)
+            user_storage.instance = None
+        else:
+            user_storage.instance = Storage(USER_PREFIX, database)
+        return user_storage.instance
+    
 
-    def insert(self, table_name, fields):
-        return self._apply('insert', table_name, fields)
+def project_storage():
+    """Project-level record and file storage.
+    
+    Project-level records define the project and its member components.  The user may also
+    want to install software packages at the project level to avoid quotas or in situations
+    where :any:`USER_PREFIX` is not accessible from cluster compute nodes.
+    
+    If the project-level database does not exist then this function returns None.
 
-    def update(self, table_name, fields, keys=None, match_any=False, eids=None):
-        return self._apply('update', table_name, fields, keys=keys, match_any=match_any, eids=eids)
+    Returns:
+        Storage: Project-level storage or None if no project-level database exists.
+    """
+    try:
+        return project_storage.instance
+    except AttributeError:
+        root = os.getcwd()
+        lastroot = None
+        while root and root != lastroot:
+            if root not in [USER_PREFIX, SYSTEM_PREFIX]:
+                prefix = os.path.join(root, PROJECT_DIR)
+                dbfile = os.path.join(prefix, 'project.json')
+                if os.path.exists(dbfile):
+                    LOGGER.debug("Located project database at '%s'", dbfile)
+                    try:
+                        database = JsonDatabase(dbfile)
+                    except ConfigurationError as err:
+                        LOGGER.debug(err)
+                        continue
+                    else:
+                        project_storage.instance = Storage(prefix, database)
+                        break
+            lastroot = root
+            root = os.path.dirname(root)
+        else:
+            project_storage.instance = None
+    return project_storage.instance
 
-    def remove(self, table_name, keys=None, match_any=False, eids=None):
-        return self._apply('remove', table_name, keys=keys, match_any=match_any, eids=eids)
-
-    def purge(self, table_name):
-        return self._apply('purge', table_name)
-
-#USER_STORAGE = Storage(SYSTEM_PREFIX, USER_PREFIX)
-USER_STORAGE = JsonDatabase(os.path.join(USER_PREFIX, 'local.json'))

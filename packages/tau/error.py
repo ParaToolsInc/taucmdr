@@ -55,6 +55,8 @@ class Error(Exception):
                    "%(value)s\n"
                    "\n"
                    "%(backtrace)s\n"
+                   "\n"
+                   "This is a bug in TAU Commander.\n"
                    "Please e-mail '%(logfile)s' to %(contact)s for assistance.")
     
     def __init__(self, value, *hints):
@@ -119,34 +121,6 @@ class ConfigurationError(Error):
         super(ConfigurationError, self).__init__(value, *hints)
 
 
-class ModelError(InternalError):
-    """Indicates the given data does not match the specified model."""
-
-    def __init__(self, model_cls, value):
-        """Initialize the error instance.
-        
-        Args:
-            model_cls (Controller): Controller subclass definining the data model.
-            value (str): A message describing the error.  
-        """
-        super(ModelError, self).__init__("%s: %s" % (model_cls.model_name, value))
-        self.model_cls = model_cls
-
-
-class UniqueAttributeError(ModelError):
-    """Indicates that duplicate values were given for a unique attribute.""" 
-
-    def __init__(self, model_cls, unique):
-        """Initialize the error instance.
-        
-        Args:
-            model_cls (Controller): Controller subclass definining the data model.
-            unique (dict): Dictionary of unique attributes in the data model.  
-        """
-        super(UniqueAttributeError, self).__init__(model_cls, "A record with one of %r already exists" % unique)
-
-
-
 def excepthook(etype, value, tb):
     """Exception handler for any uncaught exception (except SystemExit).
     
@@ -164,20 +138,12 @@ def excepthook(etype, value, tb):
         try:
             sys.exit(value.handle(etype, value, tb))
         except AttributeError:
-            message_fmt = ("An unexpected %(typename)s exception was raised:\n"
-                           "\n"
-                           "%(value)s\n"
-                           "\n"
-                           "%(backtrace)s\n"
-                           "\n"
-                           "This is a bug in TAU Commander.\n"
-                           "Please email '%(logfile)s' to %(contact)s for assistance.")
-            message = message_fmt % {'value': value,
-                                     'typename': etype.__name__,
-                                     'cmd': ' '.join([arg for arg in sys.argv[1:]]),
-                                     'contact': HELP_CONTACT,
-                                     'logfile': logger.LOG_FILE,
-                                     'backtrace': ''.join(traceback.format_exception(etype, value, tb))}
+            message = Error.message_fmt % {'value': value,
+                                           'typename': etype.__name__,
+                                           'cmd': ' '.join([arg for arg in sys.argv[1:]]),
+                                           'contact': HELP_CONTACT,
+                                           'logfile': logger.LOG_FILE,
+                                           'backtrace': ''.join(traceback.format_exception(etype, value, tb))}
             LOGGER.critical(message)
             sys.exit(EXIT_FAILURE)
 

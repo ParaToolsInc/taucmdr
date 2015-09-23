@@ -25,13 +25,19 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""Persistant record storage."""
+"""Persistant record storage.
+
+Provides an abstract base class (ABC) for document-based databases and a simple
+implementation based on `TinyDB`_.
+
+.. _TinyDB: http://pypi.python.org/pypi/tinydb/
+"""
 
 import os
-from abc import ABCMeta, abstractmethod
 from tinydb import TinyDB, where
+from tinydb.operations import delete
 from tau import logger, util
-from tau.error import InternalError
+from tau.error import ConfigurationError
 
 
 LOGGER = logger.get_logger(__name__)
@@ -40,9 +46,6 @@ LOGGER = logger.get_logger(__name__)
 class AbstractDatabase(object):
     """Abstract interface to a persistant record storage system."""
     
-    __metaclass__ = ABCMeta
-
-    @abstractmethod
     def get(self, table_name, keys=None, match_any=False, eid=None):
         """Find a record.
         
@@ -59,8 +62,8 @@ class AbstractDatabase(object):
         Returns:
             dict: Matching data record or None if no such record exists.
         """
+        raise NotImplementedError
 
-    @abstractmethod
     def search(self, table_name, keys=None, match_any=False):
         """Find multiple records.
         
@@ -74,8 +77,8 @@ class AbstractDatabase(object):
         Returns:
             list: Matching data records.
         """
+        raise NotImplementedError
 
-    @abstractmethod
     def match(self, table_name, field, regex=None, test=None):
         """Find records where 'field' matches 'regex'.
         
@@ -93,8 +96,8 @@ class AbstractDatabase(object):
         Returns:
             list: Matching data records.
         """
+        raise NotImplementedError
 
-    @abstractmethod
     def contains(self, table_name, keys=None, match_any=False, eids=None):
         """Check if the specified table contains at least one matching record.
         
@@ -109,8 +112,8 @@ class AbstractDatabase(object):
         Returns:
             bool: True if a record exists, False otherwise.          
         """
+        raise NotImplementedError
 
-    @abstractmethod
     def insert(self, table_name, fields):
         """Create a new record.
         
@@ -121,8 +124,8 @@ class AbstractDatabase(object):
         Returns:
             int: The new record's identifier.                 
         """
+        raise NotImplementedError
 
-    @abstractmethod
     def update(self, table_name, fields, keys=None, match_any=False, eids=None):
         """Update existing records.
         
@@ -133,8 +136,20 @@ class AbstractDatabase(object):
             match_any (bool): If True then any key may match or if False then all keys must match.
             eids (list): Record identifiers to match.
         """
+        raise NotImplementedError
+        
+    def unset(self, table_name, fields, keys=None, match_any=False, eids=None):
+        """Update existing records by unsetting fields.
+        
+        Args:
+            table_name (str): Name of the table to operate on.
+            fields (list): Fields to unset.
+            keys (dict): Attributes to match.
+            match_any (bool): If True then any key may match or if False then all keys must match.
+            eids (list): Record identifiers to match.
+        """
+        raise NotImplementedError
 
-    @abstractmethod
     def remove(self, table_name, keys=None, match_any=False, eids=None):
         """Delete records.
         
@@ -144,14 +159,15 @@ class AbstractDatabase(object):
             match_any (bool): If True then any key may match or if False then all keys must match.
             eids (list): Record identifiers to match.
         """
+        raise NotImplementedError
 
-    @abstractmethod
     def purge(self, table_name):
         """Delete all records.
 
         Args:
             table_name (str): Name of the table to operate on.
         """
+        raise NotImplementedError
 
 
 
@@ -171,6 +187,9 @@ class JsonDatabase(AbstractDatabase):
         Args:
             dbfile (str): Absolute path to the TinyDB database file.
                           Parent directories will be created as needed.
+                          
+        Raises:
+            ConfigurationError: The database file could not be created.
         """
         self._transaction_count = 0
         self._db_copy = None
@@ -179,15 +198,17 @@ class JsonDatabase(AbstractDatabase):
         try:
             util.mkdirp(prefix)
         except:
-            raise InternalError("Cannot create directory '%s'" % prefix, 
-                                "Check that you have `write` access")
+            raise ConfigurationError("Cannot create directory '%s'" % prefix, 
+                                     "Check that you have `write` access")
         try:
             self.database = TinyDB(self.dbfile)
         except:
-            raise InternalError("Cannot create '%s'" % self.dbfile, 
-                                "Check that you have `write` access")
-        else:
-            LOGGER.debug("Opened '%s' for read/write", self.dbfile)
+            raise ConfigurationError("Cannot create '%s'" % self.dbfile, 
+                                     "Check that you have `write` access")
+        if not util.file_accessible(self.dbfile):
+            raise ConfigurationError("Database file '%s' exists but cannot be read." % self.dbfile,
+                                     "Check that you have `read` access")
+        LOGGER.debug("Opened '%s' for read/write", self.dbfile)
 
     def __enter__(self):
         """Initiates the database transaction."""
@@ -366,6 +387,28 @@ class JsonDatabase(AbstractDatabase):
         else:
             LOGGER.debug("%s: update(%r, keys=%r)", table_name, fields, keys)
             table.update(fields, self._get_query(keys, match_any))
+
+    def unset(self, table_name, fields, keys=None, match_any=False, eids=None):
+        """Update existing records by unsetting fields.
+        
+        Args:
+            table_name (str): Name of the table to operate on.
+            fields (list): Fields to unset.
+            keys (dict): Attributes to match.
+            match_any (bool): If True then any key may match or if False then all keys must match.
+            eids (list): Record identifiers to match.
+        """
+        table = self.database.table(table_name)
+        if eids is not None:
+            LOGGER.debug("%s: unset(%r, eids=%r)", table_name, fields, eids)
+            if not isinstance(eids, list):
+                eids = [eids]
+            for field in fields:
+                table.update(delete(field), eids=eids)
+        else:
+            LOGGER.debug("%s: update(%r, keys=%r)", table_name, fields, keys)
+            for field in fields:
+                table.update(delete(field), self._get_query(keys, match_any))
 
     def remove(self, table_name, keys=None, match_any=False, eids=None):
         """Delete records.

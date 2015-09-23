@@ -29,7 +29,7 @@
 
 
 from tau import logger
-from tau.core.controller import Controller
+from tau.core.mvc import Controller
 
 
 LOGGER = logger.get_logger(__name__)
@@ -37,7 +37,7 @@ LOGGER = logger.get_logger(__name__)
 
 class Compiler(Controller):
     """Compiler data controller."""
-
+    
     def info(self):
         """Probes the system for information on this compiler command.
         

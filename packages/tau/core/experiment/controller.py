@@ -31,12 +31,12 @@
 import os
 import glob
 import shutil
-import tau.settings
 from tau import logger, util
 from tau.error import ConfigurationError, InternalError
-from tau.core.controller import Controller
+from tau.core.mvc import Controller
 from tau.core.trial import Trial
 from tau.core.compiler import Compiler
+from tau.core.project import Project
 from tau.cf.software.tau_installation import TauInstallation
 from tau.cf.compiler.installed import InstalledCompiler
 
@@ -75,8 +75,7 @@ class Experiment(Controller):
 
     def on_delete(self):
         # pylint: disable=broad-except
-        if self.is_selected():
-            tau.settings.unset('experiment_id')
+        self.unselect()
         prefix = self.prefix()
         try:
             shutil.rmtree(prefix)
@@ -87,26 +86,19 @@ class Experiment(Controller):
     def select(self):
         if not self.eid:
             raise InternalError('Tried to select an experiment without an eid')
-        tau.settings.set('experiment_id', self.eid)
+        Project.update({'selected': self.eid}, eids=self['project'])
+        self.configure()
+
+    def unselect(self):
+        if not self.eid:
+            raise InternalError('Tried to unselect an experiment without an eid')
+        if self.is_selected():
+            Project.unset(['selected'], eids=self['project'])
         self.configure()
 
     def is_selected(self):
-        return self.eid and tau.settings.get('experiment_id') == self.eid
-
-    @classmethod
-    def get_selected(cls):
-        """Gets the selected Experiment.
-        
-        Returns:
-            Experiment: Controller for the currently selected experiment data.
-        """
-        experiment_id = tau.settings.get('experiment_id')
-        if experiment_id:
-            found = cls.one(eid=experiment_id)
-            if not found:
-                raise InternalError('Invalid experiment ID: %r' % experiment_id)
-            return found
-        return None
+        proj = self.populate('project')
+        return self.eid == proj['selected']
 
     def configure(self):
         """Sets up the Experiment for a new trial.

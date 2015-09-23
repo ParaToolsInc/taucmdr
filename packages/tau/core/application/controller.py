@@ -28,9 +28,9 @@
 """Application data model controller."""
 
 
-from tau.core.controller import Controller, ByName
+from tau.core.mvc import Controller, ByName
 
 
 class Application(Controller, ByName):
     """Application data controller."""
-    pass
+    

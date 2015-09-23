@@ -29,7 +29,7 @@
 
 from tau import logger, cli
 from tau.cli import arguments
-from tau.error import ConfigurationError, UniqueAttributeError
+from tau.core.mvc import ConfigurationError, UniqueAttributeError
 from tau.core.target import Target
 from tau.core.compiler import Compiler
 from tau.cf.compiler import CompilerFamily, CompilerRole

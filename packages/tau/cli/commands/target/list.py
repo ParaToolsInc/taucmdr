@@ -83,6 +83,8 @@ def main(argv):
     """
     args = parser().parse_args(args=argv)
     LOGGER.debug('Arguments: %s', args)
+    
+    
 
     try:
         names = args.names
