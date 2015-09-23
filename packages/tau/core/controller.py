@@ -34,7 +34,7 @@ import sys
 import json
 from tau import logger, util
 from tau.error import ConfigurationError, ModelError, UniqueAttributeError, InternalError
-from tau.storage import USER_STORAGE
+from tau.core.storage import USER_STORAGE
 
 
 LOGGER = logger.get_logger(__name__)
@@ -73,7 +73,7 @@ class Controller(object):
         cls.model_name = model_name
         cls.associations = {}
         cls.references = set()
-        attrs_module_name = '.'.join(module_name_parts[:-1] + ['attributes'])
+        attrs_module_name = '.'.join(module_name_parts[:-1] + ['model'])
         __import__(attrs_module_name)
         cls.attributes = sys.modules[attrs_module_name].ATTRIBUTES
         for attr, props in cls.attributes.iteritems():

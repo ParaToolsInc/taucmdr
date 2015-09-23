@@ -30,7 +30,7 @@
 from tau import logger, cli
 from tau.cli import arguments
 from tau.error import UniqueAttributeError
-from tau.core.application.controller import Application
+from tau.core.application import Application
 
 
 LOGGER = logger.get_logger(__name__)

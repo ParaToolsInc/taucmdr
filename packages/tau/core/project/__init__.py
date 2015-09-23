@@ -32,3 +32,6 @@ configurations in a single container.  Selecting one of each forms a new :any:`E
 Each application of the :any:`Experiment` generates a new :any:`Trial` record along with
 some performance data (profiles, traces, etc.).
 """
+
+# Provide convenient handle to data model
+from tau.core.project.controller import Project

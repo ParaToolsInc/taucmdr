@@ -25,38 +25,52 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""Experiment data model attributes."""
+"""Trial data model attributes."""
 
-from tau.core.project.controller import Project
-from tau.core.target.controller import Target
-from tau.core.application.controller import Application
-from tau.core.measurement.controller import Measurement
-from tau.core.trial.controller import Trial
+from tau.core.experiment import Experiment
+
 
 ATTRIBUTES = {
-    'project': {
-        'model': Project,
+    'number': {
+        'type': 'integer',
         'required': True,
-        'description': "Project this experiment belongs to"
+        'description': 'trial unique identifier'
     },
-    'target': {
-        'model': Target,
+    'experiment': {
+        'model': Experiment,
         'required': True,
-        'description': "Target this experiment runs on"
+        'description': "this trial's experiment"
     },
-    'application': {
-        'model': Application,
+    'command': {
+        'type': 'string',
         'required': True,
-        'description': "Application this experiment uses"
+        'description': "command line executed when performing the trial"
     },
-    'measurement': {
-        'model': Measurement,
+    'cwd': {
+        'type': 'string',
         'required': True,
-        'description': "Measurement parameters for this experiment"
+        'description': "directory the trial was performed in",
     },
-    'trials': {
-        'collection': Trial,
-        'via': 'experiment',
-        'description': "Trials of this experiment"
+    'environment': {
+        'type': 'string',
+        'required': True,
+        'description': "shell environment the trial was performed in"
+    },
+    'begin_time': {
+        'type': 'datetime',
+        'description': "date and time the trial began"
+    },
+    'end_time': {
+        'type': 'datetime',
+        'description': "date and time the trial ended"
+    },
+    'return_code': {
+        'type': 'integer',
+        'description': "return code of the command executed when performing the trial"
+    },
+    'data_size': {
+        'type': 'integer',
+        'description': "the size in bytes of the trial data"
     }
 }
+

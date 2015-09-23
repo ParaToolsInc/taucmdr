@@ -27,10 +27,10 @@
 #
 """Project data model attributes."""
 
-from tau.core.target.controller import Target
-from tau.core.application.controller import Application
-from tau.core.measurement.controller import Measurement
-from tau.core.experiment.controller import Experiment
+from tau.core.target import Target
+from tau.core.application import Application
+from tau.core.measurement import Measurement
+from tau.core.experiment import Experiment
 
 ATTRIBUTES = {
     'name': {

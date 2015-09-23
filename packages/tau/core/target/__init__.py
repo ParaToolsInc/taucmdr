@@ -34,3 +34,6 @@ target records for any physical computer system since each target record uniquel
 describes a specific set of system features.  For example, if both GNU and Intel
 compilers are installed then there will target configurations for each compiler family.
 """
+
+# Provide convenient handle to data model
+from tau.core.target.controller import Target

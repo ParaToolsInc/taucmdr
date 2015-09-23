@@ -31,7 +31,7 @@ FIXME: settings needs a design review.
 """
 
 from tau import logger
-from tau.core.setting.controller import Setting
+from tau.core.setting import Setting
 
 
 LOGGER = logger.get_logger(__name__)

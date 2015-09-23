@@ -31,3 +31,6 @@ TAU only works reliablly when the same compiler is used to build both the applic
 source code and TAU itself.  If the system compiler changes TAU can break entirely.
 This data tracks the system compilers so we can warn the user if they have changed.
 """
+
+# Provide convenient handle to data model
+from tau.core.compiler.controller import Compiler

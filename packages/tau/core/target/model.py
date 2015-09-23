@@ -27,9 +27,9 @@
 #
 """Target data model attributes."""
 
-from tau.core.project.controller import Project
-from tau.core.target.controller import Target
-from tau.core.compiler.controller import Compiler
+from tau.core.project import Project
+from tau.core.target import Target
+from tau.core.compiler import Compiler
 from tau.cli.arguments import ParsePackagePathAction
 from tau.cf.target import host, Architecture, OperatingSystem
 

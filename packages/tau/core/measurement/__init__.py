@@ -32,3 +32,6 @@ we wish to perform.  It is often the case that we do not wish to gather all
 the available data in a single run since overhead would be extreme.  Different
 measurements allow us to take different views of the application's performance.
 """
+
+# Provide convenient handle to data model
+from tau.core.measurement.controller import Measurement

@@ -30,7 +30,7 @@
 from tau import logger, cli
 from tau.cli import arguments
 from tau.error import ConfigurationError
-from tau.core.experiment.controller import Experiment
+from tau.core.experiment import Experiment
 from tau.cf.compiler import CompilerFamily, CompilerInfo
 from tau.cf.compiler.mpi import MpiCompilerFamily
 

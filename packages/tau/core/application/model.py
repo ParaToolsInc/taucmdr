@@ -28,9 +28,9 @@
 """Application data model attributes."""
 
 from tau.cli.arguments import ParseBooleanAction
-from tau.core.project.controller import Project
-from tau.core.target.controller import Target
-from tau.core.measurement.controller import Measurement
+from tau.core.project import Project
+from tau.core.target import Target
+from tau.core.measurement import Measurement
 
 ATTRIBUTES = {
     'projects': {
@@ -49,16 +49,6 @@ ATTRIBUTES = {
         'description': 'application uses OpenMP',
         'default': False, 
         'argparse': {'flags': ('--openmp',),
-                     'metavar': 'yes/no',
-                     'nargs': '?',
-                     'const': True,
-                     'action': ParseBooleanAction},
-    },
-    'opencl': {
-        'type': 'boolean', 
-        'description': 'application uses OpenCL',
-        'default': False, 
-        'argparse': {'flags': ('--opencl',),
                      'metavar': 'yes/no',
                      'nargs': '?',
                      'const': True,

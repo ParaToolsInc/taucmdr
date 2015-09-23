@@ -30,7 +30,7 @@
 from tau import logger, util, cli
 from tau.cli import arguments
 from tau.error import ConfigurationError
-from tau.core.experiment.controller import Experiment
+from tau.core.experiment import Experiment
 
 
 LOGGER = logger.get_logger(__name__)

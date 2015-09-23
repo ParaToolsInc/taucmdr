@@ -34,3 +34,6 @@ For example, if an application can operate with or without OpenMP then there
 are potentially two application records for the same application code: one 
 specifying OpenMP is used and the other specifying OpenMP is not used.
 """
+
+# Provide convenient handle to data model
+from tau.core.application.controller import Application

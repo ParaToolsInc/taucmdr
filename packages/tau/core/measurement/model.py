@@ -32,10 +32,10 @@
 
 from tau.cli.arguments import ParseBooleanAction
 from tau.error import ConfigurationError
-from tau.core.target.controller import Target
-from tau.core.application.controller import Application
-from tau.core.measurement.controller import Measurement
-from tau.core.project.controller import Project
+from tau.core.target import Target
+from tau.core.application import Application
+from tau.core.measurement import Measurement
+from tau.core.project import Project
 from tau.cf.compiler import INTEL_COMPILERS
 from tau.cf.compiler.installed import InstalledCompiler
 

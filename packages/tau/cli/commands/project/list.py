@@ -32,7 +32,7 @@ from pprint import pformat
 from tau import EXIT_SUCCESS, USER_PREFIX, EXIT_WARNING
 from tau import logger, cli
 from tau.cli import arguments
-from tau.core.project.controller import Project
+from tau.core.project import Project
 
 
 LOGGER = logger.get_logger(__name__)

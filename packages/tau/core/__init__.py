@@ -176,7 +176,9 @@ from tau.core.controller import Controller
 for _, module_name, ispkg in walk_packages(__path__, __name__ + '.'):
     if ispkg:
         controller_module_name = module_name + '.controller'
-        attributes_module_name = module_name + '.attributes'
+        attributes_module_name = module_name + '.model'
+        print controller_module_name
+        print attributes_module_name
         __import__(module_name)
         __import__(controller_module_name)
         __import__(attributes_module_name)

@@ -31,3 +31,6 @@ Every application of an :any:`Experiment` produces a new :any:`Trial`.  The tria
 record completely describes the hardware and software environment that produced
 the performance data.
 """
+
+# Provide convenient handle to data model
+from tau.core.trial.controller import Trial

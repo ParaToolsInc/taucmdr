@@ -30,8 +30,8 @@
 from tau import logger, cli
 from tau.cli import arguments
 from tau.error import ConfigurationError, UniqueAttributeError
-from tau.core.target.controller import Target
-from tau.core.compiler.controller import Compiler
+from tau.core.target import Target
+from tau.core.compiler import Compiler
 from tau.cf.compiler import CompilerFamily, CompilerRole
 from tau.cf.compiler.mpi import MpiCompilerFamily, MPI_CXX_ROLE, MPI_CC_ROLE, MPI_FC_ROLE
 from tau.cf.compiler.installed import InstalledCompiler, InstalledCompilerFamily

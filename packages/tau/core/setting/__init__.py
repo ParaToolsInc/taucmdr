@@ -29,3 +29,6 @@
 
 FIXME: Settings needs a design review.
 """
+
+# Provide convenient handle to data model
+from tau.core.setting.controller import Setting

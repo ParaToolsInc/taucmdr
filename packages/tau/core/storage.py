@@ -33,7 +33,7 @@ TODO: Docs
 import os
 from tau import logger
 from tau import PROJECT_DIR, SYSTEM_PREFIX, USER_PREFIX
-from tau.database import JsonDatabase, AbstractDatabase
+from tau.core.database import JsonDatabase, AbstractDatabase
 
 LOGGER = logger.get_logger(__name__)
 

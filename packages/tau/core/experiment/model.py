@@ -25,52 +25,38 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""Trial data model attributes."""
+"""Experiment data model attributes."""
 
-from tau.core.experiment.controller import Experiment
-
+from tau.core.project import Project
+from tau.core.target import Target
+from tau.core.application import Application
+from tau.core.measurement import Measurement
+from tau.core.trial import Trial
 
 ATTRIBUTES = {
-    'number': {
-        'type': 'integer',
+    'project': {
+        'model': Project,
         'required': True,
-        'description': 'trial unique identifier'
+        'description': "Project this experiment belongs to"
     },
-    'experiment': {
-        'model': Experiment,
+    'target': {
+        'model': Target,
         'required': True,
-        'description': "this trial's experiment"
+        'description': "Target this experiment runs on"
     },
-    'command': {
-        'type': 'string',
+    'application': {
+        'model': Application,
         'required': True,
-        'description': "command line executed when performing the trial"
+        'description': "Application this experiment uses"
     },
-    'cwd': {
-        'type': 'string',
+    'measurement': {
+        'model': Measurement,
         'required': True,
-        'description': "directory the trial was performed in",
+        'description': "Measurement parameters for this experiment"
     },
-    'environment': {
-        'type': 'string',
-        'required': True,
-        'description': "shell environment the trial was performed in"
-    },
-    'begin_time': {
-        'type': 'datetime',
-        'description': "date and time the trial began"
-    },
-    'end_time': {
-        'type': 'datetime',
-        'description': "date and time the trial ended"
-    },
-    'return_code': {
-        'type': 'integer',
-        'description': "return code of the command executed when performing the trial"
-    },
-    'data_size': {
-        'type': 'integer',
-        'description': "the size in bytes of the trial data"
+    'trials': {
+        'collection': Trial,
+        'via': 'experiment',
+        'description': "Trials of this experiment"
     }
 }
-

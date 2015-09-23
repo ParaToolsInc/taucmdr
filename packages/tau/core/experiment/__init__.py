@@ -32,3 +32,5 @@ and will have zero or more :any:`Trial`. There is one selected experiment per pr
 The selected experiment will be used for application compilation and trial visualization. 
 """
 
+# Provide convenient handle to data model
+from tau.core.experiment.controller import Experiment

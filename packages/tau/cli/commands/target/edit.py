@@ -29,8 +29,8 @@
 
 from tau import logger, cli
 from tau.cli import arguments
-from tau.core.target.controller import Target
-from tau.core.compiler.controller import Compiler
+from tau.core.target import Target
+from tau.core.compiler import Compiler
 from tau.cf.compiler import CompilerFamily, CompilerRole
 from tau.cf.compiler.installed import InstalledCompiler, InstalledCompilerFamily
 from tau.cf.compiler.mpi import MpiCompilerFamily
