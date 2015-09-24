@@ -344,7 +344,7 @@ Uses system specific methods to determine console line width.  If the line
 width cannot be determined, the default is 80.
 """
 
-_ROOT_LOGGER = logging.getLogger('tau')
+_ROOT_LOGGER = logging.getLogger()
 if not len(_ROOT_LOGGER.handlers):
     _LOG_FILE_PREFIX = os.path.dirname(LOG_FILE)
     try:
