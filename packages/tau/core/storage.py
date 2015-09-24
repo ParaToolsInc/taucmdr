@@ -25,129 +25,195 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""Multi-level storage system.
+"""TAU Commander hierarchical file and record storage system.
 
-TODO: Docs
+System-level records are globally readable and writable, depending on the user's 
+system access level.  System-level is a good place for software package installations
+and some system-specific configurations, e.g. target or compiler configurations.
+
+User-level records are readable and writable by (at least) the user.  User-level is also
+where software is installed when the user doesn't have write access to :any:`SYSTEM_PREFIX`.  
+It's a good place for user-specific records, i.e. preferences or encrypted login credentials.
+
+Project-level records define the project and its member components.  The user may also
+want to install software packages at the project level to avoid quotas or in situations
+where :any:`USER_PREFIX` is not accessible from cluster compute nodes.
 """
 
 import os
-from tau import logger, TAU_HOME
-from tau.error import ConfigurationError
-from tau.core.database import JsonDatabase, AbstractDatabase
+from abc import ABCMeta, abstractmethod
+from tau import logger, util
+from tau import SYSTEM_PREFIX, USER_PREFIX, PROJECT_DIR
+from tau.error import Error, ConfigurationError
+from tau.core.database import JsonDatabase
 
 
 LOGGER = logger.get_logger(__name__)
 
-SYSTEM_PREFIX = os.path.join(TAU_HOME, '.system')
-"""str: Absolute path to system-level TAU Commander files."""
 
-USER_PREFIX = os.path.join(os.path.expanduser('~'), '.tau')
-"""str: Absolute path to user-level TAU Commander files."""
+class StorageError(Error):
+    """Indicates a failure in the storage system."""
 
-PROJECT_DIR = '.tau'
-"""str: Name of the directory containing TAU Commander project files."""
+    message_fmt = ("%(value)s\n"
+                   "\n"
+                   "Please e-mail '%(logfile)s' to %(contact)s for assistance.")
 
 
-class Storage(object):
-    """Storage location for records and files.
-    
-    Pairs a database instance with a file system path.
-    """
-    
-    def __init__(self, prefix, database):
-        self.prefix = prefix
-        self.database = database
+class ProjectStorageError(StorageError):
+    """Indicates that the project storage could not be found."""
 
+    def __init__(self, search_root):
+        """Initialize the error object.
         
-def system_storage():
-    """System-level record and file storage.
-    
-    System-level records are globally readable and writable, depending on the user's 
-    system access level.  System-level is a good place for software package installations
-    and some system-specific records, i.e. compiler configurations.
-    
-    If the system-level database does not exist then we will attempt to create it. If it
-    can't be created then this function issues a warning and returns None.
-    
-    Returns:
-        Storage: System-level storage or None if no system-level database exists and it
-                 cannot be created.
-    """      
-    try:
-        return system_storage.instance
-    except AttributeError:
-        try:
-            database = JsonDatabase(os.path.join(SYSTEM_PREFIX, 'system.json'))
-        except ConfigurationError as err:
-            LOGGER.warning(err)
-            system_storage.instance = None
-        else:
-            system_storage.instance = Storage(SYSTEM_PREFIX, database)
-        return system_storage.instance
+        Args:
+            cwd (str): Directory in which the search for a project directory was initiated.
+        """
+        value = "Project not found at '%s' or any of its parent directories." % search_root
+        super(ProjectStorageError, self).__init__(value)
+        self.search_root = search_root
 
-
-def user_storage():
-    """User-level record and file storage.
+class AbstractStorageContainer(object):
+    """Abstract base class for storage containers.
     
-    User-level records are readable and writable by (at least) the user.  User-level is
-    where software is installed when the user doesn't have write access to the system-level
-    filesystem prefix.  It's also a good place for user-specific records, i.e. preferences
-    or encrypted login credentials.
+    A storage container pairs a persistent record storage system with a persistent filesystem.
+    The database may be any record storage system that implements :any:`AbstractDatabase`.
+    The filesystem is accessed via its filesystem prefix, e.g. ``/usr/local/packages``.
     
-    If the user-level database does not exist then we will attempt to create it. If it
-    can't be created then this function issues a warning and returns None.
-    
-    Returns:
-        Storage: User-level storage or None if no user-level database exists and it
-                 cannot be created.
-    """      
-    try:
-        return user_storage.instance
-    except AttributeError:
-        try:
-            database = JsonDatabase(os.path.join(USER_PREFIX, 'user.json'))
-        except ConfigurationError as err:
-            LOGGER.warning(err)
-            user_storage.instance = None
-        else:
-            user_storage.instance = Storage(USER_PREFIX, database)
-        return user_storage.instance
-    
-
-def project_storage():
-    """Project-level record and file storage.
-    
-    Project-level records define the project and its member components.  The user may also
-    want to install software packages at the project level to avoid quotas or in situations
-    where :any:`USER_PREFIX` is not accessible from cluster compute nodes.
-    
-    If the project-level database does not exist then this function returns None.
-
-    Returns:
-        Storage: Project-level storage or None if no project-level database exists.
+    Attributes:
+        name (str): The storage container's name, e.g. "system" or "user".
+        prefix (str): Absolute path to the top-level directory of the container's filesystem.
+        database (str): Database object implementing :any:`AbstractDatabase`. 
     """
-    try:
-        return project_storage.instance
-    except AttributeError:
-        root = os.getcwd()
-        lastroot = None
-        while root and root != lastroot:
-            if root not in [USER_PREFIX, SYSTEM_PREFIX]:
-                prefix = os.path.join(root, PROJECT_DIR)
-                dbfile = os.path.join(prefix, 'project.json')
-                if os.path.exists(dbfile):
-                    LOGGER.debug("Located project database at '%s'", dbfile)
-                    try:
-                        database = JsonDatabase(dbfile)
-                    except ConfigurationError as err:
-                        LOGGER.debug(err)
-                        continue
-                    else:
-                        project_storage.instance = Storage(prefix, database)
-                        break
-            lastroot = root
-            root = os.path.dirname(root)
-        else:
-            project_storage.instance = None
-    return project_storage.instance
+    
+    __metaclass__ = ABCMeta
+    
+    def __init__(self, name):
+        self.name = name
 
+    @abstractmethod
+    def prefix(self):
+        """Get the filesystem prefix for file storage.
+        
+        The filesystem must be persistent and provide the usual POSIX filesystem calls.
+        In particular, GNU software packages should be installable in the filesystem.
+        
+        Returns:
+            str: Absolute path in the filesystem.
+        """
+
+    @abstractmethod
+    def database(self):
+        """Get the record storage system.
+        
+        Returns:
+            AbstractDatabase: The database object.
+        """
+
+
+class JsonStorageContainer(AbstractStorageContainer):
+    """Implements a storage container that uses :any:`JsonDatabase` for record storage.
+    
+    The JSON file containing all records will be kept in :any:`prefix`.
+    """
+    
+    def __init__(self, name, prefix):
+        super(JsonStorageContainer, self).__init__(name)
+        self._prefix = prefix
+        
+    @property
+    def prefix(self):
+        """Initializes filesystem storage on first access.
+        
+        If the path does not exist then this function will attempt to create it.
+        
+        Returns:
+            str: The filesystem prefix.
+        """
+        if not os.path.isdir(self._prefix):
+            try:
+                util.mkdirp(self._prefix)
+            except Exception as err:
+                raise StorageError("Failed to access %s filesystem prefix '%s': %s" % (self.name, self._prefix, err))
+            LOGGER.debug("Initialized %s filesystem prefix '%s'", self.name, self._prefix)
+        return self._prefix
+        
+    @property
+    def database(self):
+        """Initializes persistent record storage on first access.
+        
+        If the database does not exist then this function will attempt to create it.
+        
+        Returns:
+            AbstractDatabase: The database object.
+        
+        Raises:
+            StorageError: The database could not be created or accessed.
+        """
+        # pylint: disable=no-member,attribute-defined-outside-init
+        try:
+            return self._database
+        except AttributeError:
+            dbfile = os.path.join(self.prefix, self.name + '.json')
+            try:
+                self._database = JsonDatabase(dbfile)
+            except ConfigurationError as err:
+                raise StorageError("Failed to access %s database '%s': %s" % (self.name, dbfile, err))
+            LOGGER.debug("Initialized %s database '%s'", self.name, dbfile)
+            return self._database
+
+
+class ProjectStorageContainer(JsonStorageContainer):
+    """Handle the special case project storage container.
+    
+    Each TAU Commander project has its own project storage container that holds project-specific files
+    (i.e. performance data) and the project configuration.
+    """
+    
+    def __init__(self):
+        super(ProjectStorageContainer, self).__init__('project', None)
+    
+    def create(self, root=None):
+        """Create the project container prefix and JSON database file."""
+        root = root or os.getcwd()
+        project_prefix = os.path.join(root, PROJECT_DIR)
+        project_dbfile = os.path.join(project_prefix, self.name + '.json')
+        util.mkdirp(project_prefix)
+        JsonDatabase(project_dbfile)
+    
+    @property
+    def prefix(self):
+        """Searches the current directory and its parents for a TAU Commander project directory.
+        
+        This method **does not** create or modify files.  If the project directory cannot be found
+        then an error is raised.  It's up to the caller to determine how the error should be handled.
+        
+        Returns:
+            str: The project directory, i.e. this storage container's filesystem prefix.
+        
+        Raises:
+            StorageError: Neither the current directory nor any of its parent directories contain
+                          a TAU Commander project directory.
+        """
+        if not self._prefix:
+            cwd = os.getcwd()
+            root = cwd
+            lastroot = None
+            while root and root != lastroot:
+                project_prefix = os.path.join(root, PROJECT_DIR)
+                project_dbfile = os.path.join(project_prefix, self.name + '.json')
+                if project_prefix not in [USER_PREFIX, SYSTEM_PREFIX] and util.file_accessible(project_dbfile):
+                    LOGGER.debug("Located project storage prefix '%s'", project_prefix)
+                    self._prefix = project_prefix
+                    break
+                lastroot = root
+                root = os.path.dirname(root)
+            else:
+                raise ProjectStorageError(cwd)
+        return self._prefix
+
+
+SYSTEM_STORAGE = JsonStorageContainer('system', SYSTEM_PREFIX)
+
+USER_STORAGE = JsonStorageContainer('user', USER_PREFIX)
+
+PROJECT_STORAGE = ProjectStorageContainer()

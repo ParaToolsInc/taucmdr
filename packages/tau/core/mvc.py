@@ -170,12 +170,13 @@ Examples:
     
 .. _Model-View-Controller (MVC): https://en.wikipedia.org/wiki/Model-view-controller
 """
+# Yes, this is a long-ass file.  Sorry.
+# pylint: disable=too-many-lines
 
 import sys
 import json
 from tau import logger, util
 from tau.error import ConfigurationError, InternalError
-from tau.core import storage
 
 
 LOGGER = logger.get_logger(__name__)
@@ -184,42 +185,28 @@ LOGGER = logger.get_logger(__name__)
 class ModelError(InternalError):
     """Indicates an error in model data or the model itself."""
 
-    def __init__(self, model_cls, value):
+    def __init__(self, controller, value):
         """Initialize the error instance.
         
         Args:
-            model_cls (Controller): Controller subclass definining the data model.
+            controller (Controller): Controller for the data model.
             value (str): A message describing the error.  
         """
-        super(ModelError, self).__init__("%s: %s" % (model_cls.model_name, value))
-        self.model_cls = model_cls
+        super(ModelError, self).__init__("%s: %s" % (controller.model_name, value))
+        self.controller = controller
 
 
 class UniqueAttributeError(ModelError):
     """Indicates that duplicate values were given for a unique attribute.""" 
 
-    def __init__(self, model_cls, unique):
+    def __init__(self, controller, unique):
         """Initialize the error instance.
         
         Args:
-            model_cls (Controller): Controller subclass definining the data model.
+            controller (Controller): Controller for the data model.
             unique (dict): Dictionary of unique attributes in the data model.  
         """
-        super(UniqueAttributeError, self).__init__(model_cls, "A record with one of %r already exists" % unique)
-
-
-class NoStorageError(ConfigurationError):
-    """Indicates that the controller couldn't find a storage backend."""
-    
-    def __init__(self, model_cls, value):
-        """Initialize the error instance.
-        
-        Args:
-            model_cls (Controller): Controller subclass definining the data model.
-            value (str): A message describing the error.  
-        """
-        super(NoStorageError, self).__init__("%s: %s" % (model_cls.model_name, value))
-        self.model_cls = model_cls
+        super(UniqueAttributeError, self).__init__(controller, "A record with one of %r already exists" % unique)
 
 
 class Controller(object):
@@ -230,6 +217,7 @@ class Controller(object):
         attributes (dict): The model attributes.
         references (set): (Controller, str) tuples listing foreign models referencing this model.  
         associations (dict): (Controller, str) tuples keyed by attribute name defining attribute associations.
+        storage (AbstractStorageContainer): Data record storage. 
         eid (int): Unique identifier for the controlled data record, None if the data has not been recorded.
         data (dict): The controlled data.
     
@@ -237,7 +225,7 @@ class Controller(object):
     """
     # Class methods may access the protected members of the class instances. 
     # pylint: disable=protected-access
-    
+
     @classmethod
     def __class_init__(cls):
         """Initializes the controller class object.
@@ -328,47 +316,35 @@ class Controller(object):
                         raise ModelError(cls, "%s: conflicting associations: '%s' vs. '%s'" % 
                                          (model_attr_name, existing, forward))
     
-    def __init__(self, fields):
+    def __init__(self, storage, eid=None, data=None):
         """Initializes the controller instance.
         
-        A :any:`Controller` instance is attached to a specific data record via the :any:`data`
-        and possibly :any:`eid` members.
-
         Args:
-            fields: A dictionary-like object with the optional `eid` attribute.
+            storage (AbstractStorageContainer): Data record storage.
+            eid (int): Controlled data unique element identifier. 
+            data (dict): Controlled data.
+
+        Raises:
+            ModelError: The given data doesn't fit the model.
         """
         self._populated = None
-        self.eid = getattr(fields, 'eid', None)
-        self.data = self._validate(fields)
+        self.storage = storage
+        self._eid = eid
+        self._data = self._validate(data)
+        if self._eid and not self._data:
+            raise InternalError("eid=%s: Controlled record cannot have undefined data" % self._eid)
         
-    def __getitem__(self, key):
-        return self.data[key]
-    
-    def __contains__(self, key):
-        return key in self.data
+    @property
+    def eid(self):
+        """The element identifier is read-only."""
+        return self._eid
 
-    def get(self, key, default=None):
-        return self.data.get(key, default)
+    @property
+    def data(self):
+        """The controlled data is read-only."""
+        return self._data
 
-    def __repr__(self):
-        return json.dumps(repr(self.data))
-    
-    @classmethod
-    def storage(cls):
-        return storage.user_storage().database
-    
-    @classmethod
-    def _storage(cls):
-        try:
-            return cls._storage_inst
-        except AttributeError:
-            cls._storage_inst = cls.storage()
-            if not cls._storage_inst:
-                raise NoStorageError(cls, "Cannot connect to storage system")
-            return cls._storage_inst
-    
-    @classmethod
-    def _validate(cls, data):
+    def _validate(self, data):
         """Validates data against the model.
         
         Args:
@@ -382,21 +358,21 @@ class Controller(object):
             
         Raises:
             ModelError: The given data doesn't fit the model.
-        """
+        """    
         if data is None:
             return None
         for key in data:
-            if not key in cls.attributes:
-                raise ModelError(cls, "no attribute named '%s'" % key)
+            if not key in self.attributes:
+                raise ModelError(self, "no attribute named '%s'" % key)
         validated = {}
-        for attr, props in cls.attributes.iteritems():
+        for attr, props in self.attributes.iteritems():
             # Check required fields and defaults
             try:
                 validated[attr] = data[attr]
             except KeyError:
                 if 'required' in props:
                     if props['required']:
-                        raise ModelError(cls, "'%s' is required but was not defined" % attr)
+                        raise ModelError(self, "'%s' is required but was not defined" % attr)
                 elif 'default' in props:
                     validated[attr] = props['default']
             # Check collections
@@ -405,13 +381,13 @@ class Controller(object):
                 if not value:
                     value = []
                 elif not isinstance(value, list):
-                    raise ModelError(cls, "Value supplied for '%s' is not a list: %r" % (attr, value))
+                    raise ModelError(self, "Value supplied for '%s' is not a list: %r" % (attr, value))
                 else:
                     for eid in value:
                         try:
                             int(eid)
                         except ValueError:
-                            raise ModelError(cls, "Invalid non-integer ID '%s' in '%s'" % (eid, attr))
+                            raise ModelError(self, "Invalid non-integer ID '%s' in '%s'" % (eid, attr))
                 validated[attr] = value
             # Check model associations
             elif 'model' in props:
@@ -421,9 +397,21 @@ class Controller(object):
                         if int(value) != value:
                             raise ValueError
                     except ValueError:
-                        raise ModelError(cls, "Invalid non-integer ID '%s' in '%s'" % (value, attr))
+                        raise ModelError(self, "Invalid non-integer ID '%s' in '%s'" % (value, attr))
                     validated[attr] = value
         return validated
+    
+    def __getitem__(self, key):
+        return self.data[key]
+    
+    def __contains__(self, key):
+        return key in self.data
+
+    def get(self, key, default=None):
+        return self.data.get(key, default)
+
+    def __repr__(self):
+        return json.dumps(repr(self.data))
 
     def on_create(self):
         """Callback to be invoked when a new data record is created.""" 
@@ -481,13 +469,13 @@ class Controller(object):
                         continue
                     else:
                         try:
-                            self._populated[attr] = foreign_model.search(eids=self.data[attr])
+                            self._populated[attr] = foreign_model(self.storage).search(eids=self.data[attr])
                         except KeyError:
                             if props.get('required', False):
                                 raise ModelError(self, "'%s' is required but was not defined" % attr)
                 else:
                     try:
-                        self._populated[attr] = foreign_model.one(eid=self.data[attr])
+                        self._populated[attr] = foreign_model(self.storage).one(eid=self.data[attr])
                     except KeyError:
                         if props.get('required', False):
                             raise ModelError(self, "'%s' is required but was not defined" % attr)
@@ -496,8 +484,7 @@ class Controller(object):
         else:
             return self._populated
 
-    @classmethod
-    def one(cls, keys=None, eid=None):
+    def one(self, keys=None, eid=None):
         """Return a single record matching all of `keys` or element id `eid`.
         
         Either `keys` or `eid` should be specified, not both.  If `keys` is given,
@@ -511,17 +498,20 @@ class Controller(object):
         Returns:
             Controller: Controller subclass instance controlling the found record or None if no such record exists. 
         """
-        LOGGER.debug("%s.one(keys=%s, eid=%s)", cls.model_name, keys, eid)
-        found = cls._storage().get(cls.model_name, keys=keys, eid=eid)
-        return cls(found) if found else None
+        LOGGER.debug("%s.one(keys=%s, eid=%s)", self.model_name, keys, eid)
+        eid, data = self.storage.database.get(self.model_name, keys=keys, eid=eid)
+        return self.__class__(self.storage, eid, data) if data else None
 
-    @classmethod
-    def all(cls):
+    def all(self):
         """Return a list of all records."""
-        return [cls(result) for result in cls._storage().search(cls.model_name)]
-
-    @classmethod
-    def search(cls, keys=None, eids=None):
+        return [self.__class__(self.storage, eid, data) 
+                for eid, data in self.storage.database.search(self.model_name)]
+    
+    def count(self):
+        """Count all records."""
+        return self.storage.database.count(self.model_name)
+    
+    def search(self, keys=None, eids=None):
         """Return a list of records matching all of `keys` or element id `eid`.
         
         Either `keys` or `eids` may be specified, not both.  If `keys` is not empty
@@ -537,21 +527,21 @@ class Controller(object):
         Returns:
             list: Controller subclass instances controlling the found records. 
         """
-        LOGGER.debug("%s.search(keys=%s, eids=%s)", cls.model_name, keys, eids)
+        LOGGER.debug("%s.search(keys=%s, eids=%s)", self.model_name, keys, eids)
         if keys is None and eids is None:
-            return cls.all()
+            return self.all()
         elif eids:
             if isinstance(eids, list):
-                return [cls.one(eid=i) for i in eids]
+                return [self.one(eid=i) for i in eids]
             else:
-                return [cls.one(eid=eids)]
+                return [self.one(eid=eids)]
         elif keys:
-            return [cls(record) for record in cls._storage().search(cls.model_name, keys=keys)]
+            return [self.__class__(self.storage, eid, data) 
+                    for eid, data in self.storage.database.search(self.model_name, keys=keys)]
         else:
             return []
 
-    @classmethod
-    def match(cls, field, regex=None, test=None):
+    def match(self, field, regex=None, test=None):
         """Return a list of records with `field` matching `regex` or `test`.
         
         Either `regex` or `test` may be specified, not both.  If `regex` is given,
@@ -567,11 +557,11 @@ class Controller(object):
         Returns:
             list: Controller subclass instances controlling the found records. 
         """
-        LOGGER.debug("%s.match(field=%s, regex=%s, test=%s)", cls.model_name, field, regex, test)
-        return [cls(record) for record in cls._storage().match(cls.model_name, field, regex, test)]
+        LOGGER.debug("%s.match(field=%s, regex=%s, test=%s)", self.model_name, field, regex, test)
+        return [self.__class__(self.storage, eid, data) 
+                for eid, data in self.storage.database.match(self.model_name, field, regex, test)]
 
-    @classmethod
-    def exists(cls, keys=None, eids=None):
+    def exists(self, keys=None, eids=None):
         """Test if a record matching the given keys exists.
         
         Just like :any:`Controller.search`, except only tests if the record exists without
@@ -584,60 +574,59 @@ class Controller(object):
         Returns:
             bool: True if a record exists for **all** values in `keys` or `eids`.          
         """
-        return cls._storage().contains(cls.model_name, keys=keys, eids=eids)
+        return self.storage.database.contains(self.model_name, keys=keys, eids=eids)
 
-    @classmethod
-    def create(cls, fields):
-        """Store a new model record and update associations.
+    def create(self, data):
+        """Store a new record and update associations.
         
         Invokes the `on_create` callback **after** the data is recorded. 
         
         Args:
-            fields (dict): Data to record.
+            data (dict): Data to record.
             
         Returns:
             Controller: Controller subclass instance controlling the specified data. 
         """
-        model = cls(fields)
-        unique = dict([(attr, model[attr]) for attr, props in cls.attributes.iteritems() if 'unique' in props])
-        if cls._storage().contains(cls.model_name, keys=unique, match_any=True):
-            raise UniqueAttributeError(cls, unique)
-        with cls._storage() as storage:
-            model.eid = storage.insert(cls.model_name, model.data)
-            for attr, foreign in cls.associations.iteritems():
+        data = self._validate(data)
+        unique = {attr: data[attr] for attr, props in self.attributes.iteritems() if 'unique' in props}
+        if self.storage.database.contains(self.model_name, keys=unique, match_any=True):
+            raise UniqueAttributeError(self, unique)
+        with self.storage.database as database:
+            eid = database.insert(self.model_name, data)
+            model = self.__class__(self.storage, eid, data) 
+            for attr, foreign in model.associations.iteritems():
                 foreign_model, via = foreign
                 if 'model' in model.attributes[attr]:
-                    foreign_keys = [model.data[attr]]
+                    foreign_keys = [data[attr]]
                 elif 'collection' in model.attributes[attr]:
-                    foreign_keys = model.data[attr]
+                    foreign_keys = data[attr]
                 model._associate(foreign_model, foreign_keys, via)
             model.on_create()
-            LOGGER.debug("Created new %s record", cls.model_name)
+            LOGGER.debug("Created new %s record", model.model_name)
             return model
 
-    @classmethod
-    def update(cls, fields, keys=None, eids=None):
+    def update(self, data, keys=None, eids=None):
         """Change recorded data and update associations.
         
         Invokes the `on_update` callback for each record **after** the records are updated.
 
         Args:
-            fields (dict): New data for existing records.
+            data (dict): New data for existing records.
             keys (dict): Attributes to match.
             eids (list): Record identifiers to match.
         """
-        LOGGER.debug("%s.update(fields=%s, keys=%s, eids=%s)", cls.model_name, fields, keys, eids)
-        with cls._storage() as storage:
+        LOGGER.debug("%s.update(fields=%s, keys=%s, eids=%s)", self.model_name, data, keys, eids)
+        for attr in data:
+            if not attr in self.attributes:
+                raise ModelError(self, "Model '%s' has no attribute named '%s'" % (self.model_name, attr))
+        with self.storage.database as database:
             # Get the list of affected records **before** updating the data so foreign keys are correct
-            changing = cls.search(keys, eids)
-            for attr in fields:
-                if not attr in cls.attributes:
-                    raise ModelError(cls, "Model '%s' has no attribute named '%s'" % (cls.model_name, attr))
-            storage.update(cls.model_name, fields, keys=keys, eids=eids)
+            changing = self.search(keys, eids)
+            database.update(self.model_name, data, keys=keys, eids=eids)
             for model in changing:
-                for attr, foreign in cls.associations.iteritems():
+                for attr, foreign in self.associations.iteritems():
                     try:
-                        new_foreign_keys = set(fields[attr])
+                        new_foreign_keys = set(data[attr])
                     except KeyError:
                         continue
                     try:
@@ -648,11 +637,10 @@ class Controller(object):
                     added = list(new_foreign_keys - old_foreign_keys)
                     deled = list(old_foreign_keys - new_foreign_keys)
                     model._associate(foreign_model, added, via)
-                    model._disassociate(foreign_model.search(eids=list(deled)), via)
+                    model._disassociate(foreign_model(self.storage).search(eids=list(deled)), via)
                     model.on_update()
 
-    @classmethod
-    def unset(cls, fields, keys=None, eids=None):
+    def unset(self, fields, keys=None, eids=None):
         """Unset recorded data fields and update associations.
         
         Invokes the `on_update` callback for each record **after** the records are updated.
@@ -662,16 +650,16 @@ class Controller(object):
             keys (dict): Attributes to match.
             eids (list): Record identifiers to match.
         """
-        LOGGER.debug("%s.unset(fields=%s, keys=%s, eids=%s)", cls.model_name, fields, keys, eids)
-        with cls._storage() as storage:
+        LOGGER.debug("%s.unset(fields=%s, keys=%s, eids=%s)", self.model_name, fields, keys, eids)
+        for attr in fields:
+            if not attr in self.attributes:
+                raise ModelError(self, "Model '%s' has no attribute named '%s'" % (self.model_name, attr))
+        with self.storage.database as database:
             # Get the list of affected records **before** updating the data so foreign keys are correct
-            changing = cls.search(keys, eids)
-            for attr in fields:
-                if not attr in cls.attributes:
-                    raise ModelError(cls, "Model '%s' has no attribute named '%s'" % (cls.model_name, attr))
-            storage.unset(cls.model_name, fields, keys=keys, eids=eids)
+            changing = self.search(keys, eids)
+            database.unset(self.model_name, fields, keys=keys, eids=eids)
             for model in changing:
-                for attr, foreign in cls.associations.iteritems():
+                for attr, foreign in self.associations.iteritems():
                     if attr not in fields:
                         continue
                     try:
@@ -679,11 +667,10 @@ class Controller(object):
                     except KeyError:
                         old_foreign_keys = []
                     foreign_model, via = foreign
-                    model._disassociate(foreign_model.search(eids=old_foreign_keys), via)
+                    model._disassociate(foreign_model(self.storage).search(eids=old_foreign_keys), via)
                     model.on_update()
 
-    @classmethod
-    def delete(cls, keys=None, eids=None):
+    def delete(self, keys=None, eids=None):
         """Delete recorded data and update associations.
         
         Invokes the `on_delete` callback for each record **before** the record is deleted.
@@ -692,25 +679,25 @@ class Controller(object):
             keys (dict): Attributes to match.
             eids (list): Record identifiers to match.
         """
-        LOGGER.debug("%s.delete(keys=%s, eids=%s)", cls.model_name, keys, eids)
-        with cls._storage() as storage:
-            for model in cls.search(keys, eids):
+        LOGGER.debug("%s.delete(keys=%s, eids=%s)", self.model_name, keys, eids)
+        with self.storage.database as database:
+            for model in self.search(keys, eids):
                 # pylint complains because `model` is changing on every iteration so we'll have
                 # a different lambda function `test` on each iteration.  This is exactly what
                 # we want so we disble the warning. 
                 # pylint: disable=cell-var-from-loop
                 test = lambda x: model.eid in x if isinstance(x, list) else model.eid == x
                 model.on_delete()
-                for attr, foreign in cls.associations.iteritems():
+                for attr, foreign in self.associations.iteritems():
                     foreign_model, via = foreign
-                    affected = foreign_model.search(eids=model[attr])
-                    LOGGER.debug("Deleting %s(eid=%s) affects '%s' in '%s'", cls.model_name, model.eid, via, affected)
+                    affected = foreign_model(self.storage).search(eids=model[attr])
+                    LOGGER.debug("Deleting %s(eid=%s) affects '%s' in '%s'", self.model_name, model.eid, via, affected)
                     model._disassociate(affected, via)
-                for foreign_model, via in cls.references:
-                    affected = foreign_model.match(via, test=test)
-                    LOGGER.debug("Deleting %s(eid=%s) affects '%s'", cls.model_name, model.eid, affected)
+                for foreign_model, via in self.references:
+                    affected = foreign_model(self.storage).match(via, test=test)
+                    LOGGER.debug("Deleting %s(eid=%s) affects '%s'", self.model_name, model.eid, affected)
                     model._disassociate(affected, via)
-            storage.remove(cls.model_name, keys=keys, eids=eids)
+            database.remove(self.model_name, keys=keys, eids=eids)
 
     @staticmethod
     def import_records(data):
@@ -718,7 +705,6 @@ class Controller(object):
         
         TODO: Docs
         """
-        
         
     @classmethod
     def export_records(cls, keys=None, eids=None):
@@ -782,10 +768,10 @@ class Controller(object):
                              associate with the controlled record.
             attr (str): The name of the associated foreign attribute.
         """ 
-        if not len(affected): 
+        if not affected: 
             return
         LOGGER.debug("Adding %s to '%s' in %s(eids=%s)", self.eid, attr, foreign_cls.model_name, affected)
-        with self._storage() as storage:
+        with self.storage.database as database:
             for key in affected:
                 model = foreign_cls.one(eid=key)
                 if not model:
@@ -794,7 +780,7 @@ class Controller(object):
                     updated = self.eid
                 elif 'collection' in model.attributes[attr]:
                     updated = list(set(model[attr] + [self.eid]))
-                storage.update(foreign_cls.model_name, {attr: updated}, eids=key)
+                database.update(foreign_cls.model_name, {attr: updated}, eids=key)
 
     def _disassociate(self, affected, attr):
         """Disassociates the controlled record from another record.
@@ -807,10 +793,10 @@ class Controller(object):
                              associate with the controlled record.
             attr (str): The name of the associated foreign attribute.
         """ 
-        if not len(affected):
+        if not affected:
             return
         LOGGER.debug("Removing %s from '%s' in %r", self.eid, attr, affected)
-        with self._storage() as storage:
+        with self.storage.database as database:
             for model in affected:
                 if 'model' in model.attributes[attr]:
                     if 'required' in model.attributes[attr]:
@@ -818,7 +804,7 @@ class Controller(object):
                                      attr, model.model_name, model.eid)
                         model.delete(eids=model.eid)
                     else:
-                        storage.update(model.model_name, {attr: None}, eids=model.eid)
+                        database.update(model.model_name, {attr: None}, eids=model.eid)
                 elif 'collection' in model.attributes[attr]:
                     update = list(set(model[attr]) - set([self.eid]))
                     if 'required' in model.attributes[attr] and len(update) == 0:
@@ -826,7 +812,7 @@ class Controller(object):
                                      attr, model.model_name, model.eid)
                         model.delete(eids=model.eid)
                     else:
-                        storage.update(model.model_name, {attr: update}, eids=model.eid)
+                        database.update(model.model_name, {attr: update}, eids=model.eid)
 
     @classmethod
     def construct_condition(cls, args, attr_defined=None, attr_undefined=None, attr_eq=None, attr_ne=None):

@@ -34,6 +34,7 @@ implementation based on `TinyDB`_.
 """
 
 import os
+from abc import ABCMeta, abstractmethod
 from tinydb import TinyDB, where
 from tinydb.operations import delete
 from tau import logger, util
@@ -44,10 +45,24 @@ LOGGER = logger.get_logger(__name__)
 
 
 class AbstractDatabase(object):
-    """Abstract interface to a persistant record storage system."""
+    """Abstract base class for a persistant record storage system."""
     
+    __metaclass__ = ABCMeta
+    
+    @abstractmethod
+    def count(self, table_name):
+        """Count the records in the table.
+        
+        Args:
+            table_name (str): Name of the table to search.
+            
+        Returns:
+            int: Number of records in the table.
+        """
+    
+    @abstractmethod
     def get(self, table_name, keys=None, match_any=False, eid=None):
-        """Find a record.
+        """Find a single record.
         
         Either `keys` or `eid` should be specified, not both.  If `keys` is given,
         then every attribute listed in `keys` must have the given value. If `eid`
@@ -60,10 +75,10 @@ class AbstractDatabase(object):
             match_any (bool): If True then any key may match or if False then all keys must match.
 
         Returns:
-            dict: Matching data record or None if no such record exists.
+            tuple: (eid, data) matching data record or (None, None) if no such record exists.
         """
-        raise NotImplementedError
 
+    @abstractmethod
     def search(self, table_name, keys=None, match_any=False):
         """Find multiple records.
         
@@ -75,10 +90,10 @@ class AbstractDatabase(object):
             match_any (bool): If True then any key may match or if False then all keys must match.
 
         Returns:
-            list: Matching data records.
+            list: Matching data records as (eid, data) tuples.
         """
-        raise NotImplementedError
 
+    @abstractmethod
     def match(self, table_name, field, regex=None, test=None):
         """Find records where 'field' matches 'regex'.
         
@@ -94,10 +109,10 @@ class AbstractDatabase(object):
             test: A callable expression returning a boolean value.  
             
         Returns:
-            list: Matching data records.
+            list: Matching data records as (eid, data) tuples.
         """
-        raise NotImplementedError
 
+    @abstractmethod
     def contains(self, table_name, keys=None, match_any=False, eids=None):
         """Check if the specified table contains at least one matching record.
         
@@ -110,10 +125,10 @@ class AbstractDatabase(object):
             eids (list): Record identifiers to match.
             
         Returns:
-            bool: True if a record exists, False otherwise.          
+            bool: True if a record exists, False otherwise.
         """
-        raise NotImplementedError
 
+    @abstractmethod
     def insert(self, table_name, fields):
         """Create a new record.
         
@@ -122,10 +137,10 @@ class AbstractDatabase(object):
             fields (dict): Data to record.
             
         Returns:
-            int: The new record's identifier.                 
+            int: The new record's element identifier (eid).                 
         """
-        raise NotImplementedError
 
+    @abstractmethod
     def update(self, table_name, fields, keys=None, match_any=False, eids=None):
         """Update existing records.
         
@@ -136,8 +151,8 @@ class AbstractDatabase(object):
             match_any (bool): If True then any key may match or if False then all keys must match.
             eids (list): Record identifiers to match.
         """
-        raise NotImplementedError
-        
+
+    @abstractmethod        
     def unset(self, table_name, fields, keys=None, match_any=False, eids=None):
         """Update existing records by unsetting fields.
         
@@ -148,8 +163,8 @@ class AbstractDatabase(object):
             match_any (bool): If True then any key may match or if False then all keys must match.
             eids (list): Record identifiers to match.
         """
-        raise NotImplementedError
 
+    @abstractmethod
     def remove(self, table_name, keys=None, match_any=False, eids=None):
         """Delete records.
         
@@ -159,16 +174,14 @@ class AbstractDatabase(object):
             match_any (bool): If True then any key may match or if False then all keys must match.
             eids (list): Record identifiers to match.
         """
-        raise NotImplementedError
 
+    @abstractmethod
     def purge(self, table_name):
         """Delete all records.
 
         Args:
             table_name (str): Name of the table to operate on.
         """
-        raise NotImplementedError
-
 
 
 class JsonDatabase(AbstractDatabase):
@@ -229,7 +242,7 @@ class JsonDatabase(AbstractDatabase):
             self._db_copy = None
 
     @staticmethod
-    def _get_query(keys, match_any):
+    def _query(keys, match_any):
         """Returns a query object from a dictionary of keys.
         
         Args:
@@ -250,9 +263,24 @@ class JsonDatabase(AbstractDatabase):
         for key, value in itr:
             query = join(query, (where(key) == value))
         return query
+    
+    @staticmethod
+    def _tuple_list(records):
+        return [(record.eid, record) for record in records]
 
+    def count(self, table_name):
+        """Count the records in the table.
+        
+        Args:
+            table_name (str): Name of the table to search.
+            
+        Returns:
+            int: Number of records in the table.
+        """
+        return len(self.database.table(table_name))
+        
     def get(self, table_name, keys=None, match_any=False, eid=None):
-        """Find a record.
+        """Find a single record.
         
         Either `keys` or `eid` should be specified, not both.  If `keys` is given,
         then every attribute listed in `keys` must have the given value. If `eid`
@@ -265,17 +293,19 @@ class JsonDatabase(AbstractDatabase):
             match_any (bool): If True then any key may match or if False then all keys must match.
 
         Returns:
-            dict: Matching data record or None if no such record exists.
+            tuple: (eid, data) matching data record or (None, None) if no such record exists.
         """
         table = self.database.table(table_name)
         if eid is not None:
             LOGGER.debug("%r: get(eid=%r)", table_name, eid)
-            return table.get(eid=eid)
+            found = table.get(eid=eid)
+            return found.eid, found
         elif keys is not None:
             LOGGER.debug("%r: get(keys=%r)", table_name, keys)
-            return table.get(self._get_query(keys, match_any))
+            found = table.get(self._query(keys, match_any))
+            return found.eid, found
         else:
-            return None
+            return None, None
 
     def search(self, table_name, keys=None, match_any=False):
         """Find multiple records.
@@ -288,15 +318,15 @@ class JsonDatabase(AbstractDatabase):
             match_any (bool): If True then any key may match or if False then all keys must match.
 
         Returns:
-            list: Matching data records.
+            list: Matching data records as (eid, data) tuples.
         """
         table = self.database.table(table_name)
         if keys:
             LOGGER.debug("%r: search(keys=%r)", table_name, keys)
-            return table.search(self._get_query(keys, match_any))
+            return self._tuple_list(table.search(self._query(keys, match_any)))
         else:
             LOGGER.debug("%r: all()", table_name)
-            return table.all()
+            return self._tuple_list(table.all())
 
     def match(self, table_name, field, regex=None, test=None):
         """Find records where 'field' matches 'regex'.
@@ -313,18 +343,18 @@ class JsonDatabase(AbstractDatabase):
             test: A callable expression returning a boolean value.  
             
         Returns:
-            list: Matching data records.
+            list: Matching data records as (eid, data) tuples.
         """
         table = self.database.table(table_name)
         if test is not None:
             LOGGER.debug('%r: search(where(%r).test(%r))', table_name, field, test)
-            return table.search(where(field).test(test))
+            return self._tuple_list(table.search(where(field).test(test)))
         elif regex is not None:
             LOGGER.debug('%r: search(where(%r).matches(%r))', table_name, field, regex)
-            return table.search(where(field).matches(regex))
+            return self._tuple_list(table.search(where(field).matches(regex)))
         else:
             LOGGER.debug("%r: search(where(%r).matches('.*'))", table_name, field)
-            return table.search(where(field).matches('.*'))
+            return self._tuple_list(table.search(where(field).matches('.*')))
 
     def contains(self, table_name, keys=None, match_any=False, eids=None):
         """Check if the specified table contains at least one matching record.
@@ -340,7 +370,6 @@ class JsonDatabase(AbstractDatabase):
         Returns:
             bool: True if a record exists, False otherwise.          
         """
-
         table = self.database.table(table_name)
         if eids is not None:
             LOGGER.debug("%r: contains(eids=%r)", table_name, eids)
@@ -350,7 +379,7 @@ class JsonDatabase(AbstractDatabase):
                 return table.contains(eids=[eids])
         elif keys:
             LOGGER.debug("%r: contains(keys=%r)", table_name, keys)
-            return table.contains(self._get_query(keys, match_any))
+            return table.contains(self._query(keys, match_any))
         else:
             return False
 
@@ -386,7 +415,7 @@ class JsonDatabase(AbstractDatabase):
                 table.update(fields, eids=[eids])
         else:
             LOGGER.debug("%s: update(%r, keys=%r)", table_name, fields, keys)
-            table.update(fields, self._get_query(keys, match_any))
+            table.update(fields, self._query(keys, match_any))
 
     def unset(self, table_name, fields, keys=None, match_any=False, eids=None):
         """Update existing records by unsetting fields.
@@ -408,7 +437,7 @@ class JsonDatabase(AbstractDatabase):
         else:
             LOGGER.debug("%s: update(%r, keys=%r)", table_name, fields, keys)
             for field in fields:
-                table.update(delete(field), self._get_query(keys, match_any))
+                table.update(delete(field), self._query(keys, match_any))
 
     def remove(self, table_name, keys=None, match_any=False, eids=None):
         """Delete records.
@@ -423,12 +452,12 @@ class JsonDatabase(AbstractDatabase):
         if eids is not None:
             LOGGER.debug("%s: remove(eids=%r)", table_name, eids)
             if isinstance(eids, list):
-                return table.remove(eids=eids)
+                table.remove(eids=eids)
             else:
-                return table.remove(eids=[eids])
+                table.remove(eids=[eids])
         else:
             LOGGER.debug("%s: remove(keys=%r)", table_name, keys)
-            return table.remove(self._get_query(keys, match_any))
+            table.remove(self._query(keys, match_any))
 
     def purge(self, table_name):
         """Delete all records.
@@ -437,4 +466,4 @@ class JsonDatabase(AbstractDatabase):
             table_name (str): Name of the table to operate on.
         """
         LOGGER.debug("%s: purge()", table_name)
-        return self.database.table(table_name).purge()
+        self.database.table(table_name).purge()
