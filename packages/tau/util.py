@@ -38,6 +38,7 @@ import shutil
 import urllib
 import tarfile
 import urlparse
+from termcolor import termcolor
 from tau import logger
 
 
@@ -55,11 +56,9 @@ def mkdirp(*args):
     for path in args:
         try:
             os.makedirs(path)
-            LOGGER.debug('Created directory %r', path)
+            LOGGER.debug("Created directory '%s'", path)
         except OSError as exc:
-            if exc.errno == errno.EEXIST and os.path.isdir(path):
-                pass
-            else:
+            if not (exc.errno == errno.EEXIST and os.path.isdir(path)):
                 raise
 
 
@@ -335,4 +334,10 @@ def camelcase(name):
         str: `name` in CamelCase.
     """
     return ''.join(x.capitalize() for x in name.split('_'))
-    
+
+def hline(title, *color_args):
+    text = "{:=<{}}\n".format('== %s ==' % title, logger.LINE_WIDTH)
+    if color_args:
+        return termcolor.colored(text, *color_args)
+    else:
+        return text
