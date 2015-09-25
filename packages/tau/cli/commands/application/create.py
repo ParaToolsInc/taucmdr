@@ -25,58 +25,10 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""``tau application create`` subcommand."""
+"""``tau application`` subcommand."""
 
-from tau import logger, cli
-from tau.cli import arguments
-from tau.core.mvc import UniqueAttributeError
+from tau.cli.view_base import CreateCommand
 from tau.core.application import Application
 
 
-LOGGER = logger.get_logger(__name__)
-
-COMMAND = cli.get_command(__name__)
-
-SHORT_DESCRIPTION = "Create a new application configuration."
-
-HELP = """
-'%(command)s' page to be written.
-""" % {'command': COMMAND}
-
-
-def parser():
-    """Construct a command line argument parser.
-    
-    Constructing the parser may cause a lot of imports as :py:mod:`tau.cli` is explored.
-    To avoid possible circular imports we defer parser creation until afer all
-    modules are imported, hence this function.  The parser instance is maintained as
-    an attribute of the function, making it something like a C++ function static variable.
-    """
-    if not hasattr(parser, 'inst'):
-        usage_head = "%s <application_name> [arguments]" % COMMAND
-        parser.inst = arguments.get_parser_from_model(Application,
-                                                      prog=COMMAND,
-                                                      usage=usage_head,
-                                                      description=SHORT_DESCRIPTION)
-    return parser.inst
-
-
-def main(argv):
-    """Subcommand program entry point.
-    
-    Args:
-        argv (list): Command line arguments.
-        
-    Returns:
-        int: Process return code: non-zero if a problem occurred, 0 otherwise
-    """
-    args = parser().parse_args(args=argv)
-    LOGGER.debug('Arguments: %s', args)
-
-    try:
-        Application.create(args.__dict__)
-    except UniqueAttributeError:
-        parser().error("An application named '%s' already exists" % args.name)
-
-    LOGGER.info("Created a new application named '%s'.", args.name)
-    return cli.execute_command(['application', 'list'], [args.name])
+COMMAND = CreateCommand(Application, __name__)

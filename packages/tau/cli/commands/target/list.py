@@ -25,110 +25,20 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""``tau target list`` subcommand."""
+"""``tau target`` subcommand."""
 
-
-from texttable import Texttable
-from pprint import pformat
-from tau import EXIT_SUCCESS, USER_PREFIX, EXIT_WARNING
-from tau import logger, cli
-from tau.cli import arguments
+import os
+from tau.cli.view_base import ListCommand
 from tau.core.target import Target
 
 
-LOGGER = logger.get_logger(__name__)
+DASHBOARD_COLUMNS = [{'header': 'Name', 'value': 'name', 'align': 'r'},
+                     {'header': 'Host OS', 'value': 'host_os'},
+                     {'header': 'Host Arch.', 'value': 'host_arch'},
+                     {'header': 'C Compiler', 'function': lambda x: os.path.basename(x['CC']['path'])},
+                     {'header': 'C++ Compiler', 'function': lambda x: os.path.basename(x['CXX']['path'])},
+                     {'header': 'Fortran Compiler', 'function': lambda x: os.path.basename(x['FC']['path'])},
+                     {'header': 'In Projects', 
+                      'function': lambda x: ', '.join([p['name'] for p in x['projects']])}]
 
-COMMAND = cli.get_command(__name__)
-
-SHORT_DESCRIPTION = "List target configurations or show configuration details."
-
-HELP = """
-'%(command)s' page to be written.
-""" % {'command': COMMAND}
-
-
-def parser():
-    """Construct a command line argument parser.
-    
-    Constructing the parser may cause a lot of imports as :py:mod:`tau.cli` is explored.
-    To avoid possible circular imports we defer parser creation until afer all
-    modules are imported, hence this function.  The parser instance is maintained as
-    an attribute of the function, making it something like a C++ function static variable.
-    """
-    if not hasattr(parser, 'inst'):
-        usage_head = "%s [target_name] [target_name] ... [arguments]" % COMMAND
-        parser.inst = arguments.get_parser(prog=COMMAND,
-                                           usage=usage_head,
-                                           description=SHORT_DESCRIPTION)
-        parser.inst.add_argument('names', 
-                                 help="If given, show details for the target with this name",
-                                 metavar='target_name',
-                                 nargs='*',
-                                 default=arguments.SUPPRESS)
-        parser.inst.add_argument('-l', '--long', 
-                                 help="display all information about the target",
-                                 action='store_true',
-                                 default=False)
-    return parser.inst
-
-
-def main(argv):
-    """Subcommand program entry point.
-    
-    Args:
-        argv (list): Command line arguments.
-        
-    Returns:
-        int: Process return code: non-zero if a problem occurred, 0 otherwise
-    """
-    args = parser().parse_args(args=argv)
-    LOGGER.debug('Arguments: %s', args)
-    
-    
-
-    try:
-        names = args.names
-    except AttributeError:
-        found = Target.all()
-    else:
-        found = []
-        for name in names:
-            record = Target.with_name(name)
-            if not record:
-                parser().error("No target configuration named '%s'" % name)
-            found.append(record)
-
-    print '{:=<{}}\n'.format('== Targets (%s) ==' % USER_PREFIX, logger.LINE_WIDTH)
-    if not found:
-        print "No targets. See `%s --help`.\n" % COMMAND
-        return EXIT_WARNING
-    
-    table = Texttable(logger.LINE_WIDTH)
-    cols = [('Name', 'r', 'name'),
-            ('Host OS', 'c', 'host_os'),
-            ('Host Arch', 'c', 'host_arch'),
-            ('C', 'l', None),
-            ('C++', 'l', None),
-            ('Fortran', 'l', None),
-            ('In Projects', 'l', None)]
-    headers = [header for header, _, _ in cols]
-    rows = [headers]
-    if args.long:
-        listing = '\n'.join([pformat(record.populate()) for record in found])
-    else:
-        for record in found:
-            populated = record.populate()
-            projects = ', '.join([p['name'] for p in populated['projects']])
-            cc_path = populated['CC']['path']
-            cxx_path = populated['CXX']['path']
-            fc_path = populated['FC']['path']
-            row = [populated.get(attr, '')
-                   for _, _, attr in cols if attr] + [cc_path, cxx_path, fc_path, projects]
-            rows.append(row)
-        table.set_cols_align([align for _, align, _ in cols])
-        table.add_rows(rows)
-        listing = table.draw()
-
-    print listing
-    print 
-    return EXIT_SUCCESS
+COMMAND = ListCommand(Target, __name__, dashboard_columns=DASHBOARD_COLUMNS)

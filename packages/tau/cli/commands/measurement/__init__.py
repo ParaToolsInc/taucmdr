@@ -27,68 +27,8 @@
 #
 """``tau measurement`` subcommand."""
 
-from tau import logger, cli
-from tau.cli import arguments
+from tau.cli.view_base import RootCommand
+from tau.core.measurement import Measurement
 
 
-LOGGER = logger.get_logger(__name__)
-
-COMMAND = cli.get_command(__name__)
-
-SHORT_DESCRIPTION = "Create and manage measurement configurations."
-
-GROUP = "configuration"
-
-HELP = """
-'%(command)s' page to be written.
-""" % {'command': COMMAND}
-
-
-def parser():
-    """Construct a command line argument parser.
-    
-    Constructing the parser may cause a lot of imports as :py:mod:`tau.cli` is explored.
-    To avoid possible circular imports we defer parser creation until afer all
-    modules are imported, hence this function.  The parser instance is maintained as
-    an attribute of the function, making it something like a C++ function static variable.
-    """
-    if not hasattr(parser, 'inst'):
-        usage_head = "%s <subcommand> [arguments]" % COMMAND
-        
-        usage_foot = """
-        %(command_descr)s
-        
-        See '%(command)s <subcommand> --help' for more information on <subcommand>.
-        """ % {'command': COMMAND,
-               'command_descr': cli.get_commands_description(__name__)}
-        
-        
-        parser.inst = arguments.get_parser(prog=COMMAND,
-                                           usage=usage_head,
-                                           description=SHORT_DESCRIPTION,
-                                           epilog=usage_foot)
-        parser.inst.add_argument('subcommand', 
-                                 help="See 'subcommands' below",
-                                 metavar='<subcommand>')
-        parser.inst.add_argument('options', 
-                                 help="Arguments to be passed to <subcommand>",
-                                 metavar='[arguments]',
-                                 nargs=arguments.REMAINDER)
-    return parser.inst
-
-
-def main(argv):
-    """Subcommand program entry point.
-    
-    Args:
-        argv (list): Command line arguments.
-        
-    Returns:
-        int: Process return code: non-zero if a problem occurred, 0 otherwise
-    """
-    args = parser().parse_args(args=argv)
-    LOGGER.debug('Arguments: %s', args)
-
-    subcommand = args.subcommand
-    options = args.options
-    return cli.execute_command([subcommand], options, __name__)
+COMMAND = RootCommand(Measurement, __name__, group="configuration")

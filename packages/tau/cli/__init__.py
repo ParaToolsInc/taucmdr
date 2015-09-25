@@ -32,6 +32,8 @@ subcommands, much like `git`_.  For example, the command line
 ``tau project create my_new_project`` invokes the `create` subcommand of the
 `project` subcommand with the arguments `my_new_project`. 
 
+TODO: FIXME: This is out of date.
+
 Every package in :py:mod:`tau.cli.commands` is a TAU Commander subcommand. Modules
 in the package are that subcommand's subcommands.  This can be nested as deep as
 you like.  Subcommand modules must set the following module attributes:
@@ -70,14 +72,14 @@ class UnknownCommandError(ConfigurationError):
     """Indicates that a specified command is unknown."""
     message_fmt = ("%(value)r is not a valid TAU command.\n"
                    "\n"
-                   "%(hints)s\n")
+                   "%(hints)s")
 
 
 class AmbiguousCommandError(ConfigurationError):
     """Indicates that a specified partial command is ambiguous."""
     message_fmt = ("Command '%(value)s' is ambiguous.\n"
                    "\n"
-                   "%(hints)s\n")
+                   "%(hints)s")
     def __init__(self, value, matches, *hints):
         parts = ["Did you mean `%s %s`?" % (SCRIPT_COMMAND, match) for match in matches]
         parts.append("Try `%s --help`" % SCRIPT_COMMAND)
@@ -162,6 +164,8 @@ def get_commands(root=_COMMANDS_PACKAGE):
     command_module = sys.modules[_COMMANDS_PACKAGE]
     for _, module, _ in walk_packages(command_module.__path__, 
                                       command_module.__name__ + '.'):
+        if module.endswith('__main__'):
+            continue
         try:
             lookup(_command_as_list(module), _COMMANDS)
         except KeyError:
@@ -183,8 +187,14 @@ def get_commands_description(root=_COMMANDS_PACKAGE):
     commands = sorted([i for i in get_commands(root).iteritems() if i[0] != '__module__'])
     for cmd, topcmd in commands:
         module = topcmd['__module__']
-        descr = getattr(module, 'SHORT_DESCRIPTION', "FIXME: No description")
-        group = getattr(module, 'GROUP', None)
+        try:
+            descr = module.COMMAND.summary
+        except AttributeError:
+            descr = "FIXME"
+        try:
+            group = module.COMMAND.group
+        except AttributeError:
+            group = "FIXME"
         name = '{:<12}'.format(cmd)
         groups.setdefault(group, []).append('  %s  %s' % (name, descr))
 
@@ -237,7 +247,7 @@ def execute_command(cmd, cmd_args=None, parent_module=None):
     while len(cmd):
         root = '.'.join([_COMMANDS_PACKAGE] + cmd)
         try:
-            main = get_commands(root)['__module__'].main
+            main = get_commands(root)['__module__'].COMMAND.main
         except KeyError:
             LOGGER.debug('%r not recognized as a TAU command', cmd)
             try:
@@ -253,7 +263,7 @@ def execute_command(cmd, cmd_args=None, parent_module=None):
                 LOGGER.debug('Resolved ambiguous command %r to %r', cmd, resolved)
                 return execute_command(resolved, cmd_args)
         except AttributeError:
-            raise InternalError("'main(argv)' undefined in command %r", cmd)
+            raise InternalError("'COMMAND.main' undefined in command %r" % cmd)
         else:
             if not cmd_args:
                 cmd_args = []

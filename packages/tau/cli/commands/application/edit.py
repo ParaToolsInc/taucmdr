@@ -25,71 +25,10 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""``tau application edit`` subcommand."""
+"""``tau application`` subcommand."""
 
-from tau import logger, cli
-from tau.cli import arguments
+from tau.cli.view_base import EditCommand
 from tau.core.application import Application
 
 
-LOGGER = logger.get_logger(__name__)
-
-COMMAND = cli.get_command(__name__)
-
-SHORT_DESCRIPTION = "Modify an application configuration."
-
-HELP = """
-'%(command)s' page to be written.
-""" % {'command': COMMAND}
-
-
-def parser():
-    """Construct a command line argument parser.
-    
-    Constructing the parser may cause a lot of imports as :py:mod:`tau.cli` is explored.
-    To avoid possible circular imports we defer parser creation until afer all
-    modules are imported, hence this function.  The parser instance is maintained as
-    an attribute of the function, making it something like a C++ function static variable.
-    """
-    if not hasattr(parser, 'inst'):
-        usage_head = """
-          %(command)s <application_name> [arguments]
-        """ % {'command': COMMAND}
-        
-        parser.inst = arguments.get_parser_from_model(Application,
-                                                      use_defaults=False,
-                                                      prog=COMMAND,
-                                                      usage=usage_head,
-                                                      description=SHORT_DESCRIPTION)
-        parser.inst.add_argument('--rename',
-                                 help="rename the application configuration",
-                                 metavar='<new_name>', dest='new_name',
-                                 default=arguments.SUPPRESS)
-    return parser.inst
-
-
-def main(argv):
-    """Subcommand program entry point.
-    
-    Args:
-        argv (list): Command line arguments.
-        
-    Returns:
-        int: Process return code: non-zero if a problem occurred, 0 otherwise
-    """
-    args = parser().parse_args(args=argv)
-    LOGGER.debug('Arguments: %s', args)
-
-    name = args.name
-    if not Application.exists({'name': name}):
-        parser().error("'%s' is not an application name. Type `%s` to see valid names." % (name, COMMAND))
-
-    updates = dict(args.__dict__)
-    try:
-        updates['name'] = args.new_name
-    except AttributeError:
-        pass
-    else:
-        del updates['new_name']
-    Application.update(updates, {'name': name})
-    return cli.execute_command(['application', 'list'], [updates['name']])
+COMMAND = EditCommand(Application, __name__)

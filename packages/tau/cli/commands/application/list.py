@@ -25,115 +25,17 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""``tau application list`` subcommand."""
+"""``tau application`` subcommand."""
 
-
-from texttable import Texttable
-from pprint import pformat
-
-from tau import EXIT_SUCCESS, USER_PREFIX, EXIT_WARNING
-from tau import logger, cli
-from tau.cli import arguments
+from tau.cli.view_base import ListCommand
 from tau.core.application import Application
 
 
-LOGGER = logger.get_logger(__name__)
+DASHBOARD_COLUMNS = [{'header': 'Name', 'value': 'name', 'align': 'r'},
+                     {'header': 'OpenMP', 'yesno': 'openmp'},
+                     {'header': 'Pthreads', 'yesno': 'pthreads'},
+                     {'header': 'MPI', 'yesno': 'pthreads'},
+                     {'header': 'In Projects', 
+                      'function': lambda x: ', '.join([p['name'] for p in x['projects']])}]
 
-COMMAND = cli.get_command(__name__)
-
-SHORT_DESCRIPTION = "List application configurations or show configuration details."
-
-HELP = """
-'%(command)s' page to be written.
-""" % {'command': COMMAND}
-
-
-def parser():
-    """Construct a command line argument parser.
-    
-    Constructing the parser may cause a lot of imports as :py:mod:`tau.cli` is explored.
-    To avoid possible circular imports we defer parser creation until afer all
-    modules are imported, hence this function.  The parser instance is maintained as
-    an attribute of the function, making it something like a C++ function static variable.
-    """
-    if not hasattr(parser, 'inst'):
-        usage_head = """
-          %(command)s [application_name] [application_name] ... [arguments]
-        """ % {'command': COMMAND}
-        
-        parser.inst = arguments.get_parser(prog=COMMAND,
-                                           usage=usage_head,
-                                           description=SHORT_DESCRIPTION)
-        parser.inst.add_argument('names', 
-                                 help="If given, show details for the application with this name",
-                                 metavar='application_name',
-                                 nargs='*',
-                                 default=arguments.SUPPRESS)
-        parser.inst.add_argument('-l', '--long', 
-                                 help="display all information about the application",
-                                 action='store_true',
-                                 default=False)
-    return parser.inst
-
-
-def main(argv):
-    """Subcommand program entry point.
-    
-    Args:
-        argv (list): Command line arguments.
-        
-    Returns:
-        int: Process return code: non-zero if a problem occurred, 0 otherwise
-    """
-    args = parser().parse_args(args=argv)
-    LOGGER.debug('Arguments: %s', args)
-
-    try:
-        names = args.names
-    except AttributeError:
-        found = Application.all()
-    else:
-        found = []
-        for name in names:
-            record = Application.with_name(name)
-            if record:
-                found.append(record)
-            else:
-                parser().error("No application configuration named '%s'" % name)
-
-    print '{:=<{}}\n'.format('== Applications (%s) ==' % USER_PREFIX, logger.LINE_WIDTH)
-    if not found:
-        print "No applications. See `%s --help`.\n" % COMMAND
-        return EXIT_WARNING                
-
-    table = Texttable(logger.LINE_WIDTH)
-    cols = [('Name', 'r', None),
-            ('OpenMP', 'c', 'openmp'),
-            ('Pthreads', 'c', 'pthreads'),
-            ('MPI', 'c', 'mpi'),
-            ('CUDA', 'c', 'cuda'),
-            ('SHMEM', 'c', 'shmem'),
-            ('MPC', 'c', 'mpc'),
-            ('In Projects', 'l', None)]
-    headers = [header for header, _, _ in cols]
-    rows = [headers]
-    if args.long:
-        parts = []
-        for record in found:
-            populated = record.populate()
-            parts.append(pformat(populated))
-        listing = '\n'.join(parts)
-    else:
-        for record in found:
-            populated = record.populate()
-            name = populated['name']
-            projects = ', '.join([p['name'] for p in populated['projects']])
-            row = [name] + ['Yes' if populated.get(attr, None) else '' for _, _, attr in cols if attr] + [projects]
-            rows.append(row)
-        table.set_cols_align([align for _, align, _ in cols])
-        table.add_rows(rows)
-        listing = table.draw()
-
-    print listing
-    print
-    return EXIT_SUCCESS
+COMMAND = ListCommand(Application, __name__, dashboard_columns=DASHBOARD_COLUMNS)

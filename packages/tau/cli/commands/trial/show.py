@@ -28,78 +28,55 @@
 """``tau trial show`` subcommand."""
 
 from tau import EXIT_FAILURE
-from tau import logger, cli
 from tau.cli import arguments
-from tau.core.experiment import Experiment
+from tau.cli.view_base import CommandLineView
+from tau.core.trial import Trial
 
 
-LOGGER = logger.get_logger(__name__)
-
-COMMAND = cli.get_command(__name__)
-
-SHORT_DESCRIPTION = "Display trial data in analysis tool."
-
-HELP = """
-'%(command)s' page to be written.
-""" % {'command': COMMAND}
-
-
-def parser():
-    """Construct a command line argument parser.
+class TrialShowCommand(CommandLineView):
+    """``tau trial show`` subcommand."""
     
-    Constructing the parser may cause a lot of imports as :py:mod:`tau.cli` is explored.
-    To avoid possible circular imports we defer parser creation until afer all
-    modules are imported, hence this function.  The parser instance is maintained as
-    an attribute of the function, making it something like a C++ function static variable.
-    """
-    if not hasattr(parser, 'inst'):
-        usage_head = "%s [trial_number] [trial_number] ... [arguments]" % COMMAND
-        parser.inst = arguments.get_parser(prog=COMMAND,
-                                           usage=usage_head,
-                                           description=SHORT_DESCRIPTION)
-        parser.inst.add_argument('--tool', 
-                                 help="specify reporting or visualization tool",
-                                 metavar='tool_name',
-                                 default=arguments.SUPPRESS)
-        parser.inst.add_argument('numbers', 
-                                 help="show details for specified trials",
-                                 metavar='trial_number',
-                                 nargs='*',
-                                 default=arguments.SUPPRESS)
-    return parser.inst
-
-
-def main(argv):
-    """Subcommand program entry point.
+    def __init__(self):
+        summary = "Display trial data in analysis tool."
+        super(TrialShowCommand, self).__init__(Trial, __name__, summary=summary)
     
-    Args:
-        argv (list): Command line arguments.
-        
-    Returns:
-        int: Process return code: non-zero if a problem occurred, 0 otherwise
-    """
-    args = parser().parse_args(args=argv)
-    LOGGER.debug('Arguments: %s', args)
+    def construct_parser(self):
+        usage = "%s [trial_number] [trial_number] ... [arguments]" % self.command
+        parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
+        parser.add_argument('--tool', 
+                            help="specify reporting or visualization tool",
+                            metavar='tool_name',
+                            default=arguments.SUPPRESS)
+        parser.add_argument('numbers', 
+                            help="show details for specified trials",
+                            metavar='trial_number',
+                            nargs='*',
+                            default=arguments.SUPPRESS)
+        return parser
 
-    selection = None #Experiment.get_selected()
-    if not selection:
-        print "No experiment configured. See `tau project select`\n"
-        return EXIT_FAILURE
+    def main(self, argv):
+        args = self.parser.parse_args(args=argv)
+        self.logger.debug('Arguments: %s', args)
+    
+        selection = None #Experiment.get_selected()
+        if not selection:
+            print "No experiment configured. See `tau project select`\n"
+            return EXIT_FAILURE
+        try:
+            str_numbers = args.numbers
+        except AttributeError:
+            numbers = None
+        else:
+            numbers = []
+            for num in str_numbers:
+                try:
+                    numbers.append(int(num))
+                except ValueError:
+                    self.parser.error("Invalid trial number: %s" % num)
+        try:
+            tool = args.tool
+        except AttributeError:
+            tool = None
+        return selection.show(trial_numbers=numbers, tool_name=tool)
 
-    try:
-        str_numbers = args.numbers
-    except AttributeError:
-        numbers = None
-    else:
-        numbers = []
-        for num in str_numbers:
-            try:
-                numbers.append(int(num))
-            except ValueError:
-                parser().error("Invalid trial number: %s" % num)
-
-    try:
-        tool = args.tool
-    except AttributeError:
-        tool = None
-    return selection.show(trial_numbers=numbers, tool_name=tool)
+COMMAND = TrialShowCommand()

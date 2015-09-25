@@ -27,69 +27,49 @@
 #
 """``tau trial delete`` subcommand."""
 
-from tau import logger, cli
-from tau.cli import arguments
+from tau import EXIT_SUCCESS
 from tau.error import ConfigurationError
-from tau.core.experiment import Experiment
+from tau.cli import arguments
+from tau.cli.view_base import CommandLineView
 from tau.core.trial import Trial
 
 
-LOGGER = logger.get_logger(__name__)
+class TrialDeleteCommand(CommandLineView):
+    """``tau trial delete`` subcommand."""
 
-COMMAND = cli.get_command(__name__)
+    def __init__(self):
+        summary = "Delete experiment trials."
+        super(TrialDeleteCommand, self).__init__(Trial, __name__, summary=summary)
 
-SHORT_DESCRIPTION = "Delete experiment trials."
-
-HELP = """
-'%(command)s' page to be written.
-""" % {'command': COMMAND}
-
-
-def parser():
-    """Construct a command line argument parser.
-    
-    Constructing the parser may cause a lot of imports as :py:mod:`tau.cli` is explored.
-    To avoid possible circular imports we defer parser creation until afer all
-    modules are imported, hence this function.  The parser instance is maintained as
-    an attribute of the function, making it something like a C++ function static variable.
-    """
-    if not hasattr(parser, 'inst'):
-        usage_head = "%s <trial_number> [arguments]" % COMMAND
-        parser.inst = arguments.get_parser(prog=COMMAND,
-                                      usage=usage_head,
-                                      description=SHORT_DESCRIPTION)
-        parser.inst.add_argument('number', 
+    def construct_parser(self):
+        usage = "%s <trial_number> [arguments]" % self.command
+        parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
+        parser.add_argument('number', 
                             help="Number of the trial to delete",
                             metavar='<trial_number>')
-                                     
-    return parser.inst
+        return parser
 
-
-def main(argv):
-    """Subcommand program entry point.
+    def main(self, argv):
+        args = self.parser.parse_args(args=argv)
+        self.logger.debug('Arguments: %s', args)
     
-    Args:
-        argv (list): Command line arguments.
-        
-    Returns:
-        int: Process return code: non-zero if a problem occurred, 0 otherwise
-    """
-    args = parser().parse_args(args=argv)
-    LOGGER.debug('Arguments: %s', args)
+        selection = None #Experiment.get_selected()
+        if not selection:
+            raise ConfigurationError("No experiment configured.", "See `tau project select`")
+    
+        try:
+            number = int(args.number)
+        except ValueError:
+            self.parser.error("Invalid trial number: %s" % args.number)
+        fields = {'experiment': selection.eid, 'number': number}
+        if not Trial.exists(fields):
+            self.parser.error("No %(level)s-level %(model_name)s named '%(name)s'." %
+                              {'level': ctrl.storage.name, 'name': name, 'model_name': self.model_name})
 
-    selection = None #Experiment.get_selected()
-    if not selection:
-        raise ConfigurationError("No experiment configured.", "See `tau project select`")
+            self.parser.error("No trial number %s in the current experiment.  "
+                              "See `tau trial list` to see all trial numbers." % number)
+        Trial.delete(fields)
+        self.logger.info('Deleted trial %s', number)
+        return EXIT_SUCCESS
 
-    try:
-        number = int(args.number)
-    except ValueError:
-        parser.inst.error("Invalid trial number: %s" % args.number)
-    fields = {'experiment': selection.eid, 'number': number}
-    if not Trial.exists(fields):
-        parser.inst.error("No trial number %s in the current experiment.  "
-                     "See `tau trial list` to see all trial numbers." % number)
-    Trial.delete(fields)
-    LOGGER.info('Deleted trial %s', number)
-
-    return cli.execute_command(['trial', 'list'], [])
+COMMAND = TrialDeleteCommand()

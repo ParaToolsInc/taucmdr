@@ -27,62 +27,30 @@
 #
 """``tau dashboard`` subcommand."""
 
-from tau import EXIT_SUCCESS
-from tau import logger, cli
+from tau import cli, EXIT_SUCCESS
 from tau.cli import arguments
+from tau.cli.command import AbstractCommand
 
 
-LOGGER = logger.get_logger(__name__)
-
-COMMAND = cli.get_command(__name__)
-
-SHORT_DESCRIPTION = "Show all projects and their components."
-
-HELP = """
-'%(command)s' page to be written.
-""" % {'command': COMMAND}
-
-
-def parser():
-    """Construct a command line argument parser.
+class DashboardCommand(AbstractCommand):
     
-    Constructing the parser may cause a lot of imports as :py:mod:`tau.cli` is explored.
-    To avoid possible circular imports we defer parser creation until afer all
-    modules are imported, hence this function.  The parser instance is maintained as
-    an attribute of the function, making it something like a C++ function static variable.
-    """
-    if not hasattr(parser, 'inst'):
-        usage_head = "%s [arguments]" % COMMAND
-        parser.inst = arguments.get_parser(prog=COMMAND,
-                                           usage=usage_head,
-                                           description=SHORT_DESCRIPTION)
-        parser.inst.add_argument('-l', '--long',
-                                 help="Display all information",
-                                 action='store_true',
-                                 default=False)
-    return parser.inst
-        
+    def __init__(self):
+        summary = "Show all project components."
+        super(DashboardCommand, self).__init__(__name__, summary=summary)
 
-def main(argv):
-    """Subcommand program entry point.
-    
-    Args:
-        argv (list): Command line arguments.
-        
-    Returns:
-        int: Process return code: non-zero if a problem occurred, 0 otherwise
-    """
-    args = parser().parse_args(args=argv)
-    LOGGER.debug('Arguments: %s', args)
+    def construct_parser(self):
+        usage = "%s [arguments]" % self.command
+        return arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
 
-    subargs = []
-    if args.long:
-        subargs.append('-l')
+    def main(self, argv):
+        args = self.parser.parse_args(args=argv)
+        self.logger.debug('Arguments: %s', args)
+        subargs = ['--dashboard']
+        cli.execute_command(['target', 'list'], subargs)
+        cli.execute_command(['application', 'list'], subargs)
+        cli.execute_command(['measurement', 'list'], subargs)
+        cli.execute_command(['project', 'list'], subargs)
+        cli.execute_command(['trial', 'list'], ['-s'])
+        return EXIT_SUCCESS
 
-    cli.execute_command(['target', 'list'], subargs)
-    cli.execute_command(['application', 'list'], subargs)
-    cli.execute_command(['measurement', 'list'], subargs)
-    cli.execute_command(['project', 'list'], subargs)
-    cli.execute_command(['trial', 'list'], ['-s'])
-
-    return EXIT_SUCCESS
+COMMAND = DashboardCommand()

@@ -33,14 +33,17 @@ Extensions to :any:`argparse` to support the TAU Commander command line interfac
 import os
 import argparse
 import textwrap
-from tau import logger, util
 from operator import attrgetter
+from tau import logger, util
 
 SUPPRESS = argparse.SUPPRESS
 """Suppress attribute creation in parsed argument namespace."""
 
 REMAINDER = argparse.REMAINDER
 """All the remaining command-line arguments are gathered into a list."""
+
+STORAGE_LEVEL_FLAG = "-@"
+"""Command line flag that indicates storage level."""
 
 
 class MutableGroupArgumentParser(argparse.ArgumentParser):
@@ -289,12 +292,10 @@ def get_parser_from_model(model, use_defaults=True, prog=None, usage=None, descr
         try:
             group_name = options['group'] + ' arguments'
         except KeyError:
-            group = parser
+            group_name = model.model_name.lower() + ' arguments'
         else:
             del options['group']
-            groups.setdefault(
-                group_name, parser.add_argument_group(group_name))
-            group = groups[group_name]
+        group = groups.setdefault(group_name, parser.add_argument_group(group_name))
         try:
             flags = options['flags']
         except KeyError:
@@ -304,3 +305,28 @@ def get_parser_from_model(model, use_defaults=True, prog=None, usage=None, descr
             options['dest'] = attr
         group.add_argument(*flags, **options)
     return parser
+
+def add_storage_flags(parser, action, object_name, plural=False, exclusive=True):
+    """Add flags to indicate target storage container.
+    
+    Args:
+        parser (MutableGroupArgumentParser): The parser to modify.
+        action (str): The action that will be taken by the command, e.g. "delete" or "list"
+        object_name (str): The type of object that will be manipulated, e.g. "application" or "measurement"
+        plural (bool): Pluralize help message if True.
+        exclusive (bool): Only one storage level may be specified if True.
+    """
+    from tau.core.storage import ORDERED_CONTAINERS
+    help_parts = ["%s %ss" if plural else "%s the %s",
+                  " at the specified storage ",
+                  "level" if exclusive else "levels"]
+    help_str = "".join(help_parts) % (action, object_name)
+    nargs = 1 if exclusive else '+'
+    choices = [container.name for container in ORDERED_CONTAINERS]
+    default = [ORDERED_CONTAINERS[0].name]
+    parser.add_argument(STORAGE_LEVEL_FLAG,
+                        help=help_str,
+                        metavar="<level>", 
+                        nargs=nargs, 
+                        choices=choices,
+                        default=default)

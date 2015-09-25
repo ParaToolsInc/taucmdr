@@ -25,60 +25,10 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""``tau measurement delete`` subcommand."""
+"""``tau measurement`` subcommand."""
 
-
-from tau import logger, cli
-from tau.cli import arguments
+from tau.cli.view_base import DeleteCommand
 from tau.core.measurement import Measurement
 
 
-LOGGER = logger.get_logger(__name__)
-
-COMMAND = cli.get_command(__name__)
-
-SHORT_DESCRIPTION = "Delete measurement configurations."
-
-HELP = """
-'%(command)s' page to be written.
-""" % {'command': COMMAND}
-
-
-def parser():
-    """Construct a command line argument parser.
-    
-    Constructing the parser may cause a lot of imports as :py:mod:`tau.cli` is explored.
-    To avoid possible circular imports we defer parser creation until afer all
-    modules are imported, hence this function.  The parser instance is maintained as
-    an attribute of the function, making it something like a C++ function static variable.
-    """
-    if not hasattr(parser, 'inst'):
-        usage_head = "%s <measurement_name> [arguments]" % COMMAND
-        parser.inst = arguments.get_parser(prog=COMMAND,
-                                           usage=usage_head,
-                                           description=SHORT_DESCRIPTION)
-        parser.inst.add_argument('name', 
-                                 help="Name of measurement configuration to delete",
-                                 metavar='<measurement_name>')
-    return parser.inst
-
-
-def main(argv):
-    """Subcommand program entry point.
-    
-    Args:
-        argv (list): Command line arguments.
-        
-    Returns:
-        int: Process return code: non-zero if a problem occurred, 0 otherwise
-    """
-    args = parser().parse_args(args=argv)
-    LOGGER.debug('Arguments: %s', args)
-
-    name = args.name
-    if not Measurement.exists({'name': name}):
-        parser().error("'%s' is not a measurement name. Type `tau measurement list` to see valid names." % name)
-    Measurement.delete({'name': name})
-    LOGGER.info("Deleted measurement '%s'", name)
-
-    return cli.execute_command(['measurement', 'list'], [])
+COMMAND = DeleteCommand(Measurement, __name__)

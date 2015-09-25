@@ -27,71 +27,52 @@
 #
 """``tau trial create`` subcommand."""
 
-from tau import logger, util, cli
-from tau.cli import arguments
+from tau import util
 from tau.error import ConfigurationError
-from tau.core.experiment import Experiment
+from tau.cli import arguments
+from tau.cli.view_base import CommandLineView
+from tau.core.trial import Trial
 
 
-LOGGER = logger.get_logger(__name__)
+class TrialCreateCommand(CommandLineView):
+    """``tau trial create`` subcommand."""
 
-COMMAND = cli.get_command(__name__)
+    def __init__(self):
+        summary = "Run an application under a new experiment trial."
+        super(TrialCreateCommand, self).__init__(Trial, __name__, summary=summary)
 
-SHORT_DESCRIPTION = "Run an application under a new experiment trial."
-
-HELP = """
-'%(command)s' page to be written.
-""" % {'command': COMMAND}
-
-
-def parser():
-    """Construct a command line argument parser.
-    
-    Constructing the parser may cause a lot of imports as :py:mod:`tau.cli` is explored.
-    To avoid possible circular imports we defer parser creation until afer all
-    modules are imported, hence this function.  The parser instance is maintained as
-    an attribute of the function, making it something like a C++ function static variable.
-    """
-    if not hasattr(parser, 'inst'):
-        usage_head = "%s <command> [arguments]" % COMMAND
-        parser.inst = arguments.get_parser(prog=COMMAND,
-                                           usage=usage_head,
-                                           description=SHORT_DESCRIPTION)
-        parser.inst.add_argument('cmd',
-                                 help="Command, e.g. './a.out' or 'mpirun ./a.out'",
-                                 metavar='<command>')
-        parser.inst.add_argument('cmd_args', 
-                                 help="Command arguments",
-                                 metavar='[arguments]',
-                                 nargs=arguments.REMAINDER)
-    return parser.inst
-
-
-def is_compatible(cmd):
-    """Check if this subcommand can work with the given command.
-    
-    Args:
-        cmd (str): A command from the command line, e.g. sys.argv[1].
+    @staticmethod
+    def is_compatible(cmd):
+        """Check if this subcommand can work with the given command.
         
-    Returns:
-        bool: True if this subcommand is compatible with `cmd`.
-    """
-    return bool(util.which(cmd))
+        Args:
+            cmd (str): A command from the command line, e.g. sys.argv[1].
+            
+        Returns:
+            bool: True if this subcommand is compatible with `cmd`.
+        """
+        return bool(util.which(cmd))
+
+    def construct_parser(self):
+        usage = "%s <command> [arguments]" % self.command
+        parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
+        parser.add_argument('cmd',
+                            help="Command, e.g. './a.out' or 'mpirun ./a.out'",
+                            metavar='<command>')
+        parser.add_argument('cmd_args', 
+                            help="Command arguments",
+                            metavar='[arguments]',
+                            nargs=arguments.REMAINDER)
+        return parser
+
+    def main(self, argv):
+        args = self.parser.parse_args(args=argv)
+        self.logger.debug('Arguments: %s', args)
+
+        selection = None #Experiment.get_selected()
+        if not selection:
+            raise ConfigurationError("No experiment configured.", "See `tau project select`")
+        return selection.managed_run(args.cmd, args.cmd_args)
 
 
-def main(argv):
-    """Subcommand program entry point.
-    
-    Args:
-        argv (list): Command line arguments.
-        
-    Returns:
-        int: Process return code: non-zero if a problem occurred, 0 otherwise
-    """
-    args = parser().parse_args(args=argv)
-    LOGGER.debug('Arguments: %s', args)
-
-    selection = None #Experiment.get_selected()
-    if not selection:
-        raise ConfigurationError("No experiment configured.", "See `tau project select`")
-    return selection.managed_run(args.cmd, args.cmd_args)
+COMMAND = TrialCreateCommand()
