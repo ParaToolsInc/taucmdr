@@ -1137,9 +1137,8 @@ class ByName(object):
     # Ignore missing members since this is a mixin class to be used with Controller
     # pylint: disable=no-member
     
-    @classmethod
-    def with_name(cls, name):
+    def with_name(self, name):
         """Return the record with the given name.  See :any:`Controller.one`"""
-        return cls.one({'name': name})
+        return self.one({'name': name})
 
 
