@@ -56,19 +56,25 @@ class StorageError(Error):
 
     message_fmt = ("%(value)s\n"
                    "\n"
-                   "Please e-mail '%(logfile)s' to %(contact)s for assistance.")
+                   "%(hints)s"
+                   "Please send '%(logfile)s' to %(contact)s for assistance.")
 
 
 class ProjectStorageError(StorageError):
     """Indicates that the project storage could not be found."""
 
+    message_fmt = ("%(value)s\n"
+                   "\n"
+                   "%(hints)s"
+                   "Please contact %(contact)s for assistance.")
+
     def __init__(self, search_root):
         """Initialize the error object.
         
         Args:
-            cwd (str): Directory in which the search for a project directory was initiated.
+            search_root (str): Directory in which the search for a project directory was initiated.
         """
-        value = "Project not found at '%s' or any of its parent directories." % search_root
+        value = "Project not found in '%s' or any of its parent directories." % search_root
         super(ProjectStorageError, self).__init__(value)
         self.search_root = search_root
 
@@ -213,7 +219,16 @@ class ProjectStorageContainer(JsonStorageContainer):
 
 
 SYSTEM_STORAGE = JsonStorageContainer('system', SYSTEM_PREFIX)
+"""System-level data storage."""
 
 USER_STORAGE = JsonStorageContainer('user', USER_PREFIX)
+"""User-level data storage."""
 
 PROJECT_STORAGE = ProjectStorageContainer()
+"""Project-level data storage."""
+
+ORDERED_CONTAINERS = (PROJECT_STORAGE, USER_STORAGE, SYSTEM_STORAGE)
+"""All storage containers in their preferred order."""
+
+CONTAINERS = {container.name: container for container in ORDERED_CONTAINERS}
+"""All storage containers indexed by their names."""

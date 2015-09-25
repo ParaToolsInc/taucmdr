@@ -46,7 +46,7 @@ class TrialError(ConfigurationError):
                    "%(hints)s\n"
                    "\n"
                    "Please check the selected configuration for errors or"
-                   " email '%(logfile)s' to  %(contact)s for assistance.")
+                   " send '%(logfile)s' to  %(contact)s for assistance.")
 
 
 class Trial(Controller):

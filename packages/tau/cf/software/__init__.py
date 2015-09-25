@@ -35,6 +35,5 @@ class SoftwarePackageError(ConfigurationError):
 
     message_fmt = ("%(value)s\n"
                    "\n"
-                   "%(hints)s\n"
-                   "\n"
-                   "Please check the selected configuration or email '%(logfile)s' to  %(contact)s for assistance.")
+                   "%(hints)s"
+                   "Please check the selected configuration or send '%(logfile)s' to  %(contact)s for assistance.")

@@ -45,8 +45,11 @@ class Error(Exception):
     """Base class for all errors in TAU Commander.
     
     Attributes:
+        value: Some value attached to the error, typically a string but could be anything with a __str__ method.
+        hints (list): String hints for the user to help resolve the error.
         show_backtrace (bool): Set to True to include a backtrace in the error message.
         message_fmt (str): Format string for the error message.
+        message_fields (dict): String formatting fields to apply to message_fmt.
     """
     show_backtrace = False
 
@@ -57,7 +60,7 @@ class Error(Exception):
                    "%(backtrace)s\n"
                    "\n"
                    "This is a bug in TAU Commander.\n"
-                   "Please e-mail '%(logfile)s' to %(contact)s for assistance.")
+                   "Please send '%(logfile)s' to %(contact)s for assistance.")
     
     def __init__(self, value, *hints):
         """Initialize the Error instance.
@@ -68,18 +71,22 @@ class Error(Exception):
         """
         super(Error, self).__init__()
         self.value = value
-        self.hints = hints if hints else ("Contact "+HELP_CONTACT,)
-        self.message_fields = {'value': self.value,
-                               'cmd': ' '.join([arg for arg in sys.argv[1:]]),
-                               'contact': HELP_CONTACT,
-                               'logfile': logger.LOG_FILE}
-        if len(self.hints) == 1:
-            self.message_fields['hints'] = 'Hint: ' + self.hints[0]
+        self.hints = list(hints)
+            
+    @property
+    def message_fields(self):
+        fields = {'value': self.value, 'contact': HELP_CONTACT, 'logfile': logger.LOG_FILE}
+        if not self.hints:
+            hints_str = ''
+        elif len(self.hints) == 1:
+            hints_str = 'Hint: %s\n\n' % self.hints[0]
         else:
-            self.message_fields['hints'] = 'Hints:\n  * ' + '\n  * '.join(self.hints)
+            hints_str = 'Hints:\n  * %s\n\n' % ('\n  * '.join(self.hints))
+        fields['hints'] = hints_str
+        return fields
 
     def __str__(self):
-        return self.value
+        return self.message_fmt % self.message_fields
 
     def handle(self, etype, value, tb):
         if self.show_backtrace:
@@ -110,14 +117,13 @@ class ConfigurationError(Error):
 
     message_fmt = ("%(value)s\n"
                    "\n"
-                   "%(hints)s\n"
-                   "\n"
+                   "%(hints)s"
                    "TAU cannot proceed with the given inputs.\n" 
-                   "Please check the selected configuration for errors or contact %(contact)s for assistance.\n")
+                   "Please check the selected configuration for errors or contact %(contact)s for assistance.")
 
     def __init__(self, value, *hints):
         if not hints:
-            hints = ("Try `%s --help`" % os.path.basename(TAU_SCRIPT),)
+            hints = ["Try `%s --help`" % os.path.basename(TAU_SCRIPT)]
         super(ConfigurationError, self).__init__(value, *hints)
 
 
@@ -140,7 +146,6 @@ def excepthook(etype, value, tb):
         except AttributeError:
             message = Error.message_fmt % {'value': value,
                                            'typename': etype.__name__,
-                                           'cmd': ' '.join([arg for arg in sys.argv[1:]]),
                                            'contact': HELP_CONTACT,
                                            'logfile': logger.LOG_FILE,
                                            'backtrace': ''.join(traceback.format_exception(etype, value, tb))}
