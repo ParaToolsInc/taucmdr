@@ -49,7 +49,6 @@ class Error(Exception):
         hints (list): String hints for the user to help resolve the error.
         show_backtrace (bool): Set to True to include a backtrace in the error message.
         message_fmt (str): Format string for the error message.
-        message_fields (dict): String formatting fields to apply to message_fmt.
     """
     show_backtrace = False
 
@@ -57,8 +56,7 @@ class Error(Exception):
                    "\n"
                    "%(value)s\n"
                    "\n"
-                   "%(backtrace)s\n"
-                   "\n"
+                   "%(backtrace)s"
                    "This is a bug in TAU Commander.\n"
                    "Please send '%(logfile)s' to %(contact)s for assistance.")
     
@@ -72,10 +70,10 @@ class Error(Exception):
         super(Error, self).__init__()
         self.value = value
         self.hints = list(hints)
-            
-    @property
-    def message_fields(self):
-        fields = {'value': self.value, 'contact': HELP_CONTACT, 'logfile': logger.LOG_FILE}
+        self.message_fields = {'contact': HELP_CONTACT, 'logfile': logger.LOG_FILE}
+
+    def __str__(self):
+        fields = dict(self.message_fields, value=self.value)
         if not self.hints:
             hints_str = ''
         elif len(self.hints) == 1:
@@ -83,20 +81,16 @@ class Error(Exception):
         else:
             hints_str = 'Hints:\n  * %s\n\n' % ('\n  * '.join(self.hints))
         fields['hints'] = hints_str
-        return fields
-
-    def __str__(self):
-        return self.message_fmt % self.message_fields
+        return self.message_fmt % fields
 
     def handle(self, etype, value, tb):
         if self.show_backtrace:
-            backtrace = ''.join(traceback.format_exception(etype, value, tb))
+            backtrace = ''.join(traceback.format_exception(etype, value, tb)) + '\n'
         else:
             backtrace = ''
         self.message_fields['typename'] = etype.__name__
         self.message_fields['backtrace'] = backtrace
-        message = self.message_fmt % self.message_fields
-        LOGGER.critical(message)
+        LOGGER.critical(str(self))
         sys.exit(EXIT_FAILURE)
 
 
@@ -141,6 +135,8 @@ def excepthook(etype, value, tb):
         LOGGER.info('Received keyboard interrupt.  Exiting.')
         sys.exit(EXIT_WARNING)
     else:
+        backtrace = ''.join(traceback.format_exception(etype, value, tb))
+        LOGGER.debug(backtrace)
         try:
             sys.exit(value.handle(etype, value, tb))
         except AttributeError:
@@ -148,7 +144,7 @@ def excepthook(etype, value, tb):
                                            'typename': etype.__name__,
                                            'contact': HELP_CONTACT,
                                            'logfile': logger.LOG_FILE,
-                                           'backtrace': ''.join(traceback.format_exception(etype, value, tb))}
+                                           'backtrace': backtrace}
             LOGGER.critical(message)
             sys.exit(EXIT_FAILURE)
 
