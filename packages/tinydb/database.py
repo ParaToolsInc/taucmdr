@@ -81,7 +81,7 @@ class TinyDB(object):
 
         self._table_cache[name] = table
 
-        if name not in self._read():
+        if not getattr(self._storage, 'readonly', False) and name not in self._read():
             self._write({}, name)
 
         return table

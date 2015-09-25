@@ -239,7 +239,6 @@ class JsonDatabase(AbstractDatabase):
         if not util.file_accessible(self.dbfile):
             raise ConfigurationError("Database file '%s' exists but cannot be read." % self.dbfile,
                                      "Check that you have `read` access")
-        LOGGER.debug("Opened '%s' for read/write", self.dbfile)
 
     def __enter__(self):
         """Initiates the database transaction."""
