@@ -34,9 +34,8 @@ implementation based on `TinyDB`_.
 """
 
 import os
+import tinydb
 from abc import ABCMeta, abstractmethod
-from tinydb import TinyDB, where
-from tinydb.operations import delete
 from tau import logger, util
 from tau.error import ConfigurationError
 
@@ -193,6 +192,25 @@ class JsonDatabase(AbstractDatabase):
         dbfile (str): Absolute path to database file.
         database (TinyDB): Database handle.
     """
+    
+    class JsonFileStorage(tinydb.JSONStorage):
+        """Allow read-only as well as read-write access to the JSON file."""
+        def __init__(self, path):
+            try:
+                super(JsonDatabase.JsonFileStorage, self).__init__(path)
+            except IOError:
+                LOGGER.debug("Failed to open %s as read-write, attempting read-only", path)
+                self.path = path
+                self._handle = open(path, 'r')
+                self.readonly = True
+            else:
+                self.readonly = False
+
+        def write(self, *args, **kwargs):
+            if self.readonly:
+                raise ConfigurationError("Cannot write to '%s'" % self.path, "Check that you have `write` access.")
+            else:
+                super(JsonDatabase.JsonFileStorage, self).write(*args, **kwargs)
 
     def __init__(self, dbfile):
         """Initializes the Database instance.
@@ -210,13 +228,13 @@ class JsonDatabase(AbstractDatabase):
         prefix = os.path.dirname(dbfile)
         try:
             util.mkdirp(prefix)
-        except:
+        except IOError:
             raise ConfigurationError("Cannot create directory '%s'" % prefix, 
                                      "Check that you have `write` access")
         try:
-            self.database = TinyDB(self.dbfile)
-        except:
-            raise ConfigurationError("Cannot create '%s'" % self.dbfile, 
+            self.database = tinydb.TinyDB(self.dbfile, storage=JsonDatabase.JsonFileStorage)
+        except IOError:
+            raise ConfigurationError("Cannot create '%s'" % self.dbfile,
                                      "Check that you have `write` access")
         if not util.file_accessible(self.dbfile):
             raise ConfigurationError("Database file '%s' exists but cannot be read." % self.dbfile,
@@ -259,9 +277,9 @@ class JsonDatabase(AbstractDatabase):
         join = _or if match_any else _and
         itr = keys.iteritems()
         key, val = itr.next()
-        query = (where(key) == val)
+        query = (tinydb.where(key) == val)
         for key, value in itr:
-            query = join(query, (where(key) == value))
+            query = join(query, (tinydb.where(key) == value))
         return query
     
     @staticmethod
@@ -299,10 +317,12 @@ class JsonDatabase(AbstractDatabase):
         if eid is not None:
             LOGGER.debug("%r: get(eid=%r)", table_name, eid)
             found = table.get(eid=eid)
-            return found.eid, found
         elif keys is not None:
             LOGGER.debug("%r: get(keys=%r)", table_name, keys)
             found = table.get(self._query(keys, match_any))
+        else:
+            found = None
+        if found:
             return found.eid, found
         else:
             return None, None
@@ -348,13 +368,13 @@ class JsonDatabase(AbstractDatabase):
         table = self.database.table(table_name)
         if test is not None:
             LOGGER.debug('%r: search(where(%r).test(%r))', table_name, field, test)
-            return self._tuple_list(table.search(where(field).test(test)))
+            return self._tuple_list(table.search(tinydb.where(field).test(test)))
         elif regex is not None:
             LOGGER.debug('%r: search(where(%r).matches(%r))', table_name, field, regex)
-            return self._tuple_list(table.search(where(field).matches(regex)))
+            return self._tuple_list(table.search(tinydb.where(field).matches(regex)))
         else:
             LOGGER.debug("%r: search(where(%r).matches('.*'))", table_name, field)
-            return self._tuple_list(table.search(where(field).matches('.*')))
+            return self._tuple_list(table.search(tinydb.where(field).matches('.*')))
 
     def contains(self, table_name, keys=None, match_any=False, eids=None):
         """Check if the specified table contains at least one matching record.
@@ -433,11 +453,11 @@ class JsonDatabase(AbstractDatabase):
             if not isinstance(eids, list):
                 eids = [eids]
             for field in fields:
-                table.update(delete(field), eids=eids)
+                table.update(tinydb.operations.delete(field), eids=eids)
         else:
             LOGGER.debug("%s: update(%r, keys=%r)", table_name, fields, keys)
             for field in fields:
-                table.update(delete(field), self._query(keys, match_any))
+                table.update(tinydb.operations.delete(field), self._query(keys, match_any))
 
     def remove(self, table_name, keys=None, match_any=False, eids=None):
         """Delete records.
