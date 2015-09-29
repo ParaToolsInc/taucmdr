@@ -174,9 +174,9 @@ Examples:
 # pylint: disable=too-many-lines
 
 import sys
-import json
 from tau import logger, util
 from tau.error import ConfigurationError, InternalError
+from tau.core.database import Record
 
 
 LOGGER = logger.get_logger(__name__)
@@ -209,6 +209,67 @@ class UniqueAttributeError(ModelError):
         super(UniqueAttributeError, self).__init__(controller, "A record with one of %r already exists" % unique)
 
 
+class ControlledRecord(Record):
+    """A database record associated with a controller."""
+    
+    def __init__(self, controller, *args, **kwargs):
+        super(ControlledRecord, self).__init__(*args, **kwargs)
+        self.controller = controller
+        self._populated = None
+
+    def populate(self, attribute=None):
+        """Merges associated data into the record.
+        
+        Example:
+            Suppose we have the following records::
+            
+                1: {'name': 'Katie', 'friends': [2, 3]}
+                2: {'name': 'Ryan', 'friends': [1]}
+                3: {'name': 'John', 'friends': [1]}
+
+            Populating record ``1`` produces this dictionary::
+            
+                {'name': 'Katie',
+                 'friends': [ControlledRecord({'name': 'Ryan', 'friends': [1]}),
+                             ControlledRecord({'name': 'John', 'friends': [1]})]}
+                             
+        Args:
+            attribute (Optional[str]): If given, return only the populated attribute.
+        
+        Returns:
+            dict: Controlled data merged with associated records.
+            
+        Raises:
+            KeyError: `attribute` is undefined in the populated record. 
+        """
+        if self._populated is None:
+            LOGGER.debug("Populating %r", self)
+            self._populated = dict(self.data)
+            for attr, props in self.attributes.iteritems():
+                try:
+                    foreign_model = props['model']
+                except KeyError:
+                    try:
+                        foreign_model = props['collection']
+                    except KeyError:
+                        continue
+                    else:
+                        try:
+                            self._populated[attr] = foreign_model(self.storage).search(eids=self.data[attr])
+                        except KeyError:
+                            if props.get('required', False):
+                                raise ModelError(self, "'%s' is required but was not defined" % attr)
+                else:
+                    try:
+                        self._populated[attr] = foreign_model(self.storage).one(eid=self.data[attr])
+                    except KeyError:
+                        if props.get('required', False):
+                            raise ModelError(self, "'%s' is required but was not defined" % attr)
+        if attribute:
+            return self._populated[attribute]
+        else:
+            return self._populated
+
 class Controller(object):
     """The "C" in `MVC`_.
 
@@ -218,8 +279,6 @@ class Controller(object):
         references (set): (Controller, str) tuples listing foreign models referencing this model.  
         associations (dict): (Controller, str) tuples keyed by attribute name defining attribute associations.
         storage (AbstractStorageContainer): Data record storage. 
-        eid (int): Unique identifier for the controlled data record, None if the data has not been recorded.
-        data (dict): The controlled data.
     
     .. _MVC: https://en.wikipedia.org/wiki/Model-view-controller
     """
@@ -316,34 +375,17 @@ class Controller(object):
                         raise ModelError(cls, "%s: conflicting associations: '%s' vs. '%s'" % 
                                          (model_attr_name, existing, forward))
     
-    def __init__(self, storage, eid=None, data=None):
+    def __init__(self, storage):
         """Initializes the controller instance.
         
         Args:
             storage (AbstractStorageContainer): Data record storage.
-            eid (int): Controlled data unique element identifier. 
-            data (dict): Controlled data.
 
         Raises:
             ModelError: The given data doesn't fit the model.
         """
-        self._populated = None
         self.storage = storage
-        self._eid = eid
-        self._data = self._validate(data)
-        if self._eid and not self._data:
-            raise InternalError("eid=%s: Controlled record cannot have undefined data" % self._eid)
         
-    @property
-    def eid(self):
-        """The element identifier is read-only."""
-        return self._eid
-
-    @property
-    def data(self):
-        """The controlled data is read-only."""
-        return self._data
-
     def _validate(self, data):
         """Validates data against the model.
         
@@ -401,145 +443,74 @@ class Controller(object):
                     validated[attr] = value
         return validated
     
-    def __getitem__(self, key):
-        return self.data[key]
-    
-    def __contains__(self, key):
-        return key in self.data
-
-    def get(self, key, default=None):
-        return self.data.get(key, default)
-
-    def __repr__(self):
-        return json.dumps(repr(self.data))
-
-    def on_create(self):
+    def on_create(self, record):
         """Callback to be invoked when a new data record is created.""" 
         self.check_compatibility(self)
 
-    def on_update(self): 
+    def on_update(self, record): 
         """Callback to be invoked when a data record is updated."""
         self.check_compatibility(self)
 
-    def on_delete(self): 
+    def on_delete(self, record): 
         """Callback to be invoked when a data record is deleted."""
         pass
 
-    def populate(self, attribute=None):
-        """Merges associated record data into the controlled data.
+    def one(self, keys=None):
+        """Return a single record matching keys or an element id.
         
-        Example:
-            Suppose we have the following records::
-            
-                1: {'name': 'Katie', 'friends': [2, 3]}
-                2: {'name': 'Ryan', 'friends': [1]}
-                3: {'name': 'John', 'friends': [1]}
-                
-            Populating record ``1`` produces this dictionary::
-            
-                {'name': 'Katie',
-                 'friends': [Controller({'name': 'Ryan', 'friends': [1]}),
-                             Controller({'name': 'John', 'friends': [1]})]}
-                             
-            Note that the referenced data records are returned as :any:`Controller`
-            subclass instances.  This enables expressions like::
-            
-                for friend in katie.populate('friends'):
-                    print 'Hello %s!  Here are some fresh cookies' % friend['name']
-
-        Args:
-            attribute (Optional[str]): If given, return only the populated attribute.
-            
-        Returns:
-            dict: Controlled data merged with associated records.
-            
-        Raises:
-            KeyError: `attribute` is undefined in the populated record. 
-        """
-        if not self._populated:
-            LOGGER.debug("Populating %r", self)
-            self._populated = dict(self.data)
-            for attr, props in self.attributes.iteritems():
-                try:
-                    foreign_model = props['model']
-                except KeyError:
-                    try:
-                        foreign_model = props['collection']
-                    except KeyError:
-                        continue
-                    else:
-                        try:
-                            self._populated[attr] = foreign_model(self.storage).search(eids=self.data[attr])
-                        except KeyError:
-                            if props.get('required', False):
-                                raise ModelError(self, "'%s' is required but was not defined" % attr)
-                else:
-                    try:
-                        self._populated[attr] = foreign_model(self.storage).one(eid=self.data[attr])
-                    except KeyError:
-                        if props.get('required', False):
-                            raise ModelError(self, "'%s' is required but was not defined" % attr)
-        if attribute:
-            return self._populated[attribute]
-        else:
-            return self._populated
-
-    def one(self, keys=None, eid=None):
-        """Return a single record matching all of `keys` or element id `eid`.
-        
-        Either `keys` or `eid` should be specified, not both.  If `keys` is given,
-        then every attribute listed in `keys` must have the given value. If `eid`
-        is given, return the record with that eid. 
+        If `keys` is an integer, return the record with that element identifier (eid).
+        If `keys` is a dictionary, return the record with attributes matching `keys`. 
         
         Args:
-            keys (dict): Attributes to match.
-            eid (int): Record identifier to match.
+            keys: Fields or element identifiers to match.
             
         Returns:
-            Controller: Controller subclass instance controlling the found record or None if no such record exists. 
+            Record: The found record or None if no such record exists. 
         """
-        LOGGER.debug("%s.one(keys=%s, eid=%s)", self.model_name, keys, eid)
-        eid, data = self.storage.database.get(self.model_name, keys=keys, eid=eid)
-        return self.__class__(self.storage, eid, data) if data else None
+        return self.storage.database.get(self.model_name, keys=keys)
 
     def all(self):
-        """Return a list of all records."""
-        return [self.__class__(self.storage, eid, data) 
-                for eid, data in self.storage.database.search(self.model_name)]
+        """Get all records.
+        
+        Returns:
+            list: Record instances for all data records.
+        """
+        return self.storage.database.search(self.model_name)
     
     def count(self):
-        """Count all records."""
+        """Count all records.
+        
+        Returns:
+            int: The number of stored data records.
+        """
         return self.storage.database.count(self.model_name)
     
-    def search(self, keys=None, eids=None):
-        """Return a list of records matching all of `keys` or element id `eid`.
+    def search(self, keys=None):
+        """Return a list of records matching keys or element ids.
         
-        Either `keys` or `eids` may be specified, not both.  If `keys` is not empty
-        then every attribute listed in `keys` must have the given value. If `eids`
-        is not empty then return the records with those eids. If either `keys` or 
-        `eids` is empty, return an empty list.  If no arguments are given then
-        return all records.
+        If `keys` is an integer, search for records with that element identifier (eid).
+        If `keys` is a list of integers, search for records with these element identifiers.
+        If `keys` is a dictionary, search for records with attributes matching `keys`.
         
         Args:
             keys (dict): Attributes to match.
-            eids (list): Record identifiers to match.
             
         Returns:
-            list: Controller subclass instances controlling the found records. 
+            list: Record instances for the found data. 
         """
-        LOGGER.debug("%s.search(keys=%s, eids=%s)", self.model_name, keys, eids)
-        if keys is None and eids is None:
+        LOGGER.debug("%s.search(keys=%s)", self.model_name, keys)
+        if keys is None:
             return self.all()
-        elif eids:
-            if isinstance(eids, list):
-                return [self.one(eid=i) for i in eids]
-            else:
-                return [self.one(eid=eids)]
-        elif keys:
-            return [self.__class__(self.storage, eid, data) 
-                    for eid, data in self.storage.database.search(self.model_name, keys=keys)]
+        try:
+            eid = int(keys)
+        except TypeError:
+            if isinstance(keys, list):
+                return [self.one(keys=i) for i in keys]
+            elif isinstance(keys, dict):
+                self.storage.database.search(self.model_name, keys=keys)
         else:
-            return []
+            return [self.one(keys=eid)]
+        return []
 
     def match(self, field, regex=None, test=None):
         """Return a list of records with `field` matching `regex` or `test`.
@@ -558,23 +529,23 @@ class Controller(object):
             list: Controller subclass instances controlling the found records. 
         """
         LOGGER.debug("%s.match(field=%s, regex=%s, test=%s)", self.model_name, field, regex, test)
-        return [self.__class__(self.storage, eid, data) 
-                for eid, data in self.storage.database.match(self.model_name, field, regex, test)]
+        return self.storage.database.match(self.model_name, field, regex, test)
 
-    def exists(self, keys=None, eids=None):
+    def exists(self, keys=None):
         """Test if a record matching the given keys exists.
         
-        Just like :any:`Controller.search`, except only tests if the record exists without
-        retrieving any data or allocating new controllers.
+        Tests if the records exist without retrieving any data.
+        If `keys` is an integer, search for records with that element identifier (eid).
+        If `keys` is a list of integers, search for records with these element identifiers.
+        If `keys` is a dictionary, search for records with attributes matching `keys`. 
         
         Args:
             keys (dict): Attributes to match.
-            eids (list): Record identifiers to match.
             
         Returns:
             bool: True if a record exists for **all** values in `keys` or `eids`.          
         """
-        return self.storage.database.contains(self.model_name, keys=keys, eids=eids)
+        return self.storage.database.contains(self.model_name, keys=keys)
 
     def create(self, data):
         """Store a new record and update associations.
@@ -585,79 +556,84 @@ class Controller(object):
             data (dict): Data to record.
             
         Returns:
-            Controller: Controller subclass instance controlling the specified data. 
+            Record: The newly created data record. 
         """
         data = self._validate(data)
         unique = {attr: data[attr] for attr, props in self.attributes.iteritems() if 'unique' in props}
         if self.storage.database.contains(self.model_name, keys=unique, match_any=True):
             raise UniqueAttributeError(self, unique)
         with self.storage.database as database:
-            eid = database.insert(self.model_name, data)
-            model = self.__class__(self.storage, eid, data) 
-            for attr, foreign in model.associations.iteritems():
-                foreign_model, via = foreign
-                if 'model' in model.attributes[attr]:
+            record = database.insert(self.model_name, data) 
+            for attr, foreign in self.associations.iteritems():
+                foreign_cls, via = foreign
+                if 'model' in self.attributes[attr]:
                     foreign_keys = [data[attr]]
-                elif 'collection' in model.attributes[attr]:
+                elif 'collection' in self.attributes[attr]:
                     foreign_keys = data[attr]
-                model._associate(foreign_model, foreign_keys, via)
-            model.on_create()
-            LOGGER.debug("Created new %s record", model.model_name)
-            return model
+                self._associate(record.eid, foreign_cls, foreign_keys, via)
+            self.on_create(record)
+            LOGGER.debug("Created new %s record", self.model_name)
+            return record
 
-    def update(self, data, keys=None, eids=None):
+    def update(self, data, keys=None):
         """Change recorded data and update associations.
         
         Invokes the `on_update` callback for each record **after** the records are updated.
+        If `keys` is an integer, update records with that element identifier (eid).
+        If `keys` is a list of integers, update records with these element identifiers.
+        If `keys` is a dictionary, update records with attributes matching `keys`. 
 
         Args:
             data (dict): New data for existing records.
-            keys (dict): Attributes to match.
+            keys: Fields or element identifiers to match.
             eids (list): Record identifiers to match.
         """
-        LOGGER.debug("%s.update(fields=%s, keys=%s, eids=%s)", self.model_name, data, keys, eids)
+        LOGGER.debug("%s.update(fields=%s, keys=%s)", self.model_name, data, keys)
         for attr in data:
             if not attr in self.attributes:
                 raise ModelError(self, "Model '%s' has no attribute named '%s'" % (self.model_name, attr))
         with self.storage.database as database:
             # Get the list of affected records **before** updating the data so foreign keys are correct
-            changing = self.search(keys, eids)
-            database.update(self.model_name, data, keys=keys, eids=eids)
-            for model in changing:
+            changing = self.search(keys)
+            database.update(self.model_name, data, keys=keys)
+            for record in changing:
                 for attr, foreign in self.associations.iteritems():
                     try:
                         new_foreign_keys = set(data[attr])
                     except KeyError:
                         continue
                     try:
-                        old_foreign_keys = set(model[attr])
+                        old_foreign_keys = set(record[attr])
                     except KeyError:
                         old_foreign_keys = set()
-                    foreign_model, via = foreign
+                    foreign_cls, via = foreign
                     added = list(new_foreign_keys - old_foreign_keys)
                     deled = list(old_foreign_keys - new_foreign_keys)
-                    model._associate(foreign_model, added, via)
-                    model._disassociate(foreign_model(self.storage).search(eids=list(deled)), via)
-                    model.on_update()
+                    self._associate(record.eid, foreign_cls, added, via)
+                    self._disassociate(foreign_model(self.storage).search(eids=list(deled)), via)
+                    self.on_update(record)
 
-    def unset(self, fields, keys=None, eids=None):
+    def unset(self, fields, keys=None):
         """Unset recorded data fields and update associations.
         
         Invokes the `on_update` callback for each record **after** the records are updated.
+        If `keys` is an integer, update records with that element identifier (eid).
+        If `keys` is a list of integers, update records with these element identifiers.
+        If `keys` is a dictionary, update records with attributes matching `keys`. 
 
         Args:
             fields (list): Names of fields to unset.
-            keys (dict): Attributes to match.
+            keys: Fields or element identifiers to match.
             eids (list): Record identifiers to match.
         """
-        LOGGER.debug("%s.unset(fields=%s, keys=%s, eids=%s)", self.model_name, fields, keys, eids)
+        LOGGER.debug("%s.unset(fields=%s, keys=%s)", self.model_name, fields, keys)
         for attr in fields:
             if not attr in self.attributes:
                 raise ModelError(self, "Model '%s' has no attribute named '%s'" % (self.model_name, attr))
         with self.storage.database as database:
             # Get the list of affected records **before** updating the data so foreign keys are correct
-            changing = self.search(keys, eids)
-            database.unset(self.model_name, fields, keys=keys, eids=eids)
+            changing = self.search(keys)
+            database.unset(self.model_name, fields, keys=keys)
             for model in changing:
                 for attr, foreign in self.associations.iteritems():
                     if attr not in fields:
@@ -670,18 +646,20 @@ class Controller(object):
                     model._disassociate(foreign_model(self.storage).search(eids=old_foreign_keys), via)
                     model.on_update()
 
-    def delete(self, keys=None, eids=None):
+    def delete(self, keys=None):
         """Delete recorded data and update associations.
         
         Invokes the `on_delete` callback for each record **before** the record is deleted.
+        If `keys` is an integer, update the record with that element identifier (eid).
+        If `keys` is a dictionary, update the record with attributes matching `keys`. 
 
         Args:
             keys (dict): Attributes to match.
-            eids (list): Record identifiers to match.
+            keys: Fields or element identifiers to match.
         """
-        LOGGER.debug("%s.delete(keys=%s, eids=%s)", self.model_name, keys, eids)
+        LOGGER.debug("%s.delete(keys=%s)", self.model_name, keys)
         with self.storage.database as database:
-            for model in self.search(keys, eids):
+            for model in self.search(keys):
                 # pylint complains because `model` is changing on every iteration so we'll have
                 # a different lambda function `test` on each iteration.  This is exactly what
                 # we want so we disble the warning. 
@@ -697,7 +675,7 @@ class Controller(object):
                     affected = foreign_model(self.storage).match(via, test=test)
                     LOGGER.debug("Deleting %s(eid=%s) affects '%s'", self.model_name, model.eid, affected)
                     model._disassociate(affected, via)
-            database.remove(self.model_name, keys=keys, eids=eids)
+            database.remove(self.model_name, keys=keys)
 
     @staticmethod
     def import_records(data):
@@ -755,47 +733,46 @@ class Controller(object):
             export_record(record, record)
         return all_data
           
-    
-    def _associate(self, foreign_cls, affected, attr):
-        """Associates the controlled record with another record.
+    def _associate(self, eid, foreign_cls, affected, attr):
+        """Associates a record with another record.
         
-        Associations are defined by the :py:attr:`associations` and :py:attr:`references` 
-        attributes of the :any:`Controller` class.
+        Associations are by :py:attr:`associations` and :py:attr:`references`.
         
         Args:
+            eid (int): Identifier of the record to associate.
             foreign_cls (Controller): Class definining the foreign record's data model.
             affected (list): Identifiers for the records that will be updated to 
-                             associate with the controlled record.
+                             associate with the record specified by `eid`.
             attr (str): The name of the associated foreign attribute.
         """ 
         if not affected: 
             return
-        LOGGER.debug("Adding %s to '%s' in %s(eids=%s)", self.eid, attr, foreign_cls.model_name, affected)
+        LOGGER.debug("Adding %s to '%s' in %s(eids=%s)", eid, attr, foreign_cls.model_name, affected)
         with self.storage.database as database:
             for key in affected:
-                model = foreign_cls.one(eid=key)
-                if not model:
+                foreign_record = foreign_cls.one(eid=key)
+                if not foreign_record:
                     raise ModelError(foreign_cls, "No record with ID '%s'" % key)
-                if 'model' in model.attributes[attr]:
-                    updated = self.eid
-                elif 'collection' in model.attributes[attr]:
-                    updated = list(set(model[attr] + [self.eid]))
-                database.update(foreign_cls.model_name, {attr: updated}, eids=key)
+                if 'model' in foreign_cls.attributes[attr]:
+                    updated = eid
+                elif 'collection' in foreign_cls.attributes[attr]:
+                    updated = list(set(foreign_record[attr] + [eid]))
+                database.update(foreign_cls.model_name, {attr: updated}, keys=key)
 
-    def _disassociate(self, affected, attr):
-        """Disassociates the controlled record from another record.
+    def _disassociate(self, eid, affected, attr):
+        """Disassociates a record from another record.
         
-        Associations are defined by the :py:attr:`associations` and :py:attr:`references` 
-        attributes of the :any:`Controller` class.
+        Associations are by :py:attr:`associations` and :py:attr:`references`.
         
         Args:
+            eid (int): Identifier of the record to disassociate.
             affected (list): Identifiers for the records that will be updated to 
-                             associate with the controlled record.
+                             disassociate from the record identified by `eid`.
             attr (str): The name of the associated foreign attribute.
         """ 
         if not affected:
             return
-        LOGGER.debug("Removing %s from '%s' in %r", self.eid, attr, affected)
+        LOGGER.debug("Removing %s from '%s' in %r", eid, attr, affected)
         with self.storage.database as database:
             for model in affected:
                 if 'model' in model.attributes[attr]:
@@ -1133,24 +1110,9 @@ class Controller(object):
 
 
 def with_key_attribute(key_attr):
-    """Create a mixin class for models with a key attribute.
-    
-    Args:
-        key_attr (str): Name of the key attribute.
-        
-    Returns:
-        class: A Controller mixin class as shown in the example below.
-        
-    Example:
-        with_key_attribute('name') ==>
-        class WithName(object):
-            key_attribute = 'name'
-            def with_name(self, name):
-                return self.one({'name': name)
-    """
-    def with_key(self, key):
-        return self.one({key_attr: key})
-    name = util.camelcase('With'+key_attr)
-    dct = {'with_'+key_attr.lower(): with_key, 'key_attribute': key_attr}
-    return type(name, (object,), dct)
+    """Set a model controller's key attribute."""
+    def wrap(cls):
+        cls.key_attribute = key_attr
+        return cls
+    return wrap
 

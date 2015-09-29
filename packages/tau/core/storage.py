@@ -78,6 +78,7 @@ class ProjectStorageError(StorageError):
         super(ProjectStorageError, self).__init__(value)
         self.search_root = search_root
 
+
 class AbstractStorageContainer(object):
     """Abstract base class for storage containers.
     

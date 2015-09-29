@@ -35,12 +35,27 @@ implementation based on `TinyDB`_.
 
 import os
 import tinydb
+import json
 from abc import ABCMeta, abstractmethod
 from tau import logger, util
 from tau.error import ConfigurationError
 
 
 LOGGER = logger.get_logger(__name__)
+
+
+class Record(dict):
+    """A database record (a.k.a. "document").
+    
+    Attributes:
+        eid (int): Unique identifier for the data record, None if the data has not been recorded.
+    """
+    def __init__(self, eid=None, *args, **kwargs):
+        super(Record, self).__init__(*args, **kwargs)
+        self.eid = eid
+
+    def __repr__(self):
+        return json.dumps(self)
 
 
 class AbstractDatabase(object):
@@ -60,36 +75,34 @@ class AbstractDatabase(object):
         """
     
     @abstractmethod
-    def get(self, table_name, keys=None, match_any=False, eid=None):
+    def get(self, table_name, keys=None, match_any=False):
         """Find a single record.
         
-        Either `keys` or `eid` should be specified, not both.  If `keys` is given,
-        then every attribute listed in `keys` must have the given value. If `eid`
-        is given, return the record with that eid.  If neither is given, return None.
+        If `keys` is an integer, return the record with that element identifier (eid).
+        If `keys` is a dictionary, return the record with attributes matching `keys`. 
         
         Args:
             table_name (str): Name of the table to search.
-            keys (dict): Fields to match.
-            eid (list): Record identifier to match.
-            match_any (bool): If True then any key may match or if False then all keys must match.
+            keys: Fields or element identifiers to match.
+            match_any (bool): If True then any key in `keys` may match or if False then all keys in `keys` must match.
 
         Returns:
-            tuple: (eid, data) matching data record or (None, None) if no such record exists.
+            Record: Matching data record or None if no such record exists.
         """
 
     @abstractmethod
     def search(self, table_name, keys=None, match_any=False):
         """Find multiple records.
         
-        If `keys` is not specified then return all records.
+        If `keys` is empty or None, return all records. Otherwise return all records matching `keys`.
         
         Args:
             table_name (str): Name of the table to search.
             keys (dict): Fields to match.
-            match_any (bool): If True then any key may match or if False then all keys must match.
+            match_any (bool): If True then any key in `keys` may match or if False then all keys in `keys` must match.
 
         Returns:
-            list: Matching data records as (eid, data) tuples.
+            list: Record instances for the matching data records.
         """
 
     @abstractmethod
@@ -112,16 +125,18 @@ class AbstractDatabase(object):
         """
 
     @abstractmethod
-    def contains(self, table_name, keys=None, match_any=False, eids=None):
+    def contains(self, table_name, keys=None, match_any=False):
         """Check if the specified table contains at least one matching record.
         
-        Just like :any:`Database.search`, except only tests if the record exists without retrieving any data.
-        
+        Tests if the records exist without retrieving any data.
+        If `keys` is an integer, search for records with that element identifier (eid).
+        If `keys` is a list of integers, search for records with these element identifiers.
+        If `keys` is a dictionary, search for records with attributes matching `keys`. 
+
         Args:
             table_name (str): Name of the table to search.
-            keys (dict): Attributes to match.
+            keys: Fields or element identifiers to match.
             match_any (bool): If True then any key may match or if False then all keys must match.
-            eids (list): Record identifiers to match.
             
         Returns:
             bool: True if a record exists, False otherwise.
@@ -136,42 +151,50 @@ class AbstractDatabase(object):
             fields (dict): Data to record.
             
         Returns:
-            int: The new record's element identifier (eid).                 
+            Record: The new record.  See :any:`Record.eid`.                 
         """
 
     @abstractmethod
-    def update(self, table_name, fields, keys=None, match_any=False, eids=None):
+    def update(self, table_name, fields, keys=None, match_any=False):
         """Update existing records.
         
+        If `keys` is an integer, update records with that element identifier (eid).
+        If `keys` is a list of integers, update records with these element identifiers.
+        If `keys` is a dictionary, update records with attributes matching `keys`. 
+
         Args:
             table_name (str): Name of the table to operate on.
             fields (dict): Data to record.
-            keys (dict): Attributes to match.
+            keys: Fields or element identifiers to match.
             match_any (bool): If True then any key may match or if False then all keys must match.
-            eids (list): Record identifiers to match.
         """
 
     @abstractmethod        
-    def unset(self, table_name, fields, keys=None, match_any=False, eids=None):
+    def unset(self, table_name, fields, keys=None, match_any=False):
         """Update existing records by unsetting fields.
         
+        If `keys` is an integer, update records with that element identifier (eid).
+        If `keys` is a list of integers, update records with these element identifiers.
+        If `keys` is a dictionary, update records with attributes matching `keys`. 
+
         Args:
             table_name (str): Name of the table to operate on.
             fields (list): Fields to unset.
-            keys (dict): Attributes to match.
+            keys: Fields or element identifiers to match.
             match_any (bool): If True then any key may match or if False then all keys must match.
-            eids (list): Record identifiers to match.
         """
 
     @abstractmethod
-    def remove(self, table_name, keys=None, match_any=False, eids=None):
+    def remove(self, table_name, keys=None, match_any=False):
         """Delete records.
         
+        If `keys` is an integer, update the record with that element identifier (eid).
+        If `keys` is a dictionary, update the record with attributes matching `keys`. 
+
         Args:
             table_name (str): Name of the table to operate on.
-            keys (dict): Attributes to match.
+            keys: Fields or element identifiers to match.
             match_any (bool): If True then any key may match or if False then all keys must match.
-            eids (list): Record identifiers to match.
         """
 
     @abstractmethod
@@ -282,8 +305,8 @@ class JsonDatabase(AbstractDatabase):
         return query
     
     @staticmethod
-    def _tuple_list(records):
-        return [(record.eid, record) for record in records]
+    def _record_list(records):
+        return [Record(record.eid, record) for record in records]
 
     def count(self, table_name):
         """Count the records in the table.
@@ -296,56 +319,54 @@ class JsonDatabase(AbstractDatabase):
         """
         return len(self.database.table(table_name))
         
-    def get(self, table_name, keys=None, match_any=False, eid=None):
+    def get(self, table_name, keys=None, match_any=False):
         """Find a single record.
         
-        Either `keys` or `eid` should be specified, not both.  If `keys` is given,
-        then every attribute listed in `keys` must have the given value. If `eid`
-        is given, return the record with that eid.  If neither is given, return None.
+        If `keys` is an integer, return the record with that element identifier (eid).
+        If `keys` is a dictionary, return the record with attributes matching `keys`. 
         
         Args:
             table_name (str): Name of the table to search.
-            keys (dict): Fields to match.
-            eid (list): Record identifier to match.
-            match_any (bool): If True then any key may match or if False then all keys must match.
+            keys: Fields or element identifiers to match.
+            match_any (bool): If True then any key in `keys` may match or if False then all keys in `keys` must match.
 
         Returns:
-            tuple: (eid, data) matching data record or (None, None) if no such record exists.
+            Record: Matching data record or None if no such record exists.
         """
         table = self.database.table(table_name)
-        if eid is not None:
-            LOGGER.debug("%r: get(eid=%r)", table_name, eid)
-            found = table.get(eid=eid)
-        elif keys is not None:
+        try:
+            eid = int(keys)
+        except TypeError:
+            assert isinstance(keys, dict)
             LOGGER.debug("%r: get(keys=%r)", table_name, keys)
             found = table.get(self._query(keys, match_any))
         else:
-            found = None
+            LOGGER.debug("%r: get(eid=%r)", table_name, eid)
+            found = table.get(eid=eid)
         if found:
-            return found.eid, found
-        else:
-            return None, None
+            return Record(found.eid, found)
+        return None
 
     def search(self, table_name, keys=None, match_any=False):
         """Find multiple records.
         
-        If `keys` is not specified then return all records.
+        If `keys` is a dictionary, return all records with attributes matching `keys`.
         
         Args:
             table_name (str): Name of the table to search.
             keys (dict): Fields to match.
-            match_any (bool): If True then any key may match or if False then all keys must match.
+            match_any (bool): If True then any key in `keys` may match or if False then all keys in `keys` must match.
 
         Returns:
-            list: Matching data records as (eid, data) tuples.
+            list: Record instances for the matching data records.
         """
         table = self.database.table(table_name)
         if keys:
             LOGGER.debug("%r: search(keys=%r)", table_name, keys)
-            return self._tuple_list(table.search(self._query(keys, match_any)))
+            return self._record_list(table.search(self._query(keys, match_any)))
         else:
             LOGGER.debug("%r: all()", table_name)
-            return self._tuple_list(table.all())
+            return self._record_list(table.all())
 
     def match(self, table_name, field, regex=None, test=None):
         """Find records where 'field' matches 'regex'.
@@ -367,40 +388,44 @@ class JsonDatabase(AbstractDatabase):
         table = self.database.table(table_name)
         if test is not None:
             LOGGER.debug('%r: search(where(%r).test(%r))', table_name, field, test)
-            return self._tuple_list(table.search(tinydb.where(field).test(test)))
+            return self._record_list(table.search(tinydb.where(field).test(test)))
         elif regex is not None:
             LOGGER.debug('%r: search(where(%r).matches(%r))', table_name, field, regex)
-            return self._tuple_list(table.search(tinydb.where(field).matches(regex)))
+            return self._record_list(table.search(tinydb.where(field).matches(regex)))
         else:
             LOGGER.debug("%r: search(where(%r).matches('.*'))", table_name, field)
-            return self._tuple_list(table.search(tinydb.where(field).matches('.*')))
+            return self._record_list(table.search(tinydb.where(field).matches('.*')))
 
-    def contains(self, table_name, keys=None, match_any=False, eids=None):
+    def contains(self, table_name, keys=None, match_any=False):
         """Check if the specified table contains at least one matching record.
         
-        Just like :any:`Database.search`, except only tests if the record exists without retrieving any data.
-        
+        Tests if the records exist without retrieving any data.
+        If `keys` is an integer, search for records with that element identifier (eid).
+        If `keys` is a list of integers, search for records with these element identifiers.
+        If `keys` is a dictionary, search for records with attributes matching `keys`. 
+
         Args:
             table_name (str): Name of the table to search.
-            keys (dict): Attributes to match.
+            keys: Fields or element identifiers to match.
             match_any (bool): If True then any key may match or if False then all keys must match.
-            eids (list): Record identifiers to match.
             
         Returns:
-            bool: True if a record exists, False otherwise.          
+            bool: True if a record exists, False otherwise.
         """
         table = self.database.table(table_name)
-        if eids is not None:
-            LOGGER.debug("%r: contains(eids=%r)", table_name, eids)
-            if isinstance(eids, list):
-                return table.contains(eids=eids)
-            else:
-                return table.contains(eids=[eids])
-        elif keys:
-            LOGGER.debug("%r: contains(keys=%r)", table_name, keys)
-            return table.contains(self._query(keys, match_any))
+        try:
+            eid = int(keys)
+        except TypeError:
+            if isinstance(keys, list):
+                LOGGER.debug("%r: contains(eids=%r)", table_name, keys)
+                return table.contains(eids=keys)
+            elif isinstance(keys, dict):
+                LOGGER.debug("%r: contains(keys=%r)", table_name, keys)
+                return table.contains(self._query(keys, match_any))
         else:
-            return False
+            LOGGER.debug("%r: contains(eid=%r)", table_name, eid)
+            return table.contains(eids=[eid])
+        return False
 
     def insert(self, table_name, fields):
         """Create a new record.
@@ -410,73 +435,93 @@ class JsonDatabase(AbstractDatabase):
             fields (dict): Data to record.
             
         Returns:
-            int: The new record's identifier.                 
+            Record: The new record.  See :any:`Record.eid`.                 
         """
         LOGGER.debug("%r: Inserting %r", table_name, fields)
-        return self.database.table(table_name).insert(fields)
+        eid = self.database.table(table_name).insert(fields)
+        return Record(eid, fields)
 
-    def update(self, table_name, fields, keys=None, match_any=False, eids=None):
+    def update(self, table_name, fields, keys=None, match_any=False):
         """Update existing records.
         
+        If `keys` is an integer, update records with that element identifier (eid).
+        If `keys` is a list of integers, update records with these element identifiers.
+        If `keys` is a dictionary, update records with attributes matching `keys`. 
+
         Args:
             table_name (str): Name of the table to operate on.
             fields (dict): Data to record.
-            keys (dict): Attributes to match.
+            keys: Fields or element identifiers to match.
             match_any (bool): If True then any key may match or if False then all keys must match.
-            eids (list): Record identifiers to match.
         """
         table = self.database.table(table_name)
-        if eids is not None:
-            LOGGER.debug("%s: update(%r, eids=%r)", table_name, fields, eids)
-            if isinstance(eids, list):
-                table.update(fields, eids=eids)
-            else:
-                table.update(fields, eids=[eids])
+        try:
+            eid = int(keys)
+        except TypeError:
+            if isinstance(keys, list):
+                LOGGER.debug("%s: update(%r, eids=%r)", table_name, fields, keys)
+                table.update(fields, eids=keys)
+            elif isinstance(keys, dict):
+                LOGGER.debug("%s: update(%r, keys=%r)", table_name, fields, keys)
+                table.update(fields, self._query(keys, match_any))
         else:
-            LOGGER.debug("%s: update(%r, keys=%r)", table_name, fields, keys)
-            table.update(fields, self._query(keys, match_any))
+            LOGGER.debug("%s: update(%r, eid=%r)", table_name, fields, eid)
+            table.update(fields, eids=[eid])
 
-    def unset(self, table_name, fields, keys=None, match_any=False, eids=None):
+    def unset(self, table_name, fields, keys=None, match_any=False):
         """Update existing records by unsetting fields.
         
+        If `keys` is an integer, update records with that element identifier (eid).
+        If `keys` is a list of integers, update records with these element identifiers.
+        If `keys` is a dictionary, update records with attributes matching `keys`. 
+
         Args:
             table_name (str): Name of the table to operate on.
             fields (list): Fields to unset.
-            keys (dict): Attributes to match.
+            keys: Fields or element identifiers to match.
             match_any (bool): If True then any key may match or if False then all keys must match.
-            eids (list): Record identifiers to match.
         """
         table = self.database.table(table_name)
-        if eids is not None:
-            LOGGER.debug("%s: unset(%r, eids=%r)", table_name, fields, eids)
-            if not isinstance(eids, list):
-                eids = [eids]
-            for field in fields:
-                table.update(tinydb.operations.delete(field), eids=eids)
+        try:
+            eid = int(keys)
+        except TypeError:
+            if isinstance(keys, list):
+                LOGGER.debug("%s: unset(%r, eids=%r)", table_name, fields, keys)
+                for field in fields:
+                    table.update(tinydb.operations.delete(field), eids=keys)
+            elif isinstance(keys, dict):
+                LOGGER.debug("%s: unset(%r, keys=%r)", table_name, fields, keys)
+                for field in fields:
+                    table.update(tinydb.operations.delete(field), self._query(keys, match_any))
         else:
-            LOGGER.debug("%s: update(%r, keys=%r)", table_name, fields, keys)
+            LOGGER.debug("%s: unset(%r, eid=%r)", table_name, fields, eid)
             for field in fields:
-                table.update(tinydb.operations.delete(field), self._query(keys, match_any))
+                table.update(tinydb.operations.delete(field), eids=[eid])
 
-    def remove(self, table_name, keys=None, match_any=False, eids=None):
+    def remove(self, table_name, keys=None, match_any=False):
         """Delete records.
         
+        If `keys` is an integer, update the record with that element identifier (eid).
+        If `keys` is a dictionary, update the record with attributes matching `keys`. 
+
         Args:
             table_name (str): Name of the table to operate on.
-            keys (dict): Attributes to match.
+            keys: Fields or element identifiers to match.
             match_any (bool): If True then any key may match or if False then all keys must match.
-            eids (list): Record identifiers to match.
         """
         table = self.database.table(table_name)
-        if eids is not None:
-            LOGGER.debug("%s: remove(eids=%r)", table_name, eids)
-            if isinstance(eids, list):
-                table.remove(eids=eids)
-            else:
-                table.remove(eids=[eids])
+        try:
+            eid = int(keys)
+        except TypeError:
+            if isinstance(keys, list):
+                LOGGER.debug("%s: remove(eids=%r)", table_name, keys)
+                table.remove(eids=keys)
+            elif isinstance(keys, dict):
+                LOGGER.debug("%s: remove(keys=%r)", table_name, keys)
+                table.remove(self._query(keys, match_any))
         else:
-            LOGGER.debug("%s: remove(keys=%r)", table_name, keys)
-            table.remove(self._query(keys, match_any))
+            LOGGER.debug("%s: remove(eid=%r)", table_name, eid)
+            table.remove(eids=[eid])
 
     def purge(self, table_name):
         """Delete all records.
