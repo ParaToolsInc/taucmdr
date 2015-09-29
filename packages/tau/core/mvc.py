@@ -1133,24 +1133,8 @@ class Controller(object):
 
 
 def with_key_attribute(key_attr):
-    """Create a mixin class for models with a key attribute.
-    
-    Args:
-        key_attr (str): Name of the key attribute.
-        
-    Returns:
-        class: A Controller mixin class as shown in the example below.
-        
-    Example:
-        with_key_attribute('name') ==>
-        class WithName(object):
-            key_attribute = 'name'
-            def with_name(self, name):
-                return self.one({'name': name)
-    """
-    def with_key(self, key):
-        return self.one({key_attr: key})
-    name = util.camelcase('With'+key_attr)
-    dct = {'with_'+key_attr.lower(): with_key, 'key_attribute': key_attr}
-    return type(name, (object,), dct)
-
+    """Set a model controller's key attribute."""
+    def wrap(cls):
+        cls.key_attribute = key_attr
+        return cls
+    return wrap
