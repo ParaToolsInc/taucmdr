@@ -37,8 +37,6 @@ DASHBOARD_COLUMNS = [{'header': 'Name', 'value': 'name', 'align': 'r'},
                      {'header': 'Host Arch.', 'value': 'host_arch'},
                      {'header': 'C Compiler', 'function': lambda x: os.path.basename(x['CC']['path'])},
                      {'header': 'C++ Compiler', 'function': lambda x: os.path.basename(x['CXX']['path'])},
-                     {'header': 'Fortran Compiler', 'function': lambda x: os.path.basename(x['FC']['path'])},
-                     {'header': 'In Projects', 
-                      'function': lambda x: ', '.join([p['name'] for p in x['projects']])}]
+                     {'header': 'Fortran Compiler', 'function': lambda x: os.path.basename(x['FC']['path'])}]
 
 COMMAND = ListCommand(Target, __name__, dashboard_columns=DASHBOARD_COLUMNS)

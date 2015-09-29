@@ -28,62 +28,26 @@
 """``tau project export`` subcommand."""
 
 from pprint import pprint
-from tau import logger, cli 
 from tau import EXIT_SUCCESS
 from tau.cli import arguments
+from tau.cli.command import AbstractCommand
 from tau.core.project import Project
+from tau.core.storage import PROJECT_STORAGE
 
 
-LOGGER = logger.get_logger(__name__)
-
-COMMAND = cli.command_from_module_name(__name__)
-
-SHORT_DESCRIPTION = "Export project configurations."
-
-HELP = """
-'%(command)s' page to be written.
-""" % {'command': COMMAND}
-
-
-def parser():
-    """Construct a command line argument parser.
+class ProjectExportCommand(AbstractCommand):
     
-    Constructing the parser may cause a lot of imports as :py:mod:`tau.cli` is explored.
-    To avoid possible circular imports we defer parser creation until afer all
-    modules are imported, hence this function.  The parser instance is maintained as
-    an attribute of the function, making it something like a C++ function static variable.
-    """
-    if not hasattr(parser, 'inst'):
-        usage_head = "%s project_name [project_name ...]" % COMMAND
-        parser.inst = arguments.get_parser(prog=COMMAND,
-                                           usage=usage_head,
-                                           description=SHORT_DESCRIPTION)
-        parser.inst.add_argument('names', 
-                                 help="Names of project to export",
-                                 metavar='project_name',
-                                 nargs='+')
-    return parser.inst
+    def construct_parser(self):
+        usage = self.command
+        parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
+        return parser
 
+    def main(self, argv):
+        args = self.parser.parse_args(args=argv)
+        self.logger.debug('Arguments: %s', args)
+        store = PROJECT_STORAGE
+        ctrl = Project(store)
+        pprint(ctrl.export_records(eids=[proj.eid for proj in ctrl.all()]))
+        return EXIT_SUCCESS
 
-def main(argv):
-    """Subcommand program entry point.
-    
-    Args:
-        argv (list): Command line arguments.
-        
-    Returns:
-        int: Process return code: non-zero if a problem occurred, 0 otherwise
-    """
-    argparser = parser()
-    args = argparser.parse_args(args=argv)
-    LOGGER.debug('Arguments: %s', args)
-
-    projects = []
-    for name in args.names: 
-        found = Project.with_name(name)
-        if not found:
-            argparser.error("'%s' is not a project name." % name)
-        projects.append(found)
-    pprint(Project.export_records(eids=[proj.eid for proj in projects]))
-    
-    return EXIT_SUCCESS
+COMMAND = ProjectExportCommand(__name__, summary_fmt="Export project configurations.")

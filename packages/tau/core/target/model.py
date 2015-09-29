@@ -27,7 +27,6 @@
 #
 """Target data model attributes."""
 
-from tau.core.project import Project
 from tau.core.target import Target
 from tau.core.compiler import Compiler
 from tau.cli.arguments import ParsePackagePathAction
@@ -35,11 +34,6 @@ from tau.cf.target import host, Architecture, OperatingSystem
 
 
 ATTRIBUTES = {
-    'projects': {
-        'collection': Project,
-        'via': 'targets',
-        'description': 'projects using this target'
-    },
     'name': {
         'type': 'string',
         'unique': True,

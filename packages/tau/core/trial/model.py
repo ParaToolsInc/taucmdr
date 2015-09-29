@@ -31,15 +31,15 @@ from tau.core.experiment import Experiment
 
 
 ATTRIBUTES = {
-    'number': {
-        'type': 'integer',
-        'required': True,
-        'description': 'trial unique identifier'
-    },
     'experiment': {
         'model': Experiment,
         'required': True,
         'description': "this trial's experiment"
+    },
+    'number': {
+        'type': 'integer',
+        'required': True,
+        'description': 'trial unique identifier'
     },
     'command': {
         'type': 'string',

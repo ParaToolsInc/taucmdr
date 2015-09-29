@@ -34,7 +34,8 @@ from tau.cf.compiler import CompilerRole
 from tau.cf.compiler.installed import InstalledCompilerSet
 
 
-class Target(Controller, with_key_attribute('name')):
+@with_key_attribute('name')
+class Target(Controller):
     """Target data controller."""
 
     def on_create(self):

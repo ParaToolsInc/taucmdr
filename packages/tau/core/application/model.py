@@ -28,16 +28,10 @@
 """Application data model attributes."""
 
 from tau.cli.arguments import ParseBooleanAction
-from tau.core.project import Project
 from tau.core.target import Target
 from tau.core.measurement import Measurement
 
 ATTRIBUTES = {
-    'projects': {
-        'collection': Project,
-        'via': 'applications',
-        'description': 'projects using this application'
-    },
     'name': {
         'type': 'string',
         'description': 'application configuration name',

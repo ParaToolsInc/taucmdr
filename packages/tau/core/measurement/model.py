@@ -35,7 +35,6 @@ from tau.error import ConfigurationError
 from tau.core.target import Target
 from tau.core.application import Application
 from tau.core.measurement import Measurement
-from tau.core.project import Project
 from tau.cf.compiler import INTEL_COMPILERS
 from tau.cf.compiler.installed import InstalledCompiler
 
@@ -70,11 +69,6 @@ def intel_only(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
                                  "OMPT for OpenMP measurement only works with Intel compilers")
 
 ATTRIBUTES = {
-    'projects': {
-        'collection': Project,
-        'via': 'measurements',
-        'description': "projects using this measurement"
-    },
     'name': {
         'type': 'string',
         'unique': True,
@@ -191,7 +185,7 @@ ATTRIBUTES = {
     },
     'cuda': {
         'type': 'boolean',
-        'default': True,
+        'default': False,
         'description': 'measure cuda events via the CUPTI interface',
         'argparse': {'flags': ('--cuda',),
                      'group': 'library',

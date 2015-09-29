@@ -27,18 +27,18 @@
 #
 """Project data model controller."""
 
-
-
 import os
 import shutil
-from tau import logger, util, error
+from tau import logger, util
+from tau.error import InternalError, ConfigurationError
 from tau.core.mvc import Controller, with_key_attribute
-
+from tau.core.storage import PROJECT_STORAGE
 
 LOGGER = logger.get_logger(__name__)
 
 
-class Project(Controller, with_key_attribute('name')):
+@with_key_attribute('name')
+class Project(Controller):
     """Project data controller."""
     
     def prefix(self):
@@ -50,8 +50,8 @@ class Project(Controller, with_key_attribute('name')):
         try:
             util.mkdirp(prefix)
         except Exception as err:
-            raise error.ConfigurationError('Cannot create directory %r: %s' % (prefix, err),
-                                           'Check that you have `write` access')
+            raise ConfigurationError("Cannot create directory '%s': %s" % (prefix, err),
+                                     "Check that you have `write` access")
 
     def on_delete(self):
         # pylint: disable=broad-except
@@ -62,17 +62,38 @@ class Project(Controller, with_key_attribute('name')):
         except Exception as err:
             if os.path.exists(prefix):
                 LOGGER.error("Could not remove project data at '%s': %s", prefix, err)
+    
+    @classmethod
+    def get_project(cls):
+        """Gets the current project's configuration data.
+        
+        Asserts that there is exactly one project in the project storage container.
+        
+        Returns:
+            Project: Controller for the current project's data.
+        """
+        ctrl = cls(PROJECT_STORAGE)
+        projects = ctrl.all()
+        if not projects:
+            raise InternalError("No projects found at '%s'" % ctrl.storage.prefix)
+        elif len(projects) > 1:
+            project_names = ', '.join([proj['name'] for proj in projects])
+            raise InternalError("Multiple projects found at '%s': %s" % (ctrl.storage.prefix, project_names))
+        else:
+            return projects[0]
 
     @classmethod
     def get_selected(cls):
         """Gets the selected Experiment.
         
         Returns:
-            Experiment: Controller for the currently selected experiment data.
+            Experiment: Controller for the currently selected experiment data or None if no selection has been made.
         """
-        experiment_id = self.populate('project')['selected']
+        from tau.core.experiment import Experiment
+        proj = cls.get_project()
+        experiment_id = proj['selected']
         if experiment_id:
-            found = cls.one(eid=experiment_id)
+            found = Experiment(PROJECT_STORAGE).one(eid=experiment_id)
             if not found:
                 raise InternalError('Invalid experiment ID: %r' % experiment_id)
             return found

@@ -27,11 +27,12 @@
 #
 """``tau dashboard`` subcommand."""
 
-from tau import cli, EXIT_SUCCESS
+from tau import cli, util, EXIT_SUCCESS
 from tau.cli import arguments
 from tau.cli.command import AbstractCommand
 from tau.cli.commands.initialize import COMMAND as init_command
 from tau.core import storage
+from tau.core.project import Project
 
 
 class DashboardCommand(AbstractCommand):
@@ -43,13 +44,19 @@ class DashboardCommand(AbstractCommand):
     def main(self, argv):
         args = self.parser.parse_args(args=argv)
         self.logger.debug('Arguments: %s', args)
-        storage.PROJECT_STORAGE.verify("Try `%s` to create a new project." % init_command.command) 
+        store = storage.PROJECT_STORAGE 
+        store.verify("Try `%s` to create a new project." % init_command.command) 
+        
+        project = Project.get_project()
+        print util.hline(project['name'], 'cyan')
+        
         subargs = ['--dashboard']
         cli.execute_command(['target', 'list'], subargs)
         cli.execute_command(['application', 'list'], subargs)
         cli.execute_command(['measurement', 'list'], subargs)
-        cli.execute_command(['project', 'list'], subargs)
         cli.execute_command(['trial', 'list'], ['-s'])
+        
+        print 
         return EXIT_SUCCESS
 
 COMMAND = DashboardCommand(__name__, summary_fmt="Show all project components.")

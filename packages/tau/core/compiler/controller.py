@@ -50,8 +50,7 @@ class Compiler(Controller):
             LOGGER.warning("%s '%s' has changed!", comp.info.short_descr, comp.command)
         return comp
 
-    @classmethod
-    def register(cls, comp):
+    def register(self, comp):
         """Records information about a compiler command in the database.
         
         If the given compiler has already been registered then do not update the database.
@@ -64,9 +63,9 @@ class Compiler(Controller):
         """
         path = comp.absolute_path
         md5sum = comp.md5sum()
-        found = cls.one(keys={'path': path})
+        found = self.one(keys={'path': path})
         if not found:
-            found = cls.create(fields={'path': path, 'md5': md5sum})
+            found = self.create({'path': path, 'md5': md5sum})
         else:
             if md5sum != found['md5']:
                 LOGGER.warning("%s '%s' has changed!  MD5 sum was %s, but now it's %s", 

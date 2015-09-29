@@ -31,6 +31,7 @@
 from tau.core.mvc import Controller, with_key_attribute
 
 
-class Application(Controller, with_key_attribute('name')):
+@with_key_attribute('name')
+class Application(Controller):
     """Application data controller."""
     

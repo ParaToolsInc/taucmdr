@@ -86,18 +86,20 @@ class Experiment(Controller):
     def select(self):
         if not self.eid:
             raise InternalError('Tried to select an experiment without an eid')
-        Project.update({'selected': self.eid}, eids=self['project'])
+        proj = Project.get_project() 
+        proj.update({'selected': self.eid}, eids=proj.eid)
         self.configure()
 
     def unselect(self):
         if not self.eid:
             raise InternalError('Tried to unselect an experiment without an eid')
         if self.is_selected():
-            Project.unset(['selected'], eids=self['project'])
+            proj = Project.get_project()
+            proj.unset(['selected'], eids=proj.eid)
         self.configure()
 
     def is_selected(self):
-        proj = self.populate('project')
+        proj = Project.get_project()
         return self.eid == proj['selected']
 
     def configure(self):

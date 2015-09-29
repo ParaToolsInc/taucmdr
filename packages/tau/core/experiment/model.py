@@ -27,18 +27,12 @@
 #
 """Experiment data model attributes."""
 
-from tau.core.project import Project
 from tau.core.target import Target
 from tau.core.application import Application
 from tau.core.measurement import Measurement
 from tau.core.trial import Trial
 
 ATTRIBUTES = {
-    'project': {
-        'model': Project,
-        'required': True,
-        'description': "Project this experiment belongs to"
-    },
     'target': {
         'model': Target,
         'required': True,

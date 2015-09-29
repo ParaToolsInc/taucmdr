@@ -37,8 +37,6 @@ DASHBOARD_COLUMNS = [{'header': 'Name', 'value': 'name', 'align': 'r'},
                      {'header': 'Source Inst.', 'value': 'source_inst'},
                      {'header': 'Compiler Inst.', 'value': 'compiler_inst'},
                      {'header': 'MPI', 'yesno': 'mpi'},
-                     {'header': 'OpenMP', 'yesno': 'openmp'},
-                     {'header': 'In Projects', 
-                      'function': lambda x: ', '.join([p['name'] for p in x['projects']])}]
+                     {'header': 'OpenMP', 'yesno': 'openmp'}]
  
 COMMAND = ListCommand(Measurement, __name__, dashboard_columns=DASHBOARD_COLUMNS)

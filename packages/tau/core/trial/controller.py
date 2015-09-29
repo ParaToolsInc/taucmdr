@@ -49,7 +49,8 @@ class TrialError(ConfigurationError):
                    " send '%(logfile)s' to  %(contact)s for assistance.")
 
 
-class Trial(Controller, with_key_attribute('number')):
+@with_key_attribute('name')
+class Trial(Controller):
     """Trial data controller."""
 
     def prefix(self):
@@ -73,8 +74,8 @@ class Trial(Controller, with_key_attribute('number')):
             if os.path.exists(prefix):
                 LOGGER.error("Could not remove trial data at '%s': %s", prefix, err)
                 
-    @classmethod
-    def _next_trial_number(cls, expr):
+    @staticmethod
+    def _next_trial_number(expr):
         trials = expr.populate('trials')
         for i, j in enumerate(sorted([trial['number'] for trial in trials])):
             if i != j:
@@ -142,8 +143,7 @@ class Trial(Controller, with_key_attribute('number')):
                 raise TrialError("Application completed successfuly but did not produce any performance data.")
         return retval
 
-    @classmethod
-    def perform(cls, expr, cmd, cwd, env):
+    def perform(self, expr, cmd, cwd, env):
         """Performs a trial of an experiment.
         
         Args:
@@ -158,7 +158,7 @@ class Trial(Controller, with_key_attribute('number')):
 
         cmd_str = ' '.join(cmd)
         begin_time = str(datetime.utcnow())
-        trial_number = cls._next_trial_number(expr)
+        trial_number = self._next_trial_number(expr)
         LOGGER.debug("New trial number is %d", trial_number)
 
         banner('BEGIN', expr.name(), begin_time)
@@ -168,7 +168,7 @@ class Trial(Controller, with_key_attribute('number')):
                   'cwd': cwd,
                   'environment': 'FIXME',
                   'begin_time': begin_time}
-        trial = cls.create(fields)
+        trial = self.create(fields)
         
         # Tell TAU to send profiles and traces to the trial prefix
         prefix = trial.prefix()
@@ -178,15 +178,15 @@ class Trial(Controller, with_key_attribute('number')):
         try:
             retval = trial.execute_command(expr, cmd, cwd, env)
         except:
-            cls.delete(eids=[trial.eid])
+            self.delete(eids=[trial.eid])
             end_time = str(datetime.utcnow())
             raise
         else:
             data_size = sum(os.path.getsize(os.path.join(prefix, f)) for f in os.listdir(prefix))
             end_time = str(datetime.utcnow())
-            cls.update({'end_time': end_time,
-                        'return_code': retval,
-                        'data_size': data_size}, eids=[trial.eid])
+            self.update({'end_time': end_time,
+                         'return_code': retval,
+                         'data_size': data_size}, eids=[trial.eid])
         finally:
             banner('END', expr.name(), end_time)
         return retval

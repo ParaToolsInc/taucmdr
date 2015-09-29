@@ -28,34 +28,40 @@
 """``tau initialize`` subcommand."""
 
 from tau import EXIT_SUCCESS
+from tau import cli
 from tau.cli import arguments
 from tau.cli.command import AbstractCommand
-from tau.core import storage
+from tau.core.storage import PROJECT_STORAGE
 from tau.core.project import Project
-
 
 class InitializeCommand(AbstractCommand):
     """``tau initialize`` subcommand."""
     
     def construct_parser(self):
-        usage = "%s [project_name]" % self.command
+        components = 'project', 'target', 'application', 'measurement'
+        usage = "%s %s" % (self.command, ' '.join('[%s_name]' % comp for comp in components))
         parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
-        parser.add_argument('project_name',
-                            help="New project name",
-                            metavar='project_name',
-                            nargs='?',
-                            default='default_project')
+        for comp in components :
+            parser.add_argument('%s_name' % comp,
+                                help="New %s name" % comp,
+                                metavar='%s_name' % comp,
+                                nargs='?',
+                                default='default_%s' % comp)
         return parser
 
     def main(self, argv):
         args = self.parser.parse_args(args=argv)
         self.logger.debug('Arguments: %s', args)
-        store = storage.PROJECT_STORAGE
+        store = PROJECT_STORAGE
         if store.exists():
             self.parser.error("TAU Commander has already been initialized at '%s'" % store.prefix)
         store.create()
-        ctrl = Project(store)
-        ctrl.create({'name': args.project_name, 'prefix': store.prefix})
+
+        proj_ctrl = Project(PROJECT_STORAGE)
+        proj_ctrl.create({'name': args.project_name, 'prefix': store.prefix})
+        for comp in 'target', 'application', 'measurement':
+            cli.execute_command([comp, 'create'], [getattr(args, '%s_name' % comp)])
+
         return EXIT_SUCCESS
 
 COMMAND = InitializeCommand(__name__, summary_fmt="Initialize TAU Commander.")

@@ -27,9 +27,6 @@
 #
 """Project data model attributes."""
 
-from tau.core.target import Target
-from tau.core.application import Application
-from tau.core.measurement import Measurement
 from tau.core.experiment import Experiment
 
 ATTRIBUTES = {
@@ -43,26 +40,6 @@ ATTRIBUTES = {
         'type': 'string',
         'required': True,
         'description': 'location for all files and experiment data related to this project',
-    },
-    'targets': {
-        'collection': Target,
-        'via': 'projects',
-        'description': 'targets used by this project'
-    },
-    'applications': {
-        'collection': Application,
-        'via': 'projects',
-        'description': 'applications used by this project'
-    },
-    'measurements': {
-        'collection': Measurement,
-        'via': 'projects',
-        'description': 'measurements used by this project'
-    },
-    'experiments': {
-        'collection': Experiment,
-        'via': 'project',
-        'description': 'experiments formed from this project'
     },
     'selected': {
         'model': Experiment,
