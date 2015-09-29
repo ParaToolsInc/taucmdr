@@ -29,12 +29,12 @@
 
 
 from tau.error import InternalError, ConfigurationError
-from tau.core.mvc import Controller, ByName
+from tau.core.mvc import Controller, with_key_attribute
 from tau.cf.compiler import CompilerRole
 from tau.cf.compiler.installed import InstalledCompilerSet
 
 
-class Target(Controller, ByName):
+class Target(Controller, with_key_attribute('name')):
     """Target data controller."""
 
     def on_create(self):

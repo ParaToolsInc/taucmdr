@@ -27,81 +27,51 @@
 #
 """``tau build`` subcommand."""
 
-from tau import logger, cli
-from tau.cli import arguments
 from tau.error import ConfigurationError
-from tau.core.experiment import Experiment
+from tau.cli import arguments
+from tau.cli.command import AbstractCommand
 from tau.cf.compiler import CompilerFamily, CompilerInfo
 from tau.cf.compiler.mpi import MpiCompilerFamily
 
-
-LOGGER = logger.get_logger(__name__)
-
-COMMAND = cli.get_command(__name__)
-
-SHORT_DESCRIPTION = "Instrument programs during compilation and/or linking."
-
-HELP = """
-'%(command)s' page to be written.
-""" % {'command': COMMAND}
-
-
-def parser():
-    """Construct a command line argument parser.
+class BuildCommand(AbstractCommand):
+    """``tau build`` subcommand."""
     
-    Constructing the parser may cause a lot of imports as :py:mod:`tau.cli` is explored.
-    To avoid possible circular imports we defer parser creation until afer all
-    modules are imported, hence this function.  The parser instance is maintained as
-    an attribute of the function, making it something like a C++ function static variable.
-    """
-    if not hasattr(parser, 'inst'):
-        def _compilers_help():
-            family_containers = CompilerFamily, MpiCompilerFamily
-            known_compilers = [comp for container in family_containers for family in container.all() for comp in family]
-            parts = ['  %s  %s' % ('{:<15}'.format(comp.command), comp.short_descr) for comp in known_compilers]
-            return '\n'.join(parts)
+    @staticmethod
+    def is_compatible(cmd):
+        """Check if this subcommand can work with the given command.
         
-        usage_head = "%s <command> [arguments]" % COMMAND
-        usage_foot = "known compiler commands:\n%s\n" % _compilers_help()
-        parser.inst = arguments.get_parser(prog=COMMAND,
-                                           usage=usage_head,
-                                           description=SHORT_DESCRIPTION,
-                                           epilog=usage_foot)
-        parser.inst.add_argument('cmd',
-                                 help="Compiler or linker command, e.g. 'gcc'",
-                                 metavar='<command>')
-        parser.inst.add_argument('cmd_args', 
-                                 help="Compiler arguments",
-                                 metavar='[arguments]',
-                                 nargs=arguments.REMAINDER)
-    return parser.inst
+        Args:
+            cmd (str): A command from the command line, e.g. sys.argv[1].
+
+        Returns:
+            bool: True if this subcommand is compatible with `cmd`.
+        """
+        return cmd in [info.command for info in CompilerInfo.all()]
+
+    def construct_parser(self):
+        family_containers = CompilerFamily, MpiCompilerFamily
+        known_compilers = [comp for container in family_containers for family in container.all() for comp in family]
+        parts = ['  %s  %s' % ('{:<15}'.format(comp.command), comp.short_descr) for comp in known_compilers]
+        compilers_help = '\n'.join(parts)
+        epilog = "known compiler commands:\n%s\n" % compilers_help
+        usage = "%s <command> [arguments]" % self.command
+        parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary, epilog=epilog)
+        parser.add_argument('cmd',
+                            help="Compiler or linker command, e.g. 'gcc'",
+                            metavar='<command>')
+        parser.add_argument('cmd_args', 
+                            help="Compiler arguments",
+                            metavar='[arguments]',
+                            nargs=arguments.REMAINDER)
+        return parser
+
+    def main(self, argv):
+        args = self.parser.parse_args(args=argv)
+        self.logger.debug('Arguments: %s', args)
+        selection = None #Experiment.get_selected()
+        if not selection:
+            raise ConfigurationError("Nothing selected.", "See `tau project select`")
+        return selection.managed_build(args.cmd, args.cmd_args)
 
 
-def is_compatible(cmd):
-    """Check if this subcommand can work with the given command.
-    
-    Args:
-        cmd (str): A command from the command line, e.g. sys.argv[1].
-        
-    Returns:
-        bool: True if this subcommand is compatible with `cmd`.
-    """
-    return cmd in [info.command for info in CompilerInfo.all()]
-
-
-def main(argv):
-    """Subcommand program entry point.
-    
-    Args:
-        argv (list): Command line arguments.
-        
-    Returns:
-        int: Process return code: non-zero if a problem occurred, 0 otherwise
-    """
-    args = parser().parse_args(args=argv)
-    LOGGER.debug('Arguments: %s', args)
-
-    selection = None #Experiment.get_selected()
-    if not selection:
-        raise ConfigurationError("Nothing selected.", "See `tau project select`")
-    return selection.managed_build(args.cmd, args.cmd_args)
+COMMAND = BuildCommand(__name__, summary_fmt="Instrument programs during compilation and/or linking.")

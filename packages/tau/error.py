@@ -77,21 +77,18 @@ class Error(Exception):
         if not self.hints:
             hints_str = ''
         elif len(self.hints) == 1:
-            hints_str = 'Hint: %s\n\n' % self.hints[0]
+            hints_str = 'Hint: %s\n' % self.hints[0]
         else:
-            hints_str = 'Hints:\n  * %s\n\n' % ('\n  * '.join(self.hints))
+            hints_str = 'Hints:\n  * %s\n' % ('\n  * '.join(self.hints))
         fields['hints'] = hints_str
         return self.message_fmt % fields
 
     def handle(self, etype, value, tb):
         if self.show_backtrace:
-            backtrace = ''.join(traceback.format_exception(etype, value, tb)) + '\n'
-        else:
-            backtrace = ''
+            self.message_fields['backtrace'] = ''.join(traceback.format_exception(etype, value, tb)) + '\n'
         self.message_fields['typename'] = etype.__name__
-        self.message_fields['backtrace'] = backtrace
         LOGGER.critical(str(self))
-        sys.exit(EXIT_FAILURE)
+        return EXIT_FAILURE
 
 
 class InternalError(Error):
@@ -108,10 +105,9 @@ class ConfigurationError(Error):
     This is most commonly caused by user error, e.g the user specifies measurement
     settings that are incompatible with the application.
     """
-
     message_fmt = ("%(value)s\n"
                    "\n"
-                   "%(hints)s"
+                   "%(hints)s\n"
                    "TAU cannot proceed with the given inputs.\n" 
                    "Please check the selected configuration for errors or contact %(contact)s for assistance.")
 

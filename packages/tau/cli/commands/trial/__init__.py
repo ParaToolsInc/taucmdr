@@ -27,8 +27,8 @@
 #
 """``tau trial`` subcommand."""
 
-from tau.cli.view_base import RootCommand
+from tau.cli.cli_view import RootCommand
 from tau.core.trial import Trial
 
 COMMAND = RootCommand(Trial, __name__, group="configuration",
-                      summary="Create and manage experiment trials.")
+                      summary_fmt="Create and manage experiment trials.")

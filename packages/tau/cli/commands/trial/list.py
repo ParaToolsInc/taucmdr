@@ -27,7 +27,7 @@
 #
 """``tau trial list`` subcommand."""
 
-from tau.cli.view_base import ListCommand
+from tau.cli.cli_view import ListCommand
 from tau.core.trial import Trial
 
 
@@ -39,5 +39,4 @@ DASHBOARD_COLUMNS = [{'header': 'Number', 'value': 'number'},
                      {'header': 'Ended At', 'value': 'end_time'},
                      {'header': 'Return Code', 'value': 'return_code'}]
 
-COMMAND = ListCommand(Trial, __name__, key_attr='number', dashboard_columns=DASHBOARD_COLUMNS)
-
+COMMAND = ListCommand(Trial, __name__, dashboard_columns=DASHBOARD_COLUMNS)

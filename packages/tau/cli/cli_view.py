@@ -42,7 +42,7 @@ from tau.core import storage
 from tau.core.mvc import UniqueAttributeError, InternalError
 
 
-class CommandLineView(AbstractCommand):
+class AbstractCliView(AbstractCommand):
     """A command that works as a `view` for a `controller`.
     
     See http://en.wikipedia.org/wiki/Model-view-controller
@@ -52,28 +52,25 @@ class CommandLineView(AbstractCommand):
         model_name (str): The lower-case name of the model.
     """
 
-    def __init__(self, controller, module_name, summary=None, help_page=None, group=None):
-        if not summary:
-            summary = "Create and manage %s configurations." % controller.model_name.lower()
-        super(CommandLineView, self).__init__(module_name, summary, help_page, group)
+    def __init__(self, controller, module_name, summary_fmt=None, help_page_fmt=None, group=None):
         self.controller = controller
         self.model_name = controller.model_name.lower()
+        format_fields = {'model_name': self.model_name}
+        if not summary_fmt:
+            summary_fmt = "Create and manage %(model_name)s configurations."
+        super(AbstractCliView, self).__init__(module_name, format_fields=format_fields, summary_fmt=summary_fmt, 
+                                              help_page_fmt=help_page_fmt, group=group)
 
 
-class RootCommand(CommandLineView):
+class RootCommand(AbstractCliView):
     """A command with subcommands for actions."""
-    
-    def __init__(self, *args, **kwargs):
-        super(RootCommand, self).__init__(*args, **kwargs)
     
     def construct_parser(self):
         usage = "%s <subcommand> [arguments]" % self.command
-        epilog = ['', cli.get_commands_description(self.module_name), '',
+        epilog = ['', cli.commands_description(self.module_name), '',
                   "See '%s <subcommand> --help' for more information on <subcommand>." % self.command]
-        parser = arguments.get_parser(prog=self.command,
-                                      usage=usage,
-                                      description=self.summary,
-                                      epilog='\n'.join(epilog))
+        parser = arguments.get_parser(prog=self.command, usage=usage, 
+                                      description=self.summary, epilog='\n'.join(epilog))
         parser.add_argument('subcommand', 
                             help="See 'subcommands' below",
                             metavar='<subcommand>')
@@ -88,16 +85,17 @@ class RootCommand(CommandLineView):
         return cli.execute_command([args.subcommand], args.options, self.module_name)
     
     
-class CreateCommand(CommandLineView):
-    """Base class for the `create` subcommand of command line views."""
-    
-    def __init__(self, controller, module_name):
-        model_name = controller.model_name.lower()
-        summary = "Create %s configurations." % model_name
-        super(CreateCommand, self).__init__(controller, module_name, summary=summary)
-        
+class CreateCommand(AbstractCliView):
+    """Base class for the `create` command of command line views."""
+
+    def __init__(self, controller, module_name, summary_fmt=None, help_page_fmt=None, group=None):
+        if not summary_fmt:
+            summary_fmt = "Create %(model_name)s configurations."
+        super(CreateCommand, self).__init__(controller, module_name, summary_fmt=summary_fmt, 
+                                            help_page_fmt=help_page_fmt, group=group)
+
     def construct_parser(self):
-        usage = "%s <%s_name> [arguments]" % (self.command, self.model_name)
+        usage = "%s <%s_%s> [arguments]" % (self.command, self.model_name, self.controller.key_attribute)
         parser = arguments.get_parser_from_model(self.controller,
                                                  prog=self.command,
                                                  usage=usage,
@@ -108,70 +106,76 @@ class CreateCommand(CommandLineView):
     def main(self, argv):
         args = self.parser.parse_args(args=argv)
         self.logger.debug('Arguments: %s', args)
-        store = storage.CONTAINERS[getattr(args, "@")[0]]
+        store = storage.CONTAINERS[getattr(args, arguments.STORAGE_LEVEL_FLAG)[0]]
         ctrl = self.controller(store)
+        key_attr = ctrl.key_attribute
+        key = getattr(args, key_attr)
         data = {attr: getattr(args, attr) for attr in ctrl.attributes if hasattr(args, attr)}
         try:
             ctrl.create(data)
         except UniqueAttributeError:
-            self.parser.error("A %s named '%s' already exists" % (self.model_name, args.name))
-        self.logger.info("Created a new %s-level %s named '%s'.", ctrl.storage.name, self.model_name, args.name)
+            self.parser.error("A %s with %s='%s' already exists" % (self.model_name, key_attr, key))
+        self.logger.info("Created a new %s-level %s: '%s'.", ctrl.storage.name, self.model_name, key)
         return EXIT_SUCCESS
 
 
-class DeleteCommand(CommandLineView):
+class DeleteCommand(AbstractCliView):
     """Base class for the `delete` subcommand of command line views."""
     
-    def __init__(self, controller, module_name):
-        model_name = controller.model_name.lower()
-        summary = "Delete %s configurations." % model_name
-        super(DeleteCommand, self).__init__(controller, module_name, summary=summary)
+    def __init__(self, controller, module_name, summary_fmt=None, help_page_fmt=None, group=None):
+        if not summary_fmt:
+            summary_fmt = "Delete %(model_name)s configurations."
+        super(DeleteCommand, self).__init__(controller, module_name, summary_fmt=summary_fmt,
+                                            help_page_fmt=help_page_fmt, group=group)
         
     def construct_parser(self):
-        usage = "%s <%s_name> [arguments]" % (self.command, self.model_name)       
+        key_attr = self.controller.key_attribute
+        usage = "%s <%s_%s> [arguments]" % (self.command, self.model_name, key_attr)       
         epilog = "WARNING: This cannot be undone."
         parser = arguments.get_parser(prog=self.command,
                                       usage=usage,
                                       description=self.summary,
                                       epilog=epilog)
-        parser.add_argument('name', 
-                            help="Name of %s configuration to delete" % self.model_name,
-                            metavar='<%s_name>' % self.model_name)
+        parser.add_argument(key_attr,
+                            help="%s of %s configuration to delete" % (key_attr.capitalize(), self.model_name),
+                            metavar='<%s_%s>' % (self.model_name, key_attr))
         arguments.add_storage_flags(parser, "delete", self.model_name)
         return parser
 
     def main(self, argv):
         args = self.parser.parse_args(args=argv)
         self.logger.debug('Arguments: %s', args)
-        store = storage.CONTAINERS[getattr(args, "@")[0]]
+        store = storage.CONTAINERS[getattr(args, arguments.STORAGE_LEVEL_FLAG)[0]]
         ctrl = self.controller(store)
-        name = args.name
-        if not ctrl.exists({'name': name}):
-            self.parser.error("No %(level)s-level %(model_name)s named '%(name)s'." %
-                              {'level': ctrl.storage.name, 'name': name, 'model_name': self.model_name})
-        ctrl.delete({'name': name})
-        self.logger.info("Deleted %s '%s'", self.model_name, name)
+        key_attr = ctrl.key_attribute
+        key = getattr(args, key_attr)
+        if not ctrl.exists({key_attr: key}):
+            self.parser.error("No %s-level %s with %s='%s'." % (store.name, self.model_name, key_attr, key))
+        ctrl.delete({key_attr: key})
+        self.logger.info("Deleted %s '%s'", self.model_name, key)
         return EXIT_SUCCESS
 
 
-class EditCommand(CommandLineView):
+class EditCommand(AbstractCliView):
     """Base class for the `edit` subcommand of command line views."""
     
-    def __init__(self, controller, module_name):
-        model_name = controller.model_name.lower()
-        summary = "Modify %s configurations." % model_name
-        super(EditCommand, self).__init__(controller, module_name, summary=summary)
+    def __init__(self, controller, module_name, summary_fmt=None, help_page_fmt=None, group=None):
+        if not summary_fmt:
+            summary_fmt = "Modify %(model_name)s configurations."
+        super(EditCommand, self).__init__(controller, module_name, summary_fmt, help_page_fmt, group)
         
     def construct_parser(self):
-        usage = "%s <%s_name> [arguments]" % (self.command, self.model_name)       
+        key_attr = self.controller.key_attribute
+        usage = "%s <%s_%s> [arguments]" % (self.command, self.model_name, key_attr)       
         parser = arguments.get_parser_from_model(self.controller,
                                                  use_defaults=False,
                                                  prog=self.command,
                                                  usage=usage,
                                                  description=self.summary)
-        parser.add_argument('--rename',
-                            help="rename the %s configuration" % self.model_name,
-                            metavar='<new_name>', dest='new_name',
+        parser.add_argument('--new-%s' % key_attr,
+                            help="change the configuration's %s" % key_attr,
+                            metavar='<new_%s>' % key_attr, 
+                            dest='new_key',
                             default=arguments.SUPPRESS)
         arguments.add_storage_flags(parser, "modify", self.model_name)
         return parser
@@ -179,36 +183,37 @@ class EditCommand(CommandLineView):
     def main(self, argv):
         args = self.parser.parse_args(args=argv)
         self.logger.debug('Arguments: %s', args)
-        store = storage.CONTAINERS[getattr(args, "@")[0]]
-        ctrl = self.controller(store)   
-        name = args.name
-        if not ctrl.exists({'name': name}):
-            self.parser.error("No %(level)s-level %(model_name)s named '%(name)s'." %
-                              {'level': ctrl.storage.name, 'name': name, 'model_name': self.model_name})
+        store = storage.CONTAINERS[getattr(args, arguments.STORAGE_LEVEL_FLAG)[0]]
+        ctrl = self.controller(store)
+        key_attr = ctrl.key_attribute
+        key = getattr(args, key_attr)
+        if not ctrl.exists({key_attr: key}):
+            self.parser.error("No %s-level %s with %s='%s'." % (ctrl.storage.name, self.model_name, key_attr, key)) 
         data = {attr: getattr(args, attr) for attr in ctrl.attributes if hasattr(args, attr)}
         try:
-            data['name'] = args.new_name
+            data[key_attr] = args.new_key
         except AttributeError:
             pass
-        ctrl.update(data, {'name': name})
-        self.logger.info("Updated %s '%s'", self.model_name, name)
+        ctrl.update(data, {key_attr: key})
+        self.logger.info("Updated %s '%s'", self.model_name, key)
         return EXIT_SUCCESS
 
 
-class ListCommand(CommandLineView):
+class ListCommand(AbstractCliView):
     """Base class for the `list` subcommand of command line views."""
     
-    def __init__(self, controller, module_name, key_attr='name', default_style='dashboard', dashboard_columns=None):
-        model_name = controller.model_name.lower()
-        summary = "Show %s configuration data." % model_name
-        super(ListCommand, self).__init__(controller, module_name, summary=summary)
+    def __init__(self, controller, module_name, summary_fmt=None, help_page_fmt=None, group=None, 
+                 default_style='dashboard', dashboard_columns=None):
+        if not summary_fmt:
+            summary_fmt = "Show %(model_name)s configuration data."
+        super(ListCommand, self).__init__(controller, module_name, summary_fmt, help_page_fmt, group)
+        key_attr = self.controller.key_attribute
         self._format_fields = {'command': self.command, 'model_name': self.model_name, 'key_attr': key_attr}
-        self.key_attr = key_attr
         self.default_style = default_style
         if not dashboard_columns:
-            dashboard_columns = [{'header': attr.capitalize(), 'value': attr} for attr in controller.attributes]
+            dashboard_columns = [{'header': key_attr.capitalize(), 'value': key_attr}]
         self.dashboard_columns = dashboard_columns
-        
+
     def short_format(self, records):
         """Format records in short format.
         
@@ -218,7 +223,7 @@ class ListCommand(CommandLineView):
         Returns:
             str: Record data in short format.
         """
-        return '\n'.join([record[self.key_attr] for record in records])
+        return [record[self.controller.key_attribute] for record in records]
     
     def dashboard_format(self, records):
         """Format records in dashboard format.
@@ -256,7 +261,7 @@ class ListCommand(CommandLineView):
         table = Texttable(logger.LINE_WIDTH)
         table.set_cols_align([col.get('align', 'c') for col in self.dashboard_columns])
         table.add_rows(rows)
-        return '\n'.join([title, table.draw(), ''])
+        return [title, table.draw(), '']
 
     def long_format(self, records):
         """Format records in long format.
@@ -268,11 +273,7 @@ class ListCommand(CommandLineView):
             str: Record data in long format.
         """
         # pylint: disable=no-self-use
-        parts = []
-        for record in records:
-            populated = record.populate()
-            parts.append(pprint.pformat(populated))
-        return '\n'.join(parts)
+        return [pprint.pformat(record.populate()) for record in records]
 
     def json_format(self, records):
         """Format records in JSON format.
@@ -284,10 +285,10 @@ class ListCommand(CommandLineView):
             str: Record data in JSON format.
         """
         # pylint: disable=no-self-use
-        return '\n'.join([json.dumps(record.data) for record in records])
+        return [json.dumps(record.data) for record in records]
 
     def construct_parser(self):
-        key_str = self.model_name + '_' + self.key_attr
+        key_str = self.model_name + '_' + self.controller.key_attribute
         usage_head = ("%(command)s [%(key_str)s] [%(key_str)s] ... [arguments]" % 
                       {'command': self.command, 'key_str': key_str})
         parser = arguments.get_parser(prog=self.command,
@@ -295,7 +296,7 @@ class ListCommand(CommandLineView):
                                       description=self.summary)
         parser.add_argument('keys', 
                             help=("Show only %(model_name)ss with the given %(key_attr)ss" % self._format_fields),
-                            metavar='%(model_name)s' % self._format_fields,
+                            metavar=key_str,
                             nargs='*',
                             default=arguments.SUPPRESS)
         style_dest = 'style'
@@ -316,7 +317,7 @@ class ListCommand(CommandLineView):
                                  help="show all %(model_name)s data as JSON" % self._format_fields,
                                  const='json', action='store_const', dest=style_dest, 
                                  default=arguments.SUPPRESS)
-        arguments.add_storage_flags(parser, "show", self._format_fields['model_name'], plural=True, exclusive=False)
+        arguments.add_storage_flags(parser, "show", self.model_name, plural=True, exclusive=False)
         return parser
     
     def main(self, argv):
@@ -335,7 +336,7 @@ class ListCommand(CommandLineView):
         user_ctl = self.controller(storage.USER_STORAGE)
         system_ctl = self.controller(storage.SYSTEM_STORAGE)
         
-        storage_levels = getattr(args, "@")
+        storage_levels = getattr(args, arguments.STORAGE_LEVEL_FLAG)
         system = storage.SYSTEM_STORAGE.name in storage_levels
         user = storage.USER_STORAGE.name in storage_levels
         project = storage.PROJECT_STORAGE.name in storage_levels or not (user or system)
@@ -344,24 +345,24 @@ class ListCommand(CommandLineView):
         
         parts = []
         if system:
-            parts.append(self._format_records(system_ctl, style, keys))
+            parts.extend(self._format_records(system_ctl, style, keys))
         if user:
-            parts.append(self._format_records(user_ctl, style, keys))
+            parts.extend(self._format_records(user_ctl, style, keys))
         if project:
             try:
-                parts.append(self._format_records(project_ctl, style, keys))
+                parts.extend(self._format_records(project_ctl, style, keys))
             except storage.ProjectStorageError as err:
                 err.hints.insert(0, "See `tau init --help`.")
                 err.hints.append("Check command line arguments.")
                 self.logger.error(err)
         if style == 'dashboard':
             if not system:
-                parts.append(self._count_records(system_ctl))
+                parts.extend(self._count_records(system_ctl))
             if not user:
-                parts.append(self._count_records(user_ctl))
+                parts.extend(self._count_records(user_ctl))
             if not project:
                 try:
-                    parts.append(self._count_records(project_ctl))
+                    parts.extend(self._count_records(project_ctl))
                 except storage.ProjectStorageError:
                     pass
         print '\n'.join(parts)
@@ -377,13 +378,14 @@ class ListCommand(CommandLineView):
         if not keys:
             records = ctrl.all()
         else:
+            key_attr = self.controller.key_attribute
             records = []
             for key in keys:
-                record = ctrl.search({self.key_attr: key})
+                record = ctrl.search({key_attr: key})
                 if record:
                     records.extend(record)
                 else:
-                    self.parser.error("No %s with %s='%s'" % (self._format_fields['model_name'], self.key_attr, key))
+                    self.parser.error("No %s with %s='%s'" % (self.model_name, key_attr, key))
         return records
 
     def _format_records(self, ctrl, style, keys=None):
@@ -396,11 +398,12 @@ class ListCommand(CommandLineView):
         """
         records = self._retrieve_records(ctrl, keys)
         if not records:
-            listing = "No %s-level %ss. See `%s --help`." % (ctrl.storage.name, self.model_name, self.command)
+            parts = ["No %ss." % self.model_name]
+            
         else:
             formatter = getattr(self, style+'_format')
-            listing = formatter(records)
-        return listing
+            parts = formatter(records)
+        return parts
 
     def _count_records(self, ctrl):
         """Print a record count to stdout.
@@ -412,10 +415,10 @@ class ListCommand(CommandLineView):
         count = ctrl.count()
         fields = {'count': count, 'level': level, 'command': self.command, 'level_flag': arguments.STORAGE_LEVEL_FLAG}
         if count == 1:
-            return ("There is 1 %(level)s-level application."
-                    " Type `%(command)s %(level_flag)s %(level)s` to list it." % fields) 
+            return ["There is 1 %(level)s-level application."
+                    " Type `%(command)s %(level_flag)s %(level)s` to list it." % fields] 
         elif count > 1:
-            return ("There are %(count)d %(level)s-level applications."
-                    " Type `%(command)s %(level_flag)s %(level)s` to list them." % fields) 
+            return ["There are %(count)d %(level)s-level applications."
+                    " Type `%(command)s %(level_flag)s %(level)s` to list them." % fields] 
         else:
-            return ""
+            return []

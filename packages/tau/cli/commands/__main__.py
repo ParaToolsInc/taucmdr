@@ -37,12 +37,14 @@ from tau import TAUCMDR_URL, TAU_SCRIPT
 from tau import cli, logger
 from tau.cli import UnknownCommandError, arguments
 from tau.cli.command import AbstractCommand
+from tau.cli.commands.build import COMMAND as build
+from tau.cli.commands.trial.create import COMMAND as trial_create
 
 LOGGER = logger.get_logger(__name__)
 
-SUMMARY = "TAU Commander [ %s ]" % TAUCMDR_URL
+SUMMARY_FMT = "TAU Commander [ %s ]" % TAUCMDR_URL
 
-HELP_PAGE = """'%(command)s' page to be written.
+HELP_PAGE_FMT = """'%(command)s' page to be written.
 
 Hints:
  - All parameters can be specified partially e.g. these all do the same thing:
@@ -55,24 +57,21 @@ class MainCommand(AbstractCommand):
     """Main entry point to the command line interface."""
 
     def __init__(self):
-        super(MainCommand, self).__init__(__name__, summary=SUMMARY, help_page=HELP_PAGE)
+        super(MainCommand, self).__init__(__name__, summary_fmt=SUMMARY_FMT, help_page_fmt=HELP_PAGE_FMT)
         self.command = os.path.basename(TAU_SCRIPT)
     
     def construct_parser(self):
         usage = "%s [arguments] <subcommand> [options]"  % self.command
-        epilog = ["", cli.get_commands_description(), "",
+        epilog = ["", cli.commands_description(), "",
                   "shortcuts:",
-                  "  %(command)s <compiler>     Execute a compiler command", 
-                  "                     - Example: %(command)s gcc *.c -o a.out",
-                  "                     - Alias for '%(command)s build <compiler>'",
-                  "  %(command)s <program>      Gather data from a program",
-                  "                     - Example: %(command)s ./a.out",
-                  "                     - Alias for '%(command)s trial create <program>'",
-                  "  %(command)s run <program>  Gather data from a program",
-                  "                     - Example: %(command)s ./a.out",
-                  "                     - Alias for '%(command)s trial create <program>'",
-                  "  %(command)s show           Show data from the most recent trial",
-                  "                     - An alias for '%(command)s trial show'",
+                  "  %(command)s <compiler>  Execute a compiler command", 
+                  "                  - Example: %(command)s gcc *.c -o a.out",
+                  "                  - Alias for '%(command)s build <compiler>'",
+                  "  %(command)s <program>   Gather data from a program",
+                  "                  - Example: %(command)s ./a.out",
+                  "                  - Alias for '%(command)s trial create <program>'",
+                  "  %(command)s show        Show data from the most recent trial",
+                  "                  - An alias for '%(command)s trial show'",
                   "",
                   "See '%(command)s help <subcommand>' for more information on <subcommand>."]
         parser = arguments.get_parser(prog=self.command,
@@ -117,23 +116,21 @@ class MainCommand(AbstractCommand):
         except UnknownCommandError:
             pass
      
-#         # Check shortcuts
-#         shortcut = None
-#         if build.is_compatible(cmd):
-#             shortcut = ['build']
-#             cmd_args = [cmd] + cmd_args
-#         elif trial.create.is_compatible(cmd):
-#             shortcut = ['trial', 'create']
-#             cmd_args = [cmd] + cmd_args
-#         elif cmd == 'run' and build.is_compatible(cmd):
-#             shortcut = ['build']
-#         elif cmd == 'show':
-#             shortcut = ['trial', 'show']
-#         if shortcut:
-#             LOGGER.debug('Trying shortcut: %s', shortcut)
-#             return cli.execute_command(shortcut, cmd_args)
-#         else:
-#             LOGGER.debug('No shortcut found for %r', cmd)
+        # Check shortcuts
+        shortcut = None
+        if build.is_compatible(cmd):
+            shortcut = build
+            cmd_args = [cmd] + cmd_args
+        elif trial_create.is_compatible(cmd):
+            shortcut = ['trial', 'create']
+            cmd_args = [cmd] + cmd_args
+        elif cmd == 'show':
+            shortcut = ['trial', 'show']
+        if shortcut:
+            LOGGER.debug('Trying shortcut: %s', shortcut)
+            return cli.execute_command(shortcut, cmd_args)
+        else:
+            LOGGER.debug('No shortcut found for %r', cmd)
      
         # Not sure what to do at this point, so advise the user and exit
         LOGGER.info("Unknown command.  Calling `tau help %s` to get advice.", cmd)
@@ -141,8 +138,6 @@ class MainCommand(AbstractCommand):
 
 
 COMMAND = MainCommand()
-
-
 
 if __name__ == '__main__':
     sys.exit(COMMAND.main(sys.argv[1:]))

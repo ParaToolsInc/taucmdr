@@ -56,7 +56,7 @@ class StorageError(Error):
 
     message_fmt = ("%(value)s\n"
                    "\n"
-                   "%(hints)s"
+                   "%(hints)s\n"
                    "Please send '%(logfile)s' to %(contact)s for assistance.")
 
 
@@ -65,7 +65,7 @@ class ProjectStorageError(StorageError):
 
     message_fmt = ("%(value)s\n"
                    "\n"
-                   "%(hints)s"
+                   "%(hints)s\n"
                    "Please contact %(contact)s for assistance.")
 
     def __init__(self, search_root):
@@ -177,6 +177,20 @@ class ProjectStorageContainer(JsonStorageContainer):
     
     def __init__(self):
         super(ProjectStorageContainer, self).__init__('project', None)
+        
+    def exists(self):
+        try:
+            return bool(self.prefix)
+        except StorageError:
+            return False
+        
+    def verify(self, *hints, **kwargs):
+        try:
+            self.prefix
+        except ProjectStorageError as err:
+            default_message = "Project not found in '%s' or any of its parent directories." % err.search_root
+            message = kwargs.get('message', default_message)
+            raise ConfigurationError(message, *hints)
     
     def create(self, root=None):
         """Create the project container prefix and JSON database file."""

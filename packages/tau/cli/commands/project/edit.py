@@ -38,7 +38,7 @@ from tau.core.measurement import Measurement
 
 LOGGER = logger.get_logger(__name__)
 
-COMMAND = cli.get_command(__name__)
+COMMAND = cli.command_from_module_name(__name__)
 
 SHORT_DESCRIPTION = "Modify a project configuration."
 

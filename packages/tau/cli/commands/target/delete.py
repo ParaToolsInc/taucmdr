@@ -27,7 +27,7 @@
 #
 """``tau target`` subcommand."""
 
-from tau.cli.view_base import DeleteCommand
+from tau.cli.cli_view import DeleteCommand
 from tau.core.target import Target
 
 

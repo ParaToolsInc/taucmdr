@@ -28,7 +28,7 @@
 """``tau target`` subcommand."""
 
 import os
-from tau.cli.view_base import ListCommand
+from tau.cli.cli_view import ListCommand
 from tau.core.target import Target
 
 

@@ -27,7 +27,7 @@
 #
 """``tau target`` subcommand."""
 
-from tau.cli.view_base import EditCommand
+from tau.cli.cli_view import EditCommand
 from tau.core.target import Target
 
 

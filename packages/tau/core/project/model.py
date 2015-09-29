@@ -39,6 +39,11 @@ ATTRIBUTES = {
         'description': 'project name',
         'argparse': {'metavar': '<project_name>'}
     },
+    'prefix': {
+        'type': 'string',
+        'required': True,
+        'description': 'location for all files and experiment data related to this project',
+    },
     'targets': {
         'collection': Target,
         'via': 'projects',
@@ -58,13 +63,6 @@ ATTRIBUTES = {
         'collection': Experiment,
         'via': 'project',
         'description': 'experiments formed from this project'
-    },
-    'prefix': {
-        'type': 'string',
-        'required': True,
-        'description': 'location for all files and experiment data related to this project',
-        'argparse': {'flags': ('--home',),
-                     'metavar': 'path'}
     },
     'selected': {
         'model': Experiment,

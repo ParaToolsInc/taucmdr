@@ -42,7 +42,7 @@ SUPPRESS = argparse.SUPPRESS
 REMAINDER = argparse.REMAINDER
 """All the remaining command-line arguments are gathered into a list."""
 
-STORAGE_LEVEL_FLAG = "-@"
+STORAGE_LEVEL_FLAG = "@"
 """Command line flag that indicates storage level."""
 
 
@@ -324,7 +324,7 @@ def add_storage_flags(parser, action, object_name, plural=False, exclusive=True)
     nargs = 1 if exclusive else '+'
     choices = [container.name for container in ORDERED_CONTAINERS]
     default = [ORDERED_CONTAINERS[0].name]
-    parser.add_argument(STORAGE_LEVEL_FLAG,
+    parser.add_argument('-'+STORAGE_LEVEL_FLAG,
                         help=help_str,
                         metavar="<level>", 
                         nargs=nargs, 

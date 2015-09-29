@@ -34,7 +34,7 @@ from tau.core.project import Project
 
 LOGGER = logger.get_logger(__name__)
 
-COMMAND = cli.get_command(__name__)
+COMMAND = cli.command_from_module_name(__name__)
 
 SHORT_DESCRIPTION = "Delete project configurations."
 

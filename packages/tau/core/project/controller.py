@@ -32,13 +32,13 @@
 import os
 import shutil
 from tau import logger, util, error
-from tau.core.mvc import Controller, ByName
+from tau.core.mvc import Controller, with_key_attribute
 
 
 LOGGER = logger.get_logger(__name__)
 
 
-class Project(Controller, ByName):
+class Project(Controller, with_key_attribute('name')):
     """Project data controller."""
     
     def prefix(self):

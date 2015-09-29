@@ -28,10 +28,10 @@
 """Measurement data model controller."""
 
 from tau.error import ConfigurationError
-from tau.core.mvc import Controller, ByName
+from tau.core.mvc import Controller, with_key_attribute
 
 
-class Measurement(Controller, ByName):
+class Measurement(Controller, with_key_attribute('name')):
     """Measurement data controller."""      
 
     def on_create(self):

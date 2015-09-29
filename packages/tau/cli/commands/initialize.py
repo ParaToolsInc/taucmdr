@@ -25,12 +25,37 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""Application data model controller."""
+"""``tau initialize`` subcommand."""
+
+from tau import EXIT_SUCCESS
+from tau.cli import arguments
+from tau.cli.command import AbstractCommand
+from tau.core import storage
+from tau.core.project import Project
 
 
-from tau.core.mvc import Controller, with_key_attribute
-
-
-class Application(Controller, with_key_attribute('name')):
-    """Application data controller."""
+class InitializeCommand(AbstractCommand):
+    """``tau initialize`` subcommand."""
     
+    def construct_parser(self):
+        usage = "%s [project_name]" % self.command
+        parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
+        parser.add_argument('project_name',
+                            help="New project name",
+                            metavar='project_name',
+                            nargs='?',
+                            default='default_project')
+        return parser
+
+    def main(self, argv):
+        args = self.parser.parse_args(args=argv)
+        self.logger.debug('Arguments: %s', args)
+        store = storage.PROJECT_STORAGE
+        if store.exists():
+            self.parser.error("TAU Commander has already been initialized at '%s'" % store.prefix)
+        store.create()
+        ctrl = Project(store)
+        ctrl.create({'name': args.project_name, 'prefix': store.prefix})
+        return EXIT_SUCCESS
+
+COMMAND = InitializeCommand(__name__, summary_fmt="Initialize TAU Commander.")

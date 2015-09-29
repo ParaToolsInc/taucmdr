@@ -29,16 +29,11 @@
 
 from tau import EXIT_FAILURE
 from tau.cli import arguments
-from tau.cli.view_base import CommandLineView
-from tau.core.trial import Trial
+from tau.cli.command import AbstractCommand
 
 
-class TrialShowCommand(CommandLineView):
+class TrialShowCommand(AbstractCommand):
     """``tau trial show`` subcommand."""
-    
-    def __init__(self):
-        summary = "Display trial data in analysis tool."
-        super(TrialShowCommand, self).__init__(Trial, __name__, summary=summary)
     
     def construct_parser(self):
         usage = "%s [trial_number] [trial_number] ... [arguments]" % self.command
@@ -79,4 +74,4 @@ class TrialShowCommand(CommandLineView):
             tool = None
         return selection.show(trial_numbers=numbers, tool_name=tool)
 
-COMMAND = TrialShowCommand()
+COMMAND = TrialShowCommand(__name__, summary_fmt="Display trial data in analysis tool.")

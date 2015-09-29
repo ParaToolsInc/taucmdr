@@ -30,16 +30,12 @@
 from tau import EXIT_SUCCESS
 from tau.error import ConfigurationError
 from tau.cli import arguments
-from tau.cli.view_base import CommandLineView
+from tau.cli.cli_view import DeleteCommand
 from tau.core.trial import Trial
 
 
-class TrialDeleteCommand(CommandLineView):
+class TrialDeleteCommand(DeleteCommand):
     """``tau trial delete`` subcommand."""
-
-    def __init__(self):
-        summary = "Delete experiment trials."
-        super(TrialDeleteCommand, self).__init__(Trial, __name__, summary=summary)
 
     def construct_parser(self):
         usage = "%s <trial_number> [arguments]" % self.command
@@ -72,4 +68,4 @@ class TrialDeleteCommand(CommandLineView):
         self.logger.info('Deleted trial %s', number)
         return EXIT_SUCCESS
 
-COMMAND = TrialDeleteCommand()
+COMMAND = TrialDeleteCommand(Trial, __name__, summary_fmt="Delete experiment trials.")

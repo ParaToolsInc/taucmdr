@@ -30,14 +30,12 @@
 from tau import cli, EXIT_SUCCESS
 from tau.cli import arguments
 from tau.cli.command import AbstractCommand
+from tau.cli.commands.initialize import COMMAND as init_command
+from tau.core import storage
 
 
 class DashboardCommand(AbstractCommand):
     
-    def __init__(self):
-        summary = "Show all project components."
-        super(DashboardCommand, self).__init__(__name__, summary=summary)
-
     def construct_parser(self):
         usage = "%s [arguments]" % self.command
         return arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
@@ -45,6 +43,7 @@ class DashboardCommand(AbstractCommand):
     def main(self, argv):
         args = self.parser.parse_args(args=argv)
         self.logger.debug('Arguments: %s', args)
+        storage.PROJECT_STORAGE.verify("Try `%s` to create a new project." % init_command.command) 
         subargs = ['--dashboard']
         cli.execute_command(['target', 'list'], subargs)
         cli.execute_command(['application', 'list'], subargs)
@@ -53,4 +52,4 @@ class DashboardCommand(AbstractCommand):
         cli.execute_command(['trial', 'list'], ['-s'])
         return EXIT_SUCCESS
 
-COMMAND = DashboardCommand()
+COMMAND = DashboardCommand(__name__, summary_fmt="Show all project components.")

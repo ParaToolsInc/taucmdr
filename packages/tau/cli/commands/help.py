@@ -29,23 +29,20 @@
 
 import os
 import sys
-from tau import EXIT_SUCCESS, HELP_CONTACT
-from tau import logger, cli
-from tau.cli import UnknownCommandError, arguments
+import mimetypes
+from tau import EXIT_SUCCESS, HELP_CONTACT, TAU_SCRIPT
+from tau import logger, util, cli
+from tau.cli import arguments, UnknownCommandError
+from tau.cli.command import AbstractCommand
 
 
 LOGGER = logger.get_logger(__name__)
 
-COMMAND = cli.get_command(__name__)
+_SCRIPT_CMD = os.path.basename(TAU_SCRIPT)
 
-SHORT_DESCRIPTION = "Show help for a command or suggest actions for a file."
+_GENERIC_HELP = "See '%s --help' or contact %s for assistance" % (_SCRIPT_CMD, HELP_CONTACT)
 
-HELP = """
-Show help for a command line or file.
-"""
-
-_GENERIC_HELP = "See 'tau --help' or contact %s for assistance" % HELP_CONTACT
-
+# FIXME: Get commands from subcommands
 _KNOWN_FILES = {'makefile': ("makefile script",
                              "See 'tau make --help' for help building with make"),
                 'a.out': ("binary executable",
@@ -56,11 +53,11 @@ _KNOWN_FILES = {'makefile': ("makefile script",
 _MIME_HINTS = {None: 
                {None: ("unknown file", _GENERIC_HELP), 
                 'gzip': ("compressed file", "Please specify an executable file")},
-                'application': {None: ("unknown binary file", _GENERIC_HELP),
-                                'sharedlib': ("shared library", "Please specify an executable file"),
-                                'archive': ("archive file", "Please specify an executable file"),
-                                'tar': ("archive file", "Please specify an executable file"),
-                                'unknown': ("unknown binary file", _GENERIC_HELP)},
+               'application': {None: ("unknown binary file", _GENERIC_HELP),
+                               'sharedlib': ("shared library", "Please specify an executable file"),
+                               'archive': ("archive file", "Please specify an executable file"),
+                               'tar': ("archive file", "Please specify an executable file"),
+                               'unknown': ("unknown binary file", _GENERIC_HELP)},
                'text': {None: ("unknown text file", _GENERIC_HELP),
                         'src': ("source code file", "See 'tau build --help' for help compiling this file"),
                         'hdr': ("source header file", "See 'tau build --help' for help instrumenting this file"),
@@ -70,7 +67,7 @@ _MIME_HINTS = {None:
 
 def _fuzzy_index(dct, full_key):
     """Return d[key] where ((key in k) == true) or return d[None]."""
-    for key in dct.iterkeys():
+    for key in dct:
         if key and (key in full_key):
             return dct[key]
     return dct[None]
@@ -78,12 +75,10 @@ def _fuzzy_index(dct, full_key):
 
 def _guess_filetype(filename):
     """Return a (filetype, encoding) tuple for a file."""
-    import mimetypes
     mimetypes.init()
     filetype = mimetypes.guess_type(filename)
     if not filetype[0]:
-        textchars = bytearray(
-            [7, 8, 9, 10, 12, 13, 27]) + bytearray(range(0x20, 0x100))
+        textchars = bytearray([7, 8, 9, 10, 12, 13, 27]) + bytearray(range(0x20, 0x100))
         with open(filename) as fd:
             if fd.read(1024).translate(None, textchars):
                 filetype = ('application/unknown', None)
@@ -92,90 +87,74 @@ def _guess_filetype(filename):
     return filetype
 
 
-def exit_with_help(module_name):
-    """Show a subcommands help page and exit."""
-    __import__(module_name)
-    module = sys.modules[module_name]
-    print """
-%(bar)s
+class HelpCommand(AbstractCommand):
+    """``tau help`` subcommand."""
 
-%(usage)s
+    @staticmethod
+    def exit_with_help(name):
+        """Show a subcommands help page and exit."""
+        cmd_obj = cli.find_command(name)
+        command = cmd_obj.command
+        parts = ["", util.hline("Usage: " + command),
+                 cmd_obj.usage,
+                 "", util.hline("Help: " + command),
+                 cmd_obj.help_page]
+        print '\n'.join(parts)
+        return EXIT_SUCCESS
 
-%(bar)s
+    def construct_parser(self):
+        usage_head = "%s <command>|<file> [arguments]" % self.command
+        parser = arguments.get_parser(prog=self.command, usage=usage_head, description=self.summary)
+        parser.add_argument('command', 
+                            help="A TAU command, system command, or file",
+                            metavar='(<command>|<file>)',
+                            nargs='+')
+        return parser
 
-%(help)s
-
-%(bar)s""" % {'bar': '-' * 80,
-              'usage': module.parser().format_help(),
-              'help': module.HELP}
-    return EXIT_SUCCESS
-
-
-def parser():
-    """Construct a command line argument parser.
+    def main(self, argv):
+        args = self.parser.parse_args(args=argv)
+        self.logger.debug('Arguments: %s', args)
+        if not args.command:
+            return self.exit_with_help([])
     
-    Constructing the parser may cause a lot of imports as :py:mod:`tau.cli` is explored.
-    To avoid possible circular imports we defer parser creation until afer all
-    modules are imported, hence this function.  The parser instance is maintained as
-    an attribute of the function, making it something like a C++ function static variable.
-    """
-    if not hasattr(parser, 'inst'):
-        usage_head = "%s (<command>|<file>) [arguments]" % COMMAND
-        parser.inst = arguments.get_parser(prog=COMMAND,
-                                           usage=usage_head,
-                                           description=SHORT_DESCRIPTION)
-        parser.inst.add_argument('command', 
-                                 help="A TAU command, system command, or file",
-                                 metavar='(<command>|<file>)',
-                                 nargs=arguments.REMAINDER)
-    return parser.inst
-        
-
-def main(argv):
-    """
-    Program entry point
-    """
-    args = parser().parse_args(args=argv)
-    LOGGER.debug('Arguments: %s', args)
-
-    if not args.command:
-        return exit_with_help('__main__')
-
-    # Try to look up a Tau command's built-in help page
-    cmd = '.'.join(args.command)
-    try:
-        return exit_with_help('commands.' + cmd)
-    except ImportError:
-        pass
-
-    # Is this a file?
-    if os.path.exists(cmd):
-        # Do we recognize the file name?
+        # Try to look up a Tau command's built-in help page
+        cmd = args.command
         try:
-            desc, hint = _fuzzy_index(_KNOWN_FILES, cmd.lower())
-        except KeyError:
+            return self.exit_with_help(cmd)
+        except ImportError:
             pass
-        else:
-            article = 'an' if desc[0] in 'aeiou' else 'a'
-            hint = "'%s' is %s %s.\n%s." % (cmd, article, desc, hint)
-            raise UnknownCommandError(cmd, hint)
-
-        # Get the filetype and try to be helpful.
-        filetype, encoding = _guess_filetype(cmd)
-        LOGGER.debug("'%s' has filetype (%s, %s)", cmd, filetype, encoding)
-        if filetype:
-            filetype, subtype = filetype.split('/')
+    
+        # Is this a file?
+        if os.path.exists(cmd):
+            # Do we recognize the file name?
             try:
-                type_hints = _MIME_HINTS[filetype]
+                desc, hint = _fuzzy_index(_KNOWN_FILES, cmd.lower())
             except KeyError:
-                hint = "TAU doesn't recognize '%s'.\nSee 'tau --help' and use the appropriate subcommand." % cmd
+                pass
             else:
-                desc, hint = _fuzzy_index(type_hints, subtype)
                 article = 'an' if desc[0] in 'aeiou' else 'a'
                 hint = "'%s' is %s %s.\n%s." % (cmd, article, desc, hint)
-            raise UnknownCommandError(cmd, hint)
-        else:
-            raise UnknownCommandError(cmd)
+                raise UnknownCommandError(cmd, hint)
+    
+            # Get the filetype and try to be helpful.
+            filetype, encoding = _guess_filetype(cmd)
+            self.logger.debug("'%s' has filetype (%s, %s)", cmd, filetype, encoding)
+            if filetype:
+                filetype, subtype = filetype.split('/')
+                try:
+                    type_hints = _MIME_HINTS[filetype]
+                except KeyError:
+                    hint = "TAU doesn't recognize '%s'.\nSee 'tau --help' and use the appropriate subcommand." % cmd
+                else:
+                    desc, hint = _fuzzy_index(type_hints, subtype)
+                    article = 'an' if desc[0] in 'aeiou' else 'a'
+                    hint = "'%s' is %s %s.\n%s." % (cmd, article, desc, hint)
+                raise UnknownCommandError(cmd, hint)
+            else:
+                raise UnknownCommandError(cmd)
+    
+        LOGGER.error("Cannot identify '%s' as a command or filename.")
+        return self.exit_with_help('__main__')
+    
+COMMAND = HelpCommand(__name__, summary_fmt="Show help for a command or suggest actions for a file.")
 
-    # Not a file, not a command, let's just show TAU usage and exit
-    return exit_with_help('__main__')

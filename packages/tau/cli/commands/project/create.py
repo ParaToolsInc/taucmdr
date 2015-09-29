@@ -27,128 +27,113 @@
 #
 """``tau project create`` subcommand."""
 
-from tau import logger, cli
+from tau import EXIT_SUCCESS
 from tau.cli import arguments
+from tau.core import storage
 from tau.core.mvc import UniqueAttributeError
-from tau.core.project import Project
 from tau.core.target import Target
 from tau.core.application import Application
 from tau.core.measurement import Measurement
+from tau.core.project import Project
+from tau.cli.cli_view import CreateCommand
 
 
-LOGGER = logger.get_logger(__name__)
-
-COMMAND = cli.get_command(__name__)
-
-SHORT_DESCRIPTION = "Create a new project configuration."
-
-HELP = """
-'%(command)s' page to be written.
-""" % {'command': COMMAND}
-
-
-def parser():
-    """Construct a command line argument parser.
+class ProjectCreateCommand(CreateCommand):
+    """``tau project create`` subcommand."""
     
-    Constructing the parser may cause a lot of imports as :py:mod:`tau.cli` is explored.
-    To avoid possible circular imports we defer parser creation until afer all
-    modules are imported, hence this function.  The parser instance is maintained as
-    an attribute of the function, making it something like a C++ function static variable.
-    """
-    if not hasattr(parser, 'inst'):
-        usage_head = "%s <project_name> [targets] [applications] [measurements] [arguments]" % COMMAND       
-        parser.inst = arguments.get_parser_from_model(Project,
-                                                      prog=COMMAND,
-                                                      usage=usage_head,
-                                                      description=SHORT_DESCRIPTION)
-        parser.inst.add_argument('impl_targets',
-                                 help="Target configurations in this project",
-                                 metavar='[targets]',
-                                 nargs='*',
-                                 default=arguments.SUPPRESS)
-        parser.inst.add_argument('impl_applications',
-                                 help="Application configurations in this project",
-                                 metavar='[applications]',
-                                 nargs='*',
-                                 default=arguments.SUPPRESS)
-        parser.inst.add_argument('impl_measurements',
-                                 help="Measurement configurations in this project",
-                                 metavar='[measurements]',
-                                 nargs='*',
-                                 default=arguments.SUPPRESS)
-        parser.inst.add_argument('--targets',
-                                 help="Target configurations in this project",
-                                 metavar='t',
-                                 nargs='+',
-                                 default=arguments.SUPPRESS)
-        parser.inst.add_argument('--applications',
-                                 help="Application configurations in this project",
-                                 metavar='a',
-                                 nargs='+',
-                                 default=arguments.SUPPRESS)
-        parser.inst.add_argument('--measurements',
-                                 help="Measurement configurations in this project",
-                                 metavar='m',
-                                 nargs='+',
-                                 default=arguments.SUPPRESS)
-    return parser.inst
+    def construct_parser(self):
+        usage = "%s <project_name> [targets] [applications] [measurements] [arguments]" % self.command
+        parser = arguments.get_parser_from_model(self.controller, 
+                                                 prog=self.command, 
+                                                 usage=usage, 
+                                                 description=self.summary)
+        parser.add_argument('impl_targets',
+                            help="Target configurations in this project",
+                            metavar='[targets]',
+                            nargs='*',
+                            default=arguments.SUPPRESS)
+        parser.add_argument('impl_applications',
+                            help="Application configurations in this project",
+                            metavar='[applications]',
+                            nargs='*',
+                            default=arguments.SUPPRESS)
+        parser.add_argument('impl_measurements',
+                            help="Measurement configurations in this project",
+                            metavar='[measurements]',
+                            nargs='*',
+                            default=arguments.SUPPRESS)
+        parser.add_argument('--targets',
+                            help="Target configurations in this project",
+                            metavar='t',
+                            nargs='+',
+                            default=arguments.SUPPRESS)
+        parser.add_argument('--applications',
+                            help="Application configurations in this project",
+                            metavar='a',
+                            nargs='+',
+                            default=arguments.SUPPRESS)
+        parser.add_argument('--measurements',
+                            help="Measurement configurations in this project",
+                            metavar='m',
+                            nargs='+',
+                            default=arguments.SUPPRESS)
+        return parser
 
-
-def main(argv):
-    """Subcommand program entry point.
+    def main(self, argv):
+        args = self.parser.parse_args(args=argv)
+        self.logger.debug('Arguments: %s', args)
     
-    Args:
-        argv (list): Command line arguments.
+        store = storage.PROJECT_STORAGE
+        tar_ctl = Target(store)
+        app_ctl = Application(store)
+        mes_ctl = Measurement(store)
         
-    Returns:
-        int: Process return code: non-zero if a problem occurred, 0 otherwise
-    """
-    args = parser().parse_args(args=argv)
-    LOGGER.debug('Arguments: %s', args)
+        targets = set()
+        applications = set()
+        measurements = set()
+        for attr, model, dest in [('targets', Target, targets),
+                                  ('applications', Application, applications),
+                                  ('measurements', Measurement, measurements)]:
+            # pylint: disable=no-member
+            for name in getattr(args, attr, []):
+                found = model.with_name(name)
+                if not found:
+                    self.parser.error("There is no %s named '%s'" % (model.model_name, name))
+                dest.add(found.eid)
 
-    targets = set()
-    applications = set()
-    measurements = set()
-
-    for attr, model, dest in [('targets', Target, targets),
-                              ('applications', Application, applications),
-                              ('measurements', Measurement, measurements)]:
-        for name in getattr(args, attr, []):
-            found = model.with_name(name)
-            if not found:
-                parser().error("There is no %s named '%s'" % (model.model_name, name))
-            dest.add(found.eid)
-
-        for name in getattr(args, 'impl_' + attr, []):
-            tar = Target.with_name(name)
-            app = Application.with_name(name)
-            mes = Measurement.with_name(name)
-            tam = set([tar, app, mes]) - set([None])
-            if len(tam) > 1:
-                parser().error("'%s' is ambiguous, please use --targets, --applications,"
-                               " or --measurements to specify configuration type" % name)
-            elif len(tam) == 0:
-                parser().error("'%s' is not a target, application, or measurement" % name)
-            elif tar:
-                targets.add(tar.eid)
-            elif app:
-                applications.add(app.eid)
-            elif mes:
-                measurements.add(mes.eid)
-
+            for name in getattr(args, 'impl_' + attr, []):
+                tar = tar_ctl.with_name(name)
+                app = app_ctl.with_name(name)
+                mes = mes_ctl.with_name(name)
+                tam = set([tar, app, mes]) - set([None])
+                if len(tam) > 1:
+                    self.parser.error("'%s' is ambiguous, please use --targets, --applications,"
+                                      " or --measurements to specify configuration type" % name)
+                elif len(tam) == 0:
+                    self.parser.error("'%s' is not a target, application, or measurement" % name)
+                elif tar:
+                    targets.add(tar.eid)
+                elif app:
+                    applications.add(app.eid)
+                elif mes:
+                    measurements.add(mes.eid)
+    
+            try:
+                delattr(args, 'impl_' + attr)
+            except AttributeError:
+                pass
+    
+        args.targets = list(targets)
+        args.applications = list(applications)
+        args.measurements = list(measurements)
+    
+        ctrl = self.controller(store)
+        data = {attr: getattr(args, attr) for attr in ctrl.attributes if hasattr(args, attr)}
         try:
-            delattr(args, 'impl_' + attr)
-        except AttributeError:
-            pass
+            ctrl.create(data)
+        except UniqueAttributeError:
+            self.parser.error("A %s named '%s' already exists" % (self.model_name, args.name))
+        self.logger.info("Created a new %s named '%s'.", self.model_name, args.name)
+        return EXIT_SUCCESS
 
-    args.targets = list(targets)
-    args.applications = list(applications)
-    args.measurements = list(measurements)
-
-    try:
-        Project.create(args.__dict__)
-    except UniqueAttributeError:
-        parser().error("A project named '%s' already exists." % args.name)
-
-    LOGGER.info("Created a new project named '%s'.", args.name)
-    return cli.execute_command(['project', 'list'], [args.name])
+COMMAND = ProjectCreateCommand(Project, __name__)

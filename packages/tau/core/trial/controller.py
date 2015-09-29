@@ -34,7 +34,7 @@ import errno
 from datetime import datetime
 from tau import logger, util
 from tau.error import ConfigurationError
-from tau.core.mvc import Controller
+from tau.core.mvc import Controller, with_key_attribute
 
 LOGGER = logger.get_logger(__name__)
 
@@ -49,7 +49,7 @@ class TrialError(ConfigurationError):
                    " send '%(logfile)s' to  %(contact)s for assistance.")
 
 
-class Trial(Controller):
+class Trial(Controller, with_key_attribute('number')):
     """Trial data controller."""
 
     def prefix(self):

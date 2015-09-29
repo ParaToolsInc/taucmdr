@@ -276,7 +276,9 @@ class LogFormatter(logging.Formatter, object):
         hline = self._colored(marker * width, 'red')
         parts = list(self._textwrap([hline, '', self._colored(record.levelname, 'cyan'), '']))
         parts.extend(self._textwrap_message(record))
-        parts.extend(self._textwrap(['', hline]))
+        if parts[-1] != self.line_marker:
+            parts.append(self.line_marker)
+        parts.extend(self._textwrap([hline]))
         return '\n'.join(parts)
 
     def _textwrap_message(self, record):

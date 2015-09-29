@@ -36,26 +36,28 @@ class AbstractCommand(object):
     
     Attributes:
         module_name (str): Name of the command module this command object belongs to.
-        command (str): The command line string that executes this command.
-        summary (str): A one-line summary of the command.
-        help_page (str): A long, informative description of the command.
+        command (str): Command line string that executes this command.
+        summary (str): One-line summary of the command.
+        help_page (str): Long and informative description of the command.
         group (str): If not None, commands will be grouped together by group name in help messages.
     """
     
     __metaclass__ = ABCMeta
     
-    def __init__(self, module_name, summary=None, help_page=None, group=None):
+    def __init__(self, module_name, format_fields=None, summary_fmt=None, help_page_fmt=None, group=None):
         self.module_name = module_name
         self.logger = logger.get_logger(module_name)
-        self.command = cli.get_command(module_name)
-        if not summary:
-            summary = "No summary for '%(command)s'"
-        self.summary = summary % {'command': self.command}
-        if not help_page:
-            help_page = "No help page for '%(command)s'" 
-        self.help_page = help_page % {'command': self.command}
+        self.command = cli.command_from_module_name(module_name)
+        self.format_fields = format_fields if format_fields else {}
+        self.format_fields['command'] = self.command
+        if not summary_fmt:
+            summary_fmt = "No summary for '%(command)s'"
+        self.summary = summary_fmt % self.format_fields
+        if not help_page_fmt:
+            help_page_fmt = "No help page for '%(command)s'" 
+        self.help_page = help_page_fmt % self.format_fields
         self.group = group
-        
+
     @property
     def parser(self):
         # pylint: disable=attribute-defined-outside-init
@@ -64,6 +66,10 @@ class AbstractCommand(object):
         except AttributeError:
             self._parser = self.construct_parser()
             return self._parser
+        
+    @property
+    def usage(self):
+        return self.parser.format_help()
 
     @abstractmethod
     def construct_parser(self):

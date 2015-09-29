@@ -30,16 +30,12 @@
 from tau import util
 from tau.error import ConfigurationError
 from tau.cli import arguments
-from tau.cli.view_base import CommandLineView
+from tau.cli.cli_view import CreateCommand
 from tau.core.trial import Trial
 
 
-class TrialCreateCommand(CommandLineView):
+class TrialCreateCommand(CreateCommand):
     """``tau trial create`` subcommand."""
-
-    def __init__(self):
-        summary = "Run an application under a new experiment trial."
-        super(TrialCreateCommand, self).__init__(Trial, __name__, summary=summary)
 
     @staticmethod
     def is_compatible(cmd):
@@ -75,4 +71,4 @@ class TrialCreateCommand(CommandLineView):
         return selection.managed_run(args.cmd, args.cmd_args)
 
 
-COMMAND = TrialCreateCommand()
+COMMAND = TrialCreateCommand(Trial, __name__, summary_fmt="Run an application under a new experiment trial.")
