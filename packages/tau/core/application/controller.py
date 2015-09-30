@@ -34,4 +34,4 @@ from tau.core.mvc import Controller, with_key_attribute
 @with_key_attribute('name')
 class Application(Controller):
     """Application data controller."""
-    
+
