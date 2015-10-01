@@ -28,13 +28,13 @@
 """``tau target create`` subcommand."""
 
 from tau import EXIT_SUCCESS
+from tau import storage
 from tau.error import ConfigurationError
 from tau.cli import arguments
 from tau.cli.cli_view import CreateCommand
-from tau.core import storage
-from tau.core.mvc import UniqueAttributeError
-from tau.core.target import Target
-from tau.core.compiler import Compiler
+from tau.error import UniqueAttributeError
+from tau.model.target import Target
+from tau.model.compiler import Compiler
 from tau.cf.compiler import CompilerFamily, CompilerRole
 from tau.cf.compiler.mpi import MpiCompilerFamily, MPI_CXX_ROLE, MPI_CC_ROLE, MPI_FC_ROLE
 from tau.cf.compiler.installed import InstalledCompiler, InstalledCompilerFamily
@@ -132,24 +132,24 @@ class TargetCreateCommand(CreateCommand):
         args = self.parser.parse_args(args=argv)
         self.logger.debug('Arguments: %s', args)
         store = storage.CONTAINERS[getattr(args, arguments.STORAGE_LEVEL_FLAG)[0]]
-        ctrl = self.controller(store)
-        key_attr = ctrl.key_attribute
+        ctrl = self.model.controller(store)
+        key_attr = self.model.key_attribute
         key = getattr(args, key_attr)
-        data = {attr: getattr(args, attr) for attr in ctrl.attributes if hasattr(args, attr)}
+        data = {attr: getattr(args, attr) for attr in self.model.attributes if hasattr(args, attr)}
 
         compilers = self.parse_compiler_flags(args)
         self.logger.debug('Arguments after parsing compiler flags: %s', args)
     
         for keyword, comp in compilers.iteritems():
             self.logger.debug("%s=%s (%s)", keyword, comp.absolute_path, comp.info.short_descr)
-            record = Compiler(store).register(comp)
+            record = Compiler.controller(store).register(comp)
             data[comp.info.role.keyword] = record.eid
     
         try:
             ctrl.create(data)
         except UniqueAttributeError:
-            self.parser.error("A %s with %s='%s' already exists" % (self.model_name, key_attr, key))
-        self.logger.info("Created a new %s-level %s: '%s'.", ctrl.storage.name, self.model_name, key)
+            self.parser.error("A %s with %s='%s' already exists" % (self.model.name, key_attr, key))
+        self.logger.info("Created a new %s-level %s: '%s'.", ctrl.storage.name, self.model.name, key)
         return EXIT_SUCCESS
 
 COMMAND = TargetCreateCommand(Target, __name__)

@@ -30,12 +30,12 @@
 from tau import EXIT_SUCCESS, TAU_SCRIPT
 from tau.cli import arguments
 from tau.error import InternalError, ConfigurationError
-from tau.core.storage import PROJECT_STORAGE
-from tau.core.project import Project
-from tau.core.target import Target
-from tau.core.application import Application
-from tau.core.measurement import Measurement
-from tau.core.experiment import Experiment
+from tau.storage import PROJECT_STORAGE
+from tau.model.project import Project
+from tau.model.target import Target
+from tau.model.application import Application
+from tau.model.measurement import Measurement
+from tau.model.experiment import Experiment
 from tau.cli.command import AbstractCommand
 
 
@@ -66,7 +66,7 @@ class SelectCommand(AbstractCommand):
 
     def _parse_explicit(self, args, controller_cls, acc):
         ctrl = controller_cls(PROJECT_STORAGE)
-        model_name = ctrl.model_name.lower()
+        model_name = controller_cls.model.name.lower()
         try:
             name = getattr(args, model_name)
         except AttributeError:

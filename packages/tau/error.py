@@ -117,6 +117,34 @@ class ConfigurationError(Error):
         super(ConfigurationError, self).__init__(value, *hints)
 
 
+class ModelError(InternalError):
+    """Indicates an error in model data or the model itself."""
+
+    def __init__(self, model, value):
+        """Initialize the error instance.
+        
+        Args:
+            model (Model): Data model.
+            value (str): A message describing the error.  
+        """
+        super(ModelError, self).__init__("%s: %s" % (model.model_name, value))
+        self.model = model
+
+
+class UniqueAttributeError(ModelError):
+    """Indicates that duplicate values were given for a unique attribute.""" 
+
+    def __init__(self, model, unique):
+        """Initialize the error instance.
+        
+        Args:
+            model (Model): Data model.
+            unique (dict): Dictionary of unique attributes in the data model.  
+        """
+        super(UniqueAttributeError, self).__init__(model, "A record with one of '%s' already exists" % unique)
+        
+
+
 def excepthook(etype, value, tb):
     """Exception handler for any uncaught exception (except SystemExit).
     

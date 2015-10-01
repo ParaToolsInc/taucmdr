@@ -28,7 +28,7 @@
 """``tau measurement`` subcommand."""
 
 from tau.cli.cli_view import ListCommand
-from tau.core.measurement import Measurement
+from tau.model.measurement import Measurement
 
 DASHBOARD_COLUMNS = [{'header': 'Name', 'value': 'name', 'align': 'r'},
                      {'header': 'Profile', 'yesno': 'profile'},

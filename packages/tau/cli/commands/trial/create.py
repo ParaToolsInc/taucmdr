@@ -31,7 +31,7 @@ from tau import util
 from tau.error import ConfigurationError
 from tau.cli import arguments
 from tau.cli.cli_view import CreateCommand
-from tau.core.trial import Trial
+from tau.model.trial import Trial
 
 
 class TrialCreateCommand(CreateCommand):

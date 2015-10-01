@@ -31,7 +31,7 @@ from tau import EXIT_SUCCESS
 from tau.error import ConfigurationError
 from tau.cli import arguments
 from tau.cli.cli_view import DeleteCommand
-from tau.core.trial import Trial
+from tau.model.trial import Trial
 
 
 class TrialDeleteCommand(DeleteCommand):
@@ -58,9 +58,9 @@ class TrialDeleteCommand(DeleteCommand):
         except ValueError:
             self.parser.error("Invalid trial number: %s" % args.number)
         fields = {'experiment': selection.eid, 'number': number}
-        if not Trial.exists(fields):
+        if not Trial.controller().exists(fields):
             self.parser.error("No %(level)s-level %(model_name)s named '%(name)s'." %
-                              {'level': ctrl.storage.name, 'name': name, 'model_name': self.model_name})
+                              {'level': ctrl.storage.name, 'name': name, 'model_name': self.model.name})
 
             self.parser.error("No trial number %s in the current experiment.  "
                               "See `tau trial list` to see all trial numbers." % number)

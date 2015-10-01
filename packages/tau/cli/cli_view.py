@@ -35,11 +35,10 @@ import pprint
 from texttable import Texttable
 from termcolor import termcolor
 from tau import EXIT_SUCCESS
-from tau import logger, util, cli
+from tau import logger, util, cli, storage
+from tau.error import UniqueAttributeError, InternalError
 from tau.cli import arguments
 from tau.cli.command import AbstractCommand
-from tau.core import storage
-from tau.core.mvc import UniqueAttributeError, InternalError
 
 
 class AbstractCliView(AbstractCommand):
@@ -52,9 +51,9 @@ class AbstractCliView(AbstractCommand):
         model_name (str): The lower-case name of the model.
     """
 
-    def __init__(self, controller, module_name, summary_fmt=None, help_page_fmt=None, group=None):
-        self.controller = controller
-        self.model_name = controller.model_name.lower()
+    def __init__(self, model, module_name, summary_fmt=None, help_page_fmt=None, group=None):
+        self.model = model
+        self.model_name = self.model.name.lower()
         format_fields = {'model_name': self.model_name}
         if not summary_fmt:
             summary_fmt = "Create and manage %(model_name)s configurations."
@@ -95,8 +94,8 @@ class CreateCommand(AbstractCliView):
                                             help_page_fmt=help_page_fmt, group=group)
 
     def construct_parser(self):
-        usage = "%s <%s_%s> [arguments]" % (self.command, self.model_name, self.controller.key_attribute)
-        parser = arguments.get_parser_from_model(self.controller,
+        usage = "%s <%s_%s> [arguments]" % (self.command, self.model_name, self.model.key_attribute)
+        parser = arguments.get_parser_from_model(self.model,
                                                  prog=self.command,
                                                  usage=usage,
                                                  description=self.summary)
@@ -107,8 +106,8 @@ class CreateCommand(AbstractCliView):
         args = self.parser.parse_args(args=argv)
         self.logger.debug('Arguments: %s', args)
         store = storage.CONTAINERS[getattr(args, arguments.STORAGE_LEVEL_FLAG)[0]]
-        ctrl = self.controller(store)
-        key_attr = ctrl.key_attribute
+        ctrl = self.model.controller(store)
+        key_attr = self.model.key_attribute
         key = getattr(args, key_attr)
         data = {attr: getattr(args, attr) for attr in ctrl.attributes if hasattr(args, attr)}
         try:
@@ -129,7 +128,7 @@ class DeleteCommand(AbstractCliView):
                                             help_page_fmt=help_page_fmt, group=group)
         
     def construct_parser(self):
-        key_attr = self.controller.key_attribute
+        key_attr = self.model.key_attribute
         usage = "%s <%s_%s> [arguments]" % (self.command, self.model_name, key_attr)       
         epilog = "WARNING: This cannot be undone."
         parser = arguments.get_parser(prog=self.command,
@@ -146,8 +145,8 @@ class DeleteCommand(AbstractCliView):
         args = self.parser.parse_args(args=argv)
         self.logger.debug('Arguments: %s', args)
         store = storage.CONTAINERS[getattr(args, arguments.STORAGE_LEVEL_FLAG)[0]]
-        ctrl = self.controller(store)
-        key_attr = ctrl.key_attribute
+        ctrl = self.model.controller(store)
+        key_attr = self.model.key_attribute
         key = getattr(args, key_attr)
         if not ctrl.exists({key_attr: key}):
             self.parser.error("No %s-level %s with %s='%s'." % (store.name, self.model_name, key_attr, key))
@@ -165,9 +164,9 @@ class EditCommand(AbstractCliView):
         super(EditCommand, self).__init__(controller, module_name, summary_fmt, help_page_fmt, group)
         
     def construct_parser(self):
-        key_attr = self.controller.key_attribute
-        usage = "%s <%s_%s> [arguments]" % (self.command, self.model_name, key_attr)       
-        parser = arguments.get_parser_from_model(self.controller,
+        key_attr = self.model.key_attribute
+        usage = "%s <%s_%s> [arguments]" % (self.command, self.model.name, key_attr)       
+        parser = arguments.get_parser_from_model(self.model,
                                                  use_defaults=False,
                                                  prog=self.command,
                                                  usage=usage,
@@ -177,25 +176,25 @@ class EditCommand(AbstractCliView):
                             metavar='<new_%s>' % key_attr, 
                             dest='new_key',
                             default=arguments.SUPPRESS)
-        arguments.add_storage_flags(parser, "modify", self.model_name)
+        arguments.add_storage_flags(parser, "modify", self.model.name)
         return parser
 
     def main(self, argv):
         args = self.parser.parse_args(args=argv)
         self.logger.debug('Arguments: %s', args)
         store = storage.CONTAINERS[getattr(args, arguments.STORAGE_LEVEL_FLAG)[0]]
-        ctrl = self.controller(store)
-        key_attr = ctrl.key_attribute
+        ctrl = self.model.controller(store)
+        key_attr = self.model.key_attribute
         key = getattr(args, key_attr)
         if not ctrl.exists({key_attr: key}):
-            self.parser.error("No %s-level %s with %s='%s'." % (ctrl.storage.name, self.model_name, key_attr, key)) 
+            self.parser.error("No %s-level %s with %s='%s'." % (ctrl.storage.name, self.model.name, key_attr, key)) 
         data = {attr: getattr(args, attr) for attr in ctrl.attributes if hasattr(args, attr)}
         try:
             data[key_attr] = args.new_key
         except AttributeError:
             pass
         ctrl.update(data, {key_attr: key})
-        self.logger.info("Updated %s '%s'", self.model_name, key)
+        self.logger.info("Updated %s '%s'", self.model.name, key)
         return EXIT_SUCCESS
 
 
@@ -207,8 +206,8 @@ class ListCommand(AbstractCliView):
         if not summary_fmt:
             summary_fmt = "Show %(model_name)s configuration data."
         super(ListCommand, self).__init__(controller, module_name, summary_fmt, help_page_fmt, group)
-        key_attr = self.controller.key_attribute
-        self._format_fields = {'command': self.command, 'model_name': self.model_name, 'key_attr': key_attr}
+        key_attr = self.model.key_attribute
+        self._format_fields = {'command': self.command, 'model_name': self.model.name, 'key_attr': key_attr}
         self.default_style = default_style
         if not dashboard_columns:
             dashboard_columns = [{'header': key_attr.capitalize(), 'value': key_attr}]
@@ -223,7 +222,7 @@ class ListCommand(AbstractCliView):
         Returns:
             str: Record data in short format.
         """
-        return [record[self.controller.key_attribute] for record in records]
+        return [record[self.model.key_attribute] for record in records]
     
     def dashboard_format(self, records):
         """Format records in dashboard format.
@@ -288,7 +287,7 @@ class ListCommand(AbstractCliView):
         return [json.dumps(record.data) for record in records]
 
     def construct_parser(self):
-        key_str = self.model_name + '_' + self.controller.key_attribute
+        key_str = self.model.name + '_' + self.model.key_attribute
         usage_head = ("%(command)s [%(key_str)s] [%(key_str)s] ... [arguments]" % 
                       {'command': self.command, 'key_str': key_str})
         parser = arguments.get_parser(prog=self.command,
@@ -317,7 +316,7 @@ class ListCommand(AbstractCliView):
                                  help="show all %(model_name)s data as JSON" % self._format_fields,
                                  const='json', action='store_const', dest=style_dest, 
                                  default=arguments.SUPPRESS)
-        arguments.add_storage_flags(parser, "show", self.model_name, plural=True, exclusive=False)
+        arguments.add_storage_flags(parser, "show", self.model.name, plural=True, exclusive=False)
         return parser
     
     def main(self, argv):
@@ -332,9 +331,9 @@ class ListCommand(AbstractCliView):
         args = self.parser.parse_args(args=argv)
         self.logger.debug('Arguments: %s', args)
         
-        project_ctl = self.controller(storage.PROJECT_STORAGE)
-        user_ctl = self.controller(storage.USER_STORAGE)
-        system_ctl = self.controller(storage.SYSTEM_STORAGE)
+        project_ctl = self.model.controller(storage.PROJECT_STORAGE)
+        user_ctl = self.model.controller(storage.USER_STORAGE)
+        system_ctl = self.model.controller(storage.SYSTEM_STORAGE)
         
         storage_levels = getattr(args, arguments.STORAGE_LEVEL_FLAG)
         system = storage.SYSTEM_STORAGE.name in storage_levels
@@ -378,14 +377,14 @@ class ListCommand(AbstractCliView):
         if not keys:
             records = ctrl.all()
         else:
-            key_attr = self.controller.key_attribute
+            key_attr = self.model.key_attribute
             records = []
             for key in keys:
                 record = ctrl.search({key_attr: key})
                 if record:
                     records.extend(record)
                 else:
-                    self.parser.error("No %s with %s='%s'" % (self.model_name, key_attr, key))
+                    self.parser.error("No %s with %s='%s'" % (self.model.name, key_attr, key))
         return records
 
     def _format_records(self, ctrl, style, keys=None):
@@ -398,7 +397,7 @@ class ListCommand(AbstractCliView):
         """
         records = self._retrieve_records(ctrl, keys)
         if not records:
-            parts = ["No %ss." % self.model_name]
+            parts = ["No %ss." % self.model.name]
             
         else:
             formatter = getattr(self, style+'_format')

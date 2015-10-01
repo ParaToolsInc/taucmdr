@@ -28,7 +28,7 @@
 """``tau target`` subcommand."""
 
 from tau.cli.cli_view import RootCommand
-from tau.core.target import Target
+from tau.model.target import Target
 
 
 COMMAND = RootCommand(Target, __name__, group="configuration")

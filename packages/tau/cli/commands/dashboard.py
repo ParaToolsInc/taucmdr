@@ -27,12 +27,12 @@
 #
 """``tau dashboard`` subcommand."""
 
-from tau import cli, util, EXIT_SUCCESS
+from tau import EXIT_SUCCESS
+from tau import cli, util, storage 
 from tau.cli import arguments
 from tau.cli.command import AbstractCommand
 from tau.cli.commands.initialize import COMMAND as init_command
-from tau.core import storage
-from tau.core.project import Project
+from tau.model.project import Project
 
 
 class DashboardCommand(AbstractCommand):

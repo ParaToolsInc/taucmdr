@@ -89,7 +89,7 @@ class KeyedRecordCreator(type):
     this metaclass guarantees we call ``__new__`` and ``__init__`` only once per class instance.
     
     To learn more about metaclasses:
-    * https://docs.python.org/2/reference/datamodel.html
+    * http://docs.python.org/2/reference/datamodel.html
     * http://stackoverflow.com/questions/6760685/creating-a-singleton-in-python
     * http://stackoverflow.com/questions/100003/what-is-a-metaclass-in-python
     """

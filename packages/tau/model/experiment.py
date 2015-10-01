@@ -25,18 +25,25 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""Experiment data model controller."""
+"""Experiment data model.
 
+An Experiment uniquely groups a :any:`Target`, :any:`Application`, and :any:`Measurement` 
+and will have zero or more :any:`Trial`. There is one selected experiment per project.  
+The selected experiment will be used for application compilation and trial visualization. 
+"""
 
 import os
 import glob
 import shutil
 from tau import logger, util
 from tau.error import ConfigurationError, InternalError
-from tau.core.mvc import Controller
-from tau.core.trial import Trial
-from tau.core.compiler import Compiler
-from tau.core.project import Project
+from tau.mvc.model import Model
+from tau.model.trial import Trial
+from tau.model.compiler import Compiler
+from tau.model.project import Project
+from tau.model.target import Target
+from tau.model.application import Application
+from tau.model.measurement import Measurement
 from tau.cf.software.tau_installation import TauInstallation
 from tau.cf.compiler.installed import InstalledCompiler
 
@@ -44,8 +51,33 @@ from tau.cf.compiler.installed import InstalledCompiler
 LOGGER = logger.get_logger(__name__)
 
 
-class Experiment(Controller):
-    """Experiment data controller."""
+class Experiment(Model):
+    """Experiment data model."""
+    
+    @classmethod
+    def __attributes__(cls):
+        return {
+            'target': {
+                'model': Target,
+                'required': True,
+                'description': "Target this experiment runs on"
+            },
+            'application': {
+                'model': Application,
+                'required': True,
+                'description': "Application this experiment uses"
+            },
+            'measurement': {
+                'model': Measurement,
+                'required': True,
+                'description': "Measurement parameters for this experiment"
+            },
+            'trials': {
+                'collection': Trial,
+                'via': 'experiment',
+                'description': "Trials of this experiment"
+            }
+        }
 
     def __init__(self, *args, **kwargs):
         super(Experiment, self).__init__(*args, **kwargs)
@@ -253,4 +285,3 @@ class Experiment(Controller):
                 profiles = glob.glob(os.path.join(prefix, 'MULTI__*'))
             if profiles:
                 self.tau.show_profile(prefix, tool_name)
-

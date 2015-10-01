@@ -28,7 +28,7 @@
 """``tau application`` subcommand."""
 
 from tau.cli.cli_view import RootCommand
-from tau.core.application import Application
+from tau.model.application import Application
 
 
 COMMAND = RootCommand(Application, __name__, group="configuration")

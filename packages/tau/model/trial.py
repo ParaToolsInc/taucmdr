@@ -25,7 +25,12 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""Trial data model controller."""
+"""Trial data model.
+
+Every application of an :any:`Experiment` produces a new :any:`Trial`.  The trial
+record completely describes the hardware and software environment that produced
+the performance data.
+"""
 
 import os
 import glob
@@ -34,7 +39,9 @@ import errno
 from datetime import datetime
 from tau import logger, util
 from tau.error import ConfigurationError
-from tau.core.mvc import Controller, with_key_attribute
+from tau.mvc.controller import Controller
+from tau.mvc.model import Model
+
 
 LOGGER = logger.get_logger(__name__)
 
@@ -49,9 +56,57 @@ class TrialError(ConfigurationError):
                    " send '%(logfile)s' to  %(contact)s for assistance.")
 
 
-@with_key_attribute('name')
-class Trial(Controller):
-    """Trial data controller."""
+class Trial(Model):
+    """Trial data model."""
+    
+    key_attribute = 'number'
+    
+    @classmethod
+    def __attributes__(cls):
+        from tau.model.experiment import Experiment
+        return {
+            'experiment': {
+                'model': Experiment,
+                'required': True,
+                'description': "this trial's experiment"
+            },
+            'number': {
+                'type': 'integer',
+                'required': True,
+                'description': 'trial unique identifier'
+            },
+            'command': {
+                'type': 'string',
+                'required': True,
+                'description': "command line executed when performing the trial"
+            },
+            'cwd': {
+                'type': 'string',
+                'required': True,
+                'description': "directory the trial was performed in",
+            },
+            'environment': {
+                'type': 'string',
+                'required': True,
+                'description': "shell environment the trial was performed in"
+            },
+            'begin_time': {
+                'type': 'datetime',
+                'description': "date and time the trial began"
+            },
+            'end_time': {
+                'type': 'datetime',
+                'description': "date and time the trial ended"
+            },
+            'return_code': {
+                'type': 'integer',
+                'description': "return code of the command executed when performing the trial"
+            },
+            'data_size': {
+                'type': 'integer',
+                'description': "the size in bytes of the trial data"
+            }
+        }
 
     def prefix(self):
         experiment = self.populate('experiment')
@@ -73,7 +128,7 @@ class Trial(Controller):
         except Exception as err:
             if os.path.exists(prefix):
                 LOGGER.error("Could not remove trial data at '%s': %s", prefix, err)
-                
+    
     @staticmethod
     def _next_trial_number(expr):
         trials = expr.populate('trials')

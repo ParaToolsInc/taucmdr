@@ -28,7 +28,7 @@
 """``tau application`` subcommand."""
 
 from tau.cli.cli_view import ListCommand
-from tau.core.application import Application
+from tau.model.application import Application
 
 
 DASHBOARD_COLUMNS = [{'header': 'Name', 'value': 'name', 'align': 'r'},

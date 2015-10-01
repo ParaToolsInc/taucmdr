@@ -292,7 +292,7 @@ def get_parser_from_model(model, use_defaults=True, prog=None, usage=None, descr
         try:
             group_name = options['group'] + ' arguments'
         except KeyError:
-            group_name = model.model_name.lower() + ' arguments'
+            group_name = model.name.lower() + ' arguments'
         else:
             del options['group']
         group = groups.setdefault(group_name, parser.add_argument_group(group_name))
@@ -316,7 +316,7 @@ def add_storage_flags(parser, action, object_name, plural=False, exclusive=True)
         plural (bool): Pluralize help message if True.
         exclusive (bool): Only one storage level may be specified if True.
     """
-    from tau.core.storage import ORDERED_CONTAINERS
+    from tau.storage import ORDERED_CONTAINERS
     help_parts = ["%s %ss" if plural else "%s the %s",
                   " at the specified storage ",
                   "level" if exclusive else "levels"]

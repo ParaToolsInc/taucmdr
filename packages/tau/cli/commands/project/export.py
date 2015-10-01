@@ -31,8 +31,8 @@ from pprint import pprint
 from tau import EXIT_SUCCESS
 from tau.cli import arguments
 from tau.cli.command import AbstractCommand
-from tau.core.project import Project
-from tau.core.storage import PROJECT_STORAGE
+from tau.model.project import Project
+from tau.storage import PROJECT_STORAGE
 
 
 class ProjectExportCommand(AbstractCommand):

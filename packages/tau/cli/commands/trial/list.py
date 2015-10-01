@@ -28,7 +28,7 @@
 """``tau trial list`` subcommand."""
 
 from tau.cli.cli_view import ListCommand
-from tau.core.trial import Trial
+from tau.model.trial import Trial
 
 
 DASHBOARD_COLUMNS = [{'header': 'Number', 'value': 'number'},

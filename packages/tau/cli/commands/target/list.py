@@ -29,7 +29,7 @@
 
 import os
 from tau.cli.cli_view import ListCommand
-from tau.core.target import Target
+from tau.model.target import Target
 
 
 DASHBOARD_COLUMNS = [{'header': 'Name', 'value': 'name', 'align': 'r'},

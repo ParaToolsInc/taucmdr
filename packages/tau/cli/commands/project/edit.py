@@ -28,7 +28,7 @@
 """``tau project edit`` subcommand."""
 
 from tau.cli.cli_view import EditCommand
-from tau.core.project import Project
+from tau.model.project import Project
 
 
 COMMAND = EditCommand(Project, __name__)

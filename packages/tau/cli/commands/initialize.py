@@ -31,8 +31,8 @@ from tau import EXIT_SUCCESS
 from tau import cli
 from tau.cli import arguments
 from tau.cli.command import AbstractCommand
-from tau.core.storage import PROJECT_STORAGE
-from tau.core.project import Project
+from tau.storage import PROJECT_STORAGE
+from tau.model.project import Project
 
 class InitializeCommand(AbstractCommand):
     """``tau initialize`` subcommand."""

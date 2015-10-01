@@ -28,7 +28,7 @@
 """``tau measurement`` subcommand."""
 
 from tau.cli.cli_view import CreateCommand
-from tau.core.measurement import Measurement
+from tau.model.measurement import Measurement
 
 
 COMMAND = CreateCommand(Measurement, __name__)

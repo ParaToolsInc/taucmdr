@@ -45,18 +45,26 @@ class AbstractCommand(object):
     __metaclass__ = ABCMeta
     
     def __init__(self, module_name, format_fields=None, summary_fmt=None, help_page_fmt=None, group=None):
+        if not summary_fmt:
+            summary_fmt = "No summary for '%(command)s'"
+        if not help_page_fmt:
+            help_page_fmt = "No help page for '%(command)s'" 
         self.module_name = module_name
         self.logger = logger.get_logger(module_name)
         self.command = cli.command_from_module_name(module_name)
         self.format_fields = format_fields if format_fields else {}
         self.format_fields['command'] = self.command
-        if not summary_fmt:
-            summary_fmt = "No summary for '%(command)s'"
-        self.summary = summary_fmt % self.format_fields
-        if not help_page_fmt:
-            help_page_fmt = "No help page for '%(command)s'" 
-        self.help_page = help_page_fmt % self.format_fields
+        self.summary_fmt = summary_fmt
+        self.help_page_fmt = help_page_fmt
         self.group = group
+
+    @property
+    def summary(self):
+        return self.summary_fmt % self.format_fields
+    
+    @property
+    def help_page(self):
+        return self.help_page_fmt % self.format_fields
 
     @property
     def parser(self):

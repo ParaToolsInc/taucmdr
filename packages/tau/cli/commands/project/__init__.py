@@ -29,7 +29,7 @@
 
 
 from tau.cli.cli_view import RootCommand
-from tau.core.project import Project
+from tau.model.project import Project
 
 
 COMMAND = RootCommand(Project, __name__, group="configuration")

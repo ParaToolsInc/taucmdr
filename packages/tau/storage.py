@@ -45,7 +45,7 @@ from abc import ABCMeta, abstractmethod
 from tau import logger, util
 from tau import SYSTEM_PREFIX, USER_PREFIX, PROJECT_DIR
 from tau.error import Error, ConfigurationError
-from tau.core.database import JsonDatabase
+from tau.database import JsonDatabase
 
 
 LOGGER = logger.get_logger(__name__)
