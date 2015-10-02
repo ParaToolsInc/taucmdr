@@ -38,7 +38,7 @@ class Controller(object):
 
     Attributes:
         model (AbstractModel): Data model.
-        storage (AbstractStorageContainer): Data storage. 
+        storage (AbstractDatabase): Record storage. 
     
     .. _MVC: https://en.wikipedia.org/wiki/Model-view-controller
     """
@@ -46,6 +46,60 @@ class Controller(object):
     def __init__(self, model_cls, storage):
         self.model = model_cls
         self.storage = storage
+
+    def one(self, key):
+        record = self.storage.get(key, table_name=self.model.name)
+        return self.model(record) if record else None
+
+    def all(self):
+        return [self.model(record) for record in self.storage.search(table_name=self.model.name)]
+    
+    def count(self):
+        return self.storage.count(table_name=self.model.name)
+    
+    def search(self, keys=None):
+        return [self.model(record) if record else None 
+                for record in self.storage.search(keys=keys, table_name=self.model.name)]
+
+    def match(self, field, regex=None, test=None):
+        return [self.model(record) if record else None 
+                for record in self.storage.match(field, table_name=self.model.name, regex=regex, test=test)]
+
+    def exists(self, keys):
+        return self.storage.contains(keys, table_name=self.model.name)
+
+    def populate(self, model, attribute=None):
+        """Merges associated data into the model record.
+        
+        Example:
+            Suppose we have the following Person records::
+            
+                1: {'name': 'Katie', 'friends': [2, 3]}
+                2: {'name': 'Ryan', 'friends': [1]}
+                3: {'name': 'John', 'friends': [1]}
+
+            Populating ``Person({'name': 'Katie', 'friends': [2, 3]})`` produces this dictionary::
+            
+                {'name': 'Katie',
+                 'friends': [Person({'name': 'Ryan', 'friends': [1]}),
+                             Person({'name': 'John', 'friends': [1]}]})
+                             
+        Args:
+            attribute (Optional[str]): If given, return only the populated attribute.
+        
+        Returns:
+            If attribute is None, a dictionary of controlled data merged with associated records.
+            If attribute is not None, the value of the populated attribute. 
+            
+        Raises:
+            KeyError: `attribute` is undefined in the record. 
+        """
+        if attribute:
+            LOGGER.debug("Populating %s(%s)[%s]", model.name, model.eid, attribute)
+            return self._populate_attribute(model, attribute)
+        else:
+            LOGGER.debug("Populating %s(%s)", model.name, model.eid)
+            return {attr: self._populate_attribute(model, attr) for attr in model}
 
     def _populate_attribute(self, model, attr):
         value = model[attr]
@@ -58,60 +112,9 @@ class Controller(object):
             except KeyError:
                 return value
             else:
-                return [dict(record) for record in foreign.controller(self.storage).search(keys=value)]
+                return foreign.controller(self.storage).search(value)
         else:
-            return dict(foreign.controller(self.storage).one(keys=value))
-
-    def populate(self, model, attribute=None):
-        """Merges associated data into the model record.
-        
-        Example:
-            Suppose we have the following Person records::
-            
-                1: {'name': 'Katie', 'friends': [2, 3]}
-                2: {'name': 'Ryan', 'friends': [1]}
-                3: {'name': 'John', 'friends': [1]}
-
-            Populating Person ``1`` produces this dictionary::
-            
-                {'name': 'Katie',
-                 'friends': [{'name': 'Ryan', 'friends': [1]},
-                             {'name': 'John', 'friends': [1]}]}
-                             
-        Args:
-            attribute (Optional[str]): If given, return only the populated attribute.
-        
-        Returns:
-            dict: Controlled data merged with associated records.
-            
-        Raises:
-            KeyError: `attribute` is undefined in the populated record. 
-        """
-        if attribute:
-            LOGGER.debug("Populating %s[%s]", model, attribute)
-            return self._populate_attribute(model, attribute)
-        else:
-            LOGGER.debug("Populating %s", model)
-            return {attr: self._populate_attribute(model, attr) for attr in model.attributes}
-
-    def one(self, key):
-        return self.model(self.storage.database.get(key, table_name=self.model.name))
-
-    def all(self):
-        return [self.model(record) for record in self.storage.database.search(table_name=self.model.name)]
-    
-    def count(self):
-        return self.storage.database.count(table_name=self.model.name)
-    
-    def search(self, keys=None):
-        return [self.model(record) for record in self.storage.database.search(keys, table_name=self.model.name)]
-
-    def match(self, field, regex=None, test=None):
-        return [self.model(record) for record in 
-                self.storage.database.match(field, table_name=self.model.name, regex=regex, test=test)]
-
-    def exists(self, keys):
-        return self.storage.database.contains(keys, table_name=self.model.name)
+            return foreign.controller(self.storage).one(value)
 
     def create(self, data):
         """Store a new record and update associations.
@@ -126,10 +129,10 @@ class Controller(object):
         """
         data = self.model.validate(data)
         unique = {attr: data[attr] for attr, props in self.model.attributes.iteritems() if 'unique' in props}
-        if self.storage.database.contains(self.model.name, keys=unique, match_any=True):
-            raise UniqueAttributeError(self, unique)
-        with self.storage.database as database:
-            record = database.insert(self.model.name, data) 
+        if unique and self.storage.contains(unique, match_any=True, table_name=self.model.name):
+            raise UniqueAttributeError(self.model, unique)
+        with self.storage as database:
+            record = database.insert(data, table_name=self.model.name) 
             for attr, foreign in self.model.associations.iteritems():
                 if 'model' or 'collection' in self.model.attributes[attr]:
                     foreign_cls, via = foreign
@@ -155,8 +158,8 @@ class Controller(object):
         """
         for attr in data:
             if not attr in self.model.attributes:
-                raise ModelError(self.model, "Model '%s' has no attribute named '%s'" % (self.model.name, attr))
-        with self.storage.database as database:
+                raise ModelError(self.model, "no attribute named '%s'" % attr)
+        with self.storage as database:
             # Get the list of affected records **before** updating the data so foreign keys are correct
             changing = self.search(keys)
             database.update(data, keys, table_name=self.model.name)
@@ -196,8 +199,8 @@ class Controller(object):
         """
         for attr in fields:
             if not attr in self.model.attributes:
-                raise ModelError(self.model, "Model '%s' has no attribute named '%s'" % (self.model.name, attr))
-        with self.storage.database as database:
+                raise ModelError(self.model, "no attribute named '%s'" % attr)
+        with self.storage as database:
             # Get the list of affected records **before** updating the data so foreign keys are correct
             changing = self.search(keys)
             database.unset(fields, keys, table_name=self.model.name)
@@ -225,7 +228,7 @@ class Controller(object):
             keys (dict): Attributes to match.
             keys: Fields or element identifiers to match.
         """
-        with self.storage.database as database:
+        with self.storage as database:
             for model in self.search(keys):
                 model.on_delete()
                 for attr, foreign in model.associations.iteritems():
@@ -316,7 +319,7 @@ class Controller(object):
         LOGGER.debug("Adding %s to '%s' in %s(eids=%s)", record.eid, via, foreign_model.name, affected)
         if not isinstance(affected, list):
             affected = [affected]
-        with self.storage.database as database:
+        with self.storage as database:
             for key in affected:
                 foreign_record = database.get(key, table_name=foreign_model.name)
                 if not foreign_record:
@@ -342,7 +345,7 @@ class Controller(object):
         if not isinstance(affected, list):
             affected = [affected]
         foreign_props = foreign_model.attributes[via]
-        with self.storage.database as database:
+        with self.storage as database:
             for key in affected:
                 if 'model' in foreign_props:
                     if 'required' in foreign_props:

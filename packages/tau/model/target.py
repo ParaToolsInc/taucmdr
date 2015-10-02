@@ -40,17 +40,271 @@ from tau.mvc.model import Model
 from tau.mvc.controller import Controller
 from tau.cf.compiler import CompilerRole
 from tau.cf.compiler.installed import InstalledCompilerSet
-from tau.cf.target import host, Architecture, OperatingSystem
+from tau.model.compiler import Compiler
+
+def attributes():
+    from tau.model.project import Project
+    from tau.cli.arguments import ParsePackagePathAction
+    from tau.cf.target import host, Architecture, OperatingSystem
+    return {
+        'projects': {
+            'collection': Project,
+            'via': 'targets',
+            'description': 'projects using this target'
+        },
+        'name': {
+            'primary_key': True,
+            'type': 'string',
+            'unique': True,
+            'description': 'target configuration name',
+            'argparse': {'metavar': '<target_name>'}
+        },
+        'host_os': {
+            'type': 'string',
+            'required': True,
+            'description': 'host operating system',
+            'default': host.operating_system().name,
+            'argparse': {'flags': ('--host-os',),
+                         'group': 'target system',
+                         'metavar': '<os>',
+                         'choices': OperatingSystem.keys()}
+        },
+        'host_arch': {
+            'type': 'string',
+            'required': True,
+            'description': 'host architecture',
+            'default': host.architecture().name,
+            'argparse': {'flags': ('--host-arch',),
+                         'group': 'target system',
+                         'metavar': '<arch>',
+                         'choices': Architecture.keys()}
+        },
+        'CC': {
+            'model': Compiler,
+            'required': True,
+            'description': 'C compiler command',
+            'argparse': {'flags': ('--cc',),
+                         'group': 'compiler',
+                         'metavar': '<command>'}
+        },
+        'CXX': {
+            'model': Compiler,
+            'required': True,
+            'description': 'C++ compiler command',
+            'argparse': {'flags': ('--cxx',),
+                         'group': 'compiler',
+                         'metavar': '<command>'}
+        },
+        'FC': {
+            'model': Compiler,
+            'required': True,
+            'description': 'Fortran compiler command',
+            'argparse': {'flags': ('--fc',),
+                         'group': 'compiler',
+                         'metavar': '<command>'}
+        },
+        'UPC': {
+            'model': Compiler,
+            'required': False,
+            'description': 'Universal Parallel C compiler command',
+            'argparse': {'flags': ('--upc',),
+                         'group': 'Universal Parallel C',
+                         'metavar': '<command>'}
+        },
+        'MPI_CC': {
+            'model': Compiler,
+            'required': False,
+            'description': 'MPI C compiler command',
+            'argparse': {'flags': ('--mpi-cc',),
+                         'group': 'Message Passing Interface (MPI)',
+                         'metavar': '<command>'}
+        },
+        'MPI_CXX': {
+            'model': Compiler,
+            'required': False,
+            'description': 'MPI C++ compiler command',
+            'argparse': {'flags': ('--mpi-cxx',),
+                         'group': 'Message Passing Interface (MPI)',
+                         'metavar': '<command>'}
+        },
+        'MPI_FC': {
+            'model': Compiler,
+            'required': False,
+            'description': 'MPI Fortran compiler command',
+            'argparse': {'flags': ('--mpi-fc',),
+                         'group': 'Message Passing Interface (MPI)',
+                         'metavar': '<command>'}
+        },
+        'mpi_include_path': {
+            'type': 'array',
+            'description': 'paths to search for MPI header files when building MPI applications',
+            'argparse': {'flags': ('--mpi-include-path',),
+                         'group': 'Message Passing Interface (MPI)',
+                         'metavar': '<path>',
+                         'nargs': '+'},
+            'compat': {bool: (Target.require("MPI_CC"),
+                              Target.require("MPI_CXX"),
+                              Target.require("MPI_FC"))}
+        },
+        'mpi_library_path': {
+            'type': 'array',
+            'description': 'paths to search for MPI library files when building MPI applications',
+            'argparse': {'flags': ('--mpi-library-path',),
+                         'group': 'Message Passing Interface (MPI)',
+                         'metavar': '<path>',
+                         'nargs': '+'},
+            'compat': {bool: (Target.require("MPI_CC"),
+                              Target.require("MPI_CXX"),
+                              Target.require("MPI_FC"))}
+        },
+        'mpi_libraries': {
+            'type': 'array',
+            'description': 'libraries to link to when building MPI applications',
+            'argparse': {'flags': ('--mpi-libraries',),
+                         'group': 'Message Passing Interface (MPI)',
+                         'metavar': '<flag>',
+                         'nargs': '+'},
+            'compat': {bool: (Target.require("MPI_CC"),
+                              Target.require("MPI_CXX"),
+                              Target.require("MPI_FC"))}
+        },
+        'SHMEM_CC': {
+            'model': Compiler,
+            'required': False,
+            'description': 'SHMEM C compiler command',
+            'argparse': {'flags': ('--shmem-cc',),
+                         'group': 'Symmetric Hierarchical Memory (SHMEM)',
+                         'metavar': '<command>'}
+        },
+        'SHMEM_CXX': {
+            'model': Compiler,
+            'required': False,
+            'description': 'SHMEM C++ compiler command',
+            'argparse': {'flags': ('--shmem-cxx',),
+                         'group': 'Symmetric Hierarchical Memory (SHMEM)',
+                         'metavar': '<command>'}
+        },
+        'SHMEM_FC': {
+            'model': Compiler,
+            'required': False,
+            'description': 'SHMEM Fortran compiler command',
+            'argparse': {'flags': ('--shmem-fc',),
+                         'group': 'Symmetric Hierarchical Memory (SHMEM)',
+                         'metavar': '<command>'}
+        },
+        'shmem_include_path': {
+            'type': 'array',
+            'description': 'paths to search for SHMEM header files when building SHMEM applications',
+            'argparse': {'flags': ('--shmem-include-path',),
+                         'group': 'Symmetric Hierarchical Memory (SHMEM)',
+                         'metavar': '<path>',
+                         'nargs': '+'},
+        },
+        'shmem_library_path': {
+            'type': 'array',
+            'description': 'paths to search for SHMEM library files when building SHMEM applications',
+            'argparse': {'flags': ('--shmem-library-path',),
+                         'group': 'Symmetric Hierarchical Memory (SHMEM)',
+                         'metavar': '<path>',
+                         'nargs': '+'},
+        },
+        'shmem_libraries': {
+            'type': 'array',
+            'description': 'libraries to link to when building SHMEM applications',
+            'argparse': {'flags': ('--shmem-libraries',),
+                         'group': 'Symmetric Hierarchical Memory (SHMEM)',
+                         'metavar': '<flag>',
+                         'nargs': '+'},
+        },
+        'cuda': {
+            'type': 'string',
+            'description': 'path to NVIDIA CUDA installation (enables OpenCL support)',
+            'argparse': {'flags': ('--cuda',),
+                         'group': 'software package',
+                         'metavar': '<path>',
+                         'action': ParsePackagePathAction},
+        },
+        'opencl': {
+            'type': 'string',
+            'description': 'path to OpenCL libraries and headers',
+            'argparse': {'flags': ('--opencl',),
+                         'group': 'software package',
+                         'metavar': '<path>',
+                         'action': ParsePackagePathAction},
+        },
+        'tau_source': {
+            'type': 'string',
+            'description': 'path or URL to a TAU installation or archive file',
+            'default': 'download',
+            'argparse': {'flags': ('--tau',),
+                         'group': 'software package',
+                         'metavar': '(<path>|<url>|download)',
+                         'action': ParsePackagePathAction}
+        },
+        'pdt_source': {
+            'type': 'string',
+            'description': 'path or URL to a PDT installation or archive file',
+            'default': 'download',
+            'argparse': {'flags': ('--pdt',),
+                         'group': 'software package',
+                         'metavar': '(<path>|<url>|download|None)',
+                         'action': ParsePackagePathAction},
+        },
+        'binutils_source': {
+            'type': 'string',
+            'description': 'path or URL to a GNU binutils installation or archive file',
+            'default': 'download',
+            'argparse': {'flags': ('--binutils',),
+                         'group': 'software package',
+                         'metavar': '(<path>|<url>|download|None)',
+                         'action': ParsePackagePathAction}
+        },
+        'libunwind_source': {
+            'type': 'string',
+            'description': 'path or URL to a libunwind installation or archive file',
+            'default': 'download',
+            'argparse': {'flags': ('--libunwind',),
+                         'group': 'software package',
+                         'metavar': '(<path>|<url>|download|None)',
+                         'action': ParsePackagePathAction}
+        },
+        'papi_source': {
+            'type': 'string',
+            'description': 'path or URL to a PAPI installation or archive file',
+            'argparse': {'flags': ('--papi',),
+                         'group': 'software package',
+                         'metavar': '(<path>|<url>|download|None)',
+                         'action': ParsePackagePathAction}
+        },
+        'scorep_source': {
+            'type': 'string',
+            'description': 'path or URL to a Score-P installation or archive file',
+            'argparse': {'flags': ('--score-p',),
+                         'group': 'software package',
+                         'metavar': '(<path>|<url>|download|None)',
+                         'action': ParsePackagePathAction}
+        }
+    }
 
 
 class TargetController(Controller):
     """Target data controller."""
 
-    def compilers(self, target):
-        """Get information about the compilers used by a target configuration.
-        
-        Args:
-            target (Target): Target to operate on.
+
+class Target(Model):
+    """Target data model."""
+    
+    __attributes__ = attributes
+
+    __controller__ = TargetController
+    
+    def on_create(self):
+        super(Target, self).on_create()
+        if not self['tau_source']:
+            raise ConfigurationError("A TAU installation or source code must be provided.")
+    
+    def compilers(self):
+        """Get information about the compilers used by this target configuration.
          
         Returns:
             InstalledCompilerSet: Collection of installed compilers used by this target.
@@ -59,265 +313,25 @@ class TargetController(Controller):
         compilers = {}
         for role in CompilerRole.all():
             try:
-                compiler_command = self.populate(target, attribute=role.keyword)
+                compiler_command = self.populate(attribute=role.keyword)
             except KeyError:
                 continue
             compilers[role.keyword] = compiler_command.info()
             eids.append(compiler_command.eid)
         missing = [role.keyword for role in CompilerRole.tau_required() if role.keyword not in compilers]
         if missing:
-            raise InternalError("Target '%s' is missing required compilers: %s" % (target['name'], missing))
+            raise InternalError("Target '%s' is missing required compilers: %s" % (self['name'], missing))
         return InstalledCompilerSet('_'.join([str(x) for x in eids]), **compilers)
 
-
-
-class Target(Model):
-    """Target data model."""
-    
-    __controller__ = TargetController
-    
-    key_attribute = 'name'
-
-    @classmethod
-    def __attributes__(cls):
-        from tau.model.compiler import Compiler
-        from tau.cli.arguments import ParsePackagePathAction
-        return {
-            'name': {
-                'type': 'string',
-                'unique': True,
-                'description': 'target configuration name',
-                'argparse': {'metavar': '<target_name>'}
-            },
-            'host_os': {
-                'type': 'string',
-                'required': True,
-                'description': 'host operating system',
-                'default': host.operating_system().name,
-                'argparse': {'flags': ('--host-os',),
-                             'group': 'target system',
-                             'metavar': '<os>',
-                             'choices': OperatingSystem.keys()}
-            },
-            'host_arch': {
-                'type': 'string',
-                'required': True,
-                'description': 'host architecture',
-                'default': host.architecture().name,
-                'argparse': {'flags': ('--host-arch',),
-                             'group': 'target system',
-                             'metavar': '<arch>',
-                             'choices': Architecture.keys()}
-            },
-            'CC': {
-                'model': Compiler,
-                'required': True,
-                'description': 'C compiler command',
-                'argparse': {'flags': ('--cc',),
-                             'group': 'compiler',
-                             'metavar': '<command>'}
-            },
-            'CXX': {
-                'model': Compiler,
-                'required': True,
-                'description': 'C++ compiler command',
-                'argparse': {'flags': ('--cxx',),
-                             'group': 'compiler',
-                             'metavar': '<command>'}
-            },
-            'FC': {
-                'model': Compiler,
-                'required': True,
-                'description': 'Fortran compiler command',
-                'argparse': {'flags': ('--fc',),
-                             'group': 'compiler',
-                             'metavar': '<command>'}
-            },
-            'UPC': {
-                'model': Compiler,
-                'required': False,
-                'description': 'Universal Parallel C compiler command',
-                'argparse': {'flags': ('--upc',),
-                             'group': 'Universal Parallel C',
-                             'metavar': '<command>'}
-            },
-            'MPI_CC': {
-                'model': Compiler,
-                'required': False,
-                'description': 'MPI C compiler command',
-                'argparse': {'flags': ('--mpi-cc',),
-                             'group': 'Message Passing Interface (MPI)',
-                             'metavar': '<command>'}
-            },
-            'MPI_CXX': {
-                'model': Compiler,
-                'required': False,
-                'description': 'MPI C++ compiler command',
-                'argparse': {'flags': ('--mpi-cxx',),
-                             'group': 'Message Passing Interface (MPI)',
-                             'metavar': '<command>'}
-            },
-            'MPI_FC': {
-                'model': Compiler,
-                'required': False,
-                'description': 'MPI Fortran compiler command',
-                'argparse': {'flags': ('--mpi-fc',),
-                             'group': 'Message Passing Interface (MPI)',
-                             'metavar': '<command>'}
-            },
-            'mpi_include_path': {
-                'type': 'array',
-                'description': 'paths to search for MPI header files when building MPI applications',
-                'argparse': {'flags': ('--mpi-include-path',),
-                             'group': 'Message Passing Interface (MPI)',
-                             'metavar': '<path>',
-                             'nargs': '+'},
-                'compat': {bool: (Target.require("MPI_CC"),
-                                  Target.require("MPI_CXX"),
-                                  Target.require("MPI_FC"))}
-            },
-            'mpi_library_path': {
-                'type': 'array',
-                'description': 'paths to search for MPI library files when building MPI applications',
-                'argparse': {'flags': ('--mpi-library-path',),
-                             'group': 'Message Passing Interface (MPI)',
-                             'metavar': '<path>',
-                             'nargs': '+'},
-                'compat': {bool: (Target.require("MPI_CC"),
-                                  Target.require("MPI_CXX"),
-                                  Target.require("MPI_FC"))}
-            },
-            'mpi_libraries': {
-                'type': 'array',
-                'description': 'libraries to link to when building MPI applications',
-                'argparse': {'flags': ('--mpi-libraries',),
-                             'group': 'Message Passing Interface (MPI)',
-                             'metavar': '<flag>',
-                             'nargs': '+'},
-                'compat': {bool: (Target.require("MPI_CC"),
-                                  Target.require("MPI_CXX"),
-                                  Target.require("MPI_FC"))}
-            },
-            'SHMEM_CC': {
-                'model': Compiler,
-                'required': False,
-                'description': 'SHMEM C compiler command',
-                'argparse': {'flags': ('--shmem-cc',),
-                             'group': 'Symmetric Hierarchical Memory (SHMEM)',
-                             'metavar': '<command>'}
-            },
-            'SHMEM_CXX': {
-                'model': Compiler,
-                'required': False,
-                'description': 'SHMEM C++ compiler command',
-                'argparse': {'flags': ('--shmem-cxx',),
-                             'group': 'Symmetric Hierarchical Memory (SHMEM)',
-                             'metavar': '<command>'}
-            },
-            'SHMEM_FC': {
-                'model': Compiler,
-                'required': False,
-                'description': 'SHMEM Fortran compiler command',
-                'argparse': {'flags': ('--shmem-fc',),
-                             'group': 'Symmetric Hierarchical Memory (SHMEM)',
-                             'metavar': '<command>'}
-            },
-            'shmem_include_path': {
-                'type': 'array',
-                'description': 'paths to search for SHMEM header files when building SHMEM applications',
-                'argparse': {'flags': ('--shmem-include-path',),
-                             'group': 'Symmetric Hierarchical Memory (SHMEM)',
-                             'metavar': '<path>',
-                             'nargs': '+'},
-            },
-            'shmem_library_path': {
-                'type': 'array',
-                'description': 'paths to search for SHMEM library files when building SHMEM applications',
-                'argparse': {'flags': ('--shmem-library-path',),
-                             'group': 'Symmetric Hierarchical Memory (SHMEM)',
-                             'metavar': '<path>',
-                             'nargs': '+'},
-            },
-            'shmem_libraries': {
-                'type': 'array',
-                'description': 'libraries to link to when building SHMEM applications',
-                'argparse': {'flags': ('--shmem-libraries',),
-                             'group': 'Symmetric Hierarchical Memory (SHMEM)',
-                             'metavar': '<flag>',
-                             'nargs': '+'},
-            },
-            'cuda': {
-                'type': 'string',
-                'description': 'path to NVIDIA CUDA installation (enables OpenCL support)',
-                'argparse': {'flags': ('--cuda',),
-                             'group': 'software package',
-                             'metavar': '<path>',
-                             'action': ParsePackagePathAction},
-            },
-            'opencl': {
-                'type': 'string',
-                'description': 'path to OpenCL libraries and headers',
-                'argparse': {'flags': ('--opencl',),
-                             'group': 'software package',
-                             'metavar': '<path>',
-                             'action': ParsePackagePathAction},
-            },
-            'tau_source': {
-                'type': 'string',
-                'description': 'path or URL to a TAU installation or archive file',
-                'default': 'download',
-                'argparse': {'flags': ('--tau',),
-                             'group': 'software package',
-                             'metavar': '(<path>|<url>|download)',
-                             'action': ParsePackagePathAction}
-            },
-            'pdt_source': {
-                'type': 'string',
-                'description': 'path or URL to a PDT installation or archive file',
-                'default': 'download',
-                'argparse': {'flags': ('--pdt',),
-                             'group': 'software package',
-                             'metavar': '(<path>|<url>|download|None)',
-                             'action': ParsePackagePathAction},
-            },
-            'binutils_source': {
-                'type': 'string',
-                'description': 'path or URL to a GNU binutils installation or archive file',
-                'default': 'download',
-                'argparse': {'flags': ('--binutils',),
-                             'group': 'software package',
-                             'metavar': '(<path>|<url>|download|None)',
-                             'action': ParsePackagePathAction}
-            },
-            'libunwind_source': {
-                'type': 'string',
-                'description': 'path or URL to a libunwind installation or archive file',
-                'default': 'download',
-                'argparse': {'flags': ('--libunwind',),
-                             'group': 'software package',
-                             'metavar': '(<path>|<url>|download|None)',
-                             'action': ParsePackagePathAction}
-            },
-            'papi_source': {
-                'type': 'string',
-                'description': 'path or URL to a PAPI installation or archive file',
-                'argparse': {'flags': ('--papi',),
-                             'group': 'software package',
-                             'metavar': '(<path>|<url>|download|None)',
-                             'action': ParsePackagePathAction}
-            },
-            'scorep_source': {
-                'type': 'string',
-                'description': 'path or URL to a Score-P installation or archive file',
-                'argparse': {'flags': ('--score-p',),
-                             'group': 'software package',
-                             'metavar': '(<path>|<url>|download|None)',
-                             'action': ParsePackagePathAction}
-            }
-        }
-
-    def on_create(self):
-        super(Target, self).on_create()
-        if not self['tau_source']:
-            raise ConfigurationError("A TAU installation or source code must be provided.")
-    
+    def check_compiler(self, given_compiler):
+        compiler_ctrl = Compiler.controller(self.storage)
+        given_compiler_eid = compiler_ctrl.register(given_compiler).eid
+        target_compiler_eid = self[given_compiler.info.role.keyword]       
+        # Confirm target supports compiler
+        if given_compiler_eid != target_compiler_eid:
+            target_compiler = compiler_ctrl.one(target_compiler_eid).info()
+            raise ConfigurationError("Target '%s' is configured with %s '%s', not %s '%s'" %
+                                     (self['name'], target_compiler.info.short_descr, target_compiler.absolute_path,
+                                      given_compiler.info.short_descr, given_compiler.absolute_path),
+                                     "Select a different target or compile with '%s'" % 
+                                     target_compiler.absolute_path)

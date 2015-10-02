@@ -27,8 +27,156 @@
 #
 """``tau project edit`` subcommand."""
 
+from tau import EXIT_SUCCESS
+from tau.storage.levels import PROJECT_STORAGE
+from tau.cli import arguments
 from tau.cli.cli_view import EditCommand
 from tau.model.project import Project
+from tau.model.target import Target
+from tau.model.application import Application
+from tau.model.measurement import Measurement
 
 
-COMMAND = EditCommand(Project, __name__)
+class ProjectEditCommand(EditCommand):
+
+    def construct_parser(self):
+        usage = "%s <project_name> [arguments]" % self.command
+        parser = arguments.get_parser_from_model(self.model,
+                                                 use_defaults=False,
+                                                 prog=self.command,
+                                                 usage=usage,
+                                                 description=self.summary)
+        parser.add_argument('--new-name',
+                            help="change the project's name",
+                            metavar='<new_name>', 
+                            dest='new_name',
+                            default=arguments.SUPPRESS)
+        parser.add_argument('--add',
+                            help="Add target, application, or measurement configurations to the project",
+                            metavar='<conf>',
+                            nargs='+',
+                            default=arguments.SUPPRESS)
+        parser.add_argument('--remove',
+                            help="Remove target, application, or measurement configurations from the project",
+                            metavar='<conf>',
+                            nargs='+',
+                            default=arguments.SUPPRESS)
+        parser.add_argument('--add-targets',
+                            help="Add target configurations to the project",
+                            metavar='<target>',
+                            nargs='+',
+                            default=arguments.SUPPRESS)
+        parser.add_argument('--add-applications',
+                            help="Add application configurations to the project",
+                            metavar='<application>',
+                            nargs='+',
+                            default=arguments.SUPPRESS)
+        parser.add_argument('--add-measurements',
+                            help="Add measurement configurations to the project",
+                            metavar='<measurement>',
+                            nargs='+',
+                            default=arguments.SUPPRESS)
+        parser.add_argument('--remove-targets',
+                            help="Remove target configurations from the project",
+                            metavar='<target>',
+                            nargs='+',
+                            default=arguments.SUPPRESS)
+        parser.add_argument('--remove-applications',
+                            help="Remove application configurations from the project",
+                            metavar='<application>',
+                            nargs='+',
+                            default=arguments.SUPPRESS)
+        parser.add_argument('--remove-measurements',
+                            help="Remove measurement configurations from the project",
+                            metavar='<measurement>',
+                            nargs='+',
+                            default=arguments.SUPPRESS)
+        return parser
+
+
+    def main(self, argv):
+        from tau.cli.commands.project.list import COMMAND as project_list
+
+        args = self.parser.parse_args(args=argv)
+        self.logger.debug('Arguments: %s', args)
+    
+        tar_ctrl = Target.controller(PROJECT_STORAGE)
+        app_ctrl = Application.controller(PROJECT_STORAGE)
+        meas_ctrl = Measurement.controller(PROJECT_STORAGE)
+        proj_ctrl = Project.controller(PROJECT_STORAGE)
+    
+        project_name = args.name
+        project = proj_ctrl.one({'name': project_name})
+        if not project:
+            self.parser.error("'%s' is not a project name. Type `%s` to see valid names." % 
+                              (project_name, project_list.command))
+    
+        updates = dict(project.element)
+        updates['name'] = getattr(args, 'new_name', project_name)
+        targets = set(project['targets'])
+        applications = set(project['applications'])
+        measurements = set(project['measurements'])
+        
+        for attr, ctrl, dest in [('add_targets', tar_ctrl, targets),
+                                 ('add_applications', app_ctrl, applications),
+                                 ('add_measurements', meas_ctrl, measurements)]:
+            names = getattr(args, attr, [])
+            for name in names:
+                found = ctrl.one({'name': name})
+                if not found:
+                    self.parser.error("There is no %s named '%s'" % (ctrl.model.name, name))
+                dest.add(found.eid)
+    
+        for name in set(getattr(args, "add", [])):
+            tar = tar_ctrl.one({'name': name})
+            app = app_ctrl.one({'name': name})
+            mes = meas_ctrl.one({'name': name})
+            tam = set([tar, app, mes]) - set([None])
+            if len(tam) > 1:
+                self.parser.error("'%s' is ambiguous. Use --add-targets, --add-applications,"
+                                  " or --add-measurements to specify configuration type" % name)
+            elif len(tam) == 0:
+                self.parser.error("'%s' is not a target, application, or measurement" % name)
+            elif tar:
+                targets.add(tar.eid)
+            elif app:
+                applications.add(app.eid)
+            elif mes:
+                measurements.add(mes.eid)
+    
+        for attr, ctrl, dest in [('remove_targets', tar_ctrl, targets),
+                                 ('remove_applications', app_ctrl, applications),
+                                 ('remove_measurements', meas_ctrl, measurements)]:
+            names = getattr(args, attr, [])
+            for name in names:
+                found = ctrl.one({'name': name})
+                if not found:
+                    self.parser.error('There is no %s named %r' % (ctrl.model.name, name))
+                dest.remove(found.eid)
+    
+        for name in set(getattr(args, "remove", [])):
+            tar = tar_ctrl.one({'name': name})
+            app = app_ctrl.one({'name': name})
+            mes = meas_ctrl.one({'name': name})
+            tam = set([tar, app, mes]) - set([None])
+            if len(tam) > 1:
+                self.parser.error("'%s' is ambiguous. Use --remove-targets, --remove-applications,"
+                                  " or --remove-measurements to specify configuration type" % name)
+            elif len(tam) == 0:
+                self.parser.error("'%s' is not a target, application, or measurement" % name)
+            elif tar:
+                targets.remove(tar.eid)
+            elif app:
+                applications.remove(app.eid)
+            elif mes:
+                measurements.remove(mes.eid)
+    
+        updates['targets'] = list(targets)
+        updates['applications'] = list(applications)
+        updates['measurements'] = list(measurements)
+    
+        proj_ctrl.update(updates, {'name': project_name})
+        self.logger.info("Updated project '%s'", project_name)
+        return EXIT_SUCCESS
+
+COMMAND = ProjectEditCommand(Project, __name__)

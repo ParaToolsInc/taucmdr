@@ -316,14 +316,14 @@ def add_storage_flags(parser, action, object_name, plural=False, exclusive=True)
         plural (bool): Pluralize help message if True.
         exclusive (bool): Only one storage level may be specified if True.
     """
-    from tau.storage import ORDERED_CONTAINERS
+    from tau.storage.levels import ORDERED_LEVELS
     help_parts = ["%s %ss" if plural else "%s the %s",
                   " at the specified storage ",
                   "level" if exclusive else "levels"]
     help_str = "".join(help_parts) % (action, object_name)
     nargs = 1 if exclusive else '+'
-    choices = [container.name for container in ORDERED_CONTAINERS]
-    default = [ORDERED_CONTAINERS[0].name]
+    choices = [container.name for container in ORDERED_LEVELS]
+    default = [ORDERED_LEVELS[0].name]
     parser.add_argument('-'+STORAGE_LEVEL_FLAG,
                         help=help_str,
                         metavar="<level>", 

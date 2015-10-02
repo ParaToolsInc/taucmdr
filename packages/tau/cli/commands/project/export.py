@@ -32,7 +32,7 @@ from tau import EXIT_SUCCESS
 from tau.cli import arguments
 from tau.cli.command import AbstractCommand
 from tau.model.project import Project
-from tau.storage import PROJECT_STORAGE
+from tau.storage.levels import PROJECT_STORAGE
 
 
 class ProjectExportCommand(AbstractCommand):

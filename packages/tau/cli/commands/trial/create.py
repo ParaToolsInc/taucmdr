@@ -32,6 +32,7 @@ from tau.error import ConfigurationError
 from tau.cli import arguments
 from tau.cli.cli_view import CreateCommand
 from tau.model.trial import Trial
+from tau.model.project import Project
 
 
 class TrialCreateCommand(CreateCommand):
@@ -65,10 +66,13 @@ class TrialCreateCommand(CreateCommand):
         args = self.parser.parse_args(args=argv)
         self.logger.debug('Arguments: %s', args)
 
-        selection = None #Experiment.get_selected()
-        if not selection:
-            raise ConfigurationError("No experiment configured.", "See `tau project select`")
-        return selection.managed_run(args.cmd, args.cmd_args)
+        proj_ctrl = Project.controller()
+        proj = proj_ctrl.selected()
+        if not proj:
+            from tau.cli.commands.select import COMMAND as select_command
+            raise ConfigurationError("No project selected.", "Try `%s`" % select_command.command)
+        expr = proj.populate('selected')
+        return expr.managed_run(args.cmd, args.cmd_args)
 
 
 COMMAND = TrialCreateCommand(Trial, __name__, summary_fmt="Run an application under a new experiment trial.")

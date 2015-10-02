@@ -31,8 +31,10 @@ from tau import EXIT_SUCCESS
 from tau import cli
 from tau.cli import arguments
 from tau.cli.command import AbstractCommand
-from tau.storage import PROJECT_STORAGE
+from tau.cli.commands.select import COMMAND as select_command
 from tau.model.project import Project
+from tau.storage.project import UninitializedProjectError
+from tau.storage.levels import PROJECT_STORAGE
 
 class InitializeCommand(AbstractCommand):
     """``tau initialize`` subcommand."""
@@ -41,7 +43,7 @@ class InitializeCommand(AbstractCommand):
         components = 'project', 'target', 'application', 'measurement'
         usage = "%s %s" % (self.command, ' '.join('[%s_name]' % comp for comp in components))
         parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
-        for comp in components :
+        for comp in components:
             parser.add_argument('%s_name' % comp,
                                 help="New %s name" % comp,
                                 metavar='%s_name' % comp,
@@ -52,16 +54,29 @@ class InitializeCommand(AbstractCommand):
     def main(self, argv):
         args = self.parser.parse_args(args=argv)
         self.logger.debug('Arguments: %s', args)
-        store = PROJECT_STORAGE
-        if store.exists():
-            self.parser.error("TAU Commander has already been initialized at '%s'" % store.prefix)
-        store.create()
-
-        proj_ctrl = Project(PROJECT_STORAGE)
-        proj_ctrl.create({'name': args.project_name, 'prefix': store.prefix})
-        for comp in 'target', 'application', 'measurement':
-            cli.execute_command([comp, 'create'], [getattr(args, '%s_name' % comp)])
-
+        
+        proj_ctrl = Project.controller()
+        try:
+            proj = proj_ctrl.selected()
+        except UninitializedProjectError:
+            self.logger.debug("No project found, initializing a new project.")
+            PROJECT_STORAGE.connect_filesystem()
+            project_name = args.project_name
+            comp_names = []
+            for comp in 'target', 'application', 'measurement':
+                comp_name = getattr(args, '%s_name' % comp)
+                comp_names.append(comp_name)
+                cli.execute_command([comp, 'create'], [comp_name])
+            cli.execute_command(['project', 'create'], [project_name] + comp_names)
+            cli.execute_command(['select'], [project_name])
+            cli.execute_command(['dashboard'])
+        else:
+            if proj:
+                self.logger.info("Selected project: '%s'", proj['name'])
+            else:
+                self.logger.info("No project selected.  Try `%s`.", 
+                                 select_command.command)
+        
         return EXIT_SUCCESS
 
 COMMAND = InitializeCommand(__name__, summary_fmt="Initialize TAU Commander.")

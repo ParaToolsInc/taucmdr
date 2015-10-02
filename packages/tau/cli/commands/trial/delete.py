@@ -32,6 +32,7 @@ from tau.error import ConfigurationError
 from tau.cli import arguments
 from tau.cli.cli_view import DeleteCommand
 from tau.model.trial import Trial
+from tau.model.project import Project
 
 
 class TrialDeleteCommand(DeleteCommand):
@@ -49,22 +50,24 @@ class TrialDeleteCommand(DeleteCommand):
         args = self.parser.parse_args(args=argv)
         self.logger.debug('Arguments: %s', args)
     
-        selection = None #Experiment.get_selected()
-        if not selection:
-            raise ConfigurationError("No experiment configured.", "See `tau project select`")
+        proj_ctrl = Project.controller()
+        trial_ctrl = Trial.controller(proj_ctrl.storage)
+
+        proj = proj_ctrl.selected()
+        if not proj:
+            from tau.cli.commands.select import COMMAND as select_command
+            raise ConfigurationError("No project selected.", "Try `%s`" % select_command.command)
+        expr = proj.populate('selected')
     
         try:
             number = int(args.number)
         except ValueError:
             self.parser.error("Invalid trial number: %s" % args.number)
-        fields = {'experiment': selection.eid, 'number': number}
-        if not Trial.controller().exists(fields):
-            self.parser.error("No %(level)s-level %(model_name)s named '%(name)s'." %
-                              {'level': ctrl.storage.name, 'name': name, 'model_name': self.model.name})
-
+        fields = {'experiment': expr.eid, 'number': number}
+        if not trial_ctrl.exists(fields):
             self.parser.error("No trial number %s in the current experiment.  "
                               "See `tau trial list` to see all trial numbers." % number)
-        Trial.delete(fields)
+        trial_ctrl.delete(fields)
         self.logger.info('Deleted trial %s', number)
         return EXIT_SUCCESS
 

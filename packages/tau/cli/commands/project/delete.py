@@ -27,17 +27,8 @@
 #
 """``tau measurement`` subcommand."""
 
-from tau.cli.cli_view import ListCommand
-from tau.model.measurement import Measurement
+from tau.cli.cli_view import DeleteCommand
+from tau.model.project import Project
 
-DASHBOARD_COLUMNS = [{'header': 'Name', 'value': 'name', 'align': 'r'},
-                     {'header': 'Profile', 'yesno': 'profile'},
-                     {'header': 'Trace', 'yesno': 'trace'},
-                     {'header': 'Sample', 'yesno': 'sample'},
-                     {'header': 'Source Inst.', 'value': 'source_inst'},
-                     {'header': 'Compiler Inst.', 'value': 'compiler_inst'},
-                     {'header': 'OpenMP Inst.', 'value': 'openmp'},
-                     {'header': 'Wrap MPI', 'yesno': 'mpi'},
-                     {'header': 'In Projects', 'function': lambda x: ', '.join([p['name'] for p in x['projects']])}]
- 
-COMMAND = ListCommand(Measurement, __name__, dashboard_columns=DASHBOARD_COLUMNS)
+
+COMMAND = DeleteCommand(Project, __name__)

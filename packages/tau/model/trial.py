@@ -45,6 +45,53 @@ from tau.mvc.model import Model
 
 LOGGER = logger.get_logger(__name__)
 
+def attributes():
+    from tau.model.experiment import Experiment
+    return {
+        'number': {
+            'primary_key': True,
+            'type': 'integer',
+            'required': True,
+            'description': 'trial unique identifier'
+        },
+        'experiment': {
+            'model': Experiment,
+            'required': True,
+            'description': "this trial's experiment"
+        },
+        'command': {
+            'type': 'string',
+            'required': True,
+            'description': "command line executed when performing the trial"
+        },
+        'cwd': {
+            'type': 'string',
+            'required': True,
+            'description': "directory the trial was performed in",
+        },
+        'environment': {
+            'type': 'string',
+            'required': True,
+            'description': "shell environment the trial was performed in"
+        },
+        'begin_time': {
+            'type': 'datetime',
+            'description': "date and time the trial began"
+        },
+        'end_time': {
+            'type': 'datetime',
+            'description': "date and time the trial ended"
+        },
+        'return_code': {
+            'type': 'integer',
+            'description': "return code of the command executed when performing the trial"
+        },
+        'data_size': {
+            'type': 'integer',
+            'description': "the size in bytes of the trial data"
+        }
+    }
+
 
 class TrialError(ConfigurationError):
     """Indicates there was an error while performing an experiment trial."""
@@ -56,86 +103,83 @@ class TrialError(ConfigurationError):
                    " send '%(logfile)s' to  %(contact)s for assistance.")
 
 
+class TrialController(Controller):
+    """Trial data controller."""
+    
+    def perform(self, expr, cmd, cwd, env):
+        """Performs a trial of an experiment.
+        
+        Args:
+            expr (Experiment): Experiment data.
+            cmd (str): Command to profile, with command line arguments.
+            cwd (str): Working directory to perform trial in.
+            env (dict): Environment variables to set before performing the trial.
+        """
+        def banner(mark, name, time):
+            headline = '\n{:=<{}}\n'.format('== %s %s (%s) ==' % (mark, name, time), logger.LINE_WIDTH)
+            LOGGER.info(headline)
+
+        cmd_str = ' '.join(cmd)
+        begin_time = str(datetime.utcnow())
+        trial_number = expr.next_trial_number()
+        LOGGER.debug("New trial number is %d", trial_number)
+
+        banner('BEGIN', expr.name, begin_time)
+        fields = {'number': trial_number,
+                  'experiment': expr.eid,
+                  'command': cmd_str,
+                  'cwd': cwd,
+                  'environment': 'FIXME',
+                  'begin_time': begin_time}
+        trial = self.create(fields)
+        
+        # Tell TAU to send profiles and traces to the trial prefix
+        env['PROFILEDIR'] = trial.prefix
+        env['TRACEDIR'] = trial.prefix
+
+        try:
+            retval = trial.execute_command(expr, cmd, cwd, env)
+        except:
+            self.delete(trial.eid)
+            end_time = str(datetime.utcnow())
+            raise
+        else:
+            data_size = sum(os.path.getsize(os.path.join(trial.prefix, f)) for f in os.listdir(trial.prefix))
+            end_time = str(datetime.utcnow())
+            self.update({'end_time': end_time,
+                         'return_code': retval,
+                         'data_size': data_size}, trial.eid)
+        finally:
+            banner('END', expr.name, end_time)
+        return retval
+
+
 class Trial(Model):
     """Trial data model."""
     
-    key_attribute = 'number'
+    __attributes__ = attributes
     
-    @classmethod
-    def __attributes__(cls):
-        from tau.model.experiment import Experiment
-        return {
-            'experiment': {
-                'model': Experiment,
-                'required': True,
-                'description': "this trial's experiment"
-            },
-            'number': {
-                'type': 'integer',
-                'required': True,
-                'description': 'trial unique identifier'
-            },
-            'command': {
-                'type': 'string',
-                'required': True,
-                'description': "command line executed when performing the trial"
-            },
-            'cwd': {
-                'type': 'string',
-                'required': True,
-                'description': "directory the trial was performed in",
-            },
-            'environment': {
-                'type': 'string',
-                'required': True,
-                'description': "shell environment the trial was performed in"
-            },
-            'begin_time': {
-                'type': 'datetime',
-                'description': "date and time the trial began"
-            },
-            'end_time': {
-                'type': 'datetime',
-                'description': "date and time the trial ended"
-            },
-            'return_code': {
-                'type': 'integer',
-                'description': "return code of the command executed when performing the trial"
-            },
-            'data_size': {
-                'type': 'integer',
-                'description': "the size in bytes of the trial data"
-            }
-        }
+    __controller__ = TrialController
 
+    @property
     def prefix(self):
         experiment = self.populate('experiment')
-        return os.path.join(experiment.prefix(), str(self['number']))
+        return os.path.join(experiment.prefix, str(self['number']))
 
     def on_create(self):
-        prefix = self.prefix()
         try:
-            util.mkdirp(prefix)
+            util.mkdirp(self.prefix)
         except Exception as err:
-            raise ConfigurationError('Cannot create directory %r: %s' % (prefix, err),
+            raise ConfigurationError('Cannot create directory %r: %s' % (self.prefix, err),
                                      'Check that you have `write` access')
 
     def on_delete(self):
         # pylint: disable=broad-except
-        prefix = self.prefix()
         try:
-            shutil.rmtree(prefix)
+            shutil.rmtree(self.prefix)
         except Exception as err:
-            if os.path.exists(prefix):
-                LOGGER.error("Could not remove trial data at '%s': %s", prefix, err)
-    
-    @staticmethod
-    def _next_trial_number(expr):
-        trials = expr.populate('trials')
-        for i, j in enumerate(sorted([trial['number'] for trial in trials])):
-            if i != j:
-                return i
-        return len(trials)
+            if os.path.exists(self.prefix):
+                LOGGER.error("Could not remove trial data at '%s': %s", self.prefix, err)
     
     def profile_files(self):
         """Get this trial's profile files.
@@ -148,11 +192,10 @@ class Trial(Model):
             list: Paths to profile files.
         """
         list_profiles = lambda path: glob.glob(os.path.join(path, 'profile.*.*.*'))
-        prefix = self.prefix()
         profiles = []
-        for multi_dir in glob.iglob(os.path.join(prefix, 'MULTI__*')):
+        for multi_dir in glob.iglob(os.path.join(self.prefix, 'MULTI__*')):
             profiles.extend(list_profiles(multi_dir))
-        profiles.extend(list_profiles(prefix))
+        profiles.extend(list_profiles(self.prefix))
         return profiles
     
     def execute_command(self, expr, cmd, cwd, env):
@@ -198,50 +241,3 @@ class Trial(Model):
                 raise TrialError("Application completed successfuly but did not produce any performance data.")
         return retval
 
-    def perform(self, expr, cmd, cwd, env):
-        """Performs a trial of an experiment.
-        
-        Args:
-            expr (Experiment): Experiment data.
-            cmd (str): Command to profile, with command line arguments.
-            cwd (str): Working directory to perform trial in.
-            env (dict): Environment variables to set before performing the trial.
-        """
-        def banner(mark, name, time):
-            headline = '\n{:=<{}}\n'.format('== %s %s (%s) ==' % (mark, name, time), logger.LINE_WIDTH)
-            LOGGER.info(headline)
-
-        cmd_str = ' '.join(cmd)
-        begin_time = str(datetime.utcnow())
-        trial_number = self._next_trial_number(expr)
-        LOGGER.debug("New trial number is %d", trial_number)
-
-        banner('BEGIN', expr.name(), begin_time)
-        fields = {'number': trial_number,
-                  'experiment': expr.eid,
-                  'command': cmd_str,
-                  'cwd': cwd,
-                  'environment': 'FIXME',
-                  'begin_time': begin_time}
-        trial = self.create(fields)
-        
-        # Tell TAU to send profiles and traces to the trial prefix
-        prefix = trial.prefix()
-        env['PROFILEDIR'] = prefix
-        env['TRACEDIR'] = prefix
-
-        try:
-            retval = trial.execute_command(expr, cmd, cwd, env)
-        except:
-            self.delete(eids=[trial.eid])
-            end_time = str(datetime.utcnow())
-            raise
-        else:
-            data_size = sum(os.path.getsize(os.path.join(prefix, f)) for f in os.listdir(prefix))
-            end_time = str(datetime.utcnow())
-            self.update({'end_time': end_time,
-                         'return_code': retval,
-                         'data_size': data_size}, eids=[trial.eid])
-        finally:
-            banner('END', expr.name(), end_time)
-        return retval

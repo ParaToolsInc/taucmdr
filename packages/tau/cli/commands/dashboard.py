@@ -28,10 +28,10 @@
 """``tau dashboard`` subcommand."""
 
 from tau import EXIT_SUCCESS
-from tau import cli, util, storage 
+from tau import cli
 from tau.cli import arguments
 from tau.cli.command import AbstractCommand
-from tau.cli.commands.initialize import COMMAND as init_command
+from tau.cli.commands.select import COMMAND as select_command
 from tau.model.project import Project
 
 
@@ -44,18 +44,22 @@ class DashboardCommand(AbstractCommand):
     def main(self, argv):
         args = self.parser.parse_args(args=argv)
         self.logger.debug('Arguments: %s', args)
-        store = storage.PROJECT_STORAGE 
-        store.verify("Try `%s` to create a new project." % init_command.command) 
-        
-        project = Project.get_project()
-        print util.hline(project['name'], 'cyan')
         
         subargs = ['--dashboard']
-        cli.execute_command(['target', 'list'], subargs)
-        cli.execute_command(['application', 'list'], subargs)
-        cli.execute_command(['measurement', 'list'], subargs)
-        cli.execute_command(['trial', 'list'], ['-s'])
-        
+        proj_ctrl = Project.controller()
+        proj = proj_ctrl.selected()
+        if proj:
+            cli.execute_command(['project', 'list'], [proj['name']] + subargs)
+            cli.execute_command(['target', 'list'], [targ['name'] for targ in proj.populate('targets')])
+            cli.execute_command(['application', 'list'], [targ['name'] for targ in proj.populate('applications')])
+            cli.execute_command(['measurement', 'list'], [targ['name'] for targ in proj.populate('measurements')])
+            cli.execute_command(['trial', 'list'], ['-s'])
+        else:
+            cli.execute_command(['project', 'list'], subargs)
+            cli.execute_command(['target', 'list'], subargs)
+            cli.execute_command(['application', 'list'], subargs)
+            cli.execute_command(['measurement', 'list'], subargs)
+            print "No project selected.  Try `%s`." % select_command.command
         print 
         return EXIT_SUCCESS
 

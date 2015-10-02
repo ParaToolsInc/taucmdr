@@ -37,8 +37,8 @@ from tau import TAUCMDR_URL, TAU_SCRIPT
 from tau import cli, logger
 from tau.cli import UnknownCommandError, arguments
 from tau.cli.command import AbstractCommand
-from tau.cli.commands.build import COMMAND as build
-from tau.cli.commands.trial.create import COMMAND as trial_create
+from tau.cli.commands.build import COMMAND as build_command
+from tau.cli.commands.trial.create import COMMAND as trial_create_command
 
 LOGGER = logger.get_logger(__name__)
 
@@ -118,10 +118,10 @@ class MainCommand(AbstractCommand):
      
         # Check shortcuts
         shortcut = None
-        if build.is_compatible(cmd):
-            shortcut = build
+        if build_command.is_compatible(cmd):
+            shortcut = ['build']
             cmd_args = [cmd] + cmd_args
-        elif trial_create.is_compatible(cmd):
+        elif trial_create_command.is_compatible(cmd):
             shortcut = ['trial', 'create']
             cmd_args = [cmd] + cmd_args
         elif cmd == 'show':

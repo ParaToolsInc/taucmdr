@@ -25,19 +25,37 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""``tau measurement`` subcommand."""
+"""TAU Commander hierarchical file and record storage system.
 
-from tau.cli.cli_view import ListCommand
-from tau.model.measurement import Measurement
+System-level records are globally readable and writable, depending on the user's 
+system access level.  System-level is a good place for software package installations
+and some system-specific configurations, e.g. target or compiler configurations.
 
-DASHBOARD_COLUMNS = [{'header': 'Name', 'value': 'name', 'align': 'r'},
-                     {'header': 'Profile', 'yesno': 'profile'},
-                     {'header': 'Trace', 'yesno': 'trace'},
-                     {'header': 'Sample', 'yesno': 'sample'},
-                     {'header': 'Source Inst.', 'value': 'source_inst'},
-                     {'header': 'Compiler Inst.', 'value': 'compiler_inst'},
-                     {'header': 'OpenMP Inst.', 'value': 'openmp'},
-                     {'header': 'Wrap MPI', 'yesno': 'mpi'},
-                     {'header': 'In Projects', 'function': lambda x: ', '.join([p['name'] for p in x['projects']])}]
- 
-COMMAND = ListCommand(Measurement, __name__, dashboard_columns=DASHBOARD_COLUMNS)
+User-level records are readable and writable by (at least) the user.  User-level is also
+where software is installed when the user doesn't have write access to :any:`SYSTEM_PREFIX`.  
+It's a good place for user-specific records, i.e. preferences or encrypted login credentials.
+
+Project-level records define the project and its member components.  The user may also
+want to install software packages at the project level to avoid quotas or in situations
+where :any:`USER_PREFIX` is not accessible from cluster compute nodes.
+"""
+
+from tau import SYSTEM_PREFIX, USER_PREFIX
+from tau.storage.local_file import LocalFileStorage
+from tau.storage.project import ProjectStorage
+
+
+SYSTEM_STORAGE = LocalFileStorage('system', SYSTEM_PREFIX)
+"""System-level data storage."""
+
+USER_STORAGE = LocalFileStorage('user', USER_PREFIX)
+"""User-level data storage."""
+
+PROJECT_STORAGE = ProjectStorage()
+"""Project-level data storage."""
+
+ORDERED_LEVELS = (PROJECT_STORAGE, USER_STORAGE, SYSTEM_STORAGE)
+"""All storage levels in their preferred order."""
+
+STORAGE_LEVELS = {level.name: level for level in ORDERED_LEVELS}
+"""All storage levels indexed by their names."""

@@ -127,7 +127,7 @@ class ModelError(InternalError):
             model (Model): Data model.
             value (str): A message describing the error.  
         """
-        super(ModelError, self).__init__("%s: %s" % (model.model_name, value))
+        super(ModelError, self).__init__("%s: %s" % (model.name, value))
         self.model = model
 
 

@@ -40,6 +40,22 @@ from tau.mvc.controller import Controller
 LOGGER = logger.get_logger(__name__)
 
 
+def attributes():
+    return {
+        'path': {
+            'type': 'string',
+            'required': True,
+            'unique': True,
+            'description': "absolute path to the compiler command"
+        },
+        'md5': {
+            'type': 'string',
+            'required': True,
+            'description': "checksum of the compiler command file"
+        }
+    }
+
+
 class CompilerController(Controller):
     """Compiler data controller."""
     
@@ -69,24 +85,10 @@ class CompilerController(Controller):
 class Compiler(Model):
     """Compiler data model."""
     
+    __attributes__ = attributes
+
     __controller__ = CompilerController
-
-    @classmethod
-    def __attributes__(cls):
-        return {
-            'path': {
-                'type': 'string',
-                'required': True,
-                'unique': True,
-                'description': "absolute path to the compiler command"
-            },
-            'md5': {
-                'type': 'string',
-                'required': True,
-                'description': "checksum of the compiler command file"
-            }
-        }
-
+    
     def info(self):
         """Probes the system for information on this compiler command.
         

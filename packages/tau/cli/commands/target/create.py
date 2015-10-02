@@ -28,11 +28,10 @@
 """``tau target create`` subcommand."""
 
 from tau import EXIT_SUCCESS
-from tau import storage
-from tau.error import ConfigurationError
+from tau.error import ConfigurationError, UniqueAttributeError
+from tau.storage.levels import STORAGE_LEVELS
 from tau.cli import arguments
 from tau.cli.cli_view import CreateCommand
-from tau.error import UniqueAttributeError
 from tau.model.target import Target
 from tau.model.compiler import Compiler
 from tau.cf.compiler import CompilerFamily, CompilerRole
@@ -131,7 +130,7 @@ class TargetCreateCommand(CreateCommand):
     def main(self, argv):
         args = self.parser.parse_args(args=argv)
         self.logger.debug('Arguments: %s', args)
-        store = storage.CONTAINERS[getattr(args, arguments.STORAGE_LEVEL_FLAG)[0]]
+        store = STORAGE_LEVELS[getattr(args, arguments.STORAGE_LEVEL_FLAG)[0]]
         ctrl = self.model.controller(store)
         key_attr = self.model.key_attribute
         key = getattr(args, key_attr)
@@ -148,8 +147,8 @@ class TargetCreateCommand(CreateCommand):
         try:
             ctrl.create(data)
         except UniqueAttributeError:
-            self.parser.error("A %s with %s='%s' already exists" % (self.model.name, key_attr, key))
-        self.logger.info("Created a new %s-level %s: '%s'.", ctrl.storage.name, self.model.name, key)
+            self.parser.error("A %s with %s='%s' already exists" % (self.model_name, key_attr, key))
+        self.logger.info("Created a new %s-level %s: '%s'.", ctrl.storage.name, self.model_name, key)
         return EXIT_SUCCESS
 
 COMMAND = TargetCreateCommand(Target, __name__)

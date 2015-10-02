@@ -32,6 +32,8 @@ from tau.cli import arguments
 from tau.cli.command import AbstractCommand
 from tau.cf.compiler import CompilerFamily, CompilerInfo
 from tau.cf.compiler.mpi import MpiCompilerFamily
+from tau.model.project import Project
+from tau.storage.levels import PROJECT_STORAGE
 
 class BuildCommand(AbstractCommand):
     """``tau build`` subcommand."""
@@ -68,10 +70,13 @@ class BuildCommand(AbstractCommand):
     def main(self, argv):
         args = self.parser.parse_args(args=argv)
         self.logger.debug('Arguments: %s', args)
-        selection = None #Experiment.get_selected()
-        if not selection:
-            raise ConfigurationError("Nothing selected.", "See `tau project select`")
-        return selection.managed_build(args.cmd, args.cmd_args)
+        proj_ctrl = Project.controller()
+        proj = proj_ctrl.selected()
+        if not proj:
+            from tau.cli.commands.select import COMMAND as select_command
+            raise ConfigurationError("No project selected.", "Try `%s`" % select_command.command)
+        expr = proj.populate('selected')
+        return expr.managed_build(args.cmd, args.cmd_args)
 
 
 COMMAND = BuildCommand(__name__, summary_fmt="Instrument programs during compilation and/or linking.")

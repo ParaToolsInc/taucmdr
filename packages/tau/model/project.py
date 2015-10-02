@@ -34,105 +34,109 @@ some performance data (profiles, traces, etc.).
 """
 
 import os
-import shutil
-from tau import logger, util
-from tau.error import InternalError, ConfigurationError
+from tau import logger
+from tau.error import InternalError
 from tau.mvc.model import Model
 from tau.mvc.controller import Controller
-from tau.storage import PROJECT_STORAGE
+from tau.storage.levels import PROJECT_STORAGE
 
 
 LOGGER = logger.get_logger(__name__)
 
 
+def attributes():
+    from tau.model.target import Target
+    from tau.model.application import Application
+    from tau.model.measurement import Measurement
+    from tau.model.experiment import Experiment
+    return {
+        'name': {
+            'primary_key': True,
+            'type': 'string',
+            'unique': True,
+            'description': 'project name',
+            'argparse': {'metavar': '<project_name>'}
+        },
+        'targets': {
+            'collection': Target,
+            'via': 'projects',
+            'description': 'targets used by this project'
+        },
+        'applications': {
+            'collection': Application,
+            'via': 'projects',
+            'description': 'applications used by this project'
+        },
+        'measurements': {
+            'collection': Measurement,
+            'via': 'projects',
+            'description': 'measurements used by this project'
+        },
+        'experiments': {
+            'collection': Experiment,
+            'via': 'project',
+            'description': 'experiments formed from this project'
+        },
+        'selected': {
+            'model': Experiment,
+            'description': 'the currently selected experiment'
+        }
+    }
+
+
 class ProjectController(Controller):
     """Project data controller."""
     
-    def get_project(self):
-        """Gets the current project's configuration data.
-        
-        Asserts that there is exactly one project in the project storage container.
-        
-        Returns:
-            Project: Controller for the current project's data.
-        """
-        projects = self.all()
-        if not projects:
-            raise InternalError("No projects found at '%s'" % self.storage.prefix)
-        elif len(projects) > 1:
-            project_names = ', '.join([proj['name'] for proj in projects])
-            raise InternalError("Multiple projects found at '%s': %s" % (self.storage.prefix, project_names))
+    def create(self, data):
+        if self.storage is not PROJECT_STORAGE:
+            raise InternalError("Projects may only be created in project-level storage")
+        return super(ProjectController, self).create(data)
+    
+    def delete(self, keys):
+        super(ProjectController, self).delete(keys)
+        try:
+            selected_eid = PROJECT_STORAGE['selected_project']
+        except KeyError:
+            pass
         else:
-            return projects[0]
+            if self.one(selected_eid) is None:
+                del PROJECT_STORAGE['selected_project']
 
-    def get_selected(self):
-        """Gets the selected Experiment.
+    def select(self, project, experiment):
+        self.storage['selected_project'] = project.eid
+        self.update({'selected': experiment.eid}, project.eid)
+        experiment.configure()
+    
+    def unselect(self):
+        del self.storage['selected_project']
+
+    def selected(self):
+        """Gets the currently selected project's configuration data.
         
         Returns:
-            Experiment: Controller for the currently selected experiment data or None if no selection has been made.
+            Project: The current project.
         """
-        from tau.model.experiment import Experiment
-        proj = self.get_project()
-        experiment_id = proj['selected']
-        if experiment_id:
-            found = Experiment.controller(self.storage).one(eid=experiment_id)
-            if not found:
-                raise InternalError('Invalid experiment ID: %r' % experiment_id)
-            return found
-        return None
+        try:
+            selected_eid = PROJECT_STORAGE['selected_project']
+        except KeyError:
+            return None
+        else:
+            return self.one(selected_eid)
 
 
 class Project(Model):
     """Project data controller."""
     
+    __attributes__ = attributes
+
     __controller__ = ProjectController
-    
-    key_attribute = 'name'
-    
-    @classmethod
-    def __attributes__(cls):
-        from tau.model.experiment import Experiment
-        return {
-            'name': {
-                'type': 'string',
-                'unique': True,
-                'description': 'project name',
-                'argparse': {'metavar': '<project_name>'}
-            },
-            'prefix': {
-                'type': 'string',
-                'required': True,
-                'description': 'location for all files and experiment data related to this project',
-            },
-            'selected': {
-                'model': Experiment,
-                'description': 'the currently selected experiment configuration'
-            }
-        }
 
     @classmethod
-    def controller(cls):
-        return cls.__controller__(cls, PROJECT_STORAGE)
-
+    def controller(cls, storage=PROJECT_STORAGE):
+        return cls.__controller__(cls, storage)
+    
+    @property
     def prefix(self):
-        return os.path.join(self['prefix'], self['name'])
-
-    def on_create(self):
-        super(Project, self).on_create()
-        prefix = self.prefix()
-        try:
-            util.mkdirp(prefix)
-        except Exception as err:
-            raise ConfigurationError("Cannot create directory '%s': %s" % (prefix, err),
-                                     "Check that you have `write` access")
-
-    def on_delete(self):
-        # pylint: disable=broad-except
-        super(Project, self).on_delete()
-        prefix = self.prefix()
-        try:
-            shutil.rmtree(prefix)
-        except Exception as err:
-            if os.path.exists(prefix):
-                LOGGER.error("Could not remove project data at '%s': %s", prefix, err)
-
+        return os.path.join(self.storage.prefix, self['name'])
+        
+    

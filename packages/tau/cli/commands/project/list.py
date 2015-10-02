@@ -28,16 +28,17 @@
 """``tau measurement`` subcommand."""
 
 from tau.cli.cli_view import ListCommand
-from tau.model.measurement import Measurement
+from tau.model.project import Project
+
+# {'header': 'In Projects', 'function': }]
+
+def _name_list(attr):
+    return lambda x: ', '.join([p['name'] for p in x[attr]])
 
 DASHBOARD_COLUMNS = [{'header': 'Name', 'value': 'name', 'align': 'r'},
-                     {'header': 'Profile', 'yesno': 'profile'},
-                     {'header': 'Trace', 'yesno': 'trace'},
-                     {'header': 'Sample', 'yesno': 'sample'},
-                     {'header': 'Source Inst.', 'value': 'source_inst'},
-                     {'header': 'Compiler Inst.', 'value': 'compiler_inst'},
-                     {'header': 'OpenMP Inst.', 'value': 'openmp'},
-                     {'header': 'Wrap MPI', 'yesno': 'mpi'},
-                     {'header': 'In Projects', 'function': lambda x: ', '.join([p['name'] for p in x['projects']])}]
+                     {'header': 'Targets', 'function': _name_list('targets')},
+                     {'header': 'Applications', 'function': _name_list('applications')},
+                     {'header': 'Measurements', 'function': _name_list('measurements')},
+                     {'header': '# Experiments', 'function': lambda x: len(x['experiments'])}]
  
-COMMAND = ListCommand(Measurement, __name__, dashboard_columns=DASHBOARD_COLUMNS)
+COMMAND = ListCommand(Project, __name__, dashboard_columns=DASHBOARD_COLUMNS)

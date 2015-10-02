@@ -36,14 +36,10 @@ import os
 import glob
 import shutil
 from tau import logger, util
-from tau.error import ConfigurationError, InternalError
+from tau.error import ConfigurationError
 from tau.mvc.model import Model
 from tau.model.trial import Trial
-from tau.model.compiler import Compiler
 from tau.model.project import Project
-from tau.model.target import Target
-from tau.model.application import Application
-from tau.model.measurement import Measurement
 from tau.cf.software.tau_installation import TauInstallation
 from tau.cf.compiler.installed import InstalledCompiler
 
@@ -51,88 +47,82 @@ from tau.cf.compiler.installed import InstalledCompiler
 LOGGER = logger.get_logger(__name__)
 
 
+def attributes():   
+    from tau.model.target import Target
+    from tau.model.application import Application
+    from tau.model.measurement import Measurement
+    return {
+        'project': {
+            'model': Project,
+            'required': True,
+            'description': "Project this experiment belongs to"
+        },
+        'target': {
+            'model': Target,
+            'required': True,
+            'description': "Target this experiment runs on"
+        },
+        'application': {
+            'model': Application,
+            'required': True,
+            'description': "Application this experiment uses"
+        },
+        'measurement': {
+            'model': Measurement,
+            'required': True,
+            'description': "Measurement parameters for this experiment"
+        },
+        'trials': {
+            'collection': Trial,
+            'via': 'experiment',
+            'description': "Trials of this experiment"
+        }
+    }
+
+
 class Experiment(Model):
     """Experiment data model."""
     
-    @classmethod
-    def __attributes__(cls):
-        return {
-            'target': {
-                'model': Target,
-                'required': True,
-                'description': "Target this experiment runs on"
-            },
-            'application': {
-                'model': Application,
-                'required': True,
-                'description': "Application this experiment uses"
-            },
-            'measurement': {
-                'model': Measurement,
-                'required': True,
-                'description': "Measurement parameters for this experiment"
-            },
-            'trials': {
-                'collection': Trial,
-                'via': 'experiment',
-                'description': "Trials of this experiment"
-            }
-        }
+    __attributes__ = attributes
 
     def __init__(self, *args, **kwargs):
         super(Experiment, self).__init__(*args, **kwargs)
         self.tau = None
 
-    def name(self):
-        populated = self.populate()
-        return '%s (%s, %s, %s)' % (populated['project']['name'],
-                                    populated['target']['name'],
-                                    populated['application']['name'],
-                                    populated['measurement']['name'])
-
+    @property
     def prefix(self):
-        populated = self.populate()
-        return os.path.join(populated['project'].prefix(),
-                            populated['target']['name'],
-                            populated['application']['name'],
-                            populated['measurement']['name'])
+        # pylint: disable=attribute-defined-outside-init
+        try:
+            return self._prefix
+        except AttributeError: 
+            populated = self.populate()
+            self._prefix = os.path.join(populated['project'].prefix,
+                                        populated['target']['name'],
+                                        populated['application']['name'],
+                                        populated['measurement']['name'])
+            return self._prefix
 
     def on_create(self):
-        prefix = self.prefix()
         try:
-            util.mkdirp(prefix)
+            util.mkdirp(self.prefix)
         except:
-            raise ConfigurationError('Cannot create directory %r' % prefix,
+            raise ConfigurationError('Cannot create directory %r' % self.prefix,
                                      'Check that you have `write` access')
 
     def on_delete(self):
         # pylint: disable=broad-except
-        self.unselect()
-        prefix = self.prefix()
         try:
-            shutil.rmtree(prefix)
+            shutil.rmtree(self.prefix)
         except Exception as err:
-            if os.path.exists(prefix):
-                LOGGER.error("Could not remove experiment data at '%s': %s", prefix, err)
+            if os.path.exists(self.prefix):
+                LOGGER.error("Could not remove experiment data at '%s': %s", self.prefix, err)
 
-    def select(self):
-        if not self.eid:
-            raise InternalError('Tried to select an experiment without an eid')
-        proj = Project.get_project() 
-        proj.update({'selected': self.eid}, eids=proj.eid)
-        self.configure()
-
-    def unselect(self):
-        if not self.eid:
-            raise InternalError('Tried to unselect an experiment without an eid')
-        if self.is_selected():
-            proj = Project.get_project()
-            proj.unset(['selected'], eids=proj.eid)
-        self.configure()
-
-    def is_selected(self):
-        proj = Project.get_project()
-        return self.eid == proj['selected']
+    def next_trial_number(self):
+        trials = self.populate('trials')
+        for i, j in enumerate(sorted([trial['number'] for trial in trials])):
+            if i != j:
+                return i
+        return len(trials)
 
     def configure(self):
         """Sets up the Experiment for a new trial.
@@ -141,7 +131,7 @@ class Experiment(Model):
         function, the experiment is ready to operate on the user's application.
         """
         populated = self.populate()
-        prefix = populated['project']['prefix']
+        prefix = populated['project'].prefix
         target = populated['target']
         application = populated['application']
         measurement = populated['measurement']
@@ -211,16 +201,7 @@ class Experiment(Model):
         LOGGER.debug("Managed build: %s", [compiler_cmd] + compiler_args)
         target = self.populate('target')
         given_compiler = InstalledCompiler(compiler_cmd)
-        given_compiler_eid = Compiler.register(given_compiler).eid
-        target_compiler_eid = target[given_compiler.info.role.keyword]       
-        # Confirm target supports compiler
-        if given_compiler_eid != target_compiler_eid:
-            target_compiler = Compiler.one(eid=target_compiler_eid).info()
-            raise ConfigurationError("Target '%s' is configured with %s '%s', not %s '%s'" %
-                                     (target['name'], target_compiler.info.short_descr, target_compiler.absolute_path,
-                                      given_compiler.info.short_descr, given_compiler.absolute_path),
-                                     "Select a different target or compile with '%s'" % 
-                                     target_compiler.absolute_path)
+        target.check_compiler(given_compiler)
         self.configure()
         return self.tau.compile(given_compiler, compiler_args)
         
@@ -245,7 +226,7 @@ class Experiment(Model):
             raise ConfigurationError("Cannot find executable: %s" % application_cmd)
         self.configure()
         cmd, env = self.tau.get_application_command(application_cmd, application_args)
-        return Trial.perform(self, cmd, os.getcwd(), env)
+        return Trial.controller(self.storage).perform(self, cmd, os.getcwd(), env)
 
     def show(self, tool_name=None, trial_numbers=None):
         """Show experiment trial data.
@@ -263,7 +244,7 @@ class Experiment(Model):
         if trial_numbers:
             trials = []
             for num in trial_numbers:
-                found = Trial.one({'experiment': self.eid, 'number': num})
+                found = Trial.controller(self.storage).one({'experiment': self.eid, 'number': num})
                 if not found:
                     raise ConfigurationError("No trial number %d in experiment %s" % (num, self.name()))
                 trials.append(found)
@@ -279,7 +260,7 @@ class Experiment(Model):
                         found = trial
                 trials = [found] 
         for trial in trials:
-            prefix = trial.prefix()
+            prefix = trial.prefix
             profiles = glob.glob(os.path.join(prefix, 'profile.*.*.*'))
             if not profiles:
                 profiles = glob.glob(os.path.join(prefix, 'MULTI__*'))

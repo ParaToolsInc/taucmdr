@@ -27,10 +27,10 @@
 #
 """``tau trial show`` subcommand."""
 
-from tau import EXIT_FAILURE
+from tau.error import ConfigurationError
 from tau.cli import arguments
 from tau.cli.command import AbstractCommand
-
+from tau.model.project import Project
 
 class TrialShowCommand(AbstractCommand):
     """``tau trial show`` subcommand."""
@@ -53,10 +53,14 @@ class TrialShowCommand(AbstractCommand):
         args = self.parser.parse_args(args=argv)
         self.logger.debug('Arguments: %s', args)
     
-        selection = None #Experiment.get_selected()
-        if not selection:
-            print "No experiment configured. See `tau project select`\n"
-            return EXIT_FAILURE
+        proj_ctrl = Project.controller()
+
+        proj = proj_ctrl.selected()
+        if not proj:
+            from tau.cli.commands.select import COMMAND as select_command
+            raise ConfigurationError("No project selected.", "Try `%s`" % select_command.command)
+        expr = proj.populate('selected')
+
         try:
             str_numbers = args.numbers
         except AttributeError:
@@ -72,6 +76,6 @@ class TrialShowCommand(AbstractCommand):
             tool = args.tool
         except AttributeError:
             tool = None
-        return selection.show(trial_numbers=numbers, tool_name=tool)
+        return expr.show(trial_numbers=numbers, tool_name=tool)
 
 COMMAND = TrialShowCommand(__name__, summary_fmt="Display trial data in analysis tool.")

@@ -29,6 +29,7 @@
 
 from tau import logger
 from tau.error import ConfigurationError, ModelError, InternalError
+from tau.storage import StorageRecord
 from tau.mvc.controller import Controller
 
 LOGGER = logger.get_logger(__name__)
@@ -39,39 +40,69 @@ class ModelMeta(type):
 
     def __new__(mcs, name, bases, dct):
         if dct['__module__'] != __name__:
+            # Each Model subclass has its own relationships
+            dct.update({'associations': dict(), 'references': set()})
+            # The default controller class is Controller
             if dct.get('__controller__', NotImplemented) is NotImplemented:
                 dct['__controller__'] = Controller
-            if '__attributes__' not in dct:
-                raise InternalError("Model class %s does not define classmethod __attributes__" % name)
+            # The default model name is the class name
             if dct.get('name', NotImplemented) is NotImplemented:
                 dct['name'] = name
+            # Model subclasses must define __attributes__ as a callable.
+            # We make the callable a staticmethod to prevent method binding.
+            try:
+                __attributes__ = dct['__attributes__']
+            except KeyError: 
+                raise InternalError("Model class %s does not define '__attributes__'" % name)
+            else:
+                dct['__attributes__'] = staticmethod(__attributes__)
+            # Replace attributes with a callable property (defined below).  This is to guarantee 
+            # that model attributes won't be constructed until all Model subclasses have been constructed.
+            if dct.get('attributes', NotImplemented) is NotImplemented:
+                dct['attributes'] = ModelMeta.attributes
+            # Replace key_attribute with a callable property (defined below). This is to set
+            # the key_attribute member after the model attributes have been constructed.
             if dct.get('key_attribute', NotImplemented) is NotImplemented:
-                dct['key_attribute'] = None
-            dct.update({'associations': dict(), 'references': set()}) 
+                dct['key_attribute'] = ModelMeta.key_attribute
         return type.__new__(mcs, name, bases, dct)
 
     @property
     def attributes(cls):
+        # pylint: disable=attribute-defined-outside-init
         try:
             return cls._attributes
         except AttributeError:
             cls._attributes = cls.__attributes__()
             cls._construct_relationships()
-            return cls._attributes 
+            return cls._attributes
+        
+    @property
+    def key_attribute(cls):
+        # pylint: disable=attribute-defined-outside-init
+        try:
+            return cls._key_attribute
+        except AttributeError:
+            for attr, props in cls.attributes.iteritems():
+                if 'primary_key' in props:
+                    cls._key_attribute = attr
+                    break
+            else:
+                raise ModelError(cls, "No attribute has the 'primary_key' property set to 'True'")
+            return cls._key_attribute
 
 
-class Model(object):
+
+class Model(StorageRecord):
     """The "M" in `MVC`_.
     
     TODO: Docs    
 
     Attributes:
         name (str): Name of the model.
-        key_attribute (str): Name of an attribute that serves as a unique identifier. 
-        attributes (dict): Model attributes.
-        references (set): (Controller, str) tuples listing foreign models referencing this model.  
         associations (dict): (Controller, str) tuples keyed by attribute name defining attribute associations.
-        record (Record): Model data record.
+        references (set): (Controller, str) tuples listing foreign models referencing this model.  
+        attributes (dict): Model attributes.
+        key_attribute (str): Name of an attribute that serves as a unique identifier. 
         
     .. _MVC: https://en.wikipedia.org/wiki/Model-view-controller
     """
@@ -80,37 +111,43 @@ class Model(object):
     __controller__ = NotImplemented
     __attributes__ = NotImplemented
     name = NotImplemented
-    key_attribute = NotImplemented
     associations = NotImplemented
     references = NotImplemented
+    attributes = NotImplemented
+    key_attribute = NotImplemented
     
     def __init__(self, record):
-        self.record = record
-        
-    def __getitem__(self, key):
-        return self.record[key]
-
+        super(Model, self).__init__(record.storage, record.eid, record.element)
+        self._populated = None
+    
     def __setitem__(self, key, value):
         raise InternalError("Use controller(storage).update() to alter records")
  
     def __delitem__(self, key):
         raise InternalError("Use controller(storage).update() to alter records")
- 
-    def __iter__(self):
-        return iter(self.record)
- 
-    def __len__(self):
-        return len(self.record)
+
+    def on_create(self):
+        """Callback to be invoked when a new data record is created.""" 
+        self.check_compatibility(self)
+
+    def on_update(self): 
+        """Callback to be invoked when a data record is updated."""
+        self.check_compatibility(self)
+
+    def on_delete(self): 
+        """Callback to be invoked when a data record is deleted."""
+        pass
     
-    def __str__(self):
-        return str(self.record)
-    
+    def populate(self, attribute=None):
+        return self.controller(self.storage).populate(self, attribute)
+
     @classmethod
     def controller(cls, storage):
         return cls.__controller__(cls, storage)
     
     @classmethod
     def _construct_relationships(cls):
+        primary_key = None
         for attr, props in cls.attributes.iteritems():
             model_attr_name = cls.name + "." + attr
             if 'collection' in props and not 'via' in props:
@@ -121,6 +158,10 @@ class Model(object):
                 raise ModelError(cls, "%s: invalid value for 'unique'" % model_attr_name)
             if not isinstance(props.get('description', ''), basestring):
                 raise ModelError(cls, "%s: invalid value for 'description'" % model_attr_name)
+            if props.get('primary_key', False):
+                if primary_key is not None:
+                    raise ModelError(cls, "%s: primary key previously specified as %s" % (model_attr_name, primary_key))
+                primary_key = attr
 
             via = props.get('via', None)
             foreign_cls = props.get('model', props.get('collection', None))
@@ -216,18 +257,6 @@ class Model(object):
                     validated[attr] = value
         return validated
     
-    def on_create(self):
-        """Callback to be invoked when a new data record is created.""" 
-        self.check_compatibility(self)
-
-    def on_update(self): 
-        """Callback to be invoked when a data record is updated."""
-        self.check_compatibility(self)
-
-    def on_delete(self): 
-        """Callback to be invoked when a data record is deleted."""
-        pass
-          
     @classmethod
     def construct_condition(cls, args, attr_defined=None, attr_undefined=None, attr_eq=None, attr_ne=None):
         """Constructs a compatibility condition, see :any:`check_compatibility`.
@@ -527,7 +556,7 @@ class Model(object):
             the above expressions do nothing.
         """
         as_tuple = lambda x: x if isinstance(x, tuple) else (x,)
-        for attr, props in self.attributes.iteritems():
+        for attr, props in self.attributes.iteritems():    # pylint: disable=no-member
             try:
                 compat = props['compat']
             except KeyError:

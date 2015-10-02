@@ -35,10 +35,13 @@ import pprint
 from texttable import Texttable
 from termcolor import termcolor
 from tau import EXIT_SUCCESS
-from tau import logger, util, cli, storage
+from tau import logger, util, cli
 from tau.error import UniqueAttributeError, InternalError
+from tau.storage.levels import SYSTEM_STORAGE, USER_STORAGE, PROJECT_STORAGE, STORAGE_LEVELS
+from tau.storage.project import UninitializedProjectError
 from tau.cli import arguments
 from tau.cli.command import AbstractCommand
+from tau.cli.commands.initialize import COMMAND as initialize_command
 
 
 class AbstractCliView(AbstractCommand):
@@ -105,11 +108,11 @@ class CreateCommand(AbstractCliView):
     def main(self, argv):
         args = self.parser.parse_args(args=argv)
         self.logger.debug('Arguments: %s', args)
-        store = storage.CONTAINERS[getattr(args, arguments.STORAGE_LEVEL_FLAG)[0]]
+        store = STORAGE_LEVELS[getattr(args, arguments.STORAGE_LEVEL_FLAG)[0]]
         ctrl = self.model.controller(store)
         key_attr = self.model.key_attribute
         key = getattr(args, key_attr)
-        data = {attr: getattr(args, attr) for attr in ctrl.attributes if hasattr(args, attr)}
+        data = {attr: getattr(args, attr) for attr in self.model.attributes if hasattr(args, attr)}
         try:
             ctrl.create(data)
         except UniqueAttributeError:
@@ -144,7 +147,7 @@ class DeleteCommand(AbstractCliView):
     def main(self, argv):
         args = self.parser.parse_args(args=argv)
         self.logger.debug('Arguments: %s', args)
-        store = storage.CONTAINERS[getattr(args, arguments.STORAGE_LEVEL_FLAG)[0]]
+        store = STORAGE_LEVELS[getattr(args, arguments.STORAGE_LEVEL_FLAG)[0]]
         ctrl = self.model.controller(store)
         key_attr = self.model.key_attribute
         key = getattr(args, key_attr)
@@ -182,13 +185,13 @@ class EditCommand(AbstractCliView):
     def main(self, argv):
         args = self.parser.parse_args(args=argv)
         self.logger.debug('Arguments: %s', args)
-        store = storage.CONTAINERS[getattr(args, arguments.STORAGE_LEVEL_FLAG)[0]]
+        store = STORAGE_LEVELS[getattr(args, arguments.STORAGE_LEVEL_FLAG)[0]]
         ctrl = self.model.controller(store)
         key_attr = self.model.key_attribute
         key = getattr(args, key_attr)
         if not ctrl.exists({key_attr: key}):
             self.parser.error("No %s-level %s with %s='%s'." % (ctrl.storage.name, self.model.name, key_attr, key)) 
-        data = {attr: getattr(args, attr) for attr in ctrl.attributes if hasattr(args, attr)}
+        data = {attr: getattr(args, attr) for attr in self.model.attributes if hasattr(args, attr)}
         try:
             data[key_attr] = args.new_key
         except AttributeError:
@@ -213,39 +216,43 @@ class ListCommand(AbstractCliView):
             dashboard_columns = [{'header': key_attr.capitalize(), 'value': key_attr}]
         self.dashboard_columns = dashboard_columns
 
-    def short_format(self, records):
-        """Format records in short format.
+    def short_format(self, models):
+        """Format modeled records in short format.
         
         Args:
-            records: Controlled records to format.
+            models: Modeled records to format.
         
         Returns:
             str: Record data in short format.
         """
-        return [record[self.model.key_attribute] for record in records]
+        self.logger.debug("Short format")
+        return [model[self.model.key_attribute] for model in models]
     
-    def dashboard_format(self, records):
-        """Format records in dashboard format.
+    def dashboard_format(self, models):
+        """Format modeled records in dashboard format.
         
         Args:
-            records: Controlled records to format.
+            models: Modeled records to format.
         
         Returns:
             str: Record data in dashboard format.
         """
-        title = util.hline("%s-level %ss (%s)" %
-                           (records[0].storage.name.capitalize(),
-                            records[0].model_name.capitalize(), 
-                            records[0].storage.prefix), 
+        self.logger.debug("Dashboard format")
+        title = util.hline("%ss (%s)" %
+                           (models[0].name.capitalize(), 
+                            models[0].storage),
                            'cyan')
         header_row = [col['header'] for col in self.dashboard_columns]
         rows = [header_row]
-        for record in records:
-            populated = record.populate()
+        for model in models:
+            populated = model.populate()
             row = []
             for col in self.dashboard_columns:
                 if 'value' in col:
-                    cell = populated[col['value']]
+                    try:
+                        cell = populated[col['value']]
+                    except KeyError:
+                        cell = 'N/A'
                 elif 'yesno' in col:
                     cell = 'Yes' if populated.get(col['yesno'], False) else 'No'
                 elif 'function' in col:
@@ -271,7 +278,7 @@ class ListCommand(AbstractCliView):
         Returns:
             str: Record data in long format.
         """
-        # pylint: disable=no-self-use
+        self.logger.debug("Long format")
         return [pprint.pformat(record.populate()) for record in records]
 
     def json_format(self, records):
@@ -283,7 +290,7 @@ class ListCommand(AbstractCliView):
         Returns:
             str: Record data in JSON format.
         """
-        # pylint: disable=no-self-use
+        self.logger.debug("JSON format")
         return [json.dumps(record.data) for record in records]
 
     def construct_parser(self):
@@ -331,14 +338,14 @@ class ListCommand(AbstractCliView):
         args = self.parser.parse_args(args=argv)
         self.logger.debug('Arguments: %s', args)
         
-        project_ctl = self.model.controller(storage.PROJECT_STORAGE)
-        user_ctl = self.model.controller(storage.USER_STORAGE)
-        system_ctl = self.model.controller(storage.SYSTEM_STORAGE)
+        project_ctl = self.model.controller(PROJECT_STORAGE)
+        user_ctl = self.model.controller(USER_STORAGE)
+        system_ctl = self.model.controller(SYSTEM_STORAGE)
         
         storage_levels = getattr(args, arguments.STORAGE_LEVEL_FLAG)
-        system = storage.SYSTEM_STORAGE.name in storage_levels
-        user = storage.USER_STORAGE.name in storage_levels
-        project = storage.PROJECT_STORAGE.name in storage_levels or not (user or system)
+        system = SYSTEM_STORAGE.name in storage_levels
+        user = USER_STORAGE.name in storage_levels
+        project = PROJECT_STORAGE.name in storage_levels or not (user or system)
         keys = getattr(args, 'keys', None)
         style = getattr(args, 'style', None) or self.default_style
         
@@ -350,10 +357,10 @@ class ListCommand(AbstractCliView):
         if project:
             try:
                 parts.extend(self._format_records(project_ctl, style, keys))
-            except storage.ProjectStorageError as err:
-                err.hints.insert(0, "See `tau init --help`.")
+            except UninitializedProjectError as err:
+                err.hints.insert(0, "Use `%s` to create a new project." % initialize_command.command)
                 err.hints.append("Check command line arguments.")
-                self.logger.error(err)
+                raise err
         if style == 'dashboard':
             if not system:
                 parts.extend(self._count_records(system_ctl))
@@ -362,13 +369,13 @@ class ListCommand(AbstractCliView):
             if not project:
                 try:
                     parts.extend(self._count_records(project_ctl))
-                except storage.ProjectStorageError:
+                except UninitializedProjectError:
                     pass
         print '\n'.join(parts)
         return EXIT_SUCCESS
     
     def _retrieve_records(self, ctrl, keys):
-        """Retrieve recorded data from the controller.
+        """Retrieve modeled data from the controller.
         
         Args:
             ctrl (Controller): Controller for the data model.
@@ -378,13 +385,10 @@ class ListCommand(AbstractCliView):
             records = ctrl.all()
         else:
             key_attr = self.model.key_attribute
-            records = []
-            for key in keys:
-                record = ctrl.search({key_attr: key})
-                if record:
-                    records.extend(record)
-                else:
-                    self.parser.error("No %s with %s='%s'" % (self.model.name, key_attr, key))
+            records = ctrl.search([{key_attr: key} for key in keys])
+            for i, record in enumerate(records):
+                if not record:
+                    self.parser.error("No %s with %s='%s'" % (self.model.name, key_attr, keys[i]))
         return records
 
     def _format_records(self, ctrl, style, keys=None):
@@ -415,9 +419,9 @@ class ListCommand(AbstractCliView):
         fields = {'count': count, 'level': level, 'command': self.command, 'level_flag': arguments.STORAGE_LEVEL_FLAG}
         if count == 1:
             return ["There is 1 %(level)s-level application."
-                    " Type `%(command)s %(level_flag)s %(level)s` to list it." % fields] 
+                    " Type `%(command)s -%(level_flag)s %(level)s` to list it." % fields] 
         elif count > 1:
             return ["There are %(count)d %(level)s-level applications."
-                    " Type `%(command)s %(level_flag)s %(level)s` to list them." % fields] 
+                    " Type `%(command)s -%(level_flag)s %(level)s` to list them." % fields] 
         else:
             return []
