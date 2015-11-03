@@ -36,10 +36,6 @@ from tau import logger, util
 from tau.error import ConfigurationError, InternalError
 from tau.cf.software import SoftwarePackageError
 from tau.cf.software.installation import Installation, parallel_make_flags
-from tau.cf.software.pdt_installation import PdtInstallation
-from tau.cf.software.binutils_installation import BinutilsInstallation
-from tau.cf.software.libunwind_installation import LibunwindInstallation
-from tau.cf.software.papi_installation import PapiInstallation
 from tau.cf.compiler import SYSTEM_COMPILERS, GNU_COMPILERS, INTEL_COMPILERS, PGI_COMPILERS
 from tau.cf.compiler import CC_ROLE, CXX_ROLE, FC_ROLE, UPC_ROLE
 from tau.cf.compiler.mpi import SYSTEM_MPI_COMPILERS, INTEL_MPI_COMPILERS
@@ -51,60 +47,59 @@ LOGGER = logger.get_logger(__name__)
 
 SOURCES = {None: 'http://tau.uoregon.edu/tau.tgz'}
 
-COMMANDS = [
-    'jumpshot',
-    'paraprof',
-    'perfdmf_configure',
-    'perfdmf_createapp',
-    'perfdmf_createexp',
-    'perfdmfdb.py',
-    'perfdmf_loadtrial',
-    'perfexplorer',
-    'perfexplorer_configure',
-    'phaseconvert',
-    'pprof',
-    'ppscript',
-    'slog2print',
-    'tau2slog2',
-    'tau_analyze',
-    'taucc',
-    'tau_cc.sh',
-    'tau_compiler.sh',
-    'tau-config',
-    'tau_convert',
-    'taucxx',
-    'tau_cxx.sh',
-    'taudb_configure',
-    'taudb_install_cert',
-    'taudb_keygen',
-    'taudb_loadtrial',
-    'tau_ebs2otf.pl',
-    'tau_ebs_process.pl',
-    'tauex',
-    'tau_exec',
-    'tau_f77.sh',
-    'tauf90',
-    'tau_f90.sh',
-    'tau_gen_wrapper',
-    'tau_header_replace.pl',
-    'tauinc.pl',
-    'tau_java',
-    'tau_javamax.sh',
-    'tau_macro.sh',
-    'tau_merge',
-    'tau_multimerge',
-    'tau_pebil_rewrite',
-    'tau_reduce',
-    'tau_rewrite',
-    'tau_selectfile',
-    'tau_show_libs',
-    'tau_throttle.sh',
-    'tau_treemerge.pl',
-    'tauupc',
-    'tau_upc.sh',
-    'tau_user_setup.sh',
-    'trace2profile']
-
+COMMANDS = {None: 
+            ['jumpshot',
+             'paraprof',
+             'perfdmf_configure',
+             'perfdmf_createapp',
+             'perfdmf_createexp',
+             'perfdmfdb.py',
+             'perfdmf_loadtrial',
+             'perfexplorer',
+             'perfexplorer_configure',
+             'phaseconvert',
+             'pprof',
+             'ppscript',
+             'slog2print',
+             'tau2slog2',
+             'tau_analyze',
+             'taucc',
+             'tau_cc.sh',
+             'tau_compiler.sh',
+             'tau-config',
+             'tau_convert',
+             'taucxx',
+             'tau_cxx.sh',
+             'taudb_configure',
+             'taudb_install_cert',
+             'taudb_keygen',
+             'taudb_loadtrial',
+             'tau_ebs2otf.pl',
+             'tau_ebs_process.pl',
+             'tauex',
+             'tau_exec',
+             'tau_f77.sh',
+             'tauf90',
+             'tau_f90.sh',
+             'tau_gen_wrapper',
+             'tau_header_replace.pl',
+             'tauinc.pl',
+             'tau_java',
+             'tau_javamax.sh',
+             'tau_macro.sh',
+             'tau_merge',
+             'tau_multimerge',
+             'tau_pebil_rewrite',
+             'tau_reduce',
+             'tau_rewrite',
+             'tau_selectfile',
+             'tau_show_libs',
+             'tau_throttle.sh',
+             'tau_treemerge.pl',
+             'tauupc',
+             'tau_upc.sh',
+             'tau_user_setup.sh',
+             'trace2profile']}
 
 TAU_COMPILER_WRAPPERS = {CC_ROLE: 'tau_cc.sh',
                          CXX_ROLE: 'tau_cxx.sh',
@@ -123,13 +118,13 @@ class TauInstallation(Installation):
     of the systemization of TAU is actually implemented so it can get ugly.
     """
 
-    def __init__(self, prefix, src, host_arch, host_os, compilers, 
+    def __init__(self, prefix, src, target_arch, target_os, compilers, 
                  verbose,
                  # Source for dependencies
-                 pdt_source,
-                 binutils_source,
-                 libunwind_source,
-                 papi_source,
+                 pdt,
+                 binutils,
+                 libunwind,
+                 papi,
                  # Application support features
                  openmp_support,
                  pthreads_support, 
@@ -210,23 +205,20 @@ class TauInstallation(Installation):
             measure_memory_alloc (bool): If True then record memory allocation **and deallocation** events.
             callpath_depth (int): Depth of callpath measurement.  0 to disable.
         """
-        self.pdt = None
-        self.binutils = None
-        self.libunwind = None
-        self.papi = None
+        super(TauInstallation, self).__init__('TAU', prefix, src, "", target_arch, target_os, compilers, 
+                                              SOURCES, COMMANDS, None)
         try:
-            arch = TauArch.get(host_arch, host_os).name
+            self.arch = TauArch.get(target_arch, target_os)
         except KeyError:
-            raise InternalError("Invalid host_arch '%s' or host_os '%s'" % (host_arch, host_os))
-        super(TauInstallation, self).__init__('TAU', prefix, src, '', arch, compilers, SOURCES)
-        self.arch_path = os.path.join(self.install_prefix, str(arch))
+            raise InternalError("Invalid target_arch '%s' or target_os '%s'" % (target_arch, target_os))
+        self.arch_path = os.path.join(self.install_prefix, self.arch.name)
         self.bin_path = os.path.join(self.arch_path, 'bin')
         self.lib_path = os.path.join(self.arch_path, 'lib')
         self.verbose = verbose
-        self.pdt_source = pdt_source
-        self.binutils_source = binutils_source
-        self.libunwind_source = libunwind_source
-        self.papi_source = papi_source
+        self.pdt = pdt
+        self.binutils = binutils
+        self.libunwind = libunwind
+        self.papi = papi
         self.openmp_support = openmp_support
         self.opencl_support = opencl_support
         self.opencl_prefix = opencl_prefix
@@ -259,56 +251,8 @@ class TauInstallation(Installation):
         self.measure_memory_usage = measure_memory_usage
         self.measure_memory_alloc = measure_memory_alloc
         self.callpath_depth = callpath_depth
-        for pkg in ['pdt', 'binutils', 'libunwind', 'papi']:
-            # We save a lot of typing here by using eval.
-            # pylint: disable=eval-used
-            if eval('self.uses_%s()' % pkg):
-                if not getattr(self, '%s_source' % pkg): 
-                    raise ConfigurationError("Specified TAU configuration requires %s but no source specified" % pkg)
-            else:
-                setattr(self, pkg, None)
         
-    def uses_pdt(self):
-        return self.source_inst != 'never'
-    
-    def uses_binutils(self):
-        return (self.sample or 
-                self.compiler_inst != 'never' or 
-                self.measure_openmp == 'ompt' or
-                self.measure_openmp == 'gomp')
-        
-    def uses_libunwind(self):
-        return (self.arch != 'apple' and
-                (self.sample or 
-                 self.compiler_inst != 'never' or 
-                 self.openmp_support))
-        
-    def uses_papi(self):
-        return bool(len([met for met in self.metrics if 'PAPI' in met]))
-
-    def _check_dependencies(self):
-        """Ensures all required dependencies are installed and working.
-        
-        Kicks off dependency installation if a required dependency is not found.
-        """
-        if self.uses_pdt():
-            self.pdt = PdtInstallation(self.prefix, self.pdt_source, self.arch, self.compilers)
-            with self.pdt:
-                self.pdt.install()
-        if self.uses_binutils():
-            self.binutils = BinutilsInstallation(self.prefix, self.binutils_source, self.arch, self.compilers)
-            with self.binutils:
-                self.binutils.install()
-        if self.uses_libunwind():
-            self.libunwind = LibunwindInstallation(self.prefix, self.libunwind_source, self.arch, self.compilers)
-            with self.libunwind:
-                self.libunwind.install()
-        if self.uses_papi():
-            self.papi = PapiInstallation(self.prefix, self.papi_source, self.arch, self.compilers)
-            with self.papi:
-                self.papi.install()
-    
-    def _verify(self, commands=None, libraries=None):
+    def _verify(self):
         """Returns true if the installation is valid.
         
         A working TAU installation has a directory named `arch` 
@@ -321,7 +265,7 @@ class TauInstallation(Installation):
         Raises:
           SoftwarePackageError: Describes why the installation is invalid.
         """
-        super(TauInstallation, self)._verify(commands=COMMANDS)
+        super(TauInstallation, self)._verify()
 
         # Open TAU makefile and check BFDINCLUDE, UNWIND_INC, PAPIDIR, etc.
         makefile = self.get_makefile()
@@ -465,8 +409,6 @@ class TauInstallation(Installation):
         Raises:
             SoftwarePackageError: TAU failed installation or did not pass verification after it was installed.
         """
-        self._check_dependencies()
-
         if not self.src:
             try:
                 return self._verify()

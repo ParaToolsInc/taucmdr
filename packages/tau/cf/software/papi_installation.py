@@ -39,19 +39,16 @@ LOGGER = logger.get_logger(__name__)
 
 SOURCES = {None: 'http://icl.cs.utk.edu/projects/papi/downloads/papi-5.4.1.tar.gz'}
 
-LIBS = {None: ['libpapi.a']}
+LIBRARIES = {None: ['libpapi.a']}
 
 
 class PapiInstallation(AutotoolsInstallation):
     """Encapsulates a PAPI installation."""
 
-    def __init__(self, prefix, src, arch, compilers):
-        dst = os.path.join(arch, compilers[CC_ROLE].info.family.name)
-        super(PapiInstallation, self).__init__('PAPI', prefix, src, dst, arch, compilers, SOURCES)
-
-    def _verify(self, commands=None, libraries=None):
-        libraries = LIBS.get(self.arch, LIBS[None])
-        return super(PapiInstallation, self)._verify(commands, libraries)
+    def __init__(self, prefix, src, target_arch, target_os, compilers):
+        dst = os.path.join(target_arch, compilers[CC_ROLE].info.family.name)
+        super(PapiInstallation, self).__init__('PAPI', prefix, src, dst, 
+                                               target_arch, target_os, compilers, SOURCES, None, LIBRARIES)
 
     def _prepare_src(self, reuse=True):
         super(PapiInstallation, self)._prepare_src(reuse)

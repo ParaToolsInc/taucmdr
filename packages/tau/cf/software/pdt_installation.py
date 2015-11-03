@@ -35,16 +35,15 @@ from tau import logger, util
 from tau.cf.software import SoftwarePackageError
 from tau.cf.software.installation import AutotoolsInstallation
 from tau.cf.compiler import CXX_ROLE, GNU_COMPILERS, INTEL_COMPILERS, PGI_COMPILERS
-from tau.cf.target import TAU_ARCH_APPLE
+from tau.cf.target import TAU_ARCH_APPLE, X86_64_ARCH, TauArch
 
 
 LOGGER = logger.get_logger(__name__)
 
 SOURCES = {None: 'http://tau.uoregon.edu/pdt.tgz',
-           # Why isn't this called pdt-x86_64.tgz ?? "lite" tells me nothing
-           'x86_64': 'http://tau.uoregon.edu/pdt_lite.tgz'}
+           X86_64_ARCH: {None: 'http://tau.uoregon.edu/pdt_lite.tgz'}}
 
-COMMANDS = {None: 
+COMMANDS = {None:
             ['cparse',
              'cxxparse',
              'edg33-upcparse',
@@ -71,7 +70,7 @@ COMMANDS = {None:
              'tau_instrumentor',
              'upcparse',
              'xmlgen'],
-            TAU_ARCH_APPLE.name: 
+            TAU_ARCH_APPLE: 
             ['cparse',
              'cxxparse',
              'edgcpfe',
@@ -98,19 +97,13 @@ class PdtInstallation(AutotoolsInstallation):
     proceedure is the same otherwise, so we reuse what we can from AutotoolsInstallation.
     """
 
-    def __init__(self, prefix, src, arch, compilers):
-        dst = compilers[CXX_ROLE].info.family.name
-        super(PdtInstallation, self).__init__('PDT', prefix, src, dst, arch, compilers, SOURCES)
-        self.arch_path = os.path.join(self.install_prefix, arch)
+    def __init__(self, prefix, src, target_arch, target_os, compilers):
+        super(PdtInstallation, self).__init__('PDT', prefix, src, compilers[CXX_ROLE].info.family.name, 
+                                              target_arch, target_os, compilers, SOURCES, COMMANDS, None)
+        self.arch = TauArch.get(target_arch, target_os)
+        self.arch_path = os.path.join(self.install_prefix, self.arch.name)
         self.bin_path = os.path.join(self.arch_path, 'bin')
         self.lib_path = os.path.join(self.arch_path, 'lib')
-
-    def _verify(self, commands=None, libraries=None):
-        try:
-            commands = COMMANDS[self.arch]
-        except KeyError:
-            commands = COMMANDS[None]
-        return super(PdtInstallation, self)._verify(commands, libraries)
 
     def configure(self, flags, env):
         family_flags = {GNU_COMPILERS.name: '-GNU', 

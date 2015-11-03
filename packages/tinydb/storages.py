@@ -86,7 +86,10 @@ class JSONStorage(Storage):
         self._handle = open(path, 'r+')
 
     def close(self):
-        self._handle.close()
+        try:
+            self._handle.close()
+        except AttributeError:
+            pass
 
     def __del__(self):
         self.close()

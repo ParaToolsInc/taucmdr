@@ -49,11 +49,10 @@ class DashboardCommand(AbstractCommand):
         proj_ctrl = Project.controller()
         proj = proj_ctrl.selected()
         if proj:
-            cli.execute_command(['project', 'list'], [proj['name']] + subargs)
             cli.execute_command(['target', 'list'], [targ['name'] for targ in proj.populate('targets')])
             cli.execute_command(['application', 'list'], [targ['name'] for targ in proj.populate('applications')])
             cli.execute_command(['measurement', 'list'], [targ['name'] for targ in proj.populate('measurements')])
-            cli.execute_command(['trial', 'list'], ['-s'])
+            cli.execute_command(['trial', 'list'])
         else:
             cli.execute_command(['project', 'list'], subargs)
             cli.execute_command(['target', 'list'], subargs)

@@ -210,6 +210,7 @@ DARWIN_OS = OperatingSystem('Darwin', 'Darwin')
 LINUX_OS = OperatingSystem('Linux', 'Linux')
 IBM_CNK_OS = OperatingSystem('CNK', 'Compute Node Kernel')
 CRAY_CNL_OS = OperatingSystem('CNL', 'Compute Node Linux')
+ANDROID_OS = OperatingSystem('Android', 'Android')
 
 X86_64_ARCH = Architecture('x86_64', 'x86_64')
 INTEL_KNC_ARCH = Architecture('knc', 'Intel Knights Corner')
@@ -229,4 +230,4 @@ TAU_ARCH_BGQ = TauArch('bgq', IBM_BGQ_ARCH, IBM_CNK_OS)
 TAU_ARCH_IBM64_LINUX = TauArch('ibm64linux', IBM64_ARCH, LINUX_OS)
 TAU_ARCH_ARM32_LINUX = TauArch('arm_linux', ARM32_ARCH, LINUX_OS)
 TAU_ARCH_ARM64_LINUX = TauArch('arm64_linux', ARM64_ARCH, LINUX_OS)
-
+TAU_ARCH_ARM_ANDROID = TauArch('arm_android', ARM32_ARCH, ANDROID_OS)

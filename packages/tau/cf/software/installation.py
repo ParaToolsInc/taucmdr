@@ -37,6 +37,7 @@ from tau import logger, util
 from tau.error import ConfigurationError
 from tau.cf.software import SoftwarePackageError
 from tau.cf.compiler import CC_ROLE
+from tau.cf.target import Architecture, OperatingSystem 
 
 
 LOGGER = logger.get_logger(__name__)
@@ -67,7 +68,8 @@ class Installation(object):
         src (str): Path to a directory where the software has already been 
                    installed, or a path to a source archive file, or the special
                    keyword 'download'.
-        arch (str): Target architecture keyword.
+        target_arch (str): Target architecture name.
+        target_os (str): Target operating system name.
         compilers (InstalledCompilerSet): Compilers to use if software must be compiled.
         archive_prefix (str): Directory containing package source code archive file.
         src_prefix (str): Directory containing package source code.
@@ -80,7 +82,8 @@ class Installation(object):
     #pylint: disable=too-many-instance-attributes
     #pylint: disable=too-many-arguments
 
-    def __init__(self, name, prefix, src, dst, arch, compilers, sources):
+    def __init__(self, name, prefix, src, dst, target_arch, target_os, compilers, 
+                 sources, commands, libraries):
         """Initializes the installation object.
         
         To set up a new installation, pass `src` as a URL, file path, or the special keyword 'download'.
@@ -97,35 +100,53 @@ class Installation(object):
                        installed, or a path to a source archive file, or the special
                        keyword 'download'.
             dst (str): Installation destination to be created below `prefix`.
-            arch (str): Target architecture keyword.
+            target_arch (str): Target architecture name.
+            target_os (str): Target operating system name.
             compilers (InstalledCompilerSet): Compilers to use if software must be compiled.
-            sources (dict): (arch, path) dictionary specifying where to get source
-                            code archives for different architectures.  The None
-                            key specifies the default (i.e. universal) source.
+            sources (dict): Dictionary of URLs for source code archives indexed by architecture and OS.  
+                            `None` specifies the default (i.e. universal) source.
+            commands (dict): Dictionary of commands that must be installed indexed by architecture and OS.
+                             `None` specifies the universal commands.
+            libraries (dict): Dictionary of libraries that must be installed indexed by architecture and OS.
+                              `None` specifies the universal libraries.
         """
         self.name = name
         self.prefix = prefix
-        self.arch = arch
+        self.target_arch = Architecture.find(target_arch)
+        self.target_os = OperatingSystem.find(target_os)
         self.compilers = compilers
         self.archive_prefix = os.path.join(prefix, 'src')
+        self.src_prefix = None
         if os.path.isdir(src):
             self.src = None
-            self.src_prefix = None
             self.install_prefix = src
         else:
             if src.lower() == 'download':
-                self.src = sources.get(arch, sources[None])
+                self.src = self._lookup_target_os_list(sources, target_arch, target_os)
             else:
                 self.src = src
-            self.src_prefix = None
             md5sum = hashlib.md5()
             md5sum.update(self.src)
-            self.install_prefix = os.path.join(prefix, name, dst, md5sum.hexdigest())
+            self.install_prefix = os.path.join(prefix, dst, name, md5sum.hexdigest())
+        self.commands = self._lookup_target_os_list(commands, target_arch, target_os)
+        self.libraries = self._lookup_target_os_list(libraries, target_arch, target_os)
         self.include_path = os.path.join(self.install_prefix, 'include')
         self.bin_path = os.path.join(self.install_prefix, 'bin')
         self.lib_path = os.path.join(self.install_prefix, 'lib')
         self._lockfile = LockFile(os.path.join(self.install_prefix, '.tau_lock'))
         LOGGER.debug("%s installation prefix is %s", self.name, self.install_prefix)
+        
+    @staticmethod
+    def _lookup_target_os_list(dct, target_arch, target_os):
+        if not dct:
+            return []
+        default = dct[None]
+        try:
+            arch_val = dct[target_arch]
+        except KeyError:
+            return default
+        else:
+            return arch_val.get(target_os, arch_val.get(None, default))
         
     def __enter__(self):
         """Lock the software installation for use by this process only."""
@@ -189,7 +210,7 @@ class Installation(object):
                                          "Check that the file or directory is accessable")
         self.src_prefix = src_prefix
 
-    def _verify(self, commands=None, libraries=None):
+    def _verify(self):
         """Check if the installation is valid.
         
         A valid installation provides all expected libraries and commands.
@@ -205,22 +226,20 @@ class Installation(object):
         Raises:
           SoftwarePackageError: Describs why the installation is invalid.
         """
-        LOGGER.debug("Checking %s installation at '%s' targeting arch '%s'", 
-                     self.name, self.install_prefix, self.arch)
+        LOGGER.debug("Checking %s installation at '%s' targeting %s %s", 
+                     self.name, self.install_prefix, self.target_arch, self.target_os)
         if not os.path.exists(self.install_prefix):
             raise SoftwarePackageError("'%s' does not exist" % self.install_prefix)
-        if commands:
-            for cmd in commands:
-                path = os.path.join(self.bin_path, cmd)
-                if not os.path.exists(path):
-                    raise SoftwarePackageError("'%s' is missing" % path)
-                if not os.access(path, os.X_OK):
-                    raise SoftwarePackageError("'%s' exists but is not executable" % path)
-        if libraries:
-            for lib in libraries:
-                path = os.path.join(self.lib_path, lib)
-                if not util.file_accessible(path):
-                    raise SoftwarePackageError("'%s' is not accessible" % path)
+        for cmd in self.commands:
+            path = os.path.join(self.bin_path, cmd)
+            if not os.path.exists(path):
+                raise SoftwarePackageError("'%s' is missing" % path)
+            if not os.access(path, os.X_OK):
+                raise SoftwarePackageError("'%s' exists but is not executable" % path)
+        for lib in self.libraries:
+            path = os.path.join(self.lib_path, lib)
+            if not util.file_accessible(path):
+                raise SoftwarePackageError("'%s' is not accessible" % path)
         LOGGER.debug("%s installation at '%s' is valid", self.name, self.install_prefix)
         return True
         

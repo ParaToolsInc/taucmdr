@@ -27,7 +27,7 @@
 #
 """Experiment data model.
 
-An Experiment uniquely groups a :any:`Target`, :any:`Application`, and :any:`Measurement` 
+An Experiment uniquely groups a :any:`Target`, :any:`Application`, and :any:`Measurement`
 and will have zero or more :any:`Trial`. There is one selected experiment per project.  
 The selected experiment will be used for application compilation and trial visualization. 
 """
@@ -40,6 +40,8 @@ from tau.error import ConfigurationError
 from tau.mvc.model import Model
 from tau.model.trial import Trial
 from tau.model.project import Project
+from tau.storage.levels import USER_STORAGE
+from tau.cf.target import OperatingSystem, DARWIN_OS
 from tau.cf.software.tau_installation import TauInstallation
 from tau.cf.compiler.installed import InstalledCompiler
 
@@ -87,7 +89,6 @@ class Experiment(Model):
 
     def __init__(self, *args, **kwargs):
         super(Experiment, self).__init__(*args, **kwargs)
-        self.tau = None
 
     @property
     def prefix(self):
@@ -101,7 +102,7 @@ class Experiment(Model):
                                         populated['application']['name'],
                                         populated['measurement']['name'])
             return self._prefix
-
+        
     def on_create(self):
         try:
             util.mkdirp(self.prefix)
@@ -123,64 +124,125 @@ class Experiment(Model):
             if i != j:
                 return i
         return len(trials)
+    
+    def uses_tau(self):
+        # For now, all experiments use TAU
+        # This might change if we ever re-use this for something like ThreadSpotter
+        # pylint: disable=no-self-use
+        return True
+
+    def uses_pdt(self):
+        measurement = self.populate('measurement')
+        return measurement['source_inst'] != 'never'
+    
+    def uses_binutils(self):
+        measurement = self.populate('measurement')
+        return (measurement['sample'] or 
+                measurement['compiler_inst'] != 'never' or 
+                measurement['openmp'] in ('ompt', 'gomp'))
+        
+    def uses_libunwind(self):
+        populated = self.populate()
+        host_os = OperatingSystem.find(populated['target']['host_os'])
+        return (host_os is not DARWIN_OS and
+                (populated['measurement']['sample'] or 
+                 populated['measurement']['compiler_inst'] != 'never' or 
+                 populated['application']['openmp']))
+        
+    def uses_papi(self):
+        measurement = self.populate('measurement')
+        return bool(len([met for met in measurement['metrics'] if 'PAPI' in met]))
+    
+    def configure_tau(self, prefix, dependencies):
+        """Configures TAU for the current experiment, if necessary.
+        
+        Args:
+            prefix (str): Filesystem prefix where TAU will be installed, if necessary.
+            dependencies (dict): Installation objects indexed by dependency name.
+            
+        Returns:
+            TauInstallation: Object handle for the TAU installation.
+        """
+        populated = self.populate()
+        target = populated['target']
+        application = populated['application']
+        measurement = populated['measurement']
+        verbose = (logger.LOG_LEVEL == 'DEBUG')
+        tau = TauInstallation(prefix, target.get('tau_source', None), 
+                              target['host_arch'], target['host_os'], target.compilers(),
+                              verbose=verbose,
+                              # TAU dependencies
+                              pdt=dependencies['pdt'],
+                              binutils=dependencies['binutils'],
+                              libunwind=dependencies['libunwind'],
+                              papi=dependencies['papi'],
+                              # TAU feature suppport
+                              openmp_support=application['openmp'],
+                              pthreads_support=application['pthreads'],
+                              mpi_support=application['mpi'],
+                              mpi_include_path=target.get('mpi_include_path', []),
+                              mpi_library_path=target.get('mpi_library_path', []),
+                              mpi_libraries=target.get('mpi_libraries', []),
+                              cuda_support=application['cuda'],
+                              cuda_prefix=target.get('cuda', None),
+                              opencl_support=application['opencl'],
+                              opencl_prefix=target.get('opencl', None),
+                              shmem_support=application['shmem'],
+                              mpc_support=application['mpc'],
+                              # Instrumentation methods and options            
+                              source_inst=measurement['source_inst'],
+                              compiler_inst=measurement['compiler_inst'],
+                              link_only=measurement['link_only'],
+                              io_inst=measurement['io'],
+                              keep_inst_files=measurement['keep_inst_files'],
+                              reuse_inst_files=measurement['reuse_inst_files'],
+                              # Measurement methods and options
+                              profile=measurement['profile'],
+                              trace=measurement['trace'],
+                              sample=measurement['sample'],
+                              metrics=measurement['metrics'],
+                              measure_mpi=measurement['mpi'],
+                              measure_openmp=measurement['openmp'],
+                              measure_opencl=measurement['opencl'],
+                              measure_pthreads=None,  # TODO
+                              measure_cuda=None,  # TODO
+                              measure_shmem=None,  # TODO
+                              measure_mpc=None,  # TODO
+                              measure_memory_usage=measurement['memory_usage'],
+                              measure_memory_alloc=measurement['memory_alloc'],
+                              callpath_depth=measurement['callpath'])
+        with tau:
+            tau.install()
+            return tau
+    
+    def configure_tau_dependency(self, name, prefix):
+        target = self.populate('target')
+        cls_name = name.title() + 'Installation'
+        pkg = __import__('tau.cf.software.%s_installation' % name.lower(), globals(), locals(), [cls_name], -1)
+        cls = getattr(pkg, cls_name)
+        inst = cls(prefix, target.get(name + '_source', None), 
+                   target['host_arch'], target['host_os'], target.compilers())
+        with inst:
+            inst.install()
+            return inst       
 
     def configure(self):
         """Sets up the Experiment for a new trial.
         
         Installs or configures TAU and all its dependencies.  After calling this 
         function, the experiment is ready to operate on the user's application.
-        """
-        populated = self.populate()
-        prefix = populated['project'].prefix
-        target = populated['target']
-        application = populated['application']
-        measurement = populated['measurement']
-        verbose = (logger.LOG_LEVEL == 'DEBUG')
         
-        # Configure/build/install TAU if needed
-        self.tau = TauInstallation(prefix, target['tau_source'], target['host_arch'], target['host_os'], 
-                                   target.compilers(),
-                                   verbose=verbose,
-                                   pdt_source=target.get('pdt_source', None),
-                                   binutils_source=target.get('binutils_source', None),
-                                   libunwind_source=target.get('libunwind_source', None),
-                                   papi_source=target.get('papi_source', None),
-                                   openmp_support=application['openmp'],
-                                   pthreads_support=application['pthreads'],
-                                   mpi_support=application['mpi'],
-                                   mpi_include_path=target.get('mpi_include_path', []),
-                                   mpi_library_path=target.get('mpi_library_path', []),
-                                   mpi_libraries=target.get('mpi_libraries', []),
-                                   cuda_support=application['cuda'],
-                                   cuda_prefix=target.get('cuda', None),
-                                   opencl_support=application['opencl'],
-                                   opencl_prefix=target.get('opencl', None),
-                                   shmem_support=application['shmem'],
-                                   mpc_support=application['mpc'],
-                                   # Instrumentation methods and options            
-                                   source_inst=measurement['source_inst'],
-                                   compiler_inst=measurement['compiler_inst'],
-                                   link_only=measurement['link_only'],
-                                   io_inst=measurement['io'],
-                                   keep_inst_files=measurement['keep_inst_files'],
-                                   reuse_inst_files=measurement['reuse_inst_files'],
-                                   # Measurements TAU must support
-                                   profile=measurement['profile'],
-                                   trace=measurement['trace'],
-                                   sample=measurement['sample'],
-                                   metrics=measurement['metrics'],
-                                   measure_mpi=measurement['mpi'],
-                                   measure_openmp=measurement['openmp'],
-                                   measure_opencl=measurement['opencl'],
-                                   measure_pthreads=None,  # TODO
-                                   measure_cuda=None,  # Todo
-                                   measure_shmem=None,  # TODO
-                                   measure_mpc=None,  # TODO
-                                   measure_memory_usage=measurement['memory_usage'],
-                                   measure_memory_alloc=measurement['memory_alloc'],
-                                   callpath_depth=measurement['callpath'])
-        with self.tau:
-            self.tau.install()
+        Returns:
+            TauInstallation: Object handle for the TAU installation. 
+        """
+        prefix = USER_STORAGE.prefix
+        if self.uses_tau():
+            dependencies = {}
+            for name in 'pdt', 'binutils', 'libunwind', 'papi':
+                uses_dependency = getattr(self, 'uses_' + name)
+                inst = self.configure_tau_dependency(name, prefix) if uses_dependency() else None
+                dependencies[name] = inst
+            return self.configure_tau(prefix, dependencies)
 
     def managed_build(self, compiler_cmd, compiler_args):
         """Uses this experiment to perform a build operation.
@@ -202,8 +264,8 @@ class Experiment(Model):
         target = self.populate('target')
         given_compiler = InstalledCompiler(compiler_cmd)
         target.check_compiler(given_compiler)
-        self.configure()
-        return self.tau.compile(given_compiler, compiler_args)
+        tau = self.configure()
+        return tau.compile(given_compiler, compiler_args)
         
     def managed_run(self, application_cmd, application_args):
         """Uses this experiment to run an application command.
@@ -224,8 +286,8 @@ class Experiment(Model):
         command = util.which(application_cmd)
         if not command:
             raise ConfigurationError("Cannot find executable: %s" % application_cmd)
-        self.configure()
-        cmd, env = self.tau.get_application_command(application_cmd, application_args)
+        tau = self.configure()
+        cmd, env = tau.get_application_command(application_cmd, application_args)
         return Trial.controller(self.storage).perform(self, cmd, os.getcwd(), env)
 
     def show(self, tool_name=None, trial_numbers=None):
@@ -240,7 +302,6 @@ class Experiment(Model):
         Raises:
             ConfigurationError: Invalid trial numbers or no trial data for this experiment.
         """
-        self.configure()
         if trial_numbers:
             trials = []
             for num in trial_numbers:
@@ -258,11 +319,13 @@ class Experiment(Model):
                 for trial in all_trials[1:]:
                     if trial['begin_time'] > found['begin_time']:
                         found = trial
-                trials = [found] 
-        for trial in trials:
-            prefix = trial.prefix
-            profiles = glob.glob(os.path.join(prefix, 'profile.*.*.*'))
-            if not profiles:
-                profiles = glob.glob(os.path.join(prefix, 'MULTI__*'))
-            if profiles:
-                self.tau.show_profile(prefix, tool_name)
+                trials = [found]
+        if trials:
+            tau = self.configure()
+            for trial in trials:
+                prefix = trial.prefix
+                profiles = glob.glob(os.path.join(prefix, 'profile.*.*.*'))
+                if not profiles:
+                    profiles = glob.glob(os.path.join(prefix, 'MULTI__*'))
+                if profiles:
+                    tau.show_profile(prefix, tool_name)

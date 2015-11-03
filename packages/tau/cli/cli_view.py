@@ -25,6 +25,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
+from tau.storage import StorageError
 """A command line data `view`.
 
 See http://en.wikipedia.org/wiki/Model-view-controller
@@ -117,7 +118,10 @@ class CreateCommand(AbstractCliView):
             ctrl.create(data)
         except UniqueAttributeError:
             self.parser.error("A %s with %s='%s' already exists" % (self.model_name, key_attr, key))
-        self.logger.info("Created a new %s-level %s: '%s'.", ctrl.storage.name, self.model_name, key)
+        if ctrl.storage is PROJECT_STORAGE:
+            self.logger.info("Created a new %s: '%s'.", self.model_name, key)
+        else:
+            self.logger.info("Created a new %s-level %s: '%s'.", ctrl.storage.name, self.model_name, key)
         return EXIT_SUCCESS
 
 
@@ -226,7 +230,7 @@ class ListCommand(AbstractCliView):
             str: Record data in short format.
         """
         self.logger.debug("Short format")
-        return [model[self.model.key_attribute] for model in models]
+        return [str(model[self.model.key_attribute]) for model in models]
     
     def dashboard_format(self, models):
         """Format modeled records in dashboard format.
@@ -379,7 +383,10 @@ class ListCommand(AbstractCliView):
         
         Args:
             ctrl (Controller): Controller for the data model.
-            keys (list): Keys to match to :any:`self.key_attr`.       
+            keys (list): Keys to match to :any:`self.key_attr`.
+            
+        Returns:
+            list: Model records.
         """
         if not keys:
             records = ctrl.all()
@@ -392,17 +399,24 @@ class ListCommand(AbstractCliView):
         return records
 
     def _format_records(self, ctrl, style, keys=None):
-        """Print formatted record data to stdout.
+        """Format records in a given style.
+        
+        Retrieves records for controller `ctrl` and formats them.
         
         Args:
             ctrl (Controller): Controller for the data model.
             style (str): Style in which to format records.        
-            keys (list): Keys to match to :any:`self.key_attr`.       
+            keys (list): Keys to match to :any:`self.key_attr`.
+            
+        Returns:
+            list: Record data as formatted strings.
         """
-        records = self._retrieve_records(ctrl, keys)
+        try:
+            records = self._retrieve_records(ctrl, keys)
+        except StorageError:
+            records = []
         if not records:
             parts = ["No %ss." % self.model.name]
-            
         else:
             formatter = getattr(self, style+'_format')
             parts = formatter(records)
@@ -415,13 +429,16 @@ class ListCommand(AbstractCliView):
             controller (Controller): Controller for the data model.
         """
         level = ctrl.storage.name
-        count = ctrl.count()
+        try:
+            count = ctrl.count()
+        except StorageError:
+            count = 0
         fields = {'count': count, 'level': level, 'command': self.command, 'level_flag': arguments.STORAGE_LEVEL_FLAG}
         if count == 1:
-            return ["There is 1 %(level)s-level application."
+            return ["There is 1 %(level)s application."
                     " Type `%(command)s -%(level_flag)s %(level)s` to list it." % fields] 
         elif count > 1:
-            return ["There are %(count)d %(level)s-level applications."
+            return ["There are %(count)d %(level)s applications."
                     " Type `%(command)s -%(level_flag)s %(level)s` to list them." % fields] 
         else:
             return []

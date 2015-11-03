@@ -39,112 +39,82 @@ import fileinput
 from tau import logger, util
 from tau.cf.software.installation import AutotoolsInstallation
 from tau.cf.compiler import CC_ROLE
-
+from tau.cf.target import IBM_BGP_ARCH, IBM_BGQ_ARCH, IBM64_ARCH, ARM32_ARCH, INTEL_KNC_ARCH, X86_64_ARCH, DARWIN_OS
+from tau.cf.target import DARWIN_OS 
 
 LOGGER = logger.get_logger(__name__)
  
 SOURCES = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/binutils-2.23.2.tar.gz'}
 
-LIBS = {None: ['libbfd.a']}
+LIBRARIES = {None: ['libbfd.a']}
 
 
 class BinutilsInstallation(AutotoolsInstallation):
     """Encapsulates a GNU binutils installation."""
     
-    def __init__(self, prefix, src, arch, compilers):
-        dst = os.path.join(arch, compilers[CC_ROLE].info.family.name)
-        super(BinutilsInstallation, self).__init__('binutils', prefix, src, dst, arch, compilers, SOURCES)
+    def __init__(self, prefix, src, target_arch, target_os, compilers):
+        dst = os.path.join(target_arch, compilers[CC_ROLE].info.family.name)
+        super(BinutilsInstallation, self).__init__('binutils', prefix, src, dst, 
+                                                   target_arch, target_os, compilers, SOURCES, None, LIBRARIES)
 
-    def _verify(self, commands=None, libraries=None):
-        libraries = LIBS.get(self.arch, LIBS[None])
-        return super(BinutilsInstallation, self)._verify(commands, libraries)
+    def _configure_default(self, flags, env):
+        # pylint: disable=unused-argument,no-self-use
+        flags.extend(['CFLAGS=-fPIC', 'CXXFLAGS=-fPIC',
+                      '--disable-nls', '--disable-werror'])
     
+    def _configure_bgp(self, flags, env):
+        # pylint: disable=unused-argument,no-self-use
+        flags.extend(['CFLAGS=-fPIC', 'CXXFLAGS=-fPIC',
+                      'CC=/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc-bgp-linux-gcc',
+                      'CXX=/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc-bgp-linux-g++',
+                      '--disable-nls', '--disable-werror'])
+        
+    def _configure_bgq(self, flags, env):
+        # pylint: disable=unused-argument,no-self-use
+        flags.extend(['CFLAGS=-fPIC', 'CXXFLAGS=-fPIC',
+                      'CC=/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc64-bgq-linux-gcc',
+                      'CXX=/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc64-bgq-linux-g++',
+                      '--disable-nls', '--disable-werror'])
+        
+    def _configure_ibm64(self, flags, env):
+        # pylint: disable=unused-argument,no-self-use
+        flags.extend(['CFLAGS=-fPIC', 'CXXFLAGS=-fPIC',
+                      '--disable-nls', '--disable-werror',
+                      '--disable-largefile'])
+        
+    def _configure_knc(self, flags, env):
+        # pylint: disable=no-self-use
+        k1om_ar = util.which('x86_64-k1om-linux-ar')
+        if not k1om_ar:
+            for path in glob.glob('/usr/linux-k1om-*'):
+                k1om_ar = util.which(os.path.join(path, 'bin', 'x86_64-k1om-linux-ar'))
+                if k1om_ar:
+                    break
+        env['PATH'] = os.pathsep.join([os.path.dirname(k1om_ar), env.get('PATH', os.environ['PATH'])])
+        flags.extend(['CFLAGS=-fPIC', 'CXXFLAGS=-fPIC',
+                      '--host=x86_64-k1om-linux',
+                      '--disable-nls', '--disable-werror'])
+
+    def _configure_x86_64(self, flags, env):
+        # pylint: disable=unused-argument
+        if self.target_os is DARWIN_OS:
+            flags.extend(['CFLAGS=-Wno-error=unused-value -Wno-error=deprecated-declarations -fPIC', 
+                          'CXXFLAGS=-Wno-error=unused-value -Wno-error=deprecated-declarations -fPIC',
+                          '--disable-nls', '--disable-werror'])
+        else:
+            flags.extend(['CFLAGS=-fPIC', 'CXXFLAGS=-fPIC',
+                          '--disable-nls', '--disable-werror'])
+
     def configure(self, flags, env):
-        arch_flags = {'bgp': ['CFLAGS=-fPIC', 'CXXFLAGS=-fPIC',
-                              'CC=/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc-bgp-linux-gcc',
-                              'CXX=/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc-bgp-linux-g++',
-                              '--disable-nls', '--disable-werror'],
-                      'bgq': ['CFLAGS=-fPIC', 'CXXFLAGS=-fPIC',
-                              'CC=/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc64-bgq-linux-gcc',
-                              'CXX=/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc64-bgq-linux-g++',
-                              '--disable-nls', '--disable-werror'],
-                      'rs6000': ['CFLAGS=-fPIC', 'CXXFLAGS=-fPIC',
-                                 '--disable-nls', '--disable-werror',
-                                 '--disable-largefile'],
-                      'ibm64': ['CFLAGS=-fPIC', 'CXXFLAGS=-fPIC',
-                                '--disable-nls', '--disable-werror',
-                                '--disable-largefile'],
-                      'arm_android': ['CFLAGS=-fPIC', 'CXXFLAGS=-fPIC',
-                                      '--disable-nls', '--disable-werror',
-                                      '--disable-largefile',
-                                      '--host=%s' % self.arch],
-                      'mic_linux': ['CFLAGS=-fPIC', 'CXXFLAGS=-fPIC',
-                                    '--host=x86_64-k1om-linux',
-                                    '--disable-nls', '--disable-werror'],
-                      'apple': ['CFLAGS=-Wno-error=unused-value -Wno-error=deprecated-declarations -fPIC', 
-                                'CXXFLAGS=-Wno-error=unused-value -Wno-error=deprecated-declarations -fPIC',
-                                '--disable-nls', '--disable-werror'],
-                      'sparc64fx': ['CFLAGS="-fPIC -Xg"',
-                                    'CXXFLAGS="-fPIC -Xg"',
-                                    'AR=sparc64-unknown-linux-gnu-ar',
-                                    '--host=sparc64-unknown-linux-gnu',
-                                    '--disable-nls', '--disable-werror'],
-                      None: ['CFLAGS=-fPIC', 'CXXFLAGS=-fPIC',
-                             '--disable-nls', '--disable-werror']}
-
-        flags.extend(arch_flags.get(self.arch, arch_flags[None]))
-            
-        if self.arch == 'arm_android':
-            # TODO: Android
-            #patch -p1 <$START_DIR/android.binutils-2.23.2.patch
-            pass
-        elif self.arch == 'mic_linux':
-            k1om_ar = util.which('x86_64-k1om-linux-ar')
-            if not k1om_ar:
-                for path in glob.glob('/usr/linux-k1om-*'):
-                    k1om_ar = util.which(os.path.join(path, 'bin', 'x86_64-k1om-linux-ar'))
-                    if k1om_ar:
-                        break
-            env['PATH'] = os.pathsep.join([os.path.dirname(k1om_ar), env.get('PATH', os.environ['PATH'])])
-        elif self.arch == 'sparc64fx':
-            # TODO: SPARC64
-            #fccpxpath=`which fccpx | sed 's/\/bin\/fccpx$//'`
-            #if [ -r $fccpxpath/util/bin/sparc64-unknown-linux-gnu-ar ]; then
-            #  echo "NOTE: Using ar from $fccpxpath/util/bin/sparc64-unknown-linux-gnu-ar"
-            #  export PATH=$fccpxpath/util/bin:$PATH
-            #fi
-            #./configure \
-            #    CFLAGS="-fPIC -Xg" CXXFLAGS="-fPIC -Xg" \
-            #        CC=$fccpxpath/bin/fccpx \
-            #        CXX=$fccpxpath/bin/FCCpx \
-            #        AR=sparc64-unknown-linux-gnu-ar \
-            #        --host=sparc64-unknown-linux-gnu \
-            #        --prefix=$bfddir \
-            #        --disable-nls --disable-werror > tau_configure.log 2>&1
-            pass
-        #TODO: Cray with MIC
-#         elif CRAY_WITH_MIC:
-#           craycnl)
-#             unset CC CXX
-#             if [ $craymic = yes ]; then
-#               # Note: may need to search other paths than just /usr/linux-k1om-*
-#               k1om_bin="`ls -1d /usr/linux-k1om-* | sort -r | head -1`/bin"
-#               export PATH=$k1om_bin:$PATH
-#               ./configure \
-#                 CFLAGS='-mmic -fPIC' CXXFLAGS='-mmic -fPIC' \
-#                 --host=x86_64-k1om-linux \
-#                 --prefix=$bfddir \
-#                 --disable-nls --disable-werror > tau_configure.log 2>&1
-#               err=$?
-#             else
-#               ./configure \
-#                 CFLAGS=-fPIC CXXFLAGS=-fPIC \
-#                 --prefix=$bfddir \
-#                 --disable-nls --disable-werror > tau_configure.log 2>&1
-#               err=$?
-#             fi
+        arch_config = {IBM_BGP_ARCH: self._configure_bgp,
+                       IBM_BGQ_ARCH: self._configure_bgq,
+                       IBM64_ARCH: self._configure_ibm64,
+                       INTEL_KNC_ARCH: self._configure_knc,
+                       X86_64_ARCH: self._configure_x86_64}
+        config = arch_config.get(self.target_arch, self._configure_default) 
+        config(flags, env)
         return super(BinutilsInstallation, self).configure(flags, env)
-    
+
     def make_install(self, flags, env, parallel=False):
         super(BinutilsInstallation, self).make_install(flags, env, parallel)
 

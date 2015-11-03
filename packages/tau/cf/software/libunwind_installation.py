@@ -36,38 +36,32 @@ import glob
 from tau import logger, util
 from tau.cf.software.installation import AutotoolsInstallation
 from tau.cf.compiler import CC_ROLE
+from tau.cf.target import INTEL_KNC_ARCH
 
 
 LOGGER = logger.get_logger(__name__)
 
 SOURCES = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-1.1.tar.gz'}
  
-LIBS = {None: ['libunwind.a']}
+LIBRARIES = {None: ['libunwind.a']}
 
 
 class LibunwindInstallation(AutotoolsInstallation):
     """Encapsulates a libunwind installation."""
 
-    def __init__(self, prefix, src, arch, compilers):
-        dst = os.path.join(arch, compilers[CC_ROLE].info.family.name)
-        super(LibunwindInstallation, self).__init__('libunwind', prefix, src, dst, arch, compilers, SOURCES)
+    def __init__(self, prefix, src, target_arch, target_os, compilers):
+        dst = os.path.join(target_arch, compilers[CC_ROLE].info.family.name)
+        super(LibunwindInstallation, self).__init__('libunwind', prefix, src, dst, 
+                                                    target_arch, target_os, compilers, SOURCES, None, LIBRARIES)
 
-    def _verify(self, commands=None, libraries=None):
-        try:
-            libraries = LIBS[self.arch]
-        except KeyError:
-            libraries = LIBS[None]
-        return super(LibunwindInstallation, self)._verify(commands, libraries)
-    
     def configure(self, flags, env):
-        
         # Handle special target architecture flags
-        arch_flags = {'mic_linux': ['--host=x86_64-k1om-linux'], 
+        arch_flags = {INTEL_KNC_ARCH: ['--host=x86_64-k1om-linux'], 
                       None: []}
-        flags.extend(arch_flags.get(self.arch, arch_flags[None]))
+        flags.extend(arch_flags.get(self.target_arch, arch_flags[None]))
                    
         # Add KNC GNU compilers to PATH if building for KNC
-        if self.arch == 'mic_linux':
+        if self.target_arch is INTEL_KNC_ARCH:
             k1om_ar = util.which('x86_64-k1om-linux-ar')
             if not k1om_ar:
                 for path in glob.glob('/usr/linux-k1om-*'):
