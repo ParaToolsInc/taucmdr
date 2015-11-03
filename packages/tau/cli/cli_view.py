@@ -42,7 +42,6 @@ from tau.storage.levels import SYSTEM_STORAGE, USER_STORAGE, PROJECT_STORAGE, ST
 from tau.storage.project import UninitializedProjectError
 from tau.cli import arguments
 from tau.cli.command import AbstractCommand
-from tau.cli.commands.initialize import COMMAND as initialize_command
 
 
 class AbstractCliView(AbstractCommand):
@@ -362,6 +361,7 @@ class ListCommand(AbstractCliView):
             try:
                 parts.extend(self._format_records(project_ctl, style, keys))
             except UninitializedProjectError as err:
+                from tau.cli.commands.initialize import COMMAND as initialize_command
                 err.hints.insert(0, "Use `%s` to create a new project." % initialize_command.command)
                 err.hints.append("Check command line arguments.")
                 raise err

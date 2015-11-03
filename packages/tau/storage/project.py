@@ -65,7 +65,7 @@ class ProjectStorage(LocalFileStorage):
         super(ProjectStorage, self).__init__('project', None)
         
     def connect_filesystem(self, *args, **kwargs):
-        """Prepares the store filesystem fore reading and writing."""
+        """Prepares the store filesystem for reading and writing."""
         try:
             project_prefix = self.prefix
         except UninitializedProjectError:
@@ -76,7 +76,7 @@ class ProjectStorage(LocalFileStorage):
                 raise StorageError("Failed to access %s filesystem prefix '%s': %s" % 
                                    (self.name, project_prefix, err))
             LOGGER.debug("Initialized %s filesystem prefix '%s'", self.name, project_prefix)
-        
+
     @property
     def prefix(self):
         """Searches the current directory and its parents for a TAU Commander project directory.
@@ -88,8 +88,8 @@ class ProjectStorage(LocalFileStorage):
             str: The project directory, i.e. this storage container's filesystem prefix.
         
         Raises:
-            StorageError: Neither the current directory nor any of its parent directories contain
-                          a TAU Commander project directory.
+            UninitializedProjectError: Neither the current directory nor any of its parent directories contain
+                                       a TAU Commander project directory.
         """
         if not self._prefix:
             cwd = os.getcwd()

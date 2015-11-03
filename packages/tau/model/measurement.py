@@ -317,11 +317,14 @@ class Measurement(Model):
             raise ConfigurationError("Profiling, tracing, or both must be enabled",
                                      "Specify %s or %s or both" % (profile_flag, trace_flag))
         
-        if self['source_inst'] == 'never' and self['compiler_inst'] == 'never' and not self['sample']:
+        if ((self['source_inst'] == 'never') and (self['compiler_inst'] == 'never') and 
+            (not self['sample']) and (not self['link_only'])):
             source_inst_flag = get_flag('source_inst')
             compiler_inst_flag = get_flag('compiler_inst')
             sample_flag = get_flag('sample')
+            link_only_flag = get_flag('link_only')
             raise ConfigurationError("At least one instrumentation method must be used",
-                                     "Specify %s, %s, or %s" % (source_inst_flag, compiler_inst_flag, sample_flag))
+                                     "Specify %s, %s, %s, or %s" % (source_inst_flag, compiler_inst_flag, 
+                                                                    sample_flag, link_only_flag))
 
 

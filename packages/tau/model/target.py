@@ -65,7 +65,7 @@ def attributes():
             'description': 'host operating system',
             'default': host.operating_system().name,
             'argparse': {'flags': ('--host-os',),
-                         'group': 'target system',
+                         'group': 'host',
                          'metavar': '<os>',
                          'choices': OperatingSystem.keys()}
         },
@@ -75,32 +75,32 @@ def attributes():
             'description': 'host architecture',
             'default': host.architecture().name,
             'argparse': {'flags': ('--host-arch',),
-                         'group': 'target system',
+                         'group': 'host',
                          'metavar': '<arch>',
                          'choices': Architecture.keys()}
         },
         'CC': {
             'model': Compiler,
             'required': True,
-            'description': 'C compiler command',
+            'description': 'Host C compiler command',
             'argparse': {'flags': ('--cc',),
-                         'group': 'compiler',
+                         'group': 'host',
                          'metavar': '<command>'}
         },
         'CXX': {
             'model': Compiler,
             'required': True,
-            'description': 'C++ compiler command',
+            'description': 'Host C++ compiler command',
             'argparse': {'flags': ('--cxx',),
-                         'group': 'compiler',
+                         'group': 'host',
                          'metavar': '<command>'}
         },
         'FC': {
             'model': Compiler,
             'required': True,
-            'description': 'Fortran compiler command',
+            'description': 'Host Fortran compiler command',
             'argparse': {'flags': ('--fc',),
-                         'group': 'compiler',
+                         'group': 'host',
                          'metavar': '<command>'}
         },
         'UPC': {

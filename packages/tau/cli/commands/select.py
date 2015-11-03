@@ -101,12 +101,8 @@ class SelectCommand(AbstractCommand):
                 lhs.check_compatibility(rhs)
 
     def construct_parser(self):
-        usage = "%s [project] [target] [application] [measurement] [arguments]" % self.command
+        usage = "%s [target] [application] [measurement] [arguments]" % self.command
         parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
-        parser.add_argument('project', 
-                            metavar='[project]',
-                            help="Project to select",
-                            default=arguments.SUPPRESS)
         parser.add_argument('impl_target',
                             help="Target to select",
                             metavar='[target]',
@@ -144,16 +140,9 @@ class SelectCommand(AbstractCommand):
         measurements = set()
         
         proj_ctrl = Project.controller()
-        try:
-            proj_name = args.project
-        except AttributeError:
-            proj = proj_ctrl.selected()
-            if not proj:
-                self.parser.error("No project is currently selected.  Please specify a project name.")
-        else:
-            proj = proj_ctrl.one({'name': proj_name})
-            if not proj:
-                self.parser.error("No project named '%s'" % args.project)
+        proj = proj_ctrl.selected()
+        if not proj:
+            self.parser.error("No project is currently selected.  Please specify a project name.")
 
         self._parse_implicit(args, targets, applications, measurements)
         targ = self._parse_explicit(args, Target, targets, proj, 'targets')

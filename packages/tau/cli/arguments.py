@@ -52,27 +52,29 @@ class MutableGroupArgumentParser(argparse.ArgumentParser):
     :py:class:`argparse.ArgumentParser` doesn't allow groups to change once set 
     and generates "scruffy" looking help, so we fix this problems in this subclass.
     """
+    # We're changing the behavior of the superclass so we need to access protected members
+    # pylint: disable=protected-access
 
-    def get_group(self, title):
+    def add_argument_group(self, *args, **kwargs):
         """Returns an argument group.
         
         If the group doesn't exist it will be created.
         
         Args:
-            title (str): Group title.
-            
+            *args: Positional arguments to pass to :any:`ArgumentParser.add_argument_group`
+            **kwargs: Keyword arguments to pass to :any:`ArgumentParser.add_argument_group`
+
         Returns:
             An argument group object.
         """
+        title = kwargs.get('title', args[0])
         for group in self._action_groups:
             if group.title == title:
                 return group
-        return self.add_argument_group(title=title)
+        return super(MutableGroupArgumentParser, self).add_argument_group(*args, **kwargs)
 
     def format_help(self):
         """Format command line help string."""
-        # We're changing the behavior of the superclass so we need to access protected members in this function
-        # pylint: disable=protected-access
         formatter = self._get_formatter()
         formatter.add_usage(self.usage, self._actions, self._mutually_exclusive_groups)
         formatter.add_text(self.description)
@@ -100,6 +102,20 @@ class MutableGroupArgumentParser(argparse.ArgumentParser):
         for group in groups:
             if group.title not in [positional_title, optional_title]:
                 yield group
+                
+    def merge(self, parser, group_title=None, include_positional=True, include_optional=True, include_storage=False):
+        group = self.add_argument_group(group_title) if group_title else self
+        for action in parser._actions:
+            optional = bool(action.option_strings)
+            storage = '-'+STORAGE_LEVEL_FLAG in action.option_strings
+            if ((not include_storage and storage) or 
+                (not include_optional and optional) or 
+                (not include_positional and not optional)):
+                continue
+            try:
+                group._add_action(action)
+            except argparse.ArgumentError:
+                pass
 
 
 class ArgparseHelpFormatter(argparse.RawDescriptionHelpFormatter):
@@ -260,6 +276,7 @@ def get_parser_from_model(model, use_defaults=True, prog=None, usage=None, descr
         help description will appear as "application uses OpenMP" if the ``--help`` argument is given.
     
     Args:
+        model (Model): Model to construct arguments from.
         use_defaults (bool): If True, use the model attribute's default value 
                              as the argument's value if argument is not specified. 
         prog (str): Name of the program.

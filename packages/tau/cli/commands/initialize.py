@@ -27,33 +27,121 @@
 #
 """``tau initialize`` subcommand."""
 
+import os
+import platform
 from tau import EXIT_SUCCESS
 from tau import cli
 from tau.cli import arguments
 from tau.cli.command import AbstractCommand
-from tau.cli.commands.select import COMMAND as select_command
 from tau.model.project import Project
 from tau.storage.project import UninitializedProjectError
 from tau.storage.levels import PROJECT_STORAGE
+from tau.cli.arguments import ParseBooleanAction
+from tau.cli.commands.target.create import COMMAND as target_create_cmd
+from tau.cli.commands.application.create import COMMAND as application_create_cmd
+from tau.cli.commands.measurement.create import COMMAND as measurement_create_cmd
+from tau.cli.commands.project.create import COMMAND as project_create_cmd
 
 class InitializeCommand(AbstractCommand):
     """``tau initialize`` subcommand."""
     
     def construct_parser(self):
-        components = 'project', 'target', 'application', 'measurement'
-        usage = "%s %s" % (self.command, ' '.join('[%s_name]' % comp for comp in components))
+        usage = "%s [arguments]" % self.command
         parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
-        for comp in components:
-            parser.add_argument('%s_name' % comp,
-                                help="New %s name" % comp,
-                                metavar='%s_name' % comp,
-                                nargs='?',
-                                default='default_%s' % comp)
+        
+        default_project_name = os.path.basename(os.getcwd()) or 'default_project'
+        project_group = parser.add_argument_group('project arguments')
+        project_group.add_argument('--project-name',
+                                   help="Name of the new project",
+                                   metavar='<name>',
+                                   default=default_project_name)
+        
+        parser.merge(target_create_cmd.parser, group_title='target arguments', include_positional=False)
+        default_target_name = platform.node() or 'default_target'
+        target_group = parser.add_argument_group('target arguments')
+        target_group.add_argument('--target-name',
+                                  help="Name of the new target configuration",
+                                  metavar='<name>',
+                                  default=default_target_name)
+
+        parser.merge(application_create_cmd.parser, group_title='application arguments', include_positional=False)
+        default_application_name = os.path.basename(os.getcwd()) or 'default_application'
+        application_group = parser.add_argument_group('application arguments')
+        application_group.add_argument('--application-name',
+                                       help="Name of the new application configuration",
+                                       metavar='<name>',
+                                       default=default_application_name)
+
+        measurement_group = parser.add_argument_group('measurement arguments')
+        measurement_group.add_argument('--profile',
+                                       help="Create measurement configurations for profiling",
+                                       metavar='T/F',
+                                       nargs='?',
+                                       const=True,
+                                       default=True,
+                                       action=ParseBooleanAction)
+        measurement_group.add_argument('--trace',
+                                       help="Create measurement configurations for tracing",
+                                       metavar='T/F',
+                                       nargs='?',
+                                       const=True,
+                                       default=True,
+                                       action=ParseBooleanAction)
+        measurement_group.add_argument('--sample',
+                                       help="Create measurement configurations for event-based sampling",
+                                       metavar='T/F',
+                                       nargs='?',
+                                       const=True,
+                                       default=True,
+                                       action=ParseBooleanAction)
         return parser
 
+    def _initialize_target(self, target_name, argv):
+        target_argv = [target_name] + argv
+        _, unknown = target_create_cmd.parser.parse_known_args(args=target_argv)
+        return target_create_cmd.main([arg for arg in target_argv if arg not in unknown])           
+
+    def _initialize_application(self, application_name, argv):
+        application_argv = [application_name] + argv
+        _, unknown = application_create_cmd.parser.parse_known_args(args=application_argv)
+        return application_create_cmd.main([arg for arg in application_argv if arg not in unknown])
+        
+    def _initialize_measurements(self, args):
+        main = measurement_create_cmd.main
+        measurement_names = []
+        if args.sample:
+            retval = main(['profile-sample', '--profile=True', '--trace=False', '--sample=True',
+                           '--source-inst=never', '--compiler-inst=never', '--link-only=False'])
+            if retval != EXIT_SUCCESS:
+                return retval
+            measurement_names.extend(['profile-sample'])
+        if args.profile:
+            retval = main(['profile-automatic', '--profile=True', '--trace=False', '--sample=False',
+                           '--source-inst=automatic', '--compiler-inst=fallback', '--link-only=False'])
+            if retval != EXIT_SUCCESS:
+                return retval
+            retval = main(['profile-manual', '--profile=True',  '--trace=False', '--sample=False',
+                           '--source-inst=never', '--compiler-inst=never', '--link-only=True'])
+            if retval != EXIT_SUCCESS:
+                return retval
+            measurement_names.extend(['profile-automatic', 'profile-manual'])
+        if args.trace:
+            retval = main(['trace-automatic', '--profile=False', '--trace=True', 
+                           '--source-inst=automatic', '--compiler-inst=fallback'])
+            if retval != EXIT_SUCCESS:
+                return retval
+            retval = main(['trace-manual', '--profile=False',  '--trace=True',
+                           '--source-inst=never', '--compiler-inst=never', '--link-only=True'])
+            if retval != EXIT_SUCCESS:
+                return retval
+            measurement_names.extend(['trace-automatic', 'trace-manual'])
+        return measurement_names
+    
     def main(self, argv):
         args = self.parser.parse_args(args=argv)
         self.logger.debug('Arguments: %s', args)
+        if not (args.profile or args.trace or args.sample):
+            self.parser.error('You must specify at least one measurement.')
         
         proj_ctrl = Project.controller()
         try:
@@ -62,21 +150,21 @@ class InitializeCommand(AbstractCommand):
             self.logger.debug("No project found, initializing a new project.")
             PROJECT_STORAGE.connect_filesystem()
             project_name = args.project_name
-            comp_names = []
-            for comp in 'target', 'application', 'measurement':
-                comp_name = getattr(args, '%s_name' % comp)
-                comp_names.append(comp_name)
-                cli.execute_command([comp, 'create'], [comp_name])
-            cli.execute_command(['project', 'create'], [project_name] + comp_names)
-            cli.execute_command(['select'], [project_name])
+            target_name = args.target_name
+            application_name = args.application_name
+            measurement_names = self._initialize_measurements(args)
+            self._initialize_target(target_name, argv)
+            self._initialize_application(application_name, argv)
+            project_create_cmd.main([project_name, target_name, application_name] + measurement_names)
+            cli.execute_command(['select'], [project_name, measurement_names[0]])
             cli.execute_command(['dashboard'])
         else:
             if proj:
                 self.logger.info("Selected project: '%s'", proj['name'])
             else:
+                from tau.cli.commands.select import COMMAND as select_command
                 self.logger.info("No project selected.  Try `%s`.", 
                                  select_command.command)
-        
         return EXIT_SUCCESS
 
 COMMAND = InitializeCommand(__name__, summary_fmt="Initialize TAU Commander.")

@@ -29,7 +29,7 @@
 
 from tau import EXIT_SUCCESS
 from tau.error import ConfigurationError, UniqueAttributeError
-from tau.storage.levels import STORAGE_LEVELS
+from tau.storage.levels import STORAGE_LEVELS, PROJECT_STORAGE
 from tau.cli import arguments
 from tau.cli.cli_view import CreateCommand
 from tau.model.target import Target
@@ -111,14 +111,14 @@ class TargetCreateCommand(CreateCommand):
     
     def construct_parser(self):
         parser = super(TargetCreateCommand, self).construct_parser()
-        group = parser.get_group('compiler arguments')
+        group = parser.add_argument_group('host arguments')
         group.add_argument('--host-compilers',
                            help="select all host compilers automatically from the given family",
                            metavar='<family>',
                            dest='host_family',
                            default=host.preferred_compilers().name,
                            choices=CompilerFamily.family_names())
-        group = parser.get_group('Message Passing Interface (MPI) arguments')
+        group = parser.add_argument_group('Message Passing Interface (MPI) arguments')
         group.add_argument('--mpi-compilers', 
                            help="select all MPI compilers automatically from the given family",
                            metavar='<family>',
@@ -148,7 +148,10 @@ class TargetCreateCommand(CreateCommand):
             ctrl.create(data)
         except UniqueAttributeError:
             self.parser.error("A %s with %s='%s' already exists" % (self.model_name, key_attr, key))
-        self.logger.info("Created a new %s-level %s: '%s'.", ctrl.storage.name, self.model_name, key)
+        if ctrl.storage is PROJECT_STORAGE:
+            self.logger.info("Created a new %s: '%s'.", self.model_name, key)
+        else:
+            self.logger.info("Created a new %s-level %s: '%s'.", ctrl.storage.name, self.model_name, key)
         return EXIT_SUCCESS
 
 COMMAND = TargetCreateCommand(Target, __name__)

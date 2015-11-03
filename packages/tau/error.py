@@ -71,8 +71,9 @@ class Error(Exception):
         self.value = value
         self.hints = list(hints)
         self.message_fields = {'contact': HELP_CONTACT, 'logfile': logger.LOG_FILE}
-
-    def __str__(self):
+    
+    @property
+    def message(self):
         fields = dict(self.message_fields, value=self.value)
         if not self.hints:
             hints_str = ''
@@ -87,7 +88,7 @@ class Error(Exception):
         if self.show_backtrace:
             self.message_fields['backtrace'] = ''.join(traceback.format_exception(etype, value, tb)) + '\n'
         self.message_fields['typename'] = etype.__name__
-        LOGGER.critical(str(self))
+        LOGGER.critical(self.message)
         return EXIT_FAILURE
 
 
@@ -112,6 +113,12 @@ class ConfigurationError(Error):
                    "Please check the selected configuration for errors or contact %(contact)s for assistance.")
 
     def __init__(self, value, *hints):
+        """Initialize the Error instance.
+        
+        Args:
+            value (str): Message describing the error.
+            *hints: Hint messages to help the user resolve this error.
+        """
         if not hints:
             hints = ["Try `%s --help`" % os.path.basename(TAU_SCRIPT)]
         super(ConfigurationError, self).__init__(value, *hints)
@@ -142,7 +149,6 @@ class UniqueAttributeError(ModelError):
             unique (dict): Dictionary of unique attributes in the data model.  
         """
         super(UniqueAttributeError, self).__init__(model, "A record with one of '%s' already exists" % unique)
-        
 
 
 def excepthook(etype, value, tb):
