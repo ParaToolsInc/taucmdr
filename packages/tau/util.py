@@ -341,3 +341,7 @@ def hline(title, *color_args):
         return termcolor.colored(text, *color_args)
     else:
         return text
+
+def color_text(text, *args, **kwargs):
+    return termcolor.colored(text, *args, **kwargs)
+
