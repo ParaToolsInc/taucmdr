@@ -122,6 +122,9 @@ class ConfigurationError(Error):
         if not hints:
             hints = ["Try `%s --help`" % os.path.basename(TAU_SCRIPT)]
         super(ConfigurationError, self).__init__(value, *hints)
+    
+    def __str__(self):
+        return self.value
 
 
 class ModelError(InternalError):
