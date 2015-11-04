@@ -104,7 +104,7 @@ class InitializeCommand(AbstractCommand):
                                        action=ParseBooleanAction)
         return parser
 
-    def _initialize_project(self, argv):
+    def _create_project(self, argv):
         args = self.parser.parse_args(args=argv)
         self.logger.debug('Arguments: %s', args)
         if not (args.profile or args.trace or args.sample):
@@ -166,7 +166,7 @@ class InitializeCommand(AbstractCommand):
         except UninitializedProjectError:
             self.logger.debug("No project found, initializing a new project.")
             PROJECT_STORAGE.connect_filesystem()
-            self._initialize_project(argv)
+            self._create_project(argv)
         else:
             if proj:
                 self.logger.info("Selected project: '%s'", proj['name'])

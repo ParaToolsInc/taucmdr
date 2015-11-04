@@ -57,6 +57,9 @@ class AbstractCommand(object):
         self.summary_fmt = summary_fmt
         self.help_page_fmt = help_page_fmt
         self.group = group
+        
+    def __str__(self):
+        return self.command
 
     @property
     def summary(self):

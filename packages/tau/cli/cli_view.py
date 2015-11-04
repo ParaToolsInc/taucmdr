@@ -39,7 +39,6 @@ from tau import EXIT_SUCCESS
 from tau import logger, util, cli
 from tau.error import UniqueAttributeError, InternalError
 from tau.storage.levels import SYSTEM_STORAGE, USER_STORAGE, PROJECT_STORAGE, STORAGE_LEVELS
-from tau.storage.project import UninitializedProjectError
 from tau.cli import arguments
 from tau.cli.command import AbstractCommand
 
@@ -358,23 +357,15 @@ class ListCommand(AbstractCliView):
         if user:
             parts.extend(self._format_records(user_ctl, style, keys))
         if project:
-            try:
-                parts.extend(self._format_records(project_ctl, style, keys))
-            except UninitializedProjectError as err:
-                from tau.cli.commands.initialize import COMMAND as initialize_command
-                err.hints.insert(0, "Use `%s` to create a new project." % initialize_command.command)
-                err.hints.append("Check command line arguments.")
-                raise err
+            parts.extend(self._format_records(project_ctl, style, keys))
         if style == 'dashboard':
+            # Show record counts (not the records themselves) for other storage levels
             if not system:
                 parts.extend(self._count_records(system_ctl))
             if not user:
                 parts.extend(self._count_records(user_ctl))
             if not project:
-                try:
-                    parts.extend(self._count_records(project_ctl))
-                except UninitializedProjectError:
-                    pass
+                parts.extend(self._count_records(project_ctl))
         print '\n'.join(parts)
         return EXIT_SUCCESS
     
@@ -441,4 +432,4 @@ class ListCommand(AbstractCliView):
             return ["There are %(count)d %(level)s applications."
                     " Type `%(command)s -%(level_flag)s %(level)s` to list them." % fields] 
         else:
-            return []
+            return ["There are no %(level)s applications." % fields] 
