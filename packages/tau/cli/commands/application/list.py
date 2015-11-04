@@ -34,7 +34,7 @@ from tau.model.application import Application
 DASHBOARD_COLUMNS = [{'header': 'Name', 'value': 'name', 'align': 'r'},
                      {'header': 'OpenMP', 'yesno': 'openmp'},
                      {'header': 'Pthreads', 'yesno': 'pthreads'},
-                     {'header': 'MPI', 'yesno': 'pthreads'},
+                     {'header': 'MPI', 'yesno': 'mpi'},
                      {'header': 'In Projects', 'function': lambda x: ', '.join([p['name'] for p in x['projects']])}]
 
 COMMAND = ListCommand(Application, __name__, dashboard_columns=DASHBOARD_COLUMNS)
