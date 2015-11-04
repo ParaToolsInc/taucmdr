@@ -25,6 +25,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
+from tau.error import ConfigurationError
 """``tau initialize`` subcommand."""
 
 import os
@@ -34,15 +35,16 @@ from tau import EXIT_SUCCESS
 from tau import cli
 from tau.cli import arguments
 from tau.cli.command import AbstractCommand
-from tau.model.project import Project
-from tau.storage.project import UninitializedProjectError
+from tau.model.project import Project, ProjectSelectionError
+from tau.storage.project import ProjectStorageError
 from tau.storage.levels import PROJECT_STORAGE
 from tau.cli.arguments import ParseBooleanAction
 from tau.cli.commands.target.create import COMMAND as target_create_cmd
 from tau.cli.commands.application.create import COMMAND as application_create_cmd
 from tau.cli.commands.measurement.create import COMMAND as measurement_create_cmd
 from tau.cli.commands.project.create import COMMAND as project_create_cmd
-
+from tau.cli.commands.select import COMMAND as select_cmd
+from tau.cli.commands.dashboard import COMMAND as dashboard_cmd
 
 def _safe_execute(main, argv):
     retval = main(argv)
@@ -155,24 +157,22 @@ class InitializeCommand(AbstractCommand):
 
         project_create_cmd.main([project_name, '--targets', target_name, 
                                  '--applications', application_name, '--measurements'] + measurement_names)
-        cli.execute_command(['select'], ['--project', project_name, '--target', target_name, 
-                                         '--application', application_name, '--measurement', measurement_names[0]])
-        cli.execute_command(['dashboard'])
+        select_cmd.main(['--project', project_name, '--target', target_name, 
+                         '--application', application_name, '--measurement', measurement_names[0]])
     
     def main(self, argv):
         proj_ctrl = Project.controller()
         try:
             proj = proj_ctrl.selected()
-        except UninitializedProjectError:
+        except ProjectStorageError:
             self.logger.debug("No project found, initializing a new project.")
             PROJECT_STORAGE.connect_filesystem()
             self._create_project(argv)
+        except ProjectSelectionError as err:
+            err.value = "The project has been initialized but no project configuration is selected."
+            raise err
         else:
-            if proj:
-                self.logger.info("Selected project: '%s'", proj['name'])
-            else:
-                from tau.cli.commands.select import COMMAND as select_command
-                self.logger.info("No project selected.  Try `%s`.", select_command.command)
-        return EXIT_SUCCESS
+            self.logger.info("Selected project: '%s'", proj['name'])
+        return dashboard_cmd.main([])
 
 COMMAND = InitializeCommand(__name__, summary_fmt="Initialize TAU Commander.")

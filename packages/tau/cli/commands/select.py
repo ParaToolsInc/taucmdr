@@ -32,7 +32,7 @@ from tau import EXIT_SUCCESS, TAU_SCRIPT
 from tau.cli import arguments
 from tau.error import ConfigurationError, InternalError
 from tau.storage.levels import PROJECT_STORAGE
-from tau.model.project import Project
+from tau.model.project import Project, ProjectSelectionError
 from tau.model.target import Target
 from tau.model.application import Application
 from tau.model.measurement import Measurement
@@ -144,9 +144,10 @@ class SelectCommand(AbstractCommand):
         try:
             proj_name = args.project
         except AttributeError:
-            proj = proj_ctrl.selected()
-            if not proj:
-                self.parser.error("No project selected.  Use --project to select a project.")
+            try:
+                proj = proj_ctrl.selected()
+            except ProjectSelectionError:
+                self.parser.error("There is no selected project.  Use --project to select a project.")
         else:
             proj = proj_ctrl.one({'name': proj_name})
             if not proj:

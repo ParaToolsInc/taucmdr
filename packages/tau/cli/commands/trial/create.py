@@ -32,7 +32,7 @@ from tau.error import ConfigurationError
 from tau.cli import arguments
 from tau.cli.cli_view import CreateCommand
 from tau.model.trial import Trial
-from tau.model.project import Project
+from tau.model.project import Project, ProjectSelectionError
 
 
 LAUNCHERS = ['mpirun', 'mpiexec', 'ibrun', 'aprun']
@@ -104,10 +104,7 @@ class TrialCreateCommand(CreateCommand):
 
         proj_ctrl = Project.controller()
         proj = proj_ctrl.selected()
-        if not proj:
-            from tau.cli.commands.select import COMMAND as select_command
-            raise ConfigurationError("No project selected.", "Try `%s`" % select_command.command)
-        expr = proj.populate('selected')
+        expr = proj.populate('experiment')
         return expr.managed_run(launcher_cmd, application_cmd)
 
 

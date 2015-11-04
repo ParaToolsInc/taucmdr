@@ -34,7 +34,7 @@ from tau.storage.local_file import LocalFileStorage
 
 LOGGER = logger.get_logger(__name__)
 
-class UninitializedProjectError(StorageError):
+class ProjectStorageError(StorageError):
     """Indicates that the project storage has not been initialized."""
 
     message_fmt = ("%(value)s\n"
@@ -51,7 +51,7 @@ class UninitializedProjectError(StorageError):
         from tau.cli.commands.initialize import COMMAND as init_cmd
         value = "Project not found in '%s' or any of its parent directories." % search_root
         hints = ['Use `%s` to create a new project.' % init_cmd]
-        super(UninitializedProjectError, self).__init__(value, *hints)
+        super(ProjectStorageError, self).__init__(value, *hints)
         self.search_root = search_root
         
 
@@ -70,7 +70,7 @@ class ProjectStorage(LocalFileStorage):
         """Prepares the store filesystem for reading and writing."""
         try:
             project_prefix = self.prefix
-        except UninitializedProjectError:
+        except ProjectStorageError:
             project_prefix = os.path.join(os.getcwd(), PROJECT_DIR)
             try:
                 util.mkdirp(project_prefix)
@@ -90,8 +90,8 @@ class ProjectStorage(LocalFileStorage):
             str: The project directory, i.e. this storage container's filesystem prefix.
         
         Raises:
-            UninitializedProjectError: Neither the current directory nor any of its parent directories contain
-                                       a TAU Commander project directory.
+            ProjectStorageError: Neither the current directory nor any of its parent directories contain
+                                 a TAU Commander project directory.
         """
         if not self._prefix:
             cwd = os.getcwd()
@@ -107,5 +107,5 @@ class ProjectStorage(LocalFileStorage):
                 lastroot = root
                 root = os.path.dirname(root)
             else:
-                raise UninitializedProjectError(cwd)
+                raise ProjectStorageError(cwd)
         return self._prefix

@@ -52,13 +52,8 @@ class TrialDeleteCommand(DeleteCommand):
     
         proj_ctrl = Project.controller()
         trial_ctrl = Trial.controller(proj_ctrl.storage)
-
         proj = proj_ctrl.selected()
-        if not proj:
-            from tau.cli.commands.select import COMMAND as select_command
-            raise ConfigurationError("No project selected.", "Try `%s`" % select_command.command)
-        expr = proj.populate('selected')
-    
+        expr = proj.populate('experiment')
         try:
             number = int(args.number)
         except ValueError:

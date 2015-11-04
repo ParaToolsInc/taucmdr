@@ -89,6 +89,15 @@ class Experiment(Model):
 
     def __init__(self, *args, **kwargs):
         super(Experiment, self).__init__(*args, **kwargs)
+        
+    def title(self):
+        populated = self.populate()
+        return '(%s, %s, %s)' % (populated['target']['name'],
+                                 populated['application']['name'],
+                                 populated['measurement']['name'])
+        
+    def data_size(self):
+        return sum([int(trial['data_size']) for trial in self.populate('trials')])
 
     @property
     def prefix(self):

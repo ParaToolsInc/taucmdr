@@ -35,7 +35,7 @@ some performance data (profiles, traces, etc.).
 
 import os
 from tau import logger
-from tau.error import InternalError
+from tau.error import InternalError, ConfigurationError
 from tau.mvc.model import Model
 from tau.mvc.controller import Controller
 from tau.storage.levels import PROJECT_STORAGE
@@ -77,11 +77,24 @@ def attributes():
             'via': 'project',
             'description': 'experiments formed from this project'
         },
-        'selected': {
+        'experiment': {
             'model': Experiment,
-            'description': 'the currently selected experiment'
+            'description': 'the current experiment'
         }
     }
+
+
+class ProjectSelectionError(ConfigurationError):
+    
+    def __init__(self, value, *hints):
+        from tau.cli.commands.select import COMMAND as select_cmd
+        from tau.cli.commands.project.list import COMMAND as project_list_cmd
+        from tau.cli.commands.project.create import COMMAND as project_create_cmd
+        if not hints:
+            hints = ("Use `%s` to create a new project configuration." % project_create_cmd,
+                     "Use `%s <project_name>` to select a project configuration." % select_cmd,
+                     "Use `%s` to see available project configurations." % project_list_cmd)    
+        super(ProjectSelectionError, self).__init__(value, *hints)
 
 
 class ProjectController(Controller):
@@ -104,7 +117,7 @@ class ProjectController(Controller):
 
     def select(self, project, experiment):
         self.storage['selected_project'] = project.eid
-        self.update({'selected': experiment.eid}, project.eid)
+        self.update({'experiment': experiment.eid}, project.eid)
         experiment.configure()
     
     def unselect(self):
@@ -119,7 +132,7 @@ class ProjectController(Controller):
         try:
             selected_eid = PROJECT_STORAGE['selected_project']
         except KeyError:
-            return None
+            raise ProjectSelectionError("No project configuration selected.")
         else:
             return self.one(selected_eid)
 
@@ -139,4 +152,3 @@ class Project(Model):
     def prefix(self):
         return os.path.join(self.storage.prefix, self['name'])
         
-    

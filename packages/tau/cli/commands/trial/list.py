@@ -31,12 +31,14 @@ from tau.cli.cli_view import ListCommand
 from tau.model.trial import Trial
 
 
-DASHBOARD_COLUMNS = [{'header': 'Number', 'value': 'number'},
+DASHBOARD_COLUMNS = [{'header': 'Experiment', 'function': lambda x: x['experiment'].title()},
+                     {'header': 'Number', 'value': 'number'},
                      {'header': 'Data Size', 'value': 'data_size'},
                      {'header': 'Command', 'value': 'command'},
                      {'header': 'In Directory', 'value': 'cwd'},
-                     {'header': 'Began At', 'value': 'begin_time'},
-                     {'header': 'Ended At', 'value': 'end_time'},
-                     {'header': 'Return Code', 'value': 'return_code'}]
+#                      {'header': 'Began At', 'value': 'begin_time'},
+#                      {'header': 'Ended At', 'value': 'end_time'},
+#                      {'header': 'Return Code', 'value': 'return_code'}
+                     ]
 
 COMMAND = ListCommand(Trial, __name__, dashboard_columns=DASHBOARD_COLUMNS)

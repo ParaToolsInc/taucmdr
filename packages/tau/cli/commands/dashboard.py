@@ -27,12 +27,16 @@
 #
 """``tau dashboard`` subcommand."""
 
+from texttable import Texttable
 from tau import EXIT_SUCCESS
-from tau import cli
+from tau import logger, util
 from tau.cli import arguments
 from tau.cli.command import AbstractCommand
-from tau.cli.commands.select import COMMAND as select_command
-from tau.model.project import Project
+from tau.cli.commands.project.list import COMMAND as project_list_cmd
+from tau.cli.commands.target.list import COMMAND as target_list_cmd
+from tau.cli.commands.application.list import COMMAND as application_list_cmd
+from tau.cli.commands.measurement.list import COMMAND as measurement_list_cmd
+from tau.model.project import Project, ProjectSelectionError
 
 
 class DashboardCommand(AbstractCommand):
@@ -41,25 +45,44 @@ class DashboardCommand(AbstractCommand):
         usage = "%s [arguments]" % self.command
         return arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
 
+    def _print_experiments(self, proj):
+        title = util.hline("Experiments in project '%s'" % proj['name'], 'cyan')
+        experiments = proj.populate('experiments')
+        expr = proj.populate('experiment')
+        header_row = ['Experiment', 'Trials', 'Data Size']
+        rows = [header_row]
+        for expr in experiments:
+            rows.append([expr.title(), len(expr['trials']), util.human_size(expr.data_size())])
+        table = Texttable(logger.LINE_WIDTH)
+        table.add_rows(rows)
+        current = util.color_text('Current experiment: ', 'cyan') + expr.title()
+        print '\n'.join([title, table.draw(), '', current, ''])
+    
     def main(self, argv):
         args = self.parser.parse_args(args=argv)
         self.logger.debug('Arguments: %s', args)
         
         subargs = ['--dashboard']
         proj_ctrl = Project.controller()
-        proj = proj_ctrl.selected()
-        if proj:
-            cli.execute_command(['target', 'list'], [targ['name'] for targ in proj.populate('targets')])
-            cli.execute_command(['application', 'list'], [targ['name'] for targ in proj.populate('applications')])
-            cli.execute_command(['measurement', 'list'], [targ['name'] for targ in proj.populate('measurements')])
-            cli.execute_command(['trial', 'list'])
+        print
+        try:
+            proj = proj_ctrl.selected()
+        except ProjectSelectionError as err:
+            project_count = proj_ctrl.count()
+            if project_count > 0:
+                project_list_cmd.main(subargs)
+                err.value = "No project configuration selected. There are %d configurations available." % project_count
+            else:
+                from tau.cli.commands.project.create import COMMAND as project_create_cmd
+                err.value = "No project configurations exist."
+                err.hints = ['Use `%s` to create a new project configuration.' % project_create_cmd]
+            raise err
         else:
-            cli.execute_command(['project', 'list'], subargs)
-            cli.execute_command(['target', 'list'], subargs)
-            cli.execute_command(['application', 'list'], subargs)
-            cli.execute_command(['measurement', 'list'], subargs)
-            print "No project selected.  Try `%s`." % select_command.command
-        print 
+            target_list_cmd.main([targ['name'] for targ in proj.populate('targets')])
+            application_list_cmd.main([targ['name'] for targ in proj.populate('applications')])
+            measurement_list_cmd.main([targ['name'] for targ in proj.populate('measurements')])
+            self._print_experiments(proj)
+        print
         return EXIT_SUCCESS
 
 COMMAND = DashboardCommand(__name__, summary_fmt="Show all project components.")

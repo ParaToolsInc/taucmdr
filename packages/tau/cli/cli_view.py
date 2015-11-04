@@ -39,6 +39,7 @@ from tau import EXIT_SUCCESS
 from tau import logger, util, cli
 from tau.error import UniqueAttributeError, InternalError
 from tau.storage.levels import SYSTEM_STORAGE, USER_STORAGE, PROJECT_STORAGE, STORAGE_LEVELS
+from tau.model.project import Project, ProjectSelectionError
 from tau.cli import arguments
 from tau.cli.command import AbstractCommand
 
@@ -117,7 +118,16 @@ class CreateCommand(AbstractCliView):
         except UniqueAttributeError:
             self.parser.error("A %s with %s='%s' already exists" % (self.model_name, key_attr, key))
         if ctrl.storage is PROJECT_STORAGE:
+            from tau.cli.commands.project.edit import COMMAND as project_edit_cmd
             self.logger.info("Created a new %s: '%s'.", self.model_name, key)
+            proj_ctrl = Project.controller()
+            try:
+                proj = proj_ctrl.selected()
+            except ProjectSelectionError as err:
+                self.logger.info("%s: Use `%s` to add the new %s to a project" % 
+                                 (err, project_edit_cmd, self.model_name))
+            else:
+                project_edit_cmd.main([proj['name'], '--add', key])
         else:
             self.logger.info("Created a new %s-level %s: '%s'.", ctrl.storage.name, self.model_name, key)
         return EXIT_SUCCESS
@@ -170,7 +180,7 @@ class EditCommand(AbstractCliView):
         
     def construct_parser(self):
         key_attr = self.model.key_attribute
-        usage = "%s <%s_%s> [arguments]" % (self.command, self.model.name, key_attr)       
+        usage = "%s <%s_%s> [arguments]" % (self.command, self.model_name, key_attr)       
         parser = arguments.get_parser_from_model(self.model,
                                                  use_defaults=False,
                                                  prog=self.command,
@@ -181,7 +191,7 @@ class EditCommand(AbstractCliView):
                             metavar='<new_%s>' % key_attr, 
                             dest='new_key',
                             default=arguments.SUPPRESS)
-        arguments.add_storage_flags(parser, "modify", self.model.name)
+        arguments.add_storage_flags(parser, "modify", self.model_name)
         return parser
 
     def main(self, argv):
@@ -192,14 +202,14 @@ class EditCommand(AbstractCliView):
         key_attr = self.model.key_attribute
         key = getattr(args, key_attr)
         if not ctrl.exists({key_attr: key}):
-            self.parser.error("No %s-level %s with %s='%s'." % (ctrl.storage.name, self.model.name, key_attr, key)) 
+            self.parser.error("No %s-level %s with %s='%s'." % (ctrl.storage.name, self.model_name, key_attr, key)) 
         data = {attr: getattr(args, attr) for attr in self.model.attributes if hasattr(args, attr)}
         try:
             data[key_attr] = args.new_key
         except AttributeError:
             pass
         ctrl.update(data, {key_attr: key})
-        self.logger.info("Updated %s '%s'", self.model.name, key)
+        self.logger.info("Updated %s '%s'", self.model_name, key)
         return EXIT_SUCCESS
 
 
@@ -212,7 +222,7 @@ class ListCommand(AbstractCliView):
             summary_fmt = "Show %(model_name)s configuration data."
         super(ListCommand, self).__init__(controller, module_name, summary_fmt, help_page_fmt, group)
         key_attr = self.model.key_attribute
-        self._format_fields = {'command': self.command, 'model_name': self.model.name, 'key_attr': key_attr}
+        self._format_fields = {'command': self.command, 'model_name': self.model_name, 'key_attr': key_attr}
         self.default_style = default_style
         if not dashboard_columns:
             dashboard_columns = [{'header': key_attr.capitalize(), 'value': key_attr}]
@@ -296,7 +306,7 @@ class ListCommand(AbstractCliView):
         return [json.dumps(record.data) for record in records]
 
     def construct_parser(self):
-        key_str = self.model.name + '_' + self.model.key_attribute
+        key_str = self.model_name + '_' + self.model.key_attribute
         usage_head = ("%(command)s [%(key_str)s] [%(key_str)s] ... [arguments]" % 
                       {'command': self.command, 'key_str': key_str})
         parser = arguments.get_parser(prog=self.command,
@@ -325,7 +335,7 @@ class ListCommand(AbstractCliView):
                                  help="show all %(model_name)s data as JSON" % self._format_fields,
                                  const='json', action='store_const', dest=style_dest, 
                                  default=arguments.SUPPRESS)
-        arguments.add_storage_flags(parser, "show", self.model.name, plural=True, exclusive=False)
+        arguments.add_storage_flags(parser, "show", self.model_name, plural=True, exclusive=False)
         return parser
     
     def main(self, argv):
@@ -386,7 +396,7 @@ class ListCommand(AbstractCliView):
             records = ctrl.search([{key_attr: key} for key in keys])
             for i, record in enumerate(records):
                 if not record:
-                    self.parser.error("No %s with %s='%s'" % (self.model.name, key_attr, keys[i]))
+                    self.parser.error("No %s with %s='%s'" % (self.model_name, key_attr, keys[i]))
         return records
 
     def _format_records(self, ctrl, style, keys=None):
@@ -407,7 +417,7 @@ class ListCommand(AbstractCliView):
         except StorageError:
             records = []
         if not records:
-            parts = ["No %ss." % self.model.name]
+            parts = ["No %ss." % self.model_name]
         else:
             formatter = getattr(self, style+'_format')
             parts = formatter(records)
@@ -424,12 +434,13 @@ class ListCommand(AbstractCliView):
             count = ctrl.count()
         except StorageError:
             count = 0
-        fields = {'count': count, 'level': level, 'command': self.command, 'level_flag': arguments.STORAGE_LEVEL_FLAG}
+        fields = dict(self._format_fields, count=count, level=level, level_flag=arguments.STORAGE_LEVEL_FLAG)
         if count == 1:
-            return ["There is 1 %(level)s application."
+            return ["There is 1 %(level)s %(model_name)s."
                     " Type `%(command)s -%(level_flag)s %(level)s` to list it." % fields] 
         elif count > 1:
-            return ["There are %(count)d %(level)s applications."
+            return ["There are %(count)d %(level)s %(model_name)ss."
                     " Type `%(command)s -%(level_flag)s %(level)s` to list them." % fields] 
         else:
-            return ["There are no %(level)s applications." % fields] 
+            #return ["There are no %(level)s %(model_name)ss." % fields]
+            return [] 
