@@ -34,7 +34,6 @@ from tau.storage.local_file import LocalFileStorage
 
 LOGGER = logger.get_logger(__name__)
 
-
 class UninitializedProjectError(StorageError):
     """Indicates that the project storage has not been initialized."""
 
@@ -49,9 +48,12 @@ class UninitializedProjectError(StorageError):
         Args:
             search_root (str): Directory in which the search for a project directory was initiated.
         """
+        from tau.cli.commands.initialize import COMMAND as init_cmd
         value = "Project not found in '%s' or any of its parent directories." % search_root
-        super(UninitializedProjectError, self).__init__(value)
+        hints = ['Use `%s` to create a new project.' % init_cmd]
+        super(UninitializedProjectError, self).__init__(value, *hints)
         self.search_root = search_root
+        
 
 
 class ProjectStorage(LocalFileStorage):
