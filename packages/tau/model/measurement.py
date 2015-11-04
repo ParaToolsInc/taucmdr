@@ -221,7 +221,7 @@ def attributes():
         },
         'callpath': {
             'type': 'integer',
-            'default': 0,
+            'default': 2,
             'description': 'maximum depth for callpath recording',
             'argparse': {'flags': ('--callpath',),
                          'group': 'data',
