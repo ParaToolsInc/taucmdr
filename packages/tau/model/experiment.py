@@ -267,27 +267,27 @@ class Experiment(Model):
         tau = self.configure()
         return tau.compile(given_compiler, compiler_args)
         
-    def managed_run(self, application_cmd, application_args):
+    def managed_run(self, launcher_cmd, application_cmd):
         """Uses this experiment to run an application command.
         
         Performs all relevent system preparation tasks to run the user's application
         under the specified experimental configuration.
         
         Args:
-            application_cmd (str): The application command intercepted by TAU Commander.
-            application_args (list): Application command line arguments intercepted by TAU Commander.
-            
+            launcher_cmd (list): Application launcher with command line arguments.
+            application_cmd (list): Application executable with command line arguments.
+
         Raises:
             ConfigurationError: The experiment is not configured to perform the desired run.
             
         Returns:
             int: Application subprocess return code.
         """
-        command = util.which(application_cmd)
+        command = util.which(application_cmd[0])
         if not command:
-            raise ConfigurationError("Cannot find executable: %s" % application_cmd)
+            raise ConfigurationError("Cannot find executable: %s" % application_cmd[0])
         tau = self.configure()
-        cmd, env = tau.get_application_command(application_cmd, application_args)
+        cmd, env = tau.get_application_command(launcher_cmd, application_cmd)
         return Trial.controller(self.storage).perform(self, cmd, os.getcwd(), env)
 
     def show(self, tool_name=None, trial_numbers=None):

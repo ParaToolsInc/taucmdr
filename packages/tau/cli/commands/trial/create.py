@@ -35,6 +35,9 @@ from tau.model.trial import Trial
 from tau.model.project import Project
 
 
+LAUNCHERS = ['mpirun', 'mpiexec', 'ibrun', 'aprun']
+
+
 class TrialCreateCommand(CreateCommand):
     """``tau trial create`` subcommand."""
 
@@ -51,20 +54,53 @@ class TrialCreateCommand(CreateCommand):
         return bool(util.which(cmd))
 
     def construct_parser(self):
-        usage = "%s <command> [arguments]" % self.command
+        usage = "%s [arguments] [--] <command> [command_arguments]" % self.command
         parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
         parser.add_argument('cmd',
-                            help="Command, e.g. './a.out' or 'mpirun ./a.out'",
+                            help="Executable command, e.g. './a.out'",
                             metavar='<command>')
         parser.add_argument('cmd_args', 
-                            help="Command arguments",
-                            metavar='[arguments]',
+                            help="Executable command arguments",
+                            metavar='[command_arguments]',
                             nargs=arguments.REMAINDER)
+        parser.add_argument('--launcher',
+                            help="Launcher command with arguments, e.g. 'mpirun -np 4'",
+                            metavar='<command>',
+                            nargs=arguments.REMAINDER,
+                            default=arguments.SUPPRESS)
         return parser
+    
+    def _detect_launcher(self, application_cmd):
+        cmd = application_cmd[0]
+        launcher_cmd = [] 
+        if cmd in LAUNCHERS:
+            try:
+                idx = application_cmd.index('--')
+            except ValueError:
+                exes = [item for item in enumerate(application_cmd[1:], 1) if util.which(item[1])]
+                self.logger.debug("Executables on command line: %s", exes)
+                if len(exes) == 1:
+                    idx = exes[0][0]
+                    launcher_cmd = application_cmd[:idx]
+                    application_cmd = application_cmd[idx:]
+                else:
+                    raise ConfigurationError("TAU is having trouble parsing the command line arguments",
+                                             ("Use '--' to seperate %s and its arguments from the application command "
+                                              "and its arguments, e.g. `mpirun -np 4 -- ./a.out -g hello`" % cmd))
+            else:
+                launcher_cmd = application_cmd[:idx]
+                application_cmd = application_cmd[idx+1:]
+        return launcher_cmd, application_cmd
 
     def main(self, argv):
         args = self.parser.parse_args(args=argv)
         self.logger.debug('Arguments: %s', args)
+        
+        application_cmd = [args.cmd] + args.cmd_args
+        try:
+            launcher_cmd = args.launcher
+        except AttributeError:
+            launcher_cmd, application_cmd = self._detect_launcher(application_cmd)
 
         proj_ctrl = Project.controller()
         proj = proj_ctrl.selected()
@@ -72,7 +108,7 @@ class TrialCreateCommand(CreateCommand):
             from tau.cli.commands.select import COMMAND as select_command
             raise ConfigurationError("No project selected.", "Try `%s`" % select_command.command)
         expr = proj.populate('selected')
-        return expr.managed_run(args.cmd, args.cmd_args)
+        return expr.managed_run(launcher_cmd, application_cmd)
 
 
 COMMAND = TrialCreateCommand(Trial, __name__, summary_fmt="Run an application under a new experiment trial.")

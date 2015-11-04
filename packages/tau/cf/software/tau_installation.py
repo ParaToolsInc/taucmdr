@@ -683,33 +683,32 @@ class TauInstallation(Installation):
                                      "See detailed output at the end of in '%s'" % logger.LOG_FILE)
         return retval
 
-    def get_application_command(self, application_cmd, application_args):
+    def get_application_command(self, launcher_cmd, application_cmd):
         """Build a command line to launch an application under TAU.
         
         Sometimes TAU needs to use tau_exec, sometimes not.  This routine
         also handles backend launch commands like `aprun`.
         
-        Args:
-            application_cmd (str): The application command, e.g. './a.out'.
-            application_args (list): The application command line arguments.
+        Args
+            launcher_cmd (list): Application launcher with command line arguments, e.g. ['mpirun', '-np', '4'].
+            application_cmd (list): Application command with command line arguments, e.g. ['./a.out', '-g', 'hello'].
             
         Returns:
-            tuple: (cmd, env) where `cmd` is the new command line and `env` is
-                   a dictionary of environment variables to set before running
-                   the application command.
+            tuple: (cmd, env) where `cmd` is the new command line and `env` is a dictionary of environment 
+                   variables to set before running the application command.
         """
-        tau_exec_opts, env = self.runtime_config()
-        use_tau_exec = (self.source_inst == 'never' and
-                        self.compiler_inst == 'never')
+        opts, env = self.runtime_config()
+        use_tau_exec = (self.source_inst == 'never' and self.compiler_inst == 'never' and not self.link_only)
         if use_tau_exec:
+            tau_exec_opts = opts
             tags = self.get_makefile_tags()
             if not self.mpi_support:
                 tags.add('serial')
-            cmd = ['tau_exec', '-T', ','.join(tags)] + tau_exec_opts + [application_cmd] + application_args
+            tau_exec = ['tau_exec', '-T', ','.join(tags)] + tau_exec_opts
+            cmd = launcher_cmd + tau_exec + application_cmd
         else:
-            cmd = [application_cmd] + application_args
+            cmd = launcher_cmd + application_cmd
         return cmd, env
-
 
     def show_profile(self, path, tool_name=None):
         """Shows profile data in the specified file or folder.
