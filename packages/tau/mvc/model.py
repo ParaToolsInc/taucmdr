@@ -261,11 +261,14 @@ class Model(StorageRecord):
     def construct_condition(cls, args, attr_defined=None, attr_undefined=None, attr_eq=None, attr_ne=None):
         """Constructs a compatibility condition, see :any:`check_compatibility`.
         
-        The returned condition is a callable that accepts four arguments:
+        The returned condition is a callable that accepts five or six arguments:
             * lhs (Model): The left-hand side of the `check_compatibility` operation.
             * lhs_attr (str): Name of the attribute that defines the 'compat' property.
             * lhs_value: The value of the attribute that defines the 'compat' property.
             * rhs (Model): Controller of the data record we are checking against.
+            * rhs_attr (str): The attribute we are checking for compatibility.
+            * checked_value (str): The required or desired value of the attribute we are checking for compatibility.
+                                   Only used by `attr_eq` and `attr_ne`.
         
         The `condition` callable raises a :any:`ConfigurationError` if the compared attributes 
         are fatally incompatibile, i.e. the user's operation is guaranteed to fail with the chosen 
@@ -274,20 +277,11 @@ class Model(StorageRecord):
         
         See :any:`require`, :any:`encourage`, :any:`discourage`, :any:`exclude` for common conditions.
         
-        args[0] specifies a model attribute to check.  If args[1] is given, it is a value to
-        compare the specified attribute against or a callback function as described below.
-        
-        The remaining arguments are callback functions accepting these arguments:
-            * lhs (Model): The model invoking `check_compatibility`.
-            * lhs_attr (str): Name of the attribute that defines the 'compat' property.
-            * lhs_value: Value of the attribute that defines the 'compat' property.
-            * rhs (Model): Model we are checking against (argument to `check_compatibility`).
-            * rhs_attr (str): The right-hand side attribute we are checking for compatibility.
-        
-        To enable complex conditions, args[1] may be a callback function.  In this case,
-        args[1] must check attribute existance and value correctness and throw the appropriate
-        exception and/or emit log messages.  See :py:func:`tau.model.measurement.intel_only` 
-        for an example of such a callback function.
+        args[0] specifies a model attribute to check.  If args[1] is given, it is a value to compare 
+        the specified attribute against or a callback function as described below. To enable complex 
+        conditions, args[1] may be a callback function.  In this case, args[1] must check attribute 
+        existance and value correctness and throw the appropriate exception and/or emit log messages.
+        See :py:func:`tau.model.measurement.intel_only` for an example of such a callback function.
         
         Args:
             args (tuple): Attribute name in args[0] and, optionally, attribute value in args[1].
@@ -327,10 +321,10 @@ class Model(StorageRecord):
                         else:
                             if attr_eq:
                                 if rhs_value == checked_value:
-                                    attr_eq(lhs, lhs_attr, lhs_value, rhs, rhs_attr)
+                                    attr_eq(lhs, lhs_attr, lhs_value, rhs, rhs_attr, checked_value)
                             elif attr_ne:
                                 if rhs_value != checked_value:
-                                    attr_ne(lhs, lhs_attr, lhs_value, rhs, rhs_attr)
+                                    attr_ne(lhs, lhs_attr, lhs_value, rhs, rhs_attr, checked_value)
                             elif attr_defined:
                                 attr_defined(lhs, lhs_attr, lhs_value, rhs, rhs_attr)
         return condition
@@ -364,14 +358,14 @@ class Model(StorageRecord):
         def attr_undefined(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
             lhs_name = lhs.name.lower()
             rhs_name = rhs.name.lower()
-            raise ConfigurationError("%s = %s in %s requires %s be defined in %s" % 
+            raise ConfigurationError("%s = %s in %s requires %s be defined in %s but it is undefined" % 
                                      (lhs_attr, lhs_value, lhs_name, rhs_attr, rhs_name))
-        def attr_ne(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
+        def attr_ne(lhs, lhs_attr, lhs_value, rhs, rhs_attr, checked_value):
             lhs_name = lhs.name.lower()
             rhs_name = rhs.name.lower()
             rhs_value = rhs[rhs_attr]
-            raise ConfigurationError("%s = %s in %s requires %s = %s in %s" % 
-                                     (lhs_attr, lhs_value, lhs_name, rhs_attr, rhs_value, rhs_name))
+            raise ConfigurationError("%s = %s in %s requires %s = %s in %s but it is %s" % 
+                                     (lhs_attr, lhs_value, lhs_name, rhs_attr, checked_value, rhs_name, rhs_value))
         return cls.construct_condition(args, attr_undefined=attr_undefined, attr_ne=attr_ne)
 
     @classmethod
@@ -403,14 +397,14 @@ class Model(StorageRecord):
         def attr_undefined(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
             lhs_name = lhs.name.lower()
             rhs_name = rhs.name.lower()
-            LOGGER.warning("%s = %s in %s recommends %s be defined in %s",
+            LOGGER.warning("%s = %s in %s recommends %s be defined in %s but it is undefined",
                            lhs_attr, lhs_value, lhs_name, rhs_attr, rhs_name)
-        def attr_ne(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
+        def attr_ne(lhs, lhs_attr, lhs_value, rhs, rhs_attr, checked_value):
             lhs_name = lhs.name.lower()
             rhs_name = rhs.name.lower()
             rhs_value = rhs[rhs_attr]
-            LOGGER.warning("%s = %s in %s recommends %s = %s in %s",
-                           lhs_attr, lhs_value, lhs_name, rhs_attr, rhs_value, rhs_name)
+            LOGGER.warning("%s = %s in %s recommends %s = %s in %s but it is %s",
+                           lhs_attr, lhs_value, lhs_name, rhs_attr, checked_value, rhs_name, rhs_value)
         return cls.construct_condition(args, attr_undefined=attr_undefined, attr_ne=attr_ne)
 
     @classmethod
@@ -444,12 +438,11 @@ class Model(StorageRecord):
             rhs_name = rhs.name.lower()
             LOGGER.warning("%s = %s in %s recommends %s be undefined in %s",
                            lhs_attr, lhs_value, lhs_name, rhs_attr, rhs_name)
-        def attr_eq(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
+        def attr_eq(lhs, lhs_attr, lhs_value, rhs, rhs_attr, checked_value):
             lhs_name = lhs.name.lower()
             rhs_name = rhs.name.lower()
-            rhs_value = rhs[rhs_attr]
             LOGGER.warning("%s = %s in %s recommends against %s = %s in %s",
-                           lhs_attr, lhs_value, lhs_name, rhs_attr, rhs_value, rhs_name)
+                           lhs_attr, lhs_value, lhs_name, rhs_attr, checked_value, rhs_name)
         return cls.construct_condition(args, attr_defined=attr_defined, attr_eq=attr_eq)
 
     @classmethod
@@ -483,12 +476,11 @@ class Model(StorageRecord):
             rhs_name = rhs.name.lower()
             raise ConfigurationError("%s = %s in %s requires %s be undefined in %s" %
                                      (lhs_attr, lhs_value, lhs_name, rhs_attr, rhs_name))
-        def attr_eq(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
+        def attr_eq(lhs, lhs_attr, lhs_value, rhs, rhs_attr, checked_value):
             lhs_name = lhs.name.lower()
             rhs_name = rhs.name.lower()
-            rhs_value = rhs[rhs_attr]
             raise ConfigurationError("%s = %s in %s is incompatible with %s = %s in %s" %
-                                     (lhs_attr, lhs_value, lhs_name, rhs_attr, rhs_value, rhs_name))
+                                     (lhs_attr, lhs_value, lhs_name, rhs_attr, checked_value, rhs_name))
         return cls.construct_condition(args, attr_defined=attr_defined, attr_eq=attr_eq)        
 
     def check_compatibility(self, rhs):
