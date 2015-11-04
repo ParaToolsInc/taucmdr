@@ -108,7 +108,7 @@ class LocalFileStorage(AbstractStorage):
 
     def connect_database(self, *args, **kwargs):
         """Open the database for reading and writing."""
-        if not self._database:
+        if self._database is None:
             dbfile = os.path.join(self.prefix, self.name + '.json')
             try:
                 self._database = tinydb.TinyDB(dbfile, storage=_JsonFileStorage)
@@ -122,7 +122,7 @@ class LocalFileStorage(AbstractStorage):
 
     def disconnect_database(self, *args, **kwargs):
         """Close the database for reading and writing."""
-        pass
+        self._database = None
 
     @property
     def prefix(self):
