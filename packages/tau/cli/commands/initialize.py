@@ -28,6 +28,7 @@
 """``tau initialize`` subcommand."""
 
 import os
+import sys
 import platform
 from tau import EXIT_SUCCESS
 from tau import cli
@@ -41,6 +42,13 @@ from tau.cli.commands.target.create import COMMAND as target_create_cmd
 from tau.cli.commands.application.create import COMMAND as application_create_cmd
 from tau.cli.commands.measurement.create import COMMAND as measurement_create_cmd
 from tau.cli.commands.project.create import COMMAND as project_create_cmd
+
+
+def _safe_execute(main, argv):
+    retval = main(argv)
+    if retval != EXIT_SUCCESS:
+        sys.exit(retval)
+
 
 class InitializeCommand(AbstractCommand):
     """``tau initialize`` subcommand."""
@@ -96,75 +104,75 @@ class InitializeCommand(AbstractCommand):
                                        action=ParseBooleanAction)
         return parser
 
-    def _initialize_target(self, target_name, argv):
-        target_argv = [target_name] + argv
-        _, unknown = target_create_cmd.parser.parse_known_args(args=target_argv)
-        return target_create_cmd.main([arg for arg in target_argv if arg not in unknown])           
-
-    def _initialize_application(self, application_name, argv):
-        application_argv = [application_name] + argv
-        _, unknown = application_create_cmd.parser.parse_known_args(args=application_argv)
-        return application_create_cmd.main([arg for arg in application_argv if arg not in unknown])
-        
-    def _initialize_measurements(self, args):
-        main = measurement_create_cmd.main
-        measurement_names = []
-        if args.sample:
-            retval = main(['profile-sample', '--profile=True', '--trace=False', '--sample=True',
-                           '--source-inst=never', '--compiler-inst=never', '--link-only=False'])
-            if retval != EXIT_SUCCESS:
-                return retval
-            measurement_names.extend(['profile-sample'])
-        if args.profile:
-            retval = main(['profile-automatic', '--profile=True', '--trace=False', '--sample=False',
-                           '--source-inst=automatic', '--compiler-inst=fallback', '--link-only=False'])
-            if retval != EXIT_SUCCESS:
-                return retval
-            retval = main(['profile-manual', '--profile=True',  '--trace=False', '--sample=False',
-                           '--source-inst=never', '--compiler-inst=never', '--link-only=True'])
-            if retval != EXIT_SUCCESS:
-                return retval
-            measurement_names.extend(['profile-automatic', 'profile-manual'])
-        if args.trace:
-            retval = main(['trace-automatic', '--profile=False', '--trace=True', 
-                           '--source-inst=automatic', '--compiler-inst=fallback'])
-            if retval != EXIT_SUCCESS:
-                return retval
-            retval = main(['trace-manual', '--profile=False',  '--trace=True',
-                           '--source-inst=never', '--compiler-inst=never', '--link-only=True'])
-            if retval != EXIT_SUCCESS:
-                return retval
-            measurement_names.extend(['trace-automatic', 'trace-manual'])
-        return measurement_names
-    
-    def main(self, argv):
+    def _initialize_project(self, argv):
         args = self.parser.parse_args(args=argv)
         self.logger.debug('Arguments: %s', args)
         if not (args.profile or args.trace or args.sample):
             self.parser.error('You must specify at least one measurement.')
         
+        project_name = args.project_name
+        target_name = args.target_name
+        application_name = args.application_name
+        
+        target_argv = [target_name] + argv
+        _, unknown = target_create_cmd.parser.parse_known_args(args=target_argv)
+        target_argv = [target_name] + [arg for arg in argv if arg not in unknown]
+        _safe_execute(target_create_cmd.main, target_argv)
+        
+        application_argv = [application_name] + argv
+        application_args, unknown = application_create_cmd.parser.parse_known_args(args=application_argv)
+        application_argv = [application_name] + [arg for arg in argv if arg not in unknown]
+        _safe_execute(application_create_cmd.main, application_argv)
+
+        measurement_names = []
+        measurement_args = ['--%s=True' % attr 
+                            for attr in 'cuda', 'mpi', 'opencl', 'openmp'
+                            if getattr(application_args, attr, False)]
+        if args.sample:
+            _safe_execute(measurement_create_cmd.main, 
+                          ['profile-sample', '--profile=True', '--trace=False', '--sample=True',
+                           '--source-inst=never', '--compiler-inst=never', '--link-only=False'] + measurement_args)
+            measurement_names.extend(['profile-sample'])
+        if args.profile:
+            _safe_execute(measurement_create_cmd.main, 
+                          ['profile-automatic', '--profile=True', '--trace=False', '--sample=False',
+                           '--source-inst=automatic', '--compiler-inst=fallback', 
+                           '--link-only=False'] + measurement_args)
+            _safe_execute(measurement_create_cmd.main, 
+                          ['profile-manual', '--profile=True', '--trace=False', '--sample=False',
+                           '--source-inst=never', '--compiler-inst=never', '--link-only=True'] + measurement_args)
+            measurement_names.extend(['profile-automatic', 'profile-manual'])
+        if args.trace:
+            _safe_execute(measurement_create_cmd.main, 
+                          ['trace-automatic', '--profile=False', '--trace=True', '--sample=False', 
+                           '--source-inst=automatic', '--compiler-inst=fallback', 
+                           '--link-only=False'] + measurement_args)
+            _safe_execute(measurement_create_cmd.main, 
+                          ['trace-manual', '--profile=False', '--trace=True', '--sample=False',
+                           '--source-inst=never', '--compiler-inst=never', 
+                           '--link-only=True'] + measurement_args)
+            measurement_names.extend(['trace-automatic', 'trace-manual'])
+
+        project_create_cmd.main([project_name, '--targets', target_name, 
+                                 '--applications', application_name, '--measurements'] + measurement_names)
+        cli.execute_command(['select'], ['--project', project_name, '--target', target_name, 
+                                         '--application', application_name, '--measurement', measurement_names[0]])
+        cli.execute_command(['dashboard'])
+    
+    def main(self, argv):
         proj_ctrl = Project.controller()
         try:
             proj = proj_ctrl.selected()
         except UninitializedProjectError:
             self.logger.debug("No project found, initializing a new project.")
             PROJECT_STORAGE.connect_filesystem()
-            project_name = args.project_name
-            target_name = args.target_name
-            application_name = args.application_name
-            measurement_names = self._initialize_measurements(args)
-            self._initialize_target(target_name, argv)
-            self._initialize_application(application_name, argv)
-            project_create_cmd.main([project_name, target_name, application_name] + measurement_names)
-            cli.execute_command(['select'], [project_name, measurement_names[0]])
-            cli.execute_command(['dashboard'])
+            self._initialize_project(argv)
         else:
             if proj:
                 self.logger.info("Selected project: '%s'", proj['name'])
             else:
                 from tau.cli.commands.select import COMMAND as select_command
-                self.logger.info("No project selected.  Try `%s`.", 
-                                 select_command.command)
+                self.logger.info("No project selected.  Try `%s`.", select_command.command)
         return EXIT_SUCCESS
 
 COMMAND = InitializeCommand(__name__, summary_fmt="Initialize TAU Commander.")

@@ -115,8 +115,12 @@ class SelectCommand(AbstractCommand):
                             default=arguments.SUPPRESS)
         parser.add_argument('impl_measurement',
                             help="Measurement to select",
-                            metavar='[measurements]',
+                            metavar='[measurement]',
                             nargs='*',
+                            default=arguments.SUPPRESS)
+        parser.add_argument('--project',
+                            help="Project to select",
+                            metavar='<name>',
                             default=arguments.SUPPRESS)
         parser.add_argument('--target',
                             help="Target to select",
@@ -134,16 +138,23 @@ class SelectCommand(AbstractCommand):
 
     def main(self, argv):
         args = self.parser.parse_args(args=argv)
-        self.logger.debug('Arguments: %s', args)        
+        self.logger.debug('Arguments: %s', args)
+        
+        proj_ctrl = Project.controller()
+        try:
+            proj_name = args.project
+        except AttributeError:
+            proj = proj_ctrl.selected()
+            if not proj:
+                self.parser.error("No project selected.  Use --project to select a project.")
+        else:
+            proj = proj_ctrl.one({'name': proj_name})
+            if not proj:
+                self.parser.error("No project named '%s'" % args.project)
+        
         targets = set()
         applications = set()
         measurements = set()
-        
-        proj_ctrl = Project.controller()
-        proj = proj_ctrl.selected()
-        if not proj:
-            self.parser.error("No project is currently selected.  Please specify a project name.")
-
         self._parse_implicit(args, targets, applications, measurements)
         targ = self._parse_explicit(args, Target, targets, proj, 'targets')
         app = self._parse_explicit(args, Application, applications, proj, 'applications')
