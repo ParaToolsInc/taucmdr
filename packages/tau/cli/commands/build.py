@@ -33,7 +33,7 @@ from tau.cli.command import AbstractCommand
 from tau.cf.compiler import CompilerFamily, CompilerInfo
 from tau.cf.compiler.mpi import MpiCompilerFamily
 from tau.model.project import Project
-from tau.storage.levels import PROJECT_STORAGE
+
 
 class BuildCommand(AbstractCommand):
     """``tau build`` subcommand."""
