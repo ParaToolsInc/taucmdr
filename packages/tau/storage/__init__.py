@@ -34,9 +34,7 @@ class StorageError(Error):
     """Indicates a failure in the storage system."""
 
     message_fmt = ("%(value)s\n"
-                   "\n"
-                   "%(hints)s\n"
-                   "Please send '%(logfile)s' to %(contact)s for assistance.")
+                   "%(hints)s\n")
 
 
 class StorageRecord(object):
@@ -86,8 +84,10 @@ class StorageRecord(object):
 class AbstractStorage(object):
     """Abstract base class for storage containers.
     
-    A storage container pairs a record database with a persistent filesystem.
-    The filesystem is accessed via its filesystem prefix, e.g. ``/usr/local/packages``.
+    A storage container provides a record database, a persistent filesystem, and a key/value store.
+    The database is accessed via member methods like :any:`insert`, :any:`search`, etc.
+    The filesystem is accessed via its filesystem prefix (e.g. ``/usr/local/packages``) via :any:`prefix`.
+    The key/value store is accessed via the `[]` operator, i.e. treat the storage object like a dictionary.
     
     Attributes:
         name (str): The storage container's name, e.g. "system" or "user".
@@ -104,22 +104,18 @@ class AbstractStorage(object):
         
     def __str__(self):
         return self.name
-    
+
+    @abstractmethod    
     def __getitem__(self, key):
-        record = self.get({'key': key})
-        try:
-            return record['value']
-        except TypeError:
-            raise KeyError
+        """Retrieve a value from the key/value store."""
     
+    @abstractmethod
     def __setitem__(self, key, value):
-        if self.contains({'key': key}):
-            self.update({'value': value}, {'key': key})
-        else:
-            self.insert({'key': key, 'value': value})
+        """Store a value in the key/value store."""
         
+    @abstractmethod
     def __delitem__(self, key):
-        self.remove({'key': key})
+        """Remove a value from the key/value store."""
     
     @abstractmethod
     def connect_filesystem(self, *args, **kwargs):

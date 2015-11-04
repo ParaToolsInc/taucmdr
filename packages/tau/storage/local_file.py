@@ -78,7 +78,7 @@ class _JsonFileStorage(tinydb.JSONStorage):
 class LocalFileStorage(AbstractStorage):
     """A persistant, transactional record storage system.  
     
-    Uses :py:class:`TinyDB` to store and retrieve data as JSON strings.
+    Uses :py:class:`TinyDB` for both the database and the key/value store.
     
     Attributes:
         dbfile (str): Absolute path to database file.
@@ -93,6 +93,22 @@ class LocalFileStorage(AbstractStorage):
         self._database = None
         self._prefix = prefix
 
+    def __getitem__(self, key):
+        record = self.get({'key': key})
+        try:
+            return record['value']
+        except TypeError:
+            raise KeyError
+    
+    def __setitem__(self, key, value):
+        if self.contains({'key': key}):
+            self.update({'value': value}, {'key': key})
+        else:
+            self.insert({'key': key, 'value': value})
+        
+    def __delitem__(self, key):
+        self.remove({'key': key})
+    
     def connect_filesystem(self, *args, **kwargs):
         """Prepares the store filesystem fore reading and writing."""
         if not os.path.isdir(self._prefix):
