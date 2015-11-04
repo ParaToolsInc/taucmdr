@@ -262,14 +262,14 @@ def get_parser_from_model(model, use_defaults=True, prog=None, usage=None, descr
                 'description': 'application uses OpenMP',
                 'default': False, 
                 'argparse': {'flags': ('--openmp',),
-                             'metavar': 'yes/no',
+                             'metavar': 'T/F',
                              'nargs': '?',
                              'const': True,
                              'action': ParseBooleanAction},
             }
 
         The returned parser will accept the ``--openmp`` flag accepting zero or one arguments 
-        with 'yes/no' as the metavar.  If ``--openmp`` is omitted the default value of False will
+        with 'T/F' as the metavar.  If ``--openmp`` is omitted the default value of False will
         be used.  If ``--openmp`` is provided with zero arguments, the const value of True will
         be used.  If ``--openmp`` is provided with one argument then the provided argument will
         be passed to a ParseBooleanAction instance to generate a boolean value.  The argument's
