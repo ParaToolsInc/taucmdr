@@ -1,0 +1,12 @@
+Source: taucmdr
+Section: devel
+Priority: optional
+Maintainer: John C. Linford <jlinford@paratools.com>
+Build-Depends: cdbs (>= 0.4.49), debhelper (>= 4.1.16), python, python-support, cx-freeze (>= 4.3)
+Homepage: http://www.paratools.com/taucmdr
+Standards-Version: 3.8.1
+
+Package: taucmdr
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: TAU Commander presents a simple, intuitive, and systemized interface that guides users through performance engineering workflows and offers constructive feedback in case of error. TAU Commander also enhances the performance engineer's ability to mine actionable information from the application performance data by connecting to a suite of cloud-based data analysis, storage, visualization, and reporting services.
