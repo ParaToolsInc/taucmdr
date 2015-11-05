@@ -70,24 +70,25 @@ COMMANDS = {None:
              'tau_instrumentor',
              'upcparse',
              'xmlgen'],
-            TAU_ARCH_APPLE: 
-            ['cparse',
-             'cxxparse',
-             'edgcpfe',
-             'f90fe',
-             'f90parse',
-             'f95parse',
-             'gfparse',
-             'pdbcomment',
-             'pdbconv',
-             'pdbhtml',
-             'pdbmerge',
-             'pdbstmt',
-             'pdbtree',
-             'pdtf90disp',
-             'pdtflint',
-             'taucpdisp',
-             'xmlgen']}
+            TAU_ARCH_APPLE.architecture: 
+            {TAU_ARCH_APPLE.operating_system: 
+             ['cparse',
+              'cxxparse',
+              'edgcpfe',
+              'f90fe',
+              'f90parse',
+              'f95parse',
+              'gfparse',
+              'pdbcomment',
+              'pdbconv',
+              'pdbhtml',
+              'pdbmerge',
+              'pdbstmt',
+              'pdbtree',
+              'pdtf90disp',
+              'pdtflint',
+              'taucpdisp',
+              'xmlgen']} }
 
 
 class PdtInstallation(AutotoolsInstallation):
