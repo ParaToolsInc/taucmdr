@@ -115,10 +115,14 @@ class ProjectController(Controller):
             if self.one(selected_eid) is None:
                 del PROJECT_STORAGE['selected_project']
 
-    def select(self, project, experiment):
+    def select(self, project, experiment=None):
         self.storage['selected_project'] = project.eid
-        self.update({'experiment': experiment.eid}, project.eid)
-        experiment.configure()
+        if experiment is not None:
+            for attr in 'target', 'application', 'measurement':
+                if experiment[attr] not in project[attr+'s']:
+                    raise InternalError("Experiment contains %s not in project" % attr)
+            self.update({'experiment': experiment.eid}, project.eid)
+            experiment.configure()
     
     def unselect(self):
         del self.storage['selected_project']
@@ -132,7 +136,7 @@ class ProjectController(Controller):
         try:
             selected_eid = PROJECT_STORAGE['selected_project']
         except KeyError:
-            raise ProjectSelectionError("No project configuration selected.")
+            raise ProjectSelectionError("No project configuration selected")
         else:
             return self.one(selected_eid)
 

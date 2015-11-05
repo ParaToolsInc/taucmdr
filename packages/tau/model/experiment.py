@@ -36,11 +36,11 @@ import os
 import glob
 import shutil
 from tau import logger, util
-from tau.error import ConfigurationError
+from tau.error import ConfigurationError, InternalError
 from tau.mvc.model import Model
 from tau.model.trial import Trial
 from tau.model.project import Project
-from tau.storage.levels import USER_STORAGE
+from tau.storage.levels import USER_STORAGE, PROJECT_STORAGE
 from tau.cf.target import OperatingSystem, DARWIN_OS
 from tau.cf.software.tau_installation import TauInstallation
 from tau.cf.compiler.installed import InstalledCompiler
@@ -90,6 +90,10 @@ class Experiment(Model):
     def __init__(self, *args, **kwargs):
         super(Experiment, self).__init__(*args, **kwargs)
         
+    @classmethod
+    def controller(cls, storage=PROJECT_STORAGE):
+        return cls.__controller__(cls, storage)
+    
     def title(self):
         populated = self.populate()
         return '(%s, %s, %s)' % (populated['target']['name'],

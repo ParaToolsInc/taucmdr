@@ -32,6 +32,7 @@ from tau import EXIT_SUCCESS
 from tau import logger, util
 from tau.cli import arguments
 from tau.cli.command import AbstractCommand
+from tau.cli.commands.select import COMMAND as select_cmd
 from tau.cli.commands.project.list import COMMAND as project_list_cmd
 from tau.cli.commands.target.list import COMMAND as target_list_cmd
 from tau.cli.commands.application.list import COMMAND as application_list_cmd
@@ -46,17 +47,29 @@ class DashboardCommand(AbstractCommand):
         return arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
 
     def _print_experiments(self, proj):
-        title = util.hline("Experiments in project '%s'" % proj['name'], 'cyan')
+        parts = []
         experiments = proj.populate('experiments')
-        expr = proj.populate('experiment')
-        header_row = ['Experiment', 'Trials', 'Data Size']
-        rows = [header_row]
-        for expr in experiments:
-            rows.append([expr.title(), len(expr['trials']), util.human_size(expr.data_size())])
-        table = Texttable(logger.LINE_WIDTH)
-        table.add_rows(rows)
-        current = util.color_text('Current experiment: ', 'cyan') + expr.title()
-        print '\n'.join([title, table.draw(), '', current, ''])
+        if not experiments:
+            label = util.color_text('%s: No experiments' % proj['name'], color='red', attrs=['bold'])
+            msg = "%s.  Use `%s` to create a new experiment." % (label, select_cmd) 
+            parts.append(msg)
+        if experiments:
+            title = util.hline("Experiments in project '%s'" % proj['name'], 'cyan')
+            header_row = ['Experiment', 'Trials', 'Data Size']
+            rows = [header_row]
+            for expr in experiments:
+                rows.append([expr.title(), len(expr['trials']), util.human_size(expr.data_size())])
+            table = Texttable(logger.LINE_WIDTH)
+            table.add_rows(rows)
+            parts.extend([title, table.draw(), ''])
+        try:
+            expr = proj.populate('experiment')
+        except KeyError:
+            pass
+        else:
+            current = util.color_text('Current experiment: ', 'cyan') + expr.title()
+            parts.append(current)
+        print '\n'.join(parts)
     
     def main(self, argv):
         args = self.parser.parse_args(args=argv)
@@ -78,6 +91,7 @@ class DashboardCommand(AbstractCommand):
                 err.hints = ['Use `%s` to create a new project configuration.' % project_create_cmd]
             raise err
         else:
+            project_list_cmd.main(subargs)
             target_list_cmd.main([targ['name'] for targ in proj.populate('targets')])
             application_list_cmd.main([targ['name'] for targ in proj.populate('applications')])
             measurement_list_cmd.main([targ['name'] for targ in proj.populate('measurements')])

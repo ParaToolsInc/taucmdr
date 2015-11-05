@@ -43,36 +43,68 @@ from tau.cli.command import AbstractCommand
 class SelectCommand(AbstractCommand):
     """``tau select`` subcommand."""
 
-    def _parse_implicit(self, args, targets, applications, measurements):
+    def _parse_implicit(self, args):
+        projects = set()
+        targets = set()
+        applications = set()
+        measurements = set()
+        proj_ctrl = Project.controller()
         targ_ctrl = Target.controller(PROJECT_STORAGE)
         app_ctrl = Application.controller(PROJECT_STORAGE)
         meas_ctrl = Measurement.controller(PROJECT_STORAGE)
-        for flag in 'impl_target', 'impl_application', 'impl_measurement':
+        for flag in 'impl_project', 'impl_target', 'impl_application', 'impl_measurement':
             for name in getattr(args, flag, []):
+                prj = proj_ctrl.one({"name": name})
                 tar = targ_ctrl.one({"name": name})
                 app = app_ctrl.one({"name": name})
                 mes = meas_ctrl.one({"name": name})
-                tam = set([tar, app, mes]) - set([None])
-                if len(tam) > 1:
-                    self.parser.error("'%s' is ambiguous.  Please use --target, --application,"
-                                      " or --measurement to specify configuration type" % name)
-                elif len(tam) == 0:
-                    self.parser.error("'%s' is not a target, application, or measurement" % name)
+                ptam = set([prj, tar, app, mes]) - set([None])
+                if len(ptam) > 1:
+                    self.parser.error("'%s' is ambiguous.  Please use --project, --target, --application,"
+                                      " or --measurement to specify configuration type." % name)
+                elif len(ptam) == 0:
+                    self.parser.error("'%s' is not a project, target, application, or measurement." % name)
+                elif prj:
+                    projects.add(prj)
                 elif tar:
                     targets.add(tar)
                 elif app:
                     applications.add(app)
                 elif mes:
                     measurements.add(mes)
+        return projects, targets, applications, measurements
+
+    def _parse_explicit_project(self, args, acc):
+        proj_ctrl = Project.controller()
+        try:
+            name = getattr(args, 'project')
+        except AttributeError:
+            pass
+        else:
+            found = proj_ctrl.one({"name": name})
+            if not found:
+                self.parser.error("There is no project configuration named '%s.'" % name)
+            else:
+                acc.add(found)
+        if len(acc) == 0:
+            try:
+                return proj_ctrl.selected()
+            except ProjectSelectionError:
+                self.parser.error("No project configuration selected.  Please use --project to specify one.")
+        elif len(acc) > 1:
+            self.parser.error("Multiple project configurations specified: %s.  Please specify at most one." % 
+                              ', '.join(acc))
+        elif len(acc) == 1:
+            return acc.pop()
 
     def _parse_explicit(self, args, model, acc, proj, attr):
-        ctrl = model.controller(PROJECT_STORAGE)
         model_name = model.name.lower()
         try:
             name = getattr(args, model_name)
         except AttributeError:
             pass
         else:
+            ctrl = model.controller(PROJECT_STORAGE)
             found = ctrl.one({"name": name})
             if not found:
                 self.parser.error('There is no %s named %s.' % (model_name, name))
@@ -81,14 +113,12 @@ class SelectCommand(AbstractCommand):
         if not acc:
             acc = set(proj.populate(attr))
         if not acc:
-            err_fmt = "There are no %s configurations in project '%s'.  Use `%s %s create` to create a new one."
-            err_msg = err_fmt % (model_name, proj['name'], os.path.basename(TAU_SCRIPT), model_name)
-            raise ConfigurationError(err_msg)
+            return None
         if len(acc) > 1:
             self.parser.error("Project '%s' has multiple %ss. Please specify which to use." % 
                               (proj['name'], model_name))
         elif len(acc) == 1:
-            return list(acc)[0]
+            return acc.pop()
 
     def _check_compatibility(self, proj, targ, app, meas):
         from tau.cli.commands.project.edit import COMMAND as project_edit
@@ -101,37 +131,42 @@ class SelectCommand(AbstractCommand):
                 lhs.check_compatibility(rhs)
 
     def construct_parser(self):
-        usage = "%s [target] [application] [measurement] [arguments]" % self.command
+        usage = "%s [project] [target] [application] [measurement] [arguments]" % self.command
         parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
+        parser.add_argument('impl_project',
+                            help="Project configuration name",
+                            metavar='[project]',
+                            nargs='*',
+                            default=arguments.SUPPRESS)
         parser.add_argument('impl_target',
-                            help="Target to select",
+                            help="Target configuration name",
                             metavar='[target]',
                             nargs='*',
                             default=arguments.SUPPRESS)
         parser.add_argument('impl_application',
-                            help="Application to select",
+                            help="Application configuration name",
                             metavar='[application]',
                             nargs='*',
                             default=arguments.SUPPRESS)
         parser.add_argument('impl_measurement',
-                            help="Measurement to select",
+                            help="Measurement configuration name",
                             metavar='[measurement]',
                             nargs='*',
                             default=arguments.SUPPRESS)
         parser.add_argument('--project',
-                            help="Project to select",
+                            help="Project configuration name",
                             metavar='<name>',
                             default=arguments.SUPPRESS)
         parser.add_argument('--target',
-                            help="Target to select",
+                            help="Target configuration name",
                             metavar='<name>',
                             default=arguments.SUPPRESS)
         parser.add_argument('--application',
-                            help="Application to select",
+                            help="Application configuration name",
                             metavar='<name>',
                             default=arguments.SUPPRESS)
         parser.add_argument('--measurement',
-                            help="Measurement to select",
+                            help="Measurement configuration name",
                             metavar='<name>',
                             default=arguments.SUPPRESS)
         return parser
@@ -140,47 +175,36 @@ class SelectCommand(AbstractCommand):
         args = self.parser.parse_args(args=argv)
         self.logger.debug('Arguments: %s', args)
         
-        proj_ctrl = Project.controller()
-        try:
-            proj_name = args.project
-        except AttributeError:
-            try:
-                proj = proj_ctrl.selected()
-            except ProjectSelectionError:
-                self.parser.error("There is no selected project.  Use --project to select a project.")
-        else:
-            proj = proj_ctrl.one({'name': proj_name})
-            if not proj:
-                self.parser.error("No project named '%s'" % args.project)
-        
-        targets = set()
-        applications = set()
-        measurements = set()
-        self._parse_implicit(args, targets, applications, measurements)
+        projects, targets, applications, measurements = self._parse_implicit(args)
+        proj = self._parse_explicit_project(args, projects)
         targ = self._parse_explicit(args, Target, targets, proj, 'targets')
         app = self._parse_explicit(args, Application, applications, proj, 'applications')
         meas = self._parse_explicit(args, Measurement, measurements, proj, 'measurements')
-        self._check_compatibility(proj, targ, app, meas)
-        
-        expr_ctrl = Experiment.controller(PROJECT_STORAGE)
-        data = {'project': proj.eid, 'target': targ.eid, 'application': app.eid, 'measurement': meas.eid}
-        matching = expr_ctrl.search(data)
-        if not matching:
-            self.logger.info('Creating new experiment')
-            expr = expr_ctrl.create(data)
-        elif len(matching) > 1:
-            raise InternalError('More than one experiment with data %r exists!' % data)
-        else:
-            self.logger.debug('Reusing existing experiment')
-            expr = matching[0]
 
-        proj_ctrl.select(proj, expr)
-        populated = expr.populate()
-        self.logger.debug("Selected project '%s': '%s' on '%s' measured by '%s'",
-                          proj['name'],
-                          populated['application']['name'],
-                          populated['target']['name'],
-                          populated['measurement']['name'])
+        proj_ctrl = Project.controller()
+        if not (targ and app and meas):
+            proj_ctrl.select(proj)
+            self.logger.info("Selected project '%s'. No experiment.", proj['name'])
+        else:
+            self._check_compatibility(proj, targ, app, meas)
+            expr_ctrl = Experiment.controller()
+            data = {'project': proj.eid, 'target': targ.eid, 'application': app.eid, 'measurement': meas.eid}
+            matching = expr_ctrl.search(data)
+            if not matching:
+                self.logger.debug('Creating new experiment')
+                expr = expr_ctrl.create(data)
+            elif len(matching) > 1:
+                raise InternalError('More than one experiment with data %r exists!' % data)
+            else:
+                self.logger.debug('Reusing existing experiment')
+                expr = matching[0]
+            proj_ctrl.select(proj, expr)
+            populated = expr.populate()
+            self.logger.info("Selected project '%s' with experiment (%s, %s, %s).",
+                             proj['name'],
+                             populated['target']['name'],
+                             populated['application']['name'],
+                             populated['measurement']['name'])
         return EXIT_SUCCESS
 
 

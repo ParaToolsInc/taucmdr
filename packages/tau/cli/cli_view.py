@@ -119,13 +119,12 @@ class CreateCommand(AbstractCliView):
             self.parser.error("A %s with %s='%s' already exists" % (self.model_name, key_attr, key))
         if ctrl.storage is PROJECT_STORAGE:
             from tau.cli.commands.project.edit import COMMAND as project_edit_cmd
-            self.logger.info("Created a new %s: '%s'.", self.model_name, key)
             proj_ctrl = Project.controller()
             try:
                 proj = proj_ctrl.selected()
-            except ProjectSelectionError as err:
-                self.logger.info("%s: Use `%s` to add the new %s to a project" % 
-                                 (err, project_edit_cmd, self.model_name))
+            except ProjectSelectionError:
+                self.logger.info("Created a new %s '%s'. Use `%s` to add the new %s to a project.", 
+                                 self.model_name, key, project_edit_cmd, self.model_name)
             else:
                 project_edit_cmd.main([proj['name'], '--add', key])
         else:
@@ -250,7 +249,7 @@ class ListCommand(AbstractCliView):
             str: Record data in dashboard format.
         """
         self.logger.debug("Dashboard format")
-        title = util.hline("%ss (%s)" %
+        title = util.hline("%s Configurations (%s)" %
                            (models[0].name.capitalize(), 
                             models[0].storage),
                            'cyan')

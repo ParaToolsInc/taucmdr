@@ -103,7 +103,7 @@ class ProjectEditCommand(EditCommand):
         tar_ctrl = Target.controller(PROJECT_STORAGE)
         app_ctrl = Application.controller(PROJECT_STORAGE)
         meas_ctrl = Measurement.controller(PROJECT_STORAGE)
-        proj_ctrl = Project.controller(PROJECT_STORAGE)
+        proj_ctrl = Project.controller()
     
         project_name = args.name
         project = proj_ctrl.one({'name': project_name})
@@ -116,6 +116,8 @@ class ProjectEditCommand(EditCommand):
         targets = set(project['targets'])
         applications = set(project['applications'])
         measurements = set(project['measurements'])
+        added = set()
+        removed = set()
         
         for attr, ctrl, dest in [('add_targets', tar_ctrl, targets),
                                  ('add_applications', app_ctrl, applications),
@@ -137,7 +139,9 @@ class ProjectEditCommand(EditCommand):
                                   " or --add-measurements to specify configuration type" % name)
             elif len(tam) == 0:
                 self.parser.error("'%s' is not a target, application, or measurement" % name)
-            elif tar:
+            else:
+                added.update(tam)
+            if tar:
                 targets.add(tar.eid)
             elif app:
                 applications.add(app.eid)
@@ -164,7 +168,9 @@ class ProjectEditCommand(EditCommand):
                                   " or --remove-measurements to specify configuration type" % name)
             elif len(tam) == 0:
                 self.parser.error("'%s' is not a target, application, or measurement" % name)
-            elif tar:
+            else:
+                removed.update(tam)
+            if tar:
                 targets.remove(tar.eid)
             elif app:
                 applications.remove(app.eid)
@@ -176,7 +182,12 @@ class ProjectEditCommand(EditCommand):
         updates['measurements'] = list(measurements)
     
         proj_ctrl.update(updates, {'name': project_name})
-        self.logger.info("Updated project '%s'", project_name)
+        for model in added:
+            self.logger.info("Added %s '%s' to project '%s'.", 
+                             model.name.lower(), model[model.key_attribute], project_name)
+        for model in removed:
+            self.logger.info("Removed %s '%s' from project '%s'.", 
+                             model.name.lower(), model[model.key_attribute], project_name)
         return EXIT_SUCCESS
 
 COMMAND = ProjectEditCommand(Project, __name__)
