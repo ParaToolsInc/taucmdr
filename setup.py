@@ -7,16 +7,11 @@ excludes = ["Tkinter", "pygments", "wx", "PyQt4", "IPython",
             "matplotlib", "scipy", "pango", "PIL", "cairo",
             "beaker"]
 
-# Don't include the license file
-# include_files = [ 'license.dat' ]
-include_files = []
-
 buildOptions = dict(packages=packages, excludes=excludes,
-                    include_files=include_files,
                     optimize=2, compressed=True)
 
 executables = [
-    Executable(os.path.abspath('packages/tau/cli/commands/__main__.py'), 'Console', targetName="tau")
+    Executable(os.path.abspath('bin/tau'), 'Console', targetName="tau")
 ]
 
 setup(name='TAU Commander',
