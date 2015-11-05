@@ -43,7 +43,7 @@ a subclass of :any:`AbstractCommand`.
 import os
 import sys
 from pkgutil import walk_packages
-from tau import TAU_SCRIPT, TAU_HOME, EXIT_FAILURE
+from tau import TAU_SCRIPT, EXIT_FAILURE
 from tau import logger
 from tau.error import ConfigurationError, InternalError
 
