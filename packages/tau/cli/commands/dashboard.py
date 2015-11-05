@@ -37,7 +37,7 @@ from tau.cli.commands.project.list import COMMAND as project_list_cmd
 from tau.cli.commands.target.list import COMMAND as target_list_cmd
 from tau.cli.commands.application.list import COMMAND as application_list_cmd
 from tau.cli.commands.measurement.list import COMMAND as measurement_list_cmd
-from tau.model.project import Project, ProjectSelectionError
+from tau.model.project import Project, ProjectSelectionError, ExperimentSelectionError
 
 
 class DashboardCommand(AbstractCommand):
@@ -63,8 +63,8 @@ class DashboardCommand(AbstractCommand):
             table.add_rows(rows)
             parts.extend([title, table.draw(), ''])
         try:
-            expr = proj.populate('experiment')
-        except KeyError:
+            expr = proj.experiment()
+        except ExperimentSelectionError:
             pass
         else:
             current = util.color_text('Current experiment: ', 'cyan') + expr.title()

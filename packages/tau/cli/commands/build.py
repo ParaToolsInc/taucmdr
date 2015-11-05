@@ -72,7 +72,7 @@ class BuildCommand(AbstractCommand):
         self.logger.debug('Arguments: %s', args)
         proj_ctrl = Project.controller()
         proj = proj_ctrl.selected()
-        expr = proj.populate('experiment')
+        expr = proj.experiment()
         return expr.managed_build(args.cmd, args.cmd_args)
 
 

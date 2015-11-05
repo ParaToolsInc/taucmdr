@@ -97,6 +97,17 @@ class ProjectSelectionError(ConfigurationError):
         super(ProjectSelectionError, self).__init__(value, *hints)
 
 
+class ExperimentSelectionError(ConfigurationError):
+    
+    def __init__(self, value, *hints):
+        from tau.cli.commands.select import COMMAND as select_cmd
+        from tau.cli.commands.project.list import COMMAND as project_list_cmd
+        if not hints:
+            hints = ("Use `%s` to create a new experiment." % select_cmd,
+                     "Use `%s` to see available project configurations." % project_list_cmd)    
+        super(ExperimentSelectionError, self).__init__(value, *hints)
+
+
 class ProjectController(Controller):
     """Project data controller."""
     
@@ -132,6 +143,9 @@ class ProjectController(Controller):
         
         Returns:
             Project: The current project.
+            
+        Raises:
+            ProjectSelectionError: No project currently selected.
         """
         try:
             selected_eid = PROJECT_STORAGE['selected_project']
@@ -156,3 +170,18 @@ class Project(Model):
     def prefix(self):
         return os.path.join(self.storage.prefix, self['name'])
         
+    def experiment(self):
+        """Gets the currently selected experiment configuration.
+        
+        Returns:
+            Experiment: The current experiment
+            
+        Raises:
+            ExperimentSelectionError: No experiment currently selected.
+        """
+        try:
+            expr = self.populate('experiment')
+        except KeyError:
+            raise ExperimentSelectionError("No experiment configured")
+        else:
+            return expr 

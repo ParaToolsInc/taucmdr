@@ -36,7 +36,7 @@ import os
 import glob
 import shutil
 from tau import logger, util
-from tau.error import ConfigurationError, InternalError
+from tau.error import ConfigurationError
 from tau.mvc.model import Model
 from tau.model.trial import Trial
 from tau.model.project import Project

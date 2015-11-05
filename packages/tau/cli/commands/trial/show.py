@@ -55,7 +55,7 @@ class TrialShowCommand(AbstractCommand):
     
         proj_ctrl = Project.controller()
         proj = proj_ctrl.selected()
-        expr = proj.populate('experiment')
+        expr = proj.experiment()
         try:
             str_numbers = args.numbers
         except AttributeError:

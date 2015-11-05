@@ -53,7 +53,7 @@ class TrialDeleteCommand(DeleteCommand):
         proj_ctrl = Project.controller()
         trial_ctrl = Trial.controller(proj_ctrl.storage)
         proj = proj_ctrl.selected()
-        expr = proj.populate('experiment')
+        expr = proj.experiment()
         try:
             number = int(args.number)
         except ValueError:

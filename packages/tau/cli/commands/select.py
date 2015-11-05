@@ -124,8 +124,10 @@ class SelectCommand(AbstractCommand):
         from tau.cli.commands.project.edit import COMMAND as project_edit
         for model in targ, app, meas:
             if proj.eid not in model['projects']:
-                raise ConfigurationError("%s '%s' is not a member of project '%s'.  See `%s --help`." %
-                                         (model.name, model['name'], proj['name'], project_edit.command))
+                raise ConfigurationError("%s '%s' is not a member of project configuration '%s'." % 
+                                         (model.name, model['name'], proj['name']), 
+                                         "Use `%s %s --add-%s %s` to add it to the project configuration." % 
+                                         (project_edit.command, proj['name'], model.name.lower(), model['name']))
         for lhs in [targ, app, meas]:
             for rhs in [targ, app, meas]:
                 lhs.check_compatibility(rhs)

@@ -128,6 +128,7 @@ class ProjectEditCommand(EditCommand):
                 if not found:
                     self.parser.error("There is no %s named '%s'" % (ctrl.model.name, name))
                 dest.add(found.eid)
+                added.add(found)
     
         for name in set(getattr(args, "add", [])):
             tar = tar_ctrl.one({'name': name})
@@ -157,6 +158,7 @@ class ProjectEditCommand(EditCommand):
                 if not found:
                     self.parser.error('There is no %s named %r' % (ctrl.model.name, name))
                 dest.remove(found.eid)
+                removed.add(found)
     
         for name in set(getattr(args, "remove", [])):
             tar = tar_ctrl.one({'name': name})
@@ -183,10 +185,10 @@ class ProjectEditCommand(EditCommand):
     
         proj_ctrl.update(updates, {'name': project_name})
         for model in added:
-            self.logger.info("Added %s '%s' to project '%s'.", 
+            self.logger.info("Added %s '%s' to project configuration '%s'.", 
                              model.name.lower(), model[model.key_attribute], project_name)
         for model in removed:
-            self.logger.info("Removed %s '%s' from project '%s'.", 
+            self.logger.info("Removed %s '%s' from project configuration '%s'.", 
                              model.name.lower(), model[model.key_attribute], project_name)
         return EXIT_SUCCESS
 

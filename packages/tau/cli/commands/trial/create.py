@@ -104,7 +104,7 @@ class TrialCreateCommand(CreateCommand):
 
         proj_ctrl = Project.controller()
         proj = proj_ctrl.selected()
-        expr = proj.populate('experiment')
+        expr = proj.experiment()
         return expr.managed_run(launcher_cmd, application_cmd)
 
 
