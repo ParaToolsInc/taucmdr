@@ -49,12 +49,4 @@ tau.cli.commands.project.list module
     :undoc-members:
     :show-inheritance:
 
-tau.cli.commands.project.select module
---------------------------------------
-
-.. automodule:: tau.cli.commands.project.select
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 

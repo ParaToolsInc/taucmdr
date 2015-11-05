@@ -26,7 +26,7 @@
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
     <link rel="top" title="TAU Commander Developer Documentation" href="../../../../index.html" />
-    <link rel="up" title="tau.cli.commands" href="../commands.html" /> 
+    <link rel="up" title="tau.cli" href="../../cli.html" /> 
   </head>
   <body role="document">
       <div class="header" role="banner"><img class="rightlogo" src="../../../../_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="../../../../index.html">
@@ -75,23 +75,20 @@
 
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">EXIT_SUCCESS</span><span class="p">,</span> <span class="n">HELP_CONTACT</span>
-<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">cli</span>
-<span class="kn">from</span> <span class="nn">tau.cli</span> <span class="kn">import</span> <span class="n">UnknownCommandError</span><span class="p">,</span> <span class="n">arguments</span>
+<span class="kn">import</span> <span class="nn">mimetypes</span>
+<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">EXIT_SUCCESS</span><span class="p">,</span> <span class="n">HELP_CONTACT</span><span class="p">,</span> <span class="n">TAU_SCRIPT</span>
+<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">util</span><span class="p">,</span> <span class="n">cli</span>
+<span class="kn">from</span> <span class="nn">tau.cli</span> <span class="kn">import</span> <span class="n">arguments</span><span class="p">,</span> <span class="n">UnknownCommandError</span>
+<span class="kn">from</span> <span class="nn">tau.cli.command</span> <span class="kn">import</span> <span class="n">AbstractCommand</span>
 
 
 <span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
 
-<span class="n">COMMAND</span> <span class="o">=</span> <span class="n">cli</span><span class="o">.</span><span class="n">get_command</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+<span class="n">_SCRIPT_CMD</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">TAU_SCRIPT</span><span class="p">)</span>
 
-<span class="n">SHORT_DESCRIPTION</span> <span class="o">=</span> <span class="s">&quot;Show help for a command or suggest actions for a file.&quot;</span>
+<span class="n">_GENERIC_HELP</span> <span class="o">=</span> <span class="s">&quot;See &#39;</span><span class="si">%s</span><span class="s"> --help&#39; or contact </span><span class="si">%s</span><span class="s"> for assistance&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">_SCRIPT_CMD</span><span class="p">,</span> <span class="n">HELP_CONTACT</span><span class="p">)</span>
 
-<span class="n">HELP</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
-<span class="s">Show help for a command line or file.</span>
-<span class="s">&quot;&quot;&quot;</span>
-
-<span class="n">_GENERIC_HELP</span> <span class="o">=</span> <span class="s">&quot;See &#39;tau --help&#39; or contact </span><span class="si">%s</span><span class="s"> for assistance&quot;</span> <span class="o">%</span> <span class="n">HELP_CONTACT</span>
-
+<span class="c"># FIXME: Get commands from subcommands</span>
 <span class="n">_KNOWN_FILES</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;makefile&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;makefile script&quot;</span><span class="p">,</span>
                              <span class="s">&quot;See &#39;tau make --help&#39; for help building with make&quot;</span><span class="p">),</span>
                 <span class="s">&#39;a.out&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;binary executable&quot;</span><span class="p">,</span>
@@ -102,11 +99,11 @@
 <span class="n">_MIME_HINTS</span> <span class="o">=</span> <span class="p">{</span><span class="bp">None</span><span class="p">:</span> 
                <span class="p">{</span><span class="bp">None</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;unknown file&quot;</span><span class="p">,</span> <span class="n">_GENERIC_HELP</span><span class="p">),</span> 
                 <span class="s">&#39;gzip&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;compressed file&quot;</span><span class="p">,</span> <span class="s">&quot;Please specify an executable file&quot;</span><span class="p">)},</span>
-                <span class="s">&#39;application&#39;</span><span class="p">:</span> <span class="p">{</span><span class="bp">None</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;unknown binary file&quot;</span><span class="p">,</span> <span class="n">_GENERIC_HELP</span><span class="p">),</span>
-                                <span class="s">&#39;sharedlib&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;shared library&quot;</span><span class="p">,</span> <span class="s">&quot;Please specify an executable file&quot;</span><span class="p">),</span>
-                                <span class="s">&#39;archive&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;archive file&quot;</span><span class="p">,</span> <span class="s">&quot;Please specify an executable file&quot;</span><span class="p">),</span>
-                                <span class="s">&#39;tar&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;archive file&quot;</span><span class="p">,</span> <span class="s">&quot;Please specify an executable file&quot;</span><span class="p">),</span>
-                                <span class="s">&#39;unknown&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;unknown binary file&quot;</span><span class="p">,</span> <span class="n">_GENERIC_HELP</span><span class="p">)},</span>
+               <span class="s">&#39;application&#39;</span><span class="p">:</span> <span class="p">{</span><span class="bp">None</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;unknown binary file&quot;</span><span class="p">,</span> <span class="n">_GENERIC_HELP</span><span class="p">),</span>
+                               <span class="s">&#39;sharedlib&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;shared library&quot;</span><span class="p">,</span> <span class="s">&quot;Please specify an executable file&quot;</span><span class="p">),</span>
+                               <span class="s">&#39;archive&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;archive file&quot;</span><span class="p">,</span> <span class="s">&quot;Please specify an executable file&quot;</span><span class="p">),</span>
+                               <span class="s">&#39;tar&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;archive file&quot;</span><span class="p">,</span> <span class="s">&quot;Please specify an executable file&quot;</span><span class="p">),</span>
+                               <span class="s">&#39;unknown&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;unknown binary file&quot;</span><span class="p">,</span> <span class="n">_GENERIC_HELP</span><span class="p">)},</span>
                <span class="s">&#39;text&#39;</span><span class="p">:</span> <span class="p">{</span><span class="bp">None</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;unknown text file&quot;</span><span class="p">,</span> <span class="n">_GENERIC_HELP</span><span class="p">),</span>
                         <span class="s">&#39;src&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;source code file&quot;</span><span class="p">,</span> <span class="s">&quot;See &#39;tau build --help&#39; for help compiling this file&quot;</span><span class="p">),</span>
                         <span class="s">&#39;hdr&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&quot;source header file&quot;</span><span class="p">,</span> <span class="s">&quot;See &#39;tau build --help&#39; for help instrumenting this file&quot;</span><span class="p">),</span>
@@ -116,7 +113,7 @@
 
 <div class="viewcode-block" id="_fuzzy_index"><a class="viewcode-back" href="../../../../tau.cli.commands.html#tau.cli.commands.help._fuzzy_index">[docs]</a><span class="k">def</span> <span class="nf">_fuzzy_index</span><span class="p">(</span><span class="n">dct</span><span class="p">,</span> <span class="n">full_key</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Return d[key] where ((key in k) == true) or return d[None].&quot;&quot;&quot;</span>
-    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">dct</span><span class="o">.</span><span class="n">iterkeys</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">dct</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">key</span> <span class="ow">and</span> <span class="p">(</span><span class="n">key</span> <span class="ow">in</span> <span class="n">full_key</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">dct</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">dct</span><span class="p">[</span><span class="bp">None</span><span class="p">]</span>
@@ -124,12 +121,10 @@
 </div>
 <div class="viewcode-block" id="_guess_filetype"><a class="viewcode-back" href="../../../../tau.cli.commands.html#tau.cli.commands.help._guess_filetype">[docs]</a><span class="k">def</span> <span class="nf">_guess_filetype</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Return a (filetype, encoding) tuple for a file.&quot;&quot;&quot;</span>
-    <span class="kn">import</span> <span class="nn">mimetypes</span>
     <span class="n">mimetypes</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
     <span class="n">filetype</span> <span class="o">=</span> <span class="n">mimetypes</span><span class="o">.</span><span class="n">guess_type</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">filetype</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-        <span class="n">textchars</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">(</span>
-            <span class="p">[</span><span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">27</span><span class="p">])</span> <span class="o">+</span> <span class="nb">bytearray</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mh">0x20</span><span class="p">,</span> <span class="mh">0x100</span><span class="p">))</span>
+        <span class="n">textchars</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">([</span><span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">27</span><span class="p">])</span> <span class="o">+</span> <span class="nb">bytearray</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mh">0x20</span><span class="p">,</span> <span class="mh">0x100</span><span class="p">))</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">fd</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="n">textchars</span><span class="p">):</span>
                 <span class="n">filetype</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;application/unknown&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
@@ -138,93 +133,76 @@
     <span class="k">return</span> <span class="n">filetype</span>
 
 </div>
-<div class="viewcode-block" id="exit_with_help"><a class="viewcode-back" href="../../../../tau.cli.commands.html#tau.cli.commands.help.exit_with_help">[docs]</a><span class="k">def</span> <span class="nf">exit_with_help</span><span class="p">(</span><span class="n">module_name</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Show a subcommands help page and exit.&quot;&quot;&quot;</span>
-    <span class="nb">__import__</span><span class="p">(</span><span class="n">module_name</span><span class="p">)</span>
-    <span class="n">module</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">module_name</span><span class="p">]</span>
-    <span class="k">print</span> <span class="s">&quot;&quot;&quot;</span>
-<span class="si">%(bar)s</span><span class="s"></span>
+<div class="viewcode-block" id="HelpCommand"><a class="viewcode-back" href="../../../../tau.cli.commands.html#tau.cli.commands.help.HelpCommand">[docs]</a><span class="k">class</span> <span class="nc">HelpCommand</span><span class="p">(</span><span class="n">AbstractCommand</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;``tau help`` subcommand.&quot;&quot;&quot;</span>
 
-<span class="si">%(usage)s</span><span class="s"></span>
-
-<span class="si">%(bar)s</span><span class="s"></span>
-
-<span class="si">%(help)s</span><span class="s"></span>
-
-<span class="si">%(bar)s</span><span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;bar&#39;</span><span class="p">:</span> <span class="s">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">,</span>
-              <span class="s">&#39;usage&#39;</span><span class="p">:</span> <span class="n">module</span><span class="o">.</span><span class="n">parser</span><span class="p">()</span><span class="o">.</span><span class="n">format_help</span><span class="p">(),</span>
-              <span class="s">&#39;help&#39;</span><span class="p">:</span> <span class="n">module</span><span class="o">.</span><span class="n">HELP</span><span class="p">}</span>
-    <span class="k">return</span> <span class="n">EXIT_SUCCESS</span>
-
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="HelpCommand.exit_with_help"><a class="viewcode-back" href="../../../../tau.cli.commands.html#tau.cli.commands.help.HelpCommand.exit_with_help">[docs]</a>    <span class="k">def</span> <span class="nf">exit_with_help</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Show a subcommands help page and exit.&quot;&quot;&quot;</span>
+        <span class="n">cmd_obj</span> <span class="o">=</span> <span class="n">cli</span><span class="o">.</span><span class="n">find_command</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">command</span> <span class="o">=</span> <span class="n">cmd_obj</span><span class="o">.</span><span class="n">command</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;&quot;</span><span class="p">,</span> <span class="n">util</span><span class="o">.</span><span class="n">hline</span><span class="p">(</span><span class="s">&quot;Usage: &quot;</span> <span class="o">+</span> <span class="n">command</span><span class="p">),</span>
+                 <span class="n">cmd_obj</span><span class="o">.</span><span class="n">usage</span><span class="p">,</span>
+                 <span class="s">&quot;&quot;</span><span class="p">,</span> <span class="n">util</span><span class="o">.</span><span class="n">hline</span><span class="p">(</span><span class="s">&quot;Help: &quot;</span> <span class="o">+</span> <span class="n">command</span><span class="p">),</span>
+                 <span class="n">cmd_obj</span><span class="o">.</span><span class="n">help_page</span><span class="p">]</span>
+        <span class="k">print</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">EXIT_SUCCESS</span>
 </div>
-<div class="viewcode-block" id="parser"><a class="viewcode-back" href="../../../../tau.cli.commands.html#tau.cli.commands.help.parser">[docs]</a><span class="k">def</span> <span class="nf">parser</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;Construct a command line argument parser.</span>
-<span class="sd">    </span>
-<span class="sd">    Constructing the parser may cause a lot of imports as :py:mod:`tau.cli` is explored.</span>
-<span class="sd">    To avoid possible circular imports we defer parser creation until afer all</span>
-<span class="sd">    modules are imported, hence this function.  The parser instance is maintained as</span>
-<span class="sd">    an attribute of the function, making it something like a C++ function static variable.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">parser</span><span class="p">,</span> <span class="s">&#39;inst&#39;</span><span class="p">):</span>
-        <span class="n">usage_head</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s"> (&lt;command&gt;|&lt;file&gt;) [arguments]&quot;</span> <span class="o">%</span> <span class="n">COMMAND</span>
-        <span class="n">parser</span><span class="o">.</span><span class="n">inst</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">get_parser</span><span class="p">(</span><span class="n">prog</span><span class="o">=</span><span class="n">COMMAND</span><span class="p">,</span>
-                                           <span class="n">usage</span><span class="o">=</span><span class="n">usage_head</span><span class="p">,</span>
-                                           <span class="n">description</span><span class="o">=</span><span class="n">SHORT_DESCRIPTION</span><span class="p">)</span>
-        <span class="n">parser</span><span class="o">.</span><span class="n">inst</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;command&#39;</span><span class="p">,</span> 
-                                 <span class="n">help</span><span class="o">=</span><span class="s">&quot;A TAU command, system command, or file&quot;</span><span class="p">,</span>
-                                 <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;(&lt;command&gt;|&lt;file&gt;)&#39;</span><span class="p">,</span>
-                                 <span class="n">nargs</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">REMAINDER</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">parser</span><span class="o">.</span><span class="n">inst</span>
-        
+<div class="viewcode-block" id="HelpCommand.construct_parser"><a class="viewcode-back" href="../../../../tau.cli.commands.html#tau.cli.commands.help.HelpCommand.construct_parser">[docs]</a>    <span class="k">def</span> <span class="nf">construct_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">usage_head</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s"> &lt;command&gt;|&lt;file&gt; [arguments]&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">get_parser</span><span class="p">(</span><span class="n">prog</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">,</span> <span class="n">usage</span><span class="o">=</span><span class="n">usage_head</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">summary</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;command&#39;</span><span class="p">,</span> 
+                            <span class="n">help</span><span class="o">=</span><span class="s">&quot;A TAU command, system command, or file&quot;</span><span class="p">,</span>
+                            <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;(&lt;command&gt;|&lt;file&gt;)&#39;</span><span class="p">,</span>
+                            <span class="n">nargs</span><span class="o">=</span><span class="s">&#39;+&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">parser</span>
 </div>
-<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../../../tau.cli.commands.html#tau.cli.commands.help.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Program entry point</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="p">()</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">argv</span><span class="p">)</span>
-    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Arguments: </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">command</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">exit_with_help</span><span class="p">(</span><span class="s">&#39;__main__&#39;</span><span class="p">)</span>
-
-    <span class="c"># Try to look up a Tau command&#39;s built-in help page</span>
-    <span class="n">cmd</span> <span class="o">=</span> <span class="s">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">command</span><span class="p">)</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">exit_with_help</span><span class="p">(</span><span class="s">&#39;commands.&#39;</span> <span class="o">+</span> <span class="n">cmd</span><span class="p">)</span>
-    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-        <span class="k">pass</span>
-
-    <span class="c"># Is this a file?</span>
-    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">cmd</span><span class="p">):</span>
-        <span class="c"># Do we recognize the file name?</span>
+<div class="viewcode-block" id="HelpCommand.main"><a class="viewcode-back" href="../../../../tau.cli.commands.html#tau.cli.commands.help.HelpCommand.main">[docs]</a>    <span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">argv</span><span class="p">):</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">argv</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Arguments: </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">command</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">exit_with_help</span><span class="p">([])</span>
+    
+        <span class="c"># Try to look up a Tau command&#39;s built-in help page</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">command</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">desc</span><span class="p">,</span> <span class="n">hint</span> <span class="o">=</span> <span class="n">_fuzzy_index</span><span class="p">(</span><span class="n">_KNOWN_FILES</span><span class="p">,</span> <span class="n">cmd</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
-        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">exit_with_help</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
             <span class="k">pass</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">article</span> <span class="o">=</span> <span class="s">&#39;an&#39;</span> <span class="k">if</span> <span class="n">desc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="s">&#39;aeiou&#39;</span> <span class="k">else</span> <span class="s">&#39;a&#39;</span>
-            <span class="n">hint</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%r</span><span class="s"> is </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">.</span><span class="se">\n</span><span class="si">%s</span><span class="s">.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">article</span><span class="p">,</span> <span class="n">desc</span><span class="p">,</span> <span class="n">hint</span><span class="p">)</span>
-            <span class="k">raise</span> <span class="n">UnknownCommandError</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">hint</span><span class="p">)</span>
-
-        <span class="c"># Get the filetype and try to be helpful.</span>
-        <span class="n">filetype</span><span class="p">,</span> <span class="n">encoding</span> <span class="o">=</span> <span class="n">_guess_filetype</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
-        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%r</span><span class="s"> has filetype (</span><span class="si">%s</span><span class="s">, </span><span class="si">%s</span><span class="s">)&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">filetype</span><span class="p">,</span> <span class="n">encoding</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">filetype</span><span class="p">:</span>
-            <span class="n">filetype</span><span class="p">,</span> <span class="n">subtype</span> <span class="o">=</span> <span class="n">filetype</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">)</span>
+    
+        <span class="c"># Is this a file?</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">cmd</span><span class="p">):</span>
+            <span class="c"># Do we recognize the file name?</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">type_hints</span> <span class="o">=</span> <span class="n">_MIME_HINTS</span><span class="p">[</span><span class="n">filetype</span><span class="p">]</span>
+                <span class="n">desc</span><span class="p">,</span> <span class="n">hint</span> <span class="o">=</span> <span class="n">_fuzzy_index</span><span class="p">(</span><span class="n">_KNOWN_FILES</span><span class="p">,</span> <span class="n">cmd</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
             <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-                <span class="n">hint</span> <span class="o">=</span> <span class="s">&quot;TAU doesn&#39;t recognize </span><span class="si">%r</span><span class="s">.</span><span class="se">\n</span><span class="s">See &#39;tau --help&#39; and use the appropriate subcommand.&quot;</span> <span class="o">%</span> <span class="n">cmd</span>
+                <span class="k">pass</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">desc</span><span class="p">,</span> <span class="n">hint</span> <span class="o">=</span> <span class="n">_fuzzy_index</span><span class="p">(</span><span class="n">type_hints</span><span class="p">,</span> <span class="n">subtype</span><span class="p">)</span>
                 <span class="n">article</span> <span class="o">=</span> <span class="s">&#39;an&#39;</span> <span class="k">if</span> <span class="n">desc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="s">&#39;aeiou&#39;</span> <span class="k">else</span> <span class="s">&#39;a&#39;</span>
-                <span class="n">hint</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%r</span><span class="s"> is </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">.</span><span class="se">\n</span><span class="si">%s</span><span class="s">.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">article</span><span class="p">,</span> <span class="n">desc</span><span class="p">,</span> <span class="n">hint</span><span class="p">)</span>
-            <span class="k">raise</span> <span class="n">UnknownCommandError</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">hint</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">UnknownCommandError</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
-
-    <span class="c"># Not a file, not a command, let&#39;s just show TAU usage and exit</span>
-    <span class="k">return</span> <span class="n">exit_with_help</span><span class="p">(</span><span class="s">&#39;__main__&#39;</span><span class="p">)</span></div>
+                <span class="n">hint</span> <span class="o">=</span> <span class="s">&quot;&#39;</span><span class="si">%s</span><span class="s">&#39; is </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">.</span><span class="se">\n</span><span class="si">%s</span><span class="s">.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">article</span><span class="p">,</span> <span class="n">desc</span><span class="p">,</span> <span class="n">hint</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">UnknownCommandError</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">hint</span><span class="p">)</span>
+    
+            <span class="c"># Get the filetype and try to be helpful.</span>
+            <span class="n">filetype</span><span class="p">,</span> <span class="n">encoding</span> <span class="o">=</span> <span class="n">_guess_filetype</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;&#39;</span><span class="si">%s</span><span class="s">&#39; has filetype (</span><span class="si">%s</span><span class="s">, </span><span class="si">%s</span><span class="s">)&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">filetype</span><span class="p">,</span> <span class="n">encoding</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">filetype</span><span class="p">:</span>
+                <span class="n">filetype</span><span class="p">,</span> <span class="n">subtype</span> <span class="o">=</span> <span class="n">filetype</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">type_hints</span> <span class="o">=</span> <span class="n">_MIME_HINTS</span><span class="p">[</span><span class="n">filetype</span><span class="p">]</span>
+                <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                    <span class="n">hint</span> <span class="o">=</span> <span class="s">&quot;TAU doesn&#39;t recognize &#39;</span><span class="si">%s</span><span class="s">&#39;.</span><span class="se">\n</span><span class="s">See &#39;tau --help&#39; and use the appropriate subcommand.&quot;</span> <span class="o">%</span> <span class="n">cmd</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">desc</span><span class="p">,</span> <span class="n">hint</span> <span class="o">=</span> <span class="n">_fuzzy_index</span><span class="p">(</span><span class="n">type_hints</span><span class="p">,</span> <span class="n">subtype</span><span class="p">)</span>
+                    <span class="n">article</span> <span class="o">=</span> <span class="s">&#39;an&#39;</span> <span class="k">if</span> <span class="n">desc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="s">&#39;aeiou&#39;</span> <span class="k">else</span> <span class="s">&#39;a&#39;</span>
+                    <span class="n">hint</span> <span class="o">=</span> <span class="s">&quot;&#39;</span><span class="si">%s</span><span class="s">&#39; is </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">.</span><span class="se">\n</span><span class="si">%s</span><span class="s">.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">article</span><span class="p">,</span> <span class="n">desc</span><span class="p">,</span> <span class="n">hint</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">UnknownCommandError</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">hint</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">UnknownCommandError</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+    
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;Cannot identify &#39;</span><span class="si">%s</span><span class="s">&#39; as a command or filename.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">exit_with_help</span><span class="p">(</span><span class="s">&#39;__main__&#39;</span><span class="p">)</span>
+    </div></div>
+<span class="n">COMMAND</span> <span class="o">=</span> <span class="n">HelpCommand</span><span class="p">(</span><span class="n">__name__</span><span class="p">,</span> <span class="n">summary_fmt</span><span class="o">=</span><span class="s">&quot;Show help for a command or suggest actions for a file.&quot;</span><span class="p">)</span>
 </pre></div>
 
       </div>

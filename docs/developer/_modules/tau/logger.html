@@ -226,6 +226,8 @@
 <span class="sd">        line_marker (str): Prefix for every line of the message.</span>
 <span class="sd">        printable_only (bool): If True, never send unprintable characters to :any:`sys.stdout`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c"># Allow invalid function names to define member functions named after logging levels.</span>
+    <span class="c"># pylint: disable=invalid-name</span>
     
     <span class="n">PRINTABLE_CHARS</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">printable</span><span class="p">)</span>
     
@@ -235,23 +237,31 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">allow_colors</span> <span class="o">=</span> <span class="n">allow_colors</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">line_width</span> <span class="o">=</span> <span class="n">line_width</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">line_marker</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_colored</span><span class="p">(</span><span class="n">line_marker</span><span class="p">,</span> <span class="s">&#39;red&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_text_wrapper</span> <span class="o">=</span> <span class="n">textwrap</span><span class="o">.</span><span class="n">TextWrapper</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">line_width</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">line_marker</span><span class="p">),</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_text_wrapper</span> <span class="o">=</span> <span class="n">textwrap</span><span class="o">.</span><span class="n">TextWrapper</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">line_width</span><span class="o">+</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">line_marker</span><span class="p">),</span>
+                                                  <span class="n">initial_indent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">line_marker</span><span class="p">,</span>
                                                   <span class="n">subsequent_indent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">line_marker</span> <span class="o">+</span> <span class="s">&#39;    &#39;</span><span class="p">,</span>
                                                   <span class="n">break_long_words</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                                                   <span class="n">break_on_hyphens</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                                                   <span class="n">drop_whitespace</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_formats</span> <span class="o">=</span> <span class="p">{</span><span class="n">logging</span><span class="o">.</span><span class="n">CRITICAL</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_msgbox</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="s">&#39;!&#39;</span><span class="p">),</span>
-                         <span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_msgbox</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="s">&#39;!&#39;</span><span class="p">),</span>
-                         <span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_msgbox</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="s">&#39;*&#39;</span><span class="p">),</span>
-                         <span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_textwrap_message</span><span class="p">(</span><span class="n">r</span><span class="p">)),</span>
-                         <span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_debug_message</span><span class="p">}</span>
-        
-    <span class="k">def</span> <span class="nf">_colored</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="o">*</span><span class="n">color_args</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">allow_colors</span> <span class="ow">and</span> <span class="n">color_args</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">termcolor</span><span class="o">.</span><span class="n">colored</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="o">*</span><span class="n">color_args</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">text</span>
-
+<div class="viewcode-block" id="LogFormatter.CRITICAL"><a class="viewcode-back" href="../../tau.html#tau.logger.LogFormatter.CRITICAL">[docs]</a>    <span class="k">def</span> <span class="nf">CRITICAL</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_msgbox</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="s">&#39;X&#39;</span><span class="p">)</span>
+        </div>
+<div class="viewcode-block" id="LogFormatter.ERROR"><a class="viewcode-back" href="../../tau.html#tau.logger.LogFormatter.ERROR">[docs]</a>    <span class="k">def</span> <span class="nf">ERROR</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_msgbox</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="s">&#39;!&#39;</span><span class="p">)</span>
+    </div>
+<div class="viewcode-block" id="LogFormatter.WARNING"><a class="viewcode-back" href="../../tau.html#tau.logger.LogFormatter.WARNING">[docs]</a>    <span class="k">def</span> <span class="nf">WARNING</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_msgbox</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="s">&#39;*&#39;</span><span class="p">)</span>
+    </div>
+<div class="viewcode-block" id="LogFormatter.INFO"><a class="viewcode-back" href="../../tau.html#tau.logger.LogFormatter.INFO">[docs]</a>    <span class="k">def</span> <span class="nf">INFO</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_textwrap_message</span><span class="p">(</span><span class="n">record</span><span class="p">))</span>
+    </div>
+<div class="viewcode-block" id="LogFormatter.DEBUG"><a class="viewcode-back" href="../../tau.html#tau.logger.LogFormatter.DEBUG">[docs]</a>    <span class="k">def</span> <span class="nf">DEBUG</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">getMessage</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">printable_only</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">message</span><span class="p">)</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">PRINTABLE_CHARS</span><span class="p">)):</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="s">&quot;&lt;&lt;UNPRINTABLE&gt;&gt;&quot;</span>
+        <span class="n">marker</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_colored</span><span class="p">(</span><span class="s">&quot;[</span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">:</span><span class="si">%s</span><span class="s">]&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">levelname</span><span class="p">,</span> <span class="n">record</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">record</span><span class="o">.</span><span class="n">lineno</span><span class="p">),</span> <span class="s">&#39;yellow&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">marker</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+        </div>
 <div class="viewcode-block" id="LogFormatter.format"><a class="viewcode-back" href="../../tau.html#tau.logger.LogFormatter.format">[docs]</a>    <span class="k">def</span> <span class="nf">format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Formats a log record.</span>
 <span class="sd">        </span>
@@ -265,31 +275,71 @@
 <span class="sd">            RuntimeError: No format specified for a the record&#39;s logging level.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_formats</span><span class="p">[</span><span class="n">record</span><span class="o">.</span><span class="n">levelno</span><span class="p">](</span><span class="n">record</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="o">.</span><span class="n">levelname</span><span class="p">)(</span><span class="n">record</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s">&#39;Unknown record level (name: </span><span class="si">%s</span><span class="s">)&#39;</span> <span class="o">%</span> <span class="n">record</span><span class="o">.</span><span class="n">levelname</span><span class="p">)</span>
 </div>
+<div class="viewcode-block" id="LogFormatter._colored"><a class="viewcode-back" href="../../tau.html#tau.logger.LogFormatter._colored">[docs]</a>    <span class="k">def</span> <span class="nf">_colored</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="o">*</span><span class="n">color_args</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Insert ANSII color formatting via `termcolor`_.</span>
+<span class="sd">        </span>
+<span class="sd">        Text colors:</span>
+<span class="sd">            * grey</span>
+<span class="sd">            * red</span>
+<span class="sd">            * green</span>
+<span class="sd">            * yellow</span>
+<span class="sd">            * blue</span>
+<span class="sd">            * magenta</span>
+<span class="sd">            * cyan</span>
+<span class="sd">            * white</span>
+<span class="sd">        </span>
+<span class="sd">        Text highlights:</span>
+<span class="sd">            * on_grey</span>
+<span class="sd">            * on_red</span>
+<span class="sd">            * on_green</span>
+<span class="sd">            * on_yellow</span>
+<span class="sd">            * on_blue</span>
+<span class="sd">            * on_magenta</span>
+<span class="sd">            * on_cyan</span>
+<span class="sd">            * on_white</span>
+
+<span class="sd">        Attributes:</span>
+<span class="sd">            * bold</span>
+<span class="sd">            * dark</span>
+<span class="sd">            * underline</span>
+<span class="sd">            * blink</span>
+<span class="sd">            * reverse</span>
+<span class="sd">            * concealed</span>
+<span class="sd">        </span>
+<span class="sd">        .. _termcolor: http://pypi.python.org/pypi/termcolor</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">allow_colors</span> <span class="ow">and</span> <span class="n">color_args</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">termcolor</span><span class="o">.</span><span class="n">colored</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="o">*</span><span class="n">color_args</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">text</span>
+</div>
     <span class="k">def</span> <span class="nf">_msgbox</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">,</span> <span class="n">marker</span><span class="p">):</span>
-        <span class="n">width</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">line_width</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">line_marker</span><span class="p">)</span>
-        <span class="n">hline</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">line_marker</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_colored</span><span class="p">(</span><span class="n">marker</span> <span class="o">*</span> <span class="n">width</span><span class="p">,</span> <span class="s">&#39;red&#39;</span><span class="p">)</span>
-        <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span><span class="n">hline</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">line_marker</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">line_marker</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_colored</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">levelname</span><span class="p">,</span> <span class="s">&#39;cyan&#39;</span><span class="p">)]</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">line_width</span>
+        <span class="n">hline</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_colored</span><span class="p">(</span><span class="n">marker</span> <span class="o">*</span> <span class="n">width</span><span class="p">,</span> <span class="s">&#39;red&#39;</span><span class="p">)</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_textwrap</span><span class="p">([</span><span class="n">hline</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_colored</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">levelname</span><span class="p">,</span> <span class="s">&#39;cyan&#39;</span><span class="p">),</span> <span class="s">&#39;&#39;</span><span class="p">]))</span>
         <span class="n">parts</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_textwrap_message</span><span class="p">(</span><span class="n">record</span><span class="p">))</span>
-        <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hline</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">line_marker</span><span class="p">:</span>
+            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">line_marker</span><span class="p">)</span>
+        <span class="n">parts</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_textwrap</span><span class="p">([</span><span class="n">hline</span><span class="p">]))</span>
         <span class="k">return</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
-    
-    <span class="k">def</span> <span class="nf">_debug_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
-        <span class="n">message</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">getMessage</span><span class="p">()</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">printable_only</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">message</span><span class="p">)</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">PRINTABLE_CHARS</span><span class="p">)):</span>
-            <span class="n">message</span> <span class="o">=</span> <span class="s">&quot;&lt;&lt;UNPRINTABLE&gt;&gt;&quot;</span>
-        <span class="k">return</span> <span class="s">&#39;[</span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">:</span><span class="si">%s</span><span class="s">] </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_colored</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">levelname</span><span class="p">,</span> <span class="s">&#39;cyan&#39;</span><span class="p">),</span> <span class="n">record</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">record</span><span class="o">.</span><span class="n">lineno</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_textwrap_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
-        <span class="n">parts</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">record</span><span class="o">.</span><span class="n">getMessage</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">):</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">printable_only</span> <span class="ow">or</span> <span class="nb">set</span><span class="p">(</span><span class="n">line</span><span class="p">)</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">PRINTABLE_CHARS</span><span class="p">):</span>
-                <span class="n">message</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_text_wrapper</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
-            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">line_marker</span> <span class="o">+</span> <span class="n">message</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">parts</span>
+            <span class="k">if</span> <span class="n">line</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">printable_only</span> <span class="ow">or</span> <span class="nb">set</span><span class="p">(</span><span class="n">line</span><span class="p">)</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">PRINTABLE_CHARS</span><span class="p">)):</span>
+                <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_text_wrapper</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line_marker</span>
+
+    <span class="k">def</span> <span class="nf">_textwrap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lines</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">line</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_text_wrapper</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line_marker</span>
 
 </div>
 <div class="viewcode-block" id="get_logger"><a class="viewcode-back" href="../../tau.html#tau.logger.get_logger">[docs]</a><span class="k">def</span> <span class="nf">get_logger</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
@@ -342,7 +392,7 @@
 <span class="sd">width cannot be determined, the default is 80.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="n">_ROOT_LOGGER</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&#39;tau&#39;</span><span class="p">)</span>
+<span class="n">_ROOT_LOGGER</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
 <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">_ROOT_LOGGER</span><span class="o">.</span><span class="n">handlers</span><span class="p">):</span>
     <span class="n">_LOG_FILE_PREFIX</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">LOG_FILE</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>

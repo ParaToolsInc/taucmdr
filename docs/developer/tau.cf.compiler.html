@@ -577,6 +577,27 @@ records and keeps MPI compilers from mixing with host etc. compilers.</p>
 </dd></dl>
 
 </div>
+<div class="section" id="module-tau.cf.compiler.shmem">
+<span id="tau-cf-compiler-shmem-module"></span><h2>tau.cf.compiler.shmem module<a class="headerlink" href="#module-tau.cf.compiler.shmem" title="Permalink to this headline">¶</a></h2>
+<p>SHMEM compiler detection.</p>
+<p>We keep a separate knowledge base for SHMEM compilers to simplify compiler
+identification and because TAU doesn&#8217;t require SHMEM for all configurations.</p>
+<dl class="class">
+<dt id="tau.cf.compiler.shmem.ShmemCompilerFamily">
+<em class="property">class </em><code class="descclassname">tau.cf.compiler.shmem.</code><code class="descname">ShmemCompilerFamily</code><span class="sig-paren">(</span><em>name, version_flags=['--version'], include_path_flags=['-I'], library_path_flags=['-L'], link_library_flags=['-l'], show_wrapper_flags=[]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/compiler/shmem.html#ShmemCompilerFamily"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.compiler.shmem.ShmemCompilerFamily" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tau.cf.compiler.CompilerFamily" title="tau.cf.compiler.CompilerFamily"><code class="xref py py-class docutils literal"><span class="pre">tau.cf.compiler.CompilerFamily</span></code></a></p>
+<p>Information about a SHMEM compiler family.</p>
+<p>Subclassing CompilerFamily creates a second database of compiler family
+records and keeps SHMEM compilers from mixing with host etc. compilers.</p>
+<dl class="classmethod">
+<dt id="tau.cf.compiler.shmem.ShmemCompilerFamily.preferred">
+<em class="property">classmethod </em><code class="descname">preferred</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/compiler/shmem.html#ShmemCompilerFamily.preferred"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.compiler.shmem.ShmemCompilerFamily.preferred" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the host&#8217;s preferred SHMEM compiler family.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
 </div>
 
 

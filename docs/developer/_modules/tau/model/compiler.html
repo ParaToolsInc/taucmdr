@@ -26,7 +26,7 @@
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
     <link rel="top" title="TAU Commander Developer Documentation" href="../../../index.html" />
-    <link rel="up" title="tau.model" href="../model.html" /> 
+    <link rel="up" title="Module code" href="../../index.html" /> 
   </head>
   <body role="document">
       <div class="header" role="banner"><img class="rightlogo" src="../../../_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="../../../index.html">
@@ -79,29 +79,33 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">logger</span>
-<span class="kn">from</span> <span class="nn">tau.model</span> <span class="kn">import</span> <span class="n">Controller</span>
+<span class="kn">from</span> <span class="nn">tau.mvc.model</span> <span class="kn">import</span> <span class="n">Model</span>
+<span class="kn">from</span> <span class="nn">tau.mvc.controller</span> <span class="kn">import</span> <span class="n">Controller</span>
 
 
 <span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
- 
- 
-<div class="viewcode-block" id="Compiler"><a class="viewcode-back" href="../../../tau.model.html#tau.model.compiler.Compiler">[docs]</a><span class="k">class</span> <span class="nc">Compiler</span><span class="p">(</span><span class="n">Controller</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Compiler data controller.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="Compiler.info"><a class="viewcode-back" href="../../../tau.model.html#tau.model.compiler.Compiler.info">[docs]</a>    <span class="k">def</span> <span class="nf">info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Probes the system for information on this compiler command.</span>
-<span class="sd">        </span>
-<span class="sd">        Returns:</span>
-<span class="sd">            InstalledCompiler: Information about the installed compiler command.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">tau.cf.compiler.installed</span> <span class="kn">import</span> <span class="n">InstalledCompiler</span>
-        <span class="n">comp</span> <span class="o">=</span> <span class="n">InstalledCompiler</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s">&#39;path&#39;</span><span class="p">])</span>
-        <span class="k">if</span> <span class="n">comp</span><span class="o">.</span><span class="n">md5sum</span><span class="p">()</span> <span class="o">!=</span> <span class="bp">self</span><span class="p">[</span><span class="s">&#39;md5&#39;</span><span class="p">]:</span>
-            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> &#39;</span><span class="si">%s</span><span class="s">&#39; has changed!&quot;</span><span class="p">,</span> <span class="n">comp</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">short_descr</span><span class="p">,</span> <span class="n">comp</span><span class="o">.</span><span class="n">command</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">comp</span>
+
+<div class="viewcode-block" id="attributes"><a class="viewcode-back" href="../../../tau.model.html#tau.model.compiler.attributes">[docs]</a><span class="k">def</span> <span class="nf">attributes</span><span class="p">():</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s">&#39;path&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;string&#39;</span><span class="p">,</span>
+            <span class="s">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+            <span class="s">&#39;unique&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+            <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">&quot;absolute path to the compiler command&quot;</span>
+        <span class="p">},</span>
+        <span class="s">&#39;md5&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;string&#39;</span><span class="p">,</span>
+            <span class="s">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+            <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">&quot;checksum of the compiler command file&quot;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
 </div>
-    <span class="nd">@classmethod</span>
-<div class="viewcode-block" id="Compiler.register"><a class="viewcode-back" href="../../../tau.model.html#tau.model.compiler.Compiler.register">[docs]</a>    <span class="k">def</span> <span class="nf">register</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">comp</span><span class="p">):</span>
+<div class="viewcode-block" id="CompilerController"><a class="viewcode-back" href="../../../tau.model.html#tau.model.compiler.CompilerController">[docs]</a><span class="k">class</span> <span class="nc">CompilerController</span><span class="p">(</span><span class="n">Controller</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compiler data controller.&quot;&quot;&quot;</span>
+    
+<div class="viewcode-block" id="CompilerController.register"><a class="viewcode-back" href="../../../tau.model.html#tau.model.compiler.CompilerController.register">[docs]</a>    <span class="k">def</span> <span class="nf">register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">comp</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Records information about a compiler command in the database.</span>
 <span class="sd">        </span>
 <span class="sd">        If the given compiler has already been registered then do not update the database.</span>
@@ -114,9 +118,9 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">path</span> <span class="o">=</span> <span class="n">comp</span><span class="o">.</span><span class="n">absolute_path</span>
         <span class="n">md5sum</span> <span class="o">=</span> <span class="n">comp</span><span class="o">.</span><span class="n">md5sum</span><span class="p">()</span>
-        <span class="n">found</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">one</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;path&#39;</span><span class="p">:</span> <span class="n">path</span><span class="p">})</span>
+        <span class="n">found</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">one</span><span class="p">({</span><span class="s">&#39;path&#39;</span><span class="p">:</span> <span class="n">path</span><span class="p">})</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">found</span><span class="p">:</span>
-            <span class="n">found</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">fields</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;path&#39;</span><span class="p">:</span> <span class="n">path</span><span class="p">,</span> <span class="s">&#39;md5&#39;</span><span class="p">:</span> <span class="n">md5sum</span><span class="p">})</span>
+            <span class="n">found</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create</span><span class="p">({</span><span class="s">&#39;path&#39;</span><span class="p">:</span> <span class="n">path</span><span class="p">,</span> <span class="s">&#39;md5&#39;</span><span class="p">:</span> <span class="n">md5sum</span><span class="p">})</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">md5sum</span> <span class="o">!=</span> <span class="n">found</span><span class="p">[</span><span class="s">&#39;md5&#39;</span><span class="p">]:</span>
                 <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> &#39;</span><span class="si">%s</span><span class="s">&#39; has changed!  MD5 sum was </span><span class="si">%s</span><span class="s">, but now it&#39;s </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> 
@@ -124,20 +128,25 @@
         <span class="k">return</span> <span class="n">found</span>
 
 </div></div>
-<span class="n">Compiler</span><span class="o">.</span><span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s">&#39;path&#39;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;string&#39;</span><span class="p">,</span>
-        <span class="s">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
-        <span class="s">&#39;unique&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
-        <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">&quot;absolute path to the compiler command&quot;</span>
-    <span class="p">},</span>
-    <span class="s">&#39;md5&#39;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;string&#39;</span><span class="p">,</span>
-        <span class="s">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
-        <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">&quot;checksum of the compiler command file&quot;</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
+<div class="viewcode-block" id="Compiler"><a class="viewcode-back" href="../../../tau.model.html#tau.model.compiler.Compiler">[docs]</a><span class="k">class</span> <span class="nc">Compiler</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compiler data model.&quot;&quot;&quot;</span>
+    
+    <span class="n">__attributes__</span> <span class="o">=</span> <span class="n">attributes</span>
+
+    <span class="n">__controller__</span> <span class="o">=</span> <span class="n">CompilerController</span>
+    
+<div class="viewcode-block" id="Compiler.info"><a class="viewcode-back" href="../../../tau.model.html#tau.model.compiler.Compiler.info">[docs]</a>    <span class="k">def</span> <span class="nf">info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Probes the system for information on this compiler command.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            InstalledCompiler: Information about the installed compiler command.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">tau.cf.compiler.installed</span> <span class="kn">import</span> <span class="n">InstalledCompiler</span>
+        <span class="n">comp</span> <span class="o">=</span> <span class="n">InstalledCompiler</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s">&#39;path&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">comp</span><span class="o">.</span><span class="n">md5sum</span><span class="p">()</span> <span class="o">!=</span> <span class="bp">self</span><span class="p">[</span><span class="s">&#39;md5&#39;</span><span class="p">]:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> &#39;</span><span class="si">%s</span><span class="s">&#39; has changed!&quot;</span><span class="p">,</span> <span class="n">comp</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">short_descr</span><span class="p">,</span> <span class="n">comp</span><span class="o">.</span><span class="n">command</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">comp</span>
+</pre></div></div></div>
 
       </div>
       <div class="bottomnav" role="navigation" aria-label="bottom navigation">

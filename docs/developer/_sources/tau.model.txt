@@ -49,14 +49,6 @@ tau.model.project module
     :undoc-members:
     :show-inheritance:
 
-tau.model.setting module
-------------------------
-
-.. automodule:: tau.model.setting
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 tau.model.target module
 -----------------------
 

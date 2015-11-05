@@ -58,42 +58,28 @@ subcommands, much like <a class="reference external" href="https://git-scm.com/"
 <cite>project</cite> subcommand with the arguments <cite>my_new_project</cite>.</p>
 <p>Every package in <a class="reference internal" href="tau.cli.commands.html#module-tau.cli.commands" title="tau.cli.commands"><code class="xref py py-mod docutils literal"><span class="pre">tau.cli.commands</span></code></a> is a TAU Commander subcommand. Modules
 in the package are that subcommand&#8217;s subcommands.  This can be nested as deep as
-you like.  Subcommand modules must set the following module attributes:</p>
-<blockquote>
-<div><ul class="simple">
-<li>COMMAND (str): The subcommand name as returned by <a class="reference internal" href="#tau.cli.get_command" title="tau.cli.get_command"><code class="xref any py py-func docutils literal"><span class="pre">get_command</span></code></a>.</li>
-<li>SHORT_DESCRIPTION (str): A one-line description of the subcommand.</li>
-<li>HELP (str): The subcommand&#8217;s help page.  Should be long and detailed.</li>
-<li>parser: A function that returns an argument parser for the command.</li>
-<li>main: The subprogram entry point.</li>
-</ul>
-</div></blockquote>
-<p>Subcommand modules may optionally set the following module attributes:</p>
-<blockquote>
-<div><ul class="simple">
-<li>GROUP (str): List this subcommand in a group named <cite>GROUP</cite> in help messages.</li>
-</ul>
-</div></blockquote>
+you like.  Subcommand modules must have a COMMAND member which is an instance of
+a subclass of <a class="reference internal" href="#tau.cli.command.AbstractCommand" title="tau.cli.command.AbstractCommand"><code class="xref any py py-class docutils literal"><span class="pre">AbstractCommand</span></code></a>.</p>
 <dl class="exception">
 <dt id="tau.cli.AmbiguousCommandError">
-<em class="property">exception </em><code class="descclassname">tau.cli.</code><code class="descname">AmbiguousCommandError</code><span class="sig-paren">(</span><em>value</em>, <em>matches</em>, <em>hint=&quot;Try 'tau --help'.&quot;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli.html#AmbiguousCommandError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.AmbiguousCommandError" title="Permalink to this definition">¶</a></dt>
+<em class="property">exception </em><code class="descclassname">tau.cli.</code><code class="descname">AmbiguousCommandError</code><span class="sig-paren">(</span><em>value</em>, <em>matches</em>, <em>*hints</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli.html#AmbiguousCommandError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.AmbiguousCommandError" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="tau.html#tau.error.ConfigurationError" title="tau.error.ConfigurationError"><code class="xref py py-class docutils literal"><span class="pre">tau.error.ConfigurationError</span></code></a></p>
 <p>Indicates that a specified partial command is ambiguous.</p>
 <dl class="attribute">
 <dt id="tau.cli.AmbiguousCommandError.message_fmt">
-<code class="descname">message_fmt</code><em class="property"> = &quot;\nCommand '%(value)s' is ambiguous: %(matches)s\n\n%(hint)s&quot;</em><a class="headerlink" href="#tau.cli.AmbiguousCommandError.message_fmt" title="Permalink to this definition">¶</a></dt>
+<code class="descname">message_fmt</code><em class="property"> = &quot;Command '%(value)s' is ambiguous.\n\n%(hints)s&quot;</em><a class="headerlink" href="#tau.cli.AmbiguousCommandError.message_fmt" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="exception">
 <dt id="tau.cli.UnknownCommandError">
-<em class="property">exception </em><code class="descclassname">tau.cli.</code><code class="descname">UnknownCommandError</code><span class="sig-paren">(</span><em>value</em>, <em>hint=&quot;Try 'tau --help'.&quot;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli.html#UnknownCommandError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.UnknownCommandError" title="Permalink to this definition">¶</a></dt>
+<em class="property">exception </em><code class="descclassname">tau.cli.</code><code class="descname">UnknownCommandError</code><span class="sig-paren">(</span><em>value</em>, <em>*hints</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli.html#UnknownCommandError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.UnknownCommandError" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="tau.html#tau.error.ConfigurationError" title="tau.error.ConfigurationError"><code class="xref py py-class docutils literal"><span class="pre">tau.error.ConfigurationError</span></code></a></p>
 <p>Indicates that a specified command is unknown.</p>
 <dl class="attribute">
 <dt id="tau.cli.UnknownCommandError.message_fmt">
-<code class="descname">message_fmt</code><em class="property"> = '\n%(value)r is not a valid TAU command.\n\n%(hint)s'</em><a class="headerlink" href="#tau.cli.UnknownCommandError.message_fmt" title="Permalink to this definition">¶</a></dt>
+<code class="descname">message_fmt</code><em class="property"> = '%(value)r is not a valid TAU command.\n\n%(hints)s'</em><a class="headerlink" href="#tau.cli.UnknownCommandError.message_fmt" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -119,9 +105,80 @@ you like.  Subcommand modules must set the following module attributes:</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="tau.cli._get_commands">
+<code class="descclassname">tau.cli.</code><code class="descname">_get_commands</code><span class="sig-paren">(</span><em>package_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli.html#_get_commands"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli._get_commands" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dictionary mapping commands to Python modules.</p>
+<p>Given a root module name, return a dictionary that maps commands and their
+subcommands to Python modules.  The special key <code class="docutils literal"><span class="pre">__module__</span></code> maps to the
+command module.  Other strings map to subcommands of the command.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>package_name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; A string naming the module to search for cli.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Strings mapping to dictionaries or modules.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)">dict</a></td>
+</tr>
+</tbody>
+</table>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre>_get_commands(&#39;tau.cli.commands.target&#39;) ==&gt;
+    {&#39;__module__&#39;: &lt;module &#39;tau.cli.commands.target&#39; from &#39;/home/jlinford/workspace/taucmdr/packages/tau/cli/commands/target/__init__.pyc&#39;&gt;,
+     &#39;create&#39;: {&#39;__module__&#39;: &lt;module &#39;tau.cli.commands.target.create&#39; from &#39;/home/jlinford/workspace/taucmdr/packages/tau/cli/commands/target/create.pyc&#39;&gt;},
+     &#39;delete&#39;: {&#39;__module__&#39;: &lt;module &#39;tau.cli.commands.target.delete&#39; from &#39;/home/jlinford/workspace/taucmdr/packages/tau/cli/commands/target/delete.pyc&#39;&gt;},
+     &#39;edit&#39;: {&#39;__module__&#39;: &lt;module &#39;tau.cli.commands.target.edit&#39; from &#39;/home/jlinford/workspace/taucmdr/packages/tau/cli/commands/target/edit.pyc&#39;&gt;},
+     &#39;list&#39;: {&#39;__module__&#39;: &lt;module &#39;tau.cli.commands.target.list&#39; from &#39;/home/jlinford/workspace/taucmdr/packages/tau/cli/commands/target/list.pyc&#39;&gt;}}
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.cli.command_from_module_name">
+<code class="descclassname">tau.cli.</code><code class="descname">command_from_module_name</code><span class="sig-paren">(</span><em>module_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli.html#command_from_module_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.command_from_module_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a module name to a command name string.</p>
+<p>Maps command module names to their command line equivilants, e.g.
+&#8216;tau.cli.commands.target.create&#8217; =&gt; &#8216;tau target create&#8217;</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>module_name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of a module.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A string that identifies the command.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)">str</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.cli.commands_description">
+<code class="descclassname">tau.cli.</code><code class="descname">commands_description</code><span class="sig-paren">(</span><em>package_name='tau.cli.commands'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli.html#commands_description"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.commands_description" title="Permalink to this definition">¶</a></dt>
+<dd><p>Builds listing of command names with short description.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>package_name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; A dot-seperated string naming the module to search for cli.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Help string describing all commands found at or below <cite>root</cite>.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)">str</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="tau.cli.execute_command">
 <code class="descclassname">tau.cli.</code><code class="descname">execute_command</code><span class="sig-paren">(</span><em>cmd</em>, <em>cmd_args=None</em>, <em>parent_module=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli.html#execute_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.execute_command" title="Permalink to this definition">¶</a></dt>
 <dd><p>Import the command module and run its main routine.</p>
+<p>Partial commands are allowed, e.g. cmd=[&#8216;tau&#8217;, &#8216;cli&#8217;, &#8216;commands&#8217;, &#8216;app&#8217;, &#8216;cre&#8217;] will resolve
+to &#8216;tau.cli.commands.application.create&#8217;.  If the command can&#8217;t be found then the parent
+command (if any) will be invoked with the <code class="docutils literal"><span class="pre">--help</span></code> flag.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -152,68 +209,29 @@ you like.  Subcommand modules must set the following module attributes:</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="tau.cli.get_command">
-<code class="descclassname">tau.cli.</code><code class="descname">get_command</code><span class="sig-paren">(</span><em>module_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli.html#get_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.get_command" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts a module name to a command name string.</p>
-<p>Maps command module names to their command line equivilants, e.g.
-&#8216;tau.cli.commands.target.create&#8217; =&gt; &#8216;tau target create&#8217;</p>
+<dt id="tau.cli.find_command">
+<code class="descclassname">tau.cli.</code><code class="descname">find_command</code><span class="sig-paren">(</span><em>cmd</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli.html#find_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.find_command" title="Permalink to this definition">¶</a></dt>
+<dd><p>Import the command module and return its COMMAND member.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>module_name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of a module.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>cmd</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; List of strings identifying the command, i.e. from <a class="reference internal" href="#tau.cli._command_as_list" title="tau.cli._command_as_list"><code class="xref any py py-func docutils literal"><span class="pre">_command_as_list</span></code></a>.</p>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A string that identifies the command.</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first simple">
+<li><a class="reference internal" href="#tau.cli.UnknownCommandError" title="tau.cli.UnknownCommandError"><code class="xref py py-exc docutils literal"><span class="pre">UnknownCommandError</span></code></a> &#8211;
+<cite>cmd</cite> is invalid.</li>
+<li><a class="reference internal" href="#tau.cli.AmbiguousCommandError" title="tau.cli.AmbiguousCommandError"><code class="xref py py-exc docutils literal"><span class="pre">AmbiguousCommandError</span></code></a> &#8211;
+<cite>cmd</cite> is ambiguous.</li>
+</ul>
+</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)">str</a></td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Command object for the subcommand.</p>
+</td>
 </tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="tau.cli.get_commands">
-<code class="descclassname">tau.cli.</code><code class="descname">get_commands</code><span class="sig-paren">(</span><em>root='tau.cli.commands'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli.html#get_commands"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.get_commands" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a dictionary mapping commands to Python modules.</p>
-<p>Given a root module name, return a dictionary that maps commands and their
-subcommands to Python modules.  The special key <code class="docutils literal"><span class="pre">__module__</span></code> maps to the
-command module.  Other strings map to subcommands of the command.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>root</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; A string naming the module to search for cli.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Strings mapping to dictionaries or modules.</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)">dict</a></td>
-</tr>
-</tbody>
-</table>
-<p>Example:</p>
-<div class="highlight-python"><div class="highlight"><pre>get_commands(&#39;tau.cli.commands.target&#39;) ==&gt;
-    {&#39;__module__&#39;: &lt;module &#39;tau.cli.commands.target&#39; from &#39;/home/jlinford/workspace/taucmdr/packages/tau/cli/commands/target/__init__.pyc&#39;&gt;,
-     &#39;create&#39;: {&#39;__module__&#39;: &lt;module &#39;tau.cli.commands.target.create&#39; from &#39;/home/jlinford/workspace/taucmdr/packages/tau/cli/commands/target/create.pyc&#39;&gt;},
-     &#39;delete&#39;: {&#39;__module__&#39;: &lt;module &#39;tau.cli.commands.target.delete&#39; from &#39;/home/jlinford/workspace/taucmdr/packages/tau/cli/commands/target/delete.pyc&#39;&gt;},
-     &#39;edit&#39;: {&#39;__module__&#39;: &lt;module &#39;tau.cli.commands.target.edit&#39; from &#39;/home/jlinford/workspace/taucmdr/packages/tau/cli/commands/target/edit.pyc&#39;&gt;},
-     &#39;list&#39;: {&#39;__module__&#39;: &lt;module &#39;tau.cli.commands.target.list&#39; from &#39;/home/jlinford/workspace/taucmdr/packages/tau/cli/commands/target/list.pyc&#39;&gt;}}
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="function">
-<dt id="tau.cli.get_commands_description">
-<code class="descclassname">tau.cli.</code><code class="descname">get_commands_description</code><span class="sig-paren">(</span><em>root='tau.cli.commands'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli.html#get_commands_description"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.get_commands_description" title="Permalink to this definition">¶</a></dt>
-<dd><p>Builds listing of command names with short description.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>root</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; A dot-seperated string naming the module to search for cli.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Help string describing all commands found at or below <cite>root</cite>.</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)">str</a></td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#tau.cli.command.AbstractCommand" title="tau.cli.command.AbstractCommand">AbstractCommand</a></p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -248,7 +266,6 @@ command module.  Other strings map to subcommands of the command.</p>
 <li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.project.html#module-tau.cli.commands.project.edit">tau.cli.commands.project.edit module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.project.html#module-tau.cli.commands.project.export">tau.cli.commands.project.export module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.project.html#module-tau.cli.commands.project.list">tau.cli.commands.project.list module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.project.html#module-tau.cli.commands.project.select">tau.cli.commands.project.select module</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="tau.cli.commands.target.html">tau.cli.commands.target package</a><ul>
@@ -270,9 +287,12 @@ command module.  Other strings map to subcommands of the command.</p>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="tau.cli.commands.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.cli.commands.html#module-tau.cli.commands.__main__">tau.cli.commands.__main__ module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tau.cli.commands.html#module-tau.cli.commands.build">tau.cli.commands.build module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tau.cli.commands.html#module-tau.cli.commands.dashboard">tau.cli.commands.dashboard module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tau.cli.commands.html#module-tau.cli.commands.help">tau.cli.commands.help module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.cli.commands.html#module-tau.cli.commands.initialize">tau.cli.commands.initialize module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.cli.commands.html#module-tau.cli.commands.select">tau.cli.commands.select module</a></li>
 </ul>
 </li>
 </ul>
@@ -287,7 +307,7 @@ command module.  Other strings map to subcommands of the command.</p>
 <p>Extensions to <a class="reference external" href="https://docs.python.org/library/argparse.html#module-argparse" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">argparse</span></code></a> to support the TAU Commander command line interface.</p>
 <dl class="class">
 <dt id="tau.cli.arguments.ArgparseHelpFormatter">
-<em class="property">class </em><code class="descclassname">tau.cli.arguments.</code><code class="descname">ArgparseHelpFormatter</code><span class="sig-paren">(</span><em>prog</em>, <em>indent_increment=2</em>, <em>max_help_position=30</em>, <em>width=151</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/arguments.html#ArgparseHelpFormatter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.arguments.ArgparseHelpFormatter" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.cli.arguments.</code><code class="descname">ArgparseHelpFormatter</code><span class="sig-paren">(</span><em>prog</em>, <em>indent_increment=2</em>, <em>max_help_position=30</em>, <em>width=197</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/arguments.html#ArgparseHelpFormatter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.arguments.ArgparseHelpFormatter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/argparse.html#argparse.RawDescriptionHelpFormatter" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">argparse.RawDescriptionHelpFormatter</span></code></a></p>
 <p>Custom help string formatter for argument parser.</p>
 <p>Provide proper help message alignment, line width, and formatting.
@@ -323,27 +343,37 @@ and generates &#8220;scruffy&#8221; looking help, so we fix this problems in thi
 </dd></dl>
 
 <dl class="method">
-<dt id="tau.cli.arguments.MutableGroupArgumentParser.format_help">
-<code class="descname">format_help</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/arguments.html#MutableGroupArgumentParser.format_help"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.arguments.MutableGroupArgumentParser.format_help" title="Permalink to this definition">¶</a></dt>
-<dd><p>Format command line help string.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tau.cli.arguments.MutableGroupArgumentParser.get_group">
-<code class="descname">get_group</code><span class="sig-paren">(</span><em>title</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/arguments.html#MutableGroupArgumentParser.get_group"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.arguments.MutableGroupArgumentParser.get_group" title="Permalink to this definition">¶</a></dt>
+<dt id="tau.cli.arguments.MutableGroupArgumentParser.add_argument_group">
+<code class="descname">add_argument_group</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/arguments.html#MutableGroupArgumentParser.add_argument_group"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.arguments.MutableGroupArgumentParser.add_argument_group" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns an argument group.</p>
 <p>If the group doesn&#8217;t exist it will be created.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>title</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Group title.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>*args</strong> &#8211; Positional arguments to pass to <code class="xref any docutils literal"><span class="pre">ArgumentParser.add_argument_group</span></code></li>
+<li><strong>**kwargs</strong> &#8211; Keyword arguments to pass to <code class="xref any docutils literal"><span class="pre">ArgumentParser.add_argument_group</span></code></li>
+</ul>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">An argument group object.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">An argument group object.</p>
+</td>
 </tr>
 </tbody>
 </table>
 </dd></dl>
+
+<dl class="method">
+<dt id="tau.cli.arguments.MutableGroupArgumentParser.format_help">
+<code class="descname">format_help</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/arguments.html#MutableGroupArgumentParser.format_help"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.arguments.MutableGroupArgumentParser.format_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Format command line help string.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.cli.arguments.MutableGroupArgumentParser.merge">
+<code class="descname">merge</code><span class="sig-paren">(</span><em>parser</em>, <em>group_title=None</em>, <em>include_positional=True</em>, <em>include_optional=True</em>, <em>include_storage=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/arguments.html#MutableGroupArgumentParser.merge"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.arguments.MutableGroupArgumentParser.merge" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 
@@ -418,9 +448,36 @@ Otherwise the attribute value is the value of <cite>flag</cite>.</p>
 </dd></dl>
 
 <dl class="data">
+<dt id="tau.cli.arguments.STORAGE_LEVEL_FLAG">
+<code class="descclassname">tau.cli.arguments.</code><code class="descname">STORAGE_LEVEL_FLAG</code><em class="property"> = '&#64;'</em><a class="headerlink" href="#tau.cli.arguments.STORAGE_LEVEL_FLAG" title="Permalink to this definition">¶</a></dt>
+<dd><p>Command line flag that indicates storage level.</p>
+</dd></dl>
+
+<dl class="data">
 <dt id="tau.cli.arguments.SUPPRESS">
 <code class="descclassname">tau.cli.arguments.</code><code class="descname">SUPPRESS</code><em class="property"> = '==SUPPRESS=='</em><a class="headerlink" href="#tau.cli.arguments.SUPPRESS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Suppress attribute creation in parsed argument namespace.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.cli.arguments.add_storage_flags">
+<code class="descclassname">tau.cli.arguments.</code><code class="descname">add_storage_flags</code><span class="sig-paren">(</span><em>parser</em>, <em>action</em>, <em>object_name</em>, <em>plural=False</em>, <em>exclusive=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/arguments.html#add_storage_flags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.arguments.add_storage_flags" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add flags to indicate target storage container.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>parser</strong> (<a class="reference internal" href="#tau.cli.arguments.MutableGroupArgumentParser" title="tau.cli.arguments.MutableGroupArgumentParser"><em>MutableGroupArgumentParser</em></a>) &#8211; The parser to modify.</li>
+<li><strong>action</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The action that will be taken by the command, e.g. &#8220;delete&#8221; or &#8220;list&#8221;</li>
+<li><strong>object_name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The type of object that will be manipulated, e.g. &#8220;application&#8221; or &#8220;measurement&#8221;</li>
+<li><strong>plural</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; Pluralize help message if True.</li>
+<li><strong>exclusive</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; Only one storage level may be specified if True.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
@@ -465,7 +522,7 @@ are specified as keyword arguments.</p>
     &#39;description&#39;: &#39;application uses OpenMP&#39;,
     &#39;default&#39;: False,
     &#39;argparse&#39;: {&#39;flags&#39;: (&#39;--openmp&#39;,),
-                 &#39;metavar&#39;: &#39;yes/no&#39;,
+                 &#39;metavar&#39;: &#39;T/F&#39;,
                  &#39;nargs&#39;: &#39;?&#39;,
                  &#39;const&#39;: True,
                  &#39;action&#39;: ParseBooleanAction},
@@ -473,7 +530,7 @@ are specified as keyword arguments.</p>
 </pre></div>
 </div>
 <p>The returned parser will accept the <code class="docutils literal"><span class="pre">--openmp</span></code> flag accepting zero or one arguments
-with &#8216;yes/no&#8217; as the metavar.  If <code class="docutils literal"><span class="pre">--openmp</span></code> is omitted the default value of False will
+with &#8216;T/F&#8217; as the metavar.  If <code class="docutils literal"><span class="pre">--openmp</span></code> is omitted the default value of False will
 be used.  If <code class="docutils literal"><span class="pre">--openmp</span></code> is provided with zero arguments, the const value of True will
 be used.  If <code class="docutils literal"><span class="pre">--openmp</span></code> is provided with one argument then the provided argument will
 be passed to a ParseBooleanAction instance to generate a boolean value.  The argument&#8217;s
@@ -483,6 +540,7 @@ help description will appear as &#8220;application uses OpenMP&#8221; if the <co
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>model</strong> (<a class="reference internal" href="tau.mvc.html#tau.mvc.model.Model" title="tau.mvc.model.Model"><em>Model</em></a>) &#8211; Model to construct arguments from.</li>
 <li><strong>use_defaults</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True, use the model attribute&#8217;s default value
 as the argument&#8217;s value if argument is not specified.</li>
 <li><strong>prog</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the program.</li>
@@ -500,6 +558,355 @@ as the argument&#8217;s value if argument is not specified.</li>
 </tr>
 </tbody>
 </table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-tau.cli.cli_view">
+<span id="tau-cli-cli-view-module"></span><h2>tau.cli.cli_view module<a class="headerlink" href="#module-tau.cli.cli_view" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="tau.cli.cli_view.AbstractCliView">
+<em class="property">class </em><code class="descclassname">tau.cli.cli_view.</code><code class="descname">AbstractCliView</code><span class="sig-paren">(</span><em>model</em>, <em>module_name</em>, <em>summary_fmt=None</em>, <em>help_page_fmt=None</em>, <em>group=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/cli_view.html#AbstractCliView"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.cli_view.AbstractCliView" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tau.cli.command.AbstractCommand" title="tau.cli.command.AbstractCommand"><code class="xref py py-class docutils literal"><span class="pre">tau.cli.command.AbstractCommand</span></code></a></p>
+<p>A command that works as a <cite>view</cite> for a <cite>controller</cite>.</p>
+<p>See <a class="reference external" href="http://en.wikipedia.org/wiki/Model-view-controller">http://en.wikipedia.org/wiki/Model-view-controller</a></p>
+<dl class="attribute">
+<dt id="tau.cli.cli_view.AbstractCliView.controller">
+<code class="descname">controller</code><a class="headerlink" href="#tau.cli.cli_view.AbstractCliView.controller" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>class</em></p>
+<p>The controller class for this view&#8217;s data.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.cli.cli_view.AbstractCliView.model_name">
+<code class="descname">model_name</code><a class="headerlink" href="#tau.cli.cli_view.AbstractCliView.model_name" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em></p>
+<p>The lower-case name of the model.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tau.cli.cli_view.CreateCommand">
+<em class="property">class </em><code class="descclassname">tau.cli.cli_view.</code><code class="descname">CreateCommand</code><span class="sig-paren">(</span><em>controller</em>, <em>module_name</em>, <em>summary_fmt=None</em>, <em>help_page_fmt=None</em>, <em>group=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/cli_view.html#CreateCommand"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.cli_view.CreateCommand" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tau.cli.cli_view.AbstractCliView" title="tau.cli.cli_view.AbstractCliView"><code class="xref py py-class docutils literal"><span class="pre">tau.cli.cli_view.AbstractCliView</span></code></a></p>
+<p>Base class for the <cite>create</cite> command of command line views.</p>
+<dl class="method">
+<dt id="tau.cli.cli_view.CreateCommand.construct_parser">
+<code class="descname">construct_parser</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/cli_view.html#CreateCommand.construct_parser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.cli_view.CreateCommand.construct_parser" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.cli.cli_view.CreateCommand.main">
+<code class="descname">main</code><span class="sig-paren">(</span><em>argv</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/cli_view.html#CreateCommand.main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.cli_view.CreateCommand.main" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tau.cli.cli_view.DeleteCommand">
+<em class="property">class </em><code class="descclassname">tau.cli.cli_view.</code><code class="descname">DeleteCommand</code><span class="sig-paren">(</span><em>controller</em>, <em>module_name</em>, <em>summary_fmt=None</em>, <em>help_page_fmt=None</em>, <em>group=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/cli_view.html#DeleteCommand"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.cli_view.DeleteCommand" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tau.cli.cli_view.AbstractCliView" title="tau.cli.cli_view.AbstractCliView"><code class="xref py py-class docutils literal"><span class="pre">tau.cli.cli_view.AbstractCliView</span></code></a></p>
+<p>Base class for the <cite>delete</cite> subcommand of command line views.</p>
+<dl class="method">
+<dt id="tau.cli.cli_view.DeleteCommand.construct_parser">
+<code class="descname">construct_parser</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/cli_view.html#DeleteCommand.construct_parser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.cli_view.DeleteCommand.construct_parser" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.cli.cli_view.DeleteCommand.main">
+<code class="descname">main</code><span class="sig-paren">(</span><em>argv</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/cli_view.html#DeleteCommand.main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.cli_view.DeleteCommand.main" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tau.cli.cli_view.EditCommand">
+<em class="property">class </em><code class="descclassname">tau.cli.cli_view.</code><code class="descname">EditCommand</code><span class="sig-paren">(</span><em>controller</em>, <em>module_name</em>, <em>summary_fmt=None</em>, <em>help_page_fmt=None</em>, <em>group=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/cli_view.html#EditCommand"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.cli_view.EditCommand" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tau.cli.cli_view.AbstractCliView" title="tau.cli.cli_view.AbstractCliView"><code class="xref py py-class docutils literal"><span class="pre">tau.cli.cli_view.AbstractCliView</span></code></a></p>
+<p>Base class for the <cite>edit</cite> subcommand of command line views.</p>
+<dl class="method">
+<dt id="tau.cli.cli_view.EditCommand.construct_parser">
+<code class="descname">construct_parser</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/cli_view.html#EditCommand.construct_parser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.cli_view.EditCommand.construct_parser" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.cli.cli_view.EditCommand.main">
+<code class="descname">main</code><span class="sig-paren">(</span><em>argv</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/cli_view.html#EditCommand.main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.cli_view.EditCommand.main" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tau.cli.cli_view.ListCommand">
+<em class="property">class </em><code class="descclassname">tau.cli.cli_view.</code><code class="descname">ListCommand</code><span class="sig-paren">(</span><em>controller</em>, <em>module_name</em>, <em>summary_fmt=None</em>, <em>help_page_fmt=None</em>, <em>group=None</em>, <em>default_style='dashboard'</em>, <em>dashboard_columns=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/cli_view.html#ListCommand"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.cli_view.ListCommand" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tau.cli.cli_view.AbstractCliView" title="tau.cli.cli_view.AbstractCliView"><code class="xref py py-class docutils literal"><span class="pre">tau.cli.cli_view.AbstractCliView</span></code></a></p>
+<p>Base class for the <cite>list</cite> subcommand of command line views.</p>
+<dl class="method">
+<dt id="tau.cli.cli_view.ListCommand._count_records">
+<code class="descname">_count_records</code><span class="sig-paren">(</span><em>ctrl</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/cli_view.html#ListCommand._count_records"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.cli_view.ListCommand._count_records" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print a record count to stdout.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>controller</strong> (<a class="reference internal" href="tau.mvc.html#tau.mvc.controller.Controller" title="tau.mvc.controller.Controller"><em>Controller</em></a>) &#8211; Controller for the data model.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.cli.cli_view.ListCommand._format_records">
+<code class="descname">_format_records</code><span class="sig-paren">(</span><em>ctrl</em>, <em>style</em>, <em>keys=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/cli_view.html#ListCommand._format_records"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.cli_view.ListCommand._format_records" title="Permalink to this definition">¶</a></dt>
+<dd><p>Format records in a given style.</p>
+<p>Retrieves records for controller <cite>ctrl</cite> and formats them.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>ctrl</strong> (<a class="reference internal" href="tau.mvc.html#tau.mvc.controller.Controller" title="tau.mvc.controller.Controller"><em>Controller</em></a>) &#8211; Controller for the data model.</li>
+<li><strong>style</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Style in which to format records.</li>
+<li><strong>keys</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Keys to match to <code class="xref any docutils literal"><span class="pre">self.key_attr</span></code>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Record data as formatted strings.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list">list</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.cli.cli_view.ListCommand._retrieve_records">
+<code class="descname">_retrieve_records</code><span class="sig-paren">(</span><em>ctrl</em>, <em>keys</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/cli_view.html#ListCommand._retrieve_records"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.cli_view.ListCommand._retrieve_records" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve modeled data from the controller.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>ctrl</strong> (<a class="reference internal" href="tau.mvc.html#tau.mvc.controller.Controller" title="tau.mvc.controller.Controller"><em>Controller</em></a>) &#8211; Controller for the data model.</li>
+<li><strong>keys</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Keys to match to <code class="xref any docutils literal"><span class="pre">self.key_attr</span></code>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Model records.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list">list</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.cli.cli_view.ListCommand.construct_parser">
+<code class="descname">construct_parser</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/cli_view.html#ListCommand.construct_parser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.cli_view.ListCommand.construct_parser" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.cli.cli_view.ListCommand.dashboard_format">
+<code class="descname">dashboard_format</code><span class="sig-paren">(</span><em>models</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/cli_view.html#ListCommand.dashboard_format"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.cli_view.ListCommand.dashboard_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>Format modeled records in dashboard format.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>models</strong> &#8211; Modeled records to format.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Record data in dashboard format.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)">str</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.cli.cli_view.ListCommand.json_format">
+<code class="descname">json_format</code><span class="sig-paren">(</span><em>records</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/cli_view.html#ListCommand.json_format"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.cli_view.ListCommand.json_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>Format records in JSON format.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>records</strong> &#8211; Controlled records to format.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Record data in JSON format.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)">str</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.cli.cli_view.ListCommand.long_format">
+<code class="descname">long_format</code><span class="sig-paren">(</span><em>records</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/cli_view.html#ListCommand.long_format"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.cli_view.ListCommand.long_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>Format records in long format.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>records</strong> &#8211; Controlled records to format.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Record data in long format.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)">str</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.cli.cli_view.ListCommand.main">
+<code class="descname">main</code><span class="sig-paren">(</span><em>argv</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/cli_view.html#ListCommand.main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.cli_view.ListCommand.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>Command program entry point.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>argv</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Command line arguments.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Process return code: non-zero if a problem occurred, 0 otherwise</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.cli.cli_view.ListCommand.short_format">
+<code class="descname">short_format</code><span class="sig-paren">(</span><em>models</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/cli_view.html#ListCommand.short_format"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.cli_view.ListCommand.short_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>Format modeled records in short format.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>models</strong> &#8211; Modeled records to format.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Record data in short format.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)">str</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tau.cli.cli_view.RootCommand">
+<em class="property">class </em><code class="descclassname">tau.cli.cli_view.</code><code class="descname">RootCommand</code><span class="sig-paren">(</span><em>model</em>, <em>module_name</em>, <em>summary_fmt=None</em>, <em>help_page_fmt=None</em>, <em>group=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/cli_view.html#RootCommand"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.cli_view.RootCommand" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tau.cli.cli_view.AbstractCliView" title="tau.cli.cli_view.AbstractCliView"><code class="xref py py-class docutils literal"><span class="pre">tau.cli.cli_view.AbstractCliView</span></code></a></p>
+<p>A command with subcommands for actions.</p>
+<dl class="method">
+<dt id="tau.cli.cli_view.RootCommand.construct_parser">
+<code class="descname">construct_parser</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/cli_view.html#RootCommand.construct_parser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.cli_view.RootCommand.construct_parser" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.cli.cli_view.RootCommand.main">
+<code class="descname">main</code><span class="sig-paren">(</span><em>argv</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/cli_view.html#RootCommand.main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.cli_view.RootCommand.main" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-tau.cli.command">
+<span id="tau-cli-command-module"></span><h2>tau.cli.command module<a class="headerlink" href="#module-tau.cli.command" title="Permalink to this headline">¶</a></h2>
+<p>Base class for TAU Commander commands</p>
+<dl class="class">
+<dt id="tau.cli.command.AbstractCommand">
+<em class="property">class </em><code class="descclassname">tau.cli.command.</code><code class="descname">AbstractCommand</code><span class="sig-paren">(</span><em>module_name</em>, <em>format_fields=None</em>, <em>summary_fmt=None</em>, <em>help_page_fmt=None</em>, <em>group=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/command.html#AbstractCommand"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.command.AbstractCommand" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Abstract base class for TAU Commander commands.</p>
+<dl class="attribute">
+<dt id="tau.cli.command.AbstractCommand.module_name">
+<code class="descname">module_name</code><a class="headerlink" href="#tau.cli.command.AbstractCommand.module_name" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em></p>
+<p>Name of the command module this command object belongs to.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.cli.command.AbstractCommand.command">
+<code class="descname">command</code><a class="headerlink" href="#tau.cli.command.AbstractCommand.command" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em></p>
+<p>Command line string that executes this command.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.cli.command.AbstractCommand.summary">
+<code class="descname">summary</code><a class="headerlink" href="#tau.cli.command.AbstractCommand.summary" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em></p>
+<p>One-line summary of the command.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.cli.command.AbstractCommand.help_page">
+<code class="descname">help_page</code><a class="headerlink" href="#tau.cli.command.AbstractCommand.help_page" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em></p>
+<p>Long and informative description of the command.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.cli.command.AbstractCommand.group">
+<code class="descname">group</code><a class="headerlink" href="#tau.cli.command.AbstractCommand.group" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em></p>
+<p>If not None, commands will be grouped together by group name in help messages.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.cli.command.AbstractCommand.construct_parser">
+<code class="descname">construct_parser</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/command.html#AbstractCommand.construct_parser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.command.AbstractCommand.construct_parser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a command line argument parser.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">help_page</code></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.cli.command.AbstractCommand.main">
+<code class="descname">main</code><span class="sig-paren">(</span><em>argv</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/command.html#AbstractCommand.main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.command.AbstractCommand.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>Command program entry point.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>argv</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Command line arguments.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Process return code: non-zero if a problem occurred, 0 otherwise</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.cli.command.AbstractCommand.parser">
+<code class="descname">parser</code><a class="headerlink" href="#tau.cli.command.AbstractCommand.parser" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">summary</code></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.cli.command.AbstractCommand.usage">
+<code class="descname">usage</code><a class="headerlink" href="#tau.cli.command.AbstractCommand.usage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 </div>

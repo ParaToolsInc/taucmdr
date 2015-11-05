@@ -26,7 +26,7 @@
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../../../../_static/favicon.ico"/>
     <link rel="top" title="TAU Commander Developer Documentation" href="../../../../../index.html" />
-    <link rel="up" title="tau.cli.commands.trial" href="../trial.html" /> 
+    <link rel="up" title="tau.cli" href="../../../cli.html" /> 
   </head>
   <body role="document">
       <div class="header" role="banner"><img class="rightlogo" src="../../../../../_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="../../../../../index.html">
@@ -73,74 +73,88 @@
 <span class="c">#</span>
 <span class="sd">&quot;&quot;&quot;``tau trial create`` subcommand.&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">util</span><span class="p">,</span> <span class="n">cli</span>
-<span class="kn">from</span> <span class="nn">tau.cli</span> <span class="kn">import</span> <span class="n">arguments</span>
+<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">util</span>
 <span class="kn">from</span> <span class="nn">tau.error</span> <span class="kn">import</span> <span class="n">ConfigurationError</span>
-<span class="kn">from</span> <span class="nn">tau.model.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
+<span class="kn">from</span> <span class="nn">tau.cli</span> <span class="kn">import</span> <span class="n">arguments</span>
+<span class="kn">from</span> <span class="nn">tau.cli.cli_view</span> <span class="kn">import</span> <span class="n">CreateCommand</span>
+<span class="kn">from</span> <span class="nn">tau.model.trial</span> <span class="kn">import</span> <span class="n">Trial</span>
+<span class="kn">from</span> <span class="nn">tau.model.project</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">ProjectSelectionError</span>
 
 
-<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
-
-<span class="n">COMMAND</span> <span class="o">=</span> <span class="n">cli</span><span class="o">.</span><span class="n">get_command</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
-
-<span class="n">SHORT_DESCRIPTION</span> <span class="o">=</span> <span class="s">&quot;Run an application under a new experiment trial.&quot;</span>
-
-<span class="n">HELP</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
-<span class="s">&#39;</span><span class="si">%(command)s</span><span class="s">&#39; page to be written.</span>
-<span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;command&#39;</span><span class="p">:</span> <span class="n">COMMAND</span><span class="p">}</span>
+<span class="n">LAUNCHERS</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;mpirun&#39;</span><span class="p">,</span> <span class="s">&#39;mpiexec&#39;</span><span class="p">,</span> <span class="s">&#39;ibrun&#39;</span><span class="p">,</span> <span class="s">&#39;aprun&#39;</span><span class="p">]</span>
 
 
-<div class="viewcode-block" id="parser"><a class="viewcode-back" href="../../../../../tau.cli.commands.trial.html#tau.cli.commands.trial.create.parser">[docs]</a><span class="k">def</span> <span class="nf">parser</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;Construct a command line argument parser.</span>
-<span class="sd">    </span>
-<span class="sd">    Constructing the parser may cause a lot of imports as :py:mod:`tau.cli` is explored.</span>
-<span class="sd">    To avoid possible circular imports we defer parser creation until afer all</span>
-<span class="sd">    modules are imported, hence this function.  The parser instance is maintained as</span>
-<span class="sd">    an attribute of the function, making it something like a C++ function static variable.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">parser</span><span class="p">,</span> <span class="s">&#39;inst&#39;</span><span class="p">):</span>
-        <span class="n">usage_head</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s"> &lt;command&gt; [arguments]&quot;</span> <span class="o">%</span> <span class="n">COMMAND</span>
-        <span class="n">parser</span><span class="o">.</span><span class="n">inst</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">get_parser</span><span class="p">(</span><span class="n">prog</span><span class="o">=</span><span class="n">COMMAND</span><span class="p">,</span>
-                                           <span class="n">usage</span><span class="o">=</span><span class="n">usage_head</span><span class="p">,</span>
-                                           <span class="n">description</span><span class="o">=</span><span class="n">SHORT_DESCRIPTION</span><span class="p">)</span>
-        <span class="n">parser</span><span class="o">.</span><span class="n">inst</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;cmd&#39;</span><span class="p">,</span>
-                                 <span class="n">help</span><span class="o">=</span><span class="s">&quot;Command, e.g. &#39;./a.out&#39; or &#39;mpirun ./a.out&#39;&quot;</span><span class="p">,</span>
-                                 <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;&lt;command&gt;&#39;</span><span class="p">)</span>
-        <span class="n">parser</span><span class="o">.</span><span class="n">inst</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;cmd_args&#39;</span><span class="p">,</span> 
-                                 <span class="n">help</span><span class="o">=</span><span class="s">&quot;Command arguments&quot;</span><span class="p">,</span>
-                                 <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;[arguments]&#39;</span><span class="p">,</span>
-                                 <span class="n">nargs</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">REMAINDER</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">parser</span><span class="o">.</span><span class="n">inst</span>
+<div class="viewcode-block" id="TrialCreateCommand"><a class="viewcode-back" href="../../../../../tau.cli.commands.trial.html#tau.cli.commands.trial.create.TrialCreateCommand">[docs]</a><span class="k">class</span> <span class="nc">TrialCreateCommand</span><span class="p">(</span><span class="n">CreateCommand</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;``tau trial create`` subcommand.&quot;&quot;&quot;</span>
 
-</div>
-<div class="viewcode-block" id="is_compatible"><a class="viewcode-back" href="../../../../../tau.cli.commands.trial.html#tau.cli.commands.trial.create.is_compatible">[docs]</a><span class="k">def</span> <span class="nf">is_compatible</span><span class="p">(</span><span class="n">cmd</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Check if this subcommand can work with the given command.</span>
-<span class="sd">    </span>
-<span class="sd">    Args:</span>
-<span class="sd">        cmd (str): A command from the command line, e.g. sys.argv[1].</span>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="TrialCreateCommand.is_compatible"><a class="viewcode-back" href="../../../../../tau.cli.commands.trial.html#tau.cli.commands.trial.create.TrialCreateCommand.is_compatible">[docs]</a>    <span class="k">def</span> <span class="nf">is_compatible</span><span class="p">(</span><span class="n">cmd</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check if this subcommand can work with the given command.</span>
 <span class="sd">        </span>
-<span class="sd">    Returns:</span>
-<span class="sd">        bool: True if this subcommand is compatible with `cmd`.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="n">cmd</span><span class="p">))</span>
-
+<span class="sd">        Args:</span>
+<span class="sd">            cmd (str): A command from the command line, e.g. sys.argv[1].</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if this subcommand is compatible with `cmd`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="n">cmd</span><span class="p">))</span>
 </div>
-<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../../../../tau.cli.commands.trial.html#tau.cli.commands.trial.create.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Subcommand program entry point.</span>
-<span class="sd">    </span>
-<span class="sd">    Args:</span>
-<span class="sd">        argv (list): Command line arguments.</span>
-<span class="sd">        </span>
-<span class="sd">    Returns:</span>
-<span class="sd">        int: Process return code: non-zero if a problem occurred, 0 otherwise</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="p">()</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">argv</span><span class="p">)</span>
-    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Arguments: </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+<div class="viewcode-block" id="TrialCreateCommand.construct_parser"><a class="viewcode-back" href="../../../../../tau.cli.commands.trial.html#tau.cli.commands.trial.create.TrialCreateCommand.construct_parser">[docs]</a>    <span class="k">def</span> <span class="nf">construct_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">usage</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s"> [arguments] [--] &lt;command&gt; [command_arguments]&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">get_parser</span><span class="p">(</span><span class="n">prog</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">,</span> <span class="n">usage</span><span class="o">=</span><span class="n">usage</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">summary</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;cmd&#39;</span><span class="p">,</span>
+                            <span class="n">help</span><span class="o">=</span><span class="s">&quot;Executable command, e.g. &#39;./a.out&#39;&quot;</span><span class="p">,</span>
+                            <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;&lt;command&gt;&#39;</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;cmd_args&#39;</span><span class="p">,</span> 
+                            <span class="n">help</span><span class="o">=</span><span class="s">&quot;Executable command arguments&quot;</span><span class="p">,</span>
+                            <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;[command_arguments]&#39;</span><span class="p">,</span>
+                            <span class="n">nargs</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">REMAINDER</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--launcher&#39;</span><span class="p">,</span>
+                            <span class="n">help</span><span class="o">=</span><span class="s">&quot;Launcher command with arguments, e.g. &#39;mpirun -np 4&#39;&quot;</span><span class="p">,</span>
+                            <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;&lt;command&gt;&#39;</span><span class="p">,</span>
+                            <span class="n">nargs</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">REMAINDER</span><span class="p">,</span>
+                            <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">parser</span>
+    </div>
+    <span class="k">def</span> <span class="nf">_detect_launcher</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">application_cmd</span><span class="p">):</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="n">application_cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">launcher_cmd</span> <span class="o">=</span> <span class="p">[]</span> 
+        <span class="k">if</span> <span class="n">cmd</span> <span class="ow">in</span> <span class="n">LAUNCHERS</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">idx</span> <span class="o">=</span> <span class="n">application_cmd</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s">&#39;--&#39;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="n">exes</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">application_cmd</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Executables on command line: </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">exes</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">exes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">idx</span> <span class="o">=</span> <span class="n">exes</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">launcher_cmd</span> <span class="o">=</span> <span class="n">application_cmd</span><span class="p">[:</span><span class="n">idx</span><span class="p">]</span>
+                    <span class="n">application_cmd</span> <span class="o">=</span> <span class="n">application_cmd</span><span class="p">[</span><span class="n">idx</span><span class="p">:]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&quot;TAU is having trouble parsing the command line arguments&quot;</span><span class="p">,</span>
+                                             <span class="p">(</span><span class="s">&quot;Use &#39;--&#39; to seperate </span><span class="si">%s</span><span class="s"> and its arguments from the application command &quot;</span>
+                                              <span class="s">&quot;and its arguments, e.g. `mpirun -np 4 -- ./a.out -g hello`&quot;</span> <span class="o">%</span> <span class="n">cmd</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">launcher_cmd</span> <span class="o">=</span> <span class="n">application_cmd</span><span class="p">[:</span><span class="n">idx</span><span class="p">]</span>
+                <span class="n">application_cmd</span> <span class="o">=</span> <span class="n">application_cmd</span><span class="p">[</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="k">return</span> <span class="n">launcher_cmd</span><span class="p">,</span> <span class="n">application_cmd</span>
 
-    <span class="n">selection</span> <span class="o">=</span> <span class="n">Experiment</span><span class="o">.</span><span class="n">get_selected</span><span class="p">()</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">selection</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&quot;No experiment configured.&quot;</span><span class="p">,</span> <span class="s">&quot;See `tau project select`&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">selection</span><span class="o">.</span><span class="n">managed_run</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">cmd</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">cmd_args</span><span class="p">)</span></div>
+<div class="viewcode-block" id="TrialCreateCommand.main"><a class="viewcode-back" href="../../../../../tau.cli.commands.trial.html#tau.cli.commands.trial.create.TrialCreateCommand.main">[docs]</a>    <span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">argv</span><span class="p">):</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">argv</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Arguments: </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+        
+        <span class="n">application_cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">args</span><span class="o">.</span><span class="n">cmd</span><span class="p">]</span> <span class="o">+</span> <span class="n">args</span><span class="o">.</span><span class="n">cmd_args</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">launcher_cmd</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">launcher</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="n">launcher_cmd</span><span class="p">,</span> <span class="n">application_cmd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detect_launcher</span><span class="p">(</span><span class="n">application_cmd</span><span class="p">)</span>
+
+        <span class="n">proj_ctrl</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">controller</span><span class="p">()</span>
+        <span class="n">proj</span> <span class="o">=</span> <span class="n">proj_ctrl</span><span class="o">.</span><span class="n">selected</span><span class="p">()</span>
+        <span class="n">expr</span> <span class="o">=</span> <span class="n">proj</span><span class="o">.</span><span class="n">experiment</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">expr</span><span class="o">.</span><span class="n">managed_run</span><span class="p">(</span><span class="n">launcher_cmd</span><span class="p">,</span> <span class="n">application_cmd</span><span class="p">)</span>
+
+</div></div>
+<span class="n">COMMAND</span> <span class="o">=</span> <span class="n">TrialCreateCommand</span><span class="p">(</span><span class="n">Trial</span><span class="p">,</span> <span class="n">__name__</span><span class="p">,</span> <span class="n">summary_fmt</span><span class="o">=</span><span class="s">&quot;Run an application under a new experiment trial.&quot;</span><span class="p">)</span>
 </pre></div>
 
       </div>

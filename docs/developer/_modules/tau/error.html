@@ -77,9 +77,10 @@
 <span class="sd">Error classes should be defined in their appropriate modules.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
+<span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">traceback</span>
-<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">HELP_CONTACT</span><span class="p">,</span> <span class="n">EXIT_FAILURE</span><span class="p">,</span> <span class="n">EXIT_WARNING</span>
+<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">HELP_CONTACT</span><span class="p">,</span> <span class="n">EXIT_FAILURE</span><span class="p">,</span> <span class="n">EXIT_WARNING</span><span class="p">,</span> <span class="n">TAU_SCRIPT</span>
 <span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">logger</span>
 
 
@@ -90,105 +91,142 @@
     <span class="sd">&quot;&quot;&quot;Base class for all errors in TAU Commander.</span>
 <span class="sd">    </span>
 <span class="sd">    Attributes:</span>
+<span class="sd">        value: Some value attached to the error, typically a string but could be anything with a __str__ method.</span>
+<span class="sd">        hints (list): String hints for the user to help resolve the error.</span>
 <span class="sd">        show_backtrace (bool): Set to True to include a backtrace in the error message.</span>
 <span class="sd">        message_fmt (str): Format string for the error message.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        value (str): Message describing the error.</span>
-<span class="sd">        hint (str): Message to help the user resolve this error.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="n">show_backtrace</span> <span class="o">=</span> <span class="bp">False</span>
 
-    <span class="n">message_fmt</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
-<span class="s">An unexpected </span><span class="si">%(typename)s</span><span class="s"> exception was raised:</span>
-
-<span class="si">%(value)s</span><span class="s"></span>
-
-<span class="si">%(backtrace)s</span><span class="s"></span>
-
-<span class="s">Please e-mail &#39;</span><span class="si">%(logfile)s</span><span class="s">&#39; to </span><span class="si">%(contact)s</span><span class="s"> for assistance.</span>
-<span class="s">&quot;&quot;&quot;</span>
+    <span class="n">message_fmt</span> <span class="o">=</span> <span class="p">(</span><span class="s">&quot;An unexpected </span><span class="si">%(typename)s</span><span class="s"> exception was raised:</span><span class="se">\n</span><span class="s">&quot;</span>
+                   <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span>
+                   <span class="s">&quot;</span><span class="si">%(value)s</span><span class="se">\n</span><span class="s">&quot;</span>
+                   <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span>
+                   <span class="s">&quot;</span><span class="si">%(backtrace)s</span><span class="s">&quot;</span>
+                   <span class="s">&quot;This is a bug in TAU Commander.</span><span class="se">\n</span><span class="s">&quot;</span>
+                   <span class="s">&quot;Please send &#39;</span><span class="si">%(logfile)s</span><span class="s">&#39; to </span><span class="si">%(contact)s</span><span class="s"> for assistance.&quot;</span><span class="p">)</span>
     
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">hint</span><span class="o">=</span><span class="s">&quot;Contact </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">HELP_CONTACT</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">Error</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">*</span><span class="n">hints</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize the Error instance.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            value (str): Message describing the error.</span>
+<span class="sd">            *hints: Hint messages to help the user resolve this error.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Error</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">hint</span> <span class="o">=</span> <span class="n">hint</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">message_fields</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;value&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                               <span class="s">&#39;hint&#39;</span><span class="p">:</span> <span class="s">&#39;Hint: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">hint</span><span class="p">,</span>
-                               <span class="s">&#39;cmd&#39;</span><span class="p">:</span> <span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">arg</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:]]),</span>
-                               <span class="s">&#39;contact&#39;</span><span class="p">:</span> <span class="n">HELP_CONTACT</span><span class="p">,</span>
-                               <span class="s">&#39;logfile&#39;</span><span class="p">:</span> <span class="n">logger</span><span class="o">.</span><span class="n">LOG_FILE</span><span class="p">}</span>
-
-    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hints</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">hints</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">message_fields</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;contact&#39;</span><span class="p">:</span> <span class="n">HELP_CONTACT</span><span class="p">,</span> <span class="s">&#39;logfile&#39;</span><span class="p">:</span> <span class="n">logger</span><span class="o">.</span><span class="n">LOG_FILE</span><span class="p">}</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">message</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">message_fields</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">hints</span><span class="p">:</span>
+            <span class="n">hints_str</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hints</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">hints_str</span> <span class="o">=</span> <span class="s">&#39;Hint: </span><span class="si">%s</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">hints</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">hints_str</span> <span class="o">=</span> <span class="s">&#39;Hints:</span><span class="se">\n</span><span class="s">  * </span><span class="si">%s</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">  * &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hints</span><span class="p">))</span>
+        <span class="n">fields</span><span class="p">[</span><span class="s">&#39;hints&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">hints_str</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">message_fmt</span> <span class="o">%</span> <span class="n">fields</span>
 
 <div class="viewcode-block" id="Error.handle"><a class="viewcode-back" href="../../tau.html#tau.error.Error.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">etype</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tb</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_backtrace</span><span class="p">:</span>
-            <span class="n">backtrace</span> <span class="o">=</span> <span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exception</span><span class="p">(</span><span class="n">etype</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tb</span><span class="p">))</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">backtrace</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">message_fields</span><span class="p">[</span><span class="s">&#39;backtrace&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exception</span><span class="p">(</span><span class="n">etype</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tb</span><span class="p">))</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">message_fields</span><span class="p">[</span><span class="s">&#39;typename&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">etype</span><span class="o">.</span><span class="n">__name__</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">message_fields</span><span class="p">[</span><span class="s">&#39;backtrace&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">backtrace</span>
-        <span class="n">message</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">message_fmt</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">message_fields</span>
-        <span class="n">LOGGER</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
-        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">EXIT_FAILURE</span><span class="p">)</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">EXIT_FAILURE</span>
 
 </div></div>
 <div class="viewcode-block" id="InternalError"><a class="viewcode-back" href="../../tau.html#tau.error.InternalError">[docs]</a><span class="k">class</span> <span class="nc">InternalError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Indicates that an internal error has occurred.</span>
+    <span class="sd">&quot;&quot;&quot;Indicates that an internal error has occurred, i.e. a bug in TAU.</span>
 <span class="sd">    </span>
 <span class="sd">    These are bad and really shouldn&#39;t happen.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">show_backtrace</span> <span class="o">=</span> <span class="bp">True</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">InternalError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-
 </div>
 <div class="viewcode-block" id="ConfigurationError"><a class="viewcode-back" href="../../tau.html#tau.error.ConfigurationError">[docs]</a><span class="k">class</span> <span class="nc">ConfigurationError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Indicates that TAU Commander cannot succeed with the given parameters.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Indicates that TAU Commander cannot succeed with the given parameters.</span>
+<span class="sd">    </span>
+<span class="sd">    This is most commonly caused by user error, e.g the user specifies measurement</span>
+<span class="sd">    settings that are incompatible with the application.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">message_fmt</span> <span class="o">=</span> <span class="p">(</span><span class="s">&quot;</span><span class="si">%(value)s</span><span class="se">\n</span><span class="s">&quot;</span>
+                   <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span>
+                   <span class="s">&quot;</span><span class="si">%(hints)s</span><span class="se">\n</span><span class="s">&quot;</span>
+                   <span class="s">&quot;TAU cannot proceed with the given inputs.</span><span class="se">\n</span><span class="s">&quot;</span> 
+                   <span class="s">&quot;Please check the selected configuration for errors or contact </span><span class="si">%(contact)s</span><span class="s"> for assistance.&quot;</span><span class="p">)</span>
 
-    <span class="n">message_fmt</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
-<span class="si">%(value)s</span><span class="s"></span>
-<span class="si">%(hint)s</span><span class="s"></span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">*</span><span class="n">hints</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize the Error instance.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            value (str): Message describing the error.</span>
+<span class="sd">            *hints: Hint messages to help the user resolve this error.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">hints</span><span class="p">:</span>
+            <span class="n">hints</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;Try `</span><span class="si">%s</span><span class="s"> --help`&quot;</span> <span class="o">%</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">TAU_SCRIPT</span><span class="p">)]</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ConfigurationError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="o">*</span><span class="n">hints</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span>
 
-<span class="s">TAU cannot proceed with the given inputs. </span>
-<span class="s">Please check the selected configuration for errors or contact </span><span class="si">%(contact)s</span><span class="s"> for assistance.</span>
-<span class="s">&quot;&quot;&quot;</span>
+</div>
+<div class="viewcode-block" id="ModelError"><a class="viewcode-back" href="../../tau.html#tau.error.ModelError">[docs]</a><span class="k">class</span> <span class="nc">ModelError</span><span class="p">(</span><span class="n">InternalError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Indicates an error in model data or the model itself.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">hint</span><span class="o">=</span><span class="s">&quot;Try `tau --help`&quot;</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">ConfigurationError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">hint</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize the error instance.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            model (Model): Data model.</span>
+<span class="sd">            value (str): A message describing the error.  </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ModelError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+
+</div>
+<div class="viewcode-block" id="UniqueAttributeError"><a class="viewcode-back" href="../../tau.html#tau.error.UniqueAttributeError">[docs]</a><span class="k">class</span> <span class="nc">UniqueAttributeError</span><span class="p">(</span><span class="n">ModelError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Indicates that duplicate values were given for a unique attribute.&quot;&quot;&quot;</span> 
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">unique</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize the error instance.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            model (Model): Data model.</span>
+<span class="sd">            unique (dict): Dictionary of unique attributes in the data model.  </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">UniqueAttributeError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s">&quot;A record with one of &#39;</span><span class="si">%s</span><span class="s">&#39; already exists&quot;</span> <span class="o">%</span> <span class="n">unique</span><span class="p">)</span>
 
 </div>
 <div class="viewcode-block" id="excepthook"><a class="viewcode-back" href="../../tau.html#tau.error.excepthook">[docs]</a><span class="k">def</span> <span class="nf">excepthook</span><span class="p">(</span><span class="n">etype</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tb</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Exception handler for any uncaught exception (except SystemExit).&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Exception handler for any uncaught exception (except SystemExit).</span>
+<span class="sd">    </span>
+<span class="sd">    Replaces :any:`sys.excepthook`.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        etype: Exception class.</span>
+<span class="sd">        value: Exception instance.</span>
+<span class="sd">        tb: Traceback object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">etype</span> <span class="o">==</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Received keyboard interrupt.  Exiting.&#39;</span><span class="p">)</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">EXIT_WARNING</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
+        <span class="n">backtrace</span> <span class="o">=</span> <span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exception</span><span class="p">(</span><span class="n">etype</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tb</span><span class="p">))</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">backtrace</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">etype</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tb</span><span class="p">))</span>
         <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
-            <span class="c"># pylint: disable=logging-not-lazy</span>
-            <span class="n">LOGGER</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s">&quot;&quot;&quot;</span>
-<span class="s">An unexpected </span><span class="si">%(typename)s</span><span class="s"> exception was raised:</span>
-
-<span class="si">%(value)s</span><span class="s"></span>
-
-<span class="si">%(backtrace)s</span><span class="s"></span>
-
-<span class="s">This is a bug in TAU.</span>
-<span class="s">Please email &#39;</span><span class="si">%(logfile)s</span><span class="s">&#39; to </span><span class="si">%(contact)s</span><span class="s"> for assistance</span>
-<span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;value&#39;</span><span class="p">:</span> <span class="n">value</span><span class="p">,</span>
-       <span class="s">&#39;typename&#39;</span><span class="p">:</span> <span class="n">etype</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span>
-       <span class="s">&#39;cmd&#39;</span><span class="p">:</span> <span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">arg</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:]]),</span>
-       <span class="s">&#39;contact&#39;</span><span class="p">:</span> <span class="n">HELP_CONTACT</span><span class="p">,</span>
-       <span class="s">&#39;logfile&#39;</span><span class="p">:</span> <span class="n">logger</span><span class="o">.</span><span class="n">LOG_FILE</span><span class="p">,</span>
-       <span class="s">&#39;backtrace&#39;</span><span class="p">:</span> <span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exception</span><span class="p">(</span><span class="n">etype</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tb</span><span class="p">))})</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="n">Error</span><span class="o">.</span><span class="n">message_fmt</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;value&#39;</span><span class="p">:</span> <span class="n">value</span><span class="p">,</span>
+                                           <span class="s">&#39;typename&#39;</span><span class="p">:</span> <span class="n">etype</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span>
+                                           <span class="s">&#39;contact&#39;</span><span class="p">:</span> <span class="n">HELP_CONTACT</span><span class="p">,</span>
+                                           <span class="s">&#39;logfile&#39;</span><span class="p">:</span> <span class="n">logger</span><span class="o">.</span><span class="n">LOG_FILE</span><span class="p">,</span>
+                                           <span class="s">&#39;backtrace&#39;</span><span class="p">:</span> <span class="n">backtrace</span><span class="p">}</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">EXIT_FAILURE</span><span class="p">)</span>
-
-<span class="c"># Set the default exception handler</span></div>
+</div>
 <span class="n">sys</span><span class="o">.</span><span class="n">excepthook</span> <span class="o">=</span> <span class="n">excepthook</span>
 </pre></div>
 

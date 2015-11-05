@@ -54,12 +54,12 @@
 <p>Software managment common objects.</p>
 <dl class="exception">
 <dt id="tau.cf.software.SoftwarePackageError">
-<em class="property">exception </em><code class="descclassname">tau.cf.software.</code><code class="descname">SoftwarePackageError</code><span class="sig-paren">(</span><em>value</em>, <em>hint='Try `tau --help`'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software.html#SoftwarePackageError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.SoftwarePackageError" title="Permalink to this definition">¶</a></dt>
+<em class="property">exception </em><code class="descclassname">tau.cf.software.</code><code class="descname">SoftwarePackageError</code><span class="sig-paren">(</span><em>value</em>, <em>*hints</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software.html#SoftwarePackageError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.SoftwarePackageError" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="tau.html#tau.error.ConfigurationError" title="tau.error.ConfigurationError"><code class="xref py py-class docutils literal"><span class="pre">tau.error.ConfigurationError</span></code></a></p>
 <p>Indicates there was an error in an external software package.</p>
 <dl class="attribute">
 <dt id="tau.cf.software.SoftwarePackageError.message_fmt">
-<code class="descname">message_fmt</code><em class="property"> = &quot;\n%(value)s\n%(hint)s\n\nPlease check the selected configuration for errors or email '%(logfile)s' to  %(contact)s for assistance.\n&quot;</em><a class="headerlink" href="#tau.cf.software.SoftwarePackageError.message_fmt" title="Permalink to this definition">¶</a></dt>
+<code class="descname">message_fmt</code><em class="property"> = &quot;%(value)s\n\n%(hints)sPlease check the selected configuration or send '%(logfile)s' to  %(contact)s for assistance.&quot;</em><a class="headerlink" href="#tau.cf.software.SoftwarePackageError.message_fmt" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -74,7 +74,7 @@
 sampling, compiler-based instrumentation, and other measurement approaches.</p>
 <dl class="class">
 <dt id="tau.cf.software.binutils_installation.BinutilsInstallation">
-<em class="property">class </em><code class="descclassname">tau.cf.software.binutils_installation.</code><code class="descname">BinutilsInstallation</code><span class="sig-paren">(</span><em>prefix</em>, <em>src</em>, <em>arch</em>, <em>compilers</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/binutils_installation.html#BinutilsInstallation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.binutils_installation.BinutilsInstallation" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.cf.software.binutils_installation.</code><code class="descname">BinutilsInstallation</code><span class="sig-paren">(</span><em>prefix</em>, <em>src</em>, <em>target_arch</em>, <em>target_os</em>, <em>compilers</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/binutils_installation.html#BinutilsInstallation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.binutils_installation.BinutilsInstallation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#tau.cf.software.installation.AutotoolsInstallation" title="tau.cf.software.installation.AutotoolsInstallation"><code class="xref py py-class docutils literal"><span class="pre">tau.cf.software.installation.AutotoolsInstallation</span></code></a></p>
 <p>Encapsulates a GNU binutils installation.</p>
 <dl class="method">
@@ -95,7 +95,7 @@ sampling, compiler-based instrumentation, and other measurement approaches.</p>
 <p>Software installation management.</p>
 <dl class="class">
 <dt id="tau.cf.software.installation.AutotoolsInstallation">
-<em class="property">class </em><code class="descclassname">tau.cf.software.installation.</code><code class="descname">AutotoolsInstallation</code><span class="sig-paren">(</span><em>name</em>, <em>prefix</em>, <em>src</em>, <em>dst</em>, <em>arch</em>, <em>compilers</em>, <em>sources</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/installation.html#AutotoolsInstallation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.installation.AutotoolsInstallation" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.cf.software.installation.</code><code class="descname">AutotoolsInstallation</code><span class="sig-paren">(</span><em>name</em>, <em>prefix</em>, <em>src</em>, <em>dst</em>, <em>target_arch</em>, <em>target_os</em>, <em>compilers</em>, <em>sources</em>, <em>commands</em>, <em>libraries</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/installation.html#AutotoolsInstallation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.installation.AutotoolsInstallation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#tau.cf.software.installation.Installation" title="tau.cf.software.installation.Installation"><code class="xref py py-class docutils literal"><span class="pre">tau.cf.software.installation.Installation</span></code></a></p>
 <p>Base class for installations that follow the GNU Autotools installation process.</p>
 <dl class="docutils">
@@ -205,7 +205,7 @@ Configuration failed.</p>
 
 <dl class="class">
 <dt id="tau.cf.software.installation.Installation">
-<em class="property">class </em><code class="descclassname">tau.cf.software.installation.</code><code class="descname">Installation</code><span class="sig-paren">(</span><em>name</em>, <em>prefix</em>, <em>src</em>, <em>dst</em>, <em>arch</em>, <em>compilers</em>, <em>sources</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/installation.html#Installation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.installation.Installation" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.cf.software.installation.</code><code class="descname">Installation</code><span class="sig-paren">(</span><em>name</em>, <em>prefix</em>, <em>src</em>, <em>dst</em>, <em>target_arch</em>, <em>target_os</em>, <em>compilers</em>, <em>sources</em>, <em>commands</em>, <em>libraries</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/installation.html#Installation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.installation.Installation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
 <p>Encapsulates a software package installation.</p>
 <dl class="attribute">
@@ -233,10 +233,17 @@ keyword &#8216;download&#8217;.</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="tau.cf.software.installation.Installation.arch">
-<code class="descname">arch</code><a class="headerlink" href="#tau.cf.software.installation.Installation.arch" title="Permalink to this definition">¶</a></dt>
+<dt id="tau.cf.software.installation.Installation.target_arch">
+<code class="descname">target_arch</code><a class="headerlink" href="#tau.cf.software.installation.Installation.target_arch" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>str</em></p>
-<p>Target architecture keyword.</p>
+<p>Target architecture name.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.cf.software.installation.Installation.target_os">
+<code class="descname">target_os</code><a class="headerlink" href="#tau.cf.software.installation.Installation.target_os" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em></p>
+<p>Target operating system name.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -322,7 +329,7 @@ The source code couldn&#8217;t be copied or downloaded.</td>
 
 <dl class="method">
 <dt id="tau.cf.software.installation.Installation._verify">
-<code class="descname">_verify</code><span class="sig-paren">(</span><em>commands=None</em>, <em>libraries=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/installation.html#Installation._verify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.installation.Installation._verify" title="Permalink to this definition">¶</a></dt>
+<code class="descname">_verify</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/installation.html#Installation._verify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.installation.Installation._verify" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check if the installation is valid.</p>
 <p>A valid installation provides all expected libraries and commands.
 Subclasses may wish to perform additional checks.</p>
@@ -451,7 +458,7 @@ Default is one less than the number of CPU cores.</td>
 instrumentation, and other measurement approaches.</p>
 <dl class="class">
 <dt id="tau.cf.software.libunwind_installation.LibunwindInstallation">
-<em class="property">class </em><code class="descclassname">tau.cf.software.libunwind_installation.</code><code class="descname">LibunwindInstallation</code><span class="sig-paren">(</span><em>prefix</em>, <em>src</em>, <em>arch</em>, <em>compilers</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/libunwind_installation.html#LibunwindInstallation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.libunwind_installation.LibunwindInstallation" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.cf.software.libunwind_installation.</code><code class="descname">LibunwindInstallation</code><span class="sig-paren">(</span><em>prefix</em>, <em>src</em>, <em>target_arch</em>, <em>target_os</em>, <em>compilers</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/libunwind_installation.html#LibunwindInstallation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.libunwind_installation.LibunwindInstallation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#tau.cf.software.installation.AutotoolsInstallation" title="tau.cf.software.installation.AutotoolsInstallation"><code class="xref py py-class docutils literal"><span class="pre">tau.cf.software.installation.AutotoolsInstallation</span></code></a></p>
 <p>Encapsulates a libunwind installation.</p>
 <dl class="method">
@@ -477,7 +484,7 @@ even if &#8216;make&#8217; appears to have died.</p>
 <p>PAPI is used to measure hardware performance counters.</p>
 <dl class="class">
 <dt id="tau.cf.software.papi_installation.PapiInstallation">
-<em class="property">class </em><code class="descclassname">tau.cf.software.papi_installation.</code><code class="descname">PapiInstallation</code><span class="sig-paren">(</span><em>prefix</em>, <em>src</em>, <em>arch</em>, <em>compilers</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/papi_installation.html#PapiInstallation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.papi_installation.PapiInstallation" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.cf.software.papi_installation.</code><code class="descname">PapiInstallation</code><span class="sig-paren">(</span><em>prefix</em>, <em>src</em>, <em>target_arch</em>, <em>target_os</em>, <em>compilers</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/papi_installation.html#PapiInstallation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.papi_installation.PapiInstallation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#tau.cf.software.installation.AutotoolsInstallation" title="tau.cf.software.installation.AutotoolsInstallation"><code class="xref py py-class docutils literal"><span class="pre">tau.cf.software.installation.AutotoolsInstallation</span></code></a></p>
 <p>Encapsulates a PAPI installation.</p>
 </dd></dl>
@@ -489,7 +496,7 @@ even if &#8216;make&#8217; appears to have died.</p>
 <p>TAU uses PDT for source instrumentation.</p>
 <dl class="class">
 <dt id="tau.cf.software.pdt_installation.PdtInstallation">
-<em class="property">class </em><code class="descclassname">tau.cf.software.pdt_installation.</code><code class="descname">PdtInstallation</code><span class="sig-paren">(</span><em>prefix</em>, <em>src</em>, <em>arch</em>, <em>compilers</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/pdt_installation.html#PdtInstallation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.pdt_installation.PdtInstallation" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.cf.software.pdt_installation.</code><code class="descname">PdtInstallation</code><span class="sig-paren">(</span><em>prefix</em>, <em>src</em>, <em>target_arch</em>, <em>target_os</em>, <em>compilers</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/pdt_installation.html#PdtInstallation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.pdt_installation.PdtInstallation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#tau.cf.software.installation.AutotoolsInstallation" title="tau.cf.software.installation.AutotoolsInstallation"><code class="xref py py-class docutils literal"><span class="pre">tau.cf.software.installation.AutotoolsInstallation</span></code></a></p>
 <p>Encapsulates a PDT installation.</p>
 <p>PDT doesn&#8217;t actually use an Autotools configure script but the installation
@@ -508,19 +515,12 @@ proceedure is the same otherwise, so we reuse what we can from AutotoolsInstalla
 <p>TAU is the core software package of TAU Commander.</p>
 <dl class="class">
 <dt id="tau.cf.software.tau_installation.TauInstallation">
-<em class="property">class </em><code class="descclassname">tau.cf.software.tau_installation.</code><code class="descname">TauInstallation</code><span class="sig-paren">(</span><em>prefix</em>, <em>src</em>, <em>host_arch</em>, <em>host_os</em>, <em>compilers</em>, <em>verbose</em>, <em>pdt_source</em>, <em>binutils_source</em>, <em>libunwind_source</em>, <em>papi_source</em>, <em>openmp_support</em>, <em>pthreads_support</em>, <em>mpi_support</em>, <em>mpi_include_path</em>, <em>mpi_library_path</em>, <em>mpi_libraries</em>, <em>cuda_support</em>, <em>shmem_support</em>, <em>mpc_support</em>, <em>source_inst</em>, <em>compiler_inst</em>, <em>link_only</em>, <em>io_inst</em>, <em>keep_inst_files</em>, <em>reuse_inst_files</em>, <em>profile</em>, <em>trace</em>, <em>sample</em>, <em>metrics</em>, <em>measure_mpi</em>, <em>measure_openmp</em>, <em>measure_pthreads</em>, <em>measure_cuda</em>, <em>measure_shmem</em>, <em>measure_mpc</em>, <em>measure_memory_usage</em>, <em>measure_memory_alloc</em>, <em>callpath_depth</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/tau_installation.html#TauInstallation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.tau_installation.TauInstallation" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.cf.software.tau_installation.</code><code class="descname">TauInstallation</code><span class="sig-paren">(</span><em>prefix</em>, <em>src</em>, <em>target_arch</em>, <em>target_os</em>, <em>compilers</em>, <em>verbose</em>, <em>pdt</em>, <em>binutils</em>, <em>libunwind</em>, <em>papi</em>, <em>openmp_support</em>, <em>pthreads_support</em>, <em>mpi_support</em>, <em>mpi_include_path</em>, <em>mpi_library_path</em>, <em>mpi_libraries</em>, <em>cuda_support</em>, <em>cuda_prefix</em>, <em>opencl_support</em>, <em>opencl_prefix</em>, <em>shmem_support</em>, <em>mpc_support</em>, <em>source_inst</em>, <em>compiler_inst</em>, <em>link_only</em>, <em>io_inst</em>, <em>keep_inst_files</em>, <em>reuse_inst_files</em>, <em>profile</em>, <em>trace</em>, <em>sample</em>, <em>metrics</em>, <em>measure_mpi</em>, <em>measure_openmp</em>, <em>measure_opencl</em>, <em>measure_pthreads</em>, <em>measure_cuda</em>, <em>measure_shmem</em>, <em>measure_mpc</em>, <em>measure_memory_usage</em>, <em>measure_memory_alloc</em>, <em>callpath_depth</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/tau_installation.html#TauInstallation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.tau_installation.TauInstallation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#tau.cf.software.installation.Installation" title="tau.cf.software.installation.Installation"><code class="xref py py-class docutils literal"><span class="pre">tau.cf.software.installation.Installation</span></code></a></p>
 <p>Encapsulates a TAU installation.</p>
 <p>TAU is an enormous, organic, complex piece of software so this class is
 unusually complex to consider all the corner cases.  This is where most
 of the systemization of TAU is actually implemented so it can get ugly.</p>
-<dl class="method">
-<dt id="tau.cf.software.tau_installation.TauInstallation._check_dependencies">
-<code class="descname">_check_dependencies</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/tau_installation.html#TauInstallation._check_dependencies"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.tau_installation.TauInstallation._check_dependencies" title="Permalink to this definition">¶</a></dt>
-<dd><p>Ensures all required dependencies are installed and working.</p>
-<p>Kicks off dependency installation if a required dependency is not found.</p>
-</dd></dl>
-
 <dl class="method">
 <dt id="tau.cf.software.tau_installation.TauInstallation._incompatible_tags">
 <code class="descname">_incompatible_tags</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/tau_installation.html#TauInstallation._incompatible_tags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.tau_installation.TauInstallation._incompatible_tags" title="Permalink to this definition">¶</a></dt>
@@ -530,7 +530,7 @@ of the systemization of TAU is actually implemented so it can get ugly.</p>
 
 <dl class="method">
 <dt id="tau.cf.software.tau_installation.TauInstallation._verify">
-<code class="descname">_verify</code><span class="sig-paren">(</span><em>commands=None</em>, <em>libraries=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/tau_installation.html#TauInstallation._verify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.tau_installation.TauInstallation._verify" title="Permalink to this definition">¶</a></dt>
+<code class="descname">_verify</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/tau_installation.html#TauInstallation._verify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.tau_installation.TauInstallation._verify" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns true if the installation is valid.</p>
 <p>A working TAU installation has a directory named <cite>arch</cite>
 containing <cite>bin</cite> and <cite>lib</cite> directories and provides all expected
@@ -625,7 +625,7 @@ TAU&#8217;s configure script failed.</td>
 
 <dl class="method">
 <dt id="tau.cf.software.tau_installation.TauInstallation.get_application_command">
-<code class="descname">get_application_command</code><span class="sig-paren">(</span><em>application_cmd</em>, <em>application_args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/tau_installation.html#TauInstallation.get_application_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.tau_installation.TauInstallation.get_application_command" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_application_command</code><span class="sig-paren">(</span><em>launcher_cmd</em>, <em>application_cmd</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/tau_installation.html#TauInstallation.get_application_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.tau_installation.TauInstallation.get_application_command" title="Permalink to this definition">¶</a></dt>
 <dd><p>Build a command line to launch an application under TAU.</p>
 <p>Sometimes TAU needs to use tau_exec, sometimes not.  This routine
 also handles backend launch commands like <cite>aprun</cite>.</p>
@@ -634,14 +634,13 @@ also handles backend launch commands like <cite>aprun</cite>.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>application_cmd</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The application command, e.g. &#8216;./a.out&#8217;.</li>
-<li><strong>application_args</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; The application command line arguments.</li>
+<li><strong>launcher_cmd</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Application launcher with command line arguments, e.g. [&#8216;mpirun&#8217;, &#8216;-np&#8217;, &#8216;4&#8217;].</li>
+<li><strong>application_cmd</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Application command with command line arguments, e.g. [&#8216;./a.out&#8217;, &#8216;-g&#8217;, &#8216;hello&#8217;].</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">(cmd, env) where <cite>cmd</cite> is the new command line and <cite>env</cite> is
-a dictionary of environment variables to set before running
-the application command.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">(cmd, env) where <cite>cmd</cite> is the new command line and <cite>env</cite> is a dictionary of environment
+variables to set before running the application command.</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#tuple" title="(in Python v2.7)">tuple</a></p>
@@ -792,26 +791,6 @@ for the TAU library and tau_exec script.</p>
 </tbody>
 </table>
 </dd></dl>
-
-<dl class="method">
-<dt id="tau.cf.software.tau_installation.TauInstallation.uses_binutils">
-<code class="descname">uses_binutils</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/tau_installation.html#TauInstallation.uses_binutils"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.tau_installation.TauInstallation.uses_binutils" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="tau.cf.software.tau_installation.TauInstallation.uses_libunwind">
-<code class="descname">uses_libunwind</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/tau_installation.html#TauInstallation.uses_libunwind"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.tau_installation.TauInstallation.uses_libunwind" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="tau.cf.software.tau_installation.TauInstallation.uses_papi">
-<code class="descname">uses_papi</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/tau_installation.html#TauInstallation.uses_papi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.tau_installation.TauInstallation.uses_papi" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="tau.cf.software.tau_installation.TauInstallation.uses_pdt">
-<code class="descname">uses_pdt</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/tau_installation.html#TauInstallation.uses_pdt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.tau_installation.TauInstallation.uses_pdt" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 </dd></dl>
 

@@ -26,7 +26,7 @@
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
     <link rel="top" title="TAU Commander Developer Documentation" href="../../../index.html" />
-    <link rel="up" title="tau.model" href="../model.html" /> 
+    <link rel="up" title="Module code" href="../../index.html" /> 
   </head>
   <body role="document">
       <div class="header" role="banner"><img class="rightlogo" src="../../../_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="../../../index.html">
@@ -81,98 +81,107 @@
 <span class="sd">specifying OpenMP is used and the other specifying OpenMP is not used.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-
-<span class="kn">from</span> <span class="nn">tau.model</span> <span class="kn">import</span> <span class="n">Controller</span><span class="p">,</span> <span class="n">ByName</span>
-<span class="kn">from</span> <span class="nn">tau.cli.arguments</span> <span class="kn">import</span> <span class="n">ParseBooleanAction</span>
+<span class="kn">from</span> <span class="nn">tau.mvc.model</span> <span class="kn">import</span> <span class="n">Model</span>
 
 
-<div class="viewcode-block" id="Application"><a class="viewcode-back" href="../../../tau.model.html#tau.model.application.Application">[docs]</a><span class="k">class</span> <span class="nc">Application</span><span class="p">(</span><span class="n">Controller</span><span class="p">,</span> <span class="n">ByName</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Application data controller.&quot;&quot;&quot;</span>
-    <span class="k">pass</span>
-
-
-<span class="c"># Prevent circular imports by importing controllers from other models </span>
-<span class="c"># only after defining our own controller.  </span></div>
-<span class="kn">from</span> <span class="nn">tau.model.target</span> <span class="kn">import</span> <span class="n">Target</span>
-<span class="kn">from</span> <span class="nn">tau.model.measurement</span> <span class="kn">import</span> <span class="n">Measurement</span>
-
-
-<span class="n">Application</span><span class="o">.</span><span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s">&#39;projects&#39;</span><span class="p">:</span> <span class="p">{</span> 
-        <span class="s">&#39;collection&#39;</span><span class="p">:</span> <span class="s">&#39;Project&#39;</span><span class="p">,</span>
-        <span class="s">&#39;via&#39;</span><span class="p">:</span> <span class="s">&#39;applications&#39;</span><span class="p">,</span>
-        <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">&#39;projects using this application&#39;</span>
-    <span class="p">},</span>
-    <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;string&#39;</span><span class="p">,</span>
-        <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">&#39;application configuration name&#39;</span><span class="p">,</span>
-        <span class="s">&#39;unique&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
-        <span class="s">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;metavar&#39;</span><span class="p">:</span> <span class="s">&#39;&lt;application_name&gt;&#39;</span><span class="p">}</span>
-    <span class="p">},</span>
-    <span class="s">&#39;openmp&#39;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;boolean&#39;</span><span class="p">,</span> 
-        <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">&#39;application uses OpenMP&#39;</span><span class="p">,</span>
-        <span class="s">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span> 
-        <span class="s">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&#39;--openmp&#39;</span><span class="p">,),</span>
-                     <span class="s">&#39;metavar&#39;</span><span class="p">:</span> <span class="s">&#39;yes/no&#39;</span><span class="p">,</span>
-                     <span class="s">&#39;nargs&#39;</span><span class="p">:</span> <span class="s">&#39;?&#39;</span><span class="p">,</span>
-                     <span class="s">&#39;const&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
-                     <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParseBooleanAction</span><span class="p">},</span>
-    <span class="p">},</span>
-    <span class="s">&#39;pthreads&#39;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;boolean&#39;</span><span class="p">,</span>
-        <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">&#39;application uses pthreads&#39;</span><span class="p">,</span>
-        <span class="s">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
-        <span class="s">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&#39;--pthreads&#39;</span><span class="p">,),</span>
-                     <span class="s">&#39;metavar&#39;</span><span class="p">:</span> <span class="s">&#39;yes/no&#39;</span><span class="p">,</span>
-                     <span class="s">&#39;nargs&#39;</span><span class="p">:</span> <span class="s">&#39;?&#39;</span><span class="p">,</span>
-                     <span class="s">&#39;const&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
-                     <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParseBooleanAction</span><span class="p">}</span>
-    <span class="p">},</span>
-    <span class="s">&#39;mpi&#39;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;boolean&#39;</span><span class="p">,</span>
-        <span class="s">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
-        <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">&#39;application uses MPI&#39;</span><span class="p">,</span>
-        <span class="s">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&#39;--mpi&#39;</span><span class="p">,),</span>
-                     <span class="s">&#39;metavar&#39;</span><span class="p">:</span> <span class="s">&#39;yes/no&#39;</span><span class="p">,</span>
-                     <span class="s">&#39;nargs&#39;</span><span class="p">:</span> <span class="s">&#39;?&#39;</span><span class="p">,</span>
-                     <span class="s">&#39;const&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
-                     <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParseBooleanAction</span><span class="p">},</span>
-        <span class="s">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="bp">True</span><span class="p">:</span> <span class="n">Measurement</span><span class="o">.</span><span class="n">encourage</span><span class="p">(</span><span class="s">&#39;mpi&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)}</span>
-    <span class="p">},</span>
-    <span class="s">&#39;cuda&#39;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;boolean&#39;</span><span class="p">,</span>
-        <span class="s">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
-        <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">&#39;application uses NVIDIA CUDA&#39;</span><span class="p">,</span>
-        <span class="s">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&#39;--cuda&#39;</span><span class="p">,),</span>
-                     <span class="s">&#39;metavar&#39;</span><span class="p">:</span> <span class="s">&#39;yes/no&#39;</span><span class="p">,</span>
-                     <span class="s">&#39;nargs&#39;</span><span class="p">:</span> <span class="s">&#39;?&#39;</span><span class="p">,</span>
-                     <span class="s">&#39;const&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
-                     <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParseBooleanAction</span><span class="p">},</span>
-        <span class="s">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="bp">True</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s">&#39;cuda&#39;</span><span class="p">)}</span>
-    <span class="p">},</span>
-    <span class="s">&#39;shmem&#39;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;boolean&#39;</span><span class="p">,</span>
-        <span class="s">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
-        <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">&#39;application uses SHMEM&#39;</span><span class="p">,</span>
-        <span class="s">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&#39;--shmem&#39;</span><span class="p">,),</span>
-                     <span class="s">&#39;metavar&#39;</span><span class="p">:</span> <span class="s">&#39;yes/no&#39;</span><span class="p">,</span>
-                     <span class="s">&#39;nargs&#39;</span><span class="p">:</span> <span class="s">&#39;?&#39;</span><span class="p">,</span>
-                     <span class="s">&#39;const&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
-                     <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParseBooleanAction</span><span class="p">},</span>
-    <span class="p">},</span>
-    <span class="s">&#39;mpc&#39;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;boolean&#39;</span><span class="p">,</span>
-        <span class="s">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
-        <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">&#39;application uses MPC&#39;</span><span class="p">,</span>
-        <span class="s">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&#39;--mpc&#39;</span><span class="p">,),</span>
-                     <span class="s">&#39;metavar&#39;</span><span class="p">:</span> <span class="s">&#39;yes/no&#39;</span><span class="p">,</span>
-                     <span class="s">&#39;nargs&#39;</span><span class="p">:</span> <span class="s">&#39;?&#39;</span><span class="p">,</span>
-                     <span class="s">&#39;const&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
-                     <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParseBooleanAction</span><span class="p">}</span>
+<div class="viewcode-block" id="attributes"><a class="viewcode-back" href="../../../tau.model.html#tau.model.application.attributes">[docs]</a><span class="k">def</span> <span class="nf">attributes</span><span class="p">():</span>
+    <span class="kn">from</span> <span class="nn">tau.model.project</span> <span class="kn">import</span> <span class="n">Project</span>
+    <span class="kn">from</span> <span class="nn">tau.model.target</span> <span class="kn">import</span> <span class="n">Target</span>
+    <span class="kn">from</span> <span class="nn">tau.model.measurement</span> <span class="kn">import</span> <span class="n">Measurement</span>
+    <span class="kn">from</span> <span class="nn">tau.cli.arguments</span> <span class="kn">import</span> <span class="n">ParseBooleanAction</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s">&#39;projects&#39;</span><span class="p">:</span> <span class="p">{</span> 
+            <span class="s">&#39;collection&#39;</span><span class="p">:</span> <span class="n">Project</span><span class="p">,</span>
+            <span class="s">&#39;via&#39;</span><span class="p">:</span> <span class="s">&#39;applications&#39;</span><span class="p">,</span>
+            <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">&#39;projects using this application&#39;</span>
+        <span class="p">},</span>
+        <span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s">&#39;primary_key&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+            <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;string&#39;</span><span class="p">,</span>
+            <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">&#39;application configuration name&#39;</span><span class="p">,</span>
+            <span class="s">&#39;unique&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+            <span class="s">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;metavar&#39;</span><span class="p">:</span> <span class="s">&#39;&lt;application_name&gt;&#39;</span><span class="p">}</span>
+        <span class="p">},</span>
+        <span class="s">&#39;openmp&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;boolean&#39;</span><span class="p">,</span> 
+            <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">&#39;application uses OpenMP&#39;</span><span class="p">,</span>
+            <span class="s">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span> 
+            <span class="s">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&#39;--use-openmp&#39;</span><span class="p">,),</span>
+                         <span class="s">&#39;metavar&#39;</span><span class="p">:</span> <span class="s">&#39;T/F&#39;</span><span class="p">,</span>
+                         <span class="s">&#39;nargs&#39;</span><span class="p">:</span> <span class="s">&#39;?&#39;</span><span class="p">,</span>
+                         <span class="s">&#39;const&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+                         <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParseBooleanAction</span><span class="p">},</span>
+        <span class="p">},</span>
+        <span class="s">&#39;pthreads&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;boolean&#39;</span><span class="p">,</span>
+            <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">&#39;application uses pthreads&#39;</span><span class="p">,</span>
+            <span class="s">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&#39;--use-pthreads&#39;</span><span class="p">,),</span>
+                         <span class="s">&#39;metavar&#39;</span><span class="p">:</span> <span class="s">&#39;T/F&#39;</span><span class="p">,</span>
+                         <span class="s">&#39;nargs&#39;</span><span class="p">:</span> <span class="s">&#39;?&#39;</span><span class="p">,</span>
+                         <span class="s">&#39;const&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+                         <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParseBooleanAction</span><span class="p">}</span>
+        <span class="p">},</span>
+        <span class="s">&#39;mpi&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;boolean&#39;</span><span class="p">,</span>
+            <span class="s">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">&#39;application uses MPI&#39;</span><span class="p">,</span>
+            <span class="s">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&#39;--use-mpi&#39;</span><span class="p">,),</span>
+                         <span class="s">&#39;metavar&#39;</span><span class="p">:</span> <span class="s">&#39;T/F&#39;</span><span class="p">,</span>
+                         <span class="s">&#39;nargs&#39;</span><span class="p">:</span> <span class="s">&#39;?&#39;</span><span class="p">,</span>
+                         <span class="s">&#39;const&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+                         <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParseBooleanAction</span><span class="p">},</span>
+            <span class="s">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="bp">True</span><span class="p">:</span> <span class="n">Measurement</span><span class="o">.</span><span class="n">encourage</span><span class="p">(</span><span class="s">&#39;mpi&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)}</span>
+        <span class="p">},</span>
+        <span class="s">&#39;cuda&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;boolean&#39;</span><span class="p">,</span>
+            <span class="s">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">&#39;application uses NVIDIA CUDA&#39;</span><span class="p">,</span>
+            <span class="s">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&#39;--use-cuda&#39;</span><span class="p">,),</span>
+                         <span class="s">&#39;metavar&#39;</span><span class="p">:</span> <span class="s">&#39;T/F&#39;</span><span class="p">,</span>
+                         <span class="s">&#39;nargs&#39;</span><span class="p">:</span> <span class="s">&#39;?&#39;</span><span class="p">,</span>
+                         <span class="s">&#39;const&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+                         <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParseBooleanAction</span><span class="p">},</span>
+            <span class="s">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="bp">True</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s">&#39;cuda&#39;</span><span class="p">)}</span>
+        <span class="p">},</span>
+        <span class="s">&#39;opencl&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;boolean&#39;</span><span class="p">,</span>
+            <span class="s">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">&#39;application uses OpenCL&#39;</span><span class="p">,</span>
+            <span class="s">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&#39;--use-opencl&#39;</span><span class="p">,),</span>
+                         <span class="s">&#39;metavar&#39;</span><span class="p">:</span> <span class="s">&#39;T/F&#39;</span><span class="p">,</span>
+                         <span class="s">&#39;nargs&#39;</span><span class="p">:</span> <span class="s">&#39;?&#39;</span><span class="p">,</span>
+                         <span class="s">&#39;const&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+                         <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParseBooleanAction</span><span class="p">},</span>
+            <span class="s">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="bp">True</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s">&#39;opencl&#39;</span><span class="p">)}</span>
+        <span class="p">},</span>
+        <span class="s">&#39;shmem&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;boolean&#39;</span><span class="p">,</span>
+            <span class="s">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">&#39;application uses SHMEM&#39;</span><span class="p">,</span>
+            <span class="s">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&#39;--use-shmem&#39;</span><span class="p">,),</span>
+                         <span class="s">&#39;metavar&#39;</span><span class="p">:</span> <span class="s">&#39;T/F&#39;</span><span class="p">,</span>
+                         <span class="s">&#39;nargs&#39;</span><span class="p">:</span> <span class="s">&#39;?&#39;</span><span class="p">,</span>
+                         <span class="s">&#39;const&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+                         <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParseBooleanAction</span><span class="p">},</span>
+        <span class="p">},</span>
+        <span class="s">&#39;mpc&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;boolean&#39;</span><span class="p">,</span>
+            <span class="s">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s">&#39;description&#39;</span><span class="p">:</span> <span class="s">&#39;application uses MPC&#39;</span><span class="p">,</span>
+            <span class="s">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&#39;--use-mpc&#39;</span><span class="p">,),</span>
+                         <span class="s">&#39;metavar&#39;</span><span class="p">:</span> <span class="s">&#39;T/F&#39;</span><span class="p">,</span>
+                         <span class="s">&#39;nargs&#39;</span><span class="p">:</span> <span class="s">&#39;?&#39;</span><span class="p">,</span>
+                         <span class="s">&#39;const&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+                         <span class="s">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParseBooleanAction</span><span class="p">}</span>
+        <span class="p">}</span>
     <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
+        
+</div>
+<div class="viewcode-block" id="Application"><a class="viewcode-back" href="../../../tau.model.html#tau.model.application.Application">[docs]</a><span class="k">class</span> <span class="nc">Application</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    
+    <span class="n">__attributes__</span> <span class="o">=</span> <span class="n">attributes</span>
+</pre></div></div>
 
       </div>
       <div class="bottomnav" role="navigation" aria-label="bottom navigation">
