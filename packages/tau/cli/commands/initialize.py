@@ -100,17 +100,12 @@ class InitializeCommand(AbstractCommand):
                                        action=ParseBooleanAction)
         return parser
 
-    def _create_project(self, argv):
+    def _create_project(self, argv, args):
         def _safe_execute(cmd, argv):
             retval = cmd.main(argv)
             if retval != EXIT_SUCCESS:
                 raise InternalError("return code %s: %s %s" % (retval, cmd, ' '.join(argv)))
 
-        args = self.parser.parse_args(args=argv)
-        self.logger.debug('Arguments: %s', args)
-        if not (args.profile or args.trace or args.sample):
-            self.parser.error('You must specify at least one measurement.')
-        
         project_name = args.project_name
         target_name = args.target_name
         application_name = args.application_name
@@ -161,13 +156,18 @@ class InitializeCommand(AbstractCommand):
                          '--application', application_name, '--measurement', measurement_names[0]])
     
     def main(self, argv):
+        args = self.parser.parse_args(args=argv)
+        self.logger.debug('Arguments: %s', args)
+        if not (args.profile or args.trace or args.sample):
+            self.parser.error('You must specify at least one measurement.')
+        
         proj_ctrl = Project.controller()
         try:
             proj = proj_ctrl.selected()
         except ProjectStorageError:
             self.logger.debug("No project found, initializing a new project.")
             PROJECT_STORAGE.connect_filesystem()
-            self._create_project(argv)
+            self._create_project(argv, args)
         except ProjectSelectionError as err:
             err.value = "The project has been initialized but no project configuration is selected."
             raise err
