@@ -16,7 +16,7 @@ buildOptions = dict(packages=packages, excludes=excludes,
                     optimize=2, compressed=True)
 
 executables = [
-    Executable(os.path.abspath('tau/cli/commands/__main__.py'), 'Console', targetName="tau")
+    Executable(os.path.abspath('packages/tau/cli/commands/__main__.py'), 'Console', targetName="tau")
 ]
 
 setup(name='TAU Commander',
