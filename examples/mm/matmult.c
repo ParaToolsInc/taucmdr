@@ -29,7 +29,6 @@ This is not a parallel implementation */
 pthread_mutex_t mutexsum;
 #endif /* PTHREADS */
 
-#define APP_USE_INLINE_MULTIPLY 1
 
 #ifndef MATRIX_SIZE
 #define MATRIX_SIZE 512
@@ -56,11 +55,9 @@ void freeMatrix(double** matrix, int rows, int cols) {
   free(matrix);
 }
 
-#ifdef APP_USE_INLINE_MULTIPLY
 __inline double multiply(double a, double b) {
 	return a * b;
 }
-#endif /* APP_USE_INLINE_MULTIPLY */
 
 #if 0
 // cols_a and rows_b are the same value

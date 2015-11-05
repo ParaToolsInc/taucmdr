@@ -122,31 +122,30 @@ class Installation(object):
             self.install_prefix = src
         else:
             if src.lower() == 'download':
-                self.src = self._lookup_target_os_list(sources, target_arch, target_os)
+                self.src = self._lookup_target_os_list(sources)
             else:
                 self.src = src
             md5sum = hashlib.md5()
             md5sum.update(self.src)
             self.install_prefix = os.path.join(prefix, dst, name, md5sum.hexdigest())
-        self.commands = self._lookup_target_os_list(commands, target_arch, target_os)
-        self.libraries = self._lookup_target_os_list(libraries, target_arch, target_os)
+        self.commands = self._lookup_target_os_list(commands)
+        self.libraries = self._lookup_target_os_list(libraries)
         self.include_path = os.path.join(self.install_prefix, 'include')
         self.bin_path = os.path.join(self.install_prefix, 'bin')
         self.lib_path = os.path.join(self.install_prefix, 'lib')
         self._lockfile = LockFile(os.path.join(self.install_prefix, '.tau_lock'))
         LOGGER.debug("%s installation prefix is %s", self.name, self.install_prefix)
         
-    @staticmethod
-    def _lookup_target_os_list(dct, target_arch, target_os):
+    def _lookup_target_os_list(self, dct):
         if not dct:
             return []
         default = dct[None]
         try:
-            arch_val = dct[target_arch]
+            arch_dct = dct[self.target_arch]
         except KeyError:
             return default
         else:
-            return arch_val.get(target_os, arch_val.get(None, default))
+            return arch_dct.get(self.target_os, arch_dct.get(None, default))
         
     def __enter__(self):
         """Lock the software installation for use by this process only."""
@@ -215,10 +214,6 @@ class Installation(object):
         
         A valid installation provides all expected libraries and commands.
         Subclasses may wish to perform additional checks.
-        
-        Args:
-            commands (list): Commands that should be present and executable.
-            libraries (list): Libraries that should be present and readable.
         
         Returns:
             True: If the installation at self.install_prefix is valid.
