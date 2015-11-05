@@ -20,6 +20,14 @@ Subpackages
 Submodules
 ----------
 
+tau.cli.commands.__main__ module
+--------------------------------
+
+.. automodule:: tau.cli.commands.__main__
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 tau.cli.commands.build module
 -----------------------------
 
@@ -40,6 +48,22 @@ tau.cli.commands.help module
 ----------------------------
 
 .. automodule:: tau.cli.commands.help
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+tau.cli.commands.initialize module
+----------------------------------
+
+.. automodule:: tau.cli.commands.initialize
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+tau.cli.commands.select module
+------------------------------
+
+.. automodule:: tau.cli.commands.select
     :members:
     :undoc-members:
     :show-inheritance:

@@ -24,4 +24,20 @@ tau.cli.arguments module
     :undoc-members:
     :show-inheritance:
 
+tau.cli.cli_view module
+-----------------------
+
+.. automodule:: tau.cli.cli_view
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+tau.cli.command module
+----------------------
+
+.. automodule:: tau.cli.command
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 

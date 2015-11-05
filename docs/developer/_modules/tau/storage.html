@@ -71,269 +71,333 @@
 <span class="c"># OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE</span>
 <span class="c"># OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</span>
 <span class="c">#</span>
-<span class="sd">&quot;&quot;&quot;Persistant record storage.</span>
 
-<span class="sd">This implementation uses :py:class:`TinyDB` but could be extended to be the front end</span>
-<span class="sd">to any kind of storage system.</span>
-<span class="sd">&quot;&quot;&quot;</span>
-
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">tinydb</span> <span class="kn">import</span> <span class="n">TinyDB</span><span class="p">,</span> <span class="n">where</span>
-<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">USER_PREFIX</span><span class="p">,</span> <span class="n">SYSTEM_PREFIX</span>
-<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">util</span>
-<span class="kn">from</span> <span class="nn">tau.error</span> <span class="kn">import</span> <span class="n">InternalError</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span> <span class="nn">tau.error</span> <span class="kn">import</span> <span class="n">Error</span>
 
 
-<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+<div class="viewcode-block" id="StorageError"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.StorageError">[docs]</a><span class="k">class</span> <span class="nc">StorageError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Indicates a failure in the storage system.&quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="StorageError"><a class="viewcode-back" href="../../tau.html#tau.storage.StorageError">[docs]</a><span class="k">class</span> <span class="nc">StorageError</span><span class="p">(</span><span class="n">InternalError</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Indicates that there is a problem with the storage system.&quot;&quot;&quot;</span>
+    <span class="n">message_fmt</span> <span class="o">=</span> <span class="p">(</span><span class="s">&quot;</span><span class="si">%(value)s</span><span class="se">\n</span><span class="s">&quot;</span>
+                   <span class="s">&quot;</span><span class="si">%(hints)s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
 
 </div>
-<div class="viewcode-block" id="Storage"><a class="viewcode-back" href="../../tau.html#tau.storage.Storage">[docs]</a><span class="k">class</span> <span class="nc">Storage</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Interface to a persistant record storage system.</span>
-<span class="sd">    </span>
-<span class="sd">    This implementation uses :py:class:`TinyDB` and supports transactional updates.</span>
+<div class="viewcode-block" id="StorageRecord"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.StorageRecord">[docs]</a><span class="k">class</span> <span class="nc">StorageRecord</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A record in the storage container&#39;s database.</span>
 <span class="sd">    </span>
 <span class="sd">    Attributes:</span>
-<span class="sd">        database (TinyDB): Record database.</span>
+<span class="sd">        eid_type: Element identifier type.</span>
+<span class="sd">        storage: Storage container whos database contains this record.</span>
+<span class="sd">        eid: Element identifier value.</span>
+<span class="sd">        element (dict): The database element as a dictionary. </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">eid_type</span> <span class="o">=</span> <span class="nb">str</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">storage</span><span class="p">,</span> <span class="n">eid</span><span class="p">,</span> <span class="n">element</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">storage</span> <span class="o">=</span> <span class="n">storage</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eid</span> <span class="o">=</span> <span class="n">eid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">element</span> <span class="o">=</span> <span class="n">element</span>
+
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+    
+<div class="viewcode-block" id="StorageRecord.get"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.StorageRecord.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="p">)</span>
+    
+<div class="viewcode-block" id="StorageRecord.iteritems"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.StorageRecord.iteritems">[docs]</a>    <span class="k">def</span> <span class="nf">iteritems</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()</span>
+    </div>
+<div class="viewcode-block" id="StorageRecord.iterkeys"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.StorageRecord.iterkeys">[docs]</a>    <span class="k">def</span> <span class="nf">iterkeys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="o">.</span><span class="n">iterkeys</span><span class="p">()</span>
+ </div>
+<div class="viewcode-block" id="StorageRecord.itervalues"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.StorageRecord.itervalues">[docs]</a>    <span class="k">def</span> <span class="nf">itervalues</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="o">.</span><span class="n">itervalues</span><span class="p">()</span>
+ </div>
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="AbstractStorage"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage">[docs]</a><span class="k">class</span> <span class="nc">AbstractStorage</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Abstract base class for storage containers.</span>
 <span class="sd">    </span>
-<span class="sd">    Args:</span>
-<span class="sd">        prefix (str): Path to a directory to contain the TinyDB database file.</span>
-<span class="sd">        db_name (str): Name of the TinyDB database file.</span>
+<span class="sd">    A storage container provides a record database, a persistent filesystem, and a key/value store.</span>
+<span class="sd">    The database is accessed via member methods like :any:`insert`, :any:`search`, etc.</span>
+<span class="sd">    The filesystem is accessed via its filesystem prefix (e.g. ``/usr/local/packages``) via :any:`prefix`.</span>
+<span class="sd">    The key/value store is accessed via the `[]` operator, i.e. treat the storage object like a dictionary.</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes:</span>
+<span class="sd">        name (str): The storage container&#39;s name, e.g. &quot;system&quot; or &quot;user&quot;.</span>
+<span class="sd">        prefix (str): Absolute path to the top-level directory of the container&#39;s filesystem.</span>
+<span class="sd">        database (str): Database object implementing :any:`AbstractDatabase`. </span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">db_name</span><span class="o">=</span><span class="s">&#39;local.json&#39;</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_transaction_count</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_db_copy</span> <span class="o">=</span> <span class="bp">None</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">util</span><span class="o">.</span><span class="n">mkdirp</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span>
-        <span class="k">except</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">StorageError</span><span class="p">(</span><span class="s">&quot;Cannot create directory &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="n">prefix</span><span class="p">,</span> 
-                               <span class="s">&#39;Check that you have `write` access&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">dbfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">db_name</span><span class="p">)</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">database</span> <span class="o">=</span> <span class="n">TinyDB</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dbfile</span><span class="p">)</span>
-        <span class="k">except</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">StorageError</span><span class="p">(</span><span class="s">&quot;Cannot create &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbfile</span><span class="p">,</span> 
-                               <span class="s">&#39;Check that you have `write` access&#39;</span><span class="p">)</span>
-        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Opened &#39;</span><span class="si">%s</span><span class="s">&#39; for read/write&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbfile</span><span class="p">)</span>
+    <span class="n">__metaclass__</span> <span class="o">=</span> <span class="n">ABCMeta</span>
+    
+    <span class="n">Record</span> <span class="o">=</span> <span class="n">StorageRecord</span>
 
-<div class="viewcode-block" id="Storage.__enter__"><a class="viewcode-back" href="../../tau.html#tau.storage.Storage.__enter__">[docs]</a>    <span class="k">def</span> <span class="nf">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+
+    <span class="nd">@abstractmethod</span>    
+<div class="viewcode-block" id="AbstractStorage.__getitem__"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.__getitem__">[docs]</a>    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Retrieve a value from the key/value store.&quot;&quot;&quot;</span>
+    </div>
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="AbstractStorage.__setitem__"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.__setitem__">[docs]</a>    <span class="k">def</span> <span class="nf">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Store a value in the key/value store.&quot;&quot;&quot;</span>
+        </div>
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="AbstractStorage.__delitem__"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.__delitem__">[docs]</a>    <span class="k">def</span> <span class="nf">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Remove a value from the key/value store.&quot;&quot;&quot;</span>
+    </div>
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="AbstractStorage.connect_filesystem"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.connect_filesystem">[docs]</a>    <span class="k">def</span> <span class="nf">connect_filesystem</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Prepares the store filesystem fore reading and writing.&quot;&quot;&quot;</span>
+</div>
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="AbstractStorage.disconnect_filesystem"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.disconnect_filesystem">[docs]</a>    <span class="k">def</span> <span class="nf">disconnect_filesystem</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Prepares the store filesystem fore reading and writing.&quot;&quot;&quot;</span>
+</div>
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="AbstractStorage.connect_database"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.connect_database">[docs]</a>    <span class="k">def</span> <span class="nf">connect_database</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Open the database for reading and writing.&quot;&quot;&quot;</span>
+</div>
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="AbstractStorage.disconnect_database"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.disconnect_database">[docs]</a>    <span class="k">def</span> <span class="nf">disconnect_database</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Close the database for reading and writing.&quot;&quot;&quot;</span>
+</div>
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="AbstractStorage.prefix"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.prefix">[docs]</a>    <span class="k">def</span> <span class="nf">prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the filesystem prefix for file storage.</span>
+<span class="sd">        </span>
+<span class="sd">        The filesystem must be persistent and provide the usual POSIX filesystem calls.</span>
+<span class="sd">        In particular, GNU software packages should be installable in the filesystem.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            str: Absolute path in the filesystem.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+</div>
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="AbstractStorage.__enter__"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.__enter__">[docs]</a>    <span class="k">def</span> <span class="nf">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Initiates the database transaction.&quot;&quot;&quot;</span>
-        <span class="c"># Use protected methods to duplicate database in memory rather than on disk.</span>
-        <span class="c"># pylint: disable=protected-access</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transaction_count</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_db_copy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">_read</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_transaction_count</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="k">return</span> <span class="bp">self</span>
 </div>
-<div class="viewcode-block" id="Storage.__exit__"><a class="viewcode-back" href="../../tau.html#tau.storage.Storage.__exit__">[docs]</a>    <span class="k">def</span> <span class="nf">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ex_type</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">traceback</span><span class="p">):</span>
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="AbstractStorage.__exit__"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.__exit__">[docs]</a>    <span class="k">def</span> <span class="nf">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ex_type</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">traceback</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Finalizes the database transaction.&quot;&quot;&quot;</span>
-        <span class="c"># Use protected methods to duplicate database in memory rather than on disk.</span>
-        <span class="c"># pylint: disable=protected-access</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_transaction_count</span> <span class="o">-=</span> <span class="mi">1</span>
-        <span class="k">if</span> <span class="n">ex_type</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transaction_count</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">_write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_db_copy</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_db_copy</span> <span class="o">=</span> <span class="bp">None</span>
-</div>
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_get_query</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">match_any</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Returns a query object from a dictionary of keys.</span>
+        </div>
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="AbstractStorage.table"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.table">[docs]</a>    <span class="k">def</span> <span class="nf">table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a handle to a table.</span>
+<span class="sd">        </span>
+<span class="sd">        Return a handle to the named table or, if `table_name` is None, return the default table.</span>
 <span class="sd">        </span>
 <span class="sd">        Args:</span>
-<span class="sd">            keys (dict): data keys to query.</span>
-<span class="sd">            match_any (bool): If True then any key may match or if False then all keys must match.</span>
-<span class="sd">        </span>
+<span class="sd">            table_name (str): Name of the table or None.</span>
+<span class="sd">            </span>
 <span class="sd">        Returns:</span>
-<span class="sd">            Query: The query object. </span>
+<span class="sd">            object: A database table object.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">def</span> <span class="nf">_and</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">):</span> 
-            <span class="k">return</span> <span class="n">lhs</span> <span class="o">&amp;</span> <span class="n">rhs</span>
-        <span class="k">def</span> <span class="nf">_or</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">):</span> 
-            <span class="k">return</span> <span class="n">lhs</span> <span class="o">|</span> <span class="n">rhs</span>
-        <span class="n">join</span> <span class="o">=</span> <span class="n">_or</span> <span class="k">if</span> <span class="n">match_any</span> <span class="k">else</span> <span class="n">_and</span>
-        <span class="n">itr</span> <span class="o">=</span> <span class="n">keys</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()</span>
-        <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="o">=</span> <span class="n">itr</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
-        <span class="n">query</span> <span class="o">=</span> <span class="p">(</span><span class="n">where</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="o">==</span> <span class="n">val</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">itr</span><span class="p">:</span>
-            <span class="n">query</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">(</span><span class="n">where</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="o">==</span> <span class="n">value</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">query</span>
-
-<div class="viewcode-block" id="Storage.get"><a class="viewcode-back" href="../../tau.html#tau.storage.Storage.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">eid</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Find a record.</span>
-<span class="sd">        </span>
-<span class="sd">        Either `keys` or `eid` should be specified, not both.  If `keys` is given,</span>
-<span class="sd">        then every attribute listed in `keys` must have the given value. If `eid`</span>
-<span class="sd">        is given, return the record with that eid.  If neither is given, return None.</span>
+</div>
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="AbstractStorage.count"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.count">[docs]</a>    <span class="k">def</span> <span class="nf">count</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Count the records in the database.</span>
 <span class="sd">        </span>
 <span class="sd">        Args:</span>
-<span class="sd">            table_name (str): Name of the table to search.</span>
-<span class="sd">            keys (dict): Fields to match.</span>
-<span class="sd">            eid (list): Record identifier to match.</span>
-<span class="sd">            match_any (bool): If True then any key may match or if False then all keys must match.</span>
+<span class="sd">            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            int: Number of records in the table.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+</div>
+    <span class="nd">@abstractmethod</span>    
+<div class="viewcode-block" id="AbstractStorage.get"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Find a single record.</span>
+<span class="sd">        </span>
+<span class="sd">        The behavior depends on the type of `keys`:</span>
+<span class="sd">            * self.Record.eid_type: return the record with that element identifier.</span>
+<span class="sd">            * dict: return the record with attributes matching `keys`.</span>
+<span class="sd">            * list or tuple: return a list of records matching the elements of `keys`</span>
+<span class="sd">            * None: return None.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            keys: Fields or element identifiers to match.</span>
+<span class="sd">            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.</span>
+<span class="sd">            match_any (bool): Only applies if `keys` is a dictionary.  If True then any key </span>
+<span class="sd">                              in `keys` may match or if False then all keys in `keys` must match.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            dict: Matching data record or None if no such record exists.</span>
+<span class="sd">            Record: The matching data record if `keys` was a self.Record.eid_type or dict.</span>
+<span class="sd">            list: All matching data records if `keys` was a list or tuple.</span>
+<span class="sd">            None: No record found or ``bool(keys) == False``.</span>
+<span class="sd">            </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Invalid value for `keys`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">eid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%r</span><span class="s">: get(eid=</span><span class="si">%r</span><span class="s">)&quot;</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">eid</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">eid</span><span class="o">=</span><span class="n">eid</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">keys</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%r</span><span class="s">: get(keys=</span><span class="si">%r</span><span class="s">)&quot;</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">keys</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_query</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">match_any</span><span class="p">))</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">None</span>
 </div>
-<div class="viewcode-block" id="Storage.search"><a class="viewcode-back" href="../../tau.html#tau.storage.Storage.search">[docs]</a>    <span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="AbstractStorage.search"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.search">[docs]</a>    <span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Find multiple records.</span>
 <span class="sd">        </span>
-<span class="sd">        If `keys` is not specified then return all records.</span>
+<span class="sd">        The behavior depends on the type of `keys`:</span>
+<span class="sd">            * Record.eid_type: return the record with that element identifier.</span>
+<span class="sd">            * dict: return all records with attributes matching `keys`.</span>
+<span class="sd">            * list or tuple: return a list of records matching the elements of `keys`</span>
+<span class="sd">            * None: return all records.</span>
 <span class="sd">        </span>
 <span class="sd">        Args:</span>
-<span class="sd">            table_name (str): Name of the table to search.</span>
-<span class="sd">            keys (dict): Fields to match.</span>
-<span class="sd">            match_any (bool): If True then any key may match or if False then all keys must match.</span>
+<span class="sd">            keys: Fields or element identifiers to match.</span>
+<span class="sd">            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.</span>
+<span class="sd">            match_any (bool): Only applies if `keys` is a dictionary.  If True then any key </span>
+<span class="sd">                              in `keys` may match or if False then all keys in `keys` must match.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            list: Matching data records.</span>
+<span class="sd">            </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Invalid value for `keys`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">keys</span><span class="p">:</span>
-            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%r</span><span class="s">: search(keys=</span><span class="si">%r</span><span class="s">)&quot;</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">keys</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_query</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">match_any</span><span class="p">))</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%r</span><span class="s">: all()&quot;</span><span class="p">,</span> <span class="n">table_name</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
 </div>
-<div class="viewcode-block" id="Storage.match"><a class="viewcode-back" href="../../tau.html#tau.storage.Storage.match">[docs]</a>    <span class="k">def</span> <span class="nf">match</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">test</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Find records where &#39;field&#39; matches &#39;regex&#39;.</span>
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="AbstractStorage.match"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.match">[docs]</a>    <span class="k">def</span> <span class="nf">match</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">test</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Find records where `field` matches `regex` or `test`.</span>
 <span class="sd">        </span>
-<span class="sd">        Either `regex` or `test` may be specified, not both.  If `regex` is given,</span>
-<span class="sd">        then all records with `field` matching the regular expression are returned.</span>
-<span class="sd">        If test is given then all records with `field` set to a value that caues</span>
-<span class="sd">        `test` to return True are returned. If neither is given, return all records. </span>
+<span class="sd">        Either `regex` or `test` may be specified, not both.  </span>
+<span class="sd">        If `regex` is given, then all records with `field` matching the regular expression are returned.</span>
+<span class="sd">        If test is given then all records with `field` set to a value that caues `test` to return True are returned. </span>
+<span class="sd">        If neither is given, return all records where `field` is set to any value. </span>
 <span class="sd">        </span>
 <span class="sd">        Args:</span>
-<span class="sd">            table_name (str): Name of the table to search.</span>
+<span class="sd">            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.</span>
 <span class="sd">            field (string): Name of the data field to match.</span>
 <span class="sd">            regex (string): Regular expression string.</span>
-<span class="sd">            test: A callable expression returning a boolean value.  </span>
-<span class="sd">            </span>
+<span class="sd">            test: Callable returning a boolean value.  </span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            list: Matching data records.</span>
+<span class="sd">            </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Invalid value for `keys`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">test</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%r</span><span class="s">: search(where(</span><span class="si">%r</span><span class="s">).test(</span><span class="si">%r</span><span class="s">))&#39;</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">test</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">where</span><span class="p">(</span><span class="n">field</span><span class="p">)</span><span class="o">.</span><span class="n">test</span><span class="p">(</span><span class="n">test</span><span class="p">))</span>
-        <span class="k">elif</span> <span class="n">regex</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%r</span><span class="s">: search(where(</span><span class="si">%r</span><span class="s">).matches(</span><span class="si">%r</span><span class="s">))&#39;</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">regex</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">where</span><span class="p">(</span><span class="n">field</span><span class="p">)</span><span class="o">.</span><span class="n">matches</span><span class="p">(</span><span class="n">regex</span><span class="p">))</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%r</span><span class="s">: search(where(</span><span class="si">%r</span><span class="s">).matches(&#39;.*&#39;))&quot;</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">field</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">where</span><span class="p">(</span><span class="n">field</span><span class="p">)</span><span class="o">.</span><span class="n">matches</span><span class="p">(</span><span class="s">&#39;.*&#39;</span><span class="p">))</span>
 </div>
-<div class="viewcode-block" id="Storage.contains"><a class="viewcode-back" href="../../tau.html#tau.storage.Storage.contains">[docs]</a>    <span class="k">def</span> <span class="nf">contains</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">eids</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="AbstractStorage.contains"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.contains">[docs]</a>    <span class="k">def</span> <span class="nf">contains</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Check if the specified table contains at least one matching record.</span>
 <span class="sd">        </span>
-<span class="sd">        Just like :any:`Storage.search`, except only tests if the record exists without retrieving any data.</span>
+<span class="sd">        The behavior depends on the type of `keys`:</span>
+<span class="sd">            * self.Record.eid_type: check for the record with that element identifier.</span>
+<span class="sd">            * dict: check for the record with attributes matching `keys`.</span>
+<span class="sd">            * list or tuple: return the equivilent of ``map(contains, keys)``.</span>
 <span class="sd">        </span>
 <span class="sd">        Args:</span>
-<span class="sd">            table_name (str): Name of the table to search.</span>
-<span class="sd">            keys (dict): Attributes to match.</span>
-<span class="sd">            match_any (bool): If True then any key may match or if False then all keys must match.</span>
-<span class="sd">            eids (list): Record identifiers to match.</span>
-<span class="sd">            </span>
-<span class="sd">        Returns:</span>
-<span class="sd">            bool: True if a record exists, False otherwise.          </span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">            keys: Fields or element identifiers to match.</span>
+<span class="sd">            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.</span>
+<span class="sd">            match_any (bool): Only applies if `keys` is a dictionary.  If True then any key </span>
+<span class="sd">                              in `keys` may match or if False then all keys in `keys` must match.</span>
 
-        <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">eids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%r</span><span class="s">: contains(eids=</span><span class="si">%r</span><span class="s">)&quot;</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">eids</span><span class="p">)</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eids</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-                <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="n">eids</span><span class="o">=</span><span class="n">eids</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="n">eids</span><span class="o">=</span><span class="p">[</span><span class="n">eids</span><span class="p">])</span>
-        <span class="k">elif</span> <span class="n">keys</span><span class="p">:</span>
-            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%r</span><span class="s">: contains(keys=</span><span class="si">%r</span><span class="s">)&quot;</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">keys</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_query</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">match_any</span><span class="p">))</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">False</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if the table contains at least one matching record, False otherwise.</span>
+<span class="sd">            </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Invalid value for `keys`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 </div>
-<div class="viewcode-block" id="Storage.insert"><a class="viewcode-back" href="../../tau.html#tau.storage.Storage.insert">[docs]</a>    <span class="k">def</span> <span class="nf">insert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">fields</span><span class="p">):</span>
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="AbstractStorage.insert"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.insert">[docs]</a>    <span class="k">def</span> <span class="nf">insert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Create a new record.</span>
 <span class="sd">        </span>
+<span class="sd">        If the table doesn&#39;t exist it will be created.</span>
+<span class="sd">        </span>
 <span class="sd">        Args:</span>
-<span class="sd">            table_name (str): Name of the table to operate on.</span>
-<span class="sd">            fields (dict): Data to record.</span>
+<span class="sd">            data (dict): Data to insert in table.</span>
+<span class="sd">            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.</span>
 <span class="sd">            </span>
 <span class="sd">        Returns:</span>
-<span class="sd">            int: The new record&#39;s identifier.                 </span>
+<span class="sd">            Record: The new record.       </span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%r</span><span class="s">: Inserting </span><span class="si">%r</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">fields</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">fields</span><span class="p">)</span>
 </div>
-<div class="viewcode-block" id="Storage.update"><a class="viewcode-back" href="../../tau.html#tau.storage.Storage.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">fields</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">eids</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Update existing records.</span>
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="AbstractStorage.update"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fields</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update records.</span>
+<span class="sd">        </span>
+<span class="sd">        The behavior depends on the type of `keys`:</span>
+<span class="sd">            * self.Record.eid_type: update the record with that element identifier.</span>
+<span class="sd">            * dict: update all records with attributes matching `keys`.</span>
+<span class="sd">            * list or tuple: apply update to all records matching the elements of `keys`.</span>
 <span class="sd">        </span>
 <span class="sd">        Args:</span>
-<span class="sd">            table_name (str): Name of the table to operate on.</span>
 <span class="sd">            fields (dict): Data to record.</span>
-<span class="sd">            keys (dict): Attributes to match.</span>
-<span class="sd">            match_any (bool): If True then any key may match or if False then all keys must match.</span>
-<span class="sd">            eids (list): Record identifiers to match.</span>
+<span class="sd">            keys: Fields or element identifiers to match.</span>
+<span class="sd">            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.</span>
+<span class="sd">            match_any (bool): Only applies if `keys` is a dictionary.  If True then any key </span>
+<span class="sd">                              in `keys` may match or if False then all keys in `keys` must match.</span>
+<span class="sd">            </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: ``bool(keys) == False`` or invaild value for `keys`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">eids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">: update(</span><span class="si">%r</span><span class="s">, eids=</span><span class="si">%r</span><span class="s">)&quot;</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">fields</span><span class="p">,</span> <span class="n">eids</span><span class="p">)</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eids</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-                <span class="n">table</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">fields</span><span class="p">,</span> <span class="n">eids</span><span class="o">=</span><span class="n">eids</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">table</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">fields</span><span class="p">,</span> <span class="n">eids</span><span class="o">=</span><span class="p">[</span><span class="n">eids</span><span class="p">])</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">: update(</span><span class="si">%r</span><span class="s">, keys=</span><span class="si">%r</span><span class="s">)&quot;</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">fields</span><span class="p">,</span> <span class="n">keys</span><span class="p">)</span>
-            <span class="n">table</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">fields</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_query</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">match_any</span><span class="p">))</span>
 </div>
-<div class="viewcode-block" id="Storage.remove"><a class="viewcode-back" href="../../tau.html#tau.storage.Storage.remove">[docs]</a>    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">eids</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="nd">@abstractmethod</span>      
+<div class="viewcode-block" id="AbstractStorage.unset"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.unset">[docs]</a>    <span class="k">def</span> <span class="nf">unset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fields</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update records by unsetting fields.</span>
+<span class="sd">        </span>
+<span class="sd">        Update only allows you to update a record by adding new fields or overwriting existing fields. </span>
+<span class="sd">        Use this method to remove a field from the record.</span>
+<span class="sd">        </span>
+<span class="sd">        The behavior depends on the type of `keys`:</span>
+<span class="sd">            * self.Record.eid_type: update the record with that element identifier.</span>
+<span class="sd">            * dict: update all records with attributes matching `keys`.</span>
+<span class="sd">            * list or tuple: apply update to all records matching the elements of `keys`.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            fields (list): Names of fields to remove from matching records.</span>
+<span class="sd">            keys: Fields or element identifiers to match.</span>
+<span class="sd">            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.</span>
+<span class="sd">            match_any (bool): Only applies if `keys` is a dictionary.  If True then any key </span>
+<span class="sd">                              in `keys` may match or if False then all keys in `keys` must match.</span>
+<span class="sd">            </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: ``bool(keys) == False`` or invaild value for `keys`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+</div>
+    <span class="nd">@abstractmethod</span>        
+<div class="viewcode-block" id="AbstractStorage.remove"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.remove">[docs]</a>    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Delete records.</span>
 <span class="sd">        </span>
+<span class="sd">        The behavior depends on the type of `keys`:</span>
+<span class="sd">            * self.Record.eid_type: delete the record with that element identifier.</span>
+<span class="sd">            * dict: delete all records with attributes matching `keys`.</span>
+<span class="sd">            * list or tuple: delete all records matching the elements of `keys`.</span>
+<span class="sd">        </span>
 <span class="sd">        Args:</span>
-<span class="sd">            table_name (str): Name of the table to operate on.</span>
-<span class="sd">            keys (dict): Attributes to match.</span>
-<span class="sd">            match_any (bool): If True then any key may match or if False then all keys must match.</span>
-<span class="sd">            eids (list): Record identifiers to match.</span>
+<span class="sd">            keys: Fields or element identifiers to match.</span>
+<span class="sd">            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.</span>
+<span class="sd">            match_any (bool): Only applies if `keys` is a dictionary.  If True then any key </span>
+<span class="sd">                              in `keys` may match or if False then all keys in `keys` must match.</span>
+<span class="sd">            </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: ``bool(keys) == False`` or invaild value for `keys`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">eids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">: remove(eids=</span><span class="si">%r</span><span class="s">)&quot;</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">eids</span><span class="p">)</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eids</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-                <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">eids</span><span class="o">=</span><span class="n">eids</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">eids</span><span class="o">=</span><span class="p">[</span><span class="n">eids</span><span class="p">])</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">: remove(keys=</span><span class="si">%r</span><span class="s">)&quot;</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">keys</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_query</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">match_any</span><span class="p">))</span>
 </div>
-<div class="viewcode-block" id="Storage.purge"><a class="viewcode-back" href="../../tau.html#tau.storage.Storage.purge">[docs]</a>    <span class="k">def</span> <span class="nf">purge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">):</span>
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="AbstractStorage.purge"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.purge">[docs]</a>    <span class="k">def</span> <span class="nf">purge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Delete all records.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            table_name (str): Name of the table to operate on.</span>
+<span class="sd">            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">: purge()&quot;</span><span class="p">,</span> <span class="n">table_name</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span><span class="o">.</span><span class="n">purge</span><span class="p">()</span>
-
-</div></div>
-<span class="n">USER_STORAGE</span> <span class="o">=</span> <span class="n">Storage</span><span class="p">(</span><span class="n">USER_PREFIX</span><span class="p">)</span>
-<span class="sd">&quot;&quot;&quot;Storage: User-level project data storage.&quot;&quot;&quot;</span>
-
-<span class="n">SYSTEM_STORAGE</span> <span class="o">=</span> <span class="n">Storage</span><span class="p">(</span><span class="n">SYSTEM_PREFIX</span><span class="p">)</span>
-<span class="sd">&quot;&quot;&quot;Storage: System-level project data storage.&quot;&quot;&quot;</span>
-</pre></div>
+</pre></div></div></div>
 
       </div>
       <div class="bottomnav" role="navigation" aria-label="bottom navigation">

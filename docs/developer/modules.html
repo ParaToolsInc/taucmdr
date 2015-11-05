@@ -27,7 +27,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
     <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
     <link rel="next" title="tau package" href="tau.html" />
-    <link rel="prev" title="TAU Commander Code Documentation" href="documentation.html" /> 
+    <link rel="prev" title="How to Add Support for New TAU Features" href="new_feature.html" /> 
   </head>
   <body role="document">
       <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="index.html">
@@ -37,7 +37,7 @@
       <div class="topnav" role="navigation" aria-label="top navigation">
       
         <p>
-        «&#160;&#160;<a href="documentation.html">TAU Commander Code Documentation</a>
+        «&#160;&#160;<a href="new_feature.html">How to Add Support for New TAU Features</a>
         &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
         &#160;&#160;::&#160;&#160;
@@ -62,19 +62,33 @@
 <li class="toctree-l4"><a class="reference internal" href="tau.cli.html#subpackages">Subpackages</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tau.cli.html#submodules">Submodules</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tau.cli.html#module-tau.cli.arguments">tau.cli.arguments module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.cli.html#module-tau.cli.cli_view">tau.cli.cli_view module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.cli.html#module-tau.cli.command">tau.cli.command module</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="tau.gui.html">tau.gui package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tau.model.html">tau.model package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="tau.model.html#submodules">Submodules</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tau.model.html#module-tau.model.application">tau.model.application module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tau.model.html#module-tau.model.compiler">tau.model.compiler module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tau.model.html#module-tau.model.experiment">tau.model.experiment module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.model.html#tau-model-compiler-module">tau.model.compiler module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.model.html#tau-model-experiment-module">tau.model.experiment module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tau.model.html#module-tau.model.measurement">tau.model.measurement module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tau.model.html#module-tau.model.project">tau.model.project module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tau.model.html#module-tau.model.setting">tau.model.setting module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tau.model.html#module-tau.model.target">tau.model.target module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tau.model.html#module-tau.model.trial">tau.model.trial module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="tau.mvc.html">tau.mvc package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tau.mvc.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.mvc.html#module-tau.mvc.controller">tau.mvc.controller module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.mvc.html#tau-mvc-model-module">tau.mvc.model module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="tau.storage.html">tau.storage package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tau.storage.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.storage.html#module-tau.storage.levels">tau.storage.levels module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.storage.html#module-tau.storage.local_file">tau.storage.local_file module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.storage.html#module-tau.storage.project">tau.storage.project module</a></li>
 </ul>
 </li>
 </ul>
@@ -82,8 +96,6 @@
 <li class="toctree-l2"><a class="reference internal" href="tau.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tau.html#module-tau.error">tau.error module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tau.html#module-tau.logger">tau.logger module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tau.html#module-tau.settings">tau.settings module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tau.html#module-tau.storage">tau.storage module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tau.html#module-tau.util">tau.util module</a></li>
 </ul>
 </li>
@@ -96,7 +108,7 @@
       <div class="bottomnav" role="navigation" aria-label="bottom navigation">
       
         <p>
-        «&#160;&#160;<a href="documentation.html">TAU Commander Code Documentation</a>
+        «&#160;&#160;<a href="new_feature.html">How to Add Support for New TAU Features</a>
         &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
         &#160;&#160;::&#160;&#160;

@@ -26,7 +26,7 @@
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../../../../_static/favicon.ico"/>
     <link rel="top" title="TAU Commander Developer Documentation" href="../../../../../index.html" />
-    <link rel="up" title="tau.cli.commands.trial" href="../trial.html" /> 
+    <link rel="up" title="tau.cli" href="../../../cli.html" /> 
   </head>
   <body role="document">
       <div class="header" role="banner"><img class="rightlogo" src="../../../../../_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="../../../../../index.html">
@@ -73,72 +73,46 @@
 <span class="c">#</span>
 <span class="sd">&quot;&quot;&quot;``tau trial delete`` subcommand.&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">cli</span>
-<span class="kn">from</span> <span class="nn">tau.cli</span> <span class="kn">import</span> <span class="n">arguments</span>
+<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">EXIT_SUCCESS</span>
 <span class="kn">from</span> <span class="nn">tau.error</span> <span class="kn">import</span> <span class="n">ConfigurationError</span>
-<span class="kn">from</span> <span class="nn">tau.model.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
+<span class="kn">from</span> <span class="nn">tau.cli</span> <span class="kn">import</span> <span class="n">arguments</span>
+<span class="kn">from</span> <span class="nn">tau.cli.cli_view</span> <span class="kn">import</span> <span class="n">DeleteCommand</span>
 <span class="kn">from</span> <span class="nn">tau.model.trial</span> <span class="kn">import</span> <span class="n">Trial</span>
+<span class="kn">from</span> <span class="nn">tau.model.project</span> <span class="kn">import</span> <span class="n">Project</span>
 
 
-<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+<div class="viewcode-block" id="TrialDeleteCommand"><a class="viewcode-back" href="../../../../../tau.cli.commands.trial.html#tau.cli.commands.trial.delete.TrialDeleteCommand">[docs]</a><span class="k">class</span> <span class="nc">TrialDeleteCommand</span><span class="p">(</span><span class="n">DeleteCommand</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;``tau trial delete`` subcommand.&quot;&quot;&quot;</span>
 
-<span class="n">COMMAND</span> <span class="o">=</span> <span class="n">cli</span><span class="o">.</span><span class="n">get_command</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
-
-<span class="n">SHORT_DESCRIPTION</span> <span class="o">=</span> <span class="s">&quot;Delete experiment trials.&quot;</span>
-
-<span class="n">HELP</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
-<span class="s">&#39;</span><span class="si">%(command)s</span><span class="s">&#39; page to be written.</span>
-<span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;command&#39;</span><span class="p">:</span> <span class="n">COMMAND</span><span class="p">}</span>
-
-
-<div class="viewcode-block" id="parser"><a class="viewcode-back" href="../../../../../tau.cli.commands.trial.html#tau.cli.commands.trial.delete.parser">[docs]</a><span class="k">def</span> <span class="nf">parser</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;Construct a command line argument parser.</span>
-<span class="sd">    </span>
-<span class="sd">    Constructing the parser may cause a lot of imports as :py:mod:`tau.cli` is explored.</span>
-<span class="sd">    To avoid possible circular imports we defer parser creation until afer all</span>
-<span class="sd">    modules are imported, hence this function.  The parser instance is maintained as</span>
-<span class="sd">    an attribute of the function, making it something like a C++ function static variable.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">parser</span><span class="p">,</span> <span class="s">&#39;inst&#39;</span><span class="p">):</span>
-        <span class="n">usage_head</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s"> &lt;trial_number&gt; [arguments]&quot;</span> <span class="o">%</span> <span class="n">COMMAND</span>
-        <span class="n">parser</span><span class="o">.</span><span class="n">inst</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">get_parser</span><span class="p">(</span><span class="n">prog</span><span class="o">=</span><span class="n">COMMAND</span><span class="p">,</span>
-                                      <span class="n">usage</span><span class="o">=</span><span class="n">usage_head</span><span class="p">,</span>
-                                      <span class="n">description</span><span class="o">=</span><span class="n">SHORT_DESCRIPTION</span><span class="p">)</span>
-        <span class="n">parser</span><span class="o">.</span><span class="n">inst</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;number&#39;</span><span class="p">,</span> 
+<div class="viewcode-block" id="TrialDeleteCommand.construct_parser"><a class="viewcode-back" href="../../../../../tau.cli.commands.trial.html#tau.cli.commands.trial.delete.TrialDeleteCommand.construct_parser">[docs]</a>    <span class="k">def</span> <span class="nf">construct_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">usage</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s"> &lt;trial_number&gt; [arguments]&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">get_parser</span><span class="p">(</span><span class="n">prog</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">,</span> <span class="n">usage</span><span class="o">=</span><span class="n">usage</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">summary</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;number&#39;</span><span class="p">,</span> 
                             <span class="n">help</span><span class="o">=</span><span class="s">&quot;Number of the trial to delete&quot;</span><span class="p">,</span>
                             <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;&lt;trial_number&gt;&#39;</span><span class="p">)</span>
-                                     
-    <span class="k">return</span> <span class="n">parser</span><span class="o">.</span><span class="n">inst</span>
-
+        <span class="k">return</span> <span class="n">parser</span>
 </div>
-<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../../../../tau.cli.commands.trial.html#tau.cli.commands.trial.delete.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Subcommand program entry point.</span>
-<span class="sd">    </span>
-<span class="sd">    Args:</span>
-<span class="sd">        argv (list): Command line arguments.</span>
-<span class="sd">        </span>
-<span class="sd">    Returns:</span>
-<span class="sd">        int: Process return code: non-zero if a problem occurred, 0 otherwise</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="p">()</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">argv</span><span class="p">)</span>
-    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Arguments: </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
-
-    <span class="n">selection</span> <span class="o">=</span> <span class="n">Experiment</span><span class="o">.</span><span class="n">get_selected</span><span class="p">()</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">selection</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&quot;No experiment configured.&quot;</span><span class="p">,</span> <span class="s">&quot;See `tau project select`&quot;</span><span class="p">)</span>
-
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">number</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">number</span><span class="p">)</span>
-    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-        <span class="n">parser</span><span class="o">.</span><span class="n">inst</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;Invalid trial number: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">args</span><span class="o">.</span><span class="n">number</span><span class="p">)</span>
-    <span class="n">fields</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;experiment&#39;</span><span class="p">:</span> <span class="n">selection</span><span class="o">.</span><span class="n">eid</span><span class="p">,</span> <span class="s">&#39;number&#39;</span><span class="p">:</span> <span class="n">number</span><span class="p">}</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">Trial</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">fields</span><span class="p">):</span>
-        <span class="n">parser</span><span class="o">.</span><span class="n">inst</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;No trial number </span><span class="si">%s</span><span class="s"> in the current experiment.  &quot;</span>
-                     <span class="s">&quot;See `tau trial list` to see all trial numbers.&quot;</span> <span class="o">%</span> <span class="n">number</span><span class="p">)</span>
-    <span class="n">Trial</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">fields</span><span class="p">)</span>
-    <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Deleted trial </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">number</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">cli</span><span class="o">.</span><span class="n">execute_command</span><span class="p">([</span><span class="s">&#39;trial&#39;</span><span class="p">,</span> <span class="s">&#39;list&#39;</span><span class="p">],</span> <span class="p">[])</span></div>
+<div class="viewcode-block" id="TrialDeleteCommand.main"><a class="viewcode-back" href="../../../../../tau.cli.commands.trial.html#tau.cli.commands.trial.delete.TrialDeleteCommand.main">[docs]</a>    <span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">argv</span><span class="p">):</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">argv</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Arguments: </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+    
+        <span class="n">proj_ctrl</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">controller</span><span class="p">()</span>
+        <span class="n">trial_ctrl</span> <span class="o">=</span> <span class="n">Trial</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="n">proj_ctrl</span><span class="o">.</span><span class="n">storage</span><span class="p">)</span>
+        <span class="n">proj</span> <span class="o">=</span> <span class="n">proj_ctrl</span><span class="o">.</span><span class="n">selected</span><span class="p">()</span>
+        <span class="n">expr</span> <span class="o">=</span> <span class="n">proj</span><span class="o">.</span><span class="n">experiment</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">number</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">number</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;Invalid trial number: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">args</span><span class="o">.</span><span class="n">number</span><span class="p">)</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;experiment&#39;</span><span class="p">:</span> <span class="n">expr</span><span class="o">.</span><span class="n">eid</span><span class="p">,</span> <span class="s">&#39;number&#39;</span><span class="p">:</span> <span class="n">number</span><span class="p">}</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">trial_ctrl</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">fields</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;No trial number </span><span class="si">%s</span><span class="s"> in the current experiment.  &quot;</span>
+                              <span class="s">&quot;See `tau trial list` to see all trial numbers.&quot;</span> <span class="o">%</span> <span class="n">number</span><span class="p">)</span>
+        <span class="n">trial_ctrl</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">fields</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Deleted trial </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">number</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">EXIT_SUCCESS</span>
+</div></div>
+<span class="n">COMMAND</span> <span class="o">=</span> <span class="n">TrialDeleteCommand</span><span class="p">(</span><span class="n">Trial</span><span class="p">,</span> <span class="n">__name__</span><span class="p">,</span> <span class="n">summary_fmt</span><span class="o">=</span><span class="s">&quot;Delete experiment trials.&quot;</span><span class="p">)</span>
 </pre></div>
 
       </div>

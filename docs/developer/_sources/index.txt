@@ -49,6 +49,7 @@ Table of Contents
    design
    style
    documentation
+   new_feature
 
 * :ref:`genindex`
 * :ref:`modindex`

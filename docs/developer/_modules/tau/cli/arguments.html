@@ -79,14 +79,17 @@
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">argparse</span>
 <span class="kn">import</span> <span class="nn">textwrap</span>
-<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">util</span>
 <span class="kn">from</span> <span class="nn">operator</span> <span class="kn">import</span> <span class="n">attrgetter</span>
+<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">util</span>
 
 <span class="n">SUPPRESS</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">SUPPRESS</span>
 <span class="sd">&quot;&quot;&quot;Suppress attribute creation in parsed argument namespace.&quot;&quot;&quot;</span>
 
 <span class="n">REMAINDER</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">REMAINDER</span>
 <span class="sd">&quot;&quot;&quot;All the remaining command-line arguments are gathered into a list.&quot;&quot;&quot;</span>
+
+<span class="n">STORAGE_LEVEL_FLAG</span> <span class="o">=</span> <span class="s">&quot;@&quot;</span>
+<span class="sd">&quot;&quot;&quot;Command line flag that indicates storage level.&quot;&quot;&quot;</span>
 
 
 <div class="viewcode-block" id="MutableGroupArgumentParser"><a class="viewcode-back" href="../../../tau.cli.html#tau.cli.arguments.MutableGroupArgumentParser">[docs]</a><span class="k">class</span> <span class="nc">MutableGroupArgumentParser</span><span class="p">(</span><span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">):</span>
@@ -95,27 +98,29 @@
 <span class="sd">    :py:class:`argparse.ArgumentParser` doesn&#39;t allow groups to change once set </span>
 <span class="sd">    and generates &quot;scruffy&quot; looking help, so we fix this problems in this subclass.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c"># We&#39;re changing the behavior of the superclass so we need to access protected members</span>
+    <span class="c"># pylint: disable=protected-access</span>
 
-<div class="viewcode-block" id="MutableGroupArgumentParser.get_group"><a class="viewcode-back" href="../../../tau.cli.html#tau.cli.arguments.MutableGroupArgumentParser.get_group">[docs]</a>    <span class="k">def</span> <span class="nf">get_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="p">):</span>
+<div class="viewcode-block" id="MutableGroupArgumentParser.add_argument_group"><a class="viewcode-back" href="../../../tau.cli.html#tau.cli.arguments.MutableGroupArgumentParser.add_argument_group">[docs]</a>    <span class="k">def</span> <span class="nf">add_argument_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Returns an argument group.</span>
 <span class="sd">        </span>
 <span class="sd">        If the group doesn&#39;t exist it will be created.</span>
 <span class="sd">        </span>
 <span class="sd">        Args:</span>
-<span class="sd">            title (str): Group title.</span>
-<span class="sd">            </span>
+<span class="sd">            *args: Positional arguments to pass to :any:`ArgumentParser.add_argument_group`</span>
+<span class="sd">            **kwargs: Keyword arguments to pass to :any:`ArgumentParser.add_argument_group`</span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            An argument group object.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;title&#39;</span><span class="p">,</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
         <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_action_groups</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">group</span><span class="o">.</span><span class="n">title</span> <span class="o">==</span> <span class="n">title</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">group</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">MutableGroupArgumentParser</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 </div>
 <div class="viewcode-block" id="MutableGroupArgumentParser.format_help"><a class="viewcode-back" href="../../../tau.cli.html#tau.cli.arguments.MutableGroupArgumentParser.format_help">[docs]</a>    <span class="k">def</span> <span class="nf">format_help</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Format command line help string.&quot;&quot;&quot;</span>
-        <span class="c"># We&#39;re changing the behavior of the superclass so we need to access protected members in this function</span>
-        <span class="c"># pylint: disable=protected-access</span>
         <span class="n">formatter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_formatter</span><span class="p">()</span>
         <span class="n">formatter</span><span class="o">.</span><span class="n">add_usage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">usage</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_actions</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mutually_exclusive_groups</span><span class="p">)</span>
         <span class="n">formatter</span><span class="o">.</span><span class="n">add_text</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="p">)</span>
@@ -143,6 +148,20 @@
         <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">group</span><span class="o">.</span><span class="n">title</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="n">positional_title</span><span class="p">,</span> <span class="n">optional_title</span><span class="p">]:</span>
                 <span class="k">yield</span> <span class="n">group</span>
+                </div>
+<div class="viewcode-block" id="MutableGroupArgumentParser.merge"><a class="viewcode-back" href="../../../tau.cli.html#tau.cli.arguments.MutableGroupArgumentParser.merge">[docs]</a>    <span class="k">def</span> <span class="nf">merge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parser</span><span class="p">,</span> <span class="n">group_title</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">include_positional</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">include_optional</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">include_storage</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="n">group</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="n">group_title</span><span class="p">)</span> <span class="k">if</span> <span class="n">group_title</span> <span class="k">else</span> <span class="bp">self</span>
+        <span class="k">for</span> <span class="n">action</span> <span class="ow">in</span> <span class="n">parser</span><span class="o">.</span><span class="n">_actions</span><span class="p">:</span>
+            <span class="n">optional</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">action</span><span class="o">.</span><span class="n">option_strings</span><span class="p">)</span>
+            <span class="n">storage</span> <span class="o">=</span> <span class="s">&#39;-&#39;</span><span class="o">+</span><span class="n">STORAGE_LEVEL_FLAG</span> <span class="ow">in</span> <span class="n">action</span><span class="o">.</span><span class="n">option_strings</span>
+            <span class="k">if</span> <span class="p">((</span><span class="ow">not</span> <span class="n">include_storage</span> <span class="ow">and</span> <span class="n">storage</span><span class="p">)</span> <span class="ow">or</span> 
+                <span class="p">(</span><span class="ow">not</span> <span class="n">include_optional</span> <span class="ow">and</span> <span class="n">optional</span><span class="p">)</span> <span class="ow">or</span> 
+                <span class="p">(</span><span class="ow">not</span> <span class="n">include_positional</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">optional</span><span class="p">)):</span>
+                <span class="k">continue</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">group</span><span class="o">.</span><span class="n">_add_action</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentError</span><span class="p">:</span>
+                <span class="k">pass</span>
 
 </div></div>
 <div class="viewcode-block" id="ArgparseHelpFormatter"><a class="viewcode-back" href="../../../tau.cli.html#tau.cli.arguments.ArgparseHelpFormatter">[docs]</a><span class="k">class</span> <span class="nc">ArgparseHelpFormatter</span><span class="p">(</span><span class="n">argparse</span><span class="o">.</span><span class="n">RawDescriptionHelpFormatter</span><span class="p">):</span>
@@ -289,20 +308,21 @@
 <span class="sd">                &#39;description&#39;: &#39;application uses OpenMP&#39;,</span>
 <span class="sd">                &#39;default&#39;: False, </span>
 <span class="sd">                &#39;argparse&#39;: {&#39;flags&#39;: (&#39;--openmp&#39;,),</span>
-<span class="sd">                             &#39;metavar&#39;: &#39;yes/no&#39;,</span>
+<span class="sd">                             &#39;metavar&#39;: &#39;T/F&#39;,</span>
 <span class="sd">                             &#39;nargs&#39;: &#39;?&#39;,</span>
 <span class="sd">                             &#39;const&#39;: True,</span>
 <span class="sd">                             &#39;action&#39;: ParseBooleanAction},</span>
 <span class="sd">            }</span>
 
 <span class="sd">        The returned parser will accept the ``--openmp`` flag accepting zero or one arguments </span>
-<span class="sd">        with &#39;yes/no&#39; as the metavar.  If ``--openmp`` is omitted the default value of False will</span>
+<span class="sd">        with &#39;T/F&#39; as the metavar.  If ``--openmp`` is omitted the default value of False will</span>
 <span class="sd">        be used.  If ``--openmp`` is provided with zero arguments, the const value of True will</span>
 <span class="sd">        be used.  If ``--openmp`` is provided with one argument then the provided argument will</span>
 <span class="sd">        be passed to a ParseBooleanAction instance to generate a boolean value.  The argument&#39;s</span>
 <span class="sd">        help description will appear as &quot;application uses OpenMP&quot; if the ``--help`` argument is given.</span>
 <span class="sd">    </span>
 <span class="sd">    Args:</span>
+<span class="sd">        model (Model): Model to construct arguments from.</span>
 <span class="sd">        use_defaults (bool): If True, use the model attribute&#39;s default value </span>
 <span class="sd">                             as the argument&#39;s value if argument is not specified. </span>
 <span class="sd">        prog (str): Name of the program.</span>
@@ -335,12 +355,10 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="n">group_name</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s">&#39;group&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s">&#39; arguments&#39;</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-            <span class="n">group</span> <span class="o">=</span> <span class="n">parser</span>
+            <span class="n">group_name</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">+</span> <span class="s">&#39; arguments&#39;</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">del</span> <span class="n">options</span><span class="p">[</span><span class="s">&#39;group&#39;</span><span class="p">]</span>
-            <span class="n">groups</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span>
-                <span class="n">group_name</span><span class="p">,</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="n">group_name</span><span class="p">))</span>
-            <span class="n">group</span> <span class="o">=</span> <span class="n">groups</span><span class="p">[</span><span class="n">group_name</span><span class="p">]</span>
+        <span class="n">group</span> <span class="o">=</span> <span class="n">groups</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">group_name</span><span class="p">,</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="n">group_name</span><span class="p">))</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">flags</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s">&#39;flags&#39;</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
@@ -349,7 +367,32 @@
             <span class="k">del</span> <span class="n">options</span><span class="p">[</span><span class="s">&#39;flags&#39;</span><span class="p">]</span>
             <span class="n">options</span><span class="p">[</span><span class="s">&#39;dest&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">attr</span>
         <span class="n">group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="o">*</span><span class="n">flags</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">parser</span></div>
+    <span class="k">return</span> <span class="n">parser</span>
+</div>
+<div class="viewcode-block" id="add_storage_flags"><a class="viewcode-back" href="../../../tau.cli.html#tau.cli.arguments.add_storage_flags">[docs]</a><span class="k">def</span> <span class="nf">add_storage_flags</span><span class="p">(</span><span class="n">parser</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">object_name</span><span class="p">,</span> <span class="n">plural</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">exclusive</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Add flags to indicate target storage container.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        parser (MutableGroupArgumentParser): The parser to modify.</span>
+<span class="sd">        action (str): The action that will be taken by the command, e.g. &quot;delete&quot; or &quot;list&quot;</span>
+<span class="sd">        object_name (str): The type of object that will be manipulated, e.g. &quot;application&quot; or &quot;measurement&quot;</span>
+<span class="sd">        plural (bool): Pluralize help message if True.</span>
+<span class="sd">        exclusive (bool): Only one storage level may be specified if True.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">tau.storage.levels</span> <span class="kn">import</span> <span class="n">ORDERED_LEVELS</span>
+    <span class="n">help_parts</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">s&quot;</span> <span class="k">if</span> <span class="n">plural</span> <span class="k">else</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s"> the </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span>
+                  <span class="s">&quot; at the specified storage &quot;</span><span class="p">,</span>
+                  <span class="s">&quot;level&quot;</span> <span class="k">if</span> <span class="n">exclusive</span> <span class="k">else</span> <span class="s">&quot;levels&quot;</span><span class="p">]</span>
+    <span class="n">help_str</span> <span class="o">=</span> <span class="s">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">help_parts</span><span class="p">)</span> <span class="o">%</span> <span class="p">(</span><span class="n">action</span><span class="p">,</span> <span class="n">object_name</span><span class="p">)</span>
+    <span class="n">nargs</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">exclusive</span> <span class="k">else</span> <span class="s">&#39;+&#39;</span>
+    <span class="n">choices</span> <span class="o">=</span> <span class="p">[</span><span class="n">container</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">container</span> <span class="ow">in</span> <span class="n">ORDERED_LEVELS</span><span class="p">]</span>
+    <span class="n">default</span> <span class="o">=</span> <span class="p">[</span><span class="n">ORDERED_LEVELS</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;-&#39;</span><span class="o">+</span><span class="n">STORAGE_LEVEL_FLAG</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="n">help_str</span><span class="p">,</span>
+                        <span class="n">metavar</span><span class="o">=</span><span class="s">&quot;&lt;level&gt;&quot;</span><span class="p">,</span> 
+                        <span class="n">nargs</span><span class="o">=</span><span class="n">nargs</span><span class="p">,</span> 
+                        <span class="n">choices</span><span class="o">=</span><span class="n">choices</span><span class="p">,</span>
+                        <span class="n">default</span><span class="o">=</span><span class="n">default</span><span class="p">)</span></div>
 </pre></div>
 
       </div>

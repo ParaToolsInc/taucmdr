@@ -52,61 +52,30 @@
   <div class="section" id="module-tau.cli.commands.target">
 <span id="tau-cli-commands-target-package"></span><h1>tau.cli.commands.target package<a class="headerlink" href="#module-tau.cli.commands.target" title="Permalink to this headline">¶</a></h1>
 <p><code class="docutils literal"><span class="pre">tau</span> <span class="pre">target</span></code> subcommand.</p>
-<dl class="function">
-<dt id="tau.cli.commands.target.main">
-<code class="descclassname">tau.cli.commands.target.</code><code class="descname">main</code><span class="sig-paren">(</span><em>argv</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/commands/target.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.commands.target.main" title="Permalink to this definition">¶</a></dt>
-<dd><p>Subcommand program entry point.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>argv</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Command line arguments.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Process return code: non-zero if a problem occurred, 0 otherwise</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)">int</a></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="tau.cli.commands.target.parser">
-<code class="descclassname">tau.cli.commands.target.</code><code class="descname">parser</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/commands/target.html#parser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.commands.target.parser" title="Permalink to this definition">¶</a></dt>
-<dd><p>Construct a command line argument parser.</p>
-<p>Constructing the parser may cause a lot of imports as <a class="reference internal" href="tau.cli.html#module-tau.cli" title="tau.cli"><code class="xref py py-mod docutils literal"><span class="pre">tau.cli</span></code></a> is explored.
-To avoid possible circular imports we defer parser creation until afer all
-modules are imported, hence this function.  The parser instance is maintained as
-an attribute of the function, making it something like a C++ function static variable.</p>
-</dd></dl>
-
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
 <div class="section" id="module-tau.cli.commands.target.create">
 <span id="tau-cli-commands-target-create-module"></span><h2>tau.cli.commands.target.create module<a class="headerlink" href="#module-tau.cli.commands.target.create" title="Permalink to this headline">¶</a></h2>
 <p><code class="docutils literal"><span class="pre">tau</span> <span class="pre">target</span> <span class="pre">create</span></code> subcommand.</p>
-<dl class="function">
-<dt id="tau.cli.commands.target.create.main">
-<code class="descclassname">tau.cli.commands.target.create.</code><code class="descname">main</code><span class="sig-paren">(</span><em>argv</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/commands/target/create.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.commands.target.create.main" title="Permalink to this definition">¶</a></dt>
-<dd><p>Subcommand program entry point.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>argv</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Command line arguments.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Process return code: non-zero if a problem occurred, 0 otherwise</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)">int</a></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
+<dl class="class">
+<dt id="tau.cli.commands.target.create.TargetCreateCommand">
+<em class="property">class </em><code class="descclassname">tau.cli.commands.target.create.</code><code class="descname">TargetCreateCommand</code><span class="sig-paren">(</span><em>controller</em>, <em>module_name</em>, <em>summary_fmt=None</em>, <em>help_page_fmt=None</em>, <em>group=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/commands/target/create.html#TargetCreateCommand"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.commands.target.create.TargetCreateCommand" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="tau.cli.html#tau.cli.cli_view.CreateCommand" title="tau.cli.cli_view.CreateCommand"><code class="xref py py-class docutils literal"><span class="pre">tau.cli.cli_view.CreateCommand</span></code></a></p>
+<p><code class="docutils literal"><span class="pre">tau</span> <span class="pre">target</span> <span class="pre">create</span></code> subcommand.</p>
+<dl class="method">
+<dt id="tau.cli.commands.target.create.TargetCreateCommand.construct_parser">
+<code class="descname">construct_parser</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/commands/target/create.html#TargetCreateCommand.construct_parser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.commands.target.create.TargetCreateCommand.construct_parser" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
-<dl class="function">
-<dt id="tau.cli.commands.target.create.parse_compiler_flags">
-<code class="descclassname">tau.cli.commands.target.create.</code><code class="descname">parse_compiler_flags</code><span class="sig-paren">(</span><em>args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/commands/target/create.html#parse_compiler_flags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.commands.target.create.parse_compiler_flags" title="Permalink to this definition">¶</a></dt>
+<dl class="method">
+<dt id="tau.cli.commands.target.create.TargetCreateCommand.main">
+<code class="descname">main</code><span class="sig-paren">(</span><em>argv</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/commands/target/create.html#TargetCreateCommand.main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.commands.target.create.TargetCreateCommand.main" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.cli.commands.target.create.TargetCreateCommand.parse_compiler_flags">
+<code class="descname">parse_compiler_flags</code><span class="sig-paren">(</span><em>args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/commands/target/create.html#TargetCreateCommand.parse_compiler_flags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.commands.target.create.TargetCreateCommand.parse_compiler_flags" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parses host compiler flags out of the command line arguments.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -123,131 +92,20 @@ Invalid command line arguments specified</td>
 </table>
 </dd></dl>
 
-<dl class="function">
-<dt id="tau.cli.commands.target.create.parser">
-<code class="descclassname">tau.cli.commands.target.create.</code><code class="descname">parser</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/commands/target/create.html#parser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.commands.target.create.parser" title="Permalink to this definition">¶</a></dt>
-<dd><p>Construct a command line argument parser.</p>
-<p>Constructing the parser may cause a lot of imports as <a class="reference internal" href="tau.cli.html#module-tau.cli" title="tau.cli"><code class="xref py py-mod docutils literal"><span class="pre">tau.cli</span></code></a> is explored.
-To avoid possible circular imports we defer parser creation until afer all
-modules are imported, hence this function.  The parser instance is maintained as
-an attribute of the function, making it something like a C++ function static variable.</p>
 </dd></dl>
 
 </div>
 <div class="section" id="module-tau.cli.commands.target.delete">
 <span id="tau-cli-commands-target-delete-module"></span><h2>tau.cli.commands.target.delete module<a class="headerlink" href="#module-tau.cli.commands.target.delete" title="Permalink to this headline">¶</a></h2>
-<p><code class="docutils literal"><span class="pre">tau</span> <span class="pre">target</span> <span class="pre">delete</span></code> subcommand.</p>
-<dl class="function">
-<dt id="tau.cli.commands.target.delete.main">
-<code class="descclassname">tau.cli.commands.target.delete.</code><code class="descname">main</code><span class="sig-paren">(</span><em>argv</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/commands/target/delete.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.commands.target.delete.main" title="Permalink to this definition">¶</a></dt>
-<dd><p>Subcommand program entry point.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>argv</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Command line arguments.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Process return code: non-zero if a problem occurred, 0 otherwise</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)">int</a></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="tau.cli.commands.target.delete.parser">
-<code class="descclassname">tau.cli.commands.target.delete.</code><code class="descname">parser</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/commands/target/delete.html#parser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.commands.target.delete.parser" title="Permalink to this definition">¶</a></dt>
-<dd><p>Construct a command line argument parser.</p>
-<p>Constructing the parser may cause a lot of imports as <a class="reference internal" href="tau.cli.html#module-tau.cli" title="tau.cli"><code class="xref py py-mod docutils literal"><span class="pre">tau.cli</span></code></a> is explored.
-To avoid possible circular imports we defer parser creation until afer all
-modules are imported, hence this function.  The parser instance is maintained as
-an attribute of the function, making it something like a C++ function static variable.</p>
-</dd></dl>
-
+<p><code class="docutils literal"><span class="pre">tau</span> <span class="pre">target</span></code> subcommand.</p>
 </div>
 <div class="section" id="module-tau.cli.commands.target.edit">
 <span id="tau-cli-commands-target-edit-module"></span><h2>tau.cli.commands.target.edit module<a class="headerlink" href="#module-tau.cli.commands.target.edit" title="Permalink to this headline">¶</a></h2>
-<p><code class="docutils literal"><span class="pre">tau</span> <span class="pre">target</span> <span class="pre">edit</span></code> subcommand.</p>
-<dl class="function">
-<dt id="tau.cli.commands.target.edit.main">
-<code class="descclassname">tau.cli.commands.target.edit.</code><code class="descname">main</code><span class="sig-paren">(</span><em>argv</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/commands/target/edit.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.commands.target.edit.main" title="Permalink to this definition">¶</a></dt>
-<dd><p>Subcommand program entry point.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>argv</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Command line arguments.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Process return code: non-zero if a problem occurred, 0 otherwise</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)">int</a></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="tau.cli.commands.target.edit.parse_compiler_flags">
-<code class="descclassname">tau.cli.commands.target.edit.</code><code class="descname">parse_compiler_flags</code><span class="sig-paren">(</span><em>args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/commands/target/edit.html#parse_compiler_flags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.commands.target.edit.parse_compiler_flags" title="Permalink to this definition">¶</a></dt>
-<dd><p>Parses host compiler flags out of the command line arguments.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>args</strong> &#8211; Argument namespace containing command line arguments</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Dictionary of installed compilers by role keyword string.</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211;
-Invalid command line arguments specified</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="tau.cli.commands.target.edit.parser">
-<code class="descclassname">tau.cli.commands.target.edit.</code><code class="descname">parser</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/commands/target/edit.html#parser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.commands.target.edit.parser" title="Permalink to this definition">¶</a></dt>
-<dd><p>Construct a command line argument parser.</p>
-<p>Constructing the parser may cause a lot of imports as <a class="reference internal" href="tau.cli.html#module-tau.cli" title="tau.cli"><code class="xref py py-mod docutils literal"><span class="pre">tau.cli</span></code></a> is explored.
-To avoid possible circular imports we defer parser creation until afer all
-modules are imported, hence this function.  The parser instance is maintained as
-an attribute of the function, making it something like a C++ function static variable.</p>
-</dd></dl>
-
+<p><code class="docutils literal"><span class="pre">tau</span> <span class="pre">target</span></code> subcommand.</p>
 </div>
 <div class="section" id="module-tau.cli.commands.target.list">
 <span id="tau-cli-commands-target-list-module"></span><h2>tau.cli.commands.target.list module<a class="headerlink" href="#module-tau.cli.commands.target.list" title="Permalink to this headline">¶</a></h2>
-<p><code class="docutils literal"><span class="pre">tau</span> <span class="pre">target</span> <span class="pre">list</span></code> subcommand.</p>
-<dl class="function">
-<dt id="tau.cli.commands.target.list.main">
-<code class="descclassname">tau.cli.commands.target.list.</code><code class="descname">main</code><span class="sig-paren">(</span><em>argv</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/commands/target/list.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.commands.target.list.main" title="Permalink to this definition">¶</a></dt>
-<dd><p>Subcommand program entry point.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>argv</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Command line arguments.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Process return code: non-zero if a problem occurred, 0 otherwise</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)">int</a></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="tau.cli.commands.target.list.parser">
-<code class="descclassname">tau.cli.commands.target.list.</code><code class="descname">parser</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/commands/target/list.html#parser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.commands.target.list.parser" title="Permalink to this definition">¶</a></dt>
-<dd><p>Construct a command line argument parser.</p>
-<p>Constructing the parser may cause a lot of imports as <a class="reference internal" href="tau.cli.html#module-tau.cli" title="tau.cli"><code class="xref py py-mod docutils literal"><span class="pre">tau.cli</span></code></a> is explored.
-To avoid possible circular imports we defer parser creation until afer all
-modules are imported, hence this function.  The parser instance is maintained as
-an attribute of the function, making it something like a C++ function static variable.</p>
-</dd></dl>
-
+<p><code class="docutils literal"><span class="pre">tau</span> <span class="pre">target</span></code> subcommand.</p>
 </div>
 </div>
 

@@ -1,0 +1,276 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tau.cli.commands.select &mdash; TAU Commander Developer Documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
+    <link rel="top" title="TAU Commander Developer Documentation" href="../../../../index.html" />
+    <link rel="up" title="tau.cli" href="../../cli.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><img class="rightlogo" src="../../../../_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="../../../../index.html">
+          <span>TAU Commander Developer Documentation</span></a></h1>
+        <h2 class="heading"><span>tau.cli.commands.select</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        <a class="uplink" href="../../../../index.html">Contents</a>
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <h1>Source code for tau.cli.commands.select</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="c">#</span>
+<span class="c"># Copyright (c) 2015, ParaTools, Inc.</span>
+<span class="c"># All rights reserved.</span>
+<span class="c">#</span>
+<span class="c"># Redistribution and use in source and binary forms, with or without</span>
+<span class="c"># modification, are permitted provided that the following conditions are met:</span>
+<span class="c"># (1) Redistributions of source code must retain the above copyright notice,</span>
+<span class="c">#     this list of conditions and the following disclaimer.</span>
+<span class="c"># (2) Redistributions in binary form must reproduce the above copyright notice,</span>
+<span class="c">#     this list of conditions and the following disclaimer in the documentation</span>
+<span class="c">#     and/or other materials provided with the distribution.</span>
+<span class="c"># (3) Neither the name of ParaTools, Inc. nor the names of its contributors may</span>
+<span class="c">#     be used to endorse or promote products derived from this software without</span>
+<span class="c">#     specific prior written permission.</span>
+<span class="c">#</span>
+<span class="c"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
+<span class="c"># AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</span>
+<span class="c"># IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE</span>
+<span class="c"># DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE</span>
+<span class="c"># FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL</span>
+<span class="c"># DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR</span>
+<span class="c"># SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER</span>
+<span class="c"># CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,</span>
+<span class="c"># OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE</span>
+<span class="c"># OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</span>
+<span class="c">#</span>
+<span class="sd">&quot;&quot;&quot;``tau select`` subcommand.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">EXIT_SUCCESS</span><span class="p">,</span> <span class="n">TAU_SCRIPT</span>
+<span class="kn">from</span> <span class="nn">tau.cli</span> <span class="kn">import</span> <span class="n">arguments</span>
+<span class="kn">from</span> <span class="nn">tau.error</span> <span class="kn">import</span> <span class="n">ConfigurationError</span><span class="p">,</span> <span class="n">InternalError</span>
+<span class="kn">from</span> <span class="nn">tau.storage.levels</span> <span class="kn">import</span> <span class="n">PROJECT_STORAGE</span>
+<span class="kn">from</span> <span class="nn">tau.model.project</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">ProjectSelectionError</span>
+<span class="kn">from</span> <span class="nn">tau.model.target</span> <span class="kn">import</span> <span class="n">Target</span>
+<span class="kn">from</span> <span class="nn">tau.model.application</span> <span class="kn">import</span> <span class="n">Application</span>
+<span class="kn">from</span> <span class="nn">tau.model.measurement</span> <span class="kn">import</span> <span class="n">Measurement</span>
+<span class="kn">from</span> <span class="nn">tau.model.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
+<span class="kn">from</span> <span class="nn">tau.cli.command</span> <span class="kn">import</span> <span class="n">AbstractCommand</span>
+
+
+<div class="viewcode-block" id="SelectCommand"><a class="viewcode-back" href="../../../../tau.cli.commands.html#tau.cli.commands.select.SelectCommand">[docs]</a><span class="k">class</span> <span class="nc">SelectCommand</span><span class="p">(</span><span class="n">AbstractCommand</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;``tau select`` subcommand.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_parse_implicit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
+        <span class="n">projects</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="n">targets</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="n">applications</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="n">measurements</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="n">proj_ctrl</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">controller</span><span class="p">()</span>
+        <span class="n">targ_ctrl</span> <span class="o">=</span> <span class="n">Target</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="n">PROJECT_STORAGE</span><span class="p">)</span>
+        <span class="n">app_ctrl</span> <span class="o">=</span> <span class="n">Application</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="n">PROJECT_STORAGE</span><span class="p">)</span>
+        <span class="n">meas_ctrl</span> <span class="o">=</span> <span class="n">Measurement</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="n">PROJECT_STORAGE</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">flag</span> <span class="ow">in</span> <span class="s">&#39;impl_project&#39;</span><span class="p">,</span> <span class="s">&#39;impl_target&#39;</span><span class="p">,</span> <span class="s">&#39;impl_application&#39;</span><span class="p">,</span> <span class="s">&#39;impl_measurement&#39;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">flag</span><span class="p">,</span> <span class="p">[]):</span>
+                <span class="n">prj</span> <span class="o">=</span> <span class="n">proj_ctrl</span><span class="o">.</span><span class="n">one</span><span class="p">({</span><span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">})</span>
+                <span class="n">tar</span> <span class="o">=</span> <span class="n">targ_ctrl</span><span class="o">.</span><span class="n">one</span><span class="p">({</span><span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">})</span>
+                <span class="n">app</span> <span class="o">=</span> <span class="n">app_ctrl</span><span class="o">.</span><span class="n">one</span><span class="p">({</span><span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">})</span>
+                <span class="n">mes</span> <span class="o">=</span> <span class="n">meas_ctrl</span><span class="o">.</span><span class="n">one</span><span class="p">({</span><span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">})</span>
+                <span class="n">ptam</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">prj</span><span class="p">,</span> <span class="n">tar</span><span class="p">,</span> <span class="n">app</span><span class="p">,</span> <span class="n">mes</span><span class="p">])</span> <span class="o">-</span> <span class="nb">set</span><span class="p">([</span><span class="bp">None</span><span class="p">])</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ptam</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;&#39;</span><span class="si">%s</span><span class="s">&#39; is ambiguous.  Please use --project, --target, --application,&quot;</span>
+                                      <span class="s">&quot; or --measurement to specify configuration type.&quot;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">ptam</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;&#39;</span><span class="si">%s</span><span class="s">&#39; is not a project, target, application, or measurement.&quot;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">prj</span><span class="p">:</span>
+                    <span class="n">projects</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">prj</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">tar</span><span class="p">:</span>
+                    <span class="n">targets</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">tar</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">app</span><span class="p">:</span>
+                    <span class="n">applications</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">mes</span><span class="p">:</span>
+                    <span class="n">measurements</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mes</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">projects</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="n">applications</span><span class="p">,</span> <span class="n">measurements</span>
+
+    <span class="k">def</span> <span class="nf">_parse_explicit_project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">acc</span><span class="p">):</span>
+        <span class="n">proj_ctrl</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">controller</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s">&#39;project&#39;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">found</span> <span class="o">=</span> <span class="n">proj_ctrl</span><span class="o">.</span><span class="n">one</span><span class="p">({</span><span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">})</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">found</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;There is no project configuration named &#39;</span><span class="si">%s</span><span class="s">.&#39;&quot;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">acc</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">found</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">acc</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">proj_ctrl</span><span class="o">.</span><span class="n">selected</span><span class="p">()</span>
+            <span class="k">except</span> <span class="n">ProjectSelectionError</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;No project configuration selected.  Please use --project to specify one.&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">acc</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;Multiple project configurations specified: </span><span class="si">%s</span><span class="s">.  Please specify at most one.&quot;</span> <span class="o">%</span> 
+                              <span class="s">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">acc</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">acc</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">acc</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_parse_explicit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">acc</span><span class="p">,</span> <span class="n">proj</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
+        <span class="n">model_name</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">model_name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ctrl</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="n">PROJECT_STORAGE</span><span class="p">)</span>
+            <span class="n">found</span> <span class="o">=</span> <span class="n">ctrl</span><span class="o">.</span><span class="n">one</span><span class="p">({</span><span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">})</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">found</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&#39;There is no </span><span class="si">%s</span><span class="s"> named </span><span class="si">%s</span><span class="s">.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">acc</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">found</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">acc</span><span class="p">:</span>
+            <span class="n">acc</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">proj</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="n">attr</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">acc</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">acc</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;Project &#39;</span><span class="si">%s</span><span class="s">&#39; has multiple </span><span class="si">%s</span><span class="s">s. Please specify which to use.&quot;</span> <span class="o">%</span> 
+                              <span class="p">(</span><span class="n">proj</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">],</span> <span class="n">model_name</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">acc</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">acc</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_check_compatibility</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proj</span><span class="p">,</span> <span class="n">targ</span><span class="p">,</span> <span class="n">app</span><span class="p">,</span> <span class="n">meas</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">tau.cli.commands.project.edit</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">project_edit</span>
+        <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">targ</span><span class="p">,</span> <span class="n">app</span><span class="p">,</span> <span class="n">meas</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">proj</span><span class="o">.</span><span class="n">eid</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">model</span><span class="p">[</span><span class="s">&#39;projects&#39;</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> &#39;</span><span class="si">%s</span><span class="s">&#39; is not a member of project configuration &#39;</span><span class="si">%s</span><span class="s">&#39;.&quot;</span> <span class="o">%</span> 
+                                         <span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">model</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">],</span> <span class="n">proj</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]),</span> 
+                                         <span class="s">&quot;Use `</span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> --add-</span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">` to add it to the project configuration.&quot;</span> <span class="o">%</span> 
+                                         <span class="p">(</span><span class="n">project_edit</span><span class="o">.</span><span class="n">command</span><span class="p">,</span> <span class="n">proj</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">],</span> <span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="n">model</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]))</span>
+        <span class="k">for</span> <span class="n">lhs</span> <span class="ow">in</span> <span class="p">[</span><span class="n">targ</span><span class="p">,</span> <span class="n">app</span><span class="p">,</span> <span class="n">meas</span><span class="p">]:</span>
+            <span class="k">for</span> <span class="n">rhs</span> <span class="ow">in</span> <span class="p">[</span><span class="n">targ</span><span class="p">,</span> <span class="n">app</span><span class="p">,</span> <span class="n">meas</span><span class="p">]:</span>
+                <span class="n">lhs</span><span class="o">.</span><span class="n">check_compatibility</span><span class="p">(</span><span class="n">rhs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SelectCommand.construct_parser"><a class="viewcode-back" href="../../../../tau.cli.commands.html#tau.cli.commands.select.SelectCommand.construct_parser">[docs]</a>    <span class="k">def</span> <span class="nf">construct_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">usage</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s"> [project] [target] [application] [measurement] [arguments]&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">get_parser</span><span class="p">(</span><span class="n">prog</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">,</span> <span class="n">usage</span><span class="o">=</span><span class="n">usage</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">summary</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;impl_project&#39;</span><span class="p">,</span>
+                            <span class="n">help</span><span class="o">=</span><span class="s">&quot;Project configuration name&quot;</span><span class="p">,</span>
+                            <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;[project]&#39;</span><span class="p">,</span>
+                            <span class="n">nargs</span><span class="o">=</span><span class="s">&#39;*&#39;</span><span class="p">,</span>
+                            <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;impl_target&#39;</span><span class="p">,</span>
+                            <span class="n">help</span><span class="o">=</span><span class="s">&quot;Target configuration name&quot;</span><span class="p">,</span>
+                            <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;[target]&#39;</span><span class="p">,</span>
+                            <span class="n">nargs</span><span class="o">=</span><span class="s">&#39;*&#39;</span><span class="p">,</span>
+                            <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;impl_application&#39;</span><span class="p">,</span>
+                            <span class="n">help</span><span class="o">=</span><span class="s">&quot;Application configuration name&quot;</span><span class="p">,</span>
+                            <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;[application]&#39;</span><span class="p">,</span>
+                            <span class="n">nargs</span><span class="o">=</span><span class="s">&#39;*&#39;</span><span class="p">,</span>
+                            <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;impl_measurement&#39;</span><span class="p">,</span>
+                            <span class="n">help</span><span class="o">=</span><span class="s">&quot;Measurement configuration name&quot;</span><span class="p">,</span>
+                            <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;[measurement]&#39;</span><span class="p">,</span>
+                            <span class="n">nargs</span><span class="o">=</span><span class="s">&#39;*&#39;</span><span class="p">,</span>
+                            <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--project&#39;</span><span class="p">,</span>
+                            <span class="n">help</span><span class="o">=</span><span class="s">&quot;Project configuration name&quot;</span><span class="p">,</span>
+                            <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;&lt;name&gt;&#39;</span><span class="p">,</span>
+                            <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--target&#39;</span><span class="p">,</span>
+                            <span class="n">help</span><span class="o">=</span><span class="s">&quot;Target configuration name&quot;</span><span class="p">,</span>
+                            <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;&lt;name&gt;&#39;</span><span class="p">,</span>
+                            <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--application&#39;</span><span class="p">,</span>
+                            <span class="n">help</span><span class="o">=</span><span class="s">&quot;Application configuration name&quot;</span><span class="p">,</span>
+                            <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;&lt;name&gt;&#39;</span><span class="p">,</span>
+                            <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--measurement&#39;</span><span class="p">,</span>
+                            <span class="n">help</span><span class="o">=</span><span class="s">&quot;Measurement configuration name&quot;</span><span class="p">,</span>
+                            <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;&lt;name&gt;&#39;</span><span class="p">,</span>
+                            <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">parser</span>
+</div>
+<div class="viewcode-block" id="SelectCommand.main"><a class="viewcode-back" href="../../../../tau.cli.commands.html#tau.cli.commands.select.SelectCommand.main">[docs]</a>    <span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">argv</span><span class="p">):</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">argv</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Arguments: </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+        
+        <span class="n">projects</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="n">applications</span><span class="p">,</span> <span class="n">measurements</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_implicit</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+        <span class="n">proj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_explicit_project</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">projects</span><span class="p">)</span>
+        <span class="n">targ</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_explicit</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">Target</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="n">proj</span><span class="p">,</span> <span class="s">&#39;targets&#39;</span><span class="p">)</span>
+        <span class="n">app</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_explicit</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">Application</span><span class="p">,</span> <span class="n">applications</span><span class="p">,</span> <span class="n">proj</span><span class="p">,</span> <span class="s">&#39;applications&#39;</span><span class="p">)</span>
+        <span class="n">meas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_explicit</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">Measurement</span><span class="p">,</span> <span class="n">measurements</span><span class="p">,</span> <span class="n">proj</span><span class="p">,</span> <span class="s">&#39;measurements&#39;</span><span class="p">)</span>
+
+        <span class="n">proj_ctrl</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">controller</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">targ</span> <span class="ow">and</span> <span class="n">app</span> <span class="ow">and</span> <span class="n">meas</span><span class="p">):</span>
+            <span class="n">proj_ctrl</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">proj</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Selected project &#39;</span><span class="si">%s</span><span class="s">&#39;. No experiment.&quot;</span><span class="p">,</span> <span class="n">proj</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_check_compatibility</span><span class="p">(</span><span class="n">proj</span><span class="p">,</span> <span class="n">targ</span><span class="p">,</span> <span class="n">app</span><span class="p">,</span> <span class="n">meas</span><span class="p">)</span>
+            <span class="n">expr_ctrl</span> <span class="o">=</span> <span class="n">Experiment</span><span class="o">.</span><span class="n">controller</span><span class="p">()</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;project&#39;</span><span class="p">:</span> <span class="n">proj</span><span class="o">.</span><span class="n">eid</span><span class="p">,</span> <span class="s">&#39;target&#39;</span><span class="p">:</span> <span class="n">targ</span><span class="o">.</span><span class="n">eid</span><span class="p">,</span> <span class="s">&#39;application&#39;</span><span class="p">:</span> <span class="n">app</span><span class="o">.</span><span class="n">eid</span><span class="p">,</span> <span class="s">&#39;measurement&#39;</span><span class="p">:</span> <span class="n">meas</span><span class="o">.</span><span class="n">eid</span><span class="p">}</span>
+            <span class="n">matching</span> <span class="o">=</span> <span class="n">expr_ctrl</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">matching</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Creating new experiment&#39;</span><span class="p">)</span>
+                <span class="n">expr</span> <span class="o">=</span> <span class="n">expr_ctrl</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">matching</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">InternalError</span><span class="p">(</span><span class="s">&#39;More than one experiment with data </span><span class="si">%r</span><span class="s"> exists!&#39;</span> <span class="o">%</span> <span class="n">data</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Reusing existing experiment&#39;</span><span class="p">)</span>
+                <span class="n">expr</span> <span class="o">=</span> <span class="n">matching</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">proj_ctrl</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">proj</span><span class="p">,</span> <span class="n">expr</span><span class="p">)</span>
+            <span class="n">populated</span> <span class="o">=</span> <span class="n">expr</span><span class="o">.</span><span class="n">populate</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Selected project &#39;</span><span class="si">%s</span><span class="s">&#39; with experiment (</span><span class="si">%s</span><span class="s">, </span><span class="si">%s</span><span class="s">, </span><span class="si">%s</span><span class="s">).&quot;</span><span class="p">,</span>
+                             <span class="n">proj</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">],</span>
+                             <span class="n">populated</span><span class="p">[</span><span class="s">&#39;target&#39;</span><span class="p">][</span><span class="s">&#39;name&#39;</span><span class="p">],</span>
+                             <span class="n">populated</span><span class="p">[</span><span class="s">&#39;application&#39;</span><span class="p">][</span><span class="s">&#39;name&#39;</span><span class="p">],</span>
+                             <span class="n">populated</span><span class="p">[</span><span class="s">&#39;measurement&#39;</span><span class="p">][</span><span class="s">&#39;name&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">EXIT_SUCCESS</span>
+
+</div></div>
+<span class="n">COMMAND</span> <span class="o">=</span> <span class="n">SelectCommand</span><span class="p">(</span><span class="n">__name__</span><span class="p">,</span> <span class="n">summary_fmt</span><span class="o">=</span><span class="s">&quot;Select project components for the next experiment.&quot;</span><span class="p">)</span>
+</pre></div>
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        <a class="uplink" href="../../../../index.html">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015 ParaTools, Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>

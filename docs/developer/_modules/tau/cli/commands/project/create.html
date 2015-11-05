@@ -26,7 +26,7 @@
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../../../../_static/favicon.ico"/>
     <link rel="top" title="TAU Commander Developer Documentation" href="../../../../../index.html" />
-    <link rel="up" title="tau.cli.commands.project" href="../project.html" /> 
+    <link rel="up" title="tau.cli" href="../../../cli.html" /> 
   </head>
   <body role="document">
       <div class="header" role="banner"><img class="rightlogo" src="../../../../../_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="../../../../../index.html">
@@ -73,131 +73,121 @@
 <span class="c">#</span>
 <span class="sd">&quot;&quot;&quot;``tau project create`` subcommand.&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">cli</span>
+<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">EXIT_SUCCESS</span>
+<span class="kn">from</span> <span class="nn">tau.error</span> <span class="kn">import</span> <span class="n">UniqueAttributeError</span>
 <span class="kn">from</span> <span class="nn">tau.cli</span> <span class="kn">import</span> <span class="n">arguments</span>
-<span class="kn">from</span> <span class="nn">tau.model</span> <span class="kn">import</span> <span class="n">UniqueAttributeError</span>
+<span class="kn">from</span> <span class="nn">tau.cli.cli_view</span> <span class="kn">import</span> <span class="n">CreateCommand</span>
 <span class="kn">from</span> <span class="nn">tau.model.project</span> <span class="kn">import</span> <span class="n">Project</span>
 <span class="kn">from</span> <span class="nn">tau.model.target</span> <span class="kn">import</span> <span class="n">Target</span>
 <span class="kn">from</span> <span class="nn">tau.model.application</span> <span class="kn">import</span> <span class="n">Application</span>
 <span class="kn">from</span> <span class="nn">tau.model.measurement</span> <span class="kn">import</span> <span class="n">Measurement</span>
+<span class="kn">from</span> <span class="nn">tau.storage.levels</span> <span class="kn">import</span> <span class="n">PROJECT_STORAGE</span>
 
 
-<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+<div class="viewcode-block" id="ProjectCreateCommand"><a class="viewcode-back" href="../../../../../tau.cli.commands.project.html#tau.cli.commands.project.create.ProjectCreateCommand">[docs]</a><span class="k">class</span> <span class="nc">ProjectCreateCommand</span><span class="p">(</span><span class="n">CreateCommand</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;``tau project create`` subcommand.&quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">_parse_implicit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="n">applications</span><span class="p">,</span> <span class="n">measurements</span><span class="p">):</span>
+        <span class="n">targ_ctrl</span> <span class="o">=</span> <span class="n">Target</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="n">PROJECT_STORAGE</span><span class="p">)</span>
+        <span class="n">app_ctrl</span> <span class="o">=</span> <span class="n">Application</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="n">PROJECT_STORAGE</span><span class="p">)</span>
+        <span class="n">meas_ctrl</span> <span class="o">=</span> <span class="n">Measurement</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="n">PROJECT_STORAGE</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">flag</span> <span class="ow">in</span> <span class="s">&#39;impl_targets&#39;</span><span class="p">,</span> <span class="s">&#39;impl_applications&#39;</span><span class="p">,</span> <span class="s">&#39;impl_measurements&#39;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">flag</span><span class="p">,</span> <span class="p">[]):</span>
+                <span class="n">tar</span> <span class="o">=</span> <span class="n">targ_ctrl</span><span class="o">.</span><span class="n">one</span><span class="p">({</span><span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">})</span>
+                <span class="n">app</span> <span class="o">=</span> <span class="n">app_ctrl</span><span class="o">.</span><span class="n">one</span><span class="p">({</span><span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">})</span>
+                <span class="n">mes</span> <span class="o">=</span> <span class="n">meas_ctrl</span><span class="o">.</span><span class="n">one</span><span class="p">({</span><span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">})</span>
+                <span class="n">tam</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">tar</span><span class="p">,</span> <span class="n">app</span><span class="p">,</span> <span class="n">mes</span><span class="p">])</span> <span class="o">-</span> <span class="nb">set</span><span class="p">([</span><span class="bp">None</span><span class="p">])</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tam</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;&#39;</span><span class="si">%s</span><span class="s">&#39; is ambiguous.  Please use --target, --application,&quot;</span>
+                                      <span class="s">&quot; or --measurement to specify configuration type&quot;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">tam</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;&#39;</span><span class="si">%s</span><span class="s">&#39; is not a target, application, or measurement&quot;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">tar</span><span class="p">:</span>
+                    <span class="n">targets</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">tar</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">app</span><span class="p">:</span>
+                    <span class="n">applications</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">mes</span><span class="p">:</span>
+                    <span class="n">measurements</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mes</span><span class="p">)</span>
 
-<span class="n">COMMAND</span> <span class="o">=</span> <span class="n">cli</span><span class="o">.</span><span class="n">get_command</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
-
-<span class="n">SHORT_DESCRIPTION</span> <span class="o">=</span> <span class="s">&quot;Create a new project configuration.&quot;</span>
-
-<span class="n">HELP</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
-<span class="s">&#39;</span><span class="si">%(command)s</span><span class="s">&#39; page to be written.</span>
-<span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;command&#39;</span><span class="p">:</span> <span class="n">COMMAND</span><span class="p">}</span>
-
-
-<div class="viewcode-block" id="parser"><a class="viewcode-back" href="../../../../../tau.cli.commands.project.html#tau.cli.commands.project.create.parser">[docs]</a><span class="k">def</span> <span class="nf">parser</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;Construct a command line argument parser.</span>
-<span class="sd">    </span>
-<span class="sd">    Constructing the parser may cause a lot of imports as :py:mod:`tau.cli` is explored.</span>
-<span class="sd">    To avoid possible circular imports we defer parser creation until afer all</span>
-<span class="sd">    modules are imported, hence this function.  The parser instance is maintained as</span>
-<span class="sd">    an attribute of the function, making it something like a C++ function static variable.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">parser</span><span class="p">,</span> <span class="s">&#39;inst&#39;</span><span class="p">):</span>
-        <span class="n">usage_head</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s"> &lt;project_name&gt; [targets] [applications] [measurements] [arguments]&quot;</span> <span class="o">%</span> <span class="n">COMMAND</span>       
-        <span class="n">parser</span><span class="o">.</span><span class="n">inst</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">get_parser_from_model</span><span class="p">(</span><span class="n">Project</span><span class="p">,</span>
-                                                      <span class="n">prog</span><span class="o">=</span><span class="n">COMMAND</span><span class="p">,</span>
-                                                      <span class="n">usage</span><span class="o">=</span><span class="n">usage_head</span><span class="p">,</span>
-                                                      <span class="n">description</span><span class="o">=</span><span class="n">SHORT_DESCRIPTION</span><span class="p">)</span>
-        <span class="n">parser</span><span class="o">.</span><span class="n">inst</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;impl_targets&#39;</span><span class="p">,</span>
-                                 <span class="n">help</span><span class="o">=</span><span class="s">&quot;Target configurations in this project&quot;</span><span class="p">,</span>
-                                 <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;[targets]&#39;</span><span class="p">,</span>
-                                 <span class="n">nargs</span><span class="o">=</span><span class="s">&#39;*&#39;</span><span class="p">,</span>
-                                 <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">)</span>
-        <span class="n">parser</span><span class="o">.</span><span class="n">inst</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;impl_applications&#39;</span><span class="p">,</span>
-                                 <span class="n">help</span><span class="o">=</span><span class="s">&quot;Application configurations in this project&quot;</span><span class="p">,</span>
-                                 <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;[applications]&#39;</span><span class="p">,</span>
-                                 <span class="n">nargs</span><span class="o">=</span><span class="s">&#39;*&#39;</span><span class="p">,</span>
-                                 <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">)</span>
-        <span class="n">parser</span><span class="o">.</span><span class="n">inst</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;impl_measurements&#39;</span><span class="p">,</span>
-                                 <span class="n">help</span><span class="o">=</span><span class="s">&quot;Measurement configurations in this project&quot;</span><span class="p">,</span>
-                                 <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;[measurements]&#39;</span><span class="p">,</span>
-                                 <span class="n">nargs</span><span class="o">=</span><span class="s">&#39;*&#39;</span><span class="p">,</span>
-                                 <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">)</span>
-        <span class="n">parser</span><span class="o">.</span><span class="n">inst</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--targets&#39;</span><span class="p">,</span>
-                                 <span class="n">help</span><span class="o">=</span><span class="s">&quot;Target configurations in this project&quot;</span><span class="p">,</span>
-                                 <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;t&#39;</span><span class="p">,</span>
-                                 <span class="n">nargs</span><span class="o">=</span><span class="s">&#39;+&#39;</span><span class="p">,</span>
-                                 <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">)</span>
-        <span class="n">parser</span><span class="o">.</span><span class="n">inst</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--applications&#39;</span><span class="p">,</span>
-                                 <span class="n">help</span><span class="o">=</span><span class="s">&quot;Application configurations in this project&quot;</span><span class="p">,</span>
-                                 <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;a&#39;</span><span class="p">,</span>
-                                 <span class="n">nargs</span><span class="o">=</span><span class="s">&#39;+&#39;</span><span class="p">,</span>
-                                 <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">)</span>
-        <span class="n">parser</span><span class="o">.</span><span class="n">inst</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--measurements&#39;</span><span class="p">,</span>
-                                 <span class="n">help</span><span class="o">=</span><span class="s">&quot;Measurement configurations in this project&quot;</span><span class="p">,</span>
-                                 <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;m&#39;</span><span class="p">,</span>
-                                 <span class="n">nargs</span><span class="o">=</span><span class="s">&#39;+&#39;</span><span class="p">,</span>
-                                 <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">parser</span><span class="o">.</span><span class="n">inst</span>
-
-</div>
-<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../../../../tau.cli.commands.project.html#tau.cli.commands.project.create.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Subcommand program entry point.</span>
-<span class="sd">    </span>
-<span class="sd">    Args:</span>
-<span class="sd">        argv (list): Command line arguments.</span>
-<span class="sd">        </span>
-<span class="sd">    Returns:</span>
-<span class="sd">        int: Process return code: non-zero if a problem occurred, 0 otherwise</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="p">()</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">argv</span><span class="p">)</span>
-    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Arguments: </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
-
-    <span class="n">targets</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-    <span class="n">applications</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-    <span class="n">measurements</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-
-    <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">dest</span> <span class="ow">in</span> <span class="p">[(</span><span class="s">&#39;targets&#39;</span><span class="p">,</span> <span class="n">Target</span><span class="p">,</span> <span class="n">targets</span><span class="p">),</span>
-                              <span class="p">(</span><span class="s">&#39;applications&#39;</span><span class="p">,</span> <span class="n">Application</span><span class="p">,</span> <span class="n">applications</span><span class="p">),</span>
-                              <span class="p">(</span><span class="s">&#39;measurements&#39;</span><span class="p">,</span> <span class="n">Measurement</span><span class="p">,</span> <span class="n">measurements</span><span class="p">)]:</span>
-        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="p">[]):</span>
-            <span class="n">found</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">with_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">found</span><span class="p">:</span>
-                <span class="n">parser</span><span class="p">()</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;There is no </span><span class="si">%s</span><span class="s"> named &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
-            <span class="n">dest</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">found</span><span class="o">.</span><span class="n">eid</span><span class="p">)</span>
-
-        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s">&#39;impl_&#39;</span> <span class="o">+</span> <span class="n">attr</span><span class="p">,</span> <span class="p">[]):</span>
-            <span class="n">tar</span> <span class="o">=</span> <span class="n">Target</span><span class="o">.</span><span class="n">with_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-            <span class="n">app</span> <span class="o">=</span> <span class="n">Application</span><span class="o">.</span><span class="n">with_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-            <span class="n">mes</span> <span class="o">=</span> <span class="n">Measurement</span><span class="o">.</span><span class="n">with_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-            <span class="n">tam</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">tar</span><span class="p">,</span> <span class="n">app</span><span class="p">,</span> <span class="n">mes</span><span class="p">])</span> <span class="o">-</span> <span class="nb">set</span><span class="p">([</span><span class="bp">None</span><span class="p">])</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tam</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="n">parser</span><span class="p">()</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;&#39;</span><span class="si">%s</span><span class="s">&#39; is ambiguous, please use --targets, --applications,&quot;</span>
-                               <span class="s">&quot; or --measurements to specify configuration type&quot;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">tam</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">parser</span><span class="p">()</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;&#39;</span><span class="si">%s</span><span class="s">&#39; is not a target, application, or measurement&quot;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">tar</span><span class="p">:</span>
-                <span class="n">targets</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">tar</span><span class="o">.</span><span class="n">eid</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">app</span><span class="p">:</span>
-                <span class="n">applications</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">eid</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">mes</span><span class="p">:</span>
-                <span class="n">measurements</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mes</span><span class="o">.</span><span class="n">eid</span><span class="p">)</span>
-
+    <span class="k">def</span> <span class="nf">_parse_explicit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">acc</span><span class="p">):</span>
+        <span class="n">ctrl</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="n">PROJECT_STORAGE</span><span class="p">)</span>
+        <span class="n">model_name</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="nb">delattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s">&#39;impl_&#39;</span> <span class="o">+</span> <span class="n">attr</span><span class="p">)</span>
+            <span class="n">names</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">model_name</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
             <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span> 
+                <span class="n">found</span> <span class="o">=</span> <span class="n">ctrl</span><span class="o">.</span><span class="n">one</span><span class="p">({</span><span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">})</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">found</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&#39;There is no </span><span class="si">%s</span><span class="s"> named </span><span class="si">%s</span><span class="s">.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">acc</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">found</span><span class="p">)</span>
+    
+<div class="viewcode-block" id="ProjectCreateCommand.construct_parser"><a class="viewcode-back" href="../../../../../tau.cli.commands.project.html#tau.cli.commands.project.create.ProjectCreateCommand.construct_parser">[docs]</a>    <span class="k">def</span> <span class="nf">construct_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">usage</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s"> &lt;project_name&gt; [targets] [applications] [measurements] [arguments]&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">get_parser_from_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">prog</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">,</span> <span class="n">usage</span><span class="o">=</span><span class="n">usage</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">summary</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;impl_targets&#39;</span><span class="p">,</span>
+                            <span class="n">help</span><span class="o">=</span><span class="s">&quot;Target configurations in this project&quot;</span><span class="p">,</span>
+                            <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;[targets]&#39;</span><span class="p">,</span>
+                            <span class="n">nargs</span><span class="o">=</span><span class="s">&#39;*&#39;</span><span class="p">,</span>
+                            <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;impl_applications&#39;</span><span class="p">,</span>
+                            <span class="n">help</span><span class="o">=</span><span class="s">&quot;Application configurations in this project&quot;</span><span class="p">,</span>
+                            <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;[applications]&#39;</span><span class="p">,</span>
+                            <span class="n">nargs</span><span class="o">=</span><span class="s">&#39;*&#39;</span><span class="p">,</span>
+                            <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;impl_measurements&#39;</span><span class="p">,</span>
+                            <span class="n">help</span><span class="o">=</span><span class="s">&quot;Measurement configurations in this project&quot;</span><span class="p">,</span>
+                            <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;[measurements]&#39;</span><span class="p">,</span>
+                            <span class="n">nargs</span><span class="o">=</span><span class="s">&#39;*&#39;</span><span class="p">,</span>
+                            <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--targets&#39;</span><span class="p">,</span>
+                            <span class="n">help</span><span class="o">=</span><span class="s">&quot;Target configurations in this project&quot;</span><span class="p">,</span>
+                            <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;t&#39;</span><span class="p">,</span>
+                            <span class="n">nargs</span><span class="o">=</span><span class="s">&#39;+&#39;</span><span class="p">,</span>
+                            <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">,</span>
+                            <span class="n">dest</span><span class="o">=</span><span class="s">&#39;target&#39;</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--applications&#39;</span><span class="p">,</span>
+                            <span class="n">help</span><span class="o">=</span><span class="s">&quot;Application configurations in this project&quot;</span><span class="p">,</span>
+                            <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;a&#39;</span><span class="p">,</span>
+                            <span class="n">nargs</span><span class="o">=</span><span class="s">&#39;+&#39;</span><span class="p">,</span>
+                            <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">,</span>
+                            <span class="n">dest</span><span class="o">=</span><span class="s">&#39;application&#39;</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--measurements&#39;</span><span class="p">,</span>
+                            <span class="n">help</span><span class="o">=</span><span class="s">&quot;Measurement configurations in this project&quot;</span><span class="p">,</span>
+                            <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;m&#39;</span><span class="p">,</span>
+                            <span class="n">nargs</span><span class="o">=</span><span class="s">&#39;+&#39;</span><span class="p">,</span>
+                            <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">,</span>
+                            <span class="n">dest</span><span class="o">=</span><span class="s">&#39;measurement&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">parser</span>
 
-    <span class="n">args</span><span class="o">.</span><span class="n">targets</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
-    <span class="n">args</span><span class="o">.</span><span class="n">applications</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">applications</span><span class="p">)</span>
-    <span class="n">args</span><span class="o">.</span><span class="n">measurements</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">measurements</span><span class="p">)</span>
-
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">Project</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">__dict__</span><span class="p">)</span>
-    <span class="k">except</span> <span class="n">UniqueAttributeError</span><span class="p">:</span>
-        <span class="n">parser</span><span class="p">()</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;A project named &#39;</span><span class="si">%s</span><span class="s">&#39; already exists.&quot;</span> <span class="o">%</span> <span class="n">args</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-
-    <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Created a new project named &#39;</span><span class="si">%s</span><span class="s">&#39;.&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">cli</span><span class="o">.</span><span class="n">execute_command</span><span class="p">([</span><span class="s">&#39;project&#39;</span><span class="p">,</span> <span class="s">&#39;list&#39;</span><span class="p">],</span> <span class="p">[</span><span class="n">args</span><span class="o">.</span><span class="n">name</span><span class="p">])</span></div>
+</div>
+<div class="viewcode-block" id="ProjectCreateCommand.main"><a class="viewcode-back" href="../../../../../tau.cli.commands.project.html#tau.cli.commands.project.create.ProjectCreateCommand.main">[docs]</a>    <span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">argv</span><span class="p">):</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">argv</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Arguments: </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+    
+        <span class="n">targets</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="n">applications</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="n">measurements</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parse_implicit</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="n">applications</span><span class="p">,</span> <span class="n">measurements</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parse_explicit</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">Target</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parse_explicit</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">Application</span><span class="p">,</span> <span class="n">applications</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parse_explicit</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">Measurement</span><span class="p">,</span> <span class="n">measurements</span><span class="p">)</span>
+    
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="n">attr</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span> <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">attributes</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">attr</span><span class="p">)}</span>
+        <span class="n">data</span><span class="p">[</span><span class="s">&#39;targets&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">eid</span> <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">targets</span><span class="p">]</span>
+        <span class="n">data</span><span class="p">[</span><span class="s">&#39;applications&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">eid</span> <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">applications</span><span class="p">]</span>
+        <span class="n">data</span><span class="p">[</span><span class="s">&#39;measurements&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">eid</span> <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">measurements</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">controller</span><span class="p">()</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">UniqueAttributeError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;A project named &#39;</span><span class="si">%s</span><span class="s">&#39; already exists.&quot;</span> <span class="o">%</span> <span class="n">args</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+    
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Created a new project named &#39;</span><span class="si">%s</span><span class="s">&#39;.&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">EXIT_SUCCESS</span>
+</div></div>
+<span class="n">COMMAND</span> <span class="o">=</span> <span class="n">ProjectCreateCommand</span><span class="p">(</span><span class="n">Project</span><span class="p">,</span> <span class="n">__name__</span><span class="p">)</span>    
 </pre></div>
 
       </div>

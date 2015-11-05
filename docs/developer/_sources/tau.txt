@@ -15,6 +15,8 @@ Subpackages
     tau.cli
     tau.gui
     tau.model
+    tau.mvc
+    tau.storage
 
 Submodules
 ----------
@@ -31,22 +33,6 @@ tau.logger module
 -----------------
 
 .. automodule:: tau.logger
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-tau.settings module
--------------------
-
-.. automodule:: tau.settings
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-tau.storage module
-------------------
-
-.. automodule:: tau.storage
     :members:
     :undoc-members:
     :show-inheritance:
