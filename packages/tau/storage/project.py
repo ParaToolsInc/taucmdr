@@ -77,6 +77,9 @@ class ProjectStorage(LocalFileStorage):
             except Exception as err:
                 raise StorageError("Failed to access %s filesystem prefix '%s': %s" % 
                                    (self.name, project_prefix, err))
+            # Exclude project storage directory from git
+            with open(os.path.join(self.prefix, '.gitignore'), 'w+') as fout:
+                fout.write('/*\n')
             LOGGER.debug("Initialized %s filesystem prefix '%s'", self.name, project_prefix)
 
     @property
