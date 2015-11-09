@@ -36,13 +36,18 @@ import subprocess
 import errno
 import shutil
 import urllib
+import pkgutil
 import tarfile
 import urlparse
 from termcolor import termcolor
+from zipimport import zipimporter
+from zipfile import ZipFile
 from tau import logger
 
 
 LOGGER = logger.get_logger(__name__)
+
+_PY_SUFFEXES = ('.py', '.pyo', '.pyc')
 
 
 def mkdirp(*args):
@@ -313,6 +318,7 @@ def parse_bool(value, additional_true=None, additional_false=None):
             raise TypeError
     return bool(value)
 
+
 def is_url(url):
     """Check if `url` is a URL.
     
@@ -323,6 +329,7 @@ def is_url(url):
         bool: True if `url` is a URL, False otherwise.
     """
     return bool(len(urlparse.urlparse(url).scheme))
+
 
 def camelcase(name):
     """Converts a string to CamelCase.
@@ -335,13 +342,99 @@ def camelcase(name):
     """
     return ''.join(x.capitalize() for x in name.split('_'))
 
-def hline(title, *color_args):
+
+def hline(title, *args, **kwargs):
+    """Build a colorful horizontal rule for console output.
+    
+    Uses :any:`logger.LINE_WIDTH` to generate a string of '=' characters
+    as wide as the terminal.  `title` is included in the string near the
+    left of the horizontal line. 
+    
+    Args:
+        title (str): Text to put on the horizontal rule.
+        *args: Positional arguments to pass to :any:`termcolor.colored`.
+        **kwargs: Keyword arguments to pass to :any:`termcolor.colored`.
+    
+    Returns:
+        str: The horizontal rule.
+    """
+
     text = "{:=<{}}\n".format('== %s ==' % title, logger.LINE_WIDTH)
-    if color_args:
-        return termcolor.colored(text, *color_args)
-    else:
-        return text
+    return color_text(text, *args, **kwargs)
+
 
 def color_text(text, *args, **kwargs):
+    """Use :any:`termcolor.colored` to colorize text.
+    
+    Args:
+        text (str): Text to colorize.
+        *args: Positional arguments to pass to :any:`termcolor.colored`.
+        **kwargs: Keyword arguments to pass to :any:`termcolor.colored`.
+        
+    Returns:
+        str: The colorized text.
+    """
     return termcolor.colored(text, *args, **kwargs)
+
+
+def walk_packages(path, prefix):
+    """Fix :any:`pkgutil.walk_packages` to work with Python zip files.
+    
+    Python's default :any:`zipimporter` doesn't provide an `iter_modules` method so
+    :any:`pkgutil.walk_packages` silently fails to list modules and packages when
+    they are in a zip file.  This implementation works around this.
+    """
+    def seen(path, dct={}):
+        # pylint: disable=dangerous-default-value
+        if path in dct:
+            return True
+        dct[path] = True
+    for importer, name, ispkg in _iter_modules(path, prefix):
+        yield importer, name, ispkg
+        if ispkg:
+            __import__(name)
+            path = getattr(sys.modules[name], '__path__', None) or []
+            path = [p for p in path if not seen(p)]
+            for item in walk_packages(path, name+'.'):
+                yield item
+
+
+def _zipimporter_iter_modules(archive, path):
+    """The missing zipimporter.iter_modules method."""
+    libdir, _, pkgpath = path.partition(archive + os.sep)
+    with ZipFile(os.path.join(libdir, archive)) as zipfile:
+        namelist = zipfile.namelist()
+    
+    def iter_modules(prefix):
+        for fname in namelist:
+            fname, ext = os.path.splitext(fname)
+            if ext in _PY_SUFFEXES:
+                extrapath, _, modname = fname.partition(pkgpath + os.sep)
+                if extrapath or modname == '__init__':
+                    continue
+                pkgname, modname = os.path.split(modname)
+                if pkgname:
+                    if os.sep in pkgname:
+                        continue
+                    yield prefix + pkgname, True
+                else:
+                    yield prefix + modname, False
+    return iter_modules
+
+
+def _iter_modules(paths, prefix):
+    yielded = {}
+    for path in paths:
+        importer = pkgutil.get_importer(path)
+        if isinstance(importer, zipimporter):
+            # pylint: disable=no-member
+            archive = os.path.basename(importer.archive)
+            iter_importer_modules = _zipimporter_iter_modules(archive, path)
+        else:
+            iter_importer_modules = importer.iter_modules
+        for name, ispkg in iter_importer_modules(prefix):
+            if name not in yielded:
+                yielded[name] = True
+                yield importer, name, ispkg
+ 
 

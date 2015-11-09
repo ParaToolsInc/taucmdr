@@ -42,9 +42,8 @@ a subclass of :any:`AbstractCommand`.
 
 import os
 import sys
-import pkgutil
 from tau import TAU_SCRIPT, EXIT_FAILURE
-from tau import logger
+from tau import logger, util
 from tau.error import ConfigurationError, InternalError
 
 
@@ -136,9 +135,8 @@ def _get_commands(package_name):
             dct[car]['__module__'] = sys.modules[module]
 
     command_module = sys.modules[COMMANDS_PACKAGE_NAME]
-    for _, module, _ in pkgutil.walk_packages(command_module.__path__):
-        if module != '__main__':
-            module = '.'.join((command_module.__name__, module))
+    for _, module, _ in util.walk_packages(command_module.__path__, prefix=command_module.__name__+'.'):
+        if not module.endswith('__main__'):
             try:
                 lookup(_command_as_list(module), _COMMANDS)
             except KeyError:

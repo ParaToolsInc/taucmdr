@@ -379,6 +379,7 @@ Platform          : %(platform)s
 Python Version    : %(pyversion)s
 Working Directory : %(cwd)s
 Terminal Size     : %(termsize)s
+Frozen            : %(frozen)s
 %(bar)s
 """ % {'bar': '#' * LINE_WIDTH,
        'timestamp': str(datetime.now()),
@@ -386,4 +387,5 @@ Terminal Size     : %(termsize)s
        'platform': platform.platform(),
        'pyversion': platform.python_version(),
        'cwd': os.getcwd(),
-       'termsize': 'x'.join([str(_) for _ in TERM_SIZE])})
+       'termsize': 'x'.join([str(_) for _ in TERM_SIZE]),
+       'frozen': getattr(sys, 'frozen', False)})
