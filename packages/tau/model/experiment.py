@@ -331,7 +331,7 @@ class Experiment(Model):
                         found = trial
                 trials = [found]
         if not trials:
-            raise ConfigurationError("No trials in experiment %s" % self.name(), "See `tau trial create --help`")
+            raise ConfigurationError("No trials in experiment %s" % self.title(), "See `tau trial create --help`")
 
         tau = self.configure()
         meas = self.populate('measurement')
