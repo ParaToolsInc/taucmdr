@@ -143,7 +143,7 @@ class InitializeCommand(AbstractCommand):
         if args.sample and sample:
             _safe_execute(measurement_create_cmd, 
                           ['profile-sample', '--profile=True', '--trace=False', '--sample=True',
-                           '--source-inst=never', '--compiler-inst=%s' % comp_inst, 
+                           '--source-inst=never', '--compiler-inst=never',
                            '--link-only=False'] + measurement_args)
             measurement_names.extend(['profile-sample'])
         if args.profile:

@@ -1,4 +1,4 @@
-CC = gcc
+CC = tau gcc
 CFLAGS = 
 LDFLAGS =
 
