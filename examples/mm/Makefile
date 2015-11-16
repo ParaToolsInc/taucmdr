@@ -1,11 +1,25 @@
-CC = tau gcc
 RM = /bin/rm -rf
 
 TARGET = matmult
 
 OBJS = matmult.o matmult_initialize.o
-CFLAGS=
-LDFLAGS=
+
+ifdef MPI
+CC = tau mpicc
+MPI_CFLAGS = -DTAU_MPI
+else
+CC = tau gcc
+MPI_CFLAGS = 
+endif
+
+ifdef OPENMP
+OMP_FLAGS = -fopenmp -DTAU_OPENMP
+else
+OMP_FLAGS = 
+endif
+
+CFLAGS = $(MPI_FLAGS) $(OMP_FLAGS)
+LDFLAGS = $(MPI_FLAGS) $(OMP_FLAGS)
 
 ##############################################
 
