@@ -135,16 +135,16 @@ class TargetCreateCommand(CreateCommand):
         ctrl = self.model.controller(store)
         key_attr = self.model.key_attribute
         key = getattr(args, key_attr)
-        data = {attr: getattr(args, attr) for attr in self.model.attributes if hasattr(args, attr)}
 
         compilers = self.parse_compiler_flags(args)
         self.logger.debug('Arguments after parsing compiler flags: %s', args)
-    
+        
+        data = {attr: getattr(args, attr) for attr in self.model.attributes if hasattr(args, attr)}
         for keyword, comp in compilers.iteritems():
             self.logger.debug("%s=%s (%s)", keyword, comp.absolute_path, comp.info.short_descr)
             record = Compiler.controller(store).register(comp)
             data[comp.info.role.keyword] = record.eid
-    
+
         try:
             ctrl.create(data)
         except UniqueAttributeError:
