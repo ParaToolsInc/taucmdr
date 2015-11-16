@@ -138,8 +138,7 @@ class InitializeCommand(AbstractCommand):
 
         measurement_names = []
         measurement_args = ['--%s=True' % attr 
-                            for attr in 'cuda', 'mpi', 'opencl', 'openmp'
-                            if getattr(application_args, attr, False)]
+                            for attr in 'cuda', 'mpi', 'opencl' if getattr(application_args, attr, False)]
         
         if args.sample and sample:
             _safe_execute(measurement_create_cmd, 
