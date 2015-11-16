@@ -40,7 +40,9 @@ from tau.mvc.model import Model
 from tau.mvc.controller import Controller
 from tau.cf.compiler import CompilerRole
 from tau.cf.compiler.installed import InstalledCompilerSet
+from tau.cf.target import host, DARWIN_OS
 from tau.model.compiler import Compiler
+
 
 def attributes():
     from tau.model.project import Project
@@ -257,7 +259,8 @@ def attributes():
             'argparse': {'flags': ('--binutils',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
-                         'action': ParsePackagePathAction}
+                         'action': ParsePackagePathAction},
+            'compat': {(lambda x: x is not None): (Target.discourage('host_os', DARWIN_OS.name))}
         },
         'libunwind_source': {
             'type': 'string',
