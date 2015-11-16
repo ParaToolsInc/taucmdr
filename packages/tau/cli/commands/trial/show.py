@@ -38,9 +38,13 @@ class TrialShowCommand(AbstractCommand):
     def construct_parser(self):
         usage = "%s [trial_number] [trial_number] ... [arguments]" % self.command
         parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
-        parser.add_argument('--tool', 
-                            help="specify reporting or visualization tool",
-                            metavar='tool_name',
+        parser.add_argument('--profile-tool', 
+                            help="specify reporting or visualization tool for profiles",
+                            metavar='profile_tool',
+                            default=arguments.SUPPRESS)
+        parser.add_argument('--trace-tool', 
+                            help="specify reporting or visualization tool for traces",
+                            metavar='trace_tool',
                             default=arguments.SUPPRESS)
         parser.add_argument('numbers', 
                             help="show details for specified trials",
@@ -67,10 +71,8 @@ class TrialShowCommand(AbstractCommand):
                     numbers.append(int(num))
                 except ValueError:
                     self.parser.error("Invalid trial number: %s" % num)
-        try:
-            tool = args.tool
-        except AttributeError:
-            tool = None
-        return expr.show(trial_numbers=numbers, tool_name=tool)
+        profile_tool = getattr(args, 'profile_tool', None)
+        trace_tool = getattr(args, 'trace_tool', None)
+        return expr.show(trial_numbers=numbers, profile_tool=profile_tool, trace_tool=trace_tool)
 
 COMMAND = TrialShowCommand(__name__, summary_fmt="Display trial data in analysis tool.")

@@ -116,7 +116,7 @@ class TrialController(Controller):
             env (dict): Environment variables to set before performing the trial.
         """
         def banner(mark, name, time):
-            headline = '\n{:=<{}}\n'.format('== %s %s (%s) ==' % (mark, name, time), logger.LINE_WIDTH)
+            headline = '\n{:=<{}}\n'.format('== %s %s at %s ==' % (mark, name, time), logger.LINE_WIDTH)
             LOGGER.info(headline)
 
         cmd_str = ' '.join(cmd)
@@ -124,7 +124,7 @@ class TrialController(Controller):
         trial_number = expr.next_trial_number()
         LOGGER.debug("New trial number is %d", trial_number)
 
-        banner('BEGIN', expr.name, begin_time)
+        banner('BEGIN', expr.title(), begin_time)
         fields = {'number': trial_number,
                   'experiment': expr.eid,
                   'command': cmd_str,
@@ -141,16 +141,32 @@ class TrialController(Controller):
             retval = trial.execute_command(expr, cmd, cwd, env)
         except:
             self.delete(trial.eid)
-            end_time = str(datetime.utcnow())
             raise
-        else:
-            data_size = sum(os.path.getsize(os.path.join(trial.prefix, f)) for f in os.listdir(trial.prefix))
-            end_time = str(datetime.utcnow())
-            self.update({'end_time': end_time,
-                         'return_code': retval,
-                         'data_size': data_size}, trial.eid)
         finally:
+            end_time = str(datetime.utcnow())
+            self.update({'end_time': end_time, 'return_code': retval}, trial.eid)
             banner('END', expr.name, end_time)
+        if retval != 0:
+            raise TrialError("Program died without producing performance data.",
+                             "Verify that the right input parameters were specified.",
+                             "Check the program output for error messages.",
+                             "Does the selected application configuration correctly describe this program?",
+                             "Does the selected measurement configuration specifiy the right measurement methods?",
+                             "Does the selected target configuration match the runtime environment?")
+
+        data_size = sum(os.path.getsize(os.path.join(trial.prefix, f)) for f in os.listdir(trial.prefix))
+        self.update({'data_size': data_size}, trial.eid)
+        measurement = expr.populate('measurement')
+        profiles = trial.profile_files()
+        if profiles:
+            LOGGER.info("Trial produced %d profile files.", len(profiles))
+        elif measurement['profile']:
+            raise TrialError("Application completed successfuly but did not produce any profiles.")
+        traces = trial.trace_files()
+        if traces:
+            LOGGER.info("Trial produced %d trace files.", len(traces))
+        elif measurement['trace']:
+            raise TrialError("Application completed successfuly but did not produce any traces.")            
         return retval
 
 
@@ -198,6 +214,18 @@ class Trial(Model):
         profiles.extend(list_profiles(self.prefix))
         return profiles
     
+    def trace_files(self):
+        """Get this trial's trace files.
+        
+        Returns paths to trace files: *.[trc,edf].
+        
+        Returns:
+            list: Paths to trace files.
+        """
+        trc_files = glob.glob(os.path.join(self.prefix, '*.trc'))
+        edf_files = glob.glob(os.path.join(self.prefix, '*.edf'))
+        return trc_files + edf_files
+
     def execute_command(self, expr, cmd, cwd, env):
         """Execute a command as part of an experiment trial.
         
@@ -225,19 +253,5 @@ class Trial(Model):
             raise TrialError("Couldn't execute %s: %s" % (cmd_str, err), errno_hint.get(err.errno, None))
         if retval:
             LOGGER.warning("Return code %d from '%s'", retval, cmd_str)
-        measurement = expr.populate('measurement')
-        if measurement['profile']:
-            profiles = self.profile_files()
-            if profiles:
-                LOGGER.info("Trial produced %d profile files.", len(profiles))
-            elif retval != 0:
-                raise TrialError("Program died without producing performance data.",
-                                 "Verify that the right input parameters were specified.",
-                                 "Check the program output for error messages.",
-                                 "Does the selected application configuration correctly describe this program?",
-                                 "Does the selected measurement configuration specifiy the right measurement methods?",
-                                 "Does the selected target configuration match the runtime environment?")
-            else:
-                raise TrialError("Application completed successfuly but did not produce any performance data.")
         return retval
 

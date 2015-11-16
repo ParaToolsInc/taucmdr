@@ -25,6 +25,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
+from tau.cf.target import DARWIN_OS
 """Measurement data model.
 
 :any:`Measurement` completely describes the performance data measurements
@@ -37,6 +38,7 @@ from tau.error import ConfigurationError
 from tau.mvc.model import Model
 from tau.cf.compiler import INTEL_COMPILERS
 from tau.cf.compiler.installed import InstalledCompiler
+from tau.cf.target import host
 
 
 def intel_only(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
@@ -114,7 +116,7 @@ def attributes():
         },
         'sample': {
             'type': 'boolean',
-            'default': True,
+            'default': False,
             'description': "use event-based sampling to gather performance data",
             'argparse': {'flags': ('--sample',),
                          'group': 'instrumentation',
@@ -122,8 +124,11 @@ def attributes():
                          'nargs': '?',
                          'const': True,
                          'action': ParseBooleanAction},
-            'compat': {True: (Target.discourage('binutils_source', None),
-                              Target.discourage('libunwind_source', None))}
+            'compat': {True: (Target.require('binutils_source'),
+                              Target.exclude('binutils_source', None),
+                              Target.require('libunwind_source'),
+                              Target.exclude('libunwind_source', None),
+                              Target.exclude('host_os', DARWIN_OS))}
         },
         'source_inst': {
             'type': 'string',
@@ -140,7 +145,7 @@ def attributes():
         },
         'compiler_inst': {
             'type': 'string',
-            'default': 'fallback',
+            'default': 'fallback' if host.operating_system() is not DARWIN_OS else 'never',
             'description': "use compiler-generated callbacks to gather performance data",
             'argparse': {'flags': ('--compiler-inst',),
                          'group': 'instrumentation',
@@ -149,8 +154,11 @@ def attributes():
                          'choices': ('always', 'fallback', 'never'),
                          'const': 'always'},
             'compat': {lambda x: x in ('always', 'fallback'):
-                       (Target.discourage('binutils_source', None),
-                        Target.discourage('libunwind_source', None))}
+                       (Target.require('binutils_source'),
+                        Target.exclude('binutils_source', None),
+                        Target.require('libunwind_source'),
+                        Target.exclude('libunwind_source', None),
+                        Target.exclude('host_os', DARWIN_OS))}
         },
         'link_only': {
             'type': 'boolean',

@@ -741,3 +741,49 @@ class TauInstallation(Installation):
             raise ConfigurationError("All visualization or reporting tools failed to open '%s'" % path,
                                      "Check Java installation, X11 installation,"
                                      " network connectivity, and file permissions")
+
+    def show_trace(self, path, tool_name=None):
+        """Shows trace data in the specified file or folder.
+        
+        Merges the traces and converts them if needed.
+        
+        Args:
+            path (str): Path to the directory containing trace files.
+            tool_name (str): Name of the profile visualization tool to use, e.g. 'vampir'.
+            
+        Returns:
+            int: Return code of the visualization tool.
+        """
+        LOGGER.debug("Showing trace files at '%s'", path)
+        _, env = super(TauInstallation,self).runtime_config()
+        if tool_name is None:
+            tool_name = 'jumpshot'
+        elif tool_name != 'jumpshot':
+            raise InternalError("Only jumpshot supported at this time")
+        if not os.path.isdir(path):
+            raise InternalError("Individual trace files not yet supported.")
+        tau_slog2 = os.path.join(path, 'tau.slog2')
+        if not os.path.isfile(tau_slog2):
+            if not os.path.isfile(os.path.join(path, 'tau.trc')):
+                trc_files = glob.glob(os.path.join(path, '*.trc'))
+                edf_files = glob.glob(os.path.join(path, '*.edf'))
+                if not (trc_files and edf_files):
+                    raise ConfigurationError("No *.trc or *.edf files!")
+                cmd = ['tau_treemerge.pl']
+                retval = util.create_subprocess(cmd, cwd=path, env=env, log=False)
+                if retval != 0:
+                    raise InternalError("Nonzero return code from tau_treemerge.pl")
+            cmd = ['tau2slog2', 'tau.trc', 'tau.edf', '-o', 'tau.slog2']
+            retval = util.create_subprocess(cmd, cwd=path, env=env, log=False)
+            if retval != 0:
+                raise InternalError("Nonzero return code from %s" % ' '.join(cmd))
+        LOGGER.info("Opening %s in %s", tau_slog2, tool_name)
+        cmd = [tool_name, tau_slog2]
+        retval = util.create_subprocess(cmd, cwd=path, env=env, log=False)
+        if retval == 0:
+            return
+        else:
+            raise ConfigurationError("Trace visualizer failed to open '%s'" % path,
+                                     "Check Java installation, X11 installation,"
+                                     " network connectivity, and file permissions")
+            

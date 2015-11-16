@@ -39,8 +39,7 @@ import fileinput
 from tau import logger, util
 from tau.cf.software.installation import AutotoolsInstallation
 from tau.cf.compiler import CC_ROLE
-from tau.cf.target import IBM_BGP_ARCH, IBM_BGQ_ARCH, IBM64_ARCH, ARM32_ARCH, INTEL_KNC_ARCH, X86_64_ARCH, DARWIN_OS
-from tau.cf.target import DARWIN_OS 
+from tau.cf.target import IBM_BGP_ARCH, IBM_BGQ_ARCH, IBM64_ARCH, INTEL_KNC_ARCH, X86_64_ARCH, DARWIN_OS
 
 LOGGER = logger.get_logger(__name__)
  

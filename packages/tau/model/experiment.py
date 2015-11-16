@@ -33,7 +33,6 @@ The selected experiment will be used for application compilation and trial visua
 """
 
 import os
-import glob
 import shutil
 from tau import logger, util
 from tau.error import ConfigurationError
@@ -138,23 +137,23 @@ class Experiment(Model):
                 return i
         return len(trials)
     
-    def uses_tau(self):
+    def _will_configure_tau(self):
         # For now, all experiments use TAU
         # This might change if we ever re-use this for something like ThreadSpotter
         # pylint: disable=no-self-use
         return True
 
-    def uses_pdt(self):
+    def _will_configure_pdt(self):
         measurement = self.populate('measurement')
         return measurement['source_inst'] != 'never'
     
-    def uses_binutils(self):
+    def _will_configure_binutils(self):
         measurement = self.populate('measurement')
         return (measurement['sample'] or 
                 measurement['compiler_inst'] != 'never' or 
                 measurement['openmp'] in ('ompt', 'gomp'))
         
-    def uses_libunwind(self):
+    def _will_configure_libunwind(self):
         populated = self.populate()
         host_os = OperatingSystem.find(populated['target']['host_os'])
         return (host_os is not DARWIN_OS and
@@ -162,7 +161,7 @@ class Experiment(Model):
                  populated['measurement']['compiler_inst'] != 'never' or 
                  populated['application']['openmp']))
         
-    def uses_papi(self):
+    def _will_configure_papi(self):
         measurement = self.populate('measurement')
         return bool(len([met for met in measurement['metrics'] if 'PAPI' in met]))
     
@@ -249,10 +248,10 @@ class Experiment(Model):
             TauInstallation: Object handle for the TAU installation. 
         """
         prefix = USER_STORAGE.prefix
-        if self.uses_tau():
+        if self._will_configure_tau():
             dependencies = {}
             for name in 'pdt', 'binutils', 'libunwind', 'papi':
-                uses_dependency = getattr(self, 'uses_' + name)
+                uses_dependency = getattr(self, '_will_configure_' + name)
                 inst = self.configure_tau_dependency(name, prefix) if uses_dependency() else None
                 dependencies[name] = inst
             return self.configure_tau(prefix, dependencies)
@@ -303,13 +302,14 @@ class Experiment(Model):
         cmd, env = tau.get_application_command(launcher_cmd, application_cmd)
         return Trial.controller(self.storage).perform(self, cmd, os.getcwd(), env)
 
-    def show(self, tool_name=None, trial_numbers=None):
+    def show(self, profile_tool=None, trace_tool=None, trial_numbers=None):
         """Show experiment trial data.
         
         Shows the most recent trial or all trials with given numbers.
         
         Args:
-            tool_name (str): Name of the visualization or data processing tool to use, e.g. `pprof`.
+            profile_tool (str): Name of the visualization or data processing tool for profiles, e.g. `pprof`.
+            trace_tool (str): Name of the visualization or data processing tool for traces, e.g. `vampir`.
             trial_numbers (list): Numbers of trials to show.
             
         Raises:
@@ -323,22 +323,22 @@ class Experiment(Model):
                     raise ConfigurationError("No trial number %d in experiment %s" % (num, self.name()))
                 trials.append(found)
         else:
-            all_trials = self.populate('trials')
-            if not all_trials:
-                raise ConfigurationError("No trials in experiment %s" % self.name(),
-                                         "See `tau trial create --help`")
-            else:
-                found = all_trials[0]
-                for trial in all_trials[1:]:
+            trials = self.populate('trials')
+            if trials:
+                found = trials[0]
+                for trial in trials[1:]:
                     if trial['begin_time'] > found['begin_time']:
                         found = trial
                 trials = [found]
-        if trials:
-            tau = self.configure()
-            for trial in trials:
-                prefix = trial.prefix
-                profiles = glob.glob(os.path.join(prefix, 'profile.*.*.*'))
-                if not profiles:
-                    profiles = glob.glob(os.path.join(prefix, 'MULTI__*'))
-                if profiles:
-                    tau.show_profile(prefix, tool_name)
+        if not trials:
+            raise ConfigurationError("No trials in experiment %s" % self.name(), "See `tau trial create --help`")
+
+        tau = self.configure()
+        meas = self.populate('measurement')
+        for trial in trials:
+            prefix = trial.prefix
+            if meas['profile']:
+                tau.show_profile(prefix, profile_tool)
+            if meas['trace']:
+                tau.show_trace(prefix, trace_tool)
+                

@@ -67,7 +67,11 @@ class DashboardCommand(AbstractCommand):
         except ExperimentSelectionError:
             pass
         else:
-            current = util.color_text('Current experiment: ', 'cyan') + expr.title()
+            if expr:
+                current = util.color_text('Current experiment: ', 'cyan') + expr.title()
+            else:
+                current = (util.color_text('No experiment: ', 'red') + 
+                           ('Use `%s` to configure a new experiment' % select_cmd))  
             parts.append(current)
         print '\n'.join(parts)
     
