@@ -35,13 +35,14 @@ from tau import logger, util
 from tau.cf.software import SoftwarePackageError
 from tau.cf.software.installation import AutotoolsInstallation
 from tau.cf.compiler import CXX_ROLE, GNU_COMPILERS, INTEL_COMPILERS, PGI_COMPILERS
-from tau.cf.target import TAU_ARCH_APPLE, X86_64_ARCH, TauArch
+from tau.cf.target import TAU_ARCH_APPLE, X86_64_ARCH, LINUX_OS, TauArch
 
 
 LOGGER = logger.get_logger(__name__)
 
 SOURCES = {None: 'http://tau.uoregon.edu/pdt.tgz',
-           X86_64_ARCH: {None: 'http://tau.uoregon.edu/pdt_lite.tgz'}}
+           X86_64_ARCH: {None: 'http://tau.uoregon.edu/pdt.tgz',
+                         LINUX_OS:  'http://tau.uoregon.edu/pdt_lite.tgz'}}
 
 COMMANDS = {None:
             ['cparse',
