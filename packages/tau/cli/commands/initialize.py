@@ -43,6 +43,7 @@ from tau.cli.commands.measurement.create import COMMAND as measurement_create_cm
 from tau.cli.commands.project.create import COMMAND as project_create_cmd
 from tau.cli.commands.select import COMMAND as select_cmd
 from tau.cli.commands.dashboard import COMMAND as dashboard_cmd
+from tau.cf.target import host, DARWIN_OS
 
 
 
@@ -106,6 +107,16 @@ class InitializeCommand(AbstractCommand):
             if retval != EXIT_SUCCESS:
                 raise InternalError("return code %s: %s %s" % (retval, cmd, ' '.join(argv)))
 
+        if host.operating_system() is DARWIN_OS:
+            self.logger.info("Darwin OS detected: disabling GNU binutils, compiler-based instrumentation, and sampling.")
+            binutils = False
+            sample = False
+            comp_inst = 'never'
+        else:
+            binutils = True
+            sample = True
+            comp_inst = 'fallback'
+
         project_name = args.project_name
         target_name = args.target_name
         application_name = args.application_name
@@ -116,6 +127,8 @@ class InitializeCommand(AbstractCommand):
         target_argv = [target_name] + argv
         _, unknown = target_create_cmd.parser.parse_known_args(args=target_argv)
         target_argv = [target_name] + [arg for arg in argv if arg not in unknown]
+        if not binutils:
+            target_argv.append('--binutils=False')
         _safe_execute(target_create_cmd, target_argv)
         
         application_argv = [application_name] + argv
@@ -125,26 +138,28 @@ class InitializeCommand(AbstractCommand):
 
         measurement_names = []
         measurement_args = ['--%s=True' % attr 
-                            for attr in 'cuda', 'mpi', 'opencl', 'openmp'
-                            if getattr(application_args, attr, False)]
-        if args.sample:
+                            for attr in 'cuda', 'mpi', 'opencl' if getattr(application_args, attr, False)]
+        
+        if args.sample and sample:
             _safe_execute(measurement_create_cmd, 
                           ['profile-sample', '--profile=True', '--trace=False', '--sample=True',
-                           '--source-inst=never', '--compiler-inst=never', '--link-only=False'] + measurement_args)
+                           '--source-inst=never', '--compiler-inst=%s' % comp_inst, 
+                           '--link-only=False'] + measurement_args)
             measurement_names.extend(['profile-sample'])
         if args.profile:
             _safe_execute(measurement_create_cmd, 
                           ['profile-automatic', '--profile=True', '--trace=False', '--sample=False',
-                           '--source-inst=automatic', '--compiler-inst=fallback', 
+                           '--source-inst=automatic', '--compiler-inst=%s' % comp_inst, 
                            '--link-only=False'] + measurement_args)
             _safe_execute(measurement_create_cmd, 
                           ['profile-manual', '--profile=True', '--trace=False', '--sample=False',
-                           '--source-inst=never', '--compiler-inst=never', '--link-only=True'] + measurement_args)
+                           '--source-inst=never', '--compiler-inst=never', 
+                           '--link-only=True'] + measurement_args)
             measurement_names.extend(['profile-automatic', 'profile-manual'])
         if args.trace:
             _safe_execute(measurement_create_cmd, 
                           ['trace-automatic', '--profile=False', '--trace=True', '--sample=False', 
-                           '--source-inst=automatic', '--compiler-inst=fallback', 
+                           '--source-inst=automatic', '--compiler-inst=%s' % comp_inst, 
                            '--link-only=False'] + measurement_args)
             _safe_execute(measurement_create_cmd, 
                           ['trace-manual', '--profile=False', '--trace=True', '--sample=False',
