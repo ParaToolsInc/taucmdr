@@ -1,4 +1,4 @@
-CC = mpicc
+CC = tau mpicc
 CFLAGS = -fopenmp
 LDFLAGS = -fopenmp
 
