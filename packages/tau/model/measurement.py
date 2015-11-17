@@ -279,8 +279,9 @@ def attributes():
                          'group': 'data',
                          'metavar': '<METRIC>',
                          'nargs': '+'},
-            'compat': {lambda metrics: bool(len([met for met in metrics if 'PAPI' in met])): 
-                       Target.exclude('papi_source', None)}
+            'compat': {lambda metrics: bool(len([met for met in metrics if 'PAPI' in met])):
+                       (Target.require('papi_source'), 
+                        Target.exclude('papi_source', None))}
         },
         'keep_inst_files': {
             'type': 'boolean',

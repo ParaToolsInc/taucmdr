@@ -137,23 +137,23 @@ class Experiment(Model):
                 return i
         return len(trials)
     
-    def _will_configure_tau(self):
+    def uses_tau(self):
         # For now, all experiments use TAU
         # This might change if we ever re-use this for something like ThreadSpotter
         # pylint: disable=no-self-use
         return True
 
-    def _will_configure_pdt(self):
+    def uses_pdt(self):
         measurement = self.populate('measurement')
         return measurement['source_inst'] != 'never'
     
-    def _will_configure_binutils(self):
+    def uses_binutils(self):
         measurement = self.populate('measurement')
         return (measurement['sample'] or 
                 measurement['compiler_inst'] != 'never' or 
                 measurement['openmp'] in ('ompt', 'gomp'))
         
-    def _will_configure_libunwind(self):
+    def uses_libunwind(self):
         populated = self.populate()
         host_os = OperatingSystem.find(populated['target']['host_os'])
         return (host_os is not DARWIN_OS and
@@ -161,7 +161,7 @@ class Experiment(Model):
                  populated['measurement']['compiler_inst'] != 'never' or 
                  populated['application']['openmp']))
         
-    def _will_configure_papi(self):
+    def uses_papi(self):
         measurement = self.populate('measurement')
         return bool(len([met for met in measurement['metrics'] if 'PAPI' in met]))
     
@@ -248,10 +248,10 @@ class Experiment(Model):
             TauInstallation: Object handle for the TAU installation. 
         """
         prefix = USER_STORAGE.prefix
-        if self._will_configure_tau():
+        if self.uses_tau():
             dependencies = {}
             for name in 'pdt', 'binutils', 'libunwind', 'papi':
-                uses_dependency = getattr(self, '_will_configure_' + name)
+                uses_dependency = getattr(self, 'uses_' + name)
                 inst = self.configure_tau_dependency(name, prefix) if uses_dependency() else None
                 dependencies[name] = inst
             return self.configure_tau(prefix, dependencies)

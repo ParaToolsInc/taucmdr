@@ -47,7 +47,7 @@ from tau.model.compiler import Compiler
 def attributes():
     from tau.model.project import Project
     from tau.cli.arguments import ParsePackagePathAction
-    from tau.cf.target import host, Architecture, OperatingSystem
+    from tau.cf.target import Architecture, OperatingSystem
     return {
         'projects': {
             'collection': Project,
@@ -260,7 +260,7 @@ def attributes():
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction},
-            'compat': {(lambda x: x is not None): (Target.discourage('host_os', DARWIN_OS.name))}
+            'compat': {(lambda x: x is not None): Target.discourage('host_os', DARWIN_OS.name)}
         },
         'libunwind_source': {
             'type': 'string',
@@ -277,7 +277,8 @@ def attributes():
             'argparse': {'flags': ('--papi',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
-                         'action': ParsePackagePathAction}
+                         'action': ParsePackagePathAction},
+            'compat': {(lambda x: x is not None): Target.exclude('host_os', DARWIN_OS.name)}
         },
         'scorep_source': {
             'type': 'string',
