@@ -108,11 +108,13 @@ class InitializeCommand(AbstractCommand):
                 raise InternalError("return code %s: %s %s" % (retval, cmd, ' '.join(argv)))
 
         if host.operating_system() is DARWIN_OS:
-            self.logger.info("Darwin OS detected: disabling GNU binutils, compiler-based instrumentation, and sampling.")
+            self.logger.info("Darwin OS detected: disabling PAPI, binutils, compiler-based instrumentation, and sampling.")
+            papi = False
             binutils = False
             sample = False
             comp_inst = 'never'
         else:
+            papi = True
             binutils = True
             sample = True
             comp_inst = 'fallback'
@@ -129,6 +131,8 @@ class InitializeCommand(AbstractCommand):
         target_argv = [target_name] + [arg for arg in argv if arg not in unknown]
         if not binutils:
             target_argv.append('--binutils=False')
+        if not papi:
+            target_argv.append('--papi=False')
         _safe_execute(target_create_cmd, target_argv)
         
         application_argv = [application_name] + argv
