@@ -310,7 +310,7 @@ class InstalledCompilerSet(KeyedRecord):
             self.members[role] = val
 
     def __iter__(self):
-        return self.members.__iter__()
+        return self.members.iteritems()
     
     def __getitem__(self, role):
         return self.members[role]
