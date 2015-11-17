@@ -274,6 +274,7 @@ def attributes():
         'papi_source': {
             'type': 'string',
             'description': 'path or URL to a PAPI installation or archive file',
+            'default': 'download',
             'argparse': {'flags': ('--papi',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
