@@ -279,7 +279,7 @@ def attributes():
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction},
-            'compat': {(lambda x: x is not None): Target.exclude('host_os', DARWIN_OS.name)}
+            'compat': {(lambda x: x is not None): Target.discourage('host_os', DARWIN_OS.name)}
         },
         'scorep_source': {
             'type': 'string',

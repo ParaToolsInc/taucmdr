@@ -24,8 +24,7 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#
-from tau.cf.target import DARWIN_OS
+# 
 """Measurement data model.
 
 :any:`Measurement` completely describes the performance data measurements
@@ -36,9 +35,9 @@ measurements allow us to take different views of the application's performance.
 
 from tau.error import ConfigurationError
 from tau.mvc.model import Model
-from tau.cf.compiler import INTEL_COMPILERS
+from tau.cf.compiler import INTEL_COMPILERS, GNU_COMPILERS
 from tau.cf.compiler.installed import InstalledCompiler
-from tau.cf.target import host
+from tau.cf.target import host, DARWIN_OS
 
 
 def intel_only(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
@@ -69,6 +68,36 @@ def intel_only(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
     if given_family is not INTEL_COMPILERS:
         raise ConfigurationError("%s but it is a %s compiler" % (msg, given_family),
                                  "OMPT for OpenMP measurement only works with Intel compilers")
+
+
+def gnu_only(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
+    """Compatibility checking callback.
+    
+    Guarantees that GOMP can only be used when GNU compilers are specified.
+    
+    Args:
+        lhs (Model): The model invoking `check_compatibility`.
+        lhs_attr (str): Name of the attribute that defines the 'compat' property.
+        lhs_value: Value of the attribute that defines the 'compat' property.
+        rhs (Model): Model we are checking against (argument to `check_compatibility`).
+        rhs_attr (str): The right-hand side attribute we are checking for compatibility.
+        
+    Raises:
+        ConfigurationError: OMPT selected when non-GNU compilers specified in target configuration.
+    """
+    lhs_name = lhs.model_name.lower()
+    rhs_name = rhs.model_name.lower()
+    msg = "%s = %s in %s requires %s in %s to be an GNU compiler" % (lhs_attr, lhs_value, lhs_name, 
+                                                                       rhs_attr, rhs_name)
+    try:
+        compiler_record = rhs.populate(rhs_attr)
+    except KeyError:
+        raise ConfigurationError("%s but it is undefined" % msg)
+    given_compiler = InstalledCompiler(compiler_record['path'])
+    given_family = given_compiler.info.family
+    if given_family is not GNU_COMPILERS:
+        raise ConfigurationError("%s but it is a %s compiler" % (msg, given_family),
+                                 "GOMP for OpenMP measurement only works with GNU compilers")
 
 
 def attributes():
@@ -193,7 +222,7 @@ def attributes():
             'argparse': {'flags': ('--openmp',),
                          'group': 'library',
                          'metavar': 'library',
-                         'choices': ('none', 'opari', 'ompt'),
+                         'choices': ('none', 'opari', 'ompt', 'gomp'),
                          'nargs': 1},
             'compat': {'opari':
                        Application.require('openmp', True),
@@ -201,7 +230,12 @@ def attributes():
                        (Application.require('openmp', True),
                         Target.require('CC_ROLE', intel_only),
                         Target.require('CXX_ROLE', intel_only),
-                        Target.require('FC_ROLE', intel_only))}
+                        Target.require('FC_ROLE', intel_only)),
+                       'gomp':
+                       (Application.require('openmp', True),
+                        Target.require('CC_ROLE', gnu_only),
+                        Target.require('CXX_ROLE', gnu_only),
+                        Target.require('FC_ROLE', gnu_only))}
         },
         'cuda': {
             'type': 'boolean',
