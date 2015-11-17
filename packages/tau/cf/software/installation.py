@@ -333,13 +333,8 @@ class AutotoolsInstallation(Installation):
 
         # Prepare configuration flags
         flags += ['--prefix=%s' % self.install_prefix]
-        compiler_env = {'GNU': {'CC': 'gcc', 'CXX': 'g++'},
-                        'Intel': {'CC': 'icc', 'CXX': 'icpc'},
-                        'PGI': {'CC': 'pgcc', 'CXX': 'pgCC'}}
-        try:
-            env.update(compiler_env[self.compilers[CC_ROLE].info.family])
-        except KeyError:
-            LOGGER.info("Allowing %s to select compilers", self.name)
+        compiler_env = {role.keyword: compiler.command for role, compiler in self.compilers}
+        env.update(compiler_env)
         cmd = ['./configure'] + flags
         LOGGER.info("Configuring %s...", self.name)
         if util.create_subprocess(cmd, cwd=self.src_prefix, env=env, stdout=False):

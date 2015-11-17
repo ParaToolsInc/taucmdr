@@ -309,6 +309,9 @@ class InstalledCompilerSet(KeyedRecord):
             role = CompilerRole.find(key)
             self.members[role] = val
 
+    def __iter__(self):
+        return self.members.__iter__()
+    
     def __getitem__(self, role):
         return self.members[role]
 
