@@ -289,6 +289,12 @@ class TauInstallation(Installation):
                         LOGGER.debug("PAPI_DIR='%s' != '%s'", papi_dir, self.papi.install_prefix)
                         raise SoftwarePackageError("PAPI_DIR in TAU Makefile "
                                                    "doesn't match target PAPI installation")
+        # Check for iowrapper
+        if self.io_inst:
+            iowrap_libs = glob.glob(os.path.join(self.lib_path, 'shared', 'libTAU-iowrap*'))
+            LOGGER.debug("Found iowrap libraries: %s", iowrap_libs)
+            if not iowrap_libs:
+                raise SoftwarePackageError("iowrap libraries not found")
         LOGGER.debug("TAU installation at '%s' is valid", self.install_prefix)
         return True
     
@@ -380,6 +386,8 @@ class TauInstallation(Installation):
                 flags.append('-ompt')
             elif self.measure_openmp == 'opari':
                 flags.append('-opari')
+        if self.io_inst:
+            flags.append('-iowrapper')
         cmd = ['./configure'] + flags
         LOGGER.info("Configuring TAU...")
         if util.create_subprocess(cmd, cwd=self.src_prefix, stdout=False):
@@ -637,6 +645,8 @@ class TauInstallation(Installation):
             opts.append('-cupti')
         if self.measure_opencl:
             opts.append('-opencl')
+        if self.io_inst:
+            opts.append('-io')
         env['TAU_METRICS'] = os.pathsep.join(self.metrics)
         return list(set(opts)), env
 
