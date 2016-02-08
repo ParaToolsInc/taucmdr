@@ -28,13 +28,12 @@
 """``tau target edit`` subcommand."""
 
 from tau import EXIT_SUCCESS
-from tau.error import ConfigurationError, UniqueAttributeError
-from tau.storage.levels import STORAGE_LEVELS, PROJECT_STORAGE
+from tau.error import ConfigurationError
+from tau.storage.levels import STORAGE_LEVELS
 from tau.cli import arguments
 from tau.cli.cli_view import EditCommand
 from tau.model.target import Target
 from tau.model.compiler import Compiler
-from tau.model.project import Project, ProjectSelectionError
 from tau.cf.compiler import CompilerFamily, CompilerRole
 from tau.cf.compiler.mpi import MpiCompilerFamily, MPI_CXX_ROLE, MPI_CC_ROLE, MPI_FC_ROLE
 from tau.cf.compiler.installed import InstalledCompiler, InstalledCompilerFamily
