@@ -157,7 +157,7 @@ class TauInstallation(Installation):
                  measure_cuda,
                  measure_shmem,
                  measure_mpc,
-                 measure_memory_usage,
+                 measure_heap_usage,
                  measure_memory_alloc,
                  callpath_depth):
         """Initialize the TAU installation wrapper class.
@@ -201,7 +201,7 @@ class TauInstallation(Installation):
             measure_cuda (bool): If True then measure time spent in CUDA calls.
             measure_shmem (bool): If True then measure time spent in SHMEM calls.
             measure_mpc (bool): If True then measure time spent in MPC calls.
-            measure_memory_usage (bool): If True then measure memory usage.
+            measure_heap_usage (bool): If True then measure memory usage.
             measure_memory_alloc (bool): If True then record memory allocation **and deallocation** events.
             callpath_depth (int): Depth of callpath measurement.  0 to disable.
         """
@@ -248,7 +248,7 @@ class TauInstallation(Installation):
         self.measure_cuda = measure_cuda
         self.measure_shmem = measure_shmem
         self.measure_mpc = measure_mpc
-        self.measure_memory_usage = measure_memory_usage
+        self.measure_heap_usage = measure_heap_usage
         self.measure_memory_alloc = measure_memory_alloc
         self.callpath_depth = callpath_depth
         
@@ -624,6 +624,8 @@ class TauInstallation(Installation):
         env['TAU_PROFILE'] = str(int(self.profile))
         env['TAU_TRACE'] = str(int(self.trace))
         env['TAU_SAMPLE'] = str(int(self.sample))
+        env['TAU_TRACK_HEAP'] = str(int(self.measure_heap_usage))
+        
         if self.callpath_depth > 0:
             env['TAU_CALLPATH'] = '1'
             env['TAU_CALLPATH_DEPTH'] = str(self.callpath_depth)

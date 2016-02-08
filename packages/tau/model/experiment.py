@@ -220,7 +220,7 @@ class Experiment(Model):
                               measure_cuda=None,  # TODO
                               measure_shmem=None,  # TODO
                               measure_mpc=None,  # TODO
-                              measure_memory_usage=measurement['memory_usage'],
+                              measure_heap_usage=measurement['heap_usage'],
                               measure_memory_alloc=measurement['memory_alloc'],
                               callpath_depth=measurement['callpath'])
         with tau:

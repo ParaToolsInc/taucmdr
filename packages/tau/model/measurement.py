@@ -145,7 +145,7 @@ def attributes():
         },
         'sample': {
             'type': 'boolean',
-            'default': False,
+            'default': host.operating_system() is not DARWIN_OS,
             'description': "use event-based sampling to gather performance data",
             'argparse': {'flags': ('--sample',),
                          'group': 'instrumentation',
@@ -161,7 +161,7 @@ def attributes():
         },
         'source_inst': {
             'type': 'string',
-            'default': 'never',
+            'default': 'never' if host.operating_system() is not DARWIN_OS else 'automatic',
             'description': "use hooks inserted into the application source code to gather performance data",
             'argparse': {'flags': ('--source-inst',),
                          'group': 'instrumentation',
@@ -174,7 +174,7 @@ def attributes():
         },
         'compiler_inst': {
             'type': 'string',
-            'default': 'fallback' if host.operating_system() is not DARWIN_OS else 'never',
+            'default': 'never',
             'description': "use compiler-generated callbacks to gather performance data",
             'argparse': {'flags': ('--compiler-inst',),
                          'group': 'instrumentation',
@@ -283,11 +283,11 @@ def attributes():
                          'const': True,
                          'action': ParseBooleanAction},
         },
-        'memory_usage': {
+        'heap_usage': {
             'type': 'boolean',
             'default': False,
-            'description': 'measure memory consumption',
-            'argparse': {'flags': ('--memory-usage',),
+            'description': 'measure heap memory usage',
+            'argparse': {'flags': ('--heap_usage',),
                          'group': 'memory',
                          'metavar': 'T/F',
                          'nargs': '?',
