@@ -135,3 +135,46 @@ class BinutilsInstallation(AutotoolsInstallation):
         for line in fileinput.input(os.path.join(self.include_path, 'bfd.h'), inplace=1):
             # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
             sys.stdout.write(line.replace('#if !defined PACKAGE && !defined PACKAGE_VERSION', '#if 0'))
+
+    def compiletime_config(self, opts=None, env=None):
+        """Configure compilation environment to use this software package. 
+
+        Don't put `self.bin_path` in PATH since this offends ``ld`` on some systems.
+        
+        Args:
+            opts (list): Optional list of command line options.
+            env (dict): Optional dictionary of environment variables.
+            
+        Returns: 
+            tuple: opts, env updated for the new environment.
+        """
+        opts = list(opts) if opts else []
+        env = dict(env) if env else dict(os.environ)
+        return list(set(opts)), env
+
+    def runtime_config(self, opts=None, env=None):
+        """Configure runtime environment to use this software package.
+        
+        Don't put `self.bin_path` in PATH since this offends ``ld`` on some systems
+        but do put `self.lib_path` in LD_LIBRARY_PATH.
+        
+        Args:
+            opts (list): Optional list of command line options.
+            env (dict): Optional dictionary of environment variables.
+            
+        Returns: 
+            tuple: opts, env updated for the new environment.
+        """
+        opts = list(opts) if opts else []
+        env = dict(env) if env else dict(os.environ)
+        if os.path.isdir(self.lib_path):
+            if sys.platform == 'darwin':
+                library_path = 'DYLD_LIBRARY_PATH'
+            else:
+                library_path = 'LD_LIBRARY_PATH'   
+            try:
+                env[library_path] = os.pathsep.join([self.lib_path, env[library_path]])
+            except KeyError:
+                env[library_path] = self.lib_path
+        return list(set(opts)), env
+
