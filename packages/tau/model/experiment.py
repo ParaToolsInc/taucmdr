@@ -100,7 +100,7 @@ class Experiment(Model):
                                  populated['measurement']['name'])
         
     def data_size(self):
-        return sum([int(trial['data_size']) for trial in self.populate('trials')])
+        return sum([int(trial.get('data_size', 0)) for trial in self.populate('trials')])
 
     @property
     def prefix(self):
