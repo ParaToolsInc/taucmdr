@@ -54,7 +54,7 @@ def parallel_make_flags(nprocs=None):
         list: Command line arguments to pass to `make`.
     """
     if not nprocs:
-        nprocs = multiprocessing.cpu_count() - 1
+        nprocs = max(1, multiprocessing.cpu_count() - 1)
     return ['-j', str(nprocs)]
 
 
