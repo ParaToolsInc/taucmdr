@@ -1,40 +1,13 @@
-#****************************************************************************
-#*			TAU Portable Profiling Package			   **
-#*			http://www.cs.uoregon.edu/research/tau	           **
-#****************************************************************************
-#*    Copyright 1997  						   	   **
-#*    Department of Computer and Information Science, University of Oregon **
-#*    Advanced Computing Laboratory, Los Alamos National Laboratory        **
-#****************************************************************************
-#######################################################################
-##                  pC++/Sage++  Copyright (C) 1993,1995             ##
-##  Indiana University  University of Oregon  University of Rennes   ##
-#######################################################################
- 
-include ../../include/Makefile 
-include ../Makefile
+CXX = g++
+CXXFLAGS = 
 
-
-
-CXX		= $(TAU_CXX)
-
-CC		= $(TAU_CC)
-
-CFLAGS        	= $(TAU_INCLUDE) $(TAU_DEFS) -UTAU_MPI 
-
-LIBS 	      	= $(TAU_LIBS) 
-
-LDFLAGS	      	= $(USER_OPT)
-
-MAKEFILE      	= Makefile
-
-PRINT	      	= pr
+LD = $(CXX)
+LDFLAGS	= 
+LIBS =
 
 RM 	      	= /bin/rm -f
 
 TARGET	      	= simple
-
-EXTRAOBJS     	= 
 
 ##############################################
 
