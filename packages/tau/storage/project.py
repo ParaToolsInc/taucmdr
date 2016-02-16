@@ -97,13 +97,14 @@ class ProjectStorage(LocalFileStorage):
                                  a TAU Commander project directory.
         """
         if not self._prefix:
+            exclude_path = [os.path.realpath(x) for x in USER_PREFIX, SYSTEM_PREFIX]
             cwd = os.getcwd()
             LOGGER.debug("Searching upwards from '%s' for '%s'", cwd, PROJECT_DIR)
             root = cwd
             lastroot = None
             while root and root != lastroot:
-                project_prefix = os.path.join(root, PROJECT_DIR)
-                if project_prefix not in [USER_PREFIX, SYSTEM_PREFIX] and os.path.isdir(project_prefix):
+                project_prefix = os.path.realpath(os.path.join(root, PROJECT_DIR))
+                if project_prefix not in exclude_path and os.path.isdir(project_prefix):
                     LOGGER.debug("Located project storage prefix '%s'", project_prefix)
                     self._prefix = project_prefix
                     break
