@@ -2,5 +2,5 @@ To view the profile:
 1. Install necessary Javascript libraries with the command
 > npm install
 2. Now, start the server
-> npm prof-server.js
+> node prof-server.js
 3. Open the view.html file in your browser.
