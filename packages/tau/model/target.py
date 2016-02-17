@@ -335,8 +335,10 @@ class Target(Model):
         # Confirm target supports compiler
         if given_compiler_eid != target_compiler_eid:
             target_compiler = compiler_ctrl.one(target_compiler_eid).info()
+            target_info_abs = target_compiler.info.short_descr, target_compiler.absolute_path
+            given_info_abs = given_compiler.info.short_descr, given_compiler.absolute_path
             raise ConfigurationError("Target '%s' is configured with %s '%s', not %s '%s'" %
-                                     (self['name'], target_compiler.info.short_descr, target_compiler.absolute_path,
-                                      given_compiler.info.short_descr, given_compiler.absolute_path),
-                                     "Select a different target or compile with '%s'" % 
-                                     target_compiler.absolute_path)
+                                     tuple([self['name']] + list(target_info_abs) + list(given_info_abs)),
+                                     "Select a different target",
+                                     "Compile with %s '%s'" % target_info_abs,
+                                     "Create a new target configured with %s '%s'" % given_info_abs)
