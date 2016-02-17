@@ -55,8 +55,8 @@ def intel_only(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
     Raises:
         ConfigurationError: OMPT selected when non-Intel compilers specified in target configuration.
     """
-    lhs_name = lhs.model_name.lower()
-    rhs_name = rhs.model_name.lower()
+    lhs_name = lhs.name.lower()
+    rhs_name = rhs.name.lower()
     msg = "%s = %s in %s requires %s in %s to be an Intel compiler" % (lhs_attr, lhs_value, lhs_name, 
                                                                        rhs_attr, rhs_name)
     try:
@@ -85,8 +85,8 @@ def gnu_only(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
     Raises:
         ConfigurationError: OMPT selected when non-GNU compilers specified in target configuration.
     """
-    lhs_name = lhs.model_name.lower()
-    rhs_name = rhs.model_name.lower()
+    lhs_name = lhs.name.lower()
+    rhs_name = rhs.name.lower()
     msg = "%s = %s in %s requires %s in %s to be an GNU compiler" % (lhs_attr, lhs_value, lhs_name, 
                                                                        rhs_attr, rhs_name)
     try:
