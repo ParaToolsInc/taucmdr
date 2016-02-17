@@ -40,7 +40,7 @@ from tau.mvc.model import Model
 from tau.mvc.controller import Controller
 from tau.cf.compiler import CompilerRole
 from tau.cf.compiler.installed import InstalledCompilerSet
-from tau.cf.target import host, DARWIN_OS
+from tau.cf.target import host, DARWIN_OS, INTEL_KNC_ARCH
 from tau.model.compiler import Compiler
 
 
@@ -328,7 +328,19 @@ class Target(Model):
             raise InternalError("Target '%s' is missing required compilers: %s" % (self['name'], missing))
         return InstalledCompilerSet('_'.join([str(x) for x in eids]), **compilers)
 
-    def check_compiler(self, given_compiler):
+    def check_compiler(self, given_compiler, compiler_args):
+        """Checks a compiler command its arguments for compatibility with this target configuration.
+        
+        Checks that the given compiler matches one of the compilers used in the target.
+        Also performs any special checkes for invalid compiler arguments, e.g. -mmic is only for native KNC.
+        
+        Args:
+            given_compiler (str): The compiler command as passed by the user.
+            compiler_args (list): Compiler command line arguments.
+            
+        Raises:
+            ConfigurationError: The compiler or command line arguments are incompatible with this target.
+        """
         compiler_ctrl = Compiler.controller(self.storage)
         given_compiler_eid = compiler_ctrl.register(given_compiler).eid
         target_compiler_eid = self[given_compiler.info.role.keyword]       
@@ -342,3 +354,12 @@ class Target(Model):
                                      "Select a different target",
                                      "Compile with %s '%s'" % target_info_abs,
                                      "Create a new target configured with %s '%s'" % given_info_abs)
+        # Handle special cases where a compiler flag isn't compatible with the target
+        if '-mmic' in compiler_args and self['host_arch'] != INTEL_KNC_ARCH:
+            raise ConfigurationError("Host architecture of target '%s' is '%s'"
+                                     " but the '-mmic' compiler argument requires '%s'" %
+                                     (self['name'], self['host_arch'], INTEL_KNC_ARCH),
+                                     "Select a different target",
+                                     "Create a new target with host architecture '%s'" % INTEL_KNC_ARCH)
+                
+            
