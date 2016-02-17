@@ -365,7 +365,7 @@ class Target(Model):
                                      "Compile with %s '%s'" % target_info_abs,
                                      "Create a new target configured with %s '%s'" % given_info_abs)
         # Handle special cases where a compiler flag isn't compatible with the target
-        if '-mmic' in compiler_args and self['host_arch'] != INTEL_KNC_ARCH:
+        if '-mmic' in compiler_args and self['host_arch'] != str(INTEL_KNC_ARCH):
             raise ConfigurationError("Host architecture of target '%s' is '%s'"
                                      " but the '-mmic' compiler argument requires '%s'" %
                                      (self['name'], self['host_arch'], INTEL_KNC_ARCH),
