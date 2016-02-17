@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 # Copyright (c) 2016, ParaTools, Inc.
@@ -26,26 +25,15 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""FIXME
+"""Test functions.
 
-FIXME
+Functions used for unit tests of list.py.
 """
 
-if __name__ == '__main__':
-    import os
-    import sys
-    import unittest
-    
-    if getattr(sys, 'frozen', False):
-        __file__ = sys.executable
 
-    here = os.path.dirname(__file__)
-    os.environ['__TAU_HOME__'] = os.path.join(here)
-    os.environ['__TAU_SCRIPT__'] = os.path.basename(__file__)
-    packages = os.path.join(here, 'packages')
-    sys.path.insert(0, packages)
-    sys.path.insert(0, os.path.join(packages, 'tau'))
-    
-    suite = unittest.TestLoader().discover('packages','test*py')
-    unittest.TextTestRunner(verbosity=2).run(suite)
+import unittest
+from tau.cli.commands.application import list
 
+class list_test(unittest.TestCase):
+    def runTest(self):
+        self.assertEqual(1,1) 
