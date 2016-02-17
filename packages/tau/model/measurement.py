@@ -36,7 +36,6 @@ measurements allow us to take different views of the application's performance.
 from tau.error import ConfigurationError
 from tau.mvc.model import Model
 from tau.cf.compiler import INTEL_COMPILERS, GNU_COMPILERS
-from tau.cf.compiler.installed import InstalledCompiler
 from tau.cf.target import host, DARWIN_OS
 
 

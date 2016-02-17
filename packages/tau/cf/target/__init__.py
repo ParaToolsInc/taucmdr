@@ -214,7 +214,7 @@ ANDROID_OS = OperatingSystem('Android', 'Android')
 
 X86_64_ARCH = Architecture('x86_64', 'x86_64')
 INTEL_KNC_ARCH = Architecture('knc', 'Intel Knights Corner')
-INTEL_KNL_ARCH = Architecture('knl', 'Intel Knights Landing')
+#INTEL_KNL_ARCH = Architecture('knl', 'Intel Knights Landing')
 IBM_BGP_ARCH = Architecture('bgp', 'IBM BlueGene/P')
 IBM_BGQ_ARCH = Architecture('bgq', 'IBM BlueGene/Q')
 IBM64_ARCH = Architecture('ibm64', 'IBM 64-bit Power')
