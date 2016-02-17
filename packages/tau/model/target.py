@@ -38,7 +38,7 @@ compilers are installed then there will target configurations for each compiler 
 from tau.error import InternalError, ConfigurationError
 from tau.mvc.model import Model
 from tau.mvc.controller import Controller
-from tau.cf.compiler import CompilerRole
+from tau.cf.compiler import CompilerRole, INTEL_COMPILERS
 from tau.cf.compiler.installed import InstalledCompilerSet
 from tau.cf.target import host, DARWIN_OS, INTEL_KNC_ARCH
 from tau.model.compiler import Compiler
@@ -48,7 +48,12 @@ def attributes():
     from tau.model.project import Project
     from tau.cli.arguments import ParsePackagePathAction
     from tau.cf.target import Architecture, OperatingSystem
-    from tau.model.measurement import intel_only
+    from tau.model import require_compiler_family
+ 
+    knc_intel_only = require_compiler_family(INTEL_COMPILERS, 
+                                             "You must use Intel compilers to target the Xeon Phi",
+                                             "Try adding `--host-compilers=Intel` to the command line")
+
     return {
         'projects': {
             'collection': Project,
@@ -82,9 +87,9 @@ def attributes():
                          'metavar': '<arch>',
                          'choices': Architecture.keys()},
             'compat': {str(INTEL_KNC_ARCH): 
-                       (Target.require('CC_ROLE', intel_only),
-                        Target.require('CXX_ROLE', intel_only),
-                        Target.require('FC_ROLE', intel_only))}
+                       (Target.require('CC', knc_intel_only),
+                        Target.require('CXX', knc_intel_only),
+                        Target.require('FC', knc_intel_only))}
         },
         'CC': {
             'model': Compiler,

@@ -40,71 +40,19 @@ from tau.cf.compiler.installed import InstalledCompiler
 from tau.cf.target import host, DARWIN_OS
 
 
-def intel_only(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
-    """Compatibility checking callback.
-    
-    Guarantees that OMPT can only be used when Intel compilers are specified.
-    
-    Args:
-        lhs (Model): The model invoking `check_compatibility`.
-        lhs_attr (str): Name of the attribute that defines the 'compat' property.
-        lhs_value: Value of the attribute that defines the 'compat' property.
-        rhs (Model): Model we are checking against (argument to `check_compatibility`).
-        rhs_attr (str): The right-hand side attribute we are checking for compatibility.
-        
-    Raises:
-        ConfigurationError: OMPT selected when non-Intel compilers specified in target configuration.
-    """
-    lhs_name = lhs.name.lower()
-    rhs_name = rhs.name.lower()
-    msg = "%s = %s in %s requires %s in %s to be an Intel compiler" % (lhs_attr, lhs_value, lhs_name, 
-                                                                       rhs_attr, rhs_name)
-    try:
-        compiler_record = rhs.populate(rhs_attr)
-    except KeyError:
-        raise ConfigurationError("%s but it is undefined" % msg)
-    given_compiler = InstalledCompiler(compiler_record['path'])
-    given_family = given_compiler.info.family
-    if given_family is not INTEL_COMPILERS:
-        raise ConfigurationError("%s but it is a %s compiler" % (msg, given_family),
-                                 "OMPT for OpenMP measurement only works with Intel compilers")
-
-
-def gnu_only(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
-    """Compatibility checking callback.
-    
-    Guarantees that GOMP can only be used when GNU compilers are specified.
-    
-    Args:
-        lhs (Model): The model invoking `check_compatibility`.
-        lhs_attr (str): Name of the attribute that defines the 'compat' property.
-        lhs_value: Value of the attribute that defines the 'compat' property.
-        rhs (Model): Model we are checking against (argument to `check_compatibility`).
-        rhs_attr (str): The right-hand side attribute we are checking for compatibility.
-        
-    Raises:
-        ConfigurationError: OMPT selected when non-GNU compilers specified in target configuration.
-    """
-    lhs_name = lhs.name.lower()
-    rhs_name = rhs.name.lower()
-    msg = "%s = %s in %s requires %s in %s to be an GNU compiler" % (lhs_attr, lhs_value, lhs_name, 
-                                                                       rhs_attr, rhs_name)
-    try:
-        compiler_record = rhs.populate(rhs_attr)
-    except KeyError:
-        raise ConfigurationError("%s but it is undefined" % msg)
-    given_compiler = InstalledCompiler(compiler_record['path'])
-    given_family = given_compiler.info.family
-    if given_family is not GNU_COMPILERS:
-        raise ConfigurationError("%s but it is a %s compiler" % (msg, given_family),
-                                 "GOMP for OpenMP measurement only works with GNU compilers")
-
 
 def attributes():
     from tau.model.project import Project
     from tau.model.target import Target
     from tau.model.application import Application
     from tau.cli.arguments import ParseBooleanAction
+    from tau.model import require_compiler_family
+
+    ompt_intel_only = require_compiler_family(INTEL_COMPILERS, 
+                                              "OMPT for OpenMP measurement only works with Intel compilers")
+    gomp_gnu_only = require_compiler_family(GNU_COMPILERS, 
+                                            "GOMP for OpenMP measurement only works with GNU compilers")
+
     return {
         'projects': {
             'collection': Project,
@@ -228,14 +176,14 @@ def attributes():
                        Application.require('openmp', True),
                        'ompt':
                        (Application.require('openmp', True),
-                        Target.require('CC_ROLE', intel_only),
-                        Target.require('CXX_ROLE', intel_only),
-                        Target.require('FC_ROLE', intel_only)),
+                        Target.require('CC', ompt_intel_only),
+                        Target.require('CXX', ompt_intel_only),
+                        Target.require('FC', ompt_intel_only)),
                        'gomp':
                        (Application.require('openmp', True),
-                        Target.require('CC_ROLE', gnu_only),
-                        Target.require('CXX_ROLE', gnu_only),
-                        Target.require('FC_ROLE', gnu_only))}
+                        Target.require('CC', gomp_gnu_only),
+                        Target.require('CXX', gomp_gnu_only),
+                        Target.require('FC', gomp_gnu_only))}
         },
         'cuda': {
             'type': 'boolean',
