@@ -38,46 +38,17 @@ compilers are installed then there will target configurations for each compiler 
 from tau.error import InternalError, ConfigurationError
 from tau.mvc.model import Model
 from tau.mvc.controller import Controller
-from tau.cf.compiler import CompilerRole, INTEL_COMPILERS
-from tau.cf.compiler.installed import InstalledCompiler, InstalledCompilerSet
+from tau.cf.compiler import CompilerRole
+from tau.cf.compiler.installed import InstalledCompilerSet
 from tau.cf.target import host, DARWIN_OS, INTEL_KNC_ARCH
 from tau.model.compiler import Compiler
-
-
-def intel_only(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
-    """Compatibility checking callback.
-    
-    Guarantees that OMPT can only be used when Intel compilers are specified.
-    
-    Args:
-        lhs (Model): The model invoking `check_compatibility`.
-        lhs_attr (str): Name of the attribute that defines the 'compat' property.
-        lhs_value: Value of the attribute that defines the 'compat' property.
-        rhs (Model): Model we are checking against (argument to `check_compatibility`).
-        rhs_attr (str): The right-hand side attribute we are checking for compatibility.
-        
-    Raises:
-        ConfigurationError: OMPT selected when non-Intel compilers specified in target configuration.
-    """
-    lhs_name = lhs.model_name.lower()
-    rhs_name = rhs.model_name.lower()
-    msg = "%s = %s in %s requires %s in %s to be an Intel compiler" % (lhs_attr, lhs_value, lhs_name, 
-                                                                       rhs_attr, rhs_name)
-    try:
-        compiler_record = rhs.populate(rhs_attr)
-    except KeyError:
-        raise ConfigurationError("%s but it is undefined" % msg)
-    given_compiler = InstalledCompiler(compiler_record['path'])
-    given_family = given_compiler.info.family
-    if given_family is not INTEL_COMPILERS:
-        raise ConfigurationError("%s but it is a %s compiler" % (msg, given_family),
-                                 "OMPT for OpenMP measurement only works with Intel compilers")
 
 
 def attributes():
     from tau.model.project import Project
     from tau.cli.arguments import ParsePackagePathAction
     from tau.cf.target import Architecture, OperatingSystem
+    from tau.model.measurement import intel_only
     return {
         'projects': {
             'collection': Project,
