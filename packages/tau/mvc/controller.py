@@ -102,8 +102,11 @@ class Controller(object):
             return {attr: self._populate_attribute(model, attr) for attr in model}
 
     def _populate_attribute(self, model, attr):
+        try:
+            props = model.attributes[attr]
+        except KeyError:
+            raise ModelError(model, "no attribute '%s'" % attr)
         value = model[attr]
-        props = model.attributes[attr]
         try:
             foreign = props['model']
         except KeyError:
@@ -132,11 +135,13 @@ class Controller(object):
         if unique and self.storage.contains(unique, match_any=True, table_name=self.model.name):
             raise UniqueAttributeError(self.model, unique)
         with self.storage as database:
-            record = database.insert(data, table_name=self.model.name) 
+            record = database.insert(data, table_name=self.model.name)
             for attr, foreign in self.model.associations.iteritems():
                 if 'model' or 'collection' in self.model.attributes[attr]:
-                    foreign_cls, via = foreign
-                    self._associate(record, foreign_cls, record[attr], via)
+                    affected = record.get(attr, None)
+                    if affected:
+                        foreign_cls, via = foreign
+                        self._associate(record, foreign_cls, affected, via)
             model = self.model(record)
             model.on_create()
             return model
@@ -166,11 +171,19 @@ class Controller(object):
             for model in changing:
                 for attr, foreign in self.model.associations.iteritems():
                     try:
+                        # 'collection' attribute is iterable
                         new_foreign_keys = set(data[attr])
+                    except TypeError:
+                        # 'model' attribute is not iterable, so make a tuple
+                        new_foreign_keys = set((data[attr],))
                     except KeyError:
                         continue
                     try:
+                        # 'collection' attribute is iterable
                         old_foreign_keys = set(model[attr])
+                    except TypeError:
+                        # 'model' attribute is not iterable, so make a tuple
+                        old_foreign_keys = set((model[attr],))
                     except KeyError:
                         old_foreign_keys = set()
                     foreign_cls, via = foreign
@@ -246,9 +259,10 @@ class Controller(object):
                     test = lambda x: model.eid in x if isinstance(x, list) else model.eid == x
                     affected = database.match(via, test=test, table_name=foreign_model.name)
                     affected_keys = [record.eid for record in affected]
-                    LOGGER.debug("Deleting %s(%s) affects '%s' in %s(%s)", 
-                                 self.model.name, model.eid, via, foreign_model.name, affected_keys)
-                    self._disassociate(model, foreign_model, affected_keys, via)
+                    if affected_keys:
+                        LOGGER.debug("Deleting %s(%s) affects '%s' in %s(%s)", 
+                                     self.model.name, model.eid, via, foreign_model.name, affected_keys)
+                        self._disassociate(model, foreign_model, affected_keys, via)
             database.remove(keys, table_name=self.model.name)
 
     @staticmethod
@@ -330,7 +344,7 @@ class Controller(object):
                     updated = list(set(foreign_record[via] + [record.eid]))
                 else:
                     raise InternalError("%s.%s has neither 'model' nor 'collection'" % (foreign_model.name, via))
-                database.update({via: updated}, key, table_name=foreign_model.name)
+                foreign_model.controller(database).update({via: updated}, key)
 
     def _disassociate(self, record, foreign_model, affected, via):
         """Disassociates a record from another record.
@@ -345,20 +359,20 @@ class Controller(object):
         if not isinstance(affected, list):
             affected = [affected]
         foreign_props = foreign_model.attributes[via]
-        with self.storage as database:
-            for key in affected:
-                if 'model' in foreign_props:
-                    if 'required' in foreign_props:
-                        LOGGER.debug("Empty required attr '%s': deleting %s(key=%s)", via, foreign_model.name, key)
-                        database.remove(key, table_name=foreign_model.name)
-                    else:
-                        database.unset([via], key, table_name=foreign_model.name)
-                elif 'collection' in foreign_props:
+        if 'model' in foreign_props:
+            if 'required' in foreign_props:
+                LOGGER.debug("Empty required attr '%s': deleting %s(keys=%s)", via, foreign_model.name, affected)
+                foreign_model.controller(self.storage).delete(affected)
+            else:
+                with self.storage as database:
+                    database.unset([via], affected, table_name=foreign_model.name)
+        elif 'collection' in foreign_props:
+            with self.storage as database:
+                for key in affected:
                     foreign_record = database.get(key, table_name=foreign_model.name)
                     updated = list(set(foreign_record[via]) - set([record.eid]))
                     if 'required' in foreign_props and len(updated) == 0:
                         LOGGER.debug("Empty required attr '%s': deleting %s(key=%s)", via, foreign_model.name, key)
-                        database.remove(key, table_name=foreign_model.name)
+                        foreign_model.controller(database).delete(key)
                     else:
                         database.update({via: updated}, key, table_name=foreign_model.name)
-

@@ -275,7 +275,8 @@ class Experiment(Model):
         LOGGER.debug("Managed build: %s", [compiler_cmd] + compiler_args)
         target = self.populate('target')
         given_compiler = InstalledCompiler(compiler_cmd)
-        target.check_compiler(given_compiler)
+        target.check_compiler(given_compiler, compiler_args)
+        
         tau = self.configure()
         return tau.compile(given_compiler, compiler_args)
         

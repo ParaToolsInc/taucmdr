@@ -38,9 +38,9 @@ compilers are installed then there will target configurations for each compiler 
 from tau.error import InternalError, ConfigurationError
 from tau.mvc.model import Model
 from tau.mvc.controller import Controller
-from tau.cf.compiler import CompilerRole
+from tau.cf.compiler import CompilerRole, INTEL_COMPILERS
 from tau.cf.compiler.installed import InstalledCompilerSet
-from tau.cf.target import host, DARWIN_OS
+from tau.cf.target import host, DARWIN_OS, INTEL_KNC_ARCH
 from tau.model.compiler import Compiler
 
 
@@ -48,6 +48,12 @@ def attributes():
     from tau.model.project import Project
     from tau.cli.arguments import ParsePackagePathAction
     from tau.cf.target import Architecture, OperatingSystem
+    from tau.model import require_compiler_family
+ 
+    knc_intel_only = require_compiler_family(INTEL_COMPILERS, 
+                                             "You must use Intel compilers to target the Xeon Phi",
+                                             "Try adding `--host-compilers=Intel` to the command line")
+
     return {
         'projects': {
             'collection': Project,
@@ -79,7 +85,11 @@ def attributes():
             'argparse': {'flags': ('--host-arch',),
                          'group': 'host',
                          'metavar': '<arch>',
-                         'choices': Architecture.keys()}
+                         'choices': Architecture.keys()},
+            'compat': {str(INTEL_KNC_ARCH): 
+                       (Target.require('CC', knc_intel_only),
+                        Target.require('CXX', knc_intel_only),
+                        Target.require('FC', knc_intel_only))}
         },
         'CC': {
             'model': Compiler,
@@ -328,15 +338,38 @@ class Target(Model):
             raise InternalError("Target '%s' is missing required compilers: %s" % (self['name'], missing))
         return InstalledCompilerSet('_'.join([str(x) for x in eids]), **compilers)
 
-    def check_compiler(self, given_compiler):
+    def check_compiler(self, given_compiler, compiler_args):
+        """Checks a compiler command its arguments for compatibility with this target configuration.
+        
+        Checks that the given compiler matches one of the compilers used in the target.
+        Also performs any special checkes for invalid compiler arguments, e.g. -mmic is only for native KNC.
+        
+        Args:
+            given_compiler (str): The compiler command as passed by the user.
+            compiler_args (list): Compiler command line arguments.
+            
+        Raises:
+            ConfigurationError: The compiler or command line arguments are incompatible with this target.
+        """
         compiler_ctrl = Compiler.controller(self.storage)
         given_compiler_eid = compiler_ctrl.register(given_compiler).eid
         target_compiler_eid = self[given_compiler.info.role.keyword]       
         # Confirm target supports compiler
         if given_compiler_eid != target_compiler_eid:
             target_compiler = compiler_ctrl.one(target_compiler_eid).info()
+            target_info_abs = target_compiler.info.short_descr, target_compiler.absolute_path
+            given_info_abs = given_compiler.info.short_descr, given_compiler.absolute_path
             raise ConfigurationError("Target '%s' is configured with %s '%s', not %s '%s'" %
-                                     (self['name'], target_compiler.info.short_descr, target_compiler.absolute_path,
-                                      given_compiler.info.short_descr, given_compiler.absolute_path),
-                                     "Select a different target or compile with '%s'" % 
-                                     target_compiler.absolute_path)
+                                     tuple([self['name']] + list(target_info_abs) + list(given_info_abs)),
+                                     "Select a different target",
+                                     "Compile with %s '%s'" % target_info_abs,
+                                     "Create a new target configured with %s '%s'" % given_info_abs)
+        # Handle special cases where a compiler flag isn't compatible with the target
+        if '-mmic' in compiler_args and self['host_arch'] != str(INTEL_KNC_ARCH):
+            raise ConfigurationError("Host architecture of target '%s' is '%s'"
+                                     " but the '-mmic' compiler argument requires '%s'" %
+                                     (self['name'], self['host_arch'], INTEL_KNC_ARCH),
+                                     "Select a different target",
+                                     "Create a new target with host architecture '%s'" % INTEL_KNC_ARCH)
+                
+            

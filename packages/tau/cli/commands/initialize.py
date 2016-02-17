@@ -46,11 +46,17 @@ from tau.cli.commands.dashboard import COMMAND as dashboard_cmd
 from tau.cf.target import host, DARWIN_OS
 
 
-
 class InitializeCommand(AbstractCommand):
     """``tau initialize`` subcommand."""
     
     def construct_parser(self):
+        
+        def _default_target_name():
+            node_name = platform.node()
+            if not node_name:
+                return 'default_target'
+            return node_name.split('.')[0]
+        
         usage = "%s [arguments]" % self.command
         parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
         
@@ -62,12 +68,11 @@ class InitializeCommand(AbstractCommand):
                                    default=default_project_name)
         
         parser.merge(target_create_cmd.parser, group_title='target arguments', include_positional=False)
-        default_target_name = platform.node() or 'default_target'
         target_group = parser.add_argument_group('target arguments')
         target_group.add_argument('--target-name',
                                   help="Name of the new target configuration",
                                   metavar='<name>',
-                                  default=default_target_name)
+                                  default=_default_target_name())
 
         parser.merge(application_create_cmd.parser, group_title='application arguments', include_positional=False)
         default_application_name = os.path.basename(os.getcwd()) or 'default_application'
@@ -108,7 +113,8 @@ class InitializeCommand(AbstractCommand):
                 raise InternalError("return code %s: %s %s" % (retval, cmd, ' '.join(argv)))
 
         if host.operating_system() is DARWIN_OS:
-            self.logger.info("Darwin OS detected: disabling PAPI, binutils, compiler-based instrumentation, and sampling.")
+            self.logger.info("Darwin OS detected: disabling PAPI, binutils, "
+                             "compiler-based instrumentation, and sampling.")
             papi = False
             binutils = False
             sample = False

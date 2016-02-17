@@ -180,8 +180,6 @@ class Project(Model):
             ExperimentSelectionError: No experiment currently selected.
         """
         try:
-            expr = self.populate('experiment')
+            return self.populate('experiment')
         except KeyError:
             raise ExperimentSelectionError("No experiment configured")
-        else:
-            return expr 

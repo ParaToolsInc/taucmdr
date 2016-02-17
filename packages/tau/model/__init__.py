@@ -26,3 +26,38 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 """TODO: Describe T-A-M model here."""
+
+
+def require_compiler_family(family, *hints):
+    def callback(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
+        """Compatibility checking callback for use with data models.
+
+        Requires ``rhs[rhs_attr]`` to be a compiler in a certain compiler family.
+        
+        Args:
+            lhs (Model): The model invoking `check_compatibility`.
+            lhs_attr (str): Name of the attribute that defines the 'compat' property.
+            lhs_value: Value of the attribute that defines the 'compat' property.
+            rhs (Model): Model we are checking against (argument to `check_compatibility`).
+            rhs_attr (str): The right-hand side attribute we are checking for compatibility.
+            
+        Raises:
+            ConfigurationError: Invalid compiler family specified in target configuration.
+        """
+        from tau.error import ConfigurationError
+        from tau.cf.compiler.installed import InstalledCompiler
+
+        lhs_name = lhs.name.lower()
+        rhs_name = rhs.name.lower()
+        msg = "%s = %s in %s requires %s in %s to be a %s compiler" % (lhs_attr, lhs_value, lhs_name, 
+                                                                       rhs_attr, rhs_name, family)
+        try:
+            compiler_record = rhs.populate(rhs_attr)
+        except KeyError:
+            raise ConfigurationError("%s but it is undefined" % msg)
+        given_compiler = InstalledCompiler(compiler_record['path'])
+        given_family = given_compiler.info.family
+        if given_family is not family:
+            raise ConfigurationError("%s but it is a %s compiler" % (msg, given_family), *hints)
+    return callback
+
