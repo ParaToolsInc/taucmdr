@@ -27,13 +27,13 @@
 #
 """Test functions.
 
-Functions used for unit tests of dashboard.py.
+Functions used for unit tests of error.py.
 """
 
 
 import unittest
-#from tau.cli.commands import dashboard
+#from tau import error
 
-class DashboardTest(unittest.TestCase):
-    def test_dashboard(self):
-        self.assertEqual(1, 1) 
+class ErrorTest(unittest.TestCase):
+    def test_error(self):
+        self.assertEqual(1, 1)

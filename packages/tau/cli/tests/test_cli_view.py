@@ -32,8 +32,8 @@ Functions used for unit tests of cli_view.py.
 
 
 import unittest
-from tau.cli import cli_view
+#from tau.cli import cli_view
 
-class cli_view_test(unittest.TestCase):
-    def runTest(self):
-        self.assertEqual(1,1) 
+class CliViewTest(unittest.TestCase):
+    def test_cli_view(self):
+        self.assertEqual(1, 1)

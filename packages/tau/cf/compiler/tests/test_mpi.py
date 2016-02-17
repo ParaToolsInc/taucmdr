@@ -32,8 +32,8 @@ Functions used for unit tests of mpi.py.
 
 
 import unittest
-from tau.cf.compiler import mpi
+#from tau.cf.compiler import mpi
 
-class mpi_test(unittest.TestCase):
-    def runTest(self):
-        self.assertEqual(1,1)
+class MpiTest(unittest.TestCase):
+    def test_mpi(self):
+        self.assertEqual(1, 1)

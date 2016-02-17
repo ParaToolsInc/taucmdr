@@ -32,8 +32,8 @@ Functions used for unit tests of export.py.
 
 
 import unittest
-from tau.cli.commands.project import export
+#from tau.cli.commands.project import export
 
-class export_test(unittest.TestCase):
-    def runTest(self):
-        self.assertEqual(1,1) 
+class ExportTest(unittest.TestCase):
+    def test_export(self):
+        self.assertEqual(1, 1) 

@@ -32,8 +32,8 @@ Functions used for unit tests of build.py.
 
 
 import unittest
-from tau.cli.commands import build
+#from tau.cli.commands import build
 
-class build_test(unittest.TestCase):
-    def runTest(self):
-        self.assertEqual(1,1) 
+class BuildTest(unittest.TestCase):
+    def test_build(self):
+        self.assertEqual(1, 1) 

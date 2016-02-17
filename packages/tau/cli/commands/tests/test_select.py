@@ -32,8 +32,8 @@ Functions used for unit tests of select.py.
 
 
 import unittest
-from tau.cli.commands import select
+#from tau.cli.commands import select
 
-class select_test(unittest.TestCase):
-    def runTest(self):
-        self.assertEqual(1,1) 
+class SelectTest(unittest.TestCase):
+    def test_select(self):
+        self.assertEqual(1, 1) 

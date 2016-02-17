@@ -32,8 +32,8 @@ Functions used for unit tests of local_file.py.
 
 
 import unittest
-from tau.storage import local_file
+#from tau.storage import local_file
 
-class local_file_test(unittest.TestCase):
-    def runTest(self):
-        self.assertEqual(1,1) 
+class LocalFileTest(unittest.TestCase):
+    def test_local_file(self):
+        self.assertEqual(1, 1) 

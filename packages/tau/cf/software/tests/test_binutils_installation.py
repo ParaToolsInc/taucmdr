@@ -32,8 +32,8 @@ Functions used for unit tests of binutils_installation.py
 
 
 import unittest
-from tau.cf.software import binutils_installation
+#from tau.cf.software import binutils_installation
 
-class binutils_installation_test(unittest.TestCase):
-    def runTest(self):
-        self.assertEqual(1,1)
+class BinutilsInstallationTest(unittest.TestCase):
+    def test_binutils_installation(self):
+        self.assertEqual(1, 1)

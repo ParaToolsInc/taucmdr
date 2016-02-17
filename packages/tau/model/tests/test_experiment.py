@@ -32,8 +32,8 @@ Functions used for unit tests of experiment.py.
 
 
 import unittest
-from tau.model import experiment 
+#from tau.model import experiment 
 
-class experiment_test(unittest.TestCase):
-    def runTest(self):
-        self.assertEqual(1,1) 
+class ExperimentTest(unittest.TestCase):
+    def test_experiment(self):
+        self.assertEqual(1, 1) 

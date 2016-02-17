@@ -32,8 +32,8 @@ Functions used for unit tests of compiler.py.
 
 
 import unittest
-from tau.model import compiler
+#from tau.model import compiler
 
-class compiler_test(unittest.TestCase):
-    def runTest(self):
-        self.assertEqual(1,1) 
+class CompilerTest(unittest.TestCase):
+    def test_compiler(self):
+        self.assertEqual(1, 1) 

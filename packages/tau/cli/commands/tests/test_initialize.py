@@ -32,8 +32,8 @@ Functions used for unit tests of initialize.py.
 
 
 import unittest
-from tau.cli.commands import initialize
+#from tau.cli.commands import initialize
 
-class initialize_test(unittest.TestCase):
-    def runTest(self):
-        self.assertEqual(1,1) 
+class InitializeTest(unittest.TestCase):
+    def test_initialize(self):
+        self.assertEqual(1, 1) 

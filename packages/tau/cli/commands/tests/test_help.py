@@ -32,8 +32,8 @@ Functions used for unit tests of help.py.
 
 
 import unittest
-from tau.cli.commands import help
+#from tau.cli.commands import help
 
-class dashboard_test(unittest.TestCase):
-    def runTest(self):
-        self.assertEqual(1,1) 
+class HelpTest(unittest.TestCase):
+    def test_help(self):
+        self.assertEqual(1, 1) 

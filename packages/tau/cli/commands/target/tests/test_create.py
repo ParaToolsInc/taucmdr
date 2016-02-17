@@ -32,8 +32,8 @@ Functions used for unit tests of create.py.
 
 
 import unittest
-from tau.cli.commands.target import create
+#from tau.cli.commands.target import create
 
-class create_test(unittest.TestCase):
-    def runTest(self):
-        self.assertEqual(1,1) 
+class CreateTest(unittest.TestCase):
+    def test_create(self):
+        self.assertEqual(1, 1) 

@@ -32,8 +32,8 @@ Functions used for unit tests of levels.py.
 
 
 import unittest
-from tau.storage import levels
+#from tau.storage import levels
 
-class levels_test(unittest.TestCase):
-    def runTest(self):
-        self.assertEqual(1,1) 
+class LevelsTest(unittest.TestCase):
+    def test_levels(self):
+        self.assertEqual(1, 1) 

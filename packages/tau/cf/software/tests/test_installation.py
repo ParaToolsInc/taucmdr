@@ -32,8 +32,8 @@ Functions used for unit tests of installation.py.
 
 
 import unittest
-from tau.cf.software import installation
+#from tau.cf.software import installation
 
-class installation_test(unittest.TestCase):
-    def runTest(self):
-        self.assertEqual(1,1)
+class InstallationTest(unittest.TestCase):
+    def test_installation(self):
+        self.assertEqual(1, 1)

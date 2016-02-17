@@ -27,13 +27,13 @@
 #
 """Test functions.
 
-Functions used for unit tests of dashboard.py.
+Functions used for unit tests of logger.py.
 """
 
 
 import unittest
-#from tau.cli.commands import dashboard
+from tau import logger
 
-class DashboardTest(unittest.TestCase):
-    def test_dashboard(self):
-        self.assertEqual(1, 1) 
+class GetTerminalSizeTest(unittest.TestCase):
+    def test_sizeistuple(self):
+        self.assertIsInstance(logger.get_terminal_size(), tuple)

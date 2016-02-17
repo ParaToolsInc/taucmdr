@@ -32,8 +32,8 @@ Functions used for unit tests of model.py.
 
 
 import unittest
-from tau.mvc import model
+#from tau.mvc import model
 
-class model_test(unittest.TestCase):
-    def runTest(self):
-        self.assertEqual(1,1) 
+class ModelTest(unittest.TestCase):
+    def test_model(self):
+        self.assertEqual(1, 1) 

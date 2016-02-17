@@ -32,8 +32,8 @@ Functions used for unit tests of edit.py.
 
 
 import unittest
-from tau.cli.commands.application import edit
+#from tau.cli.commands.application import edit
 
-class edit_test(unittest.TestCase):
-    def runTest(self):
-        self.assertEqual(1,1) 
+class EditTest(unittest.TestCase):
+    def test_edit(self):
+        self.assertEqual(1, 1) 

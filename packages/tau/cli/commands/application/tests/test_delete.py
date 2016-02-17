@@ -32,8 +32,8 @@ Functions used for unit tests of delete.py.
 
 
 import unittest
-from tau.cli.commands.application import delete
+#from tau.cli.commands.application import delete
 
-class delete_test(unittest.TestCase):
-    def runTest(self):
-        self.assertEqual(1,1) 
+class DeleteTest(unittest.TestCase):
+    def test_delete(self):
+        self.assertEqual(1, 1) 

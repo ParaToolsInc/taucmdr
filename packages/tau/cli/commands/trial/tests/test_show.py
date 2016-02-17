@@ -32,8 +32,8 @@ Functions used for unit tests of show.py.
 
 
 import unittest
-from tau.cli.commands.trial import show
+#from tau.cli.commands.trial import show
 
-class show_test(unittest.TestCase):
-    def runTest(self):
-        self.assertEqual(1,1) 
+class ShowTest(unittest.TestCase):
+    def test_show(self):
+        self.assertEqual(1, 1) 

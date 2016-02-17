@@ -32,8 +32,8 @@ Functions used for unit tests of tau_installation.py.
 
 
 import unittest
-from tau.cf.software import tau_installation
+#from tau.cf.software import tau_installation
 
-class tau_installation_test(unittest.TestCase):
-    def runTest(self):
-        self.assertEqual(1,1)
+class TauInstallationTest(unittest.TestCase):
+    def test_tau_installation(self):
+        self.assertEqual(1, 1)

@@ -32,8 +32,8 @@ Functions used for unit tests of pdt_installation.py.
 
 
 import unittest
-from tau.cf.software import pdt_installation
+#from tau.cf.software import pdt_installation
 
-class pdt_installation_test(unittest.TestCase):
-    def runTest(self):
-        self.assertEqual(1,1)
+class PdtInstallationTest(unittest.TestCase):
+    def test_pdt_installation(self):
+        self.assertEqual(1, 1)

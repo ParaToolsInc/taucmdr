@@ -32,8 +32,8 @@ Functions used for unit tests of host.py.
 
 
 import unittest
-from tau.cf.target import host
+#from tau.cf.target import host
 
-class host_test(unittest.TestCase):
-    def runTest(self):
-        self.assertEqual(1,1)
+class HostTest(unittest.TestCase):
+    def test_host(self):
+        self.assertEqual(1, 1)

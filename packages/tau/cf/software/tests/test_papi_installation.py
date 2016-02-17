@@ -32,8 +32,8 @@ Functions used for unit tests of papi_installation.py.
 
 
 import unittest
-from tau.cf.software import papi_installation
+#from tau.cf.software import papi_installation
 
-class papi_installation_test(unittest.TestCase):
-    def runTest(self):
-        self.assertEqual(1,1)
+class PapiInstallationTest(unittest.TestCase):
+    def test_papi_installation(self):
+        self.assertEqual(1, 1)
