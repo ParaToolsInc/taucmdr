@@ -27,8 +27,7 @@
 #
 """``tau select`` subcommand."""
 
-import os
-from tau import EXIT_SUCCESS, TAU_SCRIPT
+from tau import EXIT_SUCCESS
 from tau.cli import arguments
 from tau.error import ConfigurationError, InternalError
 from tau.storage.levels import PROJECT_STORAGE

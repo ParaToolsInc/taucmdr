@@ -32,7 +32,6 @@ from tau import EXIT_SUCCESS
 from tau.cli import arguments
 from tau.cli.command import AbstractCommand
 from tau.model.project import Project
-from tau.storage.levels import PROJECT_STORAGE
 
 
 class ProjectExportCommand(AbstractCommand):
@@ -45,8 +44,7 @@ class ProjectExportCommand(AbstractCommand):
     def main(self, argv):
         args = self.parser.parse_args(args=argv)
         self.logger.debug('Arguments: %s', args)
-        store = PROJECT_STORAGE
-        ctrl = Project(store)
+        ctrl = Project.controller()
         pprint(ctrl.export_records(eids=[proj.eid for proj in ctrl.all()]))
         return EXIT_SUCCESS
 

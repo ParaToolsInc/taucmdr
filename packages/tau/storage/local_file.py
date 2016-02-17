@@ -29,6 +29,7 @@
 import os
 import json
 import tinydb
+from tinydb import operations
 from tau import logger, util
 from tau.error import ConfigurationError
 from tau.storage import AbstractStorage, StorageRecord, StorageError
@@ -422,15 +423,15 @@ class LocalFileStorage(AbstractStorage):
         if isinstance(keys, self.Record.eid_type):
             for field in fields:
                 LOGGER.debug("%s: unset(%s, eid=%r)", table_name, field, keys)
-                table.update(tinydb.operations.delete(field), eids=[keys])
+                table.update(operations.delete(field), eids=[keys])
         elif isinstance(keys, dict):
             for field in fields:
                 LOGGER.debug("%s: unset(%s, keys=%r)", table_name, field, keys)
-                table.update(tinydb.operations.delete(field), self._query(keys, match_any))
+                table.update(operations.delete(field), self._query(keys, match_any))
         elif isinstance(keys, (list, tuple)):
             for field in fields:
                 LOGGER.debug("%s: unset(%s, eids=%r)", table_name, field, keys)
-                table.update(tinydb.operations.delete(field), eids=keys)
+                table.update(operations.delete(field), eids=keys)
         else:
             raise ValueError(keys)
         

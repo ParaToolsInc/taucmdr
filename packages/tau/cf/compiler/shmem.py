@@ -49,7 +49,7 @@ class ShmemCompilerFamily(CompilerFamily):
     def preferred(cls):
         """Return the host's preferred SHMEM compiler family."""
         from tau.cf.target import host
-        return host.preferred_shmem_compilers()
+        return host.preferred_compilers()
 
 
 SHMEM_CC_ROLE = CompilerRole('SHMEM_CC', 'C with calls to a SHMEM library')
