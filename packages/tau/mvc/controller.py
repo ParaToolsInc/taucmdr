@@ -102,8 +102,11 @@ class Controller(object):
             return {attr: self._populate_attribute(model, attr) for attr in model}
 
     def _populate_attribute(self, model, attr):
-        value = model[attr]
-        props = model.attributes[attr]
+        try:
+            value = model[attr]
+            props = model.attributes[attr]
+        except KeyError:
+            raise ModelError(model, "no attribute '%s'" % attr)
         try:
             foreign = props['model']
         except KeyError:
