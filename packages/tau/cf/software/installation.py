@@ -330,11 +330,8 @@ class AutotoolsInstallation(Installation):
         assert self.src_prefix
         LOGGER.debug("Configuring %s at '%s'", self.name, self.src_prefix)
         flags = list(flags)
-
         # Prepare configuration flags
         flags += ['--prefix=%s' % self.install_prefix]
-        compiler_env = {role.keyword: compiler.command for role, compiler in self.compilers}
-        env.update(compiler_env)
         cmd = ['./configure'] + flags
         LOGGER.info("Configuring %s...", self.name)
         if util.create_subprocess(cmd, cwd=self.src_prefix, env=env, stdout=False):
