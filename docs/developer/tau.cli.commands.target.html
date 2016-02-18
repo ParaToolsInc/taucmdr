@@ -25,7 +25,10 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="_static/favicon.ico"/>
-    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" /> 
+    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
+    <link rel="up" title="tau.cli.commands package" href="tau.cli.commands.html" />
+    <link rel="next" title="tau.cli.commands.target.tests package" href="tau.cli.commands.target.tests.html" />
+    <link rel="prev" title="tau.cli.commands.project.tests package" href="tau.cli.commands.project.tests.html" /> 
   </head>
   <body role="document">
       <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="index.html">
@@ -35,7 +38,11 @@
       <div class="topnav" role="navigation" aria-label="top navigation">
       
         <p>
+        «&#160;&#160;<a href="tau.cli.commands.project.tests.html">tau.cli.commands.project.tests package</a>
+        &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="tau.cli.commands.target.tests.html">tau.cli.commands.target.tests package</a>&#160;&#160;»
         </p>
 
       </div>
@@ -45,6 +52,21 @@
   <div class="section" id="module-tau.cli.commands.target">
 <span id="tau-cli-commands-target-package"></span><h1>tau.cli.commands.target package<a class="headerlink" href="#module-tau.cli.commands.target" title="Permalink to this headline">¶</a></h1>
 <p><code class="docutils literal"><span class="pre">tau</span> <span class="pre">target</span></code> subcommand.</p>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tau.cli.commands.target.tests.html">tau.cli.commands.target.tests package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tau.cli.commands.target.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.cli.commands.target.tests.html#module-tau.cli.commands.target.tests.test_create">tau.cli.commands.target.tests.test_create module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.cli.commands.target.tests.html#module-tau.cli.commands.target.tests.test_delete">tau.cli.commands.target.tests.test_delete module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.cli.commands.target.tests.html#module-tau.cli.commands.target.tests.test_edit">tau.cli.commands.target.tests.test_edit module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.cli.commands.target.tests.html#module-tau.cli.commands.target.tests.test_list">tau.cli.commands.target.tests.test_list module</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
@@ -53,22 +75,22 @@
 <p><code class="docutils literal"><span class="pre">tau</span> <span class="pre">target</span> <span class="pre">create</span></code> subcommand.</p>
 <dl class="class">
 <dt id="tau.cli.commands.target.create.TargetCreateCommand">
-<em class="property">class </em><code class="descclassname">tau.cli.commands.target.create.</code><code class="descname">TargetCreateCommand</code><span class="sig-paren">(</span><em>controller</em>, <em>module_name</em>, <em>summary_fmt=None</em>, <em>help_page_fmt=None</em>, <em>group=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.cli.commands.target.create.TargetCreateCommand" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.cli.commands.target.create.</code><code class="descname">TargetCreateCommand</code><span class="sig-paren">(</span><em>controller</em>, <em>module_name</em>, <em>summary_fmt=None</em>, <em>help_page_fmt=None</em>, <em>group=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/commands/target/create.html#TargetCreateCommand"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.commands.target.create.TargetCreateCommand" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="tau.cli.html#tau.cli.cli_view.CreateCommand" title="tau.cli.cli_view.CreateCommand"><code class="xref py py-class docutils literal"><span class="pre">tau.cli.cli_view.CreateCommand</span></code></a></p>
 <p><code class="docutils literal"><span class="pre">tau</span> <span class="pre">target</span> <span class="pre">create</span></code> subcommand.</p>
 <dl class="method">
 <dt id="tau.cli.commands.target.create.TargetCreateCommand.construct_parser">
-<code class="descname">construct_parser</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.cli.commands.target.create.TargetCreateCommand.construct_parser" title="Permalink to this definition">¶</a></dt>
+<code class="descname">construct_parser</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/commands/target/create.html#TargetCreateCommand.construct_parser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.commands.target.create.TargetCreateCommand.construct_parser" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="tau.cli.commands.target.create.TargetCreateCommand.main">
-<code class="descname">main</code><span class="sig-paren">(</span><em>argv</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.cli.commands.target.create.TargetCreateCommand.main" title="Permalink to this definition">¶</a></dt>
+<code class="descname">main</code><span class="sig-paren">(</span><em>argv</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/commands/target/create.html#TargetCreateCommand.main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.commands.target.create.TargetCreateCommand.main" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="tau.cli.commands.target.create.TargetCreateCommand.parse_compiler_flags">
-<code class="descname">parse_compiler_flags</code><span class="sig-paren">(</span><em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.cli.commands.target.create.TargetCreateCommand.parse_compiler_flags" title="Permalink to this definition">¶</a></dt>
+<code class="descname">parse_compiler_flags</code><span class="sig-paren">(</span><em>args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/commands/target/create.html#TargetCreateCommand.parse_compiler_flags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.commands.target.create.TargetCreateCommand.parse_compiler_flags" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parses host compiler flags out of the command line arguments.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -97,22 +119,22 @@ Invalid command line arguments specified</td>
 <p><code class="docutils literal"><span class="pre">tau</span> <span class="pre">target</span> <span class="pre">edit</span></code> subcommand.</p>
 <dl class="class">
 <dt id="tau.cli.commands.target.edit.TargetEditCommand">
-<em class="property">class </em><code class="descclassname">tau.cli.commands.target.edit.</code><code class="descname">TargetEditCommand</code><span class="sig-paren">(</span><em>controller</em>, <em>module_name</em>, <em>summary_fmt=None</em>, <em>help_page_fmt=None</em>, <em>group=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.cli.commands.target.edit.TargetEditCommand" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.cli.commands.target.edit.</code><code class="descname">TargetEditCommand</code><span class="sig-paren">(</span><em>controller</em>, <em>module_name</em>, <em>summary_fmt=None</em>, <em>help_page_fmt=None</em>, <em>group=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/commands/target/edit.html#TargetEditCommand"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.commands.target.edit.TargetEditCommand" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="tau.cli.html#tau.cli.cli_view.EditCommand" title="tau.cli.cli_view.EditCommand"><code class="xref py py-class docutils literal"><span class="pre">tau.cli.cli_view.EditCommand</span></code></a></p>
 <p><code class="docutils literal"><span class="pre">tau</span> <span class="pre">target</span> <span class="pre">edit</span></code> subcommand.</p>
 <dl class="method">
 <dt id="tau.cli.commands.target.edit.TargetEditCommand.construct_parser">
-<code class="descname">construct_parser</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.cli.commands.target.edit.TargetEditCommand.construct_parser" title="Permalink to this definition">¶</a></dt>
+<code class="descname">construct_parser</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/commands/target/edit.html#TargetEditCommand.construct_parser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.commands.target.edit.TargetEditCommand.construct_parser" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="tau.cli.commands.target.edit.TargetEditCommand.main">
-<code class="descname">main</code><span class="sig-paren">(</span><em>argv</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.cli.commands.target.edit.TargetEditCommand.main" title="Permalink to this definition">¶</a></dt>
+<code class="descname">main</code><span class="sig-paren">(</span><em>argv</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/commands/target/edit.html#TargetEditCommand.main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.commands.target.edit.TargetEditCommand.main" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="tau.cli.commands.target.edit.TargetEditCommand.parse_compiler_flags">
-<code class="descname">parse_compiler_flags</code><span class="sig-paren">(</span><em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.cli.commands.target.edit.TargetEditCommand.parse_compiler_flags" title="Permalink to this definition">¶</a></dt>
+<code class="descname">parse_compiler_flags</code><span class="sig-paren">(</span><em>args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/commands/target/edit.html#TargetEditCommand.parse_compiler_flags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.commands.target.edit.TargetEditCommand.parse_compiler_flags" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parses host compiler flags out of the command line arguments.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -143,7 +165,11 @@ Invalid command line arguments specified</td>
       <div class="bottomnav" role="navigation" aria-label="bottom navigation">
       
         <p>
+        «&#160;&#160;<a href="tau.cli.commands.project.tests.html">tau.cli.commands.project.tests package</a>
+        &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="tau.cli.commands.target.tests.html">tau.cli.commands.target.tests package</a>&#160;&#160;»
         </p>
 
       </div>

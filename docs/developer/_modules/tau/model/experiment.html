@@ -26,7 +26,7 @@
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
     <link rel="top" title="TAU Commander Developer Documentation" href="../../../index.html" />
-    <link rel="up" title="Module code" href="../../index.html" /> 
+    <link rel="up" title="tau.model" href="../model.html" /> 
   </head>
   <body role="document">
       <div class="header" role="banner"><img class="rightlogo" src="../../../_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="../../../index.html">
@@ -79,7 +79,6 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">glob</span>
 <span class="kn">import</span> <span class="nn">shutil</span>
 <span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">util</span>
 <span class="kn">from</span> <span class="nn">tau.error</span> <span class="kn">import</span> <span class="n">ConfigurationError</span>
@@ -147,7 +146,7 @@
                                  <span class="n">populated</span><span class="p">[</span><span class="s">&#39;measurement&#39;</span><span class="p">][</span><span class="s">&#39;name&#39;</span><span class="p">])</span>
         </div>
 <div class="viewcode-block" id="Experiment.data_size"><a class="viewcode-back" href="../../../tau.model.html#tau.model.experiment.Experiment.data_size">[docs]</a>    <span class="k">def</span> <span class="nf">data_size</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">sum</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">trial</span><span class="p">[</span><span class="s">&#39;data_size&#39;</span><span class="p">])</span> <span class="k">for</span> <span class="n">trial</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="s">&#39;trials&#39;</span><span class="p">)])</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">trial</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;data_size&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">for</span> <span class="n">trial</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="s">&#39;trials&#39;</span><span class="p">)])</span>
 </div>
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -267,7 +266,7 @@
                               <span class="n">measure_cuda</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>  <span class="c"># TODO</span>
                               <span class="n">measure_shmem</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>  <span class="c"># TODO</span>
                               <span class="n">measure_mpc</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>  <span class="c"># TODO</span>
-                              <span class="n">measure_memory_usage</span><span class="o">=</span><span class="n">measurement</span><span class="p">[</span><span class="s">&#39;memory_usage&#39;</span><span class="p">],</span>
+                              <span class="n">measure_heap_usage</span><span class="o">=</span><span class="n">measurement</span><span class="p">[</span><span class="s">&#39;heap_usage&#39;</span><span class="p">],</span>
                               <span class="n">measure_memory_alloc</span><span class="o">=</span><span class="n">measurement</span><span class="p">[</span><span class="s">&#39;memory_alloc&#39;</span><span class="p">],</span>
                               <span class="n">callpath_depth</span><span class="o">=</span><span class="n">measurement</span><span class="p">[</span><span class="s">&#39;callpath&#39;</span><span class="p">])</span>
         <span class="k">with</span> <span class="n">tau</span><span class="p">:</span>
@@ -322,7 +321,8 @@
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Managed build: </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">compiler_cmd</span><span class="p">]</span> <span class="o">+</span> <span class="n">compiler_args</span><span class="p">)</span>
         <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="s">&#39;target&#39;</span><span class="p">)</span>
         <span class="n">given_compiler</span> <span class="o">=</span> <span class="n">InstalledCompiler</span><span class="p">(</span><span class="n">compiler_cmd</span><span class="p">)</span>
-        <span class="n">target</span><span class="o">.</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">given_compiler</span><span class="p">)</span>
+        <span class="n">target</span><span class="o">.</span><span class="n">check_compiler</span><span class="p">(</span><span class="n">given_compiler</span><span class="p">,</span> <span class="n">compiler_args</span><span class="p">)</span>
+        
         <span class="n">tau</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">configure</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">tau</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">given_compiler</span><span class="p">,</span> <span class="n">compiler_args</span><span class="p">)</span>
         </div>
@@ -349,13 +349,14 @@
         <span class="n">cmd</span><span class="p">,</span> <span class="n">env</span> <span class="o">=</span> <span class="n">tau</span><span class="o">.</span><span class="n">get_application_command</span><span class="p">(</span><span class="n">launcher_cmd</span><span class="p">,</span> <span class="n">application_cmd</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">Trial</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="p">)</span><span class="o">.</span><span class="n">perform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="n">env</span><span class="p">)</span>
 </div>
-<div class="viewcode-block" id="Experiment.show"><a class="viewcode-back" href="../../../tau.model.html#tau.model.experiment.Experiment.show">[docs]</a>    <span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tool_name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">trial_numbers</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Experiment.show"><a class="viewcode-back" href="../../../tau.model.html#tau.model.experiment.Experiment.show">[docs]</a>    <span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">profile_tool</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">trace_tool</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">trial_numbers</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Show experiment trial data.</span>
 <span class="sd">        </span>
 <span class="sd">        Shows the most recent trial or all trials with given numbers.</span>
 <span class="sd">        </span>
 <span class="sd">        Args:</span>
-<span class="sd">            tool_name (str): Name of the visualization or data processing tool to use, e.g. `pprof`.</span>
+<span class="sd">            profile_tool (str): Name of the visualization or data processing tool for profiles, e.g. `pprof`.</span>
+<span class="sd">            trace_tool (str): Name of the visualization or data processing tool for traces, e.g. `vampir`.</span>
 <span class="sd">            trial_numbers (list): Numbers of trials to show.</span>
 <span class="sd">            </span>
 <span class="sd">        Raises:</span>
@@ -369,25 +370,25 @@
                     <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&quot;No trial number </span><span class="si">%d</span><span class="s"> in experiment </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">num</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">()))</span>
                 <span class="n">trials</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">found</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">all_trials</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="s">&#39;trials&#39;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">all_trials</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&quot;No trials in experiment </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">(),</span>
-                                         <span class="s">&quot;See `tau trial create --help`&quot;</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">found</span> <span class="o">=</span> <span class="n">all_trials</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                <span class="k">for</span> <span class="n">trial</span> <span class="ow">in</span> <span class="n">all_trials</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+            <span class="n">trials</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="s">&#39;trials&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">trials</span><span class="p">:</span>
+                <span class="n">found</span> <span class="o">=</span> <span class="n">trials</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">trial</span> <span class="ow">in</span> <span class="n">trials</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
                     <span class="k">if</span> <span class="n">trial</span><span class="p">[</span><span class="s">&#39;begin_time&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">found</span><span class="p">[</span><span class="s">&#39;begin_time&#39;</span><span class="p">]:</span>
                         <span class="n">found</span> <span class="o">=</span> <span class="n">trial</span>
                 <span class="n">trials</span> <span class="o">=</span> <span class="p">[</span><span class="n">found</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">trials</span><span class="p">:</span>
-            <span class="n">tau</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">configure</span><span class="p">()</span>
-            <span class="k">for</span> <span class="n">trial</span> <span class="ow">in</span> <span class="n">trials</span><span class="p">:</span>
-                <span class="n">prefix</span> <span class="o">=</span> <span class="n">trial</span><span class="o">.</span><span class="n">prefix</span>
-                <span class="n">profiles</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s">&#39;profile.*.*.*&#39;</span><span class="p">))</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">profiles</span><span class="p">:</span>
-                    <span class="n">profiles</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s">&#39;MULTI__*&#39;</span><span class="p">))</span>
-                <span class="k">if</span> <span class="n">profiles</span><span class="p">:</span>
-                    <span class="n">tau</span><span class="o">.</span><span class="n">show_profile</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">tool_name</span><span class="p">)</span></div></div>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">trials</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&quot;No trials in experiment </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">(),</span> <span class="s">&quot;See `tau trial create --help`&quot;</span><span class="p">)</span>
+
+        <span class="n">tau</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">configure</span><span class="p">()</span>
+        <span class="n">meas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="s">&#39;measurement&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">trial</span> <span class="ow">in</span> <span class="n">trials</span><span class="p">:</span>
+            <span class="n">prefix</span> <span class="o">=</span> <span class="n">trial</span><span class="o">.</span><span class="n">prefix</span>
+            <span class="k">if</span> <span class="n">meas</span><span class="p">[</span><span class="s">&#39;profile&#39;</span><span class="p">]:</span>
+                <span class="n">tau</span><span class="o">.</span><span class="n">show_profile</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">profile_tool</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">meas</span><span class="p">[</span><span class="s">&#39;trace&#39;</span><span class="p">]:</span>
+                <span class="n">tau</span><span class="o">.</span><span class="n">show_trace</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">trace_tool</span><span class="p">)</span>
+                </div></div>
 </pre></div>
 
       </div>

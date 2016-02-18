@@ -74,7 +74,7 @@ the master branch.</p>
 <li>Thou shalt use <a class="reference external" href="http://www.pylint.org/">pylint</a> 1.4 or later as part of your development cycle.</li>
 <li>Thou shalt follow the <a class="reference internal" href="design.html"><em>TAU Commander Design</em></a> for it is sacred.</li>
 <li>Thou shalt style thine code according to the <a class="reference internal" href="style.html"><em>TAU Commander Code Style</em></a>.</li>
-<li>Thou shalt document your code according to the <a class="reference internal" href="documentation.html"><em>TAU Commander Code Documentation</em></a>.</li>
+<li>Thou shalt document your code according to the <code class="xref doc docutils literal"><span class="pre">documentation</span></code>.</li>
 <li><strong>Never</strong> shalt thou develop on the master branch, for that is an abomination.</li>
 <li><strong>Never</strong> shalt thou merge broken code to the master branch.</li>
 <li><strong>Never</strong> shalt thou <em>just quickly fix this one thing because I have a hard deadline I forgot and now I really really really need this feature to be part of TAU Commander whatever the cost and oh God I broke it I broke it and everything is on fire</em>.</li>
@@ -91,21 +91,6 @@ the master branch.</p>
 <li class="toctree-l2"><a class="reference internal" href="style.html#code-style">Code Style</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="documentation.html">TAU Commander Code Documentation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="documentation.html#introduction">Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="documentation.html#updating-the-developer-documentation">Updating the Developer Documentation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="documentation.html#file-header">File Header</a></li>
-<li class="toctree-l2"><a class="reference internal" href="documentation.html#comments">Comments</a></li>
-<li class="toctree-l2"><a class="reference internal" href="documentation.html#full-documentation-example">Full Documentation Example</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="new_feature.html">How to Add Support for New TAU Features</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="new_feature.html#step-1-update-the-target-model">Step 1: Update the <code class="docutils literal"><span class="pre">Target</span></code> model</a></li>
-<li class="toctree-l2"><a class="reference internal" href="new_feature.html#step-2-update-the-application-model">Step 2: Update the <code class="docutils literal"><span class="pre">Application</span></code> model</a></li>
-<li class="toctree-l2"><a class="reference internal" href="new_feature.html#step-3-update-the-measurement-model">Step 3: Update the <code class="docutils literal"><span class="pre">Measurement</span></code> model</a></li>
-<li class="toctree-l2"><a class="reference internal" href="new_feature.html#step-4-update-the-common-framework">Step 4: Update the Common Framework</a></li>
-</ul>
-</li>
 </ul>
 </div>
 <ul class="simple">
@@ -118,7 +103,24 @@ the master branch.</p>
 <h1>Modules<a class="headerlink" href="#modules" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="modules.html">tau</a><ul class="simple">
+<li class="toctree-l1"><a class="reference internal" href="modules.html">tau</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tau.html">tau package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tau.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tau.cf.html">tau.cf package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.cli.html">tau.cli package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.gui.html">tau.gui package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.model.html">tau.model package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.mvc.html">tau.mvc package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.storage.html">tau.storage package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.tests.html">tau.tests package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="tau.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tau.html#module-tau.error">tau.error module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tau.html#module-tau.logger">tau.logger module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tau.html#module-tau.util">tau.util module</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

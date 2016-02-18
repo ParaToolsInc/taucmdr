@@ -25,7 +25,10 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="_static/favicon.ico"/>
-    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" /> 
+    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
+    <link rel="up" title="tau" href="modules.html" />
+    <link rel="next" title="tau.cf package" href="tau.cf.html" />
+    <link rel="prev" title="tau" href="modules.html" /> 
   </head>
   <body role="document">
       <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="index.html">
@@ -35,7 +38,11 @@
       <div class="topnav" role="navigation" aria-label="top navigation">
       
         <p>
+        «&#160;&#160;<a href="modules.html">tau</a>
+        &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="tau.cf.html">tau.cf package</a>&#160;&#160;»
         </p>
 
       </div>
@@ -48,6 +55,76 @@
 <p>The first line of this file is the first thing to be executed whenever TAU Commander
 is invoked in any way. This module establishes global constants (as few as possible)
 and checks the Python version.  It must be kept as short and simple as possible.</p>
+<dl class="data">
+<dt id="tau.EXIT_FAILURE">
+<code class="descclassname">tau.</code><code class="descname">EXIT_FAILURE</code><em class="property"> = -100</em><a class="headerlink" href="#tau.EXIT_FAILURE" title="Permalink to this definition">¶</a></dt>
+<dd><p>int: Process exit code indicating unrecoverable failure.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="tau.EXIT_SUCCESS">
+<code class="descclassname">tau.</code><code class="descname">EXIT_SUCCESS</code><em class="property"> = 0</em><a class="headerlink" href="#tau.EXIT_SUCCESS" title="Permalink to this definition">¶</a></dt>
+<dd><p>int: Process exit code indicating successful operation.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="tau.EXIT_WARNING">
+<code class="descclassname">tau.</code><code class="descname">EXIT_WARNING</code><em class="property"> = 100</em><a class="headerlink" href="#tau.EXIT_WARNING" title="Permalink to this definition">¶</a></dt>
+<dd><p>int: Process exit code indicating non-optimal condition on exit.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="tau.HELP_CONTACT">
+<code class="descclassname">tau.</code><code class="descname">HELP_CONTACT</code><em class="property"> = '&lt;support&#64;paratools.com&gt;'</em><a class="headerlink" href="#tau.HELP_CONTACT" title="Permalink to this definition">¶</a></dt>
+<dd><p>str: E-mail address users should contact for help.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="tau.MINIMUM_PYTHON_VERSION">
+<code class="descclassname">tau.</code><code class="descname">MINIMUM_PYTHON_VERSION</code><em class="property"> = (2, 7)</em><a class="headerlink" href="#tau.MINIMUM_PYTHON_VERSION" title="Permalink to this definition">¶</a></dt>
+<dd><p>tuple: Minimum required Python version for TAU Comamnder.</p>
+<p>A tuple of at least (MAJOR, MINOR) directly comparible to <a class="reference external" href="https://docs.python.org/library/sys.html#sys.version_info" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">sys.version_info</span></code></a></p>
+</dd></dl>
+
+<dl class="data">
+<dt id="tau.PROJECT_DIR">
+<code class="descclassname">tau.</code><code class="descname">PROJECT_DIR</code><em class="property"> = '.tau'</em><a class="headerlink" href="#tau.PROJECT_DIR" title="Permalink to this definition">¶</a></dt>
+<dd><p>str: Name of the project-level directory containing TAU Commander project files.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="tau.SYSTEM_PREFIX">
+<code class="descclassname">tau.</code><code class="descname">SYSTEM_PREFIX</code><em class="property"> = '/home/jlinford/workspace/taucmdr/.system'</em><a class="headerlink" href="#tau.SYSTEM_PREFIX" title="Permalink to this definition">¶</a></dt>
+<dd><p>str: System-level TAU Commander files.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="tau.TAUCMDR_URL">
+<code class="descclassname">tau.</code><code class="descname">TAUCMDR_URL</code><em class="property"> = 'http://www.taucommander.com/'</em><a class="headerlink" href="#tau.TAUCMDR_URL" title="Permalink to this definition">¶</a></dt>
+<dd><p>str: URL of the TAU Commander project.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="tau.TAU_HOME">
+<code class="descclassname">tau.</code><code class="descname">TAU_HOME</code><em class="property"> = '/home/jlinford/workspace/taucmdr'</em><a class="headerlink" href="#tau.TAU_HOME" title="Permalink to this definition">¶</a></dt>
+<dd><p>str: Absolute path to the top-level TAU Commander directory.</p>
+<p>This directory contains at least <cite>bin</cite>, <cite>docs</cite>, and <cite>packages</cite> directories and is the root
+for system-level package installation paths. <strong>Do not</strong> change it once it is set.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="tau.TAU_SCRIPT">
+<code class="descclassname">tau.</code><code class="descname">TAU_SCRIPT</code><em class="property"> = 'sphinx'</em><a class="headerlink" href="#tau.TAU_SCRIPT" title="Permalink to this definition">¶</a></dt>
+<dd><p>str: Script that launched TAU Commander.</p>
+<p>Mainly used for help messages. <strong>Do not</strong> change it once it is set.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="tau.USER_PREFIX">
+<code class="descclassname">tau.</code><code class="descname">USER_PREFIX</code><em class="property"> = '/home/jlinford/.tau'</em><a class="headerlink" href="#tau.USER_PREFIX" title="Permalink to this definition">¶</a></dt>
+<dd><p>str: User-level TAU Commander files.</p>
+</dd></dl>
+
 <div class="section" id="subpackages">
 <h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
@@ -55,6 +132,16 @@ and checks the Python version.  It must be kept as short and simple as possible.
 <li class="toctree-l1"><a class="reference internal" href="tau.cf.html">tau.cf package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="tau.cf.html#subpackages">Subpackages</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="tau.cf.compiler.html">tau.cf.compiler package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tau.cf.compiler.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="tau.cf.compiler.tests.html">tau.cf.compiler.tests package</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="tau.cf.compiler.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cf.compiler.tests.html#module-tau.cf.compiler.tests.test_installed">tau.cf.compiler.tests.test_installed module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cf.compiler.tests.html#module-tau.cf.compiler.tests.test_mpi">tau.cf.compiler.tests.test_mpi module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cf.compiler.tests.html#module-tau.cf.compiler.tests.test_shmem">tau.cf.compiler.tests.test_shmem module</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l4"><a class="reference internal" href="tau.cf.compiler.html#submodules">Submodules</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tau.cf.compiler.html#module-tau.cf.compiler.installed">tau.cf.compiler.installed module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tau.cf.compiler.html#module-tau.cf.compiler.mpi">tau.cf.compiler.mpi module</a></li>
@@ -62,6 +149,19 @@ and checks the Python version.  It must be kept as short and simple as possible.
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="tau.cf.software.html">tau.cf.software package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tau.cf.software.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="tau.cf.software.tests.html">tau.cf.software.tests package</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="tau.cf.software.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cf.software.tests.html#module-tau.cf.software.tests.test_binutils_installation">tau.cf.software.tests.test_binutils_installation module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cf.software.tests.html#module-tau.cf.software.tests.test_installation">tau.cf.software.tests.test_installation module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cf.software.tests.html#module-tau.cf.software.tests.test_libunwind_installation">tau.cf.software.tests.test_libunwind_installation module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cf.software.tests.html#module-tau.cf.software.tests.test_papi_installation">tau.cf.software.tests.test_papi_installation module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cf.software.tests.html#module-tau.cf.software.tests.test_pdt_installation">tau.cf.software.tests.test_pdt_installation module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cf.software.tests.html#module-tau.cf.software.tests.test_tau_installation">tau.cf.software.tests.test_tau_installation module</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l4"><a class="reference internal" href="tau.cf.software.html#submodules">Submodules</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tau.cf.software.html#module-tau.cf.software.binutils_installation">tau.cf.software.binutils_installation module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tau.cf.software.html#module-tau.cf.software.installation">tau.cf.software.installation module</a></li>
@@ -72,6 +172,15 @@ and checks the Python version.  It must be kept as short and simple as possible.
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="tau.cf.target.html">tau.cf.target package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tau.cf.target.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="tau.cf.target.tests.html">tau.cf.target.tests package</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="tau.cf.target.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cf.target.tests.html#module-tau.cf.target.tests.test_device">tau.cf.target.tests.test_device module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cf.target.tests.html#module-tau.cf.target.tests.test_host">tau.cf.target.tests.test_host module</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l4"><a class="reference internal" href="tau.cf.target.html#submodules">Submodules</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tau.cf.target.html#module-tau.cf.target.device">tau.cf.target.device module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tau.cf.target.html#module-tau.cf.target.host">tau.cf.target.host module</a></li>
@@ -86,6 +195,17 @@ and checks the Python version.  It must be kept as short and simple as possible.
 <li class="toctree-l3"><a class="reference internal" href="tau.cli.commands.html">tau.cli.commands package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.html#subpackages">Subpackages</a><ul>
 <li class="toctree-l5"><a class="reference internal" href="tau.cli.commands.application.html">tau.cli.commands.application package</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.application.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="tau.cli.commands.application.tests.html">tau.cli.commands.application.tests package</a><ul>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.application.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.application.tests.html#module-tau.cli.commands.application.tests.test_create">tau.cli.commands.application.tests.test_create module</a></li>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.application.tests.html#module-tau.cli.commands.application.tests.test_delete">tau.cli.commands.application.tests.test_delete module</a></li>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.application.tests.html#module-tau.cli.commands.application.tests.test_edit">tau.cli.commands.application.tests.test_edit module</a></li>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.application.tests.html#module-tau.cli.commands.application.tests.test_list">tau.cli.commands.application.tests.test_list module</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.application.html#submodules">Submodules</a></li>
 <li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.application.html#module-tau.cli.commands.application.create">tau.cli.commands.application.create module</a></li>
 <li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.application.html#module-tau.cli.commands.application.delete">tau.cli.commands.application.delete module</a></li>
@@ -94,6 +214,17 @@ and checks the Python version.  It must be kept as short and simple as possible.
 </ul>
 </li>
 <li class="toctree-l5"><a class="reference internal" href="tau.cli.commands.measurement.html">tau.cli.commands.measurement package</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.measurement.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="tau.cli.commands.measurement.tests.html">tau.cli.commands.measurement.tests package</a><ul>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.measurement.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.measurement.tests.html#module-tau.cli.commands.measurement.tests.test_create">tau.cli.commands.measurement.tests.test_create module</a></li>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.measurement.tests.html#module-tau.cli.commands.measurement.tests.test_delete">tau.cli.commands.measurement.tests.test_delete module</a></li>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.measurement.tests.html#module-tau.cli.commands.measurement.tests.test_edit">tau.cli.commands.measurement.tests.test_edit module</a></li>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.measurement.tests.html#module-tau.cli.commands.measurement.tests.test_list">tau.cli.commands.measurement.tests.test_list module</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.measurement.html#submodules">Submodules</a></li>
 <li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.measurement.html#module-tau.cli.commands.measurement.create">tau.cli.commands.measurement.create module</a></li>
 <li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.measurement.html#module-tau.cli.commands.measurement.delete">tau.cli.commands.measurement.delete module</a></li>
@@ -102,6 +233,18 @@ and checks the Python version.  It must be kept as short and simple as possible.
 </ul>
 </li>
 <li class="toctree-l5"><a class="reference internal" href="tau.cli.commands.project.html">tau.cli.commands.project package</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.project.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="tau.cli.commands.project.tests.html">tau.cli.commands.project.tests package</a><ul>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.project.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.project.tests.html#module-tau.cli.commands.project.tests.test_create">tau.cli.commands.project.tests.test_create module</a></li>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.project.tests.html#module-tau.cli.commands.project.tests.test_delete">tau.cli.commands.project.tests.test_delete module</a></li>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.project.tests.html#module-tau.cli.commands.project.tests.test_edit">tau.cli.commands.project.tests.test_edit module</a></li>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.project.tests.html#module-tau.cli.commands.project.tests.test_export">tau.cli.commands.project.tests.test_export module</a></li>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.project.tests.html#module-tau.cli.commands.project.tests.test_list">tau.cli.commands.project.tests.test_list module</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.project.html#submodules">Submodules</a></li>
 <li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.project.html#module-tau.cli.commands.project.create">tau.cli.commands.project.create module</a></li>
 <li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.project.html#module-tau.cli.commands.project.delete">tau.cli.commands.project.delete module</a></li>
@@ -111,6 +254,17 @@ and checks the Python version.  It must be kept as short and simple as possible.
 </ul>
 </li>
 <li class="toctree-l5"><a class="reference internal" href="tau.cli.commands.target.html">tau.cli.commands.target package</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.target.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="tau.cli.commands.target.tests.html">tau.cli.commands.target.tests package</a><ul>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.target.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.target.tests.html#module-tau.cli.commands.target.tests.test_create">tau.cli.commands.target.tests.test_create module</a></li>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.target.tests.html#module-tau.cli.commands.target.tests.test_delete">tau.cli.commands.target.tests.test_delete module</a></li>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.target.tests.html#module-tau.cli.commands.target.tests.test_edit">tau.cli.commands.target.tests.test_edit module</a></li>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.target.tests.html#module-tau.cli.commands.target.tests.test_list">tau.cli.commands.target.tests.test_list module</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.target.html#submodules">Submodules</a></li>
 <li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.create">tau.cli.commands.target.create module</a></li>
 <li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.delete">tau.cli.commands.target.delete module</a></li>
@@ -118,7 +272,27 @@ and checks the Python version.  It must be kept as short and simple as possible.
 <li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list">tau.cli.commands.target.list module</a></li>
 </ul>
 </li>
+<li class="toctree-l5"><a class="reference internal" href="tau.cli.commands.tests.html">tau.cli.commands.tests package</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.tests.html#module-tau.cli.commands.tests.test_build">tau.cli.commands.tests.test_build module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.tests.html#module-tau.cli.commands.tests.test_dasboard">tau.cli.commands.tests.test_dasboard module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.tests.html#module-tau.cli.commands.tests.test_help">tau.cli.commands.tests.test_help module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.tests.html#module-tau.cli.commands.tests.test_initialize">tau.cli.commands.tests.test_initialize module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.tests.html#module-tau.cli.commands.tests.test_select">tau.cli.commands.tests.test_select module</a></li>
+</ul>
+</li>
 <li class="toctree-l5"><a class="reference internal" href="tau.cli.commands.trial.html">tau.cli.commands.trial package</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.trial.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="tau.cli.commands.trial.tests.html">tau.cli.commands.trial.tests package</a><ul>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.trial.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.trial.tests.html#module-tau.cli.commands.trial.tests.test_create">tau.cli.commands.trial.tests.test_create module</a></li>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.trial.tests.html#module-tau.cli.commands.trial.tests.test_delete">tau.cli.commands.trial.tests.test_delete module</a></li>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.trial.tests.html#module-tau.cli.commands.trial.tests.test_list">tau.cli.commands.trial.tests.test_list module</a></li>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.trial.tests.html#module-tau.cli.commands.trial.tests.test_show">tau.cli.commands.trial.tests.test_show module</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.trial.html#submodules">Submodules</a></li>
 <li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.create">tau.cli.commands.trial.create module</a></li>
 <li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.delete">tau.cli.commands.trial.delete module</a></li>
@@ -137,6 +311,13 @@ and checks the Python version.  It must be kept as short and simple as possible.
 <li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.html#module-tau.cli.commands.select">tau.cli.commands.select module</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="tau.cli.tests.html">tau.cli.tests package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tau.cli.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.cli.tests.html#module-tau.cli.tests.test_arguments">tau.cli.tests.test_arguments module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.cli.tests.html#module-tau.cli.tests.test_cli_view">tau.cli.tests.test_cli_view module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.cli.tests.html#module-tau.cli.tests.test_command">tau.cli.tests.test_command module</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="tau.cli.html#submodules">Submodules</a></li>
@@ -147,6 +328,20 @@ and checks the Python version.  It must be kept as short and simple as possible.
 </li>
 <li class="toctree-l1"><a class="reference internal" href="tau.gui.html">tau.gui package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tau.model.html">tau.model package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tau.model.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tau.model.tests.html">tau.model.tests package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tau.model.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.model.tests.html#module-tau.model.tests.test_application">tau.model.tests.test_application module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.model.tests.html#module-tau.model.tests.test_compiler">tau.model.tests.test_compiler module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.model.tests.html#module-tau.model.tests.test_experiment">tau.model.tests.test_experiment module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.model.tests.html#module-tau.model.tests.test_measurement">tau.model.tests.test_measurement module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.model.tests.html#module-tau.model.tests.test_project">tau.model.tests.test_project module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.model.tests.html#module-tau.model.tests.test_target">tau.model.tests.test_target module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.model.tests.html#module-tau.model.tests.test_trial">tau.model.tests.test_trial module</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="tau.model.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tau.model.html#module-tau.model.application">tau.model.application module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tau.model.html#tau-model-compiler-module">tau.model.compiler module</a></li>
@@ -158,16 +353,42 @@ and checks the Python version.  It must be kept as short and simple as possible.
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="tau.mvc.html">tau.mvc package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tau.mvc.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tau.mvc.tests.html">tau.mvc.tests package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tau.mvc.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.mvc.tests.html#module-tau.mvc.tests.test_controller">tau.mvc.tests.test_controller module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.mvc.tests.html#module-tau.mvc.tests.test_model">tau.mvc.tests.test_model module</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="tau.mvc.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tau.mvc.html#module-tau.mvc.controller">tau.mvc.controller module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tau.mvc.html#tau-mvc-model-module">tau.mvc.model module</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="tau.storage.html">tau.storage package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tau.storage.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tau.storage.tests.html">tau.storage.tests package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tau.storage.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.storage.tests.html#module-tau.storage.tests.test_levels">tau.storage.tests.test_levels module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.storage.tests.html#module-tau.storage.tests.test_local_file">tau.storage.tests.test_local_file module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.storage.tests.html#module-tau.storage.tests.test_project">tau.storage.tests.test_project module</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="tau.storage.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tau.storage.html#module-tau.storage.levels">tau.storage.levels module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tau.storage.html#module-tau.storage.local_file">tau.storage.local_file module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tau.storage.html#module-tau.storage.project">tau.storage.project module</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tau.tests.html">tau.tests package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tau.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.tests.html#module-tau.tests.test_error">tau.tests.test_error module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.tests.html#module-tau.tests.test_logger">tau.tests.test_logger module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.tests.html#module-tau.tests.test_util">tau.tests.test_util module</a></li>
 </ul>
 </li>
 </ul>
@@ -183,7 +404,7 @@ and checks the Python version.  It must be kept as short and simple as possible.
 Error classes should be defined in their appropriate modules.</p>
 <dl class="exception">
 <dt id="tau.error.ConfigurationError">
-<em class="property">exception </em><code class="descclassname">tau.error.</code><code class="descname">ConfigurationError</code><span class="sig-paren">(</span><em>value</em>, <em>*hints</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.error.ConfigurationError" title="Permalink to this definition">¶</a></dt>
+<em class="property">exception </em><code class="descclassname">tau.error.</code><code class="descname">ConfigurationError</code><span class="sig-paren">(</span><em>value</em>, <em>*hints</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/error.html#ConfigurationError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.error.ConfigurationError" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#tau.error.Error" title="tau.error.Error"><code class="xref py py-class docutils literal"><span class="pre">tau.error.Error</span></code></a></p>
 <p>Indicates that TAU Commander cannot succeed with the given parameters.</p>
 <p>This is most commonly caused by user error, e.g the user specifies measurement
@@ -197,7 +418,7 @@ settings that are incompatible with the application.</p>
 
 <dl class="exception">
 <dt id="tau.error.Error">
-<em class="property">exception </em><code class="descclassname">tau.error.</code><code class="descname">Error</code><span class="sig-paren">(</span><em>value</em>, <em>*hints</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.error.Error" title="Permalink to this definition">¶</a></dt>
+<em class="property">exception </em><code class="descclassname">tau.error.</code><code class="descname">Error</code><span class="sig-paren">(</span><em>value</em>, <em>*hints</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/error.html#Error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.error.Error" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/exceptions.html#exceptions.Exception" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">exceptions.Exception</span></code></a></p>
 <p>Base class for all errors in TAU Commander.</p>
 <dl class="attribute">
@@ -229,7 +450,7 @@ settings that are incompatible with the application.</p>
 
 <dl class="method">
 <dt id="tau.error.Error.handle">
-<code class="descname">handle</code><span class="sig-paren">(</span><em>etype</em>, <em>value</em>, <em>tb</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.error.Error.handle" title="Permalink to this definition">¶</a></dt>
+<code class="descname">handle</code><span class="sig-paren">(</span><em>etype</em>, <em>value</em>, <em>tb</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/error.html#Error.handle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.error.Error.handle" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -251,7 +472,7 @@ settings that are incompatible with the application.</p>
 
 <dl class="exception">
 <dt id="tau.error.InternalError">
-<em class="property">exception </em><code class="descclassname">tau.error.</code><code class="descname">InternalError</code><span class="sig-paren">(</span><em>value</em>, <em>*hints</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.error.InternalError" title="Permalink to this definition">¶</a></dt>
+<em class="property">exception </em><code class="descclassname">tau.error.</code><code class="descname">InternalError</code><span class="sig-paren">(</span><em>value</em>, <em>*hints</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/error.html#InternalError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.error.InternalError" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#tau.error.Error" title="tau.error.Error"><code class="xref py py-class docutils literal"><span class="pre">tau.error.Error</span></code></a></p>
 <p>Indicates that an internal error has occurred, i.e. a bug in TAU.</p>
 <p>These are bad and really shouldn&#8217;t happen.</p>
@@ -264,21 +485,21 @@ settings that are incompatible with the application.</p>
 
 <dl class="exception">
 <dt id="tau.error.ModelError">
-<em class="property">exception </em><code class="descclassname">tau.error.</code><code class="descname">ModelError</code><span class="sig-paren">(</span><em>model</em>, <em>value</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.error.ModelError" title="Permalink to this definition">¶</a></dt>
+<em class="property">exception </em><code class="descclassname">tau.error.</code><code class="descname">ModelError</code><span class="sig-paren">(</span><em>model</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/error.html#ModelError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.error.ModelError" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#tau.error.InternalError" title="tau.error.InternalError"><code class="xref py py-class docutils literal"><span class="pre">tau.error.InternalError</span></code></a></p>
 <p>Indicates an error in model data or the model itself.</p>
 </dd></dl>
 
 <dl class="exception">
 <dt id="tau.error.UniqueAttributeError">
-<em class="property">exception </em><code class="descclassname">tau.error.</code><code class="descname">UniqueAttributeError</code><span class="sig-paren">(</span><em>model</em>, <em>unique</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.error.UniqueAttributeError" title="Permalink to this definition">¶</a></dt>
+<em class="property">exception </em><code class="descclassname">tau.error.</code><code class="descname">UniqueAttributeError</code><span class="sig-paren">(</span><em>model</em>, <em>unique</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/error.html#UniqueAttributeError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.error.UniqueAttributeError" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#tau.error.ModelError" title="tau.error.ModelError"><code class="xref py py-class docutils literal"><span class="pre">tau.error.ModelError</span></code></a></p>
 <p>Indicates that duplicate values were given for a unique attribute.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="tau.error.excepthook">
-<code class="descclassname">tau.error.</code><code class="descname">excepthook</code><span class="sig-paren">(</span><em>etype</em>, <em>value</em>, <em>tb</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.error.excepthook" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.error.</code><code class="descname">excepthook</code><span class="sig-paren">(</span><em>etype</em>, <em>value</em>, <em>tb</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/error.html#excepthook"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.error.excepthook" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exception handler for any uncaught exception (except SystemExit).</p>
 <p>Replaces <a class="reference external" href="https://docs.python.org/library/sys.html#sys.excepthook" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">sys.excepthook</span></code></a>.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -312,9 +533,36 @@ Use this for status messages generated by TAU Commander.</li>
 </dl>
 <p>TAU Commander also logs all status messages at the highest reporting level to
 a rotating debug file in the user&#8217;s TAU Commander project prefix, typically &#8220;~/.tau&#8221;.</p>
+<dl class="data">
+<dt id="tau.logger.LINE_MARKER">
+<code class="descclassname">tau.logger.</code><code class="descname">LINE_MARKER</code><em class="property"> = '[TAU] '</em><a class="headerlink" href="#tau.logger.LINE_MARKER" title="Permalink to this definition">¶</a></dt>
+<dd><p>str: Marker for each line of output.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="tau.logger.LINE_WIDTH">
+<code class="descclassname">tau.logger.</code><code class="descname">LINE_WIDTH</code><em class="property"> = 151</em><a class="headerlink" href="#tau.logger.LINE_WIDTH" title="Permalink to this definition">¶</a></dt>
+<dd><p>Width of a line on the terminal.</p>
+<p>Uses system specific methods to determine console line width.  If the line
+width cannot be determined, the default is 80.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="tau.logger.LOG_FILE">
+<code class="descclassname">tau.logger.</code><code class="descname">LOG_FILE</code><em class="property"> = '/home/jlinford/.tau/debug_log'</em><a class="headerlink" href="#tau.logger.LOG_FILE" title="Permalink to this definition">¶</a></dt>
+<dd><p>str: Absolute path to a log file to receive all debugging output.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="tau.logger.LOG_LEVEL">
+<code class="descclassname">tau.logger.</code><code class="descname">LOG_LEVEL</code><em class="property"> = 'INFO'</em><a class="headerlink" href="#tau.logger.LOG_LEVEL" title="Permalink to this definition">¶</a></dt>
+<dd><p>str: The global logging level for stdout loggers and software packages.</p>
+<p>Don&#8217;t change directly. May be changed via <a class="reference internal" href="#tau.logger.set_log_level" title="tau.logger.set_log_level"><code class="xref any py py-func docutils literal"><span class="pre">set_log_level</span></code></a>.</p>
+</dd></dl>
+
 <dl class="class">
 <dt id="tau.logger.LogFormatter">
-<em class="property">class </em><code class="descclassname">tau.logger.</code><code class="descname">LogFormatter</code><span class="sig-paren">(</span><em>line_width</em>, <em>line_marker</em>, <em>printable_only=False</em>, <em>allow_colors=True</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.logger.LogFormatter" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.logger.</code><code class="descname">LogFormatter</code><span class="sig-paren">(</span><em>line_width</em>, <em>line_marker</em>, <em>printable_only=False</em>, <em>allow_colors=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/logger.html#LogFormatter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.logger.LogFormatter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/logging.html#logging.Formatter" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">logging.Formatter</span></code></a>, <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
 <p>Custom log message formatter.</p>
 <p>Controls message formatting for all levels.</p>
@@ -333,22 +581,22 @@ a rotating debug file in the user&#8217;s TAU Commander project prefix, typicall
 </table>
 <dl class="method">
 <dt id="tau.logger.LogFormatter.CRITICAL">
-<code class="descname">CRITICAL</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.logger.LogFormatter.CRITICAL" title="Permalink to this definition">¶</a></dt>
+<code class="descname">CRITICAL</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/logger.html#LogFormatter.CRITICAL"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.logger.LogFormatter.CRITICAL" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="tau.logger.LogFormatter.DEBUG">
-<code class="descname">DEBUG</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.logger.LogFormatter.DEBUG" title="Permalink to this definition">¶</a></dt>
+<code class="descname">DEBUG</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/logger.html#LogFormatter.DEBUG"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.logger.LogFormatter.DEBUG" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="tau.logger.LogFormatter.ERROR">
-<code class="descname">ERROR</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.logger.LogFormatter.ERROR" title="Permalink to this definition">¶</a></dt>
+<code class="descname">ERROR</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/logger.html#LogFormatter.ERROR"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.logger.LogFormatter.ERROR" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="tau.logger.LogFormatter.INFO">
-<code class="descname">INFO</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.logger.LogFormatter.INFO" title="Permalink to this definition">¶</a></dt>
+<code class="descname">INFO</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/logger.html#LogFormatter.INFO"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.logger.LogFormatter.INFO" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -358,12 +606,12 @@ a rotating debug file in the user&#8217;s TAU Commander project prefix, typicall
 
 <dl class="method">
 <dt id="tau.logger.LogFormatter.WARNING">
-<code class="descname">WARNING</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.logger.LogFormatter.WARNING" title="Permalink to this definition">¶</a></dt>
+<code class="descname">WARNING</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/logger.html#LogFormatter.WARNING"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.logger.LogFormatter.WARNING" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="tau.logger.LogFormatter._colored">
-<code class="descname">_colored</code><span class="sig-paren">(</span><em>text</em>, <em>*color_args</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.logger.LogFormatter._colored" title="Permalink to this definition">¶</a></dt>
+<code class="descname">_colored</code><span class="sig-paren">(</span><em>text</em>, <em>*color_args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/logger.html#LogFormatter._colored"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.logger.LogFormatter._colored" title="Permalink to this definition">¶</a></dt>
 <dd><p>Insert ANSII color formatting via <a class="reference external" href="http://pypi.python.org/pypi/termcolor">termcolor</a>.</p>
 <dl class="docutils">
 <dt>Text colors:</dt>
@@ -425,7 +673,7 @@ a rotating debug file in the user&#8217;s TAU Commander project prefix, typicall
 
 <dl class="method">
 <dt id="tau.logger.LogFormatter.format">
-<code class="descname">format</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.logger.LogFormatter.format" title="Permalink to this definition">¶</a></dt>
+<code class="descname">format</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/logger.html#LogFormatter.format"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.logger.LogFormatter.format" title="Permalink to this definition">¶</a></dt>
 <dd><p>Formats a log record.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -446,9 +694,15 @@ No format specified for a the record&#8217;s logging level.</td>
 
 </dd></dl>
 
+<dl class="data">
+<dt id="tau.logger.TERM_SIZE">
+<code class="descclassname">tau.logger.</code><code class="descname">TERM_SIZE</code><em class="property"> = (157, 99)</em><a class="headerlink" href="#tau.logger.TERM_SIZE" title="Permalink to this definition">¶</a></dt>
+<dd><p>tuple: (width, height) tuple of detected terminal dimensions in characters.</p>
+</dd></dl>
+
 <dl class="function">
 <dt id="tau.logger._get_term_size_env">
-<code class="descclassname">tau.logger.</code><code class="descname">_get_term_size_env</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.logger._get_term_size_env" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.logger.</code><code class="descname">_get_term_size_env</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/logger.html#_get_term_size_env"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.logger._get_term_size_env" title="Permalink to this definition">¶</a></dt>
 <dd><p>Discover the size of the user&#8217;s terminal via environment variables.</p>
 <p>The user may set the LINES and COLUMNS environment variables to control TAU Commander&#8217;s
 console dimension calculations.</p>
@@ -467,7 +721,7 @@ or None if the size could not be determined.</td>
 
 <dl class="function">
 <dt id="tau.logger._get_term_size_posix">
-<code class="descclassname">tau.logger.</code><code class="descname">_get_term_size_posix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.logger._get_term_size_posix" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.logger.</code><code class="descname">_get_term_size_posix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/logger.html#_get_term_size_posix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.logger._get_term_size_posix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Discover the size of the user&#8217;s terminal on a POSIX operating system (e.g. Linux).</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -484,7 +738,7 @@ or None if the size could not be determined.</td>
 
 <dl class="function">
 <dt id="tau.logger._get_term_size_tput">
-<code class="descclassname">tau.logger.</code><code class="descname">_get_term_size_tput</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.logger._get_term_size_tput" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.logger.</code><code class="descname">_get_term_size_tput</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/logger.html#_get_term_size_tput"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.logger._get_term_size_tput" title="Permalink to this definition">¶</a></dt>
 <dd><p>Discover the size of the user&#8217;s terminal via <a class="reference external" href="http://stackoverflow.com/questions/263890/how-do-i-find-the-width-height-of-a-terminal-window">tput</a>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -501,7 +755,7 @@ or None if the size could not be determined.</td>
 
 <dl class="function">
 <dt id="tau.logger._get_term_size_windows">
-<code class="descclassname">tau.logger.</code><code class="descname">_get_term_size_windows</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.logger._get_term_size_windows" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.logger.</code><code class="descname">_get_term_size_windows</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/logger.html#_get_term_size_windows"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.logger._get_term_size_windows" title="Permalink to this definition">¶</a></dt>
 <dd><p>Discover the size of the user&#8217;s terminal on Microsoft Windows.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -518,7 +772,7 @@ or None if the size could not be determined.</td>
 
 <dl class="function">
 <dt id="tau.logger.get_logger">
-<code class="descclassname">tau.logger.</code><code class="descname">get_logger</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.logger.get_logger" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.logger.</code><code class="descname">get_logger</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/logger.html#get_logger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.logger.get_logger" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a customized logging object.</p>
 <p>Multiple calls to with the same name will always return a reference to the same Logger object.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -537,7 +791,7 @@ or None if the size could not be determined.</td>
 
 <dl class="function">
 <dt id="tau.logger.get_terminal_size">
-<code class="descclassname">tau.logger.</code><code class="descname">get_terminal_size</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.logger.get_terminal_size" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.logger.</code><code class="descname">get_terminal_size</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/logger.html#get_terminal_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.logger.get_terminal_size" title="Permalink to this definition">¶</a></dt>
 <dd><p>Discover the size of the user&#8217;s terminal.</p>
 <p>Several methods are attempted depending on the user&#8217;s OS.
 If no method succeeds then default to (80, 25).</p>
@@ -555,8 +809,8 @@ If no method succeeds then default to (80, 25).</p>
 
 <dl class="function">
 <dt id="tau.logger.set_log_level">
-<code class="descclassname">tau.logger.</code><code class="descname">set_log_level</code><span class="sig-paren">(</span><em>level</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.logger.set_log_level" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets <code class="xref any docutils literal"><span class="pre">LOG_LEVEL</span></code>, the output level for stdout logging objects.</p>
+<code class="descclassname">tau.logger.</code><code class="descname">set_log_level</code><span class="sig-paren">(</span><em>level</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/logger.html#set_log_level"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.logger.set_log_level" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets <a class="reference internal" href="#tau.logger.LOG_LEVEL" title="tau.logger.LOG_LEVEL"><code class="xref any py py-data docutils literal"><span class="pre">LOG_LEVEL</span></code></a>, the output level for stdout logging objects.</p>
 <p>Changes to LOG_LEVEL may affect software package verbosity.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -575,13 +829,13 @@ If no method succeeds then default to (80, 25).</p>
 <p>Handles system manipulation and status tasks, e.g. subprocess management or file creation.</p>
 <dl class="function">
 <dt id="tau.util._zipimporter_iter_modules">
-<code class="descclassname">tau.util.</code><code class="descname">_zipimporter_iter_modules</code><span class="sig-paren">(</span><em>archive</em>, <em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.util._zipimporter_iter_modules" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.util.</code><code class="descname">_zipimporter_iter_modules</code><span class="sig-paren">(</span><em>archive</em>, <em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#_zipimporter_iter_modules"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util._zipimporter_iter_modules" title="Permalink to this definition">¶</a></dt>
 <dd><p>The missing zipimporter.iter_modules method.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="tau.util.archive_toplevel">
-<code class="descclassname">tau.util.</code><code class="descname">archive_toplevel</code><span class="sig-paren">(</span><em>archive</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.util.archive_toplevel" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.util.</code><code class="descname">archive_toplevel</code><span class="sig-paren">(</span><em>archive</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#archive_toplevel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.archive_toplevel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the name of the top-level directory in an archive.</p>
 <dl class="docutils">
 <dt>Assumes that the archive file is rooted in a single top-level directory::</dt>
@@ -610,7 +864,7 @@ This routine will return stupid results for archives with multiple top-level ele
 
 <dl class="function">
 <dt id="tau.util.camelcase">
-<code class="descclassname">tau.util.</code><code class="descname">camelcase</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.util.camelcase" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.util.</code><code class="descname">camelcase</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#camelcase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.camelcase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts a string to CamelCase.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -628,7 +882,7 @@ This routine will return stupid results for archives with multiple top-level ele
 
 <dl class="function">
 <dt id="tau.util.color_text">
-<code class="descclassname">tau.util.</code><code class="descname">color_text</code><span class="sig-paren">(</span><em>text</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.util.color_text" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.util.</code><code class="descname">color_text</code><span class="sig-paren">(</span><em>text</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#color_text"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.color_text" title="Permalink to this definition">¶</a></dt>
 <dd><p>Use <code class="xref any docutils literal"><span class="pre">termcolor.colored</span></code> to colorize text.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -653,7 +907,7 @@ This routine will return stupid results for archives with multiple top-level ele
 
 <dl class="function">
 <dt id="tau.util.create_subprocess">
-<code class="descclassname">tau.util.</code><code class="descname">create_subprocess</code><span class="sig-paren">(</span><em>cmd</em>, <em>cwd=None</em>, <em>env=None</em>, <em>stdout=True</em>, <em>log=True</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.util.create_subprocess" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.util.</code><code class="descname">create_subprocess</code><span class="sig-paren">(</span><em>cmd</em>, <em>cwd=None</em>, <em>env=None</em>, <em>stdout=True</em>, <em>log=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#create_subprocess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.create_subprocess" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a subprocess.</p>
 <p>See <a class="reference external" href="https://docs.python.org/library/subprocess.html#subprocess.Popen" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">subprocess.Popen</span></code></a>.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -661,7 +915,7 @@ This routine will return stupid results for archives with multiple top-level ele
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>cmd</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Command and its command line arguments.</li>
+<li><strong>cmd</strong> (<a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Command and its command line arguments.</li>
 <li><strong>cwd</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Change directory to <cite>cwd</cite> if given, otherwise use <a class="reference external" href="https://docs.python.org/library/os.html#os.getcwd" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">os.getcwd</span></code></a>.</li>
 <li><strong>env</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Environment variables to set before launching cmd.</li>
 <li><strong>stdout</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True send subprocess stdout and stderr to this processes&#8217; stdout.</li>
@@ -681,7 +935,7 @@ This routine will return stupid results for archives with multiple top-level ele
 
 <dl class="function">
 <dt id="tau.util.download">
-<code class="descclassname">tau.util.</code><code class="descname">download</code><span class="sig-paren">(</span><em>src</em>, <em>dest</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.util.download" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.util.</code><code class="descname">download</code><span class="sig-paren">(</span><em>src</em>, <em>dest</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#download"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.download" title="Permalink to this definition">¶</a></dt>
 <dd><p>Downloads or copies files.</p>
 <p><cite>src</cite> may be a file path or URL.  The destination folder will be created
 if it doesn&#8217;t exist.  Download is via curl, wget, or Python&#8217;s urllib as appropriate.</p>
@@ -705,7 +959,7 @@ File copy or download failed.</p>
 
 <dl class="function">
 <dt id="tau.util.extract">
-<code class="descclassname">tau.util.</code><code class="descname">extract</code><span class="sig-paren">(</span><em>archive</em>, <em>dest</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.util.extract" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.util.</code><code class="descname">extract</code><span class="sig-paren">(</span><em>archive</em>, <em>dest</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#extract"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.extract" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extracts archive file to dest.</p>
 <p>Supports compressed and uncompressed tar archives. Destination folder will
 be created if it doesn&#8217;t exist.</p>
@@ -735,7 +989,7 @@ Failed to extract archive.</p>
 
 <dl class="function">
 <dt id="tau.util.file_accessible">
-<code class="descclassname">tau.util.</code><code class="descname">file_accessible</code><span class="sig-paren">(</span><em>filepath</em>, <em>mode='r'</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.util.file_accessible" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.util.</code><code class="descname">file_accessible</code><span class="sig-paren">(</span><em>filepath</em>, <em>mode='r'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#file_accessible"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.file_accessible" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check if a file is accessable.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -756,9 +1010,9 @@ Failed to extract archive.</p>
 
 <dl class="function">
 <dt id="tau.util.hline">
-<code class="descclassname">tau.util.</code><code class="descname">hline</code><span class="sig-paren">(</span><em>title</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.util.hline" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.util.</code><code class="descname">hline</code><span class="sig-paren">(</span><em>title</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#hline"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.hline" title="Permalink to this definition">¶</a></dt>
 <dd><p>Build a colorful horizontal rule for console output.</p>
-<p>Uses <code class="xref any docutils literal"><span class="pre">logger.LINE_WIDTH</span></code> to generate a string of &#8216;=&#8217; characters
+<p>Uses <a class="reference internal" href="#tau.logger.LINE_WIDTH" title="tau.logger.LINE_WIDTH"><code class="xref any py py-data docutils literal"><span class="pre">logger.LINE_WIDTH</span></code></a> to generate a string of &#8216;=&#8217; characters
 as wide as the terminal.  <cite>title</cite> is included in the string near the
 left of the horizontal line.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -784,7 +1038,7 @@ left of the horizontal line.</p>
 
 <dl class="function">
 <dt id="tau.util.human_size">
-<code class="descclassname">tau.util.</code><code class="descname">human_size</code><span class="sig-paren">(</span><em>num</em>, <em>suffix='B'</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.util.human_size" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.util.</code><code class="descname">human_size</code><span class="sig-paren">(</span><em>num</em>, <em>suffix='B'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#human_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.human_size" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts a byte count to human readable units.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -808,7 +1062,7 @@ left of the horizontal line.</p>
 
 <dl class="function">
 <dt id="tau.util.is_url">
-<code class="descclassname">tau.util.</code><code class="descname">is_url</code><span class="sig-paren">(</span><em>url</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.util.is_url" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.util.</code><code class="descname">is_url</code><span class="sig-paren">(</span><em>url</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#is_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.is_url" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check if <cite>url</cite> is a URL.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -826,7 +1080,7 @@ left of the horizontal line.</p>
 
 <dl class="function">
 <dt id="tau.util.mkdirp">
-<code class="descclassname">tau.util.</code><code class="descname">mkdirp</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.util.mkdirp" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.util.</code><code class="descname">mkdirp</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#mkdirp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.mkdirp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a directory and all its parents.</p>
 <p>Works just like <code class="docutils literal"><span class="pre">mkdir</span> <span class="pre">-p</span></code>.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -841,7 +1095,7 @@ left of the horizontal line.</p>
 
 <dl class="function">
 <dt id="tau.util.parse_bool">
-<code class="descclassname">tau.util.</code><code class="descname">parse_bool</code><span class="sig-paren">(</span><em>value</em>, <em>additional_true=None</em>, <em>additional_false=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.util.parse_bool" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.util.</code><code class="descname">parse_bool</code><span class="sig-paren">(</span><em>value</em>, <em>additional_true=None</em>, <em>additional_false=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#parse_bool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.parse_bool" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parses a value to a boolean value.</p>
 <p>If <cite>value</cite> is a string try to interpret it as a bool:
 * [&#8216;1&#8217;, &#8216;t&#8217;, &#8216;y&#8217;, &#8216;true&#8217;, &#8216;yes&#8217;, &#8216;on&#8217;] ==&gt; True
@@ -853,8 +1107,8 @@ Otherwise raise TypeError.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>value</strong> &#8211; value to parse to a boolean.</li>
-<li><strong>additional_true</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; optional additional string values that stand for True.</li>
-<li><strong>additional_false</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; optional additional string values that stand for False.</li>
+<li><strong>additional_true</strong> (<a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; optional additional string values that stand for True.</li>
+<li><strong>additional_false</strong> (<a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; optional additional string values that stand for False.</li>
 </ul>
 </td>
 </tr>
@@ -874,7 +1128,7 @@ Otherwise raise TypeError.</p>
 
 <dl class="function">
 <dt id="tau.util.walk_packages">
-<code class="descclassname">tau.util.</code><code class="descname">walk_packages</code><span class="sig-paren">(</span><em>path</em>, <em>prefix</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.util.walk_packages" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.util.</code><code class="descname">walk_packages</code><span class="sig-paren">(</span><em>path</em>, <em>prefix</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#walk_packages"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.walk_packages" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fix <a class="reference external" href="https://docs.python.org/library/pkgutil.html#pkgutil.walk_packages" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">pkgutil.walk_packages</span></code></a> to work with Python zip files.</p>
 <p>Python&#8217;s default <code class="xref any docutils literal"><span class="pre">zipimporter</span></code> doesn&#8217;t provide an <cite>iter_modules</cite> method so
 <a class="reference external" href="https://docs.python.org/library/pkgutil.html#pkgutil.walk_packages" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">pkgutil.walk_packages</span></code></a> silently fails to list modules and packages when
@@ -883,7 +1137,7 @@ they are in a zip file.  This implementation works around this.</p>
 
 <dl class="function">
 <dt id="tau.util.which">
-<code class="descclassname">tau.util.</code><code class="descname">which</code><span class="sig-paren">(</span><em>program</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.util.which" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.util.</code><code class="descname">which</code><span class="sig-paren">(</span><em>program</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#which"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.which" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the full path to a program command.</p>
 <p>Program must exist and be executable.
 Searches the system PATH and the current directory.</p>
@@ -909,7 +1163,11 @@ Searches the system PATH and the current directory.</p>
       <div class="bottomnav" role="navigation" aria-label="bottom navigation">
       
         <p>
+        «&#160;&#160;<a href="modules.html">tau</a>
+        &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="tau.cf.html">tau.cf package</a>&#160;&#160;»
         </p>
 
       </div>

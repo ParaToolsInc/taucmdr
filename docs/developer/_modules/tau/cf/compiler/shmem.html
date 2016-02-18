@@ -95,7 +95,7 @@
 <div class="viewcode-block" id="ShmemCompilerFamily.preferred"><a class="viewcode-back" href="../../../../tau.cf.compiler.html#tau.cf.compiler.shmem.ShmemCompilerFamily.preferred">[docs]</a>    <span class="k">def</span> <span class="nf">preferred</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return the host&#39;s preferred SHMEM compiler family.&quot;&quot;&quot;</span>
         <span class="kn">from</span> <span class="nn">tau.cf.target</span> <span class="kn">import</span> <span class="n">host</span>
-        <span class="k">return</span> <span class="n">host</span><span class="o">.</span><span class="n">preferred_shmem_compilers</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">host</span><span class="o">.</span><span class="n">preferred_compilers</span><span class="p">()</span>
 
 </div></div>
 <span class="n">SHMEM_CC_ROLE</span> <span class="o">=</span> <span class="n">CompilerRole</span><span class="p">(</span><span class="s">&#39;SHMEM_CC&#39;</span><span class="p">,</span> <span class="s">&#39;C with calls to a SHMEM library&#39;</span><span class="p">)</span>

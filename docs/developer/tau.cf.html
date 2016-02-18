@@ -25,7 +25,10 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="_static/favicon.ico"/>
-    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" /> 
+    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
+    <link rel="up" title="tau package" href="tau.html" />
+    <link rel="next" title="tau.cf.compiler package" href="tau.cf.compiler.html" />
+    <link rel="prev" title="tau package" href="tau.html" /> 
   </head>
   <body role="document">
       <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="index.html">
@@ -35,7 +38,11 @@
       <div class="topnav" role="navigation" aria-label="top navigation">
       
         <p>
+        «&#160;&#160;<a href="tau.html">tau package</a>
+        &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="tau.cf.compiler.html">tau.cf.compiler package</a>&#160;&#160;»
         </p>
 
       </div>
@@ -47,7 +54,7 @@
 <p>TAU Common Framework (CF) intialization and common objects.</p>
 <dl class="class">
 <dt id="tau.cf.KeyedRecord">
-<em class="property">class </em><code class="descclassname">tau.cf.</code><code class="descname">KeyedRecord</code><a class="headerlink" href="#tau.cf.KeyedRecord" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.cf.</code><code class="descname">KeyedRecord</code><a class="reference internal" href="_modules/tau/cf.html#KeyedRecord"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.KeyedRecord" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
 <p>Data record with a unique key.</p>
 <p>Subclasses must declare a <code class="docutils literal"><span class="pre">__key__</span></code> member defining the attribute to be used as the key.
@@ -80,13 +87,13 @@ carrot is steak
 </div>
 <dl class="classmethod">
 <dt id="tau.cf.KeyedRecord.all">
-<em class="property">classmethod </em><code class="descname">all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.cf.KeyedRecord.all" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="descname">all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf.html#KeyedRecord.all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.KeyedRecord.all" title="Permalink to this definition">¶</a></dt>
 <dd><p>Iterate over class instances.</p>
 </dd></dl>
 
 <dl class="classmethod">
 <dt id="tau.cf.KeyedRecord.find">
-<em class="property">classmethod </em><code class="descname">find</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.cf.KeyedRecord.find" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="descname">find</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf.html#KeyedRecord.find"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.KeyedRecord.find" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find an instance.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -107,7 +114,7 @@ No instance has this key value.</td>
 
 <dl class="classmethod">
 <dt id="tau.cf.KeyedRecord.keys">
-<em class="property">classmethod </em><code class="descname">keys</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.cf.KeyedRecord.keys" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="descname">keys</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf.html#KeyedRecord.keys"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.KeyedRecord.keys" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the name of the key field in all instances.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -115,7 +122,7 @@ No instance has this key value.</td>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">All instance keys.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list">list</a></td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list">list</a></td>
 </tr>
 </tbody>
 </table>
@@ -125,7 +132,7 @@ No instance has this key value.</td>
 
 <dl class="class">
 <dt id="tau.cf.KeyedRecordCreator">
-<em class="property">class </em><code class="descclassname">tau.cf.</code><code class="descname">KeyedRecordCreator</code><a class="headerlink" href="#tau.cf.KeyedRecordCreator" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.cf.</code><code class="descname">KeyedRecordCreator</code><a class="reference internal" href="_modules/tau/cf.html#KeyedRecordCreator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.KeyedRecordCreator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#type" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">type</span></code></a></p>
 <p>Metaclass to create a new <a class="reference internal" href="#tau.cf.KeyedRecord" title="tau.cf.KeyedRecord"><code class="xref any py py-class docutils literal"><span class="pre">KeyedRecord</span></code></a> instance.</p>
 <p>Change object creation proceedure so that only one instance of a <a class="reference internal" href="#tau.cf.KeyedRecord" title="tau.cf.KeyedRecord"><code class="xref any py py-class docutils literal"><span class="pre">KeyedRecord</span></code></a>
@@ -139,7 +146,7 @@ this metaclass guarantees we call <code class="docutils literal"><span class="pr
 * <a class="reference external" href="http://stackoverflow.com/questions/100003/what-is-a-metaclass-in-python">http://stackoverflow.com/questions/100003/what-is-a-metaclass-in-python</a></p>
 <dl class="method">
 <dt id="tau.cf.KeyedRecordCreator.__call__">
-<code class="descname">__call__</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.cf.KeyedRecordCreator.__call__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf.html#KeyedRecordCreator.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.KeyedRecordCreator.__call__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create the new instance.</p>
 </dd></dl>
 
@@ -147,7 +154,7 @@ this metaclass guarantees we call <code class="docutils literal"><span class="pr
 
 <dl class="class">
 <dt id="tau.cf.TrackedInstance">
-<em class="property">class </em><code class="descclassname">tau.cf.</code><code class="descname">TrackedInstance</code><a class="headerlink" href="#tau.cf.TrackedInstance" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.cf.</code><code class="descname">TrackedInstance</code><a class="reference internal" href="_modules/tau/cf.html#TrackedInstance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.TrackedInstance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
 <p>Base class for classes that need to keep track of their instances.</p>
 <p>Each subclass tracks of its own instances separately.  Unliked <a class="reference internal" href="#tau.cf.KeyedRecordCreator" title="tau.cf.KeyedRecordCreator"><code class="xref any py py-class docutils literal"><span class="pre">KeyedRecordCreator</span></code></a>
@@ -182,7 +189,7 @@ for inst in Bar.all():
 </div>
 <dl class="classmethod">
 <dt id="tau.cf.TrackedInstance.all">
-<em class="property">classmethod </em><code class="descname">all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.cf.TrackedInstance.all" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="descname">all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf.html#TrackedInstance.all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.TrackedInstance.all" title="Permalink to this definition">¶</a></dt>
 <dd><p>Iterate over class instances.</p>
 </dd></dl>
 
@@ -193,6 +200,16 @@ for inst in Bar.all():
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="tau.cf.compiler.html">tau.cf.compiler package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tau.cf.compiler.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tau.cf.compiler.tests.html">tau.cf.compiler.tests package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tau.cf.compiler.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.cf.compiler.tests.html#module-tau.cf.compiler.tests.test_installed">tau.cf.compiler.tests.test_installed module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.cf.compiler.tests.html#module-tau.cf.compiler.tests.test_mpi">tau.cf.compiler.tests.test_mpi module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.cf.compiler.tests.html#module-tau.cf.compiler.tests.test_shmem">tau.cf.compiler.tests.test_shmem module</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="tau.cf.compiler.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tau.cf.compiler.html#module-tau.cf.compiler.installed">tau.cf.compiler.installed module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tau.cf.compiler.html#module-tau.cf.compiler.mpi">tau.cf.compiler.mpi module</a></li>
@@ -200,6 +217,19 @@ for inst in Bar.all():
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="tau.cf.software.html">tau.cf.software package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tau.cf.software.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tau.cf.software.tests.html">tau.cf.software.tests package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tau.cf.software.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.cf.software.tests.html#module-tau.cf.software.tests.test_binutils_installation">tau.cf.software.tests.test_binutils_installation module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.cf.software.tests.html#module-tau.cf.software.tests.test_installation">tau.cf.software.tests.test_installation module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.cf.software.tests.html#module-tau.cf.software.tests.test_libunwind_installation">tau.cf.software.tests.test_libunwind_installation module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.cf.software.tests.html#module-tau.cf.software.tests.test_papi_installation">tau.cf.software.tests.test_papi_installation module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.cf.software.tests.html#module-tau.cf.software.tests.test_pdt_installation">tau.cf.software.tests.test_pdt_installation module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.cf.software.tests.html#module-tau.cf.software.tests.test_tau_installation">tau.cf.software.tests.test_tau_installation module</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="tau.cf.software.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tau.cf.software.html#module-tau.cf.software.binutils_installation">tau.cf.software.binutils_installation module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tau.cf.software.html#module-tau.cf.software.installation">tau.cf.software.installation module</a></li>
@@ -210,6 +240,15 @@ for inst in Bar.all():
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="tau.cf.target.html">tau.cf.target package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tau.cf.target.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tau.cf.target.tests.html">tau.cf.target.tests package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tau.cf.target.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.cf.target.tests.html#module-tau.cf.target.tests.test_device">tau.cf.target.tests.test_device module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.cf.target.tests.html#module-tau.cf.target.tests.test_host">tau.cf.target.tests.test_host module</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="tau.cf.target.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tau.cf.target.html#module-tau.cf.target.device">tau.cf.target.device module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tau.cf.target.html#module-tau.cf.target.host">tau.cf.target.host module</a></li>
@@ -225,7 +264,11 @@ for inst in Bar.all():
       <div class="bottomnav" role="navigation" aria-label="bottom navigation">
       
         <p>
+        «&#160;&#160;<a href="tau.html">tau package</a>
+        &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="tau.cf.compiler.html">tau.cf.compiler package</a>&#160;&#160;»
         </p>
 
       </div>

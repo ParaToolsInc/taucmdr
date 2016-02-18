@@ -82,13 +82,18 @@
 <span class="kn">import</span> <span class="nn">errno</span>
 <span class="kn">import</span> <span class="nn">shutil</span>
 <span class="kn">import</span> <span class="nn">urllib</span>
+<span class="kn">import</span> <span class="nn">pkgutil</span>
 <span class="kn">import</span> <span class="nn">tarfile</span>
 <span class="kn">import</span> <span class="nn">urlparse</span>
 <span class="kn">from</span> <span class="nn">termcolor</span> <span class="kn">import</span> <span class="n">termcolor</span>
+<span class="kn">from</span> <span class="nn">zipimport</span> <span class="kn">import</span> <span class="n">zipimporter</span>
+<span class="kn">from</span> <span class="nn">zipfile</span> <span class="kn">import</span> <span class="n">ZipFile</span>
 <span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">logger</span>
 
 
 <span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+<span class="n">_PY_SUFFEXES</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;.py&#39;</span><span class="p">,</span> <span class="s">&#39;.pyo&#39;</span><span class="p">,</span> <span class="s">&#39;.pyc&#39;</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="mkdirp"><a class="viewcode-back" href="../../tau.html#tau.util.mkdirp">[docs]</a><span class="k">def</span> <span class="nf">mkdirp</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
@@ -358,6 +363,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span>
     <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
 </div>
 <div class="viewcode-block" id="is_url"><a class="viewcode-back" href="../../tau.html#tau.util.is_url">[docs]</a><span class="k">def</span> <span class="nf">is_url</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Check if `url` is a URL.</span>
@@ -369,6 +375,7 @@
 <span class="sd">        bool: True if `url` is a URL, False otherwise.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">urlparse</span><span class="o">.</span><span class="n">urlparse</span><span class="p">(</span><span class="n">url</span><span class="p">)</span><span class="o">.</span><span class="n">scheme</span><span class="p">))</span>
+
 </div>
 <div class="viewcode-block" id="camelcase"><a class="viewcode-back" href="../../tau.html#tau.util.camelcase">[docs]</a><span class="k">def</span> <span class="nf">camelcase</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Converts a string to CamelCase.</span>
@@ -380,17 +387,103 @@
 <span class="sd">        str: `name` in CamelCase.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">))</span>
+
 </div>
-<div class="viewcode-block" id="hline"><a class="viewcode-back" href="../../tau.html#tau.util.hline">[docs]</a><span class="k">def</span> <span class="nf">hline</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="o">*</span><span class="n">color_args</span><span class="p">):</span>
+<div class="viewcode-block" id="hline"><a class="viewcode-back" href="../../tau.html#tau.util.hline">[docs]</a><span class="k">def</span> <span class="nf">hline</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Build a colorful horizontal rule for console output.</span>
+<span class="sd">    </span>
+<span class="sd">    Uses :any:`logger.LINE_WIDTH` to generate a string of &#39;=&#39; characters</span>
+<span class="sd">    as wide as the terminal.  `title` is included in the string near the</span>
+<span class="sd">    left of the horizontal line. </span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        title (str): Text to put on the horizontal rule.</span>
+<span class="sd">        *args: Positional arguments to pass to :any:`termcolor.colored`.</span>
+<span class="sd">        **kwargs: Keyword arguments to pass to :any:`termcolor.colored`.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        str: The horizontal rule.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">text</span> <span class="o">=</span> <span class="s">&quot;{:=&lt;{}}</span><span class="se">\n</span><span class="s">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s">&#39;== </span><span class="si">%s</span><span class="s"> ==&#39;</span> <span class="o">%</span> <span class="n">title</span><span class="p">,</span> <span class="n">logger</span><span class="o">.</span><span class="n">LINE_WIDTH</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">color_args</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">termcolor</span><span class="o">.</span><span class="n">colored</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="o">*</span><span class="n">color_args</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">text</span>
+    <span class="k">return</span> <span class="n">color_text</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
 </div>
 <div class="viewcode-block" id="color_text"><a class="viewcode-back" href="../../tau.html#tau.util.color_text">[docs]</a><span class="k">def</span> <span class="nf">color_text</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Use :any:`termcolor.colored` to colorize text.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        text (str): Text to colorize.</span>
+<span class="sd">        *args: Positional arguments to pass to :any:`termcolor.colored`.</span>
+<span class="sd">        **kwargs: Keyword arguments to pass to :any:`termcolor.colored`.</span>
+<span class="sd">        </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        str: The colorized text.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">termcolor</span><span class="o">.</span><span class="n">colored</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-</pre></div></div>
+
+</div>
+<div class="viewcode-block" id="walk_packages"><a class="viewcode-back" href="../../tau.html#tau.util.walk_packages">[docs]</a><span class="k">def</span> <span class="nf">walk_packages</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Fix :any:`pkgutil.walk_packages` to work with Python zip files.</span>
+<span class="sd">    </span>
+<span class="sd">    Python&#39;s default :any:`zipimporter` doesn&#39;t provide an `iter_modules` method so</span>
+<span class="sd">    :any:`pkgutil.walk_packages` silently fails to list modules and packages when</span>
+<span class="sd">    they are in a zip file.  This implementation works around this.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">seen</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">dct</span><span class="o">=</span><span class="p">{}):</span>
+        <span class="c"># pylint: disable=dangerous-default-value</span>
+        <span class="k">if</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">dct</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="n">dct</span><span class="p">[</span><span class="n">path</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="k">for</span> <span class="n">importer</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">ispkg</span> <span class="ow">in</span> <span class="n">_iter_modules</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="n">importer</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">ispkg</span>
+        <span class="k">if</span> <span class="n">ispkg</span><span class="p">:</span>
+            <span class="nb">__import__</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="s">&#39;__path__&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">[]</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">path</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">seen</span><span class="p">(</span><span class="n">p</span><span class="p">)]</span>
+            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">walk_packages</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">name</span><span class="o">+</span><span class="s">&#39;.&#39;</span><span class="p">):</span>
+                <span class="k">yield</span> <span class="n">item</span>
+
+</div>
+<div class="viewcode-block" id="_zipimporter_iter_modules"><a class="viewcode-back" href="../../tau.html#tau.util._zipimporter_iter_modules">[docs]</a><span class="k">def</span> <span class="nf">_zipimporter_iter_modules</span><span class="p">(</span><span class="n">archive</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The missing zipimporter.iter_modules method.&quot;&quot;&quot;</span>
+    <span class="n">libdir</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">pkgpath</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="n">archive</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">ZipFile</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">libdir</span><span class="p">,</span> <span class="n">archive</span><span class="p">))</span> <span class="k">as</span> <span class="n">zipfile</span><span class="p">:</span>
+        <span class="n">namelist</span> <span class="o">=</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">namelist</span><span class="p">()</span>
+    
+    <span class="k">def</span> <span class="nf">iter_modules</span><span class="p">(</span><span class="n">prefix</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">namelist</span><span class="p">:</span>
+            <span class="n">fname</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ext</span> <span class="ow">in</span> <span class="n">_PY_SUFFEXES</span><span class="p">:</span>
+                <span class="n">extrapath</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">modname</span> <span class="o">=</span> <span class="n">fname</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="n">pkgpath</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">extrapath</span> <span class="ow">or</span> <span class="n">modname</span> <span class="o">==</span> <span class="s">&#39;__init__&#39;</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">pkgname</span><span class="p">,</span> <span class="n">modname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">modname</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">pkgname</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="ow">in</span> <span class="n">pkgname</span><span class="p">:</span>
+                        <span class="k">continue</span>
+                    <span class="k">yield</span> <span class="n">prefix</span> <span class="o">+</span> <span class="n">pkgname</span><span class="p">,</span> <span class="bp">True</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">prefix</span> <span class="o">+</span> <span class="n">modname</span><span class="p">,</span> <span class="bp">False</span>
+    <span class="k">return</span> <span class="n">iter_modules</span>
+
+</div>
+<span class="k">def</span> <span class="nf">_iter_modules</span><span class="p">(</span><span class="n">paths</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>
+    <span class="n">yielded</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
+        <span class="n">importer</span> <span class="o">=</span> <span class="n">pkgutil</span><span class="o">.</span><span class="n">get_importer</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">importer</span><span class="p">,</span> <span class="n">zipimporter</span><span class="p">):</span>
+            <span class="c"># pylint: disable=no-member</span>
+            <span class="n">archive</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">importer</span><span class="o">.</span><span class="n">archive</span><span class="p">)</span>
+            <span class="n">iter_importer_modules</span> <span class="o">=</span> <span class="n">_zipimporter_iter_modules</span><span class="p">(</span><span class="n">archive</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">iter_importer_modules</span> <span class="o">=</span> <span class="n">importer</span><span class="o">.</span><span class="n">iter_modules</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">ispkg</span> <span class="ow">in</span> <span class="n">iter_importer_modules</span><span class="p">(</span><span class="n">prefix</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">yielded</span><span class="p">:</span>
+                <span class="n">yielded</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="k">yield</span> <span class="n">importer</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">ispkg</span>
+ 
+</pre></div>
 
       </div>
       <div class="bottomnav" role="navigation" aria-label="bottom navigation">

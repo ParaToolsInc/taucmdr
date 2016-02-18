@@ -85,8 +85,7 @@
 <span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">util</span>
 <span class="kn">from</span> <span class="nn">tau.cf.software.installation</span> <span class="kn">import</span> <span class="n">AutotoolsInstallation</span>
 <span class="kn">from</span> <span class="nn">tau.cf.compiler</span> <span class="kn">import</span> <span class="n">CC_ROLE</span>
-<span class="kn">from</span> <span class="nn">tau.cf.target</span> <span class="kn">import</span> <span class="n">IBM_BGP_ARCH</span><span class="p">,</span> <span class="n">IBM_BGQ_ARCH</span><span class="p">,</span> <span class="n">IBM64_ARCH</span><span class="p">,</span> <span class="n">ARM32_ARCH</span><span class="p">,</span> <span class="n">INTEL_KNC_ARCH</span><span class="p">,</span> <span class="n">X86_64_ARCH</span><span class="p">,</span> <span class="n">DARWIN_OS</span>
-<span class="kn">from</span> <span class="nn">tau.cf.target</span> <span class="kn">import</span> <span class="n">DARWIN_OS</span> 
+<span class="kn">from</span> <span class="nn">tau.cf.target</span> <span class="kn">import</span> <span class="n">IBM_BGP_ARCH</span><span class="p">,</span> <span class="n">IBM_BGQ_ARCH</span><span class="p">,</span> <span class="n">IBM64_ARCH</span><span class="p">,</span> <span class="n">INTEL_KNC_ARCH</span><span class="p">,</span> <span class="n">X86_64_ARCH</span><span class="p">,</span> <span class="n">DARWIN_OS</span>
 
 <span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
  
@@ -181,8 +180,50 @@
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Fixing BFD header&quot;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fileinput</span><span class="o">.</span><span class="n">input</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">include_path</span><span class="p">,</span> <span class="s">&#39;bfd.h&#39;</span><span class="p">),</span> <span class="n">inplace</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
             <span class="c"># fileinput.input with inplace=1 redirects stdout to the input file ... freaky</span>
-            <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;#if !defined PACKAGE &amp;&amp; !defined PACKAGE_VERSION&#39;</span><span class="p">,</span> <span class="s">&#39;#if 0&#39;</span><span class="p">))</span></div></div>
-</pre></div>
+            <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;#if !defined PACKAGE &amp;&amp; !defined PACKAGE_VERSION&#39;</span><span class="p">,</span> <span class="s">&#39;#if 0&#39;</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="BinutilsInstallation.compiletime_config"><a class="viewcode-back" href="../../../../tau.cf.software.html#tau.cf.software.binutils_installation.BinutilsInstallation.compiletime_config">[docs]</a>    <span class="k">def</span> <span class="nf">compiletime_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">opts</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Configure compilation environment to use this software package. </span>
+
+<span class="sd">        Don&#39;t put `self.bin_path` in PATH since this offends ``ld`` on some systems.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            opts (list): Optional list of command line options.</span>
+<span class="sd">            env (dict): Optional dictionary of environment variables.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns: </span>
+<span class="sd">            tuple: opts, env updated for the new environment.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">opts</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span> <span class="k">if</span> <span class="n">opts</span> <span class="k">else</span> <span class="p">[]</span>
+        <span class="n">env</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">env</span><span class="p">)</span> <span class="k">if</span> <span class="n">env</span> <span class="k">else</span> <span class="nb">dict</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">opts</span><span class="p">)),</span> <span class="n">env</span>
+</div>
+<div class="viewcode-block" id="BinutilsInstallation.runtime_config"><a class="viewcode-back" href="../../../../tau.cf.software.html#tau.cf.software.binutils_installation.BinutilsInstallation.runtime_config">[docs]</a>    <span class="k">def</span> <span class="nf">runtime_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">opts</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Configure runtime environment to use this software package.</span>
+<span class="sd">        </span>
+<span class="sd">        Don&#39;t put `self.bin_path` in PATH since this offends ``ld`` on some systems</span>
+<span class="sd">        but do put `self.lib_path` in LD_LIBRARY_PATH.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            opts (list): Optional list of command line options.</span>
+<span class="sd">            env (dict): Optional dictionary of environment variables.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns: </span>
+<span class="sd">            tuple: opts, env updated for the new environment.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">opts</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span> <span class="k">if</span> <span class="n">opts</span> <span class="k">else</span> <span class="p">[]</span>
+        <span class="n">env</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">env</span><span class="p">)</span> <span class="k">if</span> <span class="n">env</span> <span class="k">else</span> <span class="nb">dict</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lib_path</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s">&#39;darwin&#39;</span><span class="p">:</span>
+                <span class="n">library_path</span> <span class="o">=</span> <span class="s">&#39;DYLD_LIBRARY_PATH&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">library_path</span> <span class="o">=</span> <span class="s">&#39;LD_LIBRARY_PATH&#39;</span>   
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">env</span><span class="p">[</span><span class="n">library_path</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">lib_path</span><span class="p">,</span> <span class="n">env</span><span class="p">[</span><span class="n">library_path</span><span class="p">]])</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="n">env</span><span class="p">[</span><span class="n">library_path</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lib_path</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">opts</span><span class="p">)),</span> <span class="n">env</span>
+</pre></div></div></div>
 
       </div>
       <div class="bottomnav" role="navigation" aria-label="bottom navigation">

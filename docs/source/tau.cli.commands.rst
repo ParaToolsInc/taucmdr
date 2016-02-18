@@ -15,6 +15,7 @@ Subpackages
     tau.cli.commands.measurement
     tau.cli.commands.project
     tau.cli.commands.target
+    tau.cli.commands.tests
     tau.cli.commands.trial
 
 Submodules

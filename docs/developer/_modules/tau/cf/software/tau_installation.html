@@ -203,7 +203,7 @@
                  <span class="n">measure_cuda</span><span class="p">,</span>
                  <span class="n">measure_shmem</span><span class="p">,</span>
                  <span class="n">measure_mpc</span><span class="p">,</span>
-                 <span class="n">measure_memory_usage</span><span class="p">,</span>
+                 <span class="n">measure_heap_usage</span><span class="p">,</span>
                  <span class="n">measure_memory_alloc</span><span class="p">,</span>
                  <span class="n">callpath_depth</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Initialize the TAU installation wrapper class.</span>
@@ -247,7 +247,7 @@
 <span class="sd">            measure_cuda (bool): If True then measure time spent in CUDA calls.</span>
 <span class="sd">            measure_shmem (bool): If True then measure time spent in SHMEM calls.</span>
 <span class="sd">            measure_mpc (bool): If True then measure time spent in MPC calls.</span>
-<span class="sd">            measure_memory_usage (bool): If True then measure memory usage.</span>
+<span class="sd">            measure_heap_usage (bool): If True then measure memory usage.</span>
 <span class="sd">            measure_memory_alloc (bool): If True then record memory allocation **and deallocation** events.</span>
 <span class="sd">            callpath_depth (int): Depth of callpath measurement.  0 to disable.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -294,7 +294,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">measure_cuda</span> <span class="o">=</span> <span class="n">measure_cuda</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">measure_shmem</span> <span class="o">=</span> <span class="n">measure_shmem</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">measure_mpc</span> <span class="o">=</span> <span class="n">measure_mpc</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">measure_memory_usage</span> <span class="o">=</span> <span class="n">measure_memory_usage</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">measure_heap_usage</span> <span class="o">=</span> <span class="n">measure_heap_usage</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">measure_memory_alloc</span> <span class="o">=</span> <span class="n">measure_memory_alloc</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">callpath_depth</span> <span class="o">=</span> <span class="n">callpath_depth</span>
         
@@ -335,6 +335,12 @@
                         <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;PAPI_DIR=&#39;</span><span class="si">%s</span><span class="s">&#39; != &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span><span class="p">,</span> <span class="n">papi_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">papi</span><span class="o">.</span><span class="n">install_prefix</span><span class="p">)</span>
                         <span class="k">raise</span> <span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s">&quot;PAPI_DIR in TAU Makefile &quot;</span>
                                                    <span class="s">&quot;doesn&#39;t match target PAPI installation&quot;</span><span class="p">)</span>
+        <span class="c"># Check for iowrapper</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">io_inst</span><span class="p">:</span>
+            <span class="n">iowrap_libs</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lib_path</span><span class="p">,</span> <span class="s">&#39;shared&#39;</span><span class="p">,</span> <span class="s">&#39;libTAU-iowrap*&#39;</span><span class="p">))</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Found iowrap libraries: </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">iowrap_libs</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">iowrap_libs</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s">&quot;iowrap libraries not found&quot;</span><span class="p">)</span>
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;TAU installation at &#39;</span><span class="si">%s</span><span class="s">&#39; is valid&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">install_prefix</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">True</span>
     </div>
@@ -426,6 +432,8 @@
                 <span class="n">flags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;-ompt&#39;</span><span class="p">)</span>
             <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">measure_openmp</span> <span class="o">==</span> <span class="s">&#39;opari&#39;</span><span class="p">:</span>
                 <span class="n">flags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;-opari&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">io_inst</span><span class="p">:</span>
+            <span class="n">flags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;-iowrapper&#39;</span><span class="p">)</span>
         <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;./configure&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">flags</span>
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Configuring TAU...&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">src_prefix</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
@@ -670,6 +678,8 @@
         <span class="n">env</span><span class="p">[</span><span class="s">&#39;TAU_PROFILE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">profile</span><span class="p">))</span>
         <span class="n">env</span><span class="p">[</span><span class="s">&#39;TAU_TRACE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trace</span><span class="p">))</span>
         <span class="n">env</span><span class="p">[</span><span class="s">&#39;TAU_SAMPLE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sample</span><span class="p">))</span>
+        <span class="n">env</span><span class="p">[</span><span class="s">&#39;TAU_TRACK_HEAP&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">measure_heap_usage</span><span class="p">))</span>
+        
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">callpath_depth</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">env</span><span class="p">[</span><span class="s">&#39;TAU_CALLPATH&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;1&#39;</span>
             <span class="n">env</span><span class="p">[</span><span class="s">&#39;TAU_CALLPATH_DEPTH&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">callpath_depth</span><span class="p">)</span>
@@ -681,6 +691,8 @@
             <span class="n">opts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;-cupti&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">measure_opencl</span><span class="p">:</span>
             <span class="n">opts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;-opencl&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">io_inst</span><span class="p">:</span>
+            <span class="n">opts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;-io&#39;</span><span class="p">)</span>
         <span class="n">env</span><span class="p">[</span><span class="s">&#39;TAU_METRICS&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">opts</span><span class="p">)),</span> <span class="n">env</span>
 </div>
@@ -786,7 +798,53 @@
         <span class="k">if</span> <span class="n">retval</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&quot;All visualization or reporting tools failed to open &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">,</span>
                                      <span class="s">&quot;Check Java installation, X11 installation,&quot;</span>
-                                     <span class="s">&quot; network connectivity, and file permissions&quot;</span><span class="p">)</span></div></div>
+                                     <span class="s">&quot; network connectivity, and file permissions&quot;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="TauInstallation.show_trace"><a class="viewcode-back" href="../../../../tau.cf.software.html#tau.cf.software.tau_installation.TauInstallation.show_trace">[docs]</a>    <span class="k">def</span> <span class="nf">show_trace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">tool_name</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Shows trace data in the specified file or folder.</span>
+<span class="sd">        </span>
+<span class="sd">        Merges the traces and converts them if needed.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            path (str): Path to the directory containing trace files.</span>
+<span class="sd">            tool_name (str): Name of the profile visualization tool to use, e.g. &#39;vampir&#39;.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            int: Return code of the visualization tool.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Showing trace files at &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">env</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">TauInstallation</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">runtime_config</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">tool_name</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">tool_name</span> <span class="o">=</span> <span class="s">&#39;jumpshot&#39;</span>
+        <span class="k">elif</span> <span class="n">tool_name</span> <span class="o">!=</span> <span class="s">&#39;jumpshot&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InternalError</span><span class="p">(</span><span class="s">&quot;Only jumpshot supported at this time&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">InternalError</span><span class="p">(</span><span class="s">&quot;Individual trace files not yet supported.&quot;</span><span class="p">)</span>
+        <span class="n">tau_slog2</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s">&#39;tau.slog2&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">tau_slog2</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s">&#39;tau.trc&#39;</span><span class="p">)):</span>
+                <span class="n">trc_files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s">&#39;*.trc&#39;</span><span class="p">))</span>
+                <span class="n">edf_files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s">&#39;*.edf&#39;</span><span class="p">))</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">trc_files</span> <span class="ow">and</span> <span class="n">edf_files</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&quot;No *.trc or *.edf files!&quot;</span><span class="p">)</span>
+                <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;tau_treemerge.pl&#39;</span><span class="p">]</span>
+                <span class="n">retval</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">retval</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">InternalError</span><span class="p">(</span><span class="s">&quot;Nonzero return code from tau_treemerge.pl&quot;</span><span class="p">)</span>
+            <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;tau2slog2&#39;</span><span class="p">,</span> <span class="s">&#39;tau.trc&#39;</span><span class="p">,</span> <span class="s">&#39;tau.edf&#39;</span><span class="p">,</span> <span class="s">&#39;-o&#39;</span><span class="p">,</span> <span class="s">&#39;tau.slog2&#39;</span><span class="p">]</span>
+            <span class="n">retval</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">retval</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">InternalError</span><span class="p">(</span><span class="s">&quot;Nonzero return code from </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cmd</span><span class="p">))</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Opening </span><span class="si">%s</span><span class="s"> in </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">tau_slog2</span><span class="p">,</span> <span class="n">tool_name</span><span class="p">)</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">tool_name</span><span class="p">,</span> <span class="n">tau_slog2</span><span class="p">]</span>
+        <span class="n">retval</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">retval</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&quot;Trace visualizer failed to open &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">,</span>
+                                     <span class="s">&quot;Check Java installation, X11 installation,&quot;</span>
+                                     <span class="s">&quot; network connectivity, and file permissions&quot;</span><span class="p">)</span>
+            </div></div>
 </pre></div>
 
       </div>

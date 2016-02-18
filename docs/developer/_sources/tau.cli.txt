@@ -12,6 +12,7 @@ Subpackages
 .. toctree::
 
     tau.cli.commands
+    tau.cli.tests
 
 Submodules
 ----------

@@ -113,7 +113,11 @@
         <span class="k">except</span> <span class="n">ExperimentSelectionError</span><span class="p">:</span>
             <span class="k">pass</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">current</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">color_text</span><span class="p">(</span><span class="s">&#39;Current experiment: &#39;</span><span class="p">,</span> <span class="s">&#39;cyan&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">expr</span><span class="o">.</span><span class="n">title</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">expr</span><span class="p">:</span>
+                <span class="n">current</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">color_text</span><span class="p">(</span><span class="s">&#39;Current experiment: &#39;</span><span class="p">,</span> <span class="s">&#39;cyan&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">expr</span><span class="o">.</span><span class="n">title</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">current</span> <span class="o">=</span> <span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">color_text</span><span class="p">(</span><span class="s">&#39;No experiment: &#39;</span><span class="p">,</span> <span class="s">&#39;red&#39;</span><span class="p">)</span> <span class="o">+</span> 
+                           <span class="p">(</span><span class="s">&#39;Use `</span><span class="si">%s</span><span class="s">` to configure a new experiment&#39;</span> <span class="o">%</span> <span class="n">select_cmd</span><span class="p">))</span>  
             <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current</span><span class="p">)</span>
         <span class="k">print</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
     

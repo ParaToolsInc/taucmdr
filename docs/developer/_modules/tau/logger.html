@@ -425,6 +425,7 @@
 <span class="s">Python Version    : </span><span class="si">%(pyversion)s</span><span class="s"></span>
 <span class="s">Working Directory : </span><span class="si">%(cwd)s</span><span class="s"></span>
 <span class="s">Terminal Size     : </span><span class="si">%(termsize)s</span><span class="s"></span>
+<span class="s">Frozen            : </span><span class="si">%(frozen)s</span><span class="s"></span>
 <span class="si">%(bar)s</span><span class="s"></span>
 <span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;bar&#39;</span><span class="p">:</span> <span class="s">&#39;#&#39;</span> <span class="o">*</span> <span class="n">LINE_WIDTH</span><span class="p">,</span>
        <span class="s">&#39;timestamp&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()),</span>
@@ -432,7 +433,8 @@
        <span class="s">&#39;platform&#39;</span><span class="p">:</span> <span class="n">platform</span><span class="o">.</span><span class="n">platform</span><span class="p">(),</span>
        <span class="s">&#39;pyversion&#39;</span><span class="p">:</span> <span class="n">platform</span><span class="o">.</span><span class="n">python_version</span><span class="p">(),</span>
        <span class="s">&#39;cwd&#39;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span>
-       <span class="s">&#39;termsize&#39;</span><span class="p">:</span> <span class="s">&#39;x&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">TERM_SIZE</span><span class="p">])})</span>
+       <span class="s">&#39;termsize&#39;</span><span class="p">:</span> <span class="s">&#39;x&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">TERM_SIZE</span><span class="p">]),</span>
+       <span class="s">&#39;frozen&#39;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">sys</span><span class="p">,</span> <span class="s">&#39;frozen&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)})</span>
 </pre></div>
 
       </div>

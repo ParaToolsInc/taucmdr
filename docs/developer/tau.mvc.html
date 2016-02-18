@@ -25,7 +25,10 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="_static/favicon.ico"/>
-    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" /> 
+    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
+    <link rel="up" title="tau package" href="tau.html" />
+    <link rel="next" title="tau.mvc.tests package" href="tau.mvc.tests.html" />
+    <link rel="prev" title="tau.model.tests package" href="tau.model.tests.html" /> 
   </head>
   <body role="document">
       <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="index.html">
@@ -35,7 +38,11 @@
       <div class="topnav" role="navigation" aria-label="top navigation">
       
         <p>
+        «&#160;&#160;<a href="tau.model.tests.html">tau.model.tests package</a>
+        &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="tau.mvc.tests.html">tau.mvc.tests package</a>&#160;&#160;»
         </p>
 
       </div>
@@ -187,6 +194,19 @@ codified as:</p>
 <li>Movie.associations = {&#8216;cast&#8217;: (Actor, &#8216;appears_in&#8217;)}</li>
 </ul>
 </div></blockquote>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tau.mvc.tests.html">tau.mvc.tests package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tau.mvc.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.mvc.tests.html#module-tau.mvc.tests.test_controller">tau.mvc.tests.test_controller module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.mvc.tests.html#module-tau.mvc.tests.test_model">tau.mvc.tests.test_model module</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
@@ -195,7 +215,7 @@ codified as:</p>
 <p>TODO: FIXME: Docs</p>
 <dl class="class">
 <dt id="tau.mvc.controller.Controller">
-<em class="property">class </em><code class="descclassname">tau.mvc.controller.</code><code class="descname">Controller</code><span class="sig-paren">(</span><em>model_cls</em>, <em>storage</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.mvc.controller.Controller" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.mvc.controller.</code><code class="descname">Controller</code><span class="sig-paren">(</span><em>model_cls</em>, <em>storage</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/controller.html#Controller"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.controller.Controller" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
 <p>The &#8220;C&#8221; in <a class="reference external" href="https://en.wikipedia.org/wiki/Model-view-controller">MVC</a>.</p>
 <dl class="attribute">
@@ -214,16 +234,16 @@ codified as:</p>
 
 <dl class="method">
 <dt id="tau.mvc.controller.Controller._associate">
-<code class="descname">_associate</code><span class="sig-paren">(</span><em>record</em>, <em>foreign_model</em>, <em>affected</em>, <em>via</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.mvc.controller.Controller._associate" title="Permalink to this definition">¶</a></dt>
+<code class="descname">_associate</code><span class="sig-paren">(</span><em>record</em>, <em>foreign_model</em>, <em>affected</em>, <em>via</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/controller.html#Controller._associate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.controller.Controller._associate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Associates a record with another record.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>record</strong> (<a class="reference internal" href="tau.storage.html#tau.storage.local_file.LocalFileStorage.Record" title="tau.storage.local_file.LocalFileStorage.Record"><em>Record</em></a>) &#8211; Record to associate.</li>
+<li><strong>record</strong> (<a class="reference internal" href="tau.storage.html#tau.storage.AbstractStorage.Record" title="tau.storage.AbstractStorage.Record"><em>Record</em></a>) &#8211; Record to associate.</li>
 <li><strong>foreign_model</strong> (<a class="reference internal" href="#tau.mvc.model.Model" title="tau.mvc.model.Model"><em>Model</em></a>) &#8211; Foreign record&#8217;s data model.</li>
-<li><strong>affected</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Identifiers for the records that will be updated to associate with <cite>record</cite>.</li>
+<li><strong>affected</strong> (<a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Identifiers for the records that will be updated to associate with <cite>record</cite>.</li>
 <li><strong>via</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The name of the associated foreign attribute.</li>
 </ul>
 </td>
@@ -234,16 +254,16 @@ codified as:</p>
 
 <dl class="method">
 <dt id="tau.mvc.controller.Controller._disassociate">
-<code class="descname">_disassociate</code><span class="sig-paren">(</span><em>record</em>, <em>foreign_model</em>, <em>affected</em>, <em>via</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.mvc.controller.Controller._disassociate" title="Permalink to this definition">¶</a></dt>
+<code class="descname">_disassociate</code><span class="sig-paren">(</span><em>record</em>, <em>foreign_model</em>, <em>affected</em>, <em>via</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/controller.html#Controller._disassociate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.controller.Controller._disassociate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Disassociates a record from another record.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>record</strong> (<a class="reference internal" href="tau.storage.html#tau.storage.local_file.LocalFileStorage.Record" title="tau.storage.local_file.LocalFileStorage.Record"><em>Record</em></a>) &#8211; Record to disassociate.</li>
+<li><strong>record</strong> (<a class="reference internal" href="tau.storage.html#tau.storage.AbstractStorage.Record" title="tau.storage.AbstractStorage.Record"><em>Record</em></a>) &#8211; Record to disassociate.</li>
 <li><strong>foreign_model</strong> (<a class="reference internal" href="#tau.mvc.model.Model" title="tau.mvc.model.Model"><em>Model</em></a>) &#8211; Foreign record&#8217;s data model.</li>
-<li><strong>affected</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Identifiers for the records that will be updated to disassociate from <cite>record</cite>.</li>
+<li><strong>affected</strong> (<a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Identifiers for the records that will be updated to disassociate from <cite>record</cite>.</li>
 <li><strong>via</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The name of the associated foreign attribute.</li>
 </ul>
 </td>
@@ -254,17 +274,17 @@ codified as:</p>
 
 <dl class="method">
 <dt id="tau.mvc.controller.Controller.all">
-<code class="descname">all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.mvc.controller.Controller.all" title="Permalink to this definition">¶</a></dt>
+<code class="descname">all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/controller.html#Controller.all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.controller.Controller.all" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="tau.mvc.controller.Controller.count">
-<code class="descname">count</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.mvc.controller.Controller.count" title="Permalink to this definition">¶</a></dt>
+<code class="descname">count</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/controller.html#Controller.count"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.controller.Controller.count" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="tau.mvc.controller.Controller.create">
-<code class="descname">create</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.mvc.controller.Controller.create" title="Permalink to this definition">¶</a></dt>
+<code class="descname">create</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/controller.html#Controller.create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.controller.Controller.create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Store a new record and update associations.</p>
 <p>Invokes the <cite>on_create</cite> callback <strong>after</strong> the data is recorded.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -283,7 +303,7 @@ codified as:</p>
 
 <dl class="method">
 <dt id="tau.mvc.controller.Controller.delete">
-<code class="descname">delete</code><span class="sig-paren">(</span><em>keys</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.mvc.controller.Controller.delete" title="Permalink to this definition">¶</a></dt>
+<code class="descname">delete</code><span class="sig-paren">(</span><em>keys</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/controller.html#Controller.delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.controller.Controller.delete" title="Permalink to this definition">¶</a></dt>
 <dd><p>Delete recorded data and update associations.</p>
 <dl class="docutils">
 <dt>The behavior depends on the type of <cite>keys</cite>:</dt>
@@ -312,12 +332,12 @@ codified as:</p>
 
 <dl class="method">
 <dt id="tau.mvc.controller.Controller.exists">
-<code class="descname">exists</code><span class="sig-paren">(</span><em>keys</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.mvc.controller.Controller.exists" title="Permalink to this definition">¶</a></dt>
+<code class="descname">exists</code><span class="sig-paren">(</span><em>keys</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/controller.html#Controller.exists"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.controller.Controller.exists" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="classmethod">
 <dt id="tau.mvc.controller.Controller.export_records">
-<em class="property">classmethod </em><code class="descname">export_records</code><span class="sig-paren">(</span><em>keys=None</em>, <em>eids=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.mvc.controller.Controller.export_records" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="descname">export_records</code><span class="sig-paren">(</span><em>keys=None</em>, <em>eids=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/controller.html#Controller.export_records"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.controller.Controller.export_records" title="Permalink to this definition">¶</a></dt>
 <dd><p>Export data records.</p>
 <p>Constructs a dictionary containing records matching <cite>keys</cite> or <cite>eids</cite> and all their
 associated records.  Association fields (<cite>model</cite> and <cite>collection</cite>) are <strong>not</strong> updated
@@ -328,7 +348,7 @@ and may contain eids of undefined records.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>keys</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Attributes to match.</li>
-<li><strong>eids</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Record identifiers to match.</li>
+<li><strong>eids</strong> (<a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Record identifiers to match.</li>
 </ul>
 </td>
 </tr>
@@ -362,24 +382,24 @@ and may contain eids of undefined records.</p>
 
 <dl class="staticmethod">
 <dt id="tau.mvc.controller.Controller.import_records">
-<em class="property">static </em><code class="descname">import_records</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.mvc.controller.Controller.import_records" title="Permalink to this definition">¶</a></dt>
+<em class="property">static </em><code class="descname">import_records</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/controller.html#Controller.import_records"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.controller.Controller.import_records" title="Permalink to this definition">¶</a></dt>
 <dd><p>Import data records.</p>
 <p>TODO: Docs</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="tau.mvc.controller.Controller.match">
-<code class="descname">match</code><span class="sig-paren">(</span><em>field</em>, <em>regex=None</em>, <em>test=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.mvc.controller.Controller.match" title="Permalink to this definition">¶</a></dt>
+<code class="descname">match</code><span class="sig-paren">(</span><em>field</em>, <em>regex=None</em>, <em>test=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/controller.html#Controller.match"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.controller.Controller.match" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="tau.mvc.controller.Controller.one">
-<code class="descname">one</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.mvc.controller.Controller.one" title="Permalink to this definition">¶</a></dt>
+<code class="descname">one</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/controller.html#Controller.one"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.controller.Controller.one" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="tau.mvc.controller.Controller.populate">
-<code class="descname">populate</code><span class="sig-paren">(</span><em>model</em>, <em>attribute=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.mvc.controller.Controller.populate" title="Permalink to this definition">¶</a></dt>
+<code class="descname">populate</code><span class="sig-paren">(</span><em>model</em>, <em>attribute=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/controller.html#Controller.populate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.controller.Controller.populate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Merges associated data into the model record.</p>
 <p class="rubric">Example</p>
 <p>Suppose we have the following Person records:</p>
@@ -412,12 +432,12 @@ If attribute is not None, the value of the populated attribute.</td>
 
 <dl class="method">
 <dt id="tau.mvc.controller.Controller.search">
-<code class="descname">search</code><span class="sig-paren">(</span><em>keys=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.mvc.controller.Controller.search" title="Permalink to this definition">¶</a></dt>
+<code class="descname">search</code><span class="sig-paren">(</span><em>keys=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/controller.html#Controller.search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.controller.Controller.search" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="tau.mvc.controller.Controller.unset">
-<code class="descname">unset</code><span class="sig-paren">(</span><em>fields</em>, <em>keys</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.mvc.controller.Controller.unset" title="Permalink to this definition">¶</a></dt>
+<code class="descname">unset</code><span class="sig-paren">(</span><em>fields</em>, <em>keys</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/controller.html#Controller.unset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.controller.Controller.unset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Unset recorded data fields and update associations.</p>
 <dl class="docutils">
 <dt>The behavior depends on the type of <cite>keys</cite>:</dt>
@@ -435,7 +455,7 @@ If attribute is not None, the value of the populated attribute.</td>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>fields</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Names of fields to unset.</li>
+<li><strong>fields</strong> (<a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Names of fields to unset.</li>
 <li><strong>keys</strong> &#8211; Fields or element identifiers to match.</li>
 </ul>
 </td>
@@ -446,7 +466,7 @@ If attribute is not None, the value of the populated attribute.</td>
 
 <dl class="method">
 <dt id="tau.mvc.controller.Controller.update">
-<code class="descname">update</code><span class="sig-paren">(</span><em>data</em>, <em>keys</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.mvc.controller.Controller.update" title="Permalink to this definition">¶</a></dt>
+<code class="descname">update</code><span class="sig-paren">(</span><em>data</em>, <em>keys</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/controller.html#Controller.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.controller.Controller.update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Change recorded data and update associations.</p>
 <dl class="docutils">
 <dt>The behavior depends on the type of <cite>keys</cite>:</dt>
@@ -481,7 +501,7 @@ If attribute is not None, the value of the populated attribute.</td>
 <span class="target" id="module-tau.mvc.model"></span><p>TODO: FIXME: Docs</p>
 <dl class="class">
 <dt id="tau.mvc.model.Model">
-<em class="property">class </em><code class="descclassname">tau.mvc.model.</code><code class="descname">Model</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.mvc.model.Model" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.mvc.model.</code><code class="descname">Model</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/model.html#Model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.model.Model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="tau.storage.html#tau.storage.StorageRecord" title="tau.storage.StorageRecord"><code class="xref py py-class docutils literal"><span class="pre">tau.storage.StorageRecord</span></code></a></p>
 <p>The &#8220;M&#8221; in <a class="reference external" href="https://en.wikipedia.org/wiki/Model-view-controller">MVC</a>.</p>
 <p>TODO: Docs</p>
@@ -527,7 +547,7 @@ If attribute is not None, the value of the populated attribute.</td>
 
 <dl class="method">
 <dt id="tau.mvc.model.Model.check_compatibility">
-<code class="descname">check_compatibility</code><span class="sig-paren">(</span><em>rhs</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.mvc.model.Model.check_compatibility" title="Permalink to this definition">¶</a></dt>
+<code class="descname">check_compatibility</code><span class="sig-paren">(</span><em>rhs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/model.html#Model.check_compatibility"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.model.Model.check_compatibility" title="Permalink to this definition">¶</a></dt>
 <dd><p>Test this record for compatibility with another record.</p>
 <p>Operations combining data from multiple records must know that the records are mutually
 compatible.  This routine checks the &#8216;compat&#8217; property of each attribute (if set) to enforce
@@ -593,7 +613,7 @@ the above expressions do nothing.</p>
 
 <dl class="classmethod">
 <dt id="tau.mvc.model.Model.construct_condition">
-<em class="property">classmethod </em><code class="descname">construct_condition</code><span class="sig-paren">(</span><em>args</em>, <em>attr_defined=None</em>, <em>attr_undefined=None</em>, <em>attr_eq=None</em>, <em>attr_ne=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.mvc.model.Model.construct_condition" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="descname">construct_condition</code><span class="sig-paren">(</span><em>args</em>, <em>attr_defined=None</em>, <em>attr_undefined=None</em>, <em>attr_eq=None</em>, <em>attr_ne=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/model.html#Model.construct_condition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.model.Model.construct_condition" title="Permalink to this definition">¶</a></dt>
 <dd><p>Constructs a compatibility condition, see <a class="reference internal" href="#tau.mvc.model.Model.check_compatibility" title="tau.mvc.model.Model.check_compatibility"><code class="xref any py py-meth docutils literal"><span class="pre">check_compatibility</span></code></a>.</p>
 <dl class="docutils">
 <dt>The returned condition is a callable that accepts five or six arguments:</dt>
@@ -652,12 +672,12 @@ See <code class="xref py py-func docutils literal"><span class="pre">tau.model.m
 
 <dl class="classmethod">
 <dt id="tau.mvc.model.Model.controller">
-<em class="property">classmethod </em><code class="descname">controller</code><span class="sig-paren">(</span><em>storage</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.mvc.model.Model.controller" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="descname">controller</code><span class="sig-paren">(</span><em>storage</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/model.html#Model.controller"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.model.Model.controller" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="classmethod">
 <dt id="tau.mvc.model.Model.discourage">
-<em class="property">classmethod </em><code class="descname">discourage</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.mvc.model.Model.discourage" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="descname">discourage</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/model.html#Model.discourage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.model.Model.discourage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Constructs a compatibility condition to make recommendations.</p>
 <p>The condition will emit warnings messages if the specified attribute is
 defined or equal to the specified value (if given).</p>
@@ -690,7 +710,7 @@ defined or equal to the specified value (if given).</p>
 
 <dl class="classmethod">
 <dt id="tau.mvc.model.Model.encourage">
-<em class="property">classmethod </em><code class="descname">encourage</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.mvc.model.Model.encourage" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="descname">encourage</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/model.html#Model.encourage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.model.Model.encourage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Constructs a compatibility condition to make recommendations.</p>
 <p>The condition will emit warnings messages if the specified attribute is
 undefined or not equal to the specified value (if given).</p>
@@ -723,7 +743,7 @@ undefined or not equal to the specified value (if given).</p>
 
 <dl class="classmethod">
 <dt id="tau.mvc.model.Model.exclude">
-<em class="property">classmethod </em><code class="descname">exclude</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.mvc.model.Model.exclude" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="descname">exclude</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/model.html#Model.exclude"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.model.Model.exclude" title="Permalink to this definition">¶</a></dt>
 <dd><p>Constructs a compatibility condition to enforce required conditions.</p>
 <p>The condition will raise a <a class="reference internal" href="tau.html#tau.error.ConfigurationError" title="tau.error.ConfigurationError"><code class="xref any py py-exc docutils literal"><span class="pre">ConfigurationError</span></code></a> if the specified attribute is
 defined or equal to the specified value (if given).</p>
@@ -761,25 +781,25 @@ defined or equal to the specified value (if given).</p>
 
 <dl class="method">
 <dt id="tau.mvc.model.Model.on_create">
-<code class="descname">on_create</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.mvc.model.Model.on_create" title="Permalink to this definition">¶</a></dt>
+<code class="descname">on_create</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/model.html#Model.on_create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.model.Model.on_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Callback to be invoked when a new data record is created.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="tau.mvc.model.Model.on_delete">
-<code class="descname">on_delete</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.mvc.model.Model.on_delete" title="Permalink to this definition">¶</a></dt>
+<code class="descname">on_delete</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/model.html#Model.on_delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.model.Model.on_delete" title="Permalink to this definition">¶</a></dt>
 <dd><p>Callback to be invoked when a data record is deleted.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="tau.mvc.model.Model.on_update">
-<code class="descname">on_update</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.mvc.model.Model.on_update" title="Permalink to this definition">¶</a></dt>
+<code class="descname">on_update</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/model.html#Model.on_update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.model.Model.on_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Callback to be invoked when a data record is updated.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="tau.mvc.model.Model.populate">
-<code class="descname">populate</code><span class="sig-paren">(</span><em>attribute=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.mvc.model.Model.populate" title="Permalink to this definition">¶</a></dt>
+<code class="descname">populate</code><span class="sig-paren">(</span><em>attribute=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/model.html#Model.populate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.model.Model.populate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -789,7 +809,7 @@ defined or equal to the specified value (if given).</p>
 
 <dl class="classmethod">
 <dt id="tau.mvc.model.Model.require">
-<em class="property">classmethod </em><code class="descname">require</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.mvc.model.Model.require" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="descname">require</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/model.html#Model.require"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.model.Model.require" title="Permalink to this definition">¶</a></dt>
 <dd><p>Constructs a compatibility condition to enforce required conditions.</p>
 <p>The condition will raise a <a class="reference internal" href="tau.html#tau.error.ConfigurationError" title="tau.error.ConfigurationError"><code class="xref any py py-exc docutils literal"><span class="pre">ConfigurationError</span></code></a> if the specified attribute is
 undefined or not equal to the specified value (if given).</p>
@@ -822,7 +842,7 @@ undefined or not equal to the specified value (if given).</p>
 
 <dl class="classmethod">
 <dt id="tau.mvc.model.Model.validate">
-<em class="property">classmethod </em><code class="descname">validate</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.mvc.model.Model.validate" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="descname">validate</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/model.html#Model.validate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.model.Model.validate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Validates data against the model.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -845,7 +865,7 @@ The given data doesn&#8217;t fit the model.</td>
 
 <dl class="class">
 <dt id="tau.mvc.model.ModelMeta">
-<em class="property">class </em><code class="descclassname">tau.mvc.model.</code><code class="descname">ModelMeta</code><a class="headerlink" href="#tau.mvc.model.ModelMeta" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.mvc.model.</code><code class="descname">ModelMeta</code><a class="reference internal" href="_modules/tau/mvc/model.html#ModelMeta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.model.ModelMeta" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#type" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">type</span></code></a></p>
 <p>Metaclass TODO: FIXME: Docs</p>
 <dl class="attribute">
@@ -868,7 +888,11 @@ The given data doesn&#8217;t fit the model.</td>
       <div class="bottomnav" role="navigation" aria-label="bottom navigation">
       
         <p>
+        «&#160;&#160;<a href="tau.model.tests.html">tau.model.tests package</a>
+        &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="tau.mvc.tests.html">tau.mvc.tests package</a>&#160;&#160;»
         </p>
 
       </div>
