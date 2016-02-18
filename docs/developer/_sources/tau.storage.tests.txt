@@ -1,0 +1,36 @@
+tau.storage.tests package
+=========================
+
+.. automodule:: tau.storage.tests
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Submodules
+----------
+
+tau.storage.tests.test_levels module
+------------------------------------
+
+.. automodule:: tau.storage.tests.test_levels
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+tau.storage.tests.test_local_file module
+----------------------------------------
+
+.. automodule:: tau.storage.tests.test_local_file
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+tau.storage.tests.test_project module
+-------------------------------------
+
+.. automodule:: tau.storage.tests.test_project
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+

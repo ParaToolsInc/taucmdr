@@ -1,0 +1,44 @@
+tau.cli.commands.trial.tests package
+====================================
+
+.. automodule:: tau.cli.commands.trial.tests
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Submodules
+----------
+
+tau.cli.commands.trial.tests.test_create module
+-----------------------------------------------
+
+.. automodule:: tau.cli.commands.trial.tests.test_create
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+tau.cli.commands.trial.tests.test_delete module
+-----------------------------------------------
+
+.. automodule:: tau.cli.commands.trial.tests.test_delete
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+tau.cli.commands.trial.tests.test_list module
+---------------------------------------------
+
+.. automodule:: tau.cli.commands.trial.tests.test_list
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+tau.cli.commands.trial.tests.test_show module
+---------------------------------------------
+
+.. automodule:: tau.cli.commands.trial.tests.test_show
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
