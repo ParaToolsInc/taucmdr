@@ -1,0 +1,120 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>How to write and run unit tests &mdash; TAU Commander Developer Documentation</title>
+    
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
+    <link rel="next" title="tau" href="modules.html" />
+    <link rel="prev" title="How to Add Support for New TAU Features" href="new_feature.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="index.html">
+          <span>TAU Commander Developer Documentation</span></a></h1>
+        <h2 class="heading"><span>How to write and run unit tests</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="new_feature.html">How to Add Support for New TAU Features</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="modules.html">tau</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="how-to-write-and-run-unit-tests">
+<h1>How to write and run unit tests<a class="headerlink" href="#how-to-write-and-run-unit-tests" title="Permalink to this headline">¶</a></h1>
+<p>After modifying or creating a file, make sure to check that function works as
+expected with unit testing.</p>
+<div class="section" id="writing-unit-tests">
+<h2>Writing unit tests<a class="headerlink" href="#writing-unit-tests" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="step-1-create-a-tests-directory">
+<h3>Step 1: Create a tests directory<a class="headerlink" href="#step-1-create-a-tests-directory" title="Permalink to this headline">¶</a></h3>
+<p>Create a a tests directory in the directory where the modified file is located
+if one does not already exist.</p>
+</div>
+<div class="section" id="step-2-contents-of-the-tests-directory">
+<h3>Step 2: Contents of the tests directory<a class="headerlink" href="#step-2-contents-of-the-tests-directory" title="Permalink to this headline">¶</a></h3>
+<p>Each tests directory should have a <code class="docutils literal"><span class="pre">__init__.py</span></code> file so that the tests can
+be discovered. A file called <code class="docutils literal"><span class="pre">test_function_name.py</span></code> should exist for each
+file in the directory.</p>
+</div>
+<div class="section" id="step-3-contents-of-test-function-name-py">
+<h3>Step 3: Contents of <code class="docutils literal"><span class="pre">test_function_name.py</span></code><a class="headerlink" href="#step-3-contents-of-test-function-name-py" title="Permalink to this headline">¶</a></h3>
+<p>Each <code class="docutils literal"><span class="pre">test_function_name.py</span></code> file should import the unittest package. A
+separate class should be created for each function that is tested and multiple
+test functions may be created in each class in order to run multiple tests on a
+single function. Each function should use an <code class="docutils literal"><span class="pre">assert*</span></code> command that checks if
+the function produces the expected output.</p>
+</div>
+<div class="section" id="an-example-unit-test-function">
+<h3>An example unit test function<a class="headerlink" href="#an-example-unit-test-function" title="Permalink to this headline">¶</a></h3>
+<p>Below is an example unit test function for a function that converts a string
+to camel case.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">CamelCaseTest</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">test_camelcase</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">camelcase</span><span class="p">(</span><span class="s">&quot;abc_def_ghi&quot;</span><span class="p">),</span> <span class="s">&quot;AbcDefGhi&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="further-information-on-the-unit-test-package">
+<h3>Further information on the unit test package<a class="headerlink" href="#further-information-on-the-unit-test-package" title="Permalink to this headline">¶</a></h3>
+<p>The <a class="reference external" href="https://docs.python.org/2/library/unittest.html">page</a> has more
+information on writing a unit test function.</p>
+</div>
+</div>
+<div class="section" id="running-unit-tests">
+<h2>Running unit tests<a class="headerlink" href="#running-unit-tests" title="Permalink to this headline">¶</a></h2>
+<p>Run the runtests script to execute all unit tests:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ ./runtests
+</pre></div>
+</div>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="new_feature.html">How to Add Support for New TAU Features</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="modules.html">tau</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015 ParaTools, Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>

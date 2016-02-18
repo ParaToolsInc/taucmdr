@@ -42,9 +42,8 @@ $(PACKAGE_REST_FILE): $(SOURCE_FILES)
 update-github-pages: 
 	git checkout $(DOCS_BRANCH)
 	git checkout $(LOCAL_BRANCH) $(PROJECT_DIR) $(HERE)
-	git reset HEAD
-	rm -f .gitignore
-	$(MAKE) clean all
+	git rm -f .gitignore
+	$(MAKE) all
 	git add $(HERE)
 	git add -u $(HERE)
 	git commit -m "Update documentation on $(DOCS_BRANCH) via Makefile"
@@ -52,6 +51,5 @@ update-github-pages:
 	git checkout $(LOCAL_BRANCH)
 
 clean:
-	rm -f $(filter-out $(SOURCE_FILES),$(wildcard $(SOURCE_DIR)*.rst))
 	rm -rf $(BUILD_DIR)
 
