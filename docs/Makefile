@@ -39,18 +39,10 @@ all: $(PACKAGE_REST_FILE) $(STATIC_FILES)
 $(PACKAGE_REST_FILE): $(SOURCE_FILES)
 	sphinx-apidoc -M -P -f -o $(SOURCE_DIR) $(PROJECT_DIR)
 
-$(LOCAL_BRANCH): all
+update-github-pages: all
+	git checkout $(DOCS_BRANCH)
 	git add $(HERE)
-	git commit -m "Update documentation on $(LOCAL_BRANCH) via Makefile"
-
-$(DOCS_BRANCH): $(LOCAL_BRANCH)
-	git checkout $(DOCS_BRANCH)
-	git checkout $(LOCAL_BRANCH) $(HERE)
 	git commit -m "Update documentation on $(DOCS_BRANCH) via Makefile"
-	git checkout $(LOCAL_BRANCH)
-
-update-github-pages: $(DOCS_BRANCH)
-	git checkout $(DOCS_BRANCH)
 	git push
 	git checkout $(LOCAL_BRANCH)
 
