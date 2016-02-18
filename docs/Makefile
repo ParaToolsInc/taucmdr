@@ -41,7 +41,9 @@ $(PACKAGE_REST_FILE): $(SOURCE_FILES)
 
 update-github-pages: 
 	git checkout $(DOCS_BRANCH)
-	$(MAKE) all
+	git checkout master $(HERE)/../packages $(HERE)/source
+	git reset HEAD
+	$(MAKE) clean all
 	git add $(HERE)
 	git commit -m "Update documentation on $(DOCS_BRANCH) via Makefile"
 	git push
