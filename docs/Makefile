@@ -45,6 +45,7 @@ update-github-pages:
 	git reset HEAD
 	$(MAKE) clean all
 	git add $(HERE)
+	git add -u $(HERE)
 	git commit -m "Update documentation on $(DOCS_BRANCH) via Makefile"
 	git push
 	git checkout $(LOCAL_BRANCH)
