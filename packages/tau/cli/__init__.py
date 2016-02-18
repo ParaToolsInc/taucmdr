@@ -178,7 +178,7 @@ def commands_description(package_name=COMMANDS_PACKAGE_NAME):
         try:
             command_obj = module.COMMAND
         except AttributeError:
-            raise InternalError("Module %s does not define COMMAND" % module) 
+            continue 
         descr = command_obj.summary
         group = command_obj.group
         name = '{:<14}'.format(cmd)
