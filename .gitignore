@@ -5,3 +5,7 @@ examples
 docs/source
 docs/Makefile
 *~Stashed*
+
+.project
+.pydevproject
+.settings
