@@ -6,6 +6,13 @@ tau.cf.target package
     :undoc-members:
     :show-inheritance:
 
+Subpackages
+-----------
+
+.. toctree::
+
+    tau.cf.target.tests
+
 Submodules
 ----------
 

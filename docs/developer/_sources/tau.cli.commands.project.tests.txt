@@ -1,0 +1,52 @@
+tau.cli.commands.project.tests package
+======================================
+
+.. automodule:: tau.cli.commands.project.tests
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Submodules
+----------
+
+tau.cli.commands.project.tests.test_create module
+-------------------------------------------------
+
+.. automodule:: tau.cli.commands.project.tests.test_create
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+tau.cli.commands.project.tests.test_delete module
+-------------------------------------------------
+
+.. automodule:: tau.cli.commands.project.tests.test_delete
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+tau.cli.commands.project.tests.test_edit module
+-----------------------------------------------
+
+.. automodule:: tau.cli.commands.project.tests.test_edit
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+tau.cli.commands.project.tests.test_export module
+-------------------------------------------------
+
+.. automodule:: tau.cli.commands.project.tests.test_export
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+tau.cli.commands.project.tests.test_list module
+-----------------------------------------------
+
+.. automodule:: tau.cli.commands.project.tests.test_list
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+

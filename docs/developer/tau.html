@@ -94,7 +94,7 @@ and checks the Python version.  It must be kept as short and simple as possible.
 
 <dl class="data">
 <dt id="tau.SYSTEM_PREFIX">
-<code class="descclassname">tau.</code><code class="descname">SYSTEM_PREFIX</code><em class="property"> = '/home/skhuvis/workspace/taucommander/.system'</em><a class="headerlink" href="#tau.SYSTEM_PREFIX" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.</code><code class="descname">SYSTEM_PREFIX</code><em class="property"> = '/home/jlinford/workspace/taucmdr/.system'</em><a class="headerlink" href="#tau.SYSTEM_PREFIX" title="Permalink to this definition">¶</a></dt>
 <dd><p>str: System-level TAU Commander files.</p>
 </dd></dl>
 
@@ -106,7 +106,7 @@ and checks the Python version.  It must be kept as short and simple as possible.
 
 <dl class="data">
 <dt id="tau.TAU_HOME">
-<code class="descclassname">tau.</code><code class="descname">TAU_HOME</code><em class="property"> = '/home/skhuvis/workspace/taucommander'</em><a class="headerlink" href="#tau.TAU_HOME" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.</code><code class="descname">TAU_HOME</code><em class="property"> = '/home/jlinford/workspace/taucmdr'</em><a class="headerlink" href="#tau.TAU_HOME" title="Permalink to this definition">¶</a></dt>
 <dd><p>str: Absolute path to the top-level TAU Commander directory.</p>
 <p>This directory contains at least <cite>bin</cite>, <cite>docs</cite>, and <cite>packages</cite> directories and is the root
 for system-level package installation paths. <strong>Do not</strong> change it once it is set.</p>
@@ -121,7 +121,7 @@ for system-level package installation paths. <strong>Do not</strong> change it o
 
 <dl class="data">
 <dt id="tau.USER_PREFIX">
-<code class="descclassname">tau.</code><code class="descname">USER_PREFIX</code><em class="property"> = '/home/skhuvis/.tau'</em><a class="headerlink" href="#tau.USER_PREFIX" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.</code><code class="descname">USER_PREFIX</code><em class="property"> = '/home/jlinford/.tau'</em><a class="headerlink" href="#tau.USER_PREFIX" title="Permalink to this definition">¶</a></dt>
 <dd><p>str: User-level TAU Commander files.</p>
 </dd></dl>
 
@@ -132,6 +132,16 @@ for system-level package installation paths. <strong>Do not</strong> change it o
 <li class="toctree-l1"><a class="reference internal" href="tau.cf.html">tau.cf package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="tau.cf.html#subpackages">Subpackages</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="tau.cf.compiler.html">tau.cf.compiler package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tau.cf.compiler.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="tau.cf.compiler.tests.html">tau.cf.compiler.tests package</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="tau.cf.compiler.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cf.compiler.tests.html#module-tau.cf.compiler.tests.test_installed">tau.cf.compiler.tests.test_installed module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cf.compiler.tests.html#module-tau.cf.compiler.tests.test_mpi">tau.cf.compiler.tests.test_mpi module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cf.compiler.tests.html#module-tau.cf.compiler.tests.test_shmem">tau.cf.compiler.tests.test_shmem module</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l4"><a class="reference internal" href="tau.cf.compiler.html#submodules">Submodules</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tau.cf.compiler.html#module-tau.cf.compiler.installed">tau.cf.compiler.installed module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tau.cf.compiler.html#module-tau.cf.compiler.mpi">tau.cf.compiler.mpi module</a></li>
@@ -139,6 +149,19 @@ for system-level package installation paths. <strong>Do not</strong> change it o
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="tau.cf.software.html">tau.cf.software package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tau.cf.software.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="tau.cf.software.tests.html">tau.cf.software.tests package</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="tau.cf.software.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cf.software.tests.html#module-tau.cf.software.tests.test_binutils_installation">tau.cf.software.tests.test_binutils_installation module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cf.software.tests.html#module-tau.cf.software.tests.test_installation">tau.cf.software.tests.test_installation module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cf.software.tests.html#module-tau.cf.software.tests.test_libunwind_installation">tau.cf.software.tests.test_libunwind_installation module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cf.software.tests.html#module-tau.cf.software.tests.test_papi_installation">tau.cf.software.tests.test_papi_installation module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cf.software.tests.html#module-tau.cf.software.tests.test_pdt_installation">tau.cf.software.tests.test_pdt_installation module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cf.software.tests.html#module-tau.cf.software.tests.test_tau_installation">tau.cf.software.tests.test_tau_installation module</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l4"><a class="reference internal" href="tau.cf.software.html#submodules">Submodules</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tau.cf.software.html#module-tau.cf.software.binutils_installation">tau.cf.software.binutils_installation module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tau.cf.software.html#module-tau.cf.software.installation">tau.cf.software.installation module</a></li>
@@ -149,6 +172,15 @@ for system-level package installation paths. <strong>Do not</strong> change it o
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="tau.cf.target.html">tau.cf.target package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tau.cf.target.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="tau.cf.target.tests.html">tau.cf.target.tests package</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="tau.cf.target.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cf.target.tests.html#module-tau.cf.target.tests.test_device">tau.cf.target.tests.test_device module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cf.target.tests.html#module-tau.cf.target.tests.test_host">tau.cf.target.tests.test_host module</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l4"><a class="reference internal" href="tau.cf.target.html#submodules">Submodules</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tau.cf.target.html#module-tau.cf.target.device">tau.cf.target.device module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tau.cf.target.html#module-tau.cf.target.host">tau.cf.target.host module</a></li>
@@ -163,6 +195,17 @@ for system-level package installation paths. <strong>Do not</strong> change it o
 <li class="toctree-l3"><a class="reference internal" href="tau.cli.commands.html">tau.cli.commands package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.html#subpackages">Subpackages</a><ul>
 <li class="toctree-l5"><a class="reference internal" href="tau.cli.commands.application.html">tau.cli.commands.application package</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.application.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="tau.cli.commands.application.tests.html">tau.cli.commands.application.tests package</a><ul>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.application.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.application.tests.html#module-tau.cli.commands.application.tests.test_create">tau.cli.commands.application.tests.test_create module</a></li>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.application.tests.html#module-tau.cli.commands.application.tests.test_delete">tau.cli.commands.application.tests.test_delete module</a></li>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.application.tests.html#module-tau.cli.commands.application.tests.test_edit">tau.cli.commands.application.tests.test_edit module</a></li>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.application.tests.html#module-tau.cli.commands.application.tests.test_list">tau.cli.commands.application.tests.test_list module</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.application.html#submodules">Submodules</a></li>
 <li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.application.html#module-tau.cli.commands.application.create">tau.cli.commands.application.create module</a></li>
 <li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.application.html#module-tau.cli.commands.application.delete">tau.cli.commands.application.delete module</a></li>
@@ -171,6 +214,17 @@ for system-level package installation paths. <strong>Do not</strong> change it o
 </ul>
 </li>
 <li class="toctree-l5"><a class="reference internal" href="tau.cli.commands.measurement.html">tau.cli.commands.measurement package</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.measurement.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="tau.cli.commands.measurement.tests.html">tau.cli.commands.measurement.tests package</a><ul>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.measurement.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.measurement.tests.html#module-tau.cli.commands.measurement.tests.test_create">tau.cli.commands.measurement.tests.test_create module</a></li>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.measurement.tests.html#module-tau.cli.commands.measurement.tests.test_delete">tau.cli.commands.measurement.tests.test_delete module</a></li>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.measurement.tests.html#module-tau.cli.commands.measurement.tests.test_edit">tau.cli.commands.measurement.tests.test_edit module</a></li>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.measurement.tests.html#module-tau.cli.commands.measurement.tests.test_list">tau.cli.commands.measurement.tests.test_list module</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.measurement.html#submodules">Submodules</a></li>
 <li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.measurement.html#module-tau.cli.commands.measurement.create">tau.cli.commands.measurement.create module</a></li>
 <li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.measurement.html#module-tau.cli.commands.measurement.delete">tau.cli.commands.measurement.delete module</a></li>
@@ -179,6 +233,18 @@ for system-level package installation paths. <strong>Do not</strong> change it o
 </ul>
 </li>
 <li class="toctree-l5"><a class="reference internal" href="tau.cli.commands.project.html">tau.cli.commands.project package</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.project.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="tau.cli.commands.project.tests.html">tau.cli.commands.project.tests package</a><ul>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.project.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.project.tests.html#module-tau.cli.commands.project.tests.test_create">tau.cli.commands.project.tests.test_create module</a></li>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.project.tests.html#module-tau.cli.commands.project.tests.test_delete">tau.cli.commands.project.tests.test_delete module</a></li>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.project.tests.html#module-tau.cli.commands.project.tests.test_edit">tau.cli.commands.project.tests.test_edit module</a></li>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.project.tests.html#module-tau.cli.commands.project.tests.test_export">tau.cli.commands.project.tests.test_export module</a></li>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.project.tests.html#module-tau.cli.commands.project.tests.test_list">tau.cli.commands.project.tests.test_list module</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.project.html#submodules">Submodules</a></li>
 <li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.project.html#module-tau.cli.commands.project.create">tau.cli.commands.project.create module</a></li>
 <li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.project.html#module-tau.cli.commands.project.delete">tau.cli.commands.project.delete module</a></li>
@@ -188,6 +254,17 @@ for system-level package installation paths. <strong>Do not</strong> change it o
 </ul>
 </li>
 <li class="toctree-l5"><a class="reference internal" href="tau.cli.commands.target.html">tau.cli.commands.target package</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.target.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="tau.cli.commands.target.tests.html">tau.cli.commands.target.tests package</a><ul>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.target.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.target.tests.html#module-tau.cli.commands.target.tests.test_create">tau.cli.commands.target.tests.test_create module</a></li>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.target.tests.html#module-tau.cli.commands.target.tests.test_delete">tau.cli.commands.target.tests.test_delete module</a></li>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.target.tests.html#module-tau.cli.commands.target.tests.test_edit">tau.cli.commands.target.tests.test_edit module</a></li>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.target.tests.html#module-tau.cli.commands.target.tests.test_list">tau.cli.commands.target.tests.test_list module</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.target.html#submodules">Submodules</a></li>
 <li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.create">tau.cli.commands.target.create module</a></li>
 <li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.delete">tau.cli.commands.target.delete module</a></li>
@@ -195,7 +272,27 @@ for system-level package installation paths. <strong>Do not</strong> change it o
 <li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list">tau.cli.commands.target.list module</a></li>
 </ul>
 </li>
+<li class="toctree-l5"><a class="reference internal" href="tau.cli.commands.tests.html">tau.cli.commands.tests package</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.tests.html#module-tau.cli.commands.tests.test_build">tau.cli.commands.tests.test_build module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.tests.html#module-tau.cli.commands.tests.test_dasboard">tau.cli.commands.tests.test_dasboard module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.tests.html#module-tau.cli.commands.tests.test_help">tau.cli.commands.tests.test_help module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.tests.html#module-tau.cli.commands.tests.test_initialize">tau.cli.commands.tests.test_initialize module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.tests.html#module-tau.cli.commands.tests.test_select">tau.cli.commands.tests.test_select module</a></li>
+</ul>
+</li>
 <li class="toctree-l5"><a class="reference internal" href="tau.cli.commands.trial.html">tau.cli.commands.trial package</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.trial.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="tau.cli.commands.trial.tests.html">tau.cli.commands.trial.tests package</a><ul>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.trial.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.trial.tests.html#module-tau.cli.commands.trial.tests.test_create">tau.cli.commands.trial.tests.test_create module</a></li>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.trial.tests.html#module-tau.cli.commands.trial.tests.test_delete">tau.cli.commands.trial.tests.test_delete module</a></li>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.trial.tests.html#module-tau.cli.commands.trial.tests.test_list">tau.cli.commands.trial.tests.test_list module</a></li>
+<li class="toctree-l8"><a class="reference internal" href="tau.cli.commands.trial.tests.html#module-tau.cli.commands.trial.tests.test_show">tau.cli.commands.trial.tests.test_show module</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.trial.html#submodules">Submodules</a></li>
 <li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.create">tau.cli.commands.trial.create module</a></li>
 <li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.delete">tau.cli.commands.trial.delete module</a></li>
@@ -214,6 +311,13 @@ for system-level package installation paths. <strong>Do not</strong> change it o
 <li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.html#module-tau.cli.commands.select">tau.cli.commands.select module</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="tau.cli.tests.html">tau.cli.tests package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tau.cli.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.cli.tests.html#module-tau.cli.tests.test_arguments">tau.cli.tests.test_arguments module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.cli.tests.html#module-tau.cli.tests.test_cli_view">tau.cli.tests.test_cli_view module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.cli.tests.html#module-tau.cli.tests.test_command">tau.cli.tests.test_command module</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="tau.cli.html#submodules">Submodules</a></li>
@@ -224,6 +328,20 @@ for system-level package installation paths. <strong>Do not</strong> change it o
 </li>
 <li class="toctree-l1"><a class="reference internal" href="tau.gui.html">tau.gui package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tau.model.html">tau.model package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tau.model.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tau.model.tests.html">tau.model.tests package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tau.model.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.model.tests.html#module-tau.model.tests.test_application">tau.model.tests.test_application module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.model.tests.html#module-tau.model.tests.test_compiler">tau.model.tests.test_compiler module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.model.tests.html#module-tau.model.tests.test_experiment">tau.model.tests.test_experiment module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.model.tests.html#module-tau.model.tests.test_measurement">tau.model.tests.test_measurement module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.model.tests.html#module-tau.model.tests.test_project">tau.model.tests.test_project module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.model.tests.html#module-tau.model.tests.test_target">tau.model.tests.test_target module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.model.tests.html#module-tau.model.tests.test_trial">tau.model.tests.test_trial module</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="tau.model.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tau.model.html#module-tau.model.application">tau.model.application module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tau.model.html#tau-model-compiler-module">tau.model.compiler module</a></li>
@@ -235,16 +353,42 @@ for system-level package installation paths. <strong>Do not</strong> change it o
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="tau.mvc.html">tau.mvc package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tau.mvc.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tau.mvc.tests.html">tau.mvc.tests package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tau.mvc.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.mvc.tests.html#module-tau.mvc.tests.test_controller">tau.mvc.tests.test_controller module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.mvc.tests.html#module-tau.mvc.tests.test_model">tau.mvc.tests.test_model module</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="tau.mvc.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tau.mvc.html#module-tau.mvc.controller">tau.mvc.controller module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tau.mvc.html#tau-mvc-model-module">tau.mvc.model module</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="tau.storage.html">tau.storage package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tau.storage.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tau.storage.tests.html">tau.storage.tests package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tau.storage.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.storage.tests.html#module-tau.storage.tests.test_levels">tau.storage.tests.test_levels module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.storage.tests.html#module-tau.storage.tests.test_local_file">tau.storage.tests.test_local_file module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tau.storage.tests.html#module-tau.storage.tests.test_project">tau.storage.tests.test_project module</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="tau.storage.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tau.storage.html#module-tau.storage.levels">tau.storage.levels module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tau.storage.html#module-tau.storage.local_file">tau.storage.local_file module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tau.storage.html#module-tau.storage.project">tau.storage.project module</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tau.tests.html">tau.tests package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tau.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.tests.html#module-tau.tests.test_error">tau.tests.test_error module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.tests.html#module-tau.tests.test_logger">tau.tests.test_logger module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.tests.html#module-tau.tests.test_util">tau.tests.test_util module</a></li>
 </ul>
 </li>
 </ul>
@@ -397,7 +541,7 @@ a rotating debug file in the user&#8217;s TAU Commander project prefix, typicall
 
 <dl class="data">
 <dt id="tau.logger.LINE_WIDTH">
-<code class="descclassname">tau.logger.</code><code class="descname">LINE_WIDTH</code><em class="property"> = 151</em><a class="headerlink" href="#tau.logger.LINE_WIDTH" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.logger.</code><code class="descname">LINE_WIDTH</code><em class="property"> = 162</em><a class="headerlink" href="#tau.logger.LINE_WIDTH" title="Permalink to this definition">¶</a></dt>
 <dd><p>Width of a line on the terminal.</p>
 <p>Uses system specific methods to determine console line width.  If the line
 width cannot be determined, the default is 80.</p>
@@ -405,7 +549,7 @@ width cannot be determined, the default is 80.</p>
 
 <dl class="data">
 <dt id="tau.logger.LOG_FILE">
-<code class="descclassname">tau.logger.</code><code class="descname">LOG_FILE</code><em class="property"> = '/home/skhuvis/.tau/debug_log'</em><a class="headerlink" href="#tau.logger.LOG_FILE" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.logger.</code><code class="descname">LOG_FILE</code><em class="property"> = '/home/jlinford/.tau/debug_log'</em><a class="headerlink" href="#tau.logger.LOG_FILE" title="Permalink to this definition">¶</a></dt>
 <dd><p>str: Absolute path to a log file to receive all debugging output.</p>
 </dd></dl>
 
@@ -552,7 +696,7 @@ No format specified for a the record&#8217;s logging level.</td>
 
 <dl class="data">
 <dt id="tau.logger.TERM_SIZE">
-<code class="descclassname">tau.logger.</code><code class="descname">TERM_SIZE</code><em class="property"> = (157, 47)</em><a class="headerlink" href="#tau.logger.TERM_SIZE" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.logger.</code><code class="descname">TERM_SIZE</code><em class="property"> = (168, 62)</em><a class="headerlink" href="#tau.logger.TERM_SIZE" title="Permalink to this definition">¶</a></dt>
 <dd><p>tuple: (width, height) tuple of detected terminal dimensions in characters.</p>
 </dd></dl>
 
@@ -771,7 +915,7 @@ This routine will return stupid results for archives with multiple top-level ele
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>cmd</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Command and its command line arguments.</li>
+<li><strong>cmd</strong> (<a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Command and its command line arguments.</li>
 <li><strong>cwd</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Change directory to <cite>cwd</cite> if given, otherwise use <a class="reference external" href="https://docs.python.org/library/os.html#os.getcwd" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">os.getcwd</span></code></a>.</li>
 <li><strong>env</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Environment variables to set before launching cmd.</li>
 <li><strong>stdout</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True send subprocess stdout and stderr to this processes&#8217; stdout.</li>
@@ -963,8 +1107,8 @@ Otherwise raise TypeError.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>value</strong> &#8211; value to parse to a boolean.</li>
-<li><strong>additional_true</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; optional additional string values that stand for True.</li>
-<li><strong>additional_false</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; optional additional string values that stand for False.</li>
+<li><strong>additional_true</strong> (<a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; optional additional string values that stand for True.</li>
+<li><strong>additional_false</strong> (<a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; optional additional string values that stand for False.</li>
 </ul>
 </td>
 </tr>

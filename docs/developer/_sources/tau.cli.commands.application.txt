@@ -6,6 +6,13 @@ tau.cli.commands.application package
     :undoc-members:
     :show-inheritance:
 
+Subpackages
+-----------
+
+.. toctree::
+
+    tau.cli.commands.application.tests
+
 Submodules
 ----------
 

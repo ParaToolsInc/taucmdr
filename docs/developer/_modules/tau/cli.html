@@ -224,7 +224,7 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="n">command_obj</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">COMMAND</span>
         <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">InternalError</span><span class="p">(</span><span class="s">&quot;Module </span><span class="si">%s</span><span class="s"> does not define COMMAND&quot;</span> <span class="o">%</span> <span class="n">module</span><span class="p">)</span> 
+            <span class="k">continue</span> 
         <span class="n">descr</span> <span class="o">=</span> <span class="n">command_obj</span><span class="o">.</span><span class="n">summary</span>
         <span class="n">group</span> <span class="o">=</span> <span class="n">command_obj</span><span class="o">.</span><span class="n">group</span>
         <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;{:&lt;14}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>

@@ -1,0 +1,52 @@
+tau.cli.commands.tests package
+==============================
+
+.. automodule:: tau.cli.commands.tests
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Submodules
+----------
+
+tau.cli.commands.tests.test_build module
+----------------------------------------
+
+.. automodule:: tau.cli.commands.tests.test_build
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+tau.cli.commands.tests.test_dasboard module
+-------------------------------------------
+
+.. automodule:: tau.cli.commands.tests.test_dasboard
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+tau.cli.commands.tests.test_help module
+---------------------------------------
+
+.. automodule:: tau.cli.commands.tests.test_help
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+tau.cli.commands.tests.test_initialize module
+---------------------------------------------
+
+.. automodule:: tau.cli.commands.tests.test_initialize
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+tau.cli.commands.tests.test_select module
+-----------------------------------------
+
+.. automodule:: tau.cli.commands.tests.test_select
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+

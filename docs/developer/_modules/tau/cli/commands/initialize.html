@@ -92,11 +92,17 @@
 <span class="kn">from</span> <span class="nn">tau.cf.target</span> <span class="kn">import</span> <span class="n">host</span><span class="p">,</span> <span class="n">DARWIN_OS</span>
 
 
-
 <div class="viewcode-block" id="InitializeCommand"><a class="viewcode-back" href="../../../../tau.cli.commands.html#tau.cli.commands.initialize.InitializeCommand">[docs]</a><span class="k">class</span> <span class="nc">InitializeCommand</span><span class="p">(</span><span class="n">AbstractCommand</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;``tau initialize`` subcommand.&quot;&quot;&quot;</span>
     
 <div class="viewcode-block" id="InitializeCommand.construct_parser"><a class="viewcode-back" href="../../../../tau.cli.commands.html#tau.cli.commands.initialize.InitializeCommand.construct_parser">[docs]</a>    <span class="k">def</span> <span class="nf">construct_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        
+        <span class="k">def</span> <span class="nf">_default_target_name</span><span class="p">():</span>
+            <span class="n">node_name</span> <span class="o">=</span> <span class="n">platform</span><span class="o">.</span><span class="n">node</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">node_name</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s">&#39;default_target&#39;</span>
+            <span class="k">return</span> <span class="n">node_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        
         <span class="n">usage</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s"> [arguments]&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span>
         <span class="n">parser</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">get_parser</span><span class="p">(</span><span class="n">prog</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">,</span> <span class="n">usage</span><span class="o">=</span><span class="n">usage</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">summary</span><span class="p">)</span>
         
@@ -108,12 +114,11 @@
                                    <span class="n">default</span><span class="o">=</span><span class="n">default_project_name</span><span class="p">)</span>
         
         <span class="n">parser</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">target_create_cmd</span><span class="o">.</span><span class="n">parser</span><span class="p">,</span> <span class="n">group_title</span><span class="o">=</span><span class="s">&#39;target arguments&#39;</span><span class="p">,</span> <span class="n">include_positional</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
-        <span class="n">default_target_name</span> <span class="o">=</span> <span class="n">platform</span><span class="o">.</span><span class="n">node</span><span class="p">()</span> <span class="ow">or</span> <span class="s">&#39;default_target&#39;</span>
         <span class="n">target_group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s">&#39;target arguments&#39;</span><span class="p">)</span>
         <span class="n">target_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--target-name&#39;</span><span class="p">,</span>
                                   <span class="n">help</span><span class="o">=</span><span class="s">&quot;Name of the new target configuration&quot;</span><span class="p">,</span>
                                   <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;&lt;name&gt;&#39;</span><span class="p">,</span>
-                                  <span class="n">default</span><span class="o">=</span><span class="n">default_target_name</span><span class="p">)</span>
+                                  <span class="n">default</span><span class="o">=</span><span class="n">_default_target_name</span><span class="p">())</span>
 
         <span class="n">parser</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">application_create_cmd</span><span class="o">.</span><span class="n">parser</span><span class="p">,</span> <span class="n">group_title</span><span class="o">=</span><span class="s">&#39;application arguments&#39;</span><span class="p">,</span> <span class="n">include_positional</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
         <span class="n">default_application_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">())</span> <span class="ow">or</span> <span class="s">&#39;default_application&#39;</span>
@@ -154,7 +159,8 @@
                 <span class="k">raise</span> <span class="n">InternalError</span><span class="p">(</span><span class="s">&quot;return code </span><span class="si">%s</span><span class="s">: </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">retval</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">argv</span><span class="p">)))</span>
 
         <span class="k">if</span> <span class="n">host</span><span class="o">.</span><span class="n">operating_system</span><span class="p">()</span> <span class="ow">is</span> <span class="n">DARWIN_OS</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Darwin OS detected: disabling PAPI, binutils, compiler-based instrumentation, and sampling.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Darwin OS detected: disabling PAPI, binutils, &quot;</span>
+                             <span class="s">&quot;compiler-based instrumentation, and sampling.&quot;</span><span class="p">)</span>
             <span class="n">papi</span> <span class="o">=</span> <span class="bp">False</span>
             <span class="n">binutils</span> <span class="o">=</span> <span class="bp">False</span>
             <span class="n">sample</span> <span class="o">=</span> <span class="bp">False</span>

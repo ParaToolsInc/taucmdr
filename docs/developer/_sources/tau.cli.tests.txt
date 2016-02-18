@@ -1,0 +1,36 @@
+tau.cli.tests package
+=====================
+
+.. automodule:: tau.cli.tests
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Submodules
+----------
+
+tau.cli.tests.test_arguments module
+-----------------------------------
+
+.. automodule:: tau.cli.tests.test_arguments
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+tau.cli.tests.test_cli_view module
+----------------------------------
+
+.. automodule:: tau.cli.tests.test_cli_view
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+tau.cli.tests.test_command module
+---------------------------------
+
+.. automodule:: tau.cli.tests.test_command
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+

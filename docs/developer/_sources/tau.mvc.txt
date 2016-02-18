@@ -6,6 +6,13 @@ tau.mvc package
     :undoc-members:
     :show-inheritance:
 
+Subpackages
+-----------
+
+.. toctree::
+
+    tau.mvc.tests
+
 Submodules
 ----------
 
