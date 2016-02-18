@@ -25,9 +25,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="_static/favicon.ico"/>
-    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
-    <link rel="up" title="tau package" href="tau.html" />
-    <link rel="prev" title="tau.mvc package" href="tau.mvc.html" /> 
+    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" /> 
   </head>
   <body role="document">
       <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="index.html">
@@ -37,8 +35,6 @@
       <div class="topnav" role="navigation" aria-label="top navigation">
       
         <p>
-        «&#160;&#160;<a href="tau.mvc.html">tau.mvc package</a>
-        &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
         </p>
 
@@ -50,7 +46,7 @@
 <span id="tau-storage-package"></span><h1>tau.storage package<a class="headerlink" href="#module-tau.storage" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="tau.storage.AbstractStorage">
-<em class="property">class </em><code class="descclassname">tau.storage.</code><code class="descname">AbstractStorage</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.storage.</code><code class="descname">AbstractStorage</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.AbstractStorage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
 <p>Abstract base class for storage containers.</p>
 <p>A storage container provides a record database, a persistent filesystem, and a key/value store.
@@ -66,7 +62,7 @@ The key/value store is accessed via the <cite>[]</cite> operator, i.e. treat the
 
 <dl class="attribute">
 <dt id="tau.storage.AbstractStorage.prefix">
-<code class="descname">prefix</code><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.prefix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.prefix" title="Permalink to this definition">¶</a></dt>
+<code class="descname">prefix</code><a class="headerlink" href="#tau.storage.AbstractStorage.prefix" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>str</em></p>
 <p>Absolute path to the top-level directory of the container&#8217;s filesystem.</p>
 </dd></dl>
@@ -86,49 +82,49 @@ The key/value store is accessed via the <cite>[]</cite> operator, i.e. treat the
 
 <dl class="method">
 <dt id="tau.storage.AbstractStorage.__delitem__">
-<code class="descname">__delitem__</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.__delitem__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.__delitem__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__delitem__</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.AbstractStorage.__delitem__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove a value from the key/value store.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="tau.storage.AbstractStorage.__enter__">
-<code class="descname">__enter__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.__enter__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.__enter__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__enter__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.AbstractStorage.__enter__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initiates the database transaction.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="tau.storage.AbstractStorage.__exit__">
-<code class="descname">__exit__</code><span class="sig-paren">(</span><em>ex_type</em>, <em>value</em>, <em>traceback</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.__exit__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.__exit__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__exit__</code><span class="sig-paren">(</span><em>ex_type</em>, <em>value</em>, <em>traceback</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.AbstractStorage.__exit__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Finalizes the database transaction.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="tau.storage.AbstractStorage.__getitem__">
-<code class="descname">__getitem__</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.__getitem__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.__getitem__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__getitem__</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.AbstractStorage.__getitem__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Retrieve a value from the key/value store.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="tau.storage.AbstractStorage.__setitem__">
-<code class="descname">__setitem__</code><span class="sig-paren">(</span><em>key</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.__setitem__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.__setitem__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__setitem__</code><span class="sig-paren">(</span><em>key</em>, <em>value</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.AbstractStorage.__setitem__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Store a value in the key/value store.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="tau.storage.AbstractStorage.connect_database">
-<code class="descname">connect_database</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.connect_database"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.connect_database" title="Permalink to this definition">¶</a></dt>
+<code class="descname">connect_database</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.AbstractStorage.connect_database" title="Permalink to this definition">¶</a></dt>
 <dd><p>Open the database for reading and writing.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="tau.storage.AbstractStorage.connect_filesystem">
-<code class="descname">connect_filesystem</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.connect_filesystem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.connect_filesystem" title="Permalink to this definition">¶</a></dt>
+<code class="descname">connect_filesystem</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.AbstractStorage.connect_filesystem" title="Permalink to this definition">¶</a></dt>
 <dd><p>Prepares the store filesystem fore reading and writing.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="tau.storage.AbstractStorage.contains">
-<code class="descname">contains</code><span class="sig-paren">(</span><em>keys</em>, <em>table_name=None</em>, <em>match_any=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.contains"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.contains" title="Permalink to this definition">¶</a></dt>
+<code class="descname">contains</code><span class="sig-paren">(</span><em>keys</em>, <em>table_name=None</em>, <em>match_any=False</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.AbstractStorage.contains" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check if the specified table contains at least one matching record.</p>
 <dl class="docutils">
 <dt>The behavior depends on the type of <cite>keys</cite>:</dt>
@@ -167,7 +163,7 @@ Invalid value for <cite>keys</cite>.</p>
 
 <dl class="method">
 <dt id="tau.storage.AbstractStorage.count">
-<code class="descname">count</code><span class="sig-paren">(</span><em>table_name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.count"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.count" title="Permalink to this definition">¶</a></dt>
+<code class="descname">count</code><span class="sig-paren">(</span><em>table_name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.AbstractStorage.count" title="Permalink to this definition">¶</a></dt>
 <dd><p>Count the records in the database.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -185,19 +181,19 @@ Invalid value for <cite>keys</cite>.</p>
 
 <dl class="method">
 <dt id="tau.storage.AbstractStorage.disconnect_database">
-<code class="descname">disconnect_database</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.disconnect_database"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.disconnect_database" title="Permalink to this definition">¶</a></dt>
+<code class="descname">disconnect_database</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.AbstractStorage.disconnect_database" title="Permalink to this definition">¶</a></dt>
 <dd><p>Close the database for reading and writing.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="tau.storage.AbstractStorage.disconnect_filesystem">
-<code class="descname">disconnect_filesystem</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.disconnect_filesystem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.disconnect_filesystem" title="Permalink to this definition">¶</a></dt>
+<code class="descname">disconnect_filesystem</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.AbstractStorage.disconnect_filesystem" title="Permalink to this definition">¶</a></dt>
 <dd><p>Prepares the store filesystem fore reading and writing.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="tau.storage.AbstractStorage.get">
-<code class="descname">get</code><span class="sig-paren">(</span><em>keys</em>, <em>table_name=None</em>, <em>match_any=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.get" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get</code><span class="sig-paren">(</span><em>keys</em>, <em>table_name=None</em>, <em>match_any=False</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.AbstractStorage.get" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find a single record.</p>
 <dl class="docutils">
 <dt>The behavior depends on the type of <cite>keys</cite>:</dt>
@@ -239,7 +235,7 @@ Invalid value for <cite>keys</cite>.</p>
 
 <dl class="method">
 <dt id="tau.storage.AbstractStorage.insert">
-<code class="descname">insert</code><span class="sig-paren">(</span><em>data</em>, <em>table_name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.insert"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.insert" title="Permalink to this definition">¶</a></dt>
+<code class="descname">insert</code><span class="sig-paren">(</span><em>data</em>, <em>table_name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.AbstractStorage.insert" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a new record.</p>
 <p>If the table doesn&#8217;t exist it will be created.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -264,7 +260,7 @@ Invalid value for <cite>keys</cite>.</p>
 
 <dl class="method">
 <dt id="tau.storage.AbstractStorage.match">
-<code class="descname">match</code><span class="sig-paren">(</span><em>field</em>, <em>table_name=None</em>, <em>regex=None</em>, <em>test=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.match"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.match" title="Permalink to this definition">¶</a></dt>
+<code class="descname">match</code><span class="sig-paren">(</span><em>field</em>, <em>table_name=None</em>, <em>regex=None</em>, <em>test=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.AbstractStorage.match" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find records where <cite>field</cite> matches <cite>regex</cite> or <cite>test</cite>.</p>
 <p>Either <cite>regex</cite> or <cite>test</cite> may be specified, not both.
 If <cite>regex</cite> is given, then all records with <cite>field</cite> matching the regular expression are returned.
@@ -298,7 +294,7 @@ Invalid value for <cite>keys</cite>.</p>
 
 <dl class="method">
 <dt>
-<code class="descname">prefix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.prefix"><span class="viewcode-link">[source]</span></a></dt>
+<code class="descname">prefix</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
 <dd><p>Get the filesystem prefix for file storage.</p>
 <p>The filesystem must be persistent and provide the usual POSIX filesystem calls.
 In particular, GNU software packages should be installable in the filesystem.</p>
@@ -316,7 +312,7 @@ In particular, GNU software packages should be installable in the filesystem.</p
 
 <dl class="method">
 <dt id="tau.storage.AbstractStorage.purge">
-<code class="descname">purge</code><span class="sig-paren">(</span><em>table_name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.purge"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.purge" title="Permalink to this definition">¶</a></dt>
+<code class="descname">purge</code><span class="sig-paren">(</span><em>table_name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.AbstractStorage.purge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Delete all records.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -330,7 +326,7 @@ In particular, GNU software packages should be installable in the filesystem.</p
 
 <dl class="method">
 <dt id="tau.storage.AbstractStorage.remove">
-<code class="descname">remove</code><span class="sig-paren">(</span><em>keys</em>, <em>table_name=None</em>, <em>match_any=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.remove"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.remove" title="Permalink to this definition">¶</a></dt>
+<code class="descname">remove</code><span class="sig-paren">(</span><em>keys</em>, <em>table_name=None</em>, <em>match_any=False</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.AbstractStorage.remove" title="Permalink to this definition">¶</a></dt>
 <dd><p>Delete records.</p>
 <dl class="docutils">
 <dt>The behavior depends on the type of <cite>keys</cite>:</dt>
@@ -363,7 +359,7 @@ in <cite>keys</cite> may match or if False then all keys in <cite>keys</cite> mu
 
 <dl class="method">
 <dt id="tau.storage.AbstractStorage.search">
-<code class="descname">search</code><span class="sig-paren">(</span><em>keys=None</em>, <em>table_name=None</em>, <em>match_any=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.search" title="Permalink to this definition">¶</a></dt>
+<code class="descname">search</code><span class="sig-paren">(</span><em>keys=None</em>, <em>table_name=None</em>, <em>match_any=False</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.AbstractStorage.search" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find multiple records.</p>
 <dl class="docutils">
 <dt>The behavior depends on the type of <cite>keys</cite>:</dt>
@@ -403,7 +399,7 @@ Invalid value for <cite>keys</cite>.</p>
 
 <dl class="method">
 <dt id="tau.storage.AbstractStorage.table">
-<code class="descname">table</code><span class="sig-paren">(</span><em>table_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.table" title="Permalink to this definition">¶</a></dt>
+<code class="descname">table</code><span class="sig-paren">(</span><em>table_name</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.AbstractStorage.table" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a handle to a table.</p>
 <p>Return a handle to the named table or, if <cite>table_name</cite> is None, return the default table.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -422,7 +418,7 @@ Invalid value for <cite>keys</cite>.</p>
 
 <dl class="method">
 <dt id="tau.storage.AbstractStorage.unset">
-<code class="descname">unset</code><span class="sig-paren">(</span><em>fields</em>, <em>keys</em>, <em>table_name=None</em>, <em>match_any=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.unset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.unset" title="Permalink to this definition">¶</a></dt>
+<code class="descname">unset</code><span class="sig-paren">(</span><em>fields</em>, <em>keys</em>, <em>table_name=None</em>, <em>match_any=False</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.AbstractStorage.unset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update records by unsetting fields.</p>
 <p>Update only allows you to update a record by adding new fields or overwriting existing fields.
 Use this method to remove a field from the record.</p>
@@ -458,7 +454,7 @@ in <cite>keys</cite> may match or if False then all keys in <cite>keys</cite> mu
 
 <dl class="method">
 <dt id="tau.storage.AbstractStorage.update">
-<code class="descname">update</code><span class="sig-paren">(</span><em>fields</em>, <em>keys</em>, <em>table_name=None</em>, <em>match_any=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.update" title="Permalink to this definition">¶</a></dt>
+<code class="descname">update</code><span class="sig-paren">(</span><em>fields</em>, <em>keys</em>, <em>table_name=None</em>, <em>match_any=False</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.AbstractStorage.update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update records.</p>
 <dl class="docutils">
 <dt>The behavior depends on the type of <cite>keys</cite>:</dt>
@@ -494,7 +490,7 @@ in <cite>keys</cite> may match or if False then all keys in <cite>keys</cite> mu
 
 <dl class="exception">
 <dt id="tau.storage.StorageError">
-<em class="property">exception </em><code class="descclassname">tau.storage.</code><code class="descname">StorageError</code><span class="sig-paren">(</span><em>value</em>, <em>*hints</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#StorageError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.StorageError" title="Permalink to this definition">¶</a></dt>
+<em class="property">exception </em><code class="descclassname">tau.storage.</code><code class="descname">StorageError</code><span class="sig-paren">(</span><em>value</em>, <em>*hints</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.StorageError" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="tau.html#tau.error.Error" title="tau.error.Error"><code class="xref py py-class docutils literal"><span class="pre">tau.error.Error</span></code></a></p>
 <p>Indicates a failure in the storage system.</p>
 <dl class="attribute">
@@ -506,7 +502,7 @@ in <cite>keys</cite> may match or if False then all keys in <cite>keys</cite> mu
 
 <dl class="class">
 <dt id="tau.storage.StorageRecord">
-<em class="property">class </em><code class="descclassname">tau.storage.</code><code class="descname">StorageRecord</code><span class="sig-paren">(</span><em>storage</em>, <em>eid</em>, <em>element</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#StorageRecord"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.StorageRecord" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.storage.</code><code class="descname">StorageRecord</code><span class="sig-paren">(</span><em>storage</em>, <em>eid</em>, <em>element</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.StorageRecord" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
 <p>A record in the storage container&#8217;s database.</p>
 <dl class="attribute">
@@ -542,22 +538,22 @@ in <cite>keys</cite> may match or if False then all keys in <cite>keys</cite> mu
 
 <dl class="method">
 <dt id="tau.storage.StorageRecord.get">
-<code class="descname">get</code><span class="sig-paren">(</span><em>key</em>, <em>default=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#StorageRecord.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.StorageRecord.get" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get</code><span class="sig-paren">(</span><em>key</em>, <em>default=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.StorageRecord.get" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="tau.storage.StorageRecord.iteritems">
-<code class="descname">iteritems</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#StorageRecord.iteritems"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.StorageRecord.iteritems" title="Permalink to this definition">¶</a></dt>
+<code class="descname">iteritems</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.StorageRecord.iteritems" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="tau.storage.StorageRecord.iterkeys">
-<code class="descname">iterkeys</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#StorageRecord.iterkeys"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.StorageRecord.iterkeys" title="Permalink to this definition">¶</a></dt>
+<code class="descname">iterkeys</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.StorageRecord.iterkeys" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="tau.storage.StorageRecord.itervalues">
-<code class="descname">itervalues</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#StorageRecord.itervalues"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.StorageRecord.itervalues" title="Permalink to this definition">¶</a></dt>
+<code class="descname">itervalues</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.StorageRecord.itervalues" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -572,47 +568,17 @@ in <cite>keys</cite> may match or if False then all keys in <cite>keys</cite> mu
 system access level.  System-level is a good place for software package installations
 and some system-specific configurations, e.g. target or compiler configurations.</p>
 <p>User-level records are readable and writable by (at least) the user.  User-level is also
-where software is installed when the user doesn&#8217;t have write access to <a class="reference internal" href="tau.html#tau.SYSTEM_PREFIX" title="tau.SYSTEM_PREFIX"><code class="xref any py py-data docutils literal"><span class="pre">SYSTEM_PREFIX</span></code></a>.
+where software is installed when the user doesn&#8217;t have write access to <code class="xref any docutils literal"><span class="pre">SYSTEM_PREFIX</span></code>.
 It&#8217;s a good place for user-specific records, i.e. preferences or encrypted login credentials.</p>
 <p>Project-level records define the project and its member components.  The user may also
 want to install software packages at the project level to avoid quotas or in situations
-where <a class="reference internal" href="tau.html#tau.USER_PREFIX" title="tau.USER_PREFIX"><code class="xref any py py-data docutils literal"><span class="pre">USER_PREFIX</span></code></a> is not accessible from cluster compute nodes.</p>
-<dl class="data">
-<dt id="tau.storage.levels.ORDERED_LEVELS">
-<code class="descclassname">tau.storage.levels.</code><code class="descname">ORDERED_LEVELS</code><em class="property"> = (&lt;tau.storage.project.ProjectStorage object at 0x10b54d7d0&gt;, &lt;tau.storage.local_file.LocalFileStorage object at 0x10b54d4d0&gt;, &lt;tau.storage.local_file.LocalFileStorage object at 0x10b54d510&gt;)</em><a class="headerlink" href="#tau.storage.levels.ORDERED_LEVELS" title="Permalink to this definition">¶</a></dt>
-<dd><p>All storage levels in their preferred order.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="tau.storage.levels.PROJECT_STORAGE">
-<code class="descclassname">tau.storage.levels.</code><code class="descname">PROJECT_STORAGE</code><em class="property"> = &lt;tau.storage.project.ProjectStorage object&gt;</em><a class="headerlink" href="#tau.storage.levels.PROJECT_STORAGE" title="Permalink to this definition">¶</a></dt>
-<dd><p>Project-level data storage.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="tau.storage.levels.STORAGE_LEVELS">
-<code class="descclassname">tau.storage.levels.</code><code class="descname">STORAGE_LEVELS</code><em class="property"> = {'project': &lt;tau.storage.project.ProjectStorage object at 0x10b54d7d0&gt;, 'user': &lt;tau.storage.local_file.LocalFileStorage object at 0x10b54d4d0&gt;, 'system': &lt;tau.storage.local_file.LocalFileStorage object at 0x10b54d510&gt;}</em><a class="headerlink" href="#tau.storage.levels.STORAGE_LEVELS" title="Permalink to this definition">¶</a></dt>
-<dd><p>All storage levels indexed by their names.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="tau.storage.levels.SYSTEM_STORAGE">
-<code class="descclassname">tau.storage.levels.</code><code class="descname">SYSTEM_STORAGE</code><em class="property"> = &lt;tau.storage.local_file.LocalFileStorage object&gt;</em><a class="headerlink" href="#tau.storage.levels.SYSTEM_STORAGE" title="Permalink to this definition">¶</a></dt>
-<dd><p>System-level data storage.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="tau.storage.levels.USER_STORAGE">
-<code class="descclassname">tau.storage.levels.</code><code class="descname">USER_STORAGE</code><em class="property"> = &lt;tau.storage.local_file.LocalFileStorage object&gt;</em><a class="headerlink" href="#tau.storage.levels.USER_STORAGE" title="Permalink to this definition">¶</a></dt>
-<dd><p>User-level data storage.</p>
-</dd></dl>
-
+where <code class="xref any docutils literal"><span class="pre">USER_PREFIX</span></code> is not accessible from cluster compute nodes.</p>
 </div>
 <div class="section" id="module-tau.storage.local_file">
 <span id="tau-storage-local-file-module"></span><h2>tau.storage.local_file module<a class="headerlink" href="#module-tau.storage.local_file" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="tau.storage.local_file.LocalFileStorage">
-<em class="property">class </em><code class="descclassname">tau.storage.local_file.</code><code class="descname">LocalFileStorage</code><span class="sig-paren">(</span><em>name</em>, <em>prefix</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage/local_file.html#LocalFileStorage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.local_file.LocalFileStorage" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.storage.local_file.</code><code class="descname">LocalFileStorage</code><span class="sig-paren">(</span><em>name</em>, <em>prefix</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.local_file.LocalFileStorage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#tau.storage.AbstractStorage" title="tau.storage.AbstractStorage"><code class="xref py py-class docutils literal"><span class="pre">tau.storage.AbstractStorage</span></code></a></p>
 <p>A persistant, transactional record storage system.</p>
 <p>Uses <code class="xref py py-class docutils literal"><span class="pre">TinyDB</span></code> for both the database and the key/value store.</p>
@@ -631,37 +597,37 @@ where <a class="reference internal" href="tau.html#tau.USER_PREFIX" title="tau.U
 
 <dl class="method">
 <dt id="tau.storage.local_file.LocalFileStorage.__enter__">
-<code class="descname">__enter__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage/local_file.html#LocalFileStorage.__enter__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.local_file.LocalFileStorage.__enter__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__enter__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.local_file.LocalFileStorage.__enter__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initiates the database transaction.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="tau.storage.local_file.LocalFileStorage.__exit__">
-<code class="descname">__exit__</code><span class="sig-paren">(</span><em>ex_type</em>, <em>value</em>, <em>traceback</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage/local_file.html#LocalFileStorage.__exit__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.local_file.LocalFileStorage.__exit__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__exit__</code><span class="sig-paren">(</span><em>ex_type</em>, <em>value</em>, <em>traceback</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.local_file.LocalFileStorage.__exit__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Finalizes the database transaction.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="tau.storage.local_file.LocalFileStorage.__str__">
-<code class="descname">__str__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage/local_file.html#LocalFileStorage.__str__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.local_file.LocalFileStorage.__str__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__str__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.local_file.LocalFileStorage.__str__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Human-readable identifier for this database.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="tau.storage.local_file.LocalFileStorage.connect_database">
-<code class="descname">connect_database</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage/local_file.html#LocalFileStorage.connect_database"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.local_file.LocalFileStorage.connect_database" title="Permalink to this definition">¶</a></dt>
+<code class="descname">connect_database</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.local_file.LocalFileStorage.connect_database" title="Permalink to this definition">¶</a></dt>
 <dd><p>Open the database for reading and writing.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="tau.storage.local_file.LocalFileStorage.connect_filesystem">
-<code class="descname">connect_filesystem</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage/local_file.html#LocalFileStorage.connect_filesystem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.local_file.LocalFileStorage.connect_filesystem" title="Permalink to this definition">¶</a></dt>
+<code class="descname">connect_filesystem</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.local_file.LocalFileStorage.connect_filesystem" title="Permalink to this definition">¶</a></dt>
 <dd><p>Prepares the store filesystem fore reading and writing.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="tau.storage.local_file.LocalFileStorage.contains">
-<code class="descname">contains</code><span class="sig-paren">(</span><em>keys</em>, <em>table_name=None</em>, <em>match_any=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage/local_file.html#LocalFileStorage.contains"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.local_file.LocalFileStorage.contains" title="Permalink to this definition">¶</a></dt>
+<code class="descname">contains</code><span class="sig-paren">(</span><em>keys</em>, <em>table_name=None</em>, <em>match_any=False</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.local_file.LocalFileStorage.contains" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check if the specified table contains at least one matching record.</p>
 <dl class="docutils">
 <dt>The behavior depends on the type of <cite>keys</cite>:</dt>
@@ -701,7 +667,7 @@ Invalid value for <cite>keys</cite>.</p>
 
 <dl class="method">
 <dt id="tau.storage.local_file.LocalFileStorage.count">
-<code class="descname">count</code><span class="sig-paren">(</span><em>table_name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage/local_file.html#LocalFileStorage.count"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.local_file.LocalFileStorage.count" title="Permalink to this definition">¶</a></dt>
+<code class="descname">count</code><span class="sig-paren">(</span><em>table_name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.local_file.LocalFileStorage.count" title="Permalink to this definition">¶</a></dt>
 <dd><p>Count the records in the database.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -719,19 +685,19 @@ Invalid value for <cite>keys</cite>.</p>
 
 <dl class="method">
 <dt id="tau.storage.local_file.LocalFileStorage.disconnect_database">
-<code class="descname">disconnect_database</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage/local_file.html#LocalFileStorage.disconnect_database"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.local_file.LocalFileStorage.disconnect_database" title="Permalink to this definition">¶</a></dt>
+<code class="descname">disconnect_database</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.local_file.LocalFileStorage.disconnect_database" title="Permalink to this definition">¶</a></dt>
 <dd><p>Close the database for reading and writing.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="tau.storage.local_file.LocalFileStorage.disconnect_filesystem">
-<code class="descname">disconnect_filesystem</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage/local_file.html#LocalFileStorage.disconnect_filesystem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.local_file.LocalFileStorage.disconnect_filesystem" title="Permalink to this definition">¶</a></dt>
+<code class="descname">disconnect_filesystem</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.local_file.LocalFileStorage.disconnect_filesystem" title="Permalink to this definition">¶</a></dt>
 <dd><p>Prepares the store filesystem fore reading and writing.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="tau.storage.local_file.LocalFileStorage.get">
-<code class="descname">get</code><span class="sig-paren">(</span><em>keys</em>, <em>table_name=None</em>, <em>match_any=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage/local_file.html#LocalFileStorage.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.local_file.LocalFileStorage.get" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get</code><span class="sig-paren">(</span><em>keys</em>, <em>table_name=None</em>, <em>match_any=False</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.local_file.LocalFileStorage.get" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find a single record.</p>
 <dl class="docutils">
 <dt>The behavior depends on the type of <cite>keys</cite>:</dt>
@@ -773,7 +739,7 @@ Invalid value for <cite>keys</cite>.</p>
 
 <dl class="method">
 <dt id="tau.storage.local_file.LocalFileStorage.insert">
-<code class="descname">insert</code><span class="sig-paren">(</span><em>data</em>, <em>table_name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage/local_file.html#LocalFileStorage.insert"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.local_file.LocalFileStorage.insert" title="Permalink to this definition">¶</a></dt>
+<code class="descname">insert</code><span class="sig-paren">(</span><em>data</em>, <em>table_name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.local_file.LocalFileStorage.insert" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a new record.</p>
 <p>If the table doesn&#8217;t exist it will be created.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -798,7 +764,7 @@ Invalid value for <cite>keys</cite>.</p>
 
 <dl class="method">
 <dt id="tau.storage.local_file.LocalFileStorage.match">
-<code class="descname">match</code><span class="sig-paren">(</span><em>field</em>, <em>table_name=None</em>, <em>regex=None</em>, <em>test=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage/local_file.html#LocalFileStorage.match"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.local_file.LocalFileStorage.match" title="Permalink to this definition">¶</a></dt>
+<code class="descname">match</code><span class="sig-paren">(</span><em>field</em>, <em>table_name=None</em>, <em>regex=None</em>, <em>test=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.local_file.LocalFileStorage.match" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find records where <cite>field</cite> matches <cite>regex</cite> or <cite>test</cite>.</p>
 <p>Either <cite>regex</cite> or <cite>test</cite> may be specified, not both.
 If <cite>regex</cite> is given, then all records with <cite>field</cite> matching the regular expression are returned.
@@ -837,7 +803,7 @@ Invalid value for <cite>keys</cite>.</p>
 
 <dl class="method">
 <dt id="tau.storage.local_file.LocalFileStorage.purge">
-<code class="descname">purge</code><span class="sig-paren">(</span><em>table_name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage/local_file.html#LocalFileStorage.purge"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.local_file.LocalFileStorage.purge" title="Permalink to this definition">¶</a></dt>
+<code class="descname">purge</code><span class="sig-paren">(</span><em>table_name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.local_file.LocalFileStorage.purge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Delete all records.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -851,7 +817,7 @@ Invalid value for <cite>keys</cite>.</p>
 
 <dl class="method">
 <dt id="tau.storage.local_file.LocalFileStorage.remove">
-<code class="descname">remove</code><span class="sig-paren">(</span><em>keys</em>, <em>table_name=None</em>, <em>match_any=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage/local_file.html#LocalFileStorage.remove"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.local_file.LocalFileStorage.remove" title="Permalink to this definition">¶</a></dt>
+<code class="descname">remove</code><span class="sig-paren">(</span><em>keys</em>, <em>table_name=None</em>, <em>match_any=False</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.local_file.LocalFileStorage.remove" title="Permalink to this definition">¶</a></dt>
 <dd><p>Delete records.</p>
 <dl class="docutils">
 <dt>The behavior depends on the type of <cite>keys</cite>:</dt>
@@ -884,7 +850,7 @@ in <cite>keys</cite> may match or if False then all keys in <cite>keys</cite> mu
 
 <dl class="method">
 <dt id="tau.storage.local_file.LocalFileStorage.search">
-<code class="descname">search</code><span class="sig-paren">(</span><em>keys=None</em>, <em>table_name=None</em>, <em>match_any=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage/local_file.html#LocalFileStorage.search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.local_file.LocalFileStorage.search" title="Permalink to this definition">¶</a></dt>
+<code class="descname">search</code><span class="sig-paren">(</span><em>keys=None</em>, <em>table_name=None</em>, <em>match_any=False</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.local_file.LocalFileStorage.search" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find multiple records.</p>
 <dl class="docutils">
 <dt>The behavior depends on the type of <cite>keys</cite>:</dt>
@@ -924,12 +890,12 @@ Invalid value for <cite>keys</cite>.</p>
 
 <dl class="method">
 <dt id="tau.storage.local_file.LocalFileStorage.table">
-<code class="descname">table</code><span class="sig-paren">(</span><em>table_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage/local_file.html#LocalFileStorage.table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.local_file.LocalFileStorage.table" title="Permalink to this definition">¶</a></dt>
+<code class="descname">table</code><span class="sig-paren">(</span><em>table_name</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.local_file.LocalFileStorage.table" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="tau.storage.local_file.LocalFileStorage.unset">
-<code class="descname">unset</code><span class="sig-paren">(</span><em>fields</em>, <em>keys</em>, <em>table_name=None</em>, <em>match_any=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage/local_file.html#LocalFileStorage.unset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.local_file.LocalFileStorage.unset" title="Permalink to this definition">¶</a></dt>
+<code class="descname">unset</code><span class="sig-paren">(</span><em>fields</em>, <em>keys</em>, <em>table_name=None</em>, <em>match_any=False</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.local_file.LocalFileStorage.unset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update records by unsetting fields.</p>
 <p>Update only allows you to update a record by adding new fields or overwriting existing fields.
 Use this method to remove a field from the record.</p>
@@ -965,7 +931,7 @@ in <cite>keys</cite> may match or if False then all keys in <cite>keys</cite> mu
 
 <dl class="method">
 <dt id="tau.storage.local_file.LocalFileStorage.update">
-<code class="descname">update</code><span class="sig-paren">(</span><em>fields</em>, <em>keys</em>, <em>table_name=None</em>, <em>match_any=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage/local_file.html#LocalFileStorage.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.local_file.LocalFileStorage.update" title="Permalink to this definition">¶</a></dt>
+<code class="descname">update</code><span class="sig-paren">(</span><em>fields</em>, <em>keys</em>, <em>table_name=None</em>, <em>match_any=False</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.local_file.LocalFileStorage.update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update records.</p>
 <dl class="docutils">
 <dt>The behavior depends on the type of <cite>keys</cite>:</dt>
@@ -1001,14 +967,14 @@ in <cite>keys</cite> may match or if False then all keys in <cite>keys</cite> mu
 
 <dl class="class">
 <dt id="tau.storage.local_file._JsonFileStorage">
-<em class="property">class </em><code class="descclassname">tau.storage.local_file.</code><code class="descname">_JsonFileStorage</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage/local_file.html#_JsonFileStorage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.local_file._JsonFileStorage" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.storage.local_file.</code><code class="descname">_JsonFileStorage</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.local_file._JsonFileStorage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">tinydb.storages.JSONStorage</span></code></p>
 <p>Allow read-only as well as read-write access to the JSON file.</p>
 <p>TinyDB&#8217;s default storage (<code class="xref any docutils literal"><span class="pre">tinydb.JSONStorage</span></code>) assumes write access to the JSON file.
 This isn&#8217;t the case for system-level storage and possibly others.</p>
 <dl class="method">
 <dt id="tau.storage.local_file._JsonFileStorage.write">
-<code class="descname">write</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage/local_file.html#_JsonFileStorage.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.local_file._JsonFileStorage.write" title="Permalink to this definition">¶</a></dt>
+<code class="descname">write</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.local_file._JsonFileStorage.write" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -1018,14 +984,14 @@ This isn&#8217;t the case for system-level storage and possibly others.</p>
 <span id="tau-storage-project-module"></span><h2>tau.storage.project module<a class="headerlink" href="#module-tau.storage.project" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="tau.storage.project.ProjectStorage">
-<em class="property">class </em><code class="descclassname">tau.storage.project.</code><code class="descname">ProjectStorage</code><a class="reference internal" href="_modules/tau/storage/project.html#ProjectStorage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.project.ProjectStorage" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.storage.project.</code><code class="descname">ProjectStorage</code><a class="headerlink" href="#tau.storage.project.ProjectStorage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#tau.storage.local_file.LocalFileStorage" title="tau.storage.local_file.LocalFileStorage"><code class="xref py py-class docutils literal"><span class="pre">tau.storage.local_file.LocalFileStorage</span></code></a></p>
 <p>Handle the special case project storage.</p>
 <p>Each TAU Commander project has its own project storage that holds project-specific files
 (i.e. performance data) and the project configuration.</p>
 <dl class="method">
 <dt id="tau.storage.project.ProjectStorage.connect_filesystem">
-<code class="descname">connect_filesystem</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage/project.html#ProjectStorage.connect_filesystem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.project.ProjectStorage.connect_filesystem" title="Permalink to this definition">¶</a></dt>
+<code class="descname">connect_filesystem</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.project.ProjectStorage.connect_filesystem" title="Permalink to this definition">¶</a></dt>
 <dd><p>Prepares the store filesystem for reading and writing.</p>
 </dd></dl>
 
@@ -1055,7 +1021,7 @@ a TAU Commander project directory.</td>
 
 <dl class="exception">
 <dt id="tau.storage.project.ProjectStorageError">
-<em class="property">exception </em><code class="descclassname">tau.storage.project.</code><code class="descname">ProjectStorageError</code><span class="sig-paren">(</span><em>search_root</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage/project.html#ProjectStorageError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.project.ProjectStorageError" title="Permalink to this definition">¶</a></dt>
+<em class="property">exception </em><code class="descclassname">tau.storage.project.</code><code class="descname">ProjectStorageError</code><span class="sig-paren">(</span><em>search_root</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.storage.project.ProjectStorageError" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#tau.storage.StorageError" title="tau.storage.StorageError"><code class="xref py py-class docutils literal"><span class="pre">tau.storage.StorageError</span></code></a></p>
 <p>Indicates that the project storage has not been initialized.</p>
 <dl class="attribute">
@@ -1073,8 +1039,6 @@ a TAU Commander project directory.</td>
       <div class="bottomnav" role="navigation" aria-label="bottom navigation">
       
         <p>
-        «&#160;&#160;<a href="tau.mvc.html">tau.mvc package</a>
-        &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
         </p>
 

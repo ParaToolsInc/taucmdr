@@ -25,10 +25,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="_static/favicon.ico"/>
-    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
-    <link rel="up" title="tau package" href="tau.html" />
-    <link rel="next" title="tau.mvc package" href="tau.mvc.html" />
-    <link rel="prev" title="tau.gui package" href="tau.gui.html" /> 
+    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" /> 
   </head>
   <body role="document">
       <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="index.html">
@@ -38,11 +35,7 @@
       <div class="topnav" role="navigation" aria-label="top navigation">
       
         <p>
-        «&#160;&#160;<a href="tau.gui.html">tau.gui package</a>
-        &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
-        &#160;&#160;::&#160;&#160;
-        <a href="tau.mvc.html">tau.mvc package</a>&#160;&#160;»
         </p>
 
       </div>
@@ -52,6 +45,11 @@
   <div class="section" id="module-tau.model">
 <span id="tau-model-package"></span><h1>tau.model package<a class="headerlink" href="#module-tau.model" title="Permalink to this headline">¶</a></h1>
 <p>TODO: Describe T-A-M model here.</p>
+<dl class="function">
+<dt id="tau.model.require_compiler_family">
+<code class="descclassname">tau.model.</code><code class="descname">require_compiler_family</code><span class="sig-paren">(</span><em>family</em>, <em>*hints</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.require_compiler_family" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
@@ -66,7 +64,7 @@ are potentially two application records for the same application code: one
 specifying OpenMP is used and the other specifying OpenMP is not used.</p>
 <dl class="class">
 <dt id="tau.model.application.Application">
-<em class="property">class </em><code class="descclassname">tau.model.application.</code><code class="descname">Application</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/application.html#Application"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.application.Application" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.model.application.</code><code class="descname">Application</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.application.Application" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="tau.mvc.html#tau.mvc.model.Model" title="tau.mvc.model.Model"><code class="xref py py-class docutils literal"><span class="pre">tau.mvc.model.Model</span></code></a></p>
 <dl class="attribute">
 <dt id="tau.model.application.Application.associations">
@@ -75,7 +73,7 @@ specifying OpenMP is used and the other specifying OpenMP is not used.</p>
 
 <dl class="attribute">
 <dt id="tau.model.application.Application.attributes">
-<code class="descname">attributes</code><em class="property"> = {'opencl': {'default': False, 'argparse': {'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'nargs': '?', 'flags': ('--use-opencl',), 'metavar': 'T/F', 'const': True}, 'compat': {True: &lt;function condition at 0x10c13f6e0&gt;}, 'type': 'boolean', 'description': 'application uses OpenCL'}, 'cuda': {'default': False, 'argparse': {'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'nargs': '?', 'flags': ('--use-cuda',), 'metavar': 'T/F', 'const': True}, 'compat': {True: &lt;function condition at 0x10c13f5f0&gt;}, 'type': 'boolean', 'description': 'application uses NVIDIA CUDA'}, 'mpc': {'default': False, 'argparse': {'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'nargs': '?', 'flags': ('--use-mpc',), 'metavar': 'T/F', 'const': True}, 'type': 'boolean', 'description': 'application uses MPC'}, 'name': {'argparse': {'metavar': '&lt;application_name&gt;'}, 'unique': True, 'type': 'string', 'primary_key': True, 'description': 'application configuration name'}, 'openmp': {'default': False, 'argparse': {'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'nargs': '?', 'flags': ('--use-openmp',), 'metavar': 'T/F', 'const': True}, 'type': 'boolean', 'description': 'application uses OpenMP'}, 'pthreads': {'default': False, 'argparse': {'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'nargs': '?', 'flags': ('--use-pthreads',), 'metavar': 'T/F', 'const': True}, 'type': 'boolean', 'description': 'application uses pthreads'}, 'shmem': {'default': False, 'argparse': {'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'nargs': '?', 'flags': ('--use-shmem',), 'metavar': 'T/F', 'const': True}, 'type': 'boolean', 'description': 'application uses SHMEM'}, 'projects': {'via': 'applications', 'description': 'projects using this application', 'collection': &lt;class 'tau.model.project.Project'&gt;}, 'mpi': {'default': False, 'argparse': {'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'nargs': '?', 'flags': ('--use-mpi',), 'metavar': 'T/F', 'const': True}, 'compat': {True: &lt;function condition at 0x10c13f488&gt;}, 'type': 'boolean', 'description': 'application uses MPI'}}</em><a class="headerlink" href="#tau.model.application.Application.attributes" title="Permalink to this definition">¶</a></dt>
+<code class="descname">attributes</code><em class="property"> = {'opencl': {'default': False, 'argparse': {'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'nargs': '?', 'flags': ('--use-opencl',), 'metavar': 'T/F', 'const': True}, 'compat': {True: &lt;function condition at 0x352bf50&gt;}, 'type': 'boolean', 'description': 'application uses OpenCL'}, 'cuda': {'default': False, 'argparse': {'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'nargs': '?', 'flags': ('--use-cuda',), 'metavar': 'T/F', 'const': True}, 'compat': {True: &lt;function condition at 0x352be60&gt;}, 'type': 'boolean', 'description': 'application uses NVIDIA CUDA'}, 'mpc': {'default': False, 'argparse': {'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'nargs': '?', 'flags': ('--use-mpc',), 'metavar': 'T/F', 'const': True}, 'type': 'boolean', 'description': 'application uses MPC'}, 'name': {'argparse': {'metavar': '&lt;application_name&gt;'}, 'unique': True, 'type': 'string', 'primary_key': True, 'description': 'application configuration name'}, 'openmp': {'default': False, 'argparse': {'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'nargs': '?', 'flags': ('--use-openmp',), 'metavar': 'T/F', 'const': True}, 'type': 'boolean', 'description': 'application uses OpenMP'}, 'pthreads': {'default': False, 'argparse': {'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'nargs': '?', 'flags': ('--use-pthreads',), 'metavar': 'T/F', 'const': True}, 'type': 'boolean', 'description': 'application uses pthreads'}, 'shmem': {'default': False, 'argparse': {'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'nargs': '?', 'flags': ('--use-shmem',), 'metavar': 'T/F', 'const': True}, 'type': 'boolean', 'description': 'application uses SHMEM'}, 'projects': {'via': 'applications', 'description': 'projects using this application', 'collection': &lt;class 'tau.model.project.Project'&gt;}, 'mpi': {'default': False, 'argparse': {'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'nargs': '?', 'flags': ('--use-mpi',), 'metavar': 'T/F', 'const': True}, 'compat': {True: &lt;function condition at 0x352bcf8&gt;}, 'type': 'boolean', 'description': 'application uses MPI'}}</em><a class="headerlink" href="#tau.model.application.Application.attributes" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -97,7 +95,7 @@ specifying OpenMP is used and the other specifying OpenMP is not used.</p>
 
 <dl class="function">
 <dt id="tau.model.application.attributes">
-<code class="descclassname">tau.model.application.</code><code class="descname">attributes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/application.html#attributes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.application.attributes" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.model.application.</code><code class="descname">attributes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.application.attributes" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -109,7 +107,7 @@ source code and TAU itself.  If the system compiler changes TAU can break entire
 This data tracks the system compilers so we can warn the user if they have changed.</p>
 <dl class="class">
 <dt id="tau.model.compiler.Compiler">
-<em class="property">class </em><code class="descclassname">tau.model.compiler.</code><code class="descname">Compiler</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/compiler.html#Compiler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.compiler.Compiler" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.model.compiler.</code><code class="descname">Compiler</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.compiler.Compiler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="tau.mvc.html#tau.mvc.model.Model" title="tau.mvc.model.Model"><code class="xref py py-class docutils literal"><span class="pre">tau.mvc.model.Model</span></code></a></p>
 <p>Compiler data model.</p>
 <dl class="attribute">
@@ -124,7 +122,7 @@ This data tracks the system compilers so we can warn the user if they have chang
 
 <dl class="method">
 <dt id="tau.model.compiler.Compiler.info">
-<code class="descname">info</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/compiler.html#Compiler.info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.compiler.Compiler.info" title="Permalink to this definition">¶</a></dt>
+<code class="descname">info</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.compiler.Compiler.info" title="Permalink to this definition">¶</a></dt>
 <dd><p>Probes the system for information on this compiler command.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -145,19 +143,19 @@ This data tracks the system compilers so we can warn the user if they have chang
 
 <dl class="attribute">
 <dt id="tau.model.compiler.Compiler.references">
-<code class="descname">references</code><em class="property"> = set([(&lt;class 'tau.model.target.Target'&gt;, 'MPI_FC'), (&lt;class 'tau.model.target.Target'&gt;, 'SHMEM_CC'), (&lt;class 'tau.model.target.Target'&gt;, 'MPI_CXX'), (&lt;class 'tau.model.target.Target'&gt;, 'FC'), (&lt;class 'tau.model.target.Target'&gt;, 'MPI_CC'), (&lt;class 'tau.model.target.Target'&gt;, 'SHMEM_CXX'), (&lt;class 'tau.model.target.Target'&gt;, 'SHMEM_FC'), (&lt;class 'tau.model.target.Target'&gt;, 'CC'), (&lt;class 'tau.model.target.Target'&gt;, 'CXX'), (&lt;class 'tau.model.target.Target'&gt;, 'UPC')])</em><a class="headerlink" href="#tau.model.compiler.Compiler.references" title="Permalink to this definition">¶</a></dt>
+<code class="descname">references</code><em class="property"> = set([(&lt;class 'tau.model.target.Target'&gt;, 'SHMEM_FC'), (&lt;class 'tau.model.target.Target'&gt;, 'MPI_CC'), (&lt;class 'tau.model.target.Target'&gt;, 'FC'), (&lt;class 'tau.model.target.Target'&gt;, 'SHMEM_CXX'), (&lt;class 'tau.model.target.Target'&gt;, 'UPC'), (&lt;class 'tau.model.target.Target'&gt;, 'MPI_FC'), (&lt;class 'tau.model.target.Target'&gt;, 'SHMEM_CC'), (&lt;class 'tau.model.target.Target'&gt;, 'MPI_CXX'), (&lt;class 'tau.model.target.Target'&gt;, 'CC'), (&lt;class 'tau.model.target.Target'&gt;, 'CXX')])</em><a class="headerlink" href="#tau.model.compiler.Compiler.references" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="class">
 <dt id="tau.model.compiler.CompilerController">
-<em class="property">class </em><code class="descclassname">tau.model.compiler.</code><code class="descname">CompilerController</code><span class="sig-paren">(</span><em>model_cls</em>, <em>storage</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/compiler.html#CompilerController"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.compiler.CompilerController" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.model.compiler.</code><code class="descname">CompilerController</code><span class="sig-paren">(</span><em>model_cls</em>, <em>storage</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.compiler.CompilerController" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="tau.mvc.html#tau.mvc.controller.Controller" title="tau.mvc.controller.Controller"><code class="xref py py-class docutils literal"><span class="pre">tau.mvc.controller.Controller</span></code></a></p>
 <p>Compiler data controller.</p>
 <dl class="method">
 <dt id="tau.model.compiler.CompilerController.register">
-<code class="descname">register</code><span class="sig-paren">(</span><em>comp</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/compiler.html#CompilerController.register"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.compiler.CompilerController.register" title="Permalink to this definition">¶</a></dt>
+<code class="descname">register</code><span class="sig-paren">(</span><em>comp</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.compiler.CompilerController.register" title="Permalink to this definition">¶</a></dt>
 <dd><p>Records information about a compiler command in the database.</p>
 <p>If the given compiler has already been registered then do not update the database.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -178,7 +176,7 @@ This data tracks the system compilers so we can warn the user if they have chang
 
 <dl class="function">
 <dt id="tau.model.compiler.attributes">
-<code class="descclassname">tau.model.compiler.</code><code class="descname">attributes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/compiler.html#attributes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.compiler.attributes" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.model.compiler.</code><code class="descname">attributes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.compiler.attributes" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -190,7 +188,7 @@ and will have zero or more <a class="reference internal" href="#tau.model.trial.
 The selected experiment will be used for application compilation and trial visualization.</p>
 <dl class="class">
 <dt id="tau.model.experiment.Experiment">
-<em class="property">class </em><code class="descclassname">tau.model.experiment.</code><code class="descname">Experiment</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.model.experiment.</code><code class="descname">Experiment</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.experiment.Experiment" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="tau.mvc.html#tau.mvc.model.Model" title="tau.mvc.model.Model"><code class="xref py py-class docutils literal"><span class="pre">tau.mvc.model.Model</span></code></a></p>
 <p>Experiment data model.</p>
 <dl class="attribute">
@@ -205,7 +203,7 @@ The selected experiment will be used for application compilation and trial visua
 
 <dl class="method">
 <dt id="tau.model.experiment.Experiment.configure">
-<code class="descname">configure</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.configure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.configure" title="Permalink to this definition">¶</a></dt>
+<code class="descname">configure</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.experiment.Experiment.configure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets up the Experiment for a new trial.</p>
 <p>Installs or configures TAU and all its dependencies.  After calling this
 function, the experiment is ready to operate on the user&#8217;s application.</p>
@@ -223,7 +221,7 @@ function, the experiment is ready to operate on the user&#8217;s application.</p
 
 <dl class="method">
 <dt id="tau.model.experiment.Experiment.configure_tau">
-<code class="descname">configure_tau</code><span class="sig-paren">(</span><em>prefix</em>, <em>dependencies</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.configure_tau"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.configure_tau" title="Permalink to this definition">¶</a></dt>
+<code class="descname">configure_tau</code><span class="sig-paren">(</span><em>prefix</em>, <em>dependencies</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.experiment.Experiment.configure_tau" title="Permalink to this definition">¶</a></dt>
 <dd><p>Configures TAU for the current experiment, if necessary.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -247,22 +245,22 @@ function, the experiment is ready to operate on the user&#8217;s application.</p
 
 <dl class="method">
 <dt id="tau.model.experiment.Experiment.configure_tau_dependency">
-<code class="descname">configure_tau_dependency</code><span class="sig-paren">(</span><em>name</em>, <em>prefix</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.configure_tau_dependency"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.configure_tau_dependency" title="Permalink to this definition">¶</a></dt>
+<code class="descname">configure_tau_dependency</code><span class="sig-paren">(</span><em>name</em>, <em>prefix</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.experiment.Experiment.configure_tau_dependency" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="classmethod">
 <dt id="tau.model.experiment.Experiment.controller">
-<em class="property">classmethod </em><code class="descname">controller</code><span class="sig-paren">(</span><em>storage=&lt;tau.storage.project.ProjectStorage object&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.controller"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.controller" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="descname">controller</code><span class="sig-paren">(</span><em>storage=&lt;tau.storage.project.ProjectStorage object at 0x32b8650&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.experiment.Experiment.controller" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="tau.model.experiment.Experiment.data_size">
-<code class="descname">data_size</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.data_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.data_size" title="Permalink to this definition">¶</a></dt>
+<code class="descname">data_size</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.experiment.Experiment.data_size" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="tau.model.experiment.Experiment.managed_build">
-<code class="descname">managed_build</code><span class="sig-paren">(</span><em>compiler_cmd</em>, <em>compiler_args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.managed_build"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.managed_build" title="Permalink to this definition">¶</a></dt>
+<code class="descname">managed_build</code><span class="sig-paren">(</span><em>compiler_cmd</em>, <em>compiler_args</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.experiment.Experiment.managed_build" title="Permalink to this definition">¶</a></dt>
 <dd><p>Uses this experiment to perform a build operation.</p>
 <p>Checks that this experiment is compatible with the desired build operation,
 prepares the experiment, and performs the operation.</p>
@@ -292,7 +290,7 @@ The experiment is not configured to perform the desired build.</p>
 
 <dl class="method">
 <dt id="tau.model.experiment.Experiment.managed_run">
-<code class="descname">managed_run</code><span class="sig-paren">(</span><em>launcher_cmd</em>, <em>application_cmd</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.managed_run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.managed_run" title="Permalink to this definition">¶</a></dt>
+<code class="descname">managed_run</code><span class="sig-paren">(</span><em>launcher_cmd</em>, <em>application_cmd</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.experiment.Experiment.managed_run" title="Permalink to this definition">¶</a></dt>
 <dd><p>Uses this experiment to run an application command.</p>
 <p>Performs all relevent system preparation tasks to run the user&#8217;s application
 under the specified experimental configuration.</p>
@@ -327,17 +325,17 @@ The experiment is not configured to perform the desired run.</p>
 
 <dl class="method">
 <dt id="tau.model.experiment.Experiment.next_trial_number">
-<code class="descname">next_trial_number</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.next_trial_number"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.next_trial_number" title="Permalink to this definition">¶</a></dt>
+<code class="descname">next_trial_number</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.experiment.Experiment.next_trial_number" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="tau.model.experiment.Experiment.on_create">
-<code class="descname">on_create</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.on_create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.on_create" title="Permalink to this definition">¶</a></dt>
+<code class="descname">on_create</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.experiment.Experiment.on_create" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="tau.model.experiment.Experiment.on_delete">
-<code class="descname">on_delete</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.on_delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.on_delete" title="Permalink to this definition">¶</a></dt>
+<code class="descname">on_delete</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.experiment.Experiment.on_delete" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -352,7 +350,7 @@ The experiment is not configured to perform the desired run.</p>
 
 <dl class="method">
 <dt id="tau.model.experiment.Experiment.show">
-<code class="descname">show</code><span class="sig-paren">(</span><em>tool_name=None</em>, <em>trial_numbers=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.show"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.show" title="Permalink to this definition">¶</a></dt>
+<code class="descname">show</code><span class="sig-paren">(</span><em>profile_tool=None</em>, <em>trace_tool=None</em>, <em>trial_numbers=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.experiment.Experiment.show" title="Permalink to this definition">¶</a></dt>
 <dd><p>Show experiment trial data.</p>
 <p>Shows the most recent trial or all trials with given numbers.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -360,7 +358,8 @@ The experiment is not configured to perform the desired run.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>tool_name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the visualization or data processing tool to use, e.g. <cite>pprof</cite>.</li>
+<li><strong>profile_tool</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the visualization or data processing tool for profiles, e.g. <cite>pprof</cite>.</li>
+<li><strong>trace_tool</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the visualization or data processing tool for traces, e.g. <cite>vampir</cite>.</li>
 <li><strong>trial_numbers</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Numbers of trials to show.</li>
 </ul>
 </td>
@@ -375,39 +374,39 @@ Invalid trial numbers or no trial data for this experiment.</p>
 
 <dl class="method">
 <dt id="tau.model.experiment.Experiment.title">
-<code class="descname">title</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.title"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.title" title="Permalink to this definition">¶</a></dt>
+<code class="descname">title</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.experiment.Experiment.title" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="tau.model.experiment.Experiment.uses_binutils">
-<code class="descname">uses_binutils</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.uses_binutils"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.uses_binutils" title="Permalink to this definition">¶</a></dt>
+<code class="descname">uses_binutils</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.experiment.Experiment.uses_binutils" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="tau.model.experiment.Experiment.uses_libunwind">
-<code class="descname">uses_libunwind</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.uses_libunwind"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.uses_libunwind" title="Permalink to this definition">¶</a></dt>
+<code class="descname">uses_libunwind</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.experiment.Experiment.uses_libunwind" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="tau.model.experiment.Experiment.uses_papi">
-<code class="descname">uses_papi</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.uses_papi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.uses_papi" title="Permalink to this definition">¶</a></dt>
+<code class="descname">uses_papi</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.experiment.Experiment.uses_papi" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="tau.model.experiment.Experiment.uses_pdt">
-<code class="descname">uses_pdt</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.uses_pdt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.uses_pdt" title="Permalink to this definition">¶</a></dt>
+<code class="descname">uses_pdt</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.experiment.Experiment.uses_pdt" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="tau.model.experiment.Experiment.uses_tau">
-<code class="descname">uses_tau</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.uses_tau"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.uses_tau" title="Permalink to this definition">¶</a></dt>
+<code class="descname">uses_tau</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.experiment.Experiment.uses_tau" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="function">
 <dt id="tau.model.experiment.attributes">
-<code class="descclassname">tau.model.experiment.</code><code class="descname">attributes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#attributes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.attributes" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.model.experiment.</code><code class="descname">attributes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.experiment.attributes" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -420,7 +419,7 @@ the available data in a single run since overhead would be extreme.  Different
 measurements allow us to take different views of the application&#8217;s performance.</p>
 <dl class="class">
 <dt id="tau.model.measurement.Measurement">
-<em class="property">class </em><code class="descclassname">tau.model.measurement.</code><code class="descname">Measurement</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/measurement.html#Measurement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.measurement.Measurement" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.model.measurement.</code><code class="descname">Measurement</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.measurement.Measurement" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="tau.mvc.html#tau.mvc.model.Model" title="tau.mvc.model.Model"><code class="xref py py-class docutils literal"><span class="pre">tau.mvc.model.Model</span></code></a></p>
 <p>Measurement data model.</p>
 <dl class="attribute">
@@ -430,7 +429,7 @@ measurements allow us to take different views of the application&#8217;s perform
 
 <dl class="attribute">
 <dt id="tau.model.measurement.Measurement.attributes">
-<code class="descname">attributes</code><em class="property"> = {'profile': {'default': True, 'argparse': {'group': 'output format', 'nargs': '?', 'flags': ('--profile',), 'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'const': True, 'metavar': 'T/F'}, 'type': 'boolean', 'description': 'generate application profiles'}, 'metrics': {'default': ['TIME'], 'argparse': {'group': 'data', 'nargs': '+', 'flags': ('--metrics',), 'metavar': '&lt;METRIC&gt;'}, 'compat': {&lt;function &lt;lambda&gt; at 0x10c13f050&gt;: &lt;function condition at 0x10c11ff50&gt;}, 'type': 'array', 'description': 'performance metrics to gather, e.g. TIME, PAPI_FP_INS'}, 'name': {'argparse': {'help': 'measurement configuration name', 'metavar': '&lt;measurement_name&gt;'}, 'unique': True, 'type': 'string', 'primary_key': True, 'description': 'measurement configuration name'}, 'trace': {'default': False, 'argparse': {'group': 'output format', 'nargs': '?', 'flags': ('--trace',), 'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'const': True, 'metavar': 'T/F'}, 'compat': {True: &lt;function condition at 0x10c0fcc80&gt;}, 'type': 'boolean', 'description': 'generate application traces'}, 'callpath': {'default': 2, 'argparse': {'group': 'data', 'nargs': '?', 'flags': ('--callpath',), 'const': 2, 'type': &lt;type 'int'&gt;, 'metavar': 'depth'}, 'type': 'integer', 'description': 'maximum depth for callpath recording'}, 'opencl': {'default': False, 'argparse': {'group': 'library', 'nargs': '?', 'flags': ('--opencl',), 'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'const': True, 'metavar': 'T/F'}, 'compat': {True: &lt;function condition at 0x10c11fe60&gt;}, 'type': 'boolean', 'description': 'measure OpenCL events'}, 'link_only': {'default': False, 'argparse': {'group': 'instrumentation', 'nargs': '?', 'flags': ('--link-only',), 'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'const': True, 'metavar': 'T/F'}, 'type': 'boolean', 'description': &quot;don't instrument, only link the TAU library to the application&quot;}, 'memory_usage': {'default': False, 'argparse': {'group': 'memory', 'nargs': '?', 'flags': ('--memory-usage',), 'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'const': True, 'metavar': 'T/F'}, 'type': 'boolean', 'description': 'measure memory consumption'}, 'mpi': {'default': False, 'argparse': {'group': 'library', 'nargs': '?', 'flags': ('--mpi',), 'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'const': True, 'metavar': 'T/F'}, 'compat': {True: (&lt;function condition at 0x10c11f668&gt;, &lt;function condition at 0x10c11f758&gt;, &lt;function condition at 0x10c11f848&gt;)}, 'type': 'boolean', 'description': 'use MPI library wrapper to measure time spent in MPI methods'}, 'sample': {'default': True, 'argparse': {'group': 'instrumentation', 'nargs': '?', 'flags': ('--sample',), 'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'const': True, 'metavar': 'T/F'}, 'compat': {True: (&lt;function condition at 0x10c0fcde8&gt;, &lt;function condition at 0x10c0fcf50&gt;)}, 'type': 'boolean', 'description': 'use event-based sampling to gather performance data'}, 'keep_inst_files': {'default': False, 'argparse': {'group': 'instrumentation', 'nargs': '?', 'flags': ('--keep-inst-files',), 'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'const': True, 'metavar': 'T/F'}, 'compat': {True: &lt;function condition at 0x10c13f1b8&gt;}, 'type': 'boolean', 'description': &quot;don't remove instrumented files after compilation&quot;}, 'cuda': {'default': False, 'argparse': {'group': 'library', 'nargs': '?', 'flags': ('--cuda',), 'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'const': True, 'metavar': 'T/F'}, 'compat': {True: &lt;function condition at 0x10c11fd70&gt;}, 'type': 'boolean', 'description': 'measure cuda events via the CUPTI interface'}, 'io': {'default': False, 'argparse': {'group': 'library', 'nargs': '?', 'flags': ('--io',), 'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'const': True, 'metavar': 'T/F'}, 'type': 'boolean', 'description': 'measure time spent in POSIX I/O calls'}, 'openmp': {'default': 'none', 'argparse': {'group': 'library', 'nargs': 1, 'flags': ('--openmp',), 'metavar': 'library', 'choices': ('none', 'opari', 'ompt')}, 'compat': {'ompt': (&lt;function condition at 0x10c11faa0&gt;, &lt;function condition at 0x10c11fc08&gt;, &lt;function condition at 0x10c11fc80&gt;, &lt;function condition at 0x10c11fcf8&gt;), 'opari': &lt;function condition at 0x10c11f938&gt;}, 'type': 'string', 'description': 'use specified library to measure time spent in OpenMP directives'}, 'source_inst': {'default': 'never', 'argparse': {'const': 'automatic', 'nargs': '?', 'choices': ('automatic', 'manual', 'never'), 'flags': ('--source-inst',), 'group': 'instrumentation', 'metavar': 'mode'}, 'compat': {&lt;function &lt;lambda&gt; at 0x10c11f1b8&gt;: &lt;function condition at 0x10c11f140&gt;}, 'type': 'string', 'description': 'use hooks inserted into the application source code to gather performance data'}, 'reuse_inst_files': {'default': False, 'argparse': {'group': 'instrumentation', 'nargs': '?', 'flags': ('--reuse-inst-files',), 'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'const': True, 'metavar': 'T/F'}, 'compat': {True: &lt;function condition at 0x10c13f320&gt;}, 'type': 'boolean', 'description': 'reuse and preserve instrumented files after compilation'}, 'memory_alloc': {'default': False, 'argparse': {'group': 'memory', 'nargs': '?', 'flags': ('--memory-alloc',), 'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'const': True, 'metavar': 'T/F'}, 'type': 'boolean', 'description': 'record memory allocation and deallocation events'}, 'projects': {'via': 'measurements', 'description': 'projects using this measurement', 'collection': &lt;class 'tau.model.project.Project'&gt;}, 'compiler_inst': {'default': 'fallback', 'argparse': {'const': 'always', 'nargs': '?', 'choices': ('always', 'fallback', 'never'), 'flags': ('--compiler-inst',), 'group': 'instrumentation', 'metavar': 'mode'}, 'compat': {&lt;function &lt;lambda&gt; at 0x10c11f500&gt;: (&lt;function condition at 0x10c11f320&gt;, &lt;function condition at 0x10c11f488&gt;)}, 'type': 'string', 'description': 'use compiler-generated callbacks to gather performance data'}}</em><a class="headerlink" href="#tau.model.measurement.Measurement.attributes" title="Permalink to this definition">¶</a></dt>
+<code class="descname">attributes</code><em class="property"> = {'profile': {'default': True, 'argparse': {'group': 'output format', 'nargs': '?', 'flags': ('--profile',), 'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'const': True, 'metavar': 'T/F'}, 'type': 'boolean', 'description': 'generate application profiles'}, 'metrics': {'default': ['TIME'], 'argparse': {'group': 'data', 'nargs': '+', 'flags': ('--metrics',), 'metavar': '&lt;METRIC&gt;'}, 'compat': {&lt;function &lt;lambda&gt; at 0x352b8c0&gt;: (&lt;function condition at 0x352b758&gt;, &lt;function condition at 0x352b848&gt;)}, 'type': 'array', 'description': 'performance metrics to gather, e.g. TIME, PAPI_FP_INS'}, 'heap_usage': {'default': False, 'argparse': {'group': 'memory', 'nargs': '?', 'flags': ('--heap_usage',), 'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'const': True, 'metavar': 'T/F'}, 'type': 'boolean', 'description': 'measure heap memory usage'}, 'name': {'argparse': {'help': 'measurement configuration name', 'metavar': '&lt;measurement_name&gt;'}, 'unique': True, 'type': 'string', 'primary_key': True, 'description': 'measurement configuration name'}, 'trace': {'default': False, 'argparse': {'group': 'output format', 'nargs': '?', 'flags': ('--trace',), 'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'const': True, 'metavar': 'T/F'}, 'compat': {True: &lt;function condition at 0x3524aa0&gt;}, 'type': 'boolean', 'description': 'generate application traces'}, 'callpath': {'default': 2, 'argparse': {'group': 'data', 'nargs': '?', 'flags': ('--callpath',), 'const': 2, 'type': &lt;type 'int'&gt;, 'metavar': 'depth'}, 'type': 'integer', 'description': 'maximum depth for callpath recording'}, 'opencl': {'default': False, 'argparse': {'group': 'library', 'nargs': '?', 'flags': ('--opencl',), 'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'const': True, 'metavar': 'T/F'}, 'compat': {True: &lt;function condition at 0x352b668&gt;}, 'type': 'boolean', 'description': 'measure OpenCL events'}, 'link_only': {'default': False, 'argparse': {'group': 'instrumentation', 'nargs': '?', 'flags': ('--link-only',), 'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'const': True, 'metavar': 'T/F'}, 'type': 'boolean', 'description': &quot;don't instrument, only link the TAU library to the application&quot;}, 'keep_inst_files': {'default': False, 'argparse': {'group': 'instrumentation', 'nargs': '?', 'flags': ('--keep-inst-files',), 'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'const': True, 'metavar': 'T/F'}, 'compat': {True: &lt;function condition at 0x352ba28&gt;}, 'type': 'boolean', 'description': &quot;don't remove instrumented files after compilation&quot;}, 'mpi': {'default': False, 'argparse': {'group': 'library', 'nargs': '?', 'flags': ('--mpi',), 'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'const': True, 'metavar': 'T/F'}, 'compat': {True: (&lt;function condition at 0x3528b18&gt;, &lt;function condition at 0x3528c08&gt;, &lt;function condition at 0x3528cf8&gt;)}, 'type': 'boolean', 'description': 'use MPI library wrapper to measure time spent in MPI methods'}, 'sample': {'default': True, 'argparse': {'group': 'instrumentation', 'nargs': '?', 'flags': ('--sample',), 'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'const': True, 'metavar': 'T/F'}, 'compat': {True: (&lt;function condition at 0x3524c08&gt;, &lt;function condition at 0x3524cf8&gt;, &lt;function condition at 0x3524e60&gt;, &lt;function condition at 0x3524f50&gt;, &lt;function condition at 0x3528140&gt;)}, 'type': 'boolean', 'description': 'use event-based sampling to gather performance data'}, 'cuda': {'default': False, 'argparse': {'group': 'library', 'nargs': '?', 'flags': ('--cuda',), 'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'const': True, 'metavar': 'T/F'}, 'compat': {True: &lt;function condition at 0x352b578&gt;}, 'type': 'boolean', 'description': 'measure cuda events via the CUPTI interface'}, 'io': {'default': False, 'argparse': {'group': 'library', 'nargs': '?', 'flags': ('--io',), 'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'const': True, 'metavar': 'T/F'}, 'type': 'boolean', 'description': 'measure time spent in POSIX I/O calls'}, 'openmp': {'default': 'none', 'argparse': {'group': 'library', 'nargs': 1, 'flags': ('--openmp',), 'metavar': 'library', 'choices': ('none', 'opari', 'ompt', 'gomp')}, 'compat': {'ompt': (&lt;function condition at 0x3528f50&gt;, &lt;function condition at 0x352b140&gt;, &lt;function condition at 0x352b1b8&gt;, &lt;function condition at 0x352b230&gt;), 'opari': &lt;function condition at 0x3528de8&gt;, 'gomp': (&lt;function condition at 0x352b2a8&gt;, &lt;function condition at 0x352b410&gt;, &lt;function condition at 0x352b488&gt;, &lt;function condition at 0x352b500&gt;)}, 'type': 'string', 'description': 'use specified library to measure time spent in OpenMP directives'}, 'source_inst': {'default': 'never', 'argparse': {'const': 'automatic', 'nargs': '?', 'choices': ('automatic', 'manual', 'never'), 'flags': ('--source-inst',), 'group': 'instrumentation', 'metavar': 'mode'}, 'compat': {&lt;function &lt;lambda&gt; at 0x3528320&gt;: &lt;function condition at 0x35282a8&gt;}, 'type': 'string', 'description': 'use hooks inserted into the application source code to gather performance data'}, 'reuse_inst_files': {'default': False, 'argparse': {'group': 'instrumentation', 'nargs': '?', 'flags': ('--reuse-inst-files',), 'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'const': True, 'metavar': 'T/F'}, 'compat': {True: &lt;function condition at 0x352bb90&gt;}, 'type': 'boolean', 'description': 'reuse and preserve instrumented files after compilation'}, 'memory_alloc': {'default': False, 'argparse': {'group': 'memory', 'nargs': '?', 'flags': ('--memory-alloc',), 'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'const': True, 'metavar': 'T/F'}, 'type': 'boolean', 'description': 'record memory allocation and deallocation events'}, 'projects': {'via': 'measurements', 'description': 'projects using this measurement', 'collection': &lt;class 'tau.model.project.Project'&gt;}, 'compiler_inst': {'default': 'never', 'argparse': {'const': 'always', 'nargs': '?', 'choices': ('always', 'fallback', 'never'), 'flags': ('--compiler-inst',), 'group': 'instrumentation', 'metavar': 'mode'}, 'compat': {&lt;function &lt;lambda&gt; at 0x35289b0&gt;: (&lt;function condition at 0x3528488&gt;, &lt;function condition at 0x3528578&gt;, &lt;function condition at 0x35286e0&gt;, &lt;function condition at 0x35287d0&gt;, &lt;function condition at 0x3528938&gt;)}, 'type': 'string', 'description': 'use compiler-generated callbacks to gather performance data'}}</em><a class="headerlink" href="#tau.model.measurement.Measurement.attributes" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -445,7 +444,7 @@ measurements allow us to take different views of the application&#8217;s perform
 
 <dl class="method">
 <dt id="tau.model.measurement.Measurement.on_create">
-<code class="descname">on_create</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/measurement.html#Measurement.on_create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.measurement.Measurement.on_create" title="Permalink to this definition">¶</a></dt>
+<code class="descname">on_create</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.measurement.Measurement.on_create" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -457,34 +456,8 @@ measurements allow us to take different views of the application&#8217;s perform
 
 <dl class="function">
 <dt id="tau.model.measurement.attributes">
-<code class="descclassname">tau.model.measurement.</code><code class="descname">attributes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/measurement.html#attributes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.measurement.attributes" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.model.measurement.</code><code class="descname">attributes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.measurement.attributes" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
-<dl class="function">
-<dt id="tau.model.measurement.intel_only">
-<code class="descclassname">tau.model.measurement.</code><code class="descname">intel_only</code><span class="sig-paren">(</span><em>lhs</em>, <em>lhs_attr</em>, <em>lhs_value</em>, <em>rhs</em>, <em>rhs_attr</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/measurement.html#intel_only"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.measurement.intel_only" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compatibility checking callback.</p>
-<p>Guarantees that OMPT can only be used when Intel compilers are specified.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>lhs</strong> (<a class="reference internal" href="tau.mvc.html#tau.mvc.model.Model" title="tau.mvc.model.Model"><em>Model</em></a>) &#8211; The model invoking <cite>check_compatibility</cite>.</li>
-<li><strong>lhs_attr</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the attribute that defines the &#8216;compat&#8217; property.</li>
-<li><strong>lhs_value</strong> &#8211; Value of the attribute that defines the &#8216;compat&#8217; property.</li>
-<li><strong>rhs</strong> (<a class="reference internal" href="tau.mvc.html#tau.mvc.model.Model" title="tau.mvc.model.Model"><em>Model</em></a>) &#8211; Model we are checking against (argument to <cite>check_compatibility</cite>).</li>
-<li><strong>rhs_attr</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The right-hand side attribute we are checking for compatibility.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211;
-OMPT selected when non-Intel compilers specified in target configuration.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
 
 </div>
 <div class="section" id="module-tau.model.project">
@@ -496,13 +469,13 @@ Each application of the <a class="reference internal" href="#tau.model.experimen
 some performance data (profiles, traces, etc.).</p>
 <dl class="exception">
 <dt id="tau.model.project.ExperimentSelectionError">
-<em class="property">exception </em><code class="descclassname">tau.model.project.</code><code class="descname">ExperimentSelectionError</code><span class="sig-paren">(</span><em>value</em>, <em>*hints</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/project.html#ExperimentSelectionError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.project.ExperimentSelectionError" title="Permalink to this definition">¶</a></dt>
+<em class="property">exception </em><code class="descclassname">tau.model.project.</code><code class="descname">ExperimentSelectionError</code><span class="sig-paren">(</span><em>value</em>, <em>*hints</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.project.ExperimentSelectionError" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="tau.html#tau.error.ConfigurationError" title="tau.error.ConfigurationError"><code class="xref py py-class docutils literal"><span class="pre">tau.error.ConfigurationError</span></code></a></p>
 </dd></dl>
 
 <dl class="class">
 <dt id="tau.model.project.Project">
-<em class="property">class </em><code class="descclassname">tau.model.project.</code><code class="descname">Project</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/project.html#Project"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.project.Project" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.model.project.</code><code class="descname">Project</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.project.Project" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="tau.mvc.html#tau.mvc.model.Model" title="tau.mvc.model.Model"><code class="xref py py-class docutils literal"><span class="pre">tau.mvc.model.Model</span></code></a></p>
 <p>Project data controller.</p>
 <dl class="attribute">
@@ -517,12 +490,12 @@ some performance data (profiles, traces, etc.).</p>
 
 <dl class="classmethod">
 <dt id="tau.model.project.Project.controller">
-<em class="property">classmethod </em><code class="descname">controller</code><span class="sig-paren">(</span><em>storage=&lt;tau.storage.project.ProjectStorage object&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/project.html#Project.controller"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.project.Project.controller" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="descname">controller</code><span class="sig-paren">(</span><em>storage=&lt;tau.storage.project.ProjectStorage object at 0x32b8650&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.project.Project.controller" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="tau.model.project.Project.experiment">
-<code class="descname">experiment</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/project.html#Project.experiment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.project.Project.experiment" title="Permalink to this definition">¶</a></dt>
+<code class="descname">experiment</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.project.Project.experiment" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets the currently selected experiment configuration.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -563,27 +536,27 @@ No experiment currently selected.</td>
 
 <dl class="class">
 <dt id="tau.model.project.ProjectController">
-<em class="property">class </em><code class="descclassname">tau.model.project.</code><code class="descname">ProjectController</code><span class="sig-paren">(</span><em>model_cls</em>, <em>storage</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/project.html#ProjectController"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.project.ProjectController" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.model.project.</code><code class="descname">ProjectController</code><span class="sig-paren">(</span><em>model_cls</em>, <em>storage</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.project.ProjectController" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="tau.mvc.html#tau.mvc.controller.Controller" title="tau.mvc.controller.Controller"><code class="xref py py-class docutils literal"><span class="pre">tau.mvc.controller.Controller</span></code></a></p>
 <p>Project data controller.</p>
 <dl class="method">
 <dt id="tau.model.project.ProjectController.create">
-<code class="descname">create</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/project.html#ProjectController.create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.project.ProjectController.create" title="Permalink to this definition">¶</a></dt>
+<code class="descname">create</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.project.ProjectController.create" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="tau.model.project.ProjectController.delete">
-<code class="descname">delete</code><span class="sig-paren">(</span><em>keys</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/project.html#ProjectController.delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.project.ProjectController.delete" title="Permalink to this definition">¶</a></dt>
+<code class="descname">delete</code><span class="sig-paren">(</span><em>keys</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.project.ProjectController.delete" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="tau.model.project.ProjectController.select">
-<code class="descname">select</code><span class="sig-paren">(</span><em>project</em>, <em>experiment=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/project.html#ProjectController.select"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.project.ProjectController.select" title="Permalink to this definition">¶</a></dt>
+<code class="descname">select</code><span class="sig-paren">(</span><em>project</em>, <em>experiment=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.project.ProjectController.select" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="tau.model.project.ProjectController.selected">
-<code class="descname">selected</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/project.html#ProjectController.selected"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.project.ProjectController.selected" title="Permalink to this definition">¶</a></dt>
+<code class="descname">selected</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.project.ProjectController.selected" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets the currently selected project&#8217;s configuration data.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -602,20 +575,20 @@ No project currently selected.</td>
 
 <dl class="method">
 <dt id="tau.model.project.ProjectController.unselect">
-<code class="descname">unselect</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/project.html#ProjectController.unselect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.project.ProjectController.unselect" title="Permalink to this definition">¶</a></dt>
+<code class="descname">unselect</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.project.ProjectController.unselect" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="exception">
 <dt id="tau.model.project.ProjectSelectionError">
-<em class="property">exception </em><code class="descclassname">tau.model.project.</code><code class="descname">ProjectSelectionError</code><span class="sig-paren">(</span><em>value</em>, <em>*hints</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/project.html#ProjectSelectionError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.project.ProjectSelectionError" title="Permalink to this definition">¶</a></dt>
+<em class="property">exception </em><code class="descclassname">tau.model.project.</code><code class="descname">ProjectSelectionError</code><span class="sig-paren">(</span><em>value</em>, <em>*hints</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.project.ProjectSelectionError" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="tau.html#tau.error.ConfigurationError" title="tau.error.ConfigurationError"><code class="xref py py-class docutils literal"><span class="pre">tau.error.ConfigurationError</span></code></a></p>
 </dd></dl>
 
 <dl class="function">
 <dt id="tau.model.project.attributes">
-<code class="descclassname">tau.model.project.</code><code class="descname">attributes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/project.html#attributes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.project.attributes" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.model.project.</code><code class="descname">attributes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.project.attributes" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -630,7 +603,7 @@ describes a specific set of system features.  For example, if both GNU and Intel
 compilers are installed then there will target configurations for each compiler family.</p>
 <dl class="class">
 <dt id="tau.model.target.Target">
-<em class="property">class </em><code class="descclassname">tau.model.target.</code><code class="descname">Target</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/target.html#Target"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.target.Target" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.model.target.</code><code class="descname">Target</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.target.Target" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="tau.mvc.html#tau.mvc.model.Model" title="tau.mvc.model.Model"><code class="xref py py-class docutils literal"><span class="pre">tau.mvc.model.Model</span></code></a></p>
 <p>Target data model.</p>
 <dl class="attribute">
@@ -640,17 +613,36 @@ compilers are installed then there will target configurations for each compiler 
 
 <dl class="attribute">
 <dt id="tau.model.target.Target.attributes">
-<code class="descname">attributes</code><em class="property"> = {'MPI_FC': {'argparse': {'group': 'Message Passing Interface (MPI)', 'flags': ('--mpi-fc',), 'metavar': '&lt;command&gt;'}, 'model': &lt;class 'tau.model.compiler.Compiler'&gt;, 'required': False, 'description': 'MPI Fortran compiler command'}, 'scorep_source': {'argparse': {'action': &lt;class 'tau.cli.arguments.ParsePackagePathAction'&gt;, 'group': 'software package', 'flags': ('--score-p',), 'metavar': '(&lt;path&gt;|&lt;url&gt;|download|None)'}, 'type': 'string', 'description': 'path or URL to a Score-P installation or archive file'}, 'shmem_include_path': {'argparse': {'group': 'Symmetric Hierarchical Memory (SHMEM)', 'nargs': '+', 'flags': ('--shmem-include-path',), 'metavar': '&lt;path&gt;'}, 'type': 'array', 'description': 'paths to search for SHMEM header files when building SHMEM applications'}, 'tau_source': {'default': 'download', 'argparse': {'action': &lt;class 'tau.cli.arguments.ParsePackagePathAction'&gt;, 'group': 'software package', 'flags': ('--tau',), 'metavar': '(&lt;path&gt;|&lt;url&gt;|download)'}, 'type': 'string', 'description': 'path or URL to a TAU installation or archive file'}, 'FC': {'argparse': {'group': 'host', 'flags': ('--fc',), 'metavar': '&lt;command&gt;'}, 'model': &lt;class 'tau.model.compiler.Compiler'&gt;, 'required': True, 'description': 'Host Fortran compiler command'}, 'mpi_library_path': {'compat': {&lt;type 'bool'&gt;: (&lt;function condition at 0x10c13faa0&gt;, &lt;function condition at 0x10c13fb90&gt;, &lt;function condition at 0x10c13fc80&gt;)}, 'argparse': {'group': 'Message Passing Interface (MPI)', 'nargs': '+', 'flags': ('--mpi-library-path',), 'metavar': '&lt;path&gt;'}, 'type': 'array', 'description': 'paths to search for MPI library files when building MPI applications'}, 'host_arch': {'default': 'x86_64', 'argparse': {'group': 'host', 'flags': ('--host-arch',), 'metavar': '&lt;arch&gt;', 'choices': ['x86_64', 'knl', 'arm32', 'knc', 'bgp', 'bgq', 'arm64', 'ibm64']}, 'required': True, 'type': 'string', 'description': 'host architecture'}, 'binutils_source': {'default': 'download', 'argparse': {'action': &lt;class 'tau.cli.arguments.ParsePackagePathAction'&gt;, 'group': 'software package', 'flags': ('--binutils',), 'metavar': '(&lt;path&gt;|&lt;url&gt;|download|None)'}, 'type': 'string', 'description': 'path or URL to a GNU binutils installation or archive file'}, 'SHMEM_CC': {'argparse': {'group': 'Symmetric Hierarchical Memory (SHMEM)', 'flags': ('--shmem-cc',), 'metavar': '&lt;command&gt;'}, 'model': &lt;class 'tau.model.compiler.Compiler'&gt;, 'required': False, 'description': 'SHMEM C compiler command'}, 'opencl': {'argparse': {'action': &lt;class 'tau.cli.arguments.ParsePackagePathAction'&gt;, 'group': 'software package', 'flags': ('--opencl',), 'metavar': '&lt;path&gt;'}, 'type': 'string', 'description': 'path to OpenCL libraries and headers'}, 'MPI_CC': {'argparse': {'group': 'Message Passing Interface (MPI)', 'flags': ('--mpi-cc',), 'metavar': '&lt;command&gt;'}, 'model': &lt;class 'tau.model.compiler.Compiler'&gt;, 'required': False, 'description': 'MPI C compiler command'}, 'SHMEM_CXX': {'argparse': {'group': 'Symmetric Hierarchical Memory (SHMEM)', 'flags': ('--shmem-cxx',), 'metavar': '&lt;command&gt;'}, 'model': &lt;class 'tau.model.compiler.Compiler'&gt;, 'required': False, 'description': 'SHMEM C++ compiler command'}, 'CC': {'argparse': {'group': 'host', 'flags': ('--cc',), 'metavar': '&lt;command&gt;'}, 'model': &lt;class 'tau.model.compiler.Compiler'&gt;, 'required': True, 'description': 'Host C compiler command'}, 'shmem_libraries': {'argparse': {'group': 'Symmetric Hierarchical Memory (SHMEM)', 'nargs': '+', 'flags': ('--shmem-libraries',), 'metavar': '&lt;flag&gt;'}, 'type': 'array', 'description': 'libraries to link to when building SHMEM applications'}, 'UPC': {'argparse': {'group': 'Universal Parallel C', 'flags': ('--upc',), 'metavar': '&lt;command&gt;'}, 'model': &lt;class 'tau.model.compiler.Compiler'&gt;, 'required': False, 'description': 'Universal Parallel C compiler command'}, 'shmem_library_path': {'argparse': {'group': 'Symmetric Hierarchical Memory (SHMEM)', 'nargs': '+', 'flags': ('--shmem-library-path',), 'metavar': '&lt;path&gt;'}, 'type': 'array', 'description': 'paths to search for SHMEM library files when building SHMEM applications'}, 'mpi_include_path': {'compat': {&lt;type 'bool'&gt;: (&lt;function condition at 0x10c13f7d0&gt;, &lt;function condition at 0x10c13f8c0&gt;, &lt;function condition at 0x10c13f9b0&gt;)}, 'argparse': {'group': 'Message Passing Interface (MPI)', 'nargs': '+', 'flags': ('--mpi-include-path',), 'metavar': '&lt;path&gt;'}, 'type': 'array', 'description': 'paths to search for MPI header files when building MPI applications'}, 'pdt_source': {'default': 'download', 'argparse': {'action': &lt;class 'tau.cli.arguments.ParsePackagePathAction'&gt;, 'group': 'software package', 'flags': ('--pdt',), 'metavar': '(&lt;path&gt;|&lt;url&gt;|download|None)'}, 'type': 'string', 'description': 'path or URL to a PDT installation or archive file'}, 'MPI_CXX': {'argparse': {'group': 'Message Passing Interface (MPI)', 'flags': ('--mpi-cxx',), 'metavar': '&lt;command&gt;'}, 'model': &lt;class 'tau.model.compiler.Compiler'&gt;, 'required': False, 'description': 'MPI C++ compiler command'}, 'host_os': {'default': 'Darwin', 'argparse': {'group': 'host', 'flags': ('--host-os',), 'metavar': '&lt;os&gt;', 'choices': ['CNL', 'Darwin', 'CNK', 'Android', 'Linux']}, 'required': True, 'type': 'string', 'description': 'host operating system'}, 'projects': {'via': 'targets', 'description': 'projects using this target', 'collection': &lt;class 'tau.model.project.Project'&gt;}, 'name': {'argparse': {'metavar': '&lt;target_name&gt;'}, 'unique': True, 'type': 'string', 'primary_key': True, 'description': 'target configuration name'}, 'CXX': {'argparse': {'group': 'host', 'flags': ('--cxx',), 'metavar': '&lt;command&gt;'}, 'model': &lt;class 'tau.model.compiler.Compiler'&gt;, 'required': True, 'description': 'Host C++ compiler command'}, 'SHMEM_FC': {'argparse': {'group': 'Symmetric Hierarchical Memory (SHMEM)', 'flags': ('--shmem-fc',), 'metavar': '&lt;command&gt;'}, 'model': &lt;class 'tau.model.compiler.Compiler'&gt;, 'required': False, 'description': 'SHMEM Fortran compiler command'}, 'papi_source': {'argparse': {'action': &lt;class 'tau.cli.arguments.ParsePackagePathAction'&gt;, 'group': 'software package', 'flags': ('--papi',), 'metavar': '(&lt;path&gt;|&lt;url&gt;|download|None)'}, 'type': 'string', 'description': 'path or URL to a PAPI installation or archive file'}, 'libunwind_source': {'default': 'download', 'argparse': {'action': &lt;class 'tau.cli.arguments.ParsePackagePathAction'&gt;, 'group': 'software package', 'flags': ('--libunwind',), 'metavar': '(&lt;path&gt;|&lt;url&gt;|download|None)'}, 'type': 'string', 'description': 'path or URL to a libunwind installation or archive file'}, 'cuda': {'argparse': {'action': &lt;class 'tau.cli.arguments.ParsePackagePathAction'&gt;, 'group': 'software package', 'flags': ('--cuda',), 'metavar': '&lt;path&gt;'}, 'type': 'string', 'description': 'path to NVIDIA CUDA installation (enables OpenCL support)'}, 'mpi_libraries': {'compat': {&lt;type 'bool'&gt;: (&lt;function condition at 0x10c13fd70&gt;, &lt;function condition at 0x10c13fe60&gt;, &lt;function condition at 0x10c13ff50&gt;)}, 'argparse': {'group': 'Message Passing Interface (MPI)', 'nargs': '+', 'flags': ('--mpi-libraries',), 'metavar': '&lt;flag&gt;'}, 'type': 'array', 'description': 'libraries to link to when building MPI applications'}}</em><a class="headerlink" href="#tau.model.target.Target.attributes" title="Permalink to this definition">¶</a></dt>
+<code class="descname">attributes</code><em class="property"> = {'MPI_FC': {'argparse': {'group': 'Message Passing Interface (MPI)', 'flags': ('--mpi-fc',), 'metavar': '&lt;command&gt;'}, 'model': &lt;class 'tau.model.compiler.Compiler'&gt;, 'required': False, 'description': 'MPI Fortran compiler command'}, 'scorep_source': {'argparse': {'action': &lt;class 'tau.cli.arguments.ParsePackagePathAction'&gt;, 'group': 'software package', 'flags': ('--score-p',), 'metavar': '(&lt;path&gt;|&lt;url&gt;|download|None)'}, 'type': 'string', 'description': 'path or URL to a Score-P installation or archive file'}, 'shmem_include_path': {'argparse': {'group': 'Symmetric Hierarchical Memory (SHMEM)', 'nargs': '+', 'flags': ('--shmem-include-path',), 'metavar': '&lt;path&gt;'}, 'type': 'array', 'description': 'paths to search for SHMEM header files when building SHMEM applications'}, 'tau_source': {'default': 'download', 'argparse': {'action': &lt;class 'tau.cli.arguments.ParsePackagePathAction'&gt;, 'group': 'software package', 'flags': ('--tau',), 'metavar': '(&lt;path&gt;|&lt;url&gt;|download)'}, 'type': 'string', 'description': 'path or URL to a TAU installation or archive file'}, 'FC': {'argparse': {'group': 'host', 'flags': ('--fc',), 'metavar': '&lt;command&gt;'}, 'model': &lt;class 'tau.model.compiler.Compiler'&gt;, 'required': True, 'description': 'Host Fortran compiler command'}, 'mpi_library_path': {'compat': {&lt;type 'bool'&gt;: (&lt;function condition at 0x3526578&gt;, &lt;function condition at 0x3526668&gt;, &lt;function condition at 0x3526758&gt;)}, 'argparse': {'group': 'Message Passing Interface (MPI)', 'nargs': '+', 'flags': ('--mpi-library-path',), 'metavar': '&lt;path&gt;'}, 'type': 'array', 'description': 'paths to search for MPI library files when building MPI applications'}, 'host_arch': {'compat': {'knc': (&lt;function condition at 0x3526140&gt;, &lt;function condition at 0x35261b8&gt;, &lt;function condition at 0x3526230&gt;)}, 'argparse': {'group': 'host', 'flags': ('--host-arch',), 'metavar': '&lt;arch&gt;', 'choices': ['x86_64', 'arm32', 'knc', 'bgp', 'bgq', 'arm64', 'ibm64']}, 'description': 'host architecture', 'default': 'x86_64', 'required': True, 'type': 'string'}, 'binutils_source': {'default': 'download', 'argparse': {'action': &lt;class 'tau.cli.arguments.ParsePackagePathAction'&gt;, 'group': 'software package', 'flags': ('--binutils',), 'metavar': '(&lt;path&gt;|&lt;url&gt;|download|None)'}, 'compat': {&lt;function &lt;lambda&gt; at 0x3526b90&gt;: &lt;function condition at 0x3526b18&gt;}, 'type': 'string', 'description': 'path or URL to a GNU binutils installation or archive file'}, 'SHMEM_CC': {'argparse': {'group': 'Symmetric Hierarchical Memory (SHMEM)', 'flags': ('--shmem-cc',), 'metavar': '&lt;command&gt;'}, 'model': &lt;class 'tau.model.compiler.Compiler'&gt;, 'required': False, 'description': 'SHMEM C compiler command'}, 'opencl': {'argparse': {'action': &lt;class 'tau.cli.arguments.ParsePackagePathAction'&gt;, 'group': 'software package', 'flags': ('--opencl',), 'metavar': '&lt;path&gt;'}, 'type': 'string', 'description': 'path to OpenCL libraries and headers'}, 'MPI_CC': {'argparse': {'group': 'Message Passing Interface (MPI)', 'flags': ('--mpi-cc',), 'metavar': '&lt;command&gt;'}, 'model': &lt;class 'tau.model.compiler.Compiler'&gt;, 'required': False, 'description': 'MPI C compiler command'}, 'SHMEM_CXX': {'argparse': {'group': 'Symmetric Hierarchical Memory (SHMEM)', 'flags': ('--shmem-cxx',), 'metavar': '&lt;command&gt;'}, 'model': &lt;class 'tau.model.compiler.Compiler'&gt;, 'required': False, 'description': 'SHMEM C++ compiler command'}, 'CC': {'argparse': {'group': 'host', 'flags': ('--cc',), 'metavar': '&lt;command&gt;'}, 'model': &lt;class 'tau.model.compiler.Compiler'&gt;, 'required': True, 'description': 'Host C compiler command'}, 'shmem_libraries': {'argparse': {'group': 'Symmetric Hierarchical Memory (SHMEM)', 'nargs': '+', 'flags': ('--shmem-libraries',), 'metavar': '&lt;flag&gt;'}, 'type': 'array', 'description': 'libraries to link to when building SHMEM applications'}, 'UPC': {'argparse': {'group': 'Universal Parallel C', 'flags': ('--upc',), 'metavar': '&lt;command&gt;'}, 'model': &lt;class 'tau.model.compiler.Compiler'&gt;, 'required': False, 'description': 'Universal Parallel C compiler command'}, 'shmem_library_path': {'argparse': {'group': 'Symmetric Hierarchical Memory (SHMEM)', 'nargs': '+', 'flags': ('--shmem-library-path',), 'metavar': '&lt;path&gt;'}, 'type': 'array', 'description': 'paths to search for SHMEM library files when building SHMEM applications'}, 'mpi_include_path': {'compat': {&lt;type 'bool'&gt;: (&lt;function condition at 0x35262a8&gt;, &lt;function condition at 0x3526398&gt;, &lt;function condition at 0x3526488&gt;)}, 'argparse': {'group': 'Message Passing Interface (MPI)', 'nargs': '+', 'flags': ('--mpi-include-path',), 'metavar': '&lt;path&gt;'}, 'type': 'array', 'description': 'paths to search for MPI header files when building MPI applications'}, 'pdt_source': {'default': 'download', 'argparse': {'action': &lt;class 'tau.cli.arguments.ParsePackagePathAction'&gt;, 'group': 'software package', 'flags': ('--pdt',), 'metavar': '(&lt;path&gt;|&lt;url&gt;|download|None)'}, 'type': 'string', 'description': 'path or URL to a PDT installation or archive file'}, 'MPI_CXX': {'argparse': {'group': 'Message Passing Interface (MPI)', 'flags': ('--mpi-cxx',), 'metavar': '&lt;command&gt;'}, 'model': &lt;class 'tau.model.compiler.Compiler'&gt;, 'required': False, 'description': 'MPI C++ compiler command'}, 'host_os': {'default': 'Linux', 'argparse': {'group': 'host', 'flags': ('--host-os',), 'metavar': '&lt;os&gt;', 'choices': ['CNL', 'Darwin', 'CNK', 'Android', 'Linux']}, 'required': True, 'type': 'string', 'description': 'host operating system'}, 'projects': {'via': 'targets', 'description': 'projects using this target', 'collection': &lt;class 'tau.model.project.Project'&gt;}, 'name': {'argparse': {'metavar': '&lt;target_name&gt;'}, 'unique': True, 'type': 'string', 'primary_key': True, 'description': 'target configuration name'}, 'CXX': {'argparse': {'group': 'host', 'flags': ('--cxx',), 'metavar': '&lt;command&gt;'}, 'model': &lt;class 'tau.model.compiler.Compiler'&gt;, 'required': True, 'description': 'Host C++ compiler command'}, 'SHMEM_FC': {'argparse': {'group': 'Symmetric Hierarchical Memory (SHMEM)', 'flags': ('--shmem-fc',), 'metavar': '&lt;command&gt;'}, 'model': &lt;class 'tau.model.compiler.Compiler'&gt;, 'required': False, 'description': 'SHMEM Fortran compiler command'}, 'papi_source': {'default': 'download', 'argparse': {'action': &lt;class 'tau.cli.arguments.ParsePackagePathAction'&gt;, 'group': 'software package', 'flags': ('--papi',), 'metavar': '(&lt;path&gt;|&lt;url&gt;|download|None)'}, 'compat': {&lt;function &lt;lambda&gt; at 0x3526d70&gt;: &lt;function condition at 0x3526cf8&gt;}, 'type': 'string', 'description': 'path or URL to a PAPI installation or archive file'}, 'libunwind_source': {'default': 'download', 'argparse': {'action': &lt;class 'tau.cli.arguments.ParsePackagePathAction'&gt;, 'group': 'software package', 'flags': ('--libunwind',), 'metavar': '(&lt;path&gt;|&lt;url&gt;|download|None)'}, 'type': 'string', 'description': 'path or URL to a libunwind installation or archive file'}, 'cuda': {'argparse': {'action': &lt;class 'tau.cli.arguments.ParsePackagePathAction'&gt;, 'group': 'software package', 'flags': ('--cuda',), 'metavar': '&lt;path&gt;'}, 'type': 'string', 'description': 'path to NVIDIA CUDA installation (enables OpenCL support)'}, 'mpi_libraries': {'compat': {&lt;type 'bool'&gt;: (&lt;function condition at 0x3526848&gt;, &lt;function condition at 0x3526938&gt;, &lt;function condition at 0x3526a28&gt;)}, 'argparse': {'group': 'Message Passing Interface (MPI)', 'nargs': '+', 'flags': ('--mpi-libraries',), 'metavar': '&lt;flag&gt;'}, 'type': 'array', 'description': 'libraries to link to when building MPI applications'}}</em><a class="headerlink" href="#tau.model.target.Target.attributes" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="tau.model.target.Target.check_compiler">
-<code class="descname">check_compiler</code><span class="sig-paren">(</span><em>given_compiler</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/target.html#Target.check_compiler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.target.Target.check_compiler" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="descname">check_compiler</code><span class="sig-paren">(</span><em>given_compiler</em>, <em>compiler_args</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.target.Target.check_compiler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks a compiler command its arguments for compatibility with this target configuration.</p>
+<p>Checks that the given compiler matches one of the compilers used in the target.
+Also performs any special checkes for invalid compiler arguments, e.g. -mmic is only for native KNC.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>given_compiler</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The compiler command as passed by the user.</li>
+<li><strong>compiler_args</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Compiler command line arguments.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211;
+The compiler or command line arguments are incompatible with this target.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="tau.model.target.Target.compilers">
-<code class="descname">compilers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/target.html#Target.compilers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.target.Target.compilers" title="Permalink to this definition">¶</a></dt>
+<code class="descname">compilers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.target.Target.compilers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get information about the compilers used by this target configuration.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -676,7 +668,7 @@ compilers are installed then there will target configurations for each compiler 
 
 <dl class="method">
 <dt id="tau.model.target.Target.on_create">
-<code class="descname">on_create</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/target.html#Target.on_create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.target.Target.on_create" title="Permalink to this definition">¶</a></dt>
+<code class="descname">on_create</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.target.Target.on_create" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -688,14 +680,14 @@ compilers are installed then there will target configurations for each compiler 
 
 <dl class="class">
 <dt id="tau.model.target.TargetController">
-<em class="property">class </em><code class="descclassname">tau.model.target.</code><code class="descname">TargetController</code><span class="sig-paren">(</span><em>model_cls</em>, <em>storage</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/target.html#TargetController"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.target.TargetController" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.model.target.</code><code class="descname">TargetController</code><span class="sig-paren">(</span><em>model_cls</em>, <em>storage</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.target.TargetController" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="tau.mvc.html#tau.mvc.controller.Controller" title="tau.mvc.controller.Controller"><code class="xref py py-class docutils literal"><span class="pre">tau.mvc.controller.Controller</span></code></a></p>
 <p>Target data controller.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="tau.model.target.attributes">
-<code class="descclassname">tau.model.target.</code><code class="descname">attributes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/target.html#attributes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.target.attributes" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.model.target.</code><code class="descname">attributes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.target.attributes" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -707,7 +699,7 @@ record completely describes the hardware and software environment that produced
 the performance data.</p>
 <dl class="class">
 <dt id="tau.model.trial.Trial">
-<em class="property">class </em><code class="descclassname">tau.model.trial.</code><code class="descname">Trial</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/trial.html#Trial"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.trial.Trial" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.model.trial.</code><code class="descname">Trial</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.trial.Trial" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="tau.mvc.html#tau.mvc.model.Model" title="tau.mvc.model.Model"><code class="xref py py-class docutils literal"><span class="pre">tau.mvc.model.Model</span></code></a></p>
 <p>Trial data model.</p>
 <dl class="attribute">
@@ -722,7 +714,7 @@ the performance data.</p>
 
 <dl class="method">
 <dt id="tau.model.trial.Trial.execute_command">
-<code class="descname">execute_command</code><span class="sig-paren">(</span><em>expr</em>, <em>cmd</em>, <em>cwd</em>, <em>env</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/trial.html#Trial.execute_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.trial.Trial.execute_command" title="Permalink to this definition">¶</a></dt>
+<code class="descname">execute_command</code><span class="sig-paren">(</span><em>expr</em>, <em>cmd</em>, <em>cwd</em>, <em>env</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.trial.Trial.execute_command" title="Permalink to this definition">¶</a></dt>
 <dd><p>Execute a command as part of an experiment trial.</p>
 <p>Creates a new subprocess for the command and checks for TAU data files
 when the subprocess exits.</p>
@@ -760,12 +752,12 @@ when the subprocess exits.</p>
 
 <dl class="method">
 <dt id="tau.model.trial.Trial.on_create">
-<code class="descname">on_create</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/trial.html#Trial.on_create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.trial.Trial.on_create" title="Permalink to this definition">¶</a></dt>
+<code class="descname">on_create</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.trial.Trial.on_create" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="tau.model.trial.Trial.on_delete">
-<code class="descname">on_delete</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/trial.html#Trial.on_delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.trial.Trial.on_delete" title="Permalink to this definition">¶</a></dt>
+<code class="descname">on_delete</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.trial.Trial.on_delete" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -775,10 +767,10 @@ when the subprocess exits.</p>
 
 <dl class="method">
 <dt id="tau.model.trial.Trial.profile_files">
-<code class="descname">profile_files</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/trial.html#Trial.profile_files"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.trial.Trial.profile_files" title="Permalink to this definition">¶</a></dt>
+<code class="descname">profile_files</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.trial.Trial.profile_files" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get this trial&#8217;s profile files.</p>
 <p>Returns paths to profile files (profile.X.Y.Z).  If the trial produced
-<a href="#id1"><span class="problematic" id="id2">MULTI__</span></a> directories then paths to every profile below every <a href="#id1"><span class="problematic" id="id3">MULTI__</span></a>
+<a href="#id3"><span class="problematic" id="id4">MULTI__</span></a> directories then paths to every profile below every <a href="#id3"><span class="problematic" id="id5">MULTI__</span></a>
 directory are returned.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -797,16 +789,33 @@ directory are returned.</p>
 <code class="descname">references</code><em class="property"> = set([])</em><a class="headerlink" href="#tau.model.trial.Trial.references" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="method">
+<dt id="tau.model.trial.Trial.trace_files">
+<code class="descname">trace_files</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.trial.Trial.trace_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get this trial&#8217;s trace files.</p>
+<p>Returns paths to trace files: <a href="#id1"><span class="problematic" id="id2">*</span></a>.[trc,edf].</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Paths to trace files.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list">list</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="class">
 <dt id="tau.model.trial.TrialController">
-<em class="property">class </em><code class="descclassname">tau.model.trial.</code><code class="descname">TrialController</code><span class="sig-paren">(</span><em>model_cls</em>, <em>storage</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/trial.html#TrialController"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.trial.TrialController" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.model.trial.</code><code class="descname">TrialController</code><span class="sig-paren">(</span><em>model_cls</em>, <em>storage</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.trial.TrialController" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="tau.mvc.html#tau.mvc.controller.Controller" title="tau.mvc.controller.Controller"><code class="xref py py-class docutils literal"><span class="pre">tau.mvc.controller.Controller</span></code></a></p>
 <p>Trial data controller.</p>
 <dl class="method">
 <dt id="tau.model.trial.TrialController.perform">
-<code class="descname">perform</code><span class="sig-paren">(</span><em>expr</em>, <em>cmd</em>, <em>cwd</em>, <em>env</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/trial.html#TrialController.perform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.trial.TrialController.perform" title="Permalink to this definition">¶</a></dt>
+<code class="descname">perform</code><span class="sig-paren">(</span><em>expr</em>, <em>cmd</em>, <em>cwd</em>, <em>env</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.trial.TrialController.perform" title="Permalink to this definition">¶</a></dt>
 <dd><p>Performs a trial of an experiment.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -828,7 +837,7 @@ directory are returned.</p>
 
 <dl class="exception">
 <dt id="tau.model.trial.TrialError">
-<em class="property">exception </em><code class="descclassname">tau.model.trial.</code><code class="descname">TrialError</code><span class="sig-paren">(</span><em>value</em>, <em>*hints</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/trial.html#TrialError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.trial.TrialError" title="Permalink to this definition">¶</a></dt>
+<em class="property">exception </em><code class="descclassname">tau.model.trial.</code><code class="descname">TrialError</code><span class="sig-paren">(</span><em>value</em>, <em>*hints</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.trial.TrialError" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="tau.html#tau.error.ConfigurationError" title="tau.error.ConfigurationError"><code class="xref py py-class docutils literal"><span class="pre">tau.error.ConfigurationError</span></code></a></p>
 <p>Indicates there was an error while performing an experiment trial.</p>
 <dl class="attribute">
@@ -840,7 +849,7 @@ directory are returned.</p>
 
 <dl class="function">
 <dt id="tau.model.trial.attributes">
-<code class="descclassname">tau.model.trial.</code><code class="descname">attributes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/trial.html#attributes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.trial.attributes" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.model.trial.</code><code class="descname">attributes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.model.trial.attributes" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -851,11 +860,7 @@ directory are returned.</p>
       <div class="bottomnav" role="navigation" aria-label="bottom navigation">
       
         <p>
-        «&#160;&#160;<a href="tau.gui.html">tau.gui package</a>
-        &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
-        &#160;&#160;::&#160;&#160;
-        <a href="tau.mvc.html">tau.mvc package</a>&#160;&#160;»
         </p>
 
       </div>

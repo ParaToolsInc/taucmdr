@@ -25,10 +25,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="_static/favicon.ico"/>
-    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
-    <link rel="up" title="tau.cf package" href="tau.cf.html" />
-    <link rel="next" title="tau.cli package" href="tau.cli.html" />
-    <link rel="prev" title="tau.cf.software package" href="tau.cf.software.html" /> 
+    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" /> 
   </head>
   <body role="document">
       <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="index.html">
@@ -38,11 +35,7 @@
       <div class="topnav" role="navigation" aria-label="top navigation">
       
         <p>
-        «&#160;&#160;<a href="tau.cf.software.html">tau.cf.software package</a>
-        &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
-        &#160;&#160;::&#160;&#160;
-        <a href="tau.cli.html">tau.cli package</a>&#160;&#160;»
         </p>
 
       </div>
@@ -54,7 +47,7 @@
 <p>Target hardware and software detection and defaults.</p>
 <dl class="class">
 <dt id="tau.cf.target.Architecture">
-<em class="property">class </em><code class="descclassname">tau.cf.target.</code><code class="descname">Architecture</code><span class="sig-paren">(</span><em>name</em>, <em>description</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/target.html#Architecture"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.target.Architecture" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.cf.target.</code><code class="descname">Architecture</code><span class="sig-paren">(</span><em>name</em>, <em>description</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.cf.target.Architecture" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="tau.cf.html#tau.cf.KeyedRecord" title="tau.cf.KeyedRecord"><code class="xref py py-class docutils literal"><span class="pre">tau.cf.KeyedRecord</span></code></a></p>
 <p>Information about a target architecture.</p>
 <dl class="attribute">
@@ -75,7 +68,7 @@
 
 <dl class="class">
 <dt id="tau.cf.target.OperatingSystem">
-<em class="property">class </em><code class="descclassname">tau.cf.target.</code><code class="descname">OperatingSystem</code><span class="sig-paren">(</span><em>name</em>, <em>description</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/target.html#OperatingSystem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.target.OperatingSystem" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.cf.target.</code><code class="descname">OperatingSystem</code><span class="sig-paren">(</span><em>name</em>, <em>description</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.cf.target.OperatingSystem" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="tau.cf.html#tau.cf.KeyedRecord" title="tau.cf.KeyedRecord"><code class="xref py py-class docutils literal"><span class="pre">tau.cf.KeyedRecord</span></code></a></p>
 <p>Information about a target operating system.</p>
 <dl class="attribute">
@@ -96,7 +89,7 @@
 
 <dl class="class">
 <dt id="tau.cf.target.TauArch">
-<em class="property">class </em><code class="descclassname">tau.cf.target.</code><code class="descname">TauArch</code><span class="sig-paren">(</span><em>name</em>, <em>architecture</em>, <em>operating_system</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/target.html#TauArch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.target.TauArch" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.cf.target.</code><code class="descname">TauArch</code><span class="sig-paren">(</span><em>name</em>, <em>architecture</em>, <em>operating_system</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.cf.target.TauArch" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="tau.cf.html#tau.cf.KeyedRecord" title="tau.cf.KeyedRecord"><code class="xref py py-class docutils literal"><span class="pre">tau.cf.KeyedRecord</span></code></a></p>
 <p>Maps (operating system, architecture pairs) to TAU&#8217;s magic words.</p>
 <dl class="attribute">
@@ -122,7 +115,7 @@
 
 <dl class="classmethod">
 <dt id="tau.cf.target.TauArch.get">
-<em class="property">classmethod </em><code class="descname">get</code><span class="sig-paren">(</span><em>targ_arch</em>, <em>targ_os</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/target.html#TauArch.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.target.TauArch.get" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="descname">get</code><span class="sig-paren">(</span><em>targ_arch</em>, <em>targ_os</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.cf.target.TauArch.get" title="Permalink to this definition">¶</a></dt>
 <dd><p>Look up the TAU magic word matching an architecture and operating system.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -154,7 +147,7 @@
 <p>Target device hardware and software detection and defaults.</p>
 <dl class="function">
 <dt id="tau.cf.target.device.detect_device">
-<code class="descclassname">tau.cf.target.device.</code><code class="descname">detect_device</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/target/device.html#detect_device"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.target.device.detect_device" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.cf.target.device.</code><code class="descname">detect_device</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.cf.target.device.detect_device" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -163,7 +156,7 @@
 <p>Target host hardware and software detection and defaults.</p>
 <dl class="function">
 <dt id="tau.cf.target.host.architecture">
-<code class="descclassname">tau.cf.target.host.</code><code class="descname">architecture</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/target/host.html#architecture"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.target.host.architecture" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.cf.target.host.</code><code class="descname">architecture</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.cf.target.host.architecture" title="Permalink to this definition">¶</a></dt>
 <dd><p>Detect the host&#8217;s architecture.</p>
 <p>Mostly relies on Python&#8217;s platform module but may also probe
 environment variables and file systems in cases where the arch
@@ -186,7 +179,7 @@ Host architecture not supported.</td>
 
 <dl class="function">
 <dt id="tau.cf.target.host.default_compiler">
-<code class="descclassname">tau.cf.target.host.</code><code class="descname">default_compiler</code><span class="sig-paren">(</span><em>role</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/target/host.html#default_compiler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.target.host.default_compiler" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.cf.target.host.</code><code class="descname">default_compiler</code><span class="sig-paren">(</span><em>role</em><span class="sig-paren">)</span><a class="headerlink" href="#tau.cf.target.host.default_compiler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the default compiler on this host for a given role.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -207,7 +200,7 @@ No installed compiler can fill the role.</td>
 
 <dl class="function">
 <dt id="tau.cf.target.host.default_compilers">
-<code class="descclassname">tau.cf.target.host.</code><code class="descname">default_compilers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/target/host.html#default_compilers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.target.host.default_compilers" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.cf.target.host.</code><code class="descname">default_compilers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.cf.target.host.default_compilers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the default installed compilers for the host.</p>
 <p>This is most likely the installation of the host&#8217;s preferred compilers,
 (see <a class="reference internal" href="#tau.cf.target.host.preferred_compilers" title="tau.cf.target.host.preferred_compilers"><code class="xref any py py-func docutils literal"><span class="pre">preferred_compilers</span></code></a>) but if those compilers are not installed
@@ -232,7 +225,7 @@ No recognized compilers are installed.</td>
 
 <dl class="function">
 <dt id="tau.cf.target.host.default_mpi_compilers">
-<code class="descclassname">tau.cf.target.host.</code><code class="descname">default_mpi_compilers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/target/host.html#default_mpi_compilers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.target.host.default_mpi_compilers" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.cf.target.host.</code><code class="descname">default_mpi_compilers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.cf.target.host.default_mpi_compilers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the default installed MPI compilers for the host.</p>
 <p>This is most likely the installation of the host&#8217;s preferred MPI compilers,
 (see <a class="reference internal" href="#tau.cf.target.host.preferred_mpi_compilers" title="tau.cf.target.host.preferred_mpi_compilers"><code class="xref any py py-func docutils literal"><span class="pre">preferred_mpi_compilers</span></code></a>) but if those compilers are not installed
@@ -257,7 +250,7 @@ No recognized compilers are installed.</td>
 
 <dl class="function">
 <dt id="tau.cf.target.host.operating_system">
-<code class="descclassname">tau.cf.target.host.</code><code class="descname">operating_system</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/target/host.html#operating_system"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.target.host.operating_system" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.cf.target.host.</code><code class="descname">operating_system</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.cf.target.host.operating_system" title="Permalink to this definition">¶</a></dt>
 <dd><p>Detect the host&#8217;s operating system.</p>
 <p>Mostly relies on Python&#8217;s platform module but may also probe
 environment variables and file systems in cases where the arch
@@ -280,7 +273,7 @@ Host operating system not supported.</td>
 
 <dl class="function">
 <dt id="tau.cf.target.host.preferred_compilers">
-<code class="descclassname">tau.cf.target.host.</code><code class="descname">preferred_compilers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/target/host.html#preferred_compilers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.target.host.preferred_compilers" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.cf.target.host.</code><code class="descname">preferred_compilers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.cf.target.host.preferred_compilers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the preferred compiler family for the host architecture.</p>
 <p>May probe environment variables and file systems in cases where the arch
 isn&#8217;t immediately known to Python.  These tests may be expensive so the
@@ -299,7 +292,7 @@ detected value is cached to improve performance.</p>
 
 <dl class="function">
 <dt id="tau.cf.target.host.preferred_mpi_compilers">
-<code class="descclassname">tau.cf.target.host.</code><code class="descname">preferred_mpi_compilers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/target/host.html#preferred_mpi_compilers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.target.host.preferred_mpi_compilers" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.cf.target.host.</code><code class="descname">preferred_mpi_compilers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.cf.target.host.preferred_mpi_compilers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the preferred MPI compiler family for the host architecture.</p>
 <p>May probe environment variables and file systems in cases where the arch
 isn&#8217;t immediately known to Python.  These tests may be expensive so the
@@ -318,7 +311,7 @@ detected value is cached to improve performance.</p>
 
 <dl class="function">
 <dt id="tau.cf.target.host.tau_arch">
-<code class="descclassname">tau.cf.target.host.</code><code class="descname">tau_arch</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/target/host.html#tau_arch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.target.host.tau_arch" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.cf.target.host.</code><code class="descname">tau_arch</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tau.cf.target.host.tau_arch" title="Permalink to this definition">¶</a></dt>
 <dd><p>Detect the TAU architecture &#8220;magic keyword&#8221; that matches the host.</p>
 <p>Mostly relies on Python&#8217;s platform module but may also probe
 environment variables and file systems in cases where the arch
@@ -347,11 +340,7 @@ Host architecture or operating system not supported.</td>
       <div class="bottomnav" role="navigation" aria-label="bottom navigation">
       
         <p>
-        «&#160;&#160;<a href="tau.cf.software.html">tau.cf.software package</a>
-        &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
-        &#160;&#160;::&#160;&#160;
-        <a href="tau.cli.html">tau.cli package</a>&#160;&#160;»
         </p>
 
       </div>
