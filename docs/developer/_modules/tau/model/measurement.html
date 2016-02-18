@@ -26,7 +26,7 @@
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
     <link rel="top" title="TAU Commander Developer Documentation" href="../../../index.html" />
-    <link rel="up" title="tau.model" href="../model.html" /> 
+    <link rel="up" title="Module code" href="../../index.html" /> 
   </head>
   <body role="document">
       <div class="header" role="banner"><img class="rightlogo" src="../../../_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="../../../index.html">
@@ -82,22 +82,75 @@
 <span class="kn">from</span> <span class="nn">tau.error</span> <span class="kn">import</span> <span class="n">ConfigurationError</span>
 <span class="kn">from</span> <span class="nn">tau.mvc.model</span> <span class="kn">import</span> <span class="n">Model</span>
 <span class="kn">from</span> <span class="nn">tau.cf.compiler</span> <span class="kn">import</span> <span class="n">INTEL_COMPILERS</span><span class="p">,</span> <span class="n">GNU_COMPILERS</span>
+<span class="kn">from</span> <span class="nn">tau.cf.compiler.installed</span> <span class="kn">import</span> <span class="n">InstalledCompiler</span>
 <span class="kn">from</span> <span class="nn">tau.cf.target</span> <span class="kn">import</span> <span class="n">host</span><span class="p">,</span> <span class="n">DARWIN_OS</span>
 
 
+<div class="viewcode-block" id="intel_only"><a class="viewcode-back" href="../../../tau.model.html#tau.model.measurement.intel_only">[docs]</a><span class="k">def</span> <span class="nf">intel_only</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">rhs</span><span class="p">,</span> <span class="n">rhs_attr</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compatibility checking callback.</span>
+<span class="sd">    </span>
+<span class="sd">    Guarantees that OMPT can only be used when Intel compilers are specified.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        lhs (Model): The model invoking `check_compatibility`.</span>
+<span class="sd">        lhs_attr (str): Name of the attribute that defines the &#39;compat&#39; property.</span>
+<span class="sd">        lhs_value: Value of the attribute that defines the &#39;compat&#39; property.</span>
+<span class="sd">        rhs (Model): Model we are checking against (argument to `check_compatibility`).</span>
+<span class="sd">        rhs_attr (str): The right-hand side attribute we are checking for compatibility.</span>
+<span class="sd">        </span>
+<span class="sd">    Raises:</span>
+<span class="sd">        ConfigurationError: OMPT selected when non-Intel compilers specified in target configuration.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">lhs_name</span> <span class="o">=</span> <span class="n">lhs</span><span class="o">.</span><span class="n">model_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="n">rhs_name</span> <span class="o">=</span> <span class="n">rhs</span><span class="o">.</span><span class="n">model_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s"> = </span><span class="si">%s</span><span class="s"> in </span><span class="si">%s</span><span class="s"> requires </span><span class="si">%s</span><span class="s"> in </span><span class="si">%s</span><span class="s"> to be an Intel compiler&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">lhs_name</span><span class="p">,</span> 
+                                                                       <span class="n">rhs_attr</span><span class="p">,</span> <span class="n">rhs_name</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">compiler_record</span> <span class="o">=</span> <span class="n">rhs</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="n">rhs_attr</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> but it is undefined&quot;</span> <span class="o">%</span> <span class="n">msg</span><span class="p">)</span>
+    <span class="n">given_compiler</span> <span class="o">=</span> <span class="n">InstalledCompiler</span><span class="p">(</span><span class="n">compiler_record</span><span class="p">[</span><span class="s">&#39;path&#39;</span><span class="p">])</span>
+    <span class="n">given_family</span> <span class="o">=</span> <span class="n">given_compiler</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">family</span>
+    <span class="k">if</span> <span class="n">given_family</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">INTEL_COMPILERS</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> but it is a </span><span class="si">%s</span><span class="s"> compiler&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">given_family</span><span class="p">),</span>
+                                 <span class="s">&quot;OMPT for OpenMP measurement only works with Intel compilers&quot;</span><span class="p">)</span>
 
+</div>
+<div class="viewcode-block" id="gnu_only"><a class="viewcode-back" href="../../../tau.model.html#tau.model.measurement.gnu_only">[docs]</a><span class="k">def</span> <span class="nf">gnu_only</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">rhs</span><span class="p">,</span> <span class="n">rhs_attr</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compatibility checking callback.</span>
+<span class="sd">    </span>
+<span class="sd">    Guarantees that GOMP can only be used when GNU compilers are specified.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        lhs (Model): The model invoking `check_compatibility`.</span>
+<span class="sd">        lhs_attr (str): Name of the attribute that defines the &#39;compat&#39; property.</span>
+<span class="sd">        lhs_value: Value of the attribute that defines the &#39;compat&#39; property.</span>
+<span class="sd">        rhs (Model): Model we are checking against (argument to `check_compatibility`).</span>
+<span class="sd">        rhs_attr (str): The right-hand side attribute we are checking for compatibility.</span>
+<span class="sd">        </span>
+<span class="sd">    Raises:</span>
+<span class="sd">        ConfigurationError: OMPT selected when non-GNU compilers specified in target configuration.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">lhs_name</span> <span class="o">=</span> <span class="n">lhs</span><span class="o">.</span><span class="n">model_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="n">rhs_name</span> <span class="o">=</span> <span class="n">rhs</span><span class="o">.</span><span class="n">model_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s"> = </span><span class="si">%s</span><span class="s"> in </span><span class="si">%s</span><span class="s"> requires </span><span class="si">%s</span><span class="s"> in </span><span class="si">%s</span><span class="s"> to be an GNU compiler&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">lhs_name</span><span class="p">,</span> 
+                                                                       <span class="n">rhs_attr</span><span class="p">,</span> <span class="n">rhs_name</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">compiler_record</span> <span class="o">=</span> <span class="n">rhs</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="n">rhs_attr</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> but it is undefined&quot;</span> <span class="o">%</span> <span class="n">msg</span><span class="p">)</span>
+    <span class="n">given_compiler</span> <span class="o">=</span> <span class="n">InstalledCompiler</span><span class="p">(</span><span class="n">compiler_record</span><span class="p">[</span><span class="s">&#39;path&#39;</span><span class="p">])</span>
+    <span class="n">given_family</span> <span class="o">=</span> <span class="n">given_compiler</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">family</span>
+    <span class="k">if</span> <span class="n">given_family</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">GNU_COMPILERS</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> but it is a </span><span class="si">%s</span><span class="s"> compiler&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">given_family</span><span class="p">),</span>
+                                 <span class="s">&quot;GOMP for OpenMP measurement only works with GNU compilers&quot;</span><span class="p">)</span>
+
+</div>
 <div class="viewcode-block" id="attributes"><a class="viewcode-back" href="../../../tau.model.html#tau.model.measurement.attributes">[docs]</a><span class="k">def</span> <span class="nf">attributes</span><span class="p">():</span>
     <span class="kn">from</span> <span class="nn">tau.model.project</span> <span class="kn">import</span> <span class="n">Project</span>
     <span class="kn">from</span> <span class="nn">tau.model.target</span> <span class="kn">import</span> <span class="n">Target</span>
     <span class="kn">from</span> <span class="nn">tau.model.application</span> <span class="kn">import</span> <span class="n">Application</span>
     <span class="kn">from</span> <span class="nn">tau.cli.arguments</span> <span class="kn">import</span> <span class="n">ParseBooleanAction</span>
-    <span class="kn">from</span> <span class="nn">tau.model</span> <span class="kn">import</span> <span class="n">require_compiler_family</span>
-
-    <span class="n">ompt_intel_only</span> <span class="o">=</span> <span class="n">require_compiler_family</span><span class="p">(</span><span class="n">INTEL_COMPILERS</span><span class="p">,</span> 
-                                              <span class="s">&quot;OMPT for OpenMP measurement only works with Intel compilers&quot;</span><span class="p">)</span>
-    <span class="n">gomp_gnu_only</span> <span class="o">=</span> <span class="n">require_compiler_family</span><span class="p">(</span><span class="n">GNU_COMPILERS</span><span class="p">,</span> 
-                                            <span class="s">&quot;GOMP for OpenMP measurement only works with GNU compilers&quot;</span><span class="p">)</span>
-
     <span class="k">return</span> <span class="p">{</span>
         <span class="s">&#39;projects&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s">&#39;collection&#39;</span><span class="p">:</span> <span class="n">Project</span><span class="p">,</span>
@@ -221,14 +274,14 @@
                        <span class="n">Application</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s">&#39;openmp&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">),</span>
                        <span class="s">&#39;ompt&#39;</span><span class="p">:</span>
                        <span class="p">(</span><span class="n">Application</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s">&#39;openmp&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">),</span>
-                        <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s">&#39;CC&#39;</span><span class="p">,</span> <span class="n">ompt_intel_only</span><span class="p">),</span>
-                        <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s">&#39;CXX&#39;</span><span class="p">,</span> <span class="n">ompt_intel_only</span><span class="p">),</span>
-                        <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s">&#39;FC&#39;</span><span class="p">,</span> <span class="n">ompt_intel_only</span><span class="p">)),</span>
+                        <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s">&#39;CC_ROLE&#39;</span><span class="p">,</span> <span class="n">intel_only</span><span class="p">),</span>
+                        <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s">&#39;CXX_ROLE&#39;</span><span class="p">,</span> <span class="n">intel_only</span><span class="p">),</span>
+                        <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s">&#39;FC_ROLE&#39;</span><span class="p">,</span> <span class="n">intel_only</span><span class="p">)),</span>
                        <span class="s">&#39;gomp&#39;</span><span class="p">:</span>
                        <span class="p">(</span><span class="n">Application</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s">&#39;openmp&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">),</span>
-                        <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s">&#39;CC&#39;</span><span class="p">,</span> <span class="n">gomp_gnu_only</span><span class="p">),</span>
-                        <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s">&#39;CXX&#39;</span><span class="p">,</span> <span class="n">gomp_gnu_only</span><span class="p">),</span>
-                        <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s">&#39;FC&#39;</span><span class="p">,</span> <span class="n">gomp_gnu_only</span><span class="p">))}</span>
+                        <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s">&#39;CC_ROLE&#39;</span><span class="p">,</span> <span class="n">gnu_only</span><span class="p">),</span>
+                        <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s">&#39;CXX_ROLE&#39;</span><span class="p">,</span> <span class="n">gnu_only</span><span class="p">),</span>
+                        <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s">&#39;FC_ROLE&#39;</span><span class="p">,</span> <span class="n">gnu_only</span><span class="p">))}</span>
         <span class="p">},</span>
         <span class="s">&#39;cuda&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;boolean&#39;</span><span class="p">,</span>

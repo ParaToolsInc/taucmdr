@@ -28,7 +28,7 @@
     <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
     <link rel="up" title="tau package" href="tau.html" />
     <link rel="next" title="tau.cli.commands package" href="tau.cli.commands.html" />
-    <link rel="prev" title="tau.cf.target.tests package" href="tau.cf.target.tests.html" /> 
+    <link rel="prev" title="tau.cf.target package" href="tau.cf.target.html" /> 
   </head>
   <body role="document">
       <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="index.html">
@@ -38,7 +38,7 @@
       <div class="topnav" role="navigation" aria-label="top navigation">
       
         <p>
-        «&#160;&#160;<a href="tau.cf.target.tests.html">tau.cf.target.tests package</a>
+        «&#160;&#160;<a href="tau.cf.target.html">tau.cf.target package</a>
         &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
         &#160;&#160;::&#160;&#160;
@@ -98,7 +98,7 @@ a subclass of <a class="reference internal" href="#tau.cli.command.AbstractComma
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Strings that identify the command.</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list">list</a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list">list</a></td>
 </tr>
 </tbody>
 </table>
@@ -184,8 +184,8 @@ command (if any) will be invoked with the <code class="docutils literal"><span c
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>cmd</strong> (<a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; List of strings identifying the command, i.e. from <a class="reference internal" href="#tau.cli._command_as_list" title="tau.cli._command_as_list"><code class="xref any py py-func docutils literal"><span class="pre">_command_as_list</span></code></a>.</li>
-<li><strong>cmd_args</strong> (<a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Command line arguments to be parsed by command.</li>
+<li><strong>cmd</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; List of strings identifying the command, i.e. from <a class="reference internal" href="#tau.cli._command_as_list" title="tau.cli._command_as_list"><code class="xref any py py-func docutils literal"><span class="pre">_command_as_list</span></code></a>.</li>
+<li><strong>cmd_args</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Command line arguments to be parsed by command.</li>
 <li><strong>parent_module</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Dot-seperated name of the command&#8217;s parent.</li>
 </ul>
 </td>
@@ -216,7 +216,7 @@ command (if any) will be invoked with the <code class="docutils literal"><span c
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>cmd</strong> (<a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; List of strings identifying the command, i.e. from <a class="reference internal" href="#tau.cli._command_as_list" title="tau.cli._command_as_list"><code class="xref any py py-func docutils literal"><span class="pre">_command_as_list</span></code></a>.</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>cmd</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; List of strings identifying the command, i.e. from <a class="reference internal" href="#tau.cli._command_as_list" title="tau.cli._command_as_list"><code class="xref any py py-func docutils literal"><span class="pre">_command_as_list</span></code></a>.</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first simple">
@@ -244,17 +244,6 @@ command (if any) will be invoked with the <code class="docutils literal"><span c
 <li class="toctree-l1"><a class="reference internal" href="tau.cli.commands.html">tau.cli.commands package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="tau.cli.commands.html#subpackages">Subpackages</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="tau.cli.commands.application.html">tau.cli.commands.application package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.application.html#subpackages">Subpackages</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="tau.cli.commands.application.tests.html">tau.cli.commands.application.tests package</a><ul>
-<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.application.tests.html#submodules">Submodules</a></li>
-<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.application.tests.html#module-tau.cli.commands.application.tests.test_create">tau.cli.commands.application.tests.test_create module</a></li>
-<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.application.tests.html#module-tau.cli.commands.application.tests.test_delete">tau.cli.commands.application.tests.test_delete module</a></li>
-<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.application.tests.html#module-tau.cli.commands.application.tests.test_edit">tau.cli.commands.application.tests.test_edit module</a></li>
-<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.application.tests.html#module-tau.cli.commands.application.tests.test_list">tau.cli.commands.application.tests.test_list module</a></li>
-</ul>
-</li>
-</ul>
-</li>
 <li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.application.html#submodules">Submodules</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.application.html#module-tau.cli.commands.application.create">tau.cli.commands.application.create module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.application.html#module-tau.cli.commands.application.delete">tau.cli.commands.application.delete module</a></li>
@@ -263,17 +252,6 @@ command (if any) will be invoked with the <code class="docutils literal"><span c
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="tau.cli.commands.measurement.html">tau.cli.commands.measurement package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.measurement.html#subpackages">Subpackages</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="tau.cli.commands.measurement.tests.html">tau.cli.commands.measurement.tests package</a><ul>
-<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.measurement.tests.html#submodules">Submodules</a></li>
-<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.measurement.tests.html#module-tau.cli.commands.measurement.tests.test_create">tau.cli.commands.measurement.tests.test_create module</a></li>
-<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.measurement.tests.html#module-tau.cli.commands.measurement.tests.test_delete">tau.cli.commands.measurement.tests.test_delete module</a></li>
-<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.measurement.tests.html#module-tau.cli.commands.measurement.tests.test_edit">tau.cli.commands.measurement.tests.test_edit module</a></li>
-<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.measurement.tests.html#module-tau.cli.commands.measurement.tests.test_list">tau.cli.commands.measurement.tests.test_list module</a></li>
-</ul>
-</li>
-</ul>
-</li>
 <li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.measurement.html#submodules">Submodules</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.measurement.html#module-tau.cli.commands.measurement.create">tau.cli.commands.measurement.create module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.measurement.html#module-tau.cli.commands.measurement.delete">tau.cli.commands.measurement.delete module</a></li>
@@ -282,18 +260,6 @@ command (if any) will be invoked with the <code class="docutils literal"><span c
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="tau.cli.commands.project.html">tau.cli.commands.project package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.project.html#subpackages">Subpackages</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="tau.cli.commands.project.tests.html">tau.cli.commands.project.tests package</a><ul>
-<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.project.tests.html#submodules">Submodules</a></li>
-<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.project.tests.html#module-tau.cli.commands.project.tests.test_create">tau.cli.commands.project.tests.test_create module</a></li>
-<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.project.tests.html#module-tau.cli.commands.project.tests.test_delete">tau.cli.commands.project.tests.test_delete module</a></li>
-<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.project.tests.html#module-tau.cli.commands.project.tests.test_edit">tau.cli.commands.project.tests.test_edit module</a></li>
-<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.project.tests.html#module-tau.cli.commands.project.tests.test_export">tau.cli.commands.project.tests.test_export module</a></li>
-<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.project.tests.html#module-tau.cli.commands.project.tests.test_list">tau.cli.commands.project.tests.test_list module</a></li>
-</ul>
-</li>
-</ul>
-</li>
 <li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.project.html#submodules">Submodules</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.project.html#module-tau.cli.commands.project.create">tau.cli.commands.project.create module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.project.html#module-tau.cli.commands.project.delete">tau.cli.commands.project.delete module</a></li>
@@ -303,17 +269,6 @@ command (if any) will be invoked with the <code class="docutils literal"><span c
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="tau.cli.commands.target.html">tau.cli.commands.target package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.target.html#subpackages">Subpackages</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="tau.cli.commands.target.tests.html">tau.cli.commands.target.tests package</a><ul>
-<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.target.tests.html#submodules">Submodules</a></li>
-<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.target.tests.html#module-tau.cli.commands.target.tests.test_create">tau.cli.commands.target.tests.test_create module</a></li>
-<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.target.tests.html#module-tau.cli.commands.target.tests.test_delete">tau.cli.commands.target.tests.test_delete module</a></li>
-<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.target.tests.html#module-tau.cli.commands.target.tests.test_edit">tau.cli.commands.target.tests.test_edit module</a></li>
-<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.target.tests.html#module-tau.cli.commands.target.tests.test_list">tau.cli.commands.target.tests.test_list module</a></li>
-</ul>
-</li>
-</ul>
-</li>
 <li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.target.html#submodules">Submodules</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.create">tau.cli.commands.target.create module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.delete">tau.cli.commands.target.delete module</a></li>
@@ -321,27 +276,7 @@ command (if any) will be invoked with the <code class="docutils literal"><span c
 <li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list">tau.cli.commands.target.list module</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="tau.cli.commands.tests.html">tau.cli.commands.tests package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.tests.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.tests.html#module-tau.cli.commands.tests.test_build">tau.cli.commands.tests.test_build module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.tests.html#module-tau.cli.commands.tests.test_dasboard">tau.cli.commands.tests.test_dasboard module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.tests.html#module-tau.cli.commands.tests.test_help">tau.cli.commands.tests.test_help module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.tests.html#module-tau.cli.commands.tests.test_initialize">tau.cli.commands.tests.test_initialize module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.tests.html#module-tau.cli.commands.tests.test_select">tau.cli.commands.tests.test_select module</a></li>
-</ul>
-</li>
 <li class="toctree-l3"><a class="reference internal" href="tau.cli.commands.trial.html">tau.cli.commands.trial package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.trial.html#subpackages">Subpackages</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="tau.cli.commands.trial.tests.html">tau.cli.commands.trial.tests package</a><ul>
-<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.trial.tests.html#submodules">Submodules</a></li>
-<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.trial.tests.html#module-tau.cli.commands.trial.tests.test_create">tau.cli.commands.trial.tests.test_create module</a></li>
-<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.trial.tests.html#module-tau.cli.commands.trial.tests.test_delete">tau.cli.commands.trial.tests.test_delete module</a></li>
-<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.trial.tests.html#module-tau.cli.commands.trial.tests.test_list">tau.cli.commands.trial.tests.test_list module</a></li>
-<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.trial.tests.html#module-tau.cli.commands.trial.tests.test_show">tau.cli.commands.trial.tests.test_show module</a></li>
-</ul>
-</li>
-</ul>
-</li>
 <li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.trial.html#submodules">Submodules</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.create">tau.cli.commands.trial.create module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.delete">tau.cli.commands.trial.delete module</a></li>
@@ -358,13 +293,6 @@ command (if any) will be invoked with the <code class="docutils literal"><span c
 <li class="toctree-l2"><a class="reference internal" href="tau.cli.commands.html#module-tau.cli.commands.help">tau.cli.commands.help module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tau.cli.commands.html#module-tau.cli.commands.initialize">tau.cli.commands.initialize module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tau.cli.commands.html#module-tau.cli.commands.select">tau.cli.commands.select module</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="tau.cli.tests.html">tau.cli.tests package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="tau.cli.tests.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tau.cli.tests.html#module-tau.cli.tests.test_arguments">tau.cli.tests.test_arguments module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tau.cli.tests.html#module-tau.cli.tests.test_cli_view">tau.cli.tests.test_cli_view module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tau.cli.tests.html#module-tau.cli.tests.test_command">tau.cli.tests.test_command module</a></li>
 </ul>
 </li>
 </ul>
@@ -739,14 +667,14 @@ as the argument&#8217;s value if argument is not specified.</li>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>ctrl</strong> (<a class="reference internal" href="tau.mvc.html#tau.mvc.controller.Controller" title="tau.mvc.controller.Controller"><em>Controller</em></a>) &#8211; Controller for the data model.</li>
 <li><strong>style</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Style in which to format records.</li>
-<li><strong>keys</strong> (<a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Keys to match to <code class="xref any docutils literal"><span class="pre">self.key_attr</span></code>.</li>
+<li><strong>keys</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Keys to match to <code class="xref any docutils literal"><span class="pre">self.key_attr</span></code>.</li>
 </ul>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Record data as formatted strings.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list">list</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list">list</a></p>
 </td>
 </tr>
 </tbody>
@@ -763,14 +691,14 @@ as the argument&#8217;s value if argument is not specified.</li>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>ctrl</strong> (<a class="reference internal" href="tau.mvc.html#tau.mvc.controller.Controller" title="tau.mvc.controller.Controller"><em>Controller</em></a>) &#8211; Controller for the data model.</li>
-<li><strong>keys</strong> (<a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Keys to match to <code class="xref any docutils literal"><span class="pre">self.key_attr</span></code>.</li>
+<li><strong>keys</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Keys to match to <code class="xref any docutils literal"><span class="pre">self.key_attr</span></code>.</li>
 </ul>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Model records.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list">list</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list">list</a></p>
 </td>
 </tr>
 </tbody>
@@ -844,7 +772,7 @@ as the argument&#8217;s value if argument is not specified.</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>argv</strong> (<a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Command line arguments.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>argv</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Command line arguments.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Process return code: non-zero if a problem occurred, 0 otherwise</td>
 </tr>
@@ -954,7 +882,7 @@ as the argument&#8217;s value if argument is not specified.</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>argv</strong> (<a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Command line arguments.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>argv</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Command line arguments.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Process return code: non-zero if a problem occurred, 0 otherwise</td>
 </tr>
@@ -989,7 +917,7 @@ as the argument&#8217;s value if argument is not specified.</li>
       <div class="bottomnav" role="navigation" aria-label="bottom navigation">
       
         <p>
-        «&#160;&#160;<a href="tau.cf.target.tests.html">tau.cf.target.tests package</a>
+        «&#160;&#160;<a href="tau.cf.target.html">tau.cf.target package</a>
         &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
         &#160;&#160;::&#160;&#160;

@@ -6,13 +6,6 @@ tau.cli.commands.measurement package
     :undoc-members:
     :show-inheritance:
 
-Subpackages
------------
-
-.. toctree::
-
-    tau.cli.commands.measurement.tests
-
 Submodules
 ----------
 

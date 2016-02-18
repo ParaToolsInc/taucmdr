@@ -6,13 +6,6 @@ tau.model package
     :undoc-members:
     :show-inheritance:
 
-Subpackages
------------
-
-.. toctree::
-
-    tau.model.tests
-
 Submodules
 ----------
 

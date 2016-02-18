@@ -6,13 +6,6 @@ tau.storage package
     :undoc-members:
     :show-inheritance:
 
-Subpackages
------------
-
-.. toctree::
-
-    tau.storage.tests
-
 Submodules
 ----------
 

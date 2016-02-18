@@ -17,7 +17,6 @@ Subpackages
     tau.model
     tau.mvc
     tau.storage
-    tau.tests
 
 Submodules
 ----------

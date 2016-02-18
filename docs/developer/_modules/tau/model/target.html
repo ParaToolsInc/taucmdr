@@ -26,7 +26,7 @@
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
     <link rel="top" title="TAU Commander Developer Documentation" href="../../../index.html" />
-    <link rel="up" title="tau.model" href="../model.html" /> 
+    <link rel="up" title="Module code" href="../../index.html" /> 
   </head>
   <body role="document">
       <div class="header" role="banner"><img class="rightlogo" src="../../../_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="../../../index.html">
@@ -84,9 +84,9 @@
 <span class="kn">from</span> <span class="nn">tau.error</span> <span class="kn">import</span> <span class="n">InternalError</span><span class="p">,</span> <span class="n">ConfigurationError</span>
 <span class="kn">from</span> <span class="nn">tau.mvc.model</span> <span class="kn">import</span> <span class="n">Model</span>
 <span class="kn">from</span> <span class="nn">tau.mvc.controller</span> <span class="kn">import</span> <span class="n">Controller</span>
-<span class="kn">from</span> <span class="nn">tau.cf.compiler</span> <span class="kn">import</span> <span class="n">CompilerRole</span><span class="p">,</span> <span class="n">INTEL_COMPILERS</span>
+<span class="kn">from</span> <span class="nn">tau.cf.compiler</span> <span class="kn">import</span> <span class="n">CompilerRole</span>
 <span class="kn">from</span> <span class="nn">tau.cf.compiler.installed</span> <span class="kn">import</span> <span class="n">InstalledCompilerSet</span>
-<span class="kn">from</span> <span class="nn">tau.cf.target</span> <span class="kn">import</span> <span class="n">host</span><span class="p">,</span> <span class="n">DARWIN_OS</span><span class="p">,</span> <span class="n">INTEL_KNC_ARCH</span>
+<span class="kn">from</span> <span class="nn">tau.cf.target</span> <span class="kn">import</span> <span class="n">host</span><span class="p">,</span> <span class="n">DARWIN_OS</span>
 <span class="kn">from</span> <span class="nn">tau.model.compiler</span> <span class="kn">import</span> <span class="n">Compiler</span>
 
 
@@ -94,12 +94,6 @@
     <span class="kn">from</span> <span class="nn">tau.model.project</span> <span class="kn">import</span> <span class="n">Project</span>
     <span class="kn">from</span> <span class="nn">tau.cli.arguments</span> <span class="kn">import</span> <span class="n">ParsePackagePathAction</span>
     <span class="kn">from</span> <span class="nn">tau.cf.target</span> <span class="kn">import</span> <span class="n">Architecture</span><span class="p">,</span> <span class="n">OperatingSystem</span>
-    <span class="kn">from</span> <span class="nn">tau.model</span> <span class="kn">import</span> <span class="n">require_compiler_family</span>
- 
-    <span class="n">knc_intel_only</span> <span class="o">=</span> <span class="n">require_compiler_family</span><span class="p">(</span><span class="n">INTEL_COMPILERS</span><span class="p">,</span> 
-                                             <span class="s">&quot;You must use Intel compilers to target the Xeon Phi&quot;</span><span class="p">,</span>
-                                             <span class="s">&quot;Try adding `--host-compilers=Intel` to the command line&quot;</span><span class="p">)</span>
-
     <span class="k">return</span> <span class="p">{</span>
         <span class="s">&#39;projects&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s">&#39;collection&#39;</span><span class="p">:</span> <span class="n">Project</span><span class="p">,</span>
@@ -131,11 +125,7 @@
             <span class="s">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s">&#39;--host-arch&#39;</span><span class="p">,),</span>
                          <span class="s">&#39;group&#39;</span><span class="p">:</span> <span class="s">&#39;host&#39;</span><span class="p">,</span>
                          <span class="s">&#39;metavar&#39;</span><span class="p">:</span> <span class="s">&#39;&lt;arch&gt;&#39;</span><span class="p">,</span>
-                         <span class="s">&#39;choices&#39;</span><span class="p">:</span> <span class="n">Architecture</span><span class="o">.</span><span class="n">keys</span><span class="p">()},</span>
-            <span class="s">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="nb">str</span><span class="p">(</span><span class="n">INTEL_KNC_ARCH</span><span class="p">):</span> 
-                       <span class="p">(</span><span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s">&#39;CC&#39;</span><span class="p">,</span> <span class="n">knc_intel_only</span><span class="p">),</span>
-                        <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s">&#39;CXX&#39;</span><span class="p">,</span> <span class="n">knc_intel_only</span><span class="p">),</span>
-                        <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s">&#39;FC&#39;</span><span class="p">,</span> <span class="n">knc_intel_only</span><span class="p">))}</span>
+                         <span class="s">&#39;choices&#39;</span><span class="p">:</span> <span class="n">Architecture</span><span class="o">.</span><span class="n">keys</span><span class="p">()}</span>
         <span class="p">},</span>
         <span class="s">&#39;CC&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s">&#39;model&#39;</span><span class="p">:</span> <span class="n">Compiler</span><span class="p">,</span>
@@ -384,41 +374,18 @@
             <span class="k">raise</span> <span class="n">InternalError</span><span class="p">(</span><span class="s">&quot;Target &#39;</span><span class="si">%s</span><span class="s">&#39; is missing required compilers: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">],</span> <span class="n">missing</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">InstalledCompilerSet</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">eids</span><span class="p">]),</span> <span class="o">**</span><span class="n">compilers</span><span class="p">)</span>
 </div>
-<div class="viewcode-block" id="Target.check_compiler"><a class="viewcode-back" href="../../../tau.model.html#tau.model.target.Target.check_compiler">[docs]</a>    <span class="k">def</span> <span class="nf">check_compiler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">given_compiler</span><span class="p">,</span> <span class="n">compiler_args</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Checks a compiler command its arguments for compatibility with this target configuration.</span>
-<span class="sd">        </span>
-<span class="sd">        Checks that the given compiler matches one of the compilers used in the target.</span>
-<span class="sd">        Also performs any special checkes for invalid compiler arguments, e.g. -mmic is only for native KNC.</span>
-<span class="sd">        </span>
-<span class="sd">        Args:</span>
-<span class="sd">            given_compiler (str): The compiler command as passed by the user.</span>
-<span class="sd">            compiler_args (list): Compiler command line arguments.</span>
-<span class="sd">            </span>
-<span class="sd">        Raises:</span>
-<span class="sd">            ConfigurationError: The compiler or command line arguments are incompatible with this target.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Target.check_compiler"><a class="viewcode-back" href="../../../tau.model.html#tau.model.target.Target.check_compiler">[docs]</a>    <span class="k">def</span> <span class="nf">check_compiler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">given_compiler</span><span class="p">):</span>
         <span class="n">compiler_ctrl</span> <span class="o">=</span> <span class="n">Compiler</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="p">)</span>
         <span class="n">given_compiler_eid</span> <span class="o">=</span> <span class="n">compiler_ctrl</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">given_compiler</span><span class="p">)</span><span class="o">.</span><span class="n">eid</span>
         <span class="n">target_compiler_eid</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">given_compiler</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="p">]</span>       
         <span class="c"># Confirm target supports compiler</span>
         <span class="k">if</span> <span class="n">given_compiler_eid</span> <span class="o">!=</span> <span class="n">target_compiler_eid</span><span class="p">:</span>
             <span class="n">target_compiler</span> <span class="o">=</span> <span class="n">compiler_ctrl</span><span class="o">.</span><span class="n">one</span><span class="p">(</span><span class="n">target_compiler_eid</span><span class="p">)</span><span class="o">.</span><span class="n">info</span><span class="p">()</span>
-            <span class="n">target_info_abs</span> <span class="o">=</span> <span class="n">target_compiler</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">short_descr</span><span class="p">,</span> <span class="n">target_compiler</span><span class="o">.</span><span class="n">absolute_path</span>
-            <span class="n">given_info_abs</span> <span class="o">=</span> <span class="n">given_compiler</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">short_descr</span><span class="p">,</span> <span class="n">given_compiler</span><span class="o">.</span><span class="n">absolute_path</span>
             <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&quot;Target &#39;</span><span class="si">%s</span><span class="s">&#39; is configured with </span><span class="si">%s</span><span class="s"> &#39;</span><span class="si">%s</span><span class="s">&#39;, not </span><span class="si">%s</span><span class="s"> &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span>
-                                     <span class="nb">tuple</span><span class="p">([</span><span class="bp">self</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">target_info_abs</span><span class="p">)</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">given_info_abs</span><span class="p">)),</span>
-                                     <span class="s">&quot;Select a different target&quot;</span><span class="p">,</span>
-                                     <span class="s">&quot;Compile with </span><span class="si">%s</span><span class="s"> &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="n">target_info_abs</span><span class="p">,</span>
-                                     <span class="s">&quot;Create a new target configured with </span><span class="si">%s</span><span class="s"> &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="n">given_info_abs</span><span class="p">)</span>
-        <span class="c"># Handle special cases where a compiler flag isn&#39;t compatible with the target</span>
-        <span class="k">if</span> <span class="s">&#39;-mmic&#39;</span> <span class="ow">in</span> <span class="n">compiler_args</span> <span class="ow">and</span> <span class="bp">self</span><span class="p">[</span><span class="s">&#39;host_arch&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="nb">str</span><span class="p">(</span><span class="n">INTEL_KNC_ARCH</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s">&quot;Host architecture of target &#39;</span><span class="si">%s</span><span class="s">&#39; is &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span>
-                                     <span class="s">&quot; but the &#39;-mmic&#39; compiler argument requires &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span>
-                                     <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="p">[</span><span class="s">&#39;host_arch&#39;</span><span class="p">],</span> <span class="n">INTEL_KNC_ARCH</span><span class="p">),</span>
-                                     <span class="s">&quot;Select a different target&quot;</span><span class="p">,</span>
-                                     <span class="s">&quot;Create a new target with host architecture &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="n">INTEL_KNC_ARCH</span><span class="p">)</span>
-                
-            </div></div>
+                                     <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">],</span> <span class="n">target_compiler</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">short_descr</span><span class="p">,</span> <span class="n">target_compiler</span><span class="o">.</span><span class="n">absolute_path</span><span class="p">,</span>
+                                      <span class="n">given_compiler</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">short_descr</span><span class="p">,</span> <span class="n">given_compiler</span><span class="o">.</span><span class="n">absolute_path</span><span class="p">),</span>
+                                     <span class="s">&quot;Select a different target or compile with &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> 
+                                     <span class="n">target_compiler</span><span class="o">.</span><span class="n">absolute_path</span><span class="p">)</span></div></div>
 </pre></div>
 
       </div>

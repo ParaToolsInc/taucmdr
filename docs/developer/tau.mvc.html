@@ -27,8 +27,8 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
     <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
     <link rel="up" title="tau package" href="tau.html" />
-    <link rel="next" title="tau.mvc.tests package" href="tau.mvc.tests.html" />
-    <link rel="prev" title="tau.model.tests package" href="tau.model.tests.html" /> 
+    <link rel="next" title="tau.storage package" href="tau.storage.html" />
+    <link rel="prev" title="tau.model package" href="tau.model.html" /> 
   </head>
   <body role="document">
       <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="index.html">
@@ -38,11 +38,11 @@
       <div class="topnav" role="navigation" aria-label="top navigation">
       
         <p>
-        «&#160;&#160;<a href="tau.model.tests.html">tau.model.tests package</a>
+        «&#160;&#160;<a href="tau.model.html">tau.model package</a>
         &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
         &#160;&#160;::&#160;&#160;
-        <a href="tau.mvc.tests.html">tau.mvc.tests package</a>&#160;&#160;»
+        <a href="tau.storage.html">tau.storage package</a>&#160;&#160;»
         </p>
 
       </div>
@@ -194,19 +194,6 @@ codified as:</p>
 <li>Movie.associations = {&#8216;cast&#8217;: (Actor, &#8216;appears_in&#8217;)}</li>
 </ul>
 </div></blockquote>
-<div class="section" id="subpackages">
-<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="tau.mvc.tests.html">tau.mvc.tests package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="tau.mvc.tests.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tau.mvc.tests.html#module-tau.mvc.tests.test_controller">tau.mvc.tests.test_controller module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tau.mvc.tests.html#module-tau.mvc.tests.test_model">tau.mvc.tests.test_model module</a></li>
-</ul>
-</li>
-</ul>
-</div>
-</div>
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
@@ -241,9 +228,9 @@ codified as:</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>record</strong> (<a class="reference internal" href="tau.storage.html#tau.storage.AbstractStorage.Record" title="tau.storage.AbstractStorage.Record"><em>Record</em></a>) &#8211; Record to associate.</li>
+<li><strong>record</strong> (<a class="reference internal" href="tau.storage.html#tau.storage.local_file.LocalFileStorage.Record" title="tau.storage.local_file.LocalFileStorage.Record"><em>Record</em></a>) &#8211; Record to associate.</li>
 <li><strong>foreign_model</strong> (<a class="reference internal" href="#tau.mvc.model.Model" title="tau.mvc.model.Model"><em>Model</em></a>) &#8211; Foreign record&#8217;s data model.</li>
-<li><strong>affected</strong> (<a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Identifiers for the records that will be updated to associate with <cite>record</cite>.</li>
+<li><strong>affected</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Identifiers for the records that will be updated to associate with <cite>record</cite>.</li>
 <li><strong>via</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The name of the associated foreign attribute.</li>
 </ul>
 </td>
@@ -261,9 +248,9 @@ codified as:</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>record</strong> (<a class="reference internal" href="tau.storage.html#tau.storage.AbstractStorage.Record" title="tau.storage.AbstractStorage.Record"><em>Record</em></a>) &#8211; Record to disassociate.</li>
+<li><strong>record</strong> (<a class="reference internal" href="tau.storage.html#tau.storage.local_file.LocalFileStorage.Record" title="tau.storage.local_file.LocalFileStorage.Record"><em>Record</em></a>) &#8211; Record to disassociate.</li>
 <li><strong>foreign_model</strong> (<a class="reference internal" href="#tau.mvc.model.Model" title="tau.mvc.model.Model"><em>Model</em></a>) &#8211; Foreign record&#8217;s data model.</li>
-<li><strong>affected</strong> (<a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Identifiers for the records that will be updated to disassociate from <cite>record</cite>.</li>
+<li><strong>affected</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Identifiers for the records that will be updated to disassociate from <cite>record</cite>.</li>
 <li><strong>via</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The name of the associated foreign attribute.</li>
 </ul>
 </td>
@@ -348,7 +335,7 @@ and may contain eids of undefined records.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>keys</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Attributes to match.</li>
-<li><strong>eids</strong> (<a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Record identifiers to match.</li>
+<li><strong>eids</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Record identifiers to match.</li>
 </ul>
 </td>
 </tr>
@@ -455,7 +442,7 @@ If attribute is not None, the value of the populated attribute.</td>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>fields</strong> (<a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Names of fields to unset.</li>
+<li><strong>fields</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Names of fields to unset.</li>
 <li><strong>keys</strong> &#8211; Fields or element identifiers to match.</li>
 </ul>
 </td>
@@ -646,7 +633,7 @@ but that the user&#8217;s operation is still likely to succeed with the chosen r
 the specified attribute against or a callback function as described below. To enable complex
 conditions, args[1] may be a callback function.  In this case, args[1] must check attribute
 existance and value correctness and throw the appropriate exception and/or emit log messages.
-See <code class="xref py py-func docutils literal"><span class="pre">tau.model.measurement.intel_only()</span></code> for an example of such a callback function.</p>
+See <a class="reference internal" href="tau.model.html#tau.model.measurement.intel_only" title="tau.model.measurement.intel_only"><code class="xref py py-func docutils literal"><span class="pre">tau.model.measurement.intel_only()</span></code></a> for an example of such a callback function.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -888,11 +875,11 @@ The given data doesn&#8217;t fit the model.</td>
       <div class="bottomnav" role="navigation" aria-label="bottom navigation">
       
         <p>
-        «&#160;&#160;<a href="tau.model.tests.html">tau.model.tests package</a>
+        «&#160;&#160;<a href="tau.model.html">tau.model package</a>
         &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
         &#160;&#160;::&#160;&#160;
-        <a href="tau.mvc.tests.html">tau.mvc.tests package</a>&#160;&#160;»
+        <a href="tau.storage.html">tau.storage package</a>&#160;&#160;»
         </p>
 
       </div>

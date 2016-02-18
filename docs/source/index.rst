@@ -50,7 +50,6 @@ Table of Contents
    style
    documentation
    new_feature
-   unit_tests
 
 * :ref:`genindex`
 * :ref:`modindex`
