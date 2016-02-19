@@ -39,7 +39,7 @@ from tau.error import InternalError, ConfigurationError
 from tau.mvc.model import Model
 from tau.mvc.controller import Controller
 from tau.cf.compiler import CompilerRole, INTEL_COMPILERS
-from tau.cf.compiler.installed import InstalledCompilerSet
+from tau.cf.compiler.installed import InstalledCompilerSet, InstalledCompiler
 from tau.cf.target import host, DARWIN_OS, INTEL_KNC_ARCH
 from tau.model.compiler import Compiler
 
@@ -354,6 +354,9 @@ class Target(Model):
         compiler_ctrl = Compiler.controller(self.storage)
         given_compiler_eid = compiler_ctrl.register(given_compiler).eid
         target_compiler_eid = self[given_compiler.info.role.keyword]       
+        given_wrapped_compiler_path = compiler_ctrl.one(given_compiler_eid)['path']
+        target_compiler_path = self.populate(attribute='CC')['path']
+        given_compiler_path = InstalledCompiler(given_wrapped_compiler_path).wrapped
         # Confirm target supports compiler
         if given_compiler_eid != target_compiler_eid:
             target_compiler = compiler_ctrl.one(target_compiler_eid).info()
@@ -371,5 +374,12 @@ class Target(Model):
                                      (self['name'], self['host_arch'], INTEL_KNC_ARCH),
                                      "Select a different target",
                                      "Create a new target with host architecture '%s'" % INTEL_KNC_ARCH)
-                
-            
+        
+        # Confirm mpi wrapped compiler matches given compiler
+        if str(given_compiler_path) == str(target_compiler_path):
+            target_compiler_family = compiler_ctrl.one(target_compiler_eid).info().info.family
+            raise ConfigurationError("Target '%s' is configured with %s, not %s" %
+                                     (self['name'], target_compiler_path,  given_compiler_path),
+                                     "Select a different target",
+                                     "Compile with '%s' compiler" % target_compiler_family,
+                                     "Create a new target configured with '%s' compiler" % target_compiler_family)
