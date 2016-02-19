@@ -374,12 +374,12 @@ class Target(Model):
                                      (self['name'], self['host_arch'], INTEL_KNC_ARCH),
                                      "Select a different target",
                                      "Create a new target with host architecture '%s'" % INTEL_KNC_ARCH)
-        
         # Confirm mpi wrapped compiler matches given compiler
         if str(given_compiler_path) == str(target_compiler_path):
             target_compiler_family = compiler_ctrl.one(target_compiler_eid).info().info.family
             raise ConfigurationError("Target '%s' is configured with %s, not %s" %
-                                     (self['name'], target_compiler_path,  given_compiler_path),
+                                     (self['name'], target_compiler_path, given_compiler_path),
                                      "Select a different target",
                                      "Compile with '%s' compiler" % target_compiler_family,
-                                     "Create a new target configured with '%s' compiler" % target_compiler_family)
+                                     "Create a new target configured with '%s' compiler" %
+                                     target_compiler_family)

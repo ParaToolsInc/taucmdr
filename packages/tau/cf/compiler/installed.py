@@ -104,7 +104,7 @@ class InstalledCompiler(KeyedRecord):
     
     __key__ = 'absolute_path'
 
-    def __init__(self, absolute_path):
+    def __init__(self, absolute_path, arch_args=[]):
         """Probes the system to find an installed compiler.
         
         May check PATH, file permissions, or other conditions in the system
@@ -126,7 +126,7 @@ class InstalledCompiler(KeyedRecord):
             raise RuntimeError("Unknown compiler command '%s'" % self.absolute_path)
         if self.info.family.show_wrapper_flags:
             LOGGER.debug("Probing wrapper compiler '%s' to discover wrapped compiler", self.absolute_path)
-            cmd = [self.absolute_path] + self.info.family.show_wrapper_flags
+            cmd = [self.absolute_path] + self.info.family.show_wrapper_flags + arch_args
             LOGGER.debug("Creating subprocess: %s", cmd)
             try:
                 stdout = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
