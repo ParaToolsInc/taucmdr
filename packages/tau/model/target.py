@@ -375,7 +375,7 @@ class Target(Model):
                                      "Select a different target",
                                      "Create a new target with host architecture '%s'" % INTEL_KNC_ARCH)
         # Confirm mpi wrapped compiler matches given compiler
-        if str(given_compiler_path) != str(target_compiler_path):
+        if str(given_compiler_path) != str(target_compiler_path) and given_compiler_path != None:
             target_compiler = compiler_ctrl.one(target_compiler_eid).info()
             given_compiler = compiler_ctrl.one(given_compiler_eid).info()
             print str(given_compiler_eid) + ' ' + str(target_compiler_eid)
