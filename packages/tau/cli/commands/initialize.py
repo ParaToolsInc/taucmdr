@@ -29,6 +29,7 @@
 
 import os
 import platform
+import warnigs
 from tau import EXIT_SUCCESS
 from tau.error import InternalError
 from tau.cli import arguments
@@ -189,6 +190,11 @@ class InitializeCommand(AbstractCommand):
         proj_ctrl = Project.controller()
         try:
             proj = proj_ctrl.selected()
+            warnings.warn("Tau is already initialized. \n Use appropriate "
+                          "commands to add, edit or remove tau projects, "
+                          "e.g. tau application edit.\n Remove the .tau "
+                          "directory to reset to a fresh environment.\n",
+                          UserWarning)
         except ProjectStorageError:
             self.logger.debug("No project found, initializing a new project.")
             PROJECT_STORAGE.connect_filesystem()
