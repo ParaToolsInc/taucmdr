@@ -35,7 +35,7 @@ from tau.cli import arguments
 from tau.cli.command import AbstractCommand
 from tau.model.project import Project, ProjectSelectionError
 from tau.storage.project import ProjectStorageError
-from tau.storage.levels import PROJECT_STORAGE
+from tau.storage.levels import PROJECT_STORAGE, USER_STORAGE, STORAGE_LEVELS
 from tau.cli.arguments import ParseBooleanAction
 from tau.cli.commands.target.create import COMMAND as target_create_cmd
 from tau.cli.commands.application.create import COMMAND as application_create_cmd
@@ -66,6 +66,11 @@ class InitializeCommand(AbstractCommand):
                                    help="Name of the new project",
                                    metavar='<name>',
                                    default=default_project_name)
+        project_group.add_argument('--storage_level',
+                                   help='location of installation directory',
+                                   choices=STORAGE_LEVELS.keys(),
+                                   metavar='<levels>',
+                                   default=USER_STORAGE.name)
         
         parser.merge(target_create_cmd.parser, group_title='target arguments', include_positional=False)
         target_group = parser.add_argument_group('target arguments')
@@ -128,8 +133,9 @@ class InitializeCommand(AbstractCommand):
         project_name = args.project_name
         target_name = args.target_name
         application_name = args.application_name
+        storage_level = args.storage_level
         
-        project_create_cmd.main([project_name])
+        project_create_cmd.main([project_name, '--storage_level', storage_level])
         select_cmd.main(['--project', project_name])
 
         target_argv = [target_name] + argv

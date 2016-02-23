@@ -39,7 +39,7 @@ from tau.error import ConfigurationError
 from tau.mvc.model import Model
 from tau.model.trial import Trial
 from tau.model.project import Project
-from tau.storage.levels import USER_STORAGE, PROJECT_STORAGE
+from tau.storage.levels import USER_STORAGE, PROJECT_STORAGE, SYSTEM_STORAGE, STORAGE_LEVELS
 from tau.cf.target import OperatingSystem, DARWIN_OS
 from tau.cf.software.tau_installation import TauInstallation
 from tau.cf.compiler.installed import InstalledCompiler
@@ -247,7 +247,20 @@ class Experiment(Model):
         Returns:
             TauInstallation: Object handle for the TAU installation. 
         """
-        prefix = USER_STORAGE.prefix
+        project_data = self.populate('project')
+        default_level = project_data['storage_level']
+        default_prefix = STORAGE_LEVELS.get(default_level).prefix
+        prefix = -1
+        try:
+            util.mkdirp(SYSTEM_STORAGE.prefix + '/test')
+        except:
+            print SYSTEM_STORAGE.name + ' storage is not available'
+        else:
+            prefix = SYSTEM_STORAGE.prefix
+            print 'Using ' + SYSTEM_STORAGE.name + ' storage'
+        if prefix == -1:
+            print 'Using default storage: ' + default_level
+            prefix = default_prefix
         if self.uses_tau():
             dependencies = {}
             for name in 'pdt', 'binutils', 'libunwind', 'papi':
