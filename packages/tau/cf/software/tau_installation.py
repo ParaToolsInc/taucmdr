@@ -383,7 +383,7 @@ class TauInstallation(Installation):
         if self.openmp_support:
             flags.append('-openmp')
             if self.measure_openmp == 'ompt':
-                flags.append('-ompt')
+                flags.append('-ompt=download')
             elif self.measure_openmp == 'opari':
                 flags.append('-opari')
         if self.io_inst:
