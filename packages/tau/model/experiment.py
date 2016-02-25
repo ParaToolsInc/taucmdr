@@ -254,12 +254,15 @@ class Experiment(Model):
         try:
             util.mkdirp(SYSTEM_STORAGE.prefix + '/test')
         except:
-            print SYSTEM_STORAGE.name + ' storage is not available'
+            LOGGER.info("%s storage is not available", 
+                             SYSTEM_STORAGE.name)
         else:
             prefix = SYSTEM_STORAGE.prefix
-            print 'Using ' + SYSTEM_STORAGE.name + ' storage'
+            LOGGER.info("Using %s storage", 
+                             SYSTEM_STORAGE.name)
         if prefix == -1:
-            print 'Using default storage: ' + default_level
+            LOGGER.info("Using default storage: %s", 
+                             default_level)
             prefix = default_prefix
         if self.uses_tau():
             dependencies = {}
