@@ -355,8 +355,8 @@ class Target(Model):
         given_compiler_eid = compiler_ctrl.register(given_compiler).eid
         target_compiler_eid = self[given_compiler.info.role.keyword]       
         given_wrapped_compiler_path = compiler_ctrl.one(given_compiler_eid)['path']
-        target_compiler_path = self.populate(attribute='CC')['path']
         given_compiler_path = InstalledCompiler(given_wrapped_compiler_path).wrapped
+        target_compiler_path = self.populate(attribute=given_compiler_path.info.role.keyword)['path']
         # Confirm target supports compiler
         if given_compiler_eid != target_compiler_eid:
             target_compiler = compiler_ctrl.one(target_compiler_eid).info()
