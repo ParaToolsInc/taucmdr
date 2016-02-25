@@ -169,8 +169,7 @@ def attributes():
             'argparse': {'flags': ('--openmp',),
                          'group': 'library',
                          'metavar': 'library',
-                         'choices': ('none', 'opari', 'ompt', 'gomp'),
-                         'nargs': 1},
+                         'choices': ('none', 'opari', 'ompt', 'gomp')},
             'compat': {'opari':
                        Application.require('openmp', True),
                        'ompt':
