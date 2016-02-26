@@ -379,7 +379,7 @@ class TauInstallation(Installation):
                   '-mpilibrary=%s' % mpilibrary if mpilibrary else '',
                   '-cuda=%s' % self.cuda_prefix if self.cuda_prefix else '',
                   '-opencl=%s' % self.opencl_prefix if self.opencl_prefix else ''
-                  ] if flag]
+                 ] if flag]
         if self.openmp_support:
             flags.append('-openmp')
             if self.measure_openmp == 'ompt':
@@ -716,6 +716,8 @@ class TauInstallation(Installation):
             tags = self.get_makefile_tags()
             if not self.mpi_support:
                 tags.add('serial')
+            if self.opencl_support:
+                tags.add('cupti')
             tau_exec = ['tau_exec', '-T', ','.join(tags)] + tau_exec_opts
             cmd = launcher_cmd + tau_exec + application_cmd
         else:
@@ -733,7 +735,7 @@ class TauInstallation(Installation):
             int: Return code of the visualization tool.
         """
         LOGGER.debug("Showing profile files at '%s'", path)
-        _, env = super(TauInstallation,self).runtime_config()
+        _, env = super(TauInstallation, self).runtime_config()
         if tool_name:
             tools = [tool_name]
         else:
@@ -767,7 +769,7 @@ class TauInstallation(Installation):
             int: Return code of the visualization tool.
         """
         LOGGER.debug("Showing trace files at '%s'", path)
-        _, env = super(TauInstallation,self).runtime_config()
+        _, env = super(TauInstallation, self).runtime_config()
         if tool_name is None:
             tool_name = 'jumpshot'
         elif tool_name != 'jumpshot':

@@ -236,14 +236,14 @@ def attributes():
                          'metavar': '<path>',
                          'action': ParsePackagePathAction},
         },
-        'opencl': {
-            'type': 'string',
-            'description': 'path to OpenCL libraries and headers',
-            'argparse': {'flags': ('--opencl',),
-                         'group': 'software package',
-                         'metavar': '<path>',
-                         'action': ParsePackagePathAction},
-        },
+        #'opencl': {
+        #    'type': 'string',
+        #    'description': 'path to OpenCL libraries and headers',
+        #    'argparse': {'flags': ('--opencl',),
+        #                 'group': 'software package',
+        #                 'metavar': '<path>',
+        #                 'action': ParsePackagePathAction},
+        #},
         'tau_source': {
             'type': 'string',
             'description': 'path or URL to a TAU installation or archive file',
