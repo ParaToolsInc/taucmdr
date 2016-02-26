@@ -69,8 +69,8 @@ class InitializeCommand(AbstractCommand):
         project_group.add_argument('--storage_level',
                                    help='location of installation directory',
                                    choices=STORAGE_LEVELS.keys(),
-                                   metavar='<levels>',
-                                   default=USER_STORAGE.name)
+                                   metavar='<levels>', default=arguments.SUPPRESS)
+                                   
         
         parser.merge(target_create_cmd.parser, group_title='target arguments', include_positional=False)
         target_group = parser.add_argument_group('target arguments')
@@ -133,9 +133,13 @@ class InitializeCommand(AbstractCommand):
         project_name = args.project_name
         target_name = args.target_name
         application_name = args.application_name
-        storage_level = args.storage_level
-        
-        project_create_cmd.main([project_name, '--storage_level', storage_level])
+        try:
+            storage_level = args.storage_level
+        except:
+            project_create_cmd.main([project_name])
+        else:
+            project_create_cmd.main([project_name, '--storage_level', storage_level])
+
         select_cmd.main(['--project', project_name])
 
         target_argv = [target_name] + argv

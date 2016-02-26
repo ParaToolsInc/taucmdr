@@ -39,8 +39,9 @@ from tau.error import ConfigurationError
 from tau.mvc.model import Model
 from tau.model.trial import Trial
 from tau.model.project import Project
-from tau.storage.levels import USER_STORAGE, PROJECT_STORAGE, SYSTEM_STORAGE, STORAGE_LEVELS
+from tau.storage.levels import USER_STORAGE, PROJECT_STORAGE, SYSTEM_STORAGE, STORAGE_LEVELS, ORDERED_LEVELS
 from tau.cf.target import OperatingSystem, DARWIN_OS
+from tau.cf.software import SoftwarePackageError
 from tau.cf.software.tau_installation import TauInstallation
 from tau.cf.compiler.installed import InstalledCompiler
 
@@ -180,63 +181,89 @@ class Experiment(Model):
         application = populated['application']
         measurement = populated['measurement']
         verbose = (logger.LOG_LEVEL == 'DEBUG')
-        tau = TauInstallation(prefix, target.get('tau_source', None), 
-                              target['host_arch'], target['host_os'], target.compilers(),
-                              verbose=verbose,
-                              # TAU dependencies
-                              pdt=dependencies['pdt'],
-                              binutils=dependencies['binutils'],
-                              libunwind=dependencies['libunwind'],
-                              papi=dependencies['papi'],
-                              # TAU feature suppport
-                              openmp_support=application['openmp'],
-                              pthreads_support=application['pthreads'],
-                              mpi_support=application['mpi'],
-                              mpi_include_path=target.get('mpi_include_path', []),
-                              mpi_library_path=target.get('mpi_library_path', []),
-                              mpi_libraries=target.get('mpi_libraries', []),
-                              cuda_support=application['cuda'],
-                              cuda_prefix=target.get('cuda', None),
-                              opencl_support=application['opencl'],
-                              opencl_prefix=target.get('opencl', None),
-                              shmem_support=application['shmem'],
-                              mpc_support=application['mpc'],
-                              # Instrumentation methods and options            
-                              source_inst=measurement['source_inst'],
-                              compiler_inst=measurement['compiler_inst'],
-                              link_only=measurement['link_only'],
-                              io_inst=measurement['io'],
-                              keep_inst_files=measurement['keep_inst_files'],
-                              reuse_inst_files=measurement['reuse_inst_files'],
-                              # Measurement methods and options
-                              profile=measurement['profile'],
-                              trace=measurement['trace'],
-                              sample=measurement['sample'],
-                              metrics=measurement['metrics'],
-                              measure_mpi=measurement['mpi'],
-                              measure_openmp=measurement['openmp'],
-                              measure_opencl=measurement['opencl'],
-                              measure_pthreads=None,  # TODO
-                              measure_cuda=None,  # TODO
-                              measure_shmem=None,  # TODO
-                              measure_mpc=None,  # TODO
-                              measure_heap_usage=measurement['heap_usage'],
-                              measure_memory_alloc=measurement['memory_alloc'],
-                              callpath_depth=measurement['callpath'])
-        with tau:
-            tau.install()
-            return tau
+        tau_args = (target.get('tau_source', None), 
+                      target['host_arch'], 
+                      target['host_os'], 
+                      target.compilers())
+        tau_kwargs = dict(verbose=verbose,
+                          # TAU dependencies
+                          pdt=dependencies['pdt'],
+                          binutils=dependencies['binutils'],
+                          libunwind=dependencies['libunwind'],
+                          papi=dependencies['papi'],
+                          # TAU feature suppport
+                          openmp_support=application['openmp'],
+                          pthreads_support=application['pthreads'],
+                          mpi_support=application['mpi'],
+                          mpi_include_path=target.get('mpi_include_path', []),
+                          mpi_library_path=target.get('mpi_library_path', []),
+                          mpi_libraries=target.get('mpi_libraries', []),
+                          cuda_support=application['cuda'],
+                          cuda_prefix=target.get('cuda', None),
+                          opencl_support=application['opencl'],
+                          opencl_prefix=target.get('opencl', None),
+                          shmem_support=application['shmem'],
+                          mpc_support=application['mpc'],
+                          # Instrumentation methods and options            
+                          source_inst=measurement['source_inst'],
+                          compiler_inst=measurement['compiler_inst'],
+                          link_only=measurement['link_only'],
+                          io_inst=measurement['io'],
+                          keep_inst_files=measurement['keep_inst_files'],
+                          reuse_inst_files=measurement['reuse_inst_files'],
+                          # Measurement methods and options
+                          profile=measurement['profile'],
+                          trace=measurement['trace'],
+                          sample=measurement['sample'],
+                          metrics=measurement['metrics'],
+                          measure_mpi=measurement['mpi'],
+                          measure_openmp=measurement['openmp'],
+                          measure_opencl=measurement['opencl'],
+                          measure_pthreads=None,  # TODO
+                          measure_cuda=None,  # TODO
+                          measure_shmem=None,  # TODO
+                          measure_mpc=None,  # TODO
+                          measure_heap_usage=measurement['heap_usage'],
+                          measure_memory_alloc=measurement['memory_alloc'],
+                          callpath_depth=measurement['callpath'])
+
+        for storage in reversed(ORDERED_LEVELS):
+            tau = TauInstallation(storage.prefix, *tau_args, **tau_kwargs)
+            try:
+                tau.verify()
+            except SoftwarePackageError:
+                # Not installed in this storage, but that's OK
+                continue
+            else:
+                # Found installation
+                return tau
+        else:
+            tau = TauInstallation(prefix, *tau_args, **tau_kwargs)
+            with tau:
+                tau.install()
+                return tau
     
     def configure_tau_dependency(self, name, prefix):
         target = self.populate('target')
         cls_name = name.title() + 'Installation'
         pkg = __import__('tau.cf.software.%s_installation' % name.lower(), globals(), locals(), [cls_name], -1)
         cls = getattr(pkg, cls_name)
-        inst = cls(prefix, target.get(name + '_source', None), 
-                   target['host_arch'], target['host_os'], target.compilers())
-        with inst:
-            inst.install()
-            return inst       
+        opts = (target.get(name + '_source', None), target['host_arch'], target['host_os'], target.compilers())
+        for storage in reversed(ORDERED_LEVELS):
+            inst = cls(storage.prefix, *opts)
+            try:
+                inst.verify()
+            except SoftwarePackageError:
+                # Not installed in this storage, but that's OK
+                continue
+            else:
+                # Found installation
+                return inst
+        else:
+            inst = cls(prefix, *opts)
+            with inst:
+                inst.install()
+                return inst       
 
     def configure(self):
         """Sets up the Experiment for a new trial.
@@ -248,22 +275,22 @@ class Experiment(Model):
             TauInstallation: Object handle for the TAU installation. 
         """
         project_data = self.populate('project')
-        default_level = project_data['storage_level']
-        default_prefix = STORAGE_LEVELS.get(default_level).prefix
-        prefix = -1
         try:
-            util.mkdirp(SYSTEM_STORAGE.prefix + '/test')
-        except:
-            LOGGER.info("%s storage is not available", 
-                             SYSTEM_STORAGE.name)
+            storage = STORAGE_LEVELS[project_data['storage_level']]
+        except KeyError:
+            # Install at highest writable storage level
+            for storage in reversed(ORDERED_LEVELS):
+                if storage.is_writable():
+                    prefix = storage.prefix
+                    break
+            else:
+                raise SofwarePackageError("%s storage is not writable" % project_data['storage_level'])
         else:
-            prefix = SYSTEM_STORAGE.prefix
-            LOGGER.info("Using %s storage", 
-                             SYSTEM_STORAGE.name)
-        if prefix == -1:
-            LOGGER.info("Using default storage: %s", 
-                             default_level)
-            prefix = default_prefix
+            if not storage.is_writable():
+                raise SofwarePackageError("%s storage is not writable" % project_data['storage_level'])
+            else:
+                prefix = storage.prefix
+
         if self.uses_tau():
             dependencies = {}
             for name in 'pdt', 'binutils', 'libunwind', 'papi':

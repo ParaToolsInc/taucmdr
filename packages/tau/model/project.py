@@ -83,7 +83,6 @@ def attributes():
         },
         'storage_level': {
             'type': 'string',
-            'default': USER_STORAGE.name,
             'description': 'location of installation directory',
             'argparse': {'flags' : ('--storage_level',),
                          'choices' : STORAGE_LEVELS.keys(),

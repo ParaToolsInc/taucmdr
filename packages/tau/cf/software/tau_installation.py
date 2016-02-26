@@ -252,7 +252,7 @@ class TauInstallation(Installation):
         self.measure_memory_alloc = measure_memory_alloc
         self.callpath_depth = callpath_depth
         
-    def _verify(self):
+    def verify(self):
         """Returns true if the installation is valid.
         
         A working TAU installation has a directory named `arch` 
@@ -265,7 +265,7 @@ class TauInstallation(Installation):
         Raises:
           SoftwarePackageError: Describes why the installation is invalid.
         """
-        super(TauInstallation, self)._verify()
+        super(TauInstallation, self).verify()
 
         # Open TAU makefile and check BFDINCLUDE, UNWIND_INC, PAPIDIR, etc.
         makefile = self.get_makefile()
@@ -419,14 +419,14 @@ class TauInstallation(Installation):
         """
         if not self.src:
             try:
-                return self._verify()
+                return self.verify()
             except SoftwarePackageError as err:
                 raise SoftwarePackageError("%s installation at '%s' is missing or broken: %s" % 
                                            (self.name, self.install_prefix, err),
                                            "Specify source code path or URL to enable broken package reinstallation.")
         elif not force_reinstall:
             try:
-                return self._verify()
+                return self.verify()
             except SoftwarePackageError as err:
                 LOGGER.debug(err)
         LOGGER.info("Installing %s at '%s' from '%s' with arch=%s and %s compilers",
@@ -437,7 +437,7 @@ class TauInstallation(Installation):
         self.make_install()
 
         LOGGER.info('%s installation complete', self.name)
-        return self._verify()
+        return self.verify()
 
     def get_makefile_tags(self):
         """Get makefile tags for this TAU installation.
