@@ -81,7 +81,7 @@ def attributes():
             'model': Experiment,
             'description': 'the current experiment'
         },
-        'storage-level': {
+        'storage_level': {
             'type': 'string',
             'description': 'location of installation directory',
             'argparse': {'flags' : ('--storage-level',),
