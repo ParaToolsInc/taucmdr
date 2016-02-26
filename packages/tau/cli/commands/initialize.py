@@ -29,7 +29,7 @@
 
 import os
 import platform
-from tau import EXIT_SUCCESS
+from tau import EXIT_SUCCESS, EXIT_WARNING
 from tau.error import InternalError
 from tau.cli import arguments
 from tau.cli.command import AbstractCommand
@@ -69,8 +69,8 @@ class InitializeCommand(AbstractCommand):
         project_group.add_argument('--storage-level',
                                    help='location of installation directory',
                                    choices=STORAGE_LEVELS.keys(),
-                                   metavar='<levels>',
-                                   default=USER_STORAGE.name)
+                                   metavar='<levels>', default=arguments.SUPPRESS)
+                                   
         
         parser.merge(target_create_cmd.parser, group_title='target arguments', include_positional=False)
         target_group = parser.add_argument_group('target arguments')
@@ -133,9 +133,13 @@ class InitializeCommand(AbstractCommand):
         project_name = args.project_name
         target_name = args.target_name
         application_name = args.application_name
-        storage_level = args.storage_level
-        
-        project_create_cmd.main([project_name, '--storage-level', storage_level])
+        try:
+            storage_level = args.storage_level
+        except:
+            project_create_cmd.main([project_name])
+        else:
+            project_create_cmd.main([project_name, '--storage-level', storage_level])
+
         select_cmd.main(['--project', project_name])
 
         target_argv = [target_name] + argv
@@ -199,11 +203,14 @@ class InitializeCommand(AbstractCommand):
             self.logger.debug("No project found, initializing a new project.")
             PROJECT_STORAGE.connect_filesystem()
             self._create_project(argv, args)
+            return dashboard_cmd.main([])
         except ProjectSelectionError as err:
             err.value = "The project has been initialized but no project configuration is selected."
             raise err
         else:
-            self.logger.info("Selected project: '%s'", proj['name'])
-        return dashboard_cmd.main([])
+            self.logger.warning("Tau is already initialized and the selected project is '%s'. Use commands like"
+                                " `tau application edit` to edit the selected project or delete"
+                                " '%s' to reset to a fresh environment.", proj['name'], proj_ctrl.storage.prefix)
+            return EXIT_WARNING
 
 COMMAND = InitializeCommand(__name__, summary_fmt="Initialize TAU Commander.")

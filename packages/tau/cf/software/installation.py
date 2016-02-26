@@ -209,7 +209,7 @@ class Installation(object):
                                          "Check that the file or directory is accessable")
         self.src_prefix = src_prefix
 
-    def _verify(self):
+    def verify(self):
         """Check if the installation is valid.
         
         A valid installation provides all expected libraries and commands.
@@ -405,13 +405,13 @@ class AutotoolsInstallation(Installation):
         """
         if not self.src:
             try:
-                return self._verify()
+                return self.verify()
             except SoftwarePackageError as err:
                 raise SoftwarePackageError("%s is missing or broken: %s" % (self.name, err),
                                            "Specify source code path or URL to enable package reinstallation.")
         elif not force_reinstall:
             try:
-                return self._verify()
+                return self.verify()
             except SoftwarePackageError as err:
                 LOGGER.debug(err)
         LOGGER.info("Installing %s at '%s' from '%s'", self.name, self.install_prefix, self.src)
@@ -440,4 +440,4 @@ class AutotoolsInstallation(Installation):
 
         # Verify the new installation
         LOGGER.info("%s installation complete, verifying installation", self.name)
-        return self._verify()
+        return self.verify()
