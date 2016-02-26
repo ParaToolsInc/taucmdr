@@ -66,7 +66,7 @@ class InitializeCommand(AbstractCommand):
                                    help="Name of the new project",
                                    metavar='<name>',
                                    default=default_project_name)
-        project_group.add_argument('--storage_level',
+        project_group.add_argument('--storage-level',
                                    help='location of installation directory',
                                    choices=STORAGE_LEVELS.keys(),
                                    metavar='<levels>',
@@ -135,7 +135,7 @@ class InitializeCommand(AbstractCommand):
         application_name = args.application_name
         storage_level = args.storage_level
         
-        project_create_cmd.main([project_name, '--storage_level', storage_level])
+        project_create_cmd.main([project_name, '--storage-level', storage_level])
         select_cmd.main(['--project', project_name])
 
         target_argv = [target_name] + argv

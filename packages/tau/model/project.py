@@ -81,11 +81,11 @@ def attributes():
             'model': Experiment,
             'description': 'the current experiment'
         },
-        'storage_level': {
+        'storage-level': {
             'type': 'string',
             'default': USER_STORAGE.name,
             'description': 'location of installation directory',
-            'argparse': {'flags' : ('--storage_level',),
+            'argparse': {'flags' : ('--storage-level',),
                          'choices' : STORAGE_LEVELS.keys(),
                          'metavar' : '<level>',
                          'action' : 'store'
