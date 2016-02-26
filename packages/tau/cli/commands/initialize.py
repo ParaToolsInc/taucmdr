@@ -29,8 +29,7 @@
 
 import os
 import platform
-import warnigs
-from tau import EXIT_SUCCESS
+from tau import EXIT_SUCCESS, EXIT_WARNING
 from tau.error import InternalError
 from tau.cli import arguments
 from tau.cli.command import AbstractCommand
@@ -190,20 +189,18 @@ class InitializeCommand(AbstractCommand):
         proj_ctrl = Project.controller()
         try:
             proj = proj_ctrl.selected()
-            warnings.warn("Tau is already initialized. \n Use appropriate "
-                          "commands to add, edit or remove tau projects, "
-                          "e.g. tau application edit.\n Remove the .tau "
-                          "directory to reset to a fresh environment.\n",
-                          UserWarning)
         except ProjectStorageError:
             self.logger.debug("No project found, initializing a new project.")
             PROJECT_STORAGE.connect_filesystem()
             self._create_project(argv, args)
+            return dashboard_cmd.main([])
         except ProjectSelectionError as err:
             err.value = "The project has been initialized but no project configuration is selected."
             raise err
         else:
-            self.logger.info("Selected project: '%s'", proj['name'])
-        return dashboard_cmd.main([])
+            self.logger.warning("Tau is already initialized and the selected project is '%s'. Use commands like"
+                                " `tau application edit` to edit the selected project or delete"
+                                " '%s' to reset to a fresh environment.", proj['name'], proj_ctrl.storage.prefix)
+            return EXIT_WARNING
 
 COMMAND = InitializeCommand(__name__, summary_fmt="Initialize TAU Commander.")
