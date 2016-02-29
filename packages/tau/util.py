@@ -292,26 +292,21 @@ def create_dl_subprocess(cmd, cwd=None, env=None, stdout=True, log=True):
             subproc_env[key] = val
             LOGGER.debug("%s=%s", key, val)
     if 'curl' in cmd[0]:
-        print 'using curl'
 # Using shell = True
 #        file_size = subprocess.Popen('curl -sI ' + cmd[2] + ' --location | grep -i "content-length"', stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True).communicate()[0]
 #        file_size = int(file_size.split()[1])
 # Using shell = False
-        size_command = 'curl -sI ' + cmd[2] + ' --location'
-        proc_output = subprocess.Popen(size_command.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
+        proc_output = subprocess.Popen(['curl','-sI', cmd[2], '--location'],
+                                       stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
         file_size = int(proc_output.partition('Content-Length')[2].split()[1])
-        print file_size
     if 'wget' in cmd[0]:
-        print 'using wget'
 # Using shell = True
 #        file_size = subprocess.Popen("wget " + cmd[1] + " --spider --server-response -O - 2>&1 | sed -ne '/Content-Length/{s/.*: //;p}'", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True).communicate()[0]
 #        file_size = int(file_size)
 # Using shell = False
-        size_command = "wget " + cmd[1] + " --spider --server-response"
-        print size_command
-        proc_output = subprocess.Popen(size_command.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[1]
+        proc_output = subprocess.Popen(['wget', cmd[1], '--spider', '--server-response'],
+                                       stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[1]
         file_size = int(proc_output.partition('Content-Length')[2].split()[1])
-        print file_size
     LOGGER.debug("Creating subprocess: cmd=%s, cwd='%s'\n", cmd, cwd)
     proc = subprocess.Popen(cmd, cwd=cwd, env=subproc_env,
                             stdout=subprocess.PIPE,
@@ -326,7 +321,8 @@ def create_dl_subprocess(cmd, cwd=None, env=None, stdout=True, log=True):
             if stdout:
                 print line,
             try:
-                current_size = subprocess.Popen(["wc", "-c", cmd[-1]], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
+                current_size = subprocess.Popen(["wc", "-c", cmd[-1]],
+                                                stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
                 current_size = current_size.split()[0]
             except:
                 current_size = 0
@@ -351,7 +347,8 @@ def progress_bar(current_size, total_size):
     size = logger.get_terminal_size()
     width = int(size[0]) - 10
     percent = min(100, float(current_size) / total_size)
-    sys.stdout.write('[' + '>' * int(percent * width) + '-' * int((1 - percent) * width) + '] %3s%%\r' %(int(100*percent)))
+    sys.stdout.write('[' + '>' * int(percent * width) + '-' * int((1 - percent) * width) + '] %3s%%\r'
+                     %(int(100*percent)))
 
 
 def human_size(num, suffix='B'):
