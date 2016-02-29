@@ -372,7 +372,7 @@ class TauInstallation(Installation):
                   '-bfd=%s' % self.binutils.install_prefix if self.binutils else '',
                   '-papi=%s' % self.papi.install_prefix if self.papi else '',
                   '-unwind=%s' % self.libunwind.install_prefix if self.libunwind else '',
-                  '-pthread' if self.pthreads_support else '',
+                  '-pthread' if self.pthreads_support or self.measure_opencl else '',
                   '-mpi' if self.mpi_support else '',
                   '-mpiinc=%s' % mpiinc if mpiinc else '',
                   '-mpilib=%s' % mpilib if mpilib else '',
@@ -383,7 +383,7 @@ class TauInstallation(Installation):
         if self.openmp_support:
             flags.append('-openmp')
             if self.measure_openmp == 'ompt':
-                flags.append('-ompt')
+                flags.append('-ompt=download')
             elif self.measure_openmp == 'opari':
                 flags.append('-opari')
         if self.io_inst:
@@ -470,7 +470,7 @@ class TauInstallation(Installation):
                 tags.append(openmp_tags[self.measure_openmp])
             except KeyError:
                 pass
-        if self.pthreads_support:
+        if self.pthreads_support or self.measure_opencl:
             tags.append('pthread')
         if self.mpi_support:
             tags.append('mpi')
@@ -710,7 +710,7 @@ class TauInstallation(Installation):
                    variables to set before running the application command.
         """
         opts, env = self.runtime_config()
-        use_tau_exec = (self.source_inst == 'never' and self.compiler_inst == 'never' and not self.link_only)
+        use_tau_exec = self.measure_opencl or (self.source_inst == 'never' and self.compiler_inst == 'never' and not self.link_only)
         if use_tau_exec:
             tau_exec_opts = opts
             tags = self.get_makefile_tags()
