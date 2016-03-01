@@ -81,10 +81,10 @@ class TargetCreateCommand(CreateCommand):
         self.logger.debug("Missing compilers: %s", missing_keys)
          
         if getattr(args, 'host_arch')  == 'knc':
-            arch_args = '-mmic'
+            arch_args = ['-mmic']
         else:
             arch_args = []
-        compilers = dict([(key, InstalledCompiler(getattr(args, key, arch_args))) for key in given_keys])
+        compilers = dict([(key, InstalledCompiler(getattr(args, key), arch_args)) for key in given_keys])
         for key in missing_keys:
             try:
                 compilers[key] = host.default_compiler(CompilerRole.find(key))
