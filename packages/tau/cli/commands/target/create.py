@@ -27,7 +27,8 @@
 #
 """``tau target create`` subcommand."""
 
-from tau import EXIT_SUCCESS
+import glob
+from tau import util, EXIT_SUCCESS
 from tau.error import ConfigurationError, UniqueAttributeError
 from tau.storage.levels import STORAGE_LEVELS, PROJECT_STORAGE
 from tau.cli import arguments
@@ -79,7 +80,16 @@ class TargetCreateCommand(CreateCommand):
         missing_keys = compiler_keys - given_keys
         self.logger.debug("Given compilers: %s", given_keys)
         self.logger.debug("Missing compilers: %s", missing_keys)
-         
+
+        k1om_ar = util.which('x86_64-k1om-linux-ar')
+        if not k1om_ar:
+            for path in glob.glob('/usr/linux-k1om-*'):
+                k1om_ar = util.which(os.path.join(path, 'bin', 'x86_64-k1om-linux-ar'))
+                if k1om_ar:
+                    break
+        if not k1om_ar:
+            raise ConfigurationError('k1om tools not found', 'Try installing on compute node', 'Install MIC SDK')
+
         if getattr(args, 'host_arch')  == 'knc':
             arch_args = ['-mmic']
         else:
