@@ -206,7 +206,6 @@ def attributes():
                          'const': True,
                          'action': ParseBooleanAction},
             'compat': {True: (Target.require('cuda'),
-                              Application.require('pthreads'),
                               Application.require('opencl'))}
         },
         'callpath': {

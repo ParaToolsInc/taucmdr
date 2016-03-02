@@ -108,7 +108,6 @@ def attributes():
                          'const': True,
                          'action': ParseBooleanAction},
             'compat': {True: (Target.require('cuda'),
-                              Application.require('pthreads'),
                               Measurement.encourage('opencl', True))}
         },
         'shmem': {

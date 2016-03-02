@@ -372,7 +372,7 @@ class TauInstallation(Installation):
                   '-bfd=%s' % self.binutils.install_prefix if self.binutils else '',
                   '-papi=%s' % self.papi.install_prefix if self.papi else '',
                   '-unwind=%s' % self.libunwind.install_prefix if self.libunwind else '',
-                  '-pthread' if self.pthreads_support or self.measure_opencl else '',
+                  '-pthread' if self.pthreads_support else '',
                   '-mpi' if self.mpi_support else '',
                   '-mpiinc=%s' % mpiinc if mpiinc else '',
                   '-mpilib=%s' % mpilib if mpilib else '',
@@ -470,7 +470,7 @@ class TauInstallation(Installation):
                 tags.append(openmp_tags[self.measure_openmp])
             except KeyError:
                 pass
-        if self.pthreads_support or self.measure_opencl:
+        if self.pthreads_support:
             tags.append('pthread')
         if self.mpi_support:
             tags.append('mpi')
