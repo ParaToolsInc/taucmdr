@@ -127,8 +127,7 @@ def download(src, dest):
         wget = which('wget')
         curl_cmd = [curl, '-L', src, '-o', dest] if curl else None
         wget_cmd = [wget, src, '-O', dest] if wget else None
-#        for cmd in [curl_cmd, wget_cmd]:
-        for cmd in [wget_cmd, curl_cmd]:
+        for cmd in [curl_cmd, wget_cmd]:
             if cmd:
                 if create_dl_subprocess(cmd, stdout=False) == 0:
                     return
@@ -136,8 +135,6 @@ def download(src, dest):
         # Fallback: this is usually **much** slower than curl or wget
         def _dl_progress(count, block_size, total_size):
             progress_bar(count*block_size, total_size)
-#            sys.stdout.write("% 3.1f%% of %d bytes\r" % (
-#                min(100, float(count * block_size) / total_size * 100), total_size))
         try:
             urllib.urlretrieve(src, dest, reporthook=_dl_progress)
         except Exception as err:
@@ -292,42 +289,25 @@ def create_dl_subprocess(cmd, cwd=None, env=None, stdout=True, log=True):
             subproc_env[key] = val
             LOGGER.debug("%s=%s", key, val)
     if 'curl' in cmd[0]:
-# Using shell = True
-#        file_size = subprocess.Popen('curl -sI ' + cmd[2] + ' --location | grep -i "content-length"', stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True).communicate()[0]
-#        file_size = int(file_size.split()[1])
-# Using shell = False
         proc_output = subprocess.Popen(['curl','-sI', cmd[2], '--location'],
                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
         file_size = int(proc_output.partition('Content-Length')[2].split()[1])
     if 'wget' in cmd[0]:
-# Using shell = True
-#        file_size = subprocess.Popen("wget " + cmd[1] + " --spider --server-response -O - 2>&1 | sed -ne '/Content-Length/{s/.*: //;p}'", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True).communicate()[0]
-#        file_size = int(file_size)
-# Using shell = False
         proc_output = subprocess.Popen(['wget', cmd[1], '--spider', '--server-response'],
                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[1]
         file_size = int(proc_output.partition('Content-Length')[2].split()[1])
+    DEVNULL = open(os.devnull, 'wb')
     LOGGER.debug("Creating subprocess: cmd=%s, cwd='%s'\n", cmd, cwd)
     proc = subprocess.Popen(cmd, cwd=cwd, env=subproc_env,
-                            stdout=subprocess.PIPE,
+                            stdout=DEVNULL,
                             stderr=subprocess.STDOUT,
                             bufsize=1)
-    with proc.stdout:
-        # Use iter to avoid hidden read-ahead buffer bug in named pipes:
-        # http://bugs.python.org/issue3907
-        for line in iter(proc.stdout.readline, b''):
-            if log:
-                LOGGER.debug(line[:-1])
-            if stdout:
-                print line,
-            try:
-                current_size = subprocess.Popen(["wc", "-c", cmd[-1]],
-                                                stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
-                current_size = current_size.split()[0]
-            except:
-                current_size = 0
-#            print '%s of %s bytes' %(current_size, file_size)
-            progress_bar(current_size, file_size)
+    while proc.poll() is None:
+        try:
+            current_size = os.stat(cmd[-1]).st_size
+        except:
+            current_size = 0
+        progress_bar(current_size, file_size)
     proc.wait()
     retval = proc.returncode
     LOGGER.debug("%s returned %d", cmd, retval)
