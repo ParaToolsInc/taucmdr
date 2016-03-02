@@ -48,16 +48,17 @@ from tau.model.compiler import Compiler
 
 
 def attributes():
-    #def require_k1om(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
     def require_k1om():
-        k1om_ar = util.which('x86_64-k1om-linux-ar')
-        if not k1om_ar:
-            for path in glob.glob('/usr/linux-k1om-*'):
-                k1om_ar = util.which(os.path.join(path, 'bin', 'x86_64-k1om-linux-ar'))
-                if k1om_ar:
-                    break
-        if not k1om_ar:
-            raise ConfigurationError('k1om tools not found', 'Try installing on compute node', 'Install MIC SDK')
+        def callback(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
+            k1om_ar = util.which('x86_64-k1om-linux-ar')
+            if not k1om_ar:
+                for path in glob.glob('/usr/linux-k1om-*'):
+                    k1om_ar = util.which(os.path.join(path, 'bin', 'x86_64-k1om-linux-ar'))
+                    if k1om_ar:
+                        break
+            if not k1om_ar:
+                raise ConfigurationError('k1om tools not found', 'Try installing on compute node', 'Install MIC SDK')
+        return callback
 
     from tau.model.project import Project
     from tau.cli.arguments import ParsePackagePathAction
@@ -105,7 +106,7 @@ def attributes():
                        (Target.require('CC', knc_intel_only),
                         Target.require('CXX', knc_intel_only),
                         Target.require('FC', knc_intel_only),
-                        Target.require(knc_require_k1om))}
+                        Target.require('host_arch', knc_require_k1om))}
         },
         'CC': {
             'model': Compiler,
