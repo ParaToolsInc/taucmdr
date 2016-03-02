@@ -35,6 +35,9 @@ describes a specific set of system features.  For example, if both GNU and Intel
 compilers are installed then there will target configurations for each compiler family.
 """
 
+import os
+import glob
+from tau import util
 from tau.error import InternalError, ConfigurationError
 from tau.mvc.model import Model
 from tau.mvc.controller import Controller
@@ -45,6 +48,17 @@ from tau.model.compiler import Compiler
 
 
 def attributes():
+    #def require_k1om(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
+    def require_k1om():
+        k1om_ar = util.which('x86_64-k1om-linux-ar')
+        if not k1om_ar:
+            for path in glob.glob('/usr/linux-k1om-*'):
+                k1om_ar = util.which(os.path.join(path, 'bin', 'x86_64-k1om-linux-ar'))
+                if k1om_ar:
+                    break
+        if not k1om_ar:
+            raise ConfigurationError('k1om tools not found', 'Try installing on compute node', 'Install MIC SDK')
+
     from tau.model.project import Project
     from tau.cli.arguments import ParsePackagePathAction
     from tau.cf.target import Architecture, OperatingSystem
@@ -53,6 +67,7 @@ def attributes():
     knc_intel_only = require_compiler_family(INTEL_COMPILERS, 
                                              "You must use Intel compilers to target the Xeon Phi",
                                              "Try adding `--host-compilers=Intel` to the command line")
+    knc_require_k1om = require_k1om()
 
     return {
         'projects': {
@@ -89,7 +104,8 @@ def attributes():
             'compat': {str(INTEL_KNC_ARCH): 
                        (Target.require('CC', knc_intel_only),
                         Target.require('CXX', knc_intel_only),
-                        Target.require('FC', knc_intel_only))}
+                        Target.require('FC', knc_intel_only),
+                        Target.require(knc_require_k1om))}
         },
         'CC': {
             'model': Compiler,
