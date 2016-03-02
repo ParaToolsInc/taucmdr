@@ -42,6 +42,7 @@ from tau.error import InternalError, ConfigurationError
 from tau.mvc.model import Model
 from tau.mvc.controller import Controller
 from tau.cf.compiler import CompilerRole, INTEL_COMPILERS
+from tau.cf.compiler.mpi import INTEL_MPI_COMPILERS
 from tau.cf.compiler.installed import InstalledCompilerSet, InstalledCompiler
 from tau.cf.target import host, DARWIN_OS, INTEL_KNC_ARCH
 from tau.model.compiler import Compiler
@@ -68,6 +69,9 @@ def attributes():
     knc_intel_only = require_compiler_family(INTEL_COMPILERS, 
                                              "You must use Intel compilers to target the Xeon Phi",
                                              "Try adding `--host-compilers=Intel` to the command line")
+    knc_intel_mpi_only = require_compiler_family(INTEL_MPI_COMPILERS,
+                                             "You must use Intel MPI compilers to target the Xeon Phi",
+                                             "Try adding `--mpi-compilers=Intel` to the command line")
     knc_require_k1om = require_k1om()
 
     return {
@@ -106,6 +110,9 @@ def attributes():
                        (Target.require('CC', knc_intel_only),
                         Target.require('CXX', knc_intel_only),
                         Target.require('FC', knc_intel_only),
+                        Target.require('MPI_CC', knc_intel_mpi_only),
+                        Target.require('MPI_CXX', knc_intel_mpi_only),
+                        Target.require('MPI_FC', knc_intel_mpi_only),
                         Target.require('host_arch', knc_require_k1om))}
         },
         'CC': {
