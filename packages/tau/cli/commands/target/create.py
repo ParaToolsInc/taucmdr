@@ -56,6 +56,10 @@ class TargetCreateCommand(CreateCommand):
         Raises:
             ConfigurationError: Invalid command line arguments specified
         """
+        if getattr(args, 'host_arch')  == 'knc':
+            arch_args = ['-mmic']
+        else:
+            arch_args = []
         for family_attr, family_cls in [('host_family', CompilerFamily), ('mpi_family', MpiCompilerFamily)]:
             try:
                 family_arg = getattr(args, family_attr)
@@ -66,7 +70,7 @@ class TargetCreateCommand(CreateCommand):
             else:
                 delattr(args, family_attr)
             try:
-                family_comps = InstalledCompilerFamily(family_cls(family_arg))
+                family_comps = InstalledCompilerFamily(family_cls(family_arg), arch_args)
             except KeyError:
                 self.parser.error("Invalid compiler family: %s" % family_arg)
             for comp in family_comps:
@@ -80,10 +84,6 @@ class TargetCreateCommand(CreateCommand):
         self.logger.debug("Given compilers: %s", given_keys)
         self.logger.debug("Missing compilers: %s", missing_keys)
          
-        if getattr(args, 'host_arch')  == 'knc':
-            arch_args = ['-mmic']
-        else:
-            arch_args = []
         compilers = dict([(key, InstalledCompiler(getattr(args, key), arch_args)) for key in given_keys])
         for key in missing_keys:
             try:
