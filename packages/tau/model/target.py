@@ -74,6 +74,8 @@ def attributes():
                                              "Try adding `--mpi-compilers=Intel` to the command line")
     knc_require_k1om = require_k1om()
 
+
+
     return {
         'projects': {
             'collection': Project,
@@ -110,10 +112,10 @@ def attributes():
                        (Target.require('CC', knc_intel_only),
                         Target.require('CXX', knc_intel_only),
                         Target.require('FC', knc_intel_only),
+                        Target.require('host_arch', knc_require_k1om),
                         Target.require('MPI_CC', knc_intel_mpi_only),
                         Target.require('MPI_CXX', knc_intel_mpi_only),
-                        Target.require('MPI_FC', knc_intel_mpi_only),
-                        Target.require('host_arch', knc_require_k1om))}
+                        Target.require('MPI_FC', knc_intel_mpi_only))}
         },
         'CC': {
             'model': Compiler,
