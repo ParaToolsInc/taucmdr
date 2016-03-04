@@ -85,7 +85,7 @@ def attributes():
                          'nargs': '?',
                          'const': True,
                          'action': ParseBooleanAction},
-            'compat': {True: Measurement.encourage('mpi', True)}
+            'compat': {True: Measurement.require('mpi', True)}
         },
         'cuda': {
             'type': 'boolean',
