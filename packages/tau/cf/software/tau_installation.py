@@ -40,7 +40,7 @@ from tau.cf.compiler import SYSTEM_COMPILERS, GNU_COMPILERS, INTEL_COMPILERS, PG
 from tau.cf.compiler import CC_ROLE, CXX_ROLE, FC_ROLE, UPC_ROLE
 from tau.cf.compiler.mpi import SYSTEM_MPI_COMPILERS, INTEL_MPI_COMPILERS
 from tau.cf.compiler.mpi import MPI_CC_ROLE, MPI_CXX_ROLE, MPI_FC_ROLE
-from tau.cf.target import TauArch
+from tau.cf.target import TauArch, CRAY_CNL_OS
 
 
 LOGGER = logger.get_logger(__name__)
@@ -168,8 +168,8 @@ class TauInstallation(Installation):
             src (str): Path to a directory where the software has already been 
                        installed, or a path to a source archive file, or the special
                        keyword 'download'.
-            host_arch (Architecture): Target architecture description.
-            host_os (OperatingSystem): Target operating system description.
+            target_arch (Architecture): Target architecture description.
+            target_os (OperatingSystem): Target operating system description.
             compilers (InstalledCompilerSet): Compilers to use if software must be compiled.
             verbose (bool): True to enable TAU verbose output.
             pdt_source (str): Path to PDT source, installation, or None.
@@ -453,7 +453,7 @@ class TauInstallation(Installation):
             list: Makefile tags, e.g. ['papi', 'pdt', 'icpc']
         """
         tags = []
-        compiler_tags = {INTEL_COMPILERS: 'icpc', 
+        compiler_tags = {INTEL_COMPILERS: 'intel' if self.target_os == CRAY_CNL_OS else 'icpc', 
                          PGI_COMPILERS: 'pgi'}
         try:
             tags.append(compiler_tags[self.compilers[CXX_ROLE].info.family])
