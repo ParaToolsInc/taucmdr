@@ -5,7 +5,7 @@ os:
 cache:
     directories:
         - "$HOME/.cache/pip"
-	- "$HOME/.pyenv"
+        - "$HOME/.pyenv"
 
 language: python
 env:
