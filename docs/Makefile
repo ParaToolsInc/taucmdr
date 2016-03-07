@@ -42,7 +42,7 @@ $(PACKAGE_REST_FILE): $(SOURCE_FILES)
 update-github-pages: 
 	git checkout $(DOCS_BRANCH)
 	git checkout $(LOCAL_BRANCH) $(PROJECT_DIR) $(HERE)
-	git rm -f .gitignore
+	-git rm -f .gitignore
 	$(MAKE) all
 	git add $(HERE)
 	git add -u $(HERE)
