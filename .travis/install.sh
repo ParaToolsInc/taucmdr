@@ -6,7 +6,7 @@ set -o verbose
 
 # Install pyenv to globally manage python versions
 # See https://github.com/yyuu/pyenv for further details
-if [ ! -d "$HOME/.pyenv" ]; then
+if [ ! -x "$HOME/.pyenv/bin/pyenv" ]; then
     curl -L https://raw.githubusercontent.com/yyuu/pyenv-installer/master/bin/pyenv-installer | bash
 fi
 
