@@ -40,3 +40,12 @@ script:
 
 after_success:
   - codecov --env TRAVIS_OS_NAME PYENV_VERSION OS
+
+deploy:
+  provider: script
+  script: make -C doc/ update-github-pages
+  skip_cleanup: true
+  on:
+    branch: master
+    condition: $TRAVIS_OS_NAME = linux &&  $PYENV_VERSION = '2.7.9'
+#    repo: ParaToolsInc/taucmdr # Don't try to deploy on private forks

@@ -10,7 +10,12 @@
 #
 HERE := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
-LOCAL_BRANCH = $(shell git rev-parse --abbrev-ref HEAD)
+# Travis-CI tests pushed commits in a detatched head state. As a result,
+# `git rev-parse --abbrev-ref HEAD` won't always be meaningful. If the
+# environment variable TRAVIS_COMMIT is defined, then use this. If not,
+# then use `git rev-parse` (and assume we're on master).
+TRAVIS_COMMIT ?= $(shell git rev-parse --abbrev-ref HEAD)
+LOCAL_BRANCH := $(TRAVIS_COMMIT)
 DOCS_BRANCH = gh-pages
 
 SPHINX_BUILDER = html
