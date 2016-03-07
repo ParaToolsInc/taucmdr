@@ -14,9 +14,7 @@ if [ ! -x "$HOME/.pyenv/bin/pyenv" ]; then
     curl -L https://raw.githubusercontent.com/yyuu/pyenv-installer/master/bin/pyenv-installer | bash
 fi
 
-# cd "$HOME/.pyenv"
-# git pull origin master || git clone -v https://github.com/yyuu/pyenv.git "$HOME/.pyenv"
-# cd -
+git pull origin master || git clone -v https://github.com/yyuu/pyenv.git "$HOME/.pyenv"
 
 ls -a ~/.pyenv
 ls ~/.pyenv/bin
@@ -35,7 +33,6 @@ pyenv which pip
 
 # Create a clean virtualenv to isolate the environment from Travis-CI defaults
 python -m pip install --user virtualenv
-
 python -m virtualenv "$HOME/.venv"
 source "$HOME/.venv/bin/activate"
 

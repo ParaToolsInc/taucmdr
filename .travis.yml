@@ -13,7 +13,7 @@ cache:
 
 language: python
 env:
-  - PYENV_VERSION='2.7.9' OS="Precise"
+  - PYENV_VERSION='2.7.9' OS='Precise'
 
 matrix:
   include:
