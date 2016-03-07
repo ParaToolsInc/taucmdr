@@ -12,3 +12,4 @@ install:
 script:
   - ./build.sh
   - ./runtests
+  - make -C docs make
