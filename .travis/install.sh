@@ -10,11 +10,13 @@ echo "$PYENV_ROOT"
 export PYENV_ROOT="$HOME/.pyenv"
 export PATH="$PYENV_ROOT/bin:$PATH"
 
-if [ ! -x "$HOME/.pyenv/bin/pyenv" ]; then
+if [ ! -x "$PYENV_ROOT/bin/pyenv" ]; then
     curl -L https://raw.githubusercontent.com/yyuu/pyenv-installer/master/bin/pyenv-installer | bash
 fi
 
-git pull origin master || git clone -v https://github.com/yyuu/pyenv.git "$HOME/.pyenv"
+if [ ! -d "$PYENV_ROOT/.git" ]; then # pyenv install script failed, try manual install
+    git clone -v https://github.com/yyuu/pyenv.git "$PYENV_ROOT"
+fi
 
 ls -a ~/.pyenv
 ls ~/.pyenv/bin
