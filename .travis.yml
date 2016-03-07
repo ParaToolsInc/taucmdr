@@ -13,16 +13,18 @@ cache:
 
 language: python
 env:
-  - PYENV_VERSION='2.7.9'
+  - PYENV_VERSION='2.7.9' OS="Precise"
 
 matrix:
   include:
     - language: generic
       os: osx
       osx_image: xcode7.1 # Corresponds to 10.10.x (Yosemite)
+      env: OS='Yosemite'
     - language: generic
       os: osx
       osx_image: xcode7.2 # Corresponds to 10.11.x (El Capitan)
+      env: OS='El Capitan'
 
 install:
   - source .travis/install.sh
@@ -33,4 +35,4 @@ script:
   - make -C docs
 
 after_success:
-  - codecov --env TRAVIS_OS_NAME PYENV_VERSION
+  - codecov --env TRAVIS_OS_NAME PYENV_VERSION OS
