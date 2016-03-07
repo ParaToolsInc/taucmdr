@@ -1,3 +1,7 @@
+branches:
+  except:
+    - gh-pages
+
 sudo: false
 os:
   - linux
@@ -36,6 +40,7 @@ script:
   - ./build.sh
   - coverage run runtests
   - make -C docs
+  - pylint --rcfile=pylintrc packages/tau
 
 after_success:
   - codecov --env TRAVIS_OS_NAME PYENV_VERSION OS
