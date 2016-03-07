@@ -4,11 +4,12 @@ os:
 
 cache:
     directories:
-        - $HOME/.cache/pip
+        - "$HOME/.cache/pip"
+	- "$HOME/.pyenv"
 
 language: python
-python:
-  - '2.7'
+env:
+  - PYENV_VERSION='2.7.9'
 
 matrix:
   include:
@@ -20,8 +21,7 @@ matrix:
       osx_image: xcode7.2 # Corresponds to 10.11.x (El Capitan)
 
 install:
-  - pip install -r requirements.txt
-  - export PATH="/path/to/taucmdr/bin:$PATH"
+  - source .travis/install.sh
 
 script:
   - ./build.sh
