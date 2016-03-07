@@ -12,6 +12,9 @@ fi
 
 export PYENV_ROOT="$HOME/.pyenv"
 export PATH="$PYENV_ROOT/bin:$PATH"
+ls ~/.pyenv
+ls ~/.pyenv/bin
+
 pyenv init -
 pyenv virtualenv-init -
 
