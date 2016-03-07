@@ -2,15 +2,31 @@ sudo: false
 os:
   - linux
 
+cache:
+    directories:
+        - $HOME/.cache/pip
+
 language: python
 python:
   - '2.7'
 
+matrix:
+  include:
+    - language: generic
+      os: osx
+      osx_image: xcode7.1 # Corresponds to 10.10.x (Yosemite)
+    - language: generic
+      os: osx
+      osx_image: xcode7.2 # Corresponds to 10.11.x (El Capitan)
+
 install:
-  - pip install -r requirements.txt
+  - pip install --user -r requirements.txt
   - export PATH="/path/to/taucmdr/bin:$PATH"
 
 script:
   - ./build.sh
-  - ./runtests
+  - coverage run runtests
   - make -C docs
+
+after_success:
+  - codecov
