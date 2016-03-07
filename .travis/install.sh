@@ -1,7 +1,6 @@
 #!/bin/bash
-
-set -o pipefail
-set -o errexit
+#set -o pipefail
+#set -o errexit
 set -o verbose
 
 # Install pyenv to globally manage python versions
