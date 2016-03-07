@@ -32,6 +32,7 @@ install:
   - source .travis/install.sh
 
 script:
+  - python --version
   - ./build.sh
   - coverage run runtests
   - make -C docs

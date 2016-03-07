@@ -46,4 +46,4 @@ source "$HOME/.venv/bin/activate"
 # Install development requirements enumerated in requirements.txt
 pip install -r requirements.txt
 
-export PATH="/path/to/taucmdr/bin:$PATH"
+export PATH="$PWD/bin:$PATH"
