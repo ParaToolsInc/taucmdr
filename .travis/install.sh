@@ -15,7 +15,12 @@ if [ ! -x "$PYENV_ROOT/bin/pyenv" ]; then
 fi
 
 if [ ! -d "$PYENV_ROOT/.git" ]; then # pyenv install script failed, try manual install
-    git clone -v https://github.com/yyuu/pyenv.git "$PYENV_ROOT"
+    git clone --no-checkout -v https://github.com/yyuu/pyenv.git "$HOME/tmp"
+    mv "$HOME/tmp/.git" "$PYENV_ROOT/"
+    rmdir "$HOME/tmp"
+    cd "$PYENV_ROOT"
+    git reset --hard HEAD
+    cd -
 fi
 
 ls -a ~/.pyenv
