@@ -1,0 +1,51 @@
+branches:
+  except:
+    - gh-pages
+
+sudo: false
+os:
+  - linux
+
+cache:
+    directories:
+        - "$HOME/.cache/pip"
+        - "$HOME/.pyenv"
+
+language: python
+env:
+  - PYENV_VERSION='2.7.9' OS='Ubuntu Precise'
+
+matrix:
+  include:
+    - language: generic
+      os: osx
+      osx_image: xcode7.1 # Corresponds to 10.10.x (Yosemite)
+      env:
+        - PYENV_VERSION='2.7.9' OS='OS X Yosemite'
+    - language: generic
+      os: osx
+      osx_image: xcode7.2 # Corresponds to 10.11.x (El Capitan)
+      env:
+        - PYENV_VERSION='2.7.9' OS='OS X El Capitan'
+
+install:
+  - source .travis/install.sh
+
+script:
+  - python --version
+  - ./build.sh
+  - coverage run runtests
+  - make -C docs
+#  - pylint --rcfile=pylintrc packages/tau # Currently returns with 30 exit code and negative score
+
+after_success:
+  - codecov --env TRAVIS_OS_NAME PYENV_VERSION OS
+
+deploy:
+  provider: script
+  script: make -C doc/ update-github-pages
+  skip_cleanup: true
+  on:
+    branch: master
+    condition: $TRAVIS_OS_NAME = linux &&  $PYENV_VERSION = '2.7.9'
+#    repo: ParaToolsInc/taucmdr # Don't try to deploy on private forks
