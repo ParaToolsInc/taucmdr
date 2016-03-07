@@ -1,6 +1,10 @@
 sudo: false
 os:
   - linux
+addons:
+  apt:
+    packages:
+    - git
 
 cache:
     directories:
@@ -29,4 +33,4 @@ script:
   - make -C docs
 
 after_success:
-  - codecov
+  - codecov --env TRAVIS_OS_NAME PYENV_VERSION
