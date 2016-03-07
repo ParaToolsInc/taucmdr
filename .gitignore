@@ -58,3 +58,6 @@ installed
 # Misc
 *~
 benchmarks
+
+# Python coverage data
+.coverage
