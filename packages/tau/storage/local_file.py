@@ -109,6 +109,11 @@ class LocalFileStorage(AbstractStorage):
         
     def __delitem__(self, key):
         self.remove({'key': key})
+
+    def is_writable(self):
+        """Check if the storage filesystem is writable."""
+        self.connect_filesystem()
+        return os.access(self.prefix, os.W_OK)
     
     def connect_filesystem(self, *args, **kwargs):
         """Prepares the store filesystem fore reading and writing."""

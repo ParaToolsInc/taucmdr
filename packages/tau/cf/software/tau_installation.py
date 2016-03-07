@@ -40,7 +40,7 @@ from tau.cf.compiler import SYSTEM_COMPILERS, GNU_COMPILERS, INTEL_COMPILERS, PG
 from tau.cf.compiler import CC_ROLE, CXX_ROLE, FC_ROLE, UPC_ROLE
 from tau.cf.compiler.mpi import SYSTEM_MPI_COMPILERS, INTEL_MPI_COMPILERS
 from tau.cf.compiler.mpi import MPI_CC_ROLE, MPI_CXX_ROLE, MPI_FC_ROLE
-from tau.cf.target import TauArch
+from tau.cf.target import TauArch, CRAY_CNL_OS
 
 
 LOGGER = logger.get_logger(__name__)
@@ -168,8 +168,8 @@ class TauInstallation(Installation):
             src (str): Path to a directory where the software has already been 
                        installed, or a path to a source archive file, or the special
                        keyword 'download'.
-            host_arch (Architecture): Target architecture description.
-            host_os (OperatingSystem): Target operating system description.
+            target_arch (Architecture): Target architecture description.
+            target_os (OperatingSystem): Target operating system description.
             compilers (InstalledCompilerSet): Compilers to use if software must be compiled.
             verbose (bool): True to enable TAU verbose output.
             pdt_source (str): Path to PDT source, installation, or None.
@@ -252,7 +252,7 @@ class TauInstallation(Installation):
         self.measure_memory_alloc = measure_memory_alloc
         self.callpath_depth = callpath_depth
         
-    def _verify(self):
+    def verify(self):
         """Returns true if the installation is valid.
         
         A working TAU installation has a directory named `arch` 
@@ -265,7 +265,7 @@ class TauInstallation(Installation):
         Raises:
           SoftwarePackageError: Describes why the installation is invalid.
         """
-        super(TauInstallation, self)._verify()
+        super(TauInstallation, self).verify()
 
         # Open TAU makefile and check BFDINCLUDE, UNWIND_INC, PAPIDIR, etc.
         makefile = self.get_makefile()
@@ -379,11 +379,11 @@ class TauInstallation(Installation):
                   '-mpilibrary=%s' % mpilibrary if mpilibrary else '',
                   '-cuda=%s' % self.cuda_prefix if self.cuda_prefix else '',
                   '-opencl=%s' % self.opencl_prefix if self.opencl_prefix else ''
-                  ] if flag]
+                 ] if flag]
         if self.openmp_support:
             flags.append('-openmp')
             if self.measure_openmp == 'ompt':
-                flags.append('-ompt')
+                flags.append('-ompt=download')
             elif self.measure_openmp == 'opari':
                 flags.append('-opari')
         if self.io_inst:
@@ -419,14 +419,14 @@ class TauInstallation(Installation):
         """
         if not self.src:
             try:
-                return self._verify()
+                return self.verify()
             except SoftwarePackageError as err:
                 raise SoftwarePackageError("%s installation at '%s' is missing or broken: %s" % 
                                            (self.name, self.install_prefix, err),
                                            "Specify source code path or URL to enable broken package reinstallation.")
         elif not force_reinstall:
             try:
-                return self._verify()
+                return self.verify()
             except SoftwarePackageError as err:
                 LOGGER.debug(err)
         LOGGER.info("Installing %s at '%s' from '%s' with arch=%s and %s compilers",
@@ -437,7 +437,7 @@ class TauInstallation(Installation):
         self.make_install()
 
         LOGGER.info('%s installation complete', self.name)
-        return self._verify()
+        return self.verify()
 
     def get_makefile_tags(self):
         """Get makefile tags for this TAU installation.
@@ -453,7 +453,7 @@ class TauInstallation(Installation):
             list: Makefile tags, e.g. ['papi', 'pdt', 'icpc']
         """
         tags = []
-        compiler_tags = {INTEL_COMPILERS: 'icpc', 
+        compiler_tags = {INTEL_COMPILERS: 'intel' if self.target_os == CRAY_CNL_OS else 'icpc', 
                          PGI_COMPILERS: 'pgi'}
         try:
             tags.append(compiler_tags[self.compilers[CXX_ROLE].info.family])
@@ -710,12 +710,14 @@ class TauInstallation(Installation):
                    variables to set before running the application command.
         """
         opts, env = self.runtime_config()
-        use_tau_exec = (self.source_inst == 'never' and self.compiler_inst == 'never' and not self.link_only)
+        use_tau_exec = self.measure_opencl or (self.source_inst == 'never' and self.compiler_inst == 'never' and not self.link_only)
         if use_tau_exec:
             tau_exec_opts = opts
             tags = self.get_makefile_tags()
             if not self.mpi_support:
                 tags.add('serial')
+            if self.opencl_support:
+                tags.add('cupti')
             tau_exec = ['tau_exec', '-T', ','.join(tags)] + tau_exec_opts
             cmd = launcher_cmd + tau_exec + application_cmd
         else:
@@ -733,7 +735,7 @@ class TauInstallation(Installation):
             int: Return code of the visualization tool.
         """
         LOGGER.debug("Showing profile files at '%s'", path)
-        _, env = super(TauInstallation,self).runtime_config()
+        _, env = super(TauInstallation, self).runtime_config()
         if tool_name:
             tools = [tool_name]
         else:
@@ -767,7 +769,7 @@ class TauInstallation(Installation):
             int: Return code of the visualization tool.
         """
         LOGGER.debug("Showing trace files at '%s'", path)
-        _, env = super(TauInstallation,self).runtime_config()
+        _, env = super(TauInstallation, self).runtime_config()
         if tool_name is None:
             tool_name = 'jumpshot'
         elif tool_name != 'jumpshot':

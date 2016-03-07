@@ -107,7 +107,8 @@ def attributes():
                          'nargs': '?',
                          'const': True,
                          'action': ParseBooleanAction},
-            'compat': {True: Target.require('opencl')}
+            'compat': {True: (Target.require('cuda'),
+                              Measurement.encourage('opencl', True))}
         },
         'shmem': {
             'type': 'boolean',

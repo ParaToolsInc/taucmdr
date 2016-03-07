@@ -38,7 +38,7 @@ from tau import logger
 from tau.error import InternalError, ConfigurationError
 from tau.mvc.model import Model
 from tau.mvc.controller import Controller
-from tau.storage.levels import PROJECT_STORAGE
+from tau.storage.levels import PROJECT_STORAGE, USER_STORAGE, STORAGE_LEVELS
 
 
 LOGGER = logger.get_logger(__name__)
@@ -80,6 +80,15 @@ def attributes():
         'experiment': {
             'model': Experiment,
             'description': 'the current experiment'
+        },
+        'storage_level': {
+            'type': 'string',
+            'description': 'location of installation directory',
+            'argparse': {'flags' : ('--storage-level',),
+                         'choices' : STORAGE_LEVELS.keys(),
+                         'metavar' : '<level>',
+                         'action' : 'store'
+            },
         }
     }
 

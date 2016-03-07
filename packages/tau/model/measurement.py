@@ -169,8 +169,7 @@ def attributes():
             'argparse': {'flags': ('--openmp',),
                          'group': 'library',
                          'metavar': 'library',
-                         'choices': ('none', 'opari', 'ompt', 'gomp'),
-                         'nargs': 1},
+                         'choices': ('none', 'opari', 'ompt', 'gomp')},
             'compat': {'opari':
                        Application.require('openmp', True),
                        'ompt':
@@ -206,7 +205,8 @@ def attributes():
                          'nargs': '?',
                          'const': True,
                          'action': ParseBooleanAction},
-            'compat': {True: Target.require('opencl')}
+            'compat': {True: (Target.require('cuda'),
+                              Application.require('opencl'))}
         },
         'callpath': {
             'type': 'integer',
