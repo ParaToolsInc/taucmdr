@@ -44,33 +44,33 @@
         
         
   <h1>Source code for tau.cf</h1><div class="highlight"><pre>
-<span class="c"># -*- coding: utf-8 -*-</span>
-<span class="c">#</span>
-<span class="c"># Copyright (c) 2015, ParaTools, Inc.</span>
-<span class="c"># All rights reserved.</span>
-<span class="c">#</span>
-<span class="c"># Redistribution and use in source and binary forms, with or without</span>
-<span class="c"># modification, are permitted provided that the following conditions are met:</span>
-<span class="c"># (1) Redistributions of source code must retain the above copyright notice,</span>
-<span class="c">#     this list of conditions and the following disclaimer.</span>
-<span class="c"># (2) Redistributions in binary form must reproduce the above copyright notice,</span>
-<span class="c">#     this list of conditions and the following disclaimer in the documentation</span>
-<span class="c">#     and/or other materials provided with the distribution.</span>
-<span class="c"># (3) Neither the name of ParaTools, Inc. nor the names of its contributors may</span>
-<span class="c">#     be used to endorse or promote products derived from this software without</span>
-<span class="c">#     specific prior written permission.</span>
-<span class="c">#</span>
-<span class="c"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
-<span class="c"># AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</span>
-<span class="c"># IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE</span>
-<span class="c"># DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE</span>
-<span class="c"># FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL</span>
-<span class="c"># DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR</span>
-<span class="c"># SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER</span>
-<span class="c"># CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,</span>
-<span class="c"># OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE</span>
-<span class="c"># OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</span>
-<span class="c">#</span>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (c) 2015, ParaTools, Inc.</span>
+<span class="c1"># All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Redistribution and use in source and binary forms, with or without</span>
+<span class="c1"># modification, are permitted provided that the following conditions are met:</span>
+<span class="c1"># (1) Redistributions of source code must retain the above copyright notice,</span>
+<span class="c1">#     this list of conditions and the following disclaimer.</span>
+<span class="c1"># (2) Redistributions in binary form must reproduce the above copyright notice,</span>
+<span class="c1">#     this list of conditions and the following disclaimer in the documentation</span>
+<span class="c1">#     and/or other materials provided with the distribution.</span>
+<span class="c1"># (3) Neither the name of ParaTools, Inc. nor the names of its contributors may</span>
+<span class="c1">#     be used to endorse or promote products derived from this software without</span>
+<span class="c1">#     specific prior written permission.</span>
+<span class="c1">#</span>
+<span class="c1"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
+<span class="c1"># AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</span>
+<span class="c1"># IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE</span>
+<span class="c1"># DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE</span>
+<span class="c1"># FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL</span>
+<span class="c1"># DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR</span>
+<span class="c1"># SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER</span>
+<span class="c1"># CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,</span>
+<span class="c1"># OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE</span>
+<span class="c1"># OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</span>
+<span class="c1">#</span>
 <span class="sd">&quot;&quot;&quot;TAU Common Framework (CF) intialization and common objects.&quot;&quot;&quot;</span>
 
 
@@ -113,7 +113,7 @@
     <span class="k">def</span> <span class="nf">__new__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Ensure that __instances__ is set and track new instances.&quot;&quot;&quot;</span>
         <span class="n">instance</span> <span class="o">=</span> <span class="nb">object</span><span class="o">.</span><span class="n">__new__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="k">if</span> <span class="s">&quot;__instances__&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">__dict__</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">&quot;__instances__&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">__dict__</span><span class="p">:</span>
             <span class="n">cls</span><span class="o">.</span><span class="n">__instances__</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="n">cls</span><span class="o">.</span><span class="n">__instances__</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">instance</span>
@@ -122,9 +122,9 @@
 <div class="viewcode-block" id="TrackedInstance.all"><a class="viewcode-back" href="../../tau.cf.html#tau.cf.TrackedInstance.all">[docs]</a>    <span class="k">def</span> <span class="nf">all</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Iterate over class instances.&quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">instance</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">__instances__</span><span class="p">:</span>
-            <span class="k">yield</span> <span class="n">instance</span>
+            <span class="k">yield</span> <span class="n">instance</span></div></div>
 
-</div></div>
+
 <div class="viewcode-block" id="KeyedRecordCreator"><a class="viewcode-back" href="../../tau.cf.html#tau.cf.KeyedRecordCreator">[docs]</a><span class="k">class</span> <span class="nc">KeyedRecordCreator</span><span class="p">(</span><span class="nb">type</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Metaclass to create a new :any:`KeyedRecord` instance.</span>
 <span class="sd">    </span>
@@ -145,7 +145,7 @@
 <span class="sd">        We do this in ``__new__`` so that each subclass has its own ``__instances__`` attribute.</span>
 <span class="sd">        This is how we keep subclass instances from being listed among their base class instances.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">dct</span><span class="p">[</span><span class="s">&#39;__instances__&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">dct</span><span class="p">[</span><span class="s1">&#39;__instances__&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">return</span> <span class="nb">type</span><span class="o">.</span><span class="n">__new__</span><span class="p">(</span><span class="n">mcs</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">dct</span><span class="p">)</span>
     
 <div class="viewcode-block" id="KeyedRecordCreator.__call__"><a class="viewcode-back" href="../../tau.cf.html#tau.cf.KeyedRecordCreator.__call__">[docs]</a>    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -159,9 +159,9 @@
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
             <span class="n">instance</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">KeyedRecordCreator</span><span class="p">,</span> <span class="n">cls</span><span class="p">)</span><span class="o">.</span><span class="n">__call__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="n">cls</span><span class="o">.</span><span class="n">__instances__</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">instance</span>
-        <span class="k">return</span> <span class="n">instance</span>
+        <span class="k">return</span> <span class="n">instance</span></div></div>
 
-</div></div>
+
 <div class="viewcode-block" id="KeyedRecord"><a class="viewcode-back" href="../../tau.cf.html#tau.cf.KeyedRecord">[docs]</a><span class="k">class</span> <span class="nc">KeyedRecord</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Data record with a unique key.</span>
 <span class="sd">    </span>
@@ -196,8 +196,8 @@
 <span class="sd">        carrot is steak</span>
 <span class="sd">        &gt;&gt;&gt; False</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c"># Some members of this class are set by the metaclass __new__ method. </span>
-    <span class="c"># pylint: disable=no-member</span>
+    <span class="c1"># Some members of this class are set by the metaclass __new__ method. </span>
+    <span class="c1"># pylint: disable=no-member</span>
     
     <span class="n">__metaclass__</span> <span class="o">=</span> <span class="n">KeyedRecordCreator</span>
     
@@ -214,8 +214,8 @@
 <div class="viewcode-block" id="KeyedRecord.all"><a class="viewcode-back" href="../../tau.cf.html#tau.cf.KeyedRecord.all">[docs]</a>    <span class="k">def</span> <span class="nf">all</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Iterate over class instances.&quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">instance</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">__instances__</span><span class="o">.</span><span class="n">itervalues</span><span class="p">():</span>
-            <span class="k">yield</span> <span class="n">instance</span>
-    </div>
+            <span class="k">yield</span> <span class="n">instance</span></div>
+    
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="KeyedRecord.keys"><a class="viewcode-back" href="../../tau.cf.html#tau.cf.KeyedRecord.keys">[docs]</a>    <span class="k">def</span> <span class="nf">keys</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get the name of the key field in all instances.</span>
@@ -223,8 +223,8 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            list: All instance keys.</span>
 <span class="sd">        &quot;&quot;&quot;</span> 
-        <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">__instances__</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
-    </div>
+        <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">__instances__</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span></div>
+    
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="KeyedRecord.find"><a class="viewcode-back" href="../../tau.cf.html#tau.cf.KeyedRecord.find">[docs]</a>    <span class="k">def</span> <span class="nf">find</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Find an instance.</span>
@@ -238,8 +238,8 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            KeyedRecord: The instance with the matching key value.</span>
 <span class="sd">        &quot;&quot;&quot;</span> 
-        <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">__instances__</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-    </div></div>
+        <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">__instances__</span><span class="p">[</span><span class="n">key</span><span class="p">]</span></div></div>
+    
 </pre></div>
 
       </div>
@@ -253,7 +253,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
 </html>

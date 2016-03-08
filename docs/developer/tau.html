@@ -94,7 +94,7 @@ and checks the Python version.  It must be kept as short and simple as possible.
 
 <dl class="data">
 <dt id="tau.SYSTEM_PREFIX">
-<code class="descclassname">tau.</code><code class="descname">SYSTEM_PREFIX</code><em class="property"> = '/home/jlinford/workspace/taucmdr/.system'</em><a class="headerlink" href="#tau.SYSTEM_PREFIX" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.</code><code class="descname">SYSTEM_PREFIX</code><em class="property"> = '/home/travis/build/zbeekman/taucmdr/.system'</em><a class="headerlink" href="#tau.SYSTEM_PREFIX" title="Permalink to this definition">¶</a></dt>
 <dd><p>str: System-level TAU Commander files.</p>
 </dd></dl>
 
@@ -106,7 +106,7 @@ and checks the Python version.  It must be kept as short and simple as possible.
 
 <dl class="data">
 <dt id="tau.TAU_HOME">
-<code class="descclassname">tau.</code><code class="descname">TAU_HOME</code><em class="property"> = '/home/jlinford/workspace/taucmdr'</em><a class="headerlink" href="#tau.TAU_HOME" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.</code><code class="descname">TAU_HOME</code><em class="property"> = '/home/travis/build/zbeekman/taucmdr'</em><a class="headerlink" href="#tau.TAU_HOME" title="Permalink to this definition">¶</a></dt>
 <dd><p>str: Absolute path to the top-level TAU Commander directory.</p>
 <p>This directory contains at least <cite>bin</cite>, <cite>docs</cite>, and <cite>packages</cite> directories and is the root
 for system-level package installation paths. <strong>Do not</strong> change it once it is set.</p>
@@ -121,7 +121,7 @@ for system-level package installation paths. <strong>Do not</strong> change it o
 
 <dl class="data">
 <dt id="tau.USER_PREFIX">
-<code class="descclassname">tau.</code><code class="descname">USER_PREFIX</code><em class="property"> = '/home/jlinford/.tau'</em><a class="headerlink" href="#tau.USER_PREFIX" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.</code><code class="descname">USER_PREFIX</code><em class="property"> = '/home/travis/.tau'</em><a class="headerlink" href="#tau.USER_PREFIX" title="Permalink to this definition">¶</a></dt>
 <dd><p>str: User-level TAU Commander files.</p>
 </dd></dl>
 
@@ -541,7 +541,7 @@ a rotating debug file in the user&#8217;s TAU Commander project prefix, typicall
 
 <dl class="data">
 <dt id="tau.logger.LINE_WIDTH">
-<code class="descclassname">tau.logger.</code><code class="descname">LINE_WIDTH</code><em class="property"> = 162</em><a class="headerlink" href="#tau.logger.LINE_WIDTH" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.logger.</code><code class="descname">LINE_WIDTH</code><em class="property"> = 74</em><a class="headerlink" href="#tau.logger.LINE_WIDTH" title="Permalink to this definition">¶</a></dt>
 <dd><p>Width of a line on the terminal.</p>
 <p>Uses system specific methods to determine console line width.  If the line
 width cannot be determined, the default is 80.</p>
@@ -549,7 +549,7 @@ width cannot be determined, the default is 80.</p>
 
 <dl class="data">
 <dt id="tau.logger.LOG_FILE">
-<code class="descclassname">tau.logger.</code><code class="descname">LOG_FILE</code><em class="property"> = '/home/jlinford/.tau/debug_log'</em><a class="headerlink" href="#tau.logger.LOG_FILE" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.logger.</code><code class="descname">LOG_FILE</code><em class="property"> = '/home/travis/.tau/debug_log'</em><a class="headerlink" href="#tau.logger.LOG_FILE" title="Permalink to this definition">¶</a></dt>
 <dd><p>str: Absolute path to a log file to receive all debugging output.</p>
 </dd></dl>
 
@@ -696,7 +696,7 @@ No format specified for a the record&#8217;s logging level.</td>
 
 <dl class="data">
 <dt id="tau.logger.TERM_SIZE">
-<code class="descclassname">tau.logger.</code><code class="descname">TERM_SIZE</code><em class="property"> = (168, 62)</em><a class="headerlink" href="#tau.logger.TERM_SIZE" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.logger.</code><code class="descname">TERM_SIZE</code><em class="property"> = (80, 24)</em><a class="headerlink" href="#tau.logger.TERM_SIZE" title="Permalink to this definition">¶</a></dt>
 <dd><p>tuple: (width, height) tuple of detected terminal dimensions in characters.</p>
 </dd></dl>
 
@@ -915,7 +915,7 @@ This routine will return stupid results for archives with multiple top-level ele
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>cmd</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Command and its command line arguments.</li>
+<li><strong>cmd</strong> (<a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Command and its command line arguments.</li>
 <li><strong>cwd</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Change directory to <cite>cwd</cite> if given, otherwise use <a class="reference external" href="https://docs.python.org/library/os.html#os.getcwd" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">os.getcwd</span></code></a>.</li>
 <li><strong>env</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Environment variables to set before launching cmd.</li>
 <li><strong>stdout</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True send subprocess stdout and stderr to this processes&#8217; stdout.</li>
@@ -1107,8 +1107,8 @@ Otherwise raise TypeError.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>value</strong> &#8211; value to parse to a boolean.</li>
-<li><strong>additional_true</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; optional additional string values that stand for True.</li>
-<li><strong>additional_false</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; optional additional string values that stand for False.</li>
+<li><strong>additional_true</strong> (<a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; optional additional string values that stand for True.</li>
+<li><strong>additional_false</strong> (<a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; optional additional string values that stand for False.</li>
 </ul>
 </td>
 </tr>
@@ -1174,7 +1174,7 @@ Searches the system PATH and the current directory.</p>
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
 </html>

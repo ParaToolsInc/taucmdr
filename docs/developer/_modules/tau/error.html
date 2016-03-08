@@ -44,33 +44,33 @@
         
         
   <h1>Source code for tau.error</h1><div class="highlight"><pre>
-<span class="c"># -*- coding: utf-8 -*-</span>
-<span class="c">#</span>
-<span class="c"># Copyright (c) 2015, ParaTools, Inc.</span>
-<span class="c"># All rights reserved.</span>
-<span class="c">#</span>
-<span class="c"># Redistribution and use in source and binary forms, with or without</span>
-<span class="c"># modification, are permitted provided that the following conditions are met:</span>
-<span class="c"># (1) Redistributions of source code must retain the above copyright notice,</span>
-<span class="c">#     this list of conditions and the following disclaimer.</span>
-<span class="c"># (2) Redistributions in binary form must reproduce the above copyright notice,</span>
-<span class="c">#     this list of conditions and the following disclaimer in the documentation</span>
-<span class="c">#     and/or other materials provided with the distribution.</span>
-<span class="c"># (3) Neither the name of ParaTools, Inc. nor the names of its contributors may</span>
-<span class="c">#     be used to endorse or promote products derived from this software without</span>
-<span class="c">#     specific prior written permission.</span>
-<span class="c">#</span>
-<span class="c"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
-<span class="c"># AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</span>
-<span class="c"># IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE</span>
-<span class="c"># DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE</span>
-<span class="c"># FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL</span>
-<span class="c"># DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR</span>
-<span class="c"># SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER</span>
-<span class="c"># CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,</span>
-<span class="c"># OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE</span>
-<span class="c"># OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</span>
-<span class="c">#</span>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (c) 2015, ParaTools, Inc.</span>
+<span class="c1"># All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Redistribution and use in source and binary forms, with or without</span>
+<span class="c1"># modification, are permitted provided that the following conditions are met:</span>
+<span class="c1"># (1) Redistributions of source code must retain the above copyright notice,</span>
+<span class="c1">#     this list of conditions and the following disclaimer.</span>
+<span class="c1"># (2) Redistributions in binary form must reproduce the above copyright notice,</span>
+<span class="c1">#     this list of conditions and the following disclaimer in the documentation</span>
+<span class="c1">#     and/or other materials provided with the distribution.</span>
+<span class="c1"># (3) Neither the name of ParaTools, Inc. nor the names of its contributors may</span>
+<span class="c1">#     be used to endorse or promote products derived from this software without</span>
+<span class="c1">#     specific prior written permission.</span>
+<span class="c1">#</span>
+<span class="c1"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
+<span class="c1"># AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</span>
+<span class="c1"># IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE</span>
+<span class="c1"># DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE</span>
+<span class="c1"># FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL</span>
+<span class="c1"># DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR</span>
+<span class="c1"># SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER</span>
+<span class="c1"># CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,</span>
+<span class="c1"># OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE</span>
+<span class="c1"># OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</span>
+<span class="c1">#</span>
 <span class="sd">&quot;&quot;&quot;TAU Commander error handling.</span>
 
 <span class="sd">Only error base classes should be defined here.  </span>
@@ -98,13 +98,13 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">show_backtrace</span> <span class="o">=</span> <span class="bp">False</span>
 
-    <span class="n">message_fmt</span> <span class="o">=</span> <span class="p">(</span><span class="s">&quot;An unexpected </span><span class="si">%(typename)s</span><span class="s"> exception was raised:</span><span class="se">\n</span><span class="s">&quot;</span>
-                   <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span>
-                   <span class="s">&quot;</span><span class="si">%(value)s</span><span class="se">\n</span><span class="s">&quot;</span>
-                   <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span>
-                   <span class="s">&quot;</span><span class="si">%(backtrace)s</span><span class="s">&quot;</span>
-                   <span class="s">&quot;This is a bug in TAU Commander.</span><span class="se">\n</span><span class="s">&quot;</span>
-                   <span class="s">&quot;Please send &#39;</span><span class="si">%(logfile)s</span><span class="s">&#39; to </span><span class="si">%(contact)s</span><span class="s"> for assistance.&quot;</span><span class="p">)</span>
+    <span class="n">message_fmt</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;An unexpected </span><span class="si">%(typename)s</span><span class="s2"> exception was raised:</span><span class="se">\n</span><span class="s2">&quot;</span>
+                   <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                   <span class="s2">&quot;</span><span class="si">%(value)s</span><span class="se">\n</span><span class="s2">&quot;</span>
+                   <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                   <span class="s2">&quot;</span><span class="si">%(backtrace)s</span><span class="s2">&quot;</span>
+                   <span class="s2">&quot;This is a bug in TAU Commander.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                   <span class="s2">&quot;Please send &#39;</span><span class="si">%(logfile)s</span><span class="s2">&#39; to </span><span class="si">%(contact)s</span><span class="s2"> for assistance.&quot;</span><span class="p">)</span>
     
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">*</span><span class="n">hints</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Initialize the Error instance.</span>
@@ -116,47 +116,47 @@
         <span class="nb">super</span><span class="p">(</span><span class="n">Error</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hints</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">hints</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">message_fields</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;contact&#39;</span><span class="p">:</span> <span class="n">HELP_CONTACT</span><span class="p">,</span> <span class="s">&#39;logfile&#39;</span><span class="p">:</span> <span class="n">logger</span><span class="o">.</span><span class="n">LOG_FILE</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">message_fields</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;contact&#39;</span><span class="p">:</span> <span class="n">HELP_CONTACT</span><span class="p">,</span> <span class="s1">&#39;logfile&#39;</span><span class="p">:</span> <span class="n">logger</span><span class="o">.</span><span class="n">LOG_FILE</span><span class="p">}</span>
     
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">message</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">fields</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">message_fields</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">hints</span><span class="p">:</span>
-            <span class="n">hints_str</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+            <span class="n">hints_str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
         <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hints</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">hints_str</span> <span class="o">=</span> <span class="s">&#39;Hint: </span><span class="si">%s</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">hints</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">hints_str</span> <span class="o">=</span> <span class="s1">&#39;Hint: </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">hints</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">hints_str</span> <span class="o">=</span> <span class="s">&#39;Hints:</span><span class="se">\n</span><span class="s">  * </span><span class="si">%s</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">  * &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hints</span><span class="p">))</span>
-        <span class="n">fields</span><span class="p">[</span><span class="s">&#39;hints&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">hints_str</span>
+            <span class="n">hints_str</span> <span class="o">=</span> <span class="s1">&#39;Hints:</span><span class="se">\n</span><span class="s1">  * </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">  * &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hints</span><span class="p">))</span>
+        <span class="n">fields</span><span class="p">[</span><span class="s1">&#39;hints&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">hints_str</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">message_fmt</span> <span class="o">%</span> <span class="n">fields</span>
 
 <div class="viewcode-block" id="Error.handle"><a class="viewcode-back" href="../../tau.html#tau.error.Error.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">etype</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tb</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_backtrace</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">message_fields</span><span class="p">[</span><span class="s">&#39;backtrace&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exception</span><span class="p">(</span><span class="n">etype</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tb</span><span class="p">))</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">message_fields</span><span class="p">[</span><span class="s">&#39;typename&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">etype</span><span class="o">.</span><span class="n">__name__</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">message_fields</span><span class="p">[</span><span class="s1">&#39;backtrace&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exception</span><span class="p">(</span><span class="n">etype</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tb</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">message_fields</span><span class="p">[</span><span class="s1">&#39;typename&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">etype</span><span class="o">.</span><span class="n">__name__</span>
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">EXIT_FAILURE</span>
+        <span class="k">return</span> <span class="n">EXIT_FAILURE</span></div></div>
 
-</div></div>
+
 <div class="viewcode-block" id="InternalError"><a class="viewcode-back" href="../../tau.html#tau.error.InternalError">[docs]</a><span class="k">class</span> <span class="nc">InternalError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Indicates that an internal error has occurred, i.e. a bug in TAU.</span>
 <span class="sd">    </span>
 <span class="sd">    These are bad and really shouldn&#39;t happen.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">show_backtrace</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="n">show_backtrace</span> <span class="o">=</span> <span class="bp">True</span></div>
 
-</div>
+
 <div class="viewcode-block" id="ConfigurationError"><a class="viewcode-back" href="../../tau.html#tau.error.ConfigurationError">[docs]</a><span class="k">class</span> <span class="nc">ConfigurationError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Indicates that TAU Commander cannot succeed with the given parameters.</span>
 <span class="sd">    </span>
 <span class="sd">    This is most commonly caused by user error, e.g the user specifies measurement</span>
 <span class="sd">    settings that are incompatible with the application.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">message_fmt</span> <span class="o">=</span> <span class="p">(</span><span class="s">&quot;</span><span class="si">%(value)s</span><span class="se">\n</span><span class="s">&quot;</span>
-                   <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span>
-                   <span class="s">&quot;</span><span class="si">%(hints)s</span><span class="se">\n</span><span class="s">&quot;</span>
-                   <span class="s">&quot;TAU cannot proceed with the given inputs.</span><span class="se">\n</span><span class="s">&quot;</span> 
-                   <span class="s">&quot;Please check the selected configuration for errors or contact </span><span class="si">%(contact)s</span><span class="s"> for assistance.&quot;</span><span class="p">)</span>
+    <span class="n">message_fmt</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="si">%(value)s</span><span class="se">\n</span><span class="s2">&quot;</span>
+                   <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                   <span class="s2">&quot;</span><span class="si">%(hints)s</span><span class="se">\n</span><span class="s2">&quot;</span>
+                   <span class="s2">&quot;TAU cannot proceed with the given inputs.</span><span class="se">\n</span><span class="s2">&quot;</span> 
+                   <span class="s2">&quot;Please check the selected configuration for errors or contact </span><span class="si">%(contact)s</span><span class="s2"> for assistance.&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">*</span><span class="n">hints</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Initialize the Error instance.</span>
@@ -166,13 +166,13 @@
 <span class="sd">            *hints: Hint messages to help the user resolve this error.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">hints</span><span class="p">:</span>
-            <span class="n">hints</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;Try `</span><span class="si">%s</span><span class="s"> --help`&quot;</span> <span class="o">%</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">TAU_SCRIPT</span><span class="p">)]</span>
+            <span class="n">hints</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Try `</span><span class="si">%s</span><span class="s2"> --help`&quot;</span> <span class="o">%</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">TAU_SCRIPT</span><span class="p">)]</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">ConfigurationError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="o">*</span><span class="n">hints</span><span class="p">)</span>
     
     <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span></div>
 
-</div>
+
 <div class="viewcode-block" id="ModelError"><a class="viewcode-back" href="../../tau.html#tau.error.ModelError">[docs]</a><span class="k">class</span> <span class="nc">ModelError</span><span class="p">(</span><span class="n">InternalError</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Indicates an error in model data or the model itself.&quot;&quot;&quot;</span>
 
@@ -183,10 +183,10 @@
 <span class="sd">            model (Model): Data model.</span>
 <span class="sd">            value (str): A message describing the error.  </span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">ModelError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ModelError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span></div>
 
-</div>
+
 <div class="viewcode-block" id="UniqueAttributeError"><a class="viewcode-back" href="../../tau.html#tau.error.UniqueAttributeError">[docs]</a><span class="k">class</span> <span class="nc">UniqueAttributeError</span><span class="p">(</span><span class="n">ModelError</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Indicates that duplicate values were given for a unique attribute.&quot;&quot;&quot;</span> 
 
@@ -197,9 +197,9 @@
 <span class="sd">            model (Model): Data model.</span>
 <span class="sd">            unique (dict): Dictionary of unique attributes in the data model.  </span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">UniqueAttributeError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s">&quot;A record with one of &#39;</span><span class="si">%s</span><span class="s">&#39; already exists&quot;</span> <span class="o">%</span> <span class="n">unique</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">UniqueAttributeError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;A record with one of &#39;</span><span class="si">%s</span><span class="s2">&#39; already exists&quot;</span> <span class="o">%</span> <span class="n">unique</span><span class="p">)</span></div>
 
-</div>
+
 <div class="viewcode-block" id="excepthook"><a class="viewcode-back" href="../../tau.html#tau.error.excepthook">[docs]</a><span class="k">def</span> <span class="nf">excepthook</span><span class="p">(</span><span class="n">etype</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tb</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Exception handler for any uncaught exception (except SystemExit).</span>
 <span class="sd">    </span>
@@ -211,22 +211,22 @@
 <span class="sd">        tb: Traceback object.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">etype</span> <span class="o">==</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
-        <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Received keyboard interrupt.  Exiting.&#39;</span><span class="p">)</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Received keyboard interrupt.  Exiting.&#39;</span><span class="p">)</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">EXIT_WARNING</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">backtrace</span> <span class="o">=</span> <span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exception</span><span class="p">(</span><span class="n">etype</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tb</span><span class="p">))</span>
+        <span class="n">backtrace</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exception</span><span class="p">(</span><span class="n">etype</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tb</span><span class="p">))</span>
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">backtrace</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">etype</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tb</span><span class="p">))</span>
         <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
-            <span class="n">message</span> <span class="o">=</span> <span class="n">Error</span><span class="o">.</span><span class="n">message_fmt</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;value&#39;</span><span class="p">:</span> <span class="n">value</span><span class="p">,</span>
-                                           <span class="s">&#39;typename&#39;</span><span class="p">:</span> <span class="n">etype</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span>
-                                           <span class="s">&#39;contact&#39;</span><span class="p">:</span> <span class="n">HELP_CONTACT</span><span class="p">,</span>
-                                           <span class="s">&#39;logfile&#39;</span><span class="p">:</span> <span class="n">logger</span><span class="o">.</span><span class="n">LOG_FILE</span><span class="p">,</span>
-                                           <span class="s">&#39;backtrace&#39;</span><span class="p">:</span> <span class="n">backtrace</span><span class="p">}</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="n">Error</span><span class="o">.</span><span class="n">message_fmt</span> <span class="o">%</span> <span class="p">{</span><span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">value</span><span class="p">,</span>
+                                           <span class="s1">&#39;typename&#39;</span><span class="p">:</span> <span class="n">etype</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span>
+                                           <span class="s1">&#39;contact&#39;</span><span class="p">:</span> <span class="n">HELP_CONTACT</span><span class="p">,</span>
+                                           <span class="s1">&#39;logfile&#39;</span><span class="p">:</span> <span class="n">logger</span><span class="o">.</span><span class="n">LOG_FILE</span><span class="p">,</span>
+                                           <span class="s1">&#39;backtrace&#39;</span><span class="p">:</span> <span class="n">backtrace</span><span class="p">}</span>
             <span class="n">LOGGER</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
-            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">EXIT_FAILURE</span><span class="p">)</span>
-</div>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">EXIT_FAILURE</span><span class="p">)</span></div>
+
 <span class="n">sys</span><span class="o">.</span><span class="n">excepthook</span> <span class="o">=</span> <span class="n">excepthook</span>
 </pre></div>
 
@@ -241,7 +241,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
 </html>
