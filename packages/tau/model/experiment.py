@@ -211,6 +211,7 @@ class Experiment(Model):
                           io_inst=measurement['io'],
                           keep_inst_files=measurement['keep_inst_files'],
                           reuse_inst_files=measurement['reuse_inst_files'],
+                          select_inst_file=measurement.get('select_inst_file', None),
                           # Measurement methods and options
                           profile=measurement['profile'],
                           trace=measurement['trace'],

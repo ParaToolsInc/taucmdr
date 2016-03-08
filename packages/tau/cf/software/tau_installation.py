@@ -145,6 +145,7 @@ class TauInstallation(Installation):
                  io_inst,
                  keep_inst_files,
                  reuse_inst_files,
+                 select_inst_file,
                  # Measurement methods and options
                  profile,
                  trace,
@@ -191,6 +192,7 @@ class TauInstallation(Installation):
             io_inst (bool): Enable or disable POSIX I/O instrumentation in TAU.
             keep_inst_files (bool): If True then do not remove instrumented source files after compilation.
             reuse_inst_files (bool): If True then reuse instrumented source files for compilation when available.
+            select_inst_file (str): Path to selective instrumentation file.
             profile (bool): Enable or disable profiling.
             trace (bool): Enable or disable tracing.
             sample (bool): Enable or disable event-based sampling.
@@ -237,6 +239,7 @@ class TauInstallation(Installation):
         self.io_inst = io_inst
         self.keep_inst_files = keep_inst_files
         self.reuse_inst_files = reuse_inst_files
+        self.select_inst_file = select_inst_file
         self.profile = profile
         self.trace = trace
         self.sample = sample
@@ -604,6 +607,9 @@ class TauInstallation(Installation):
             tau_opts.add('-optKeepFiles')
         if self.reuse_inst_files:
             tau_opts.add('-optReuseFiles')
+        if self.select_inst_file:
+            select_inst_file = os.path.realpath(os.path.abspath(self.select_inst_file))
+            tau_opts.add('-optTauSelectFile=%s' % select_inst_file)
         if self.io_inst:
             tau_opts.add('-optTrackIO')
         if self.sample or self.compiler_inst != 'never':
