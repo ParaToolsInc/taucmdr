@@ -44,33 +44,33 @@
         
         
   <h1>Source code for tau.cli.commands.project.create</h1><div class="highlight"><pre>
-<span class="c"># -*- coding: utf-8 -*-</span>
-<span class="c">#</span>
-<span class="c"># Copyright (c) 2015, ParaTools, Inc.</span>
-<span class="c"># All rights reserved.</span>
-<span class="c">#</span>
-<span class="c"># Redistribution and use in source and binary forms, with or without</span>
-<span class="c"># modification, are permitted provided that the following conditions are met:</span>
-<span class="c"># (1) Redistributions of source code must retain the above copyright notice,</span>
-<span class="c">#     this list of conditions and the following disclaimer.</span>
-<span class="c"># (2) Redistributions in binary form must reproduce the above copyright notice,</span>
-<span class="c">#     this list of conditions and the following disclaimer in the documentation</span>
-<span class="c">#     and/or other materials provided with the distribution.</span>
-<span class="c"># (3) Neither the name of ParaTools, Inc. nor the names of its contributors may</span>
-<span class="c">#     be used to endorse or promote products derived from this software without</span>
-<span class="c">#     specific prior written permission.</span>
-<span class="c">#</span>
-<span class="c"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
-<span class="c"># AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</span>
-<span class="c"># IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE</span>
-<span class="c"># DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE</span>
-<span class="c"># FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL</span>
-<span class="c"># DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR</span>
-<span class="c"># SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER</span>
-<span class="c"># CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,</span>
-<span class="c"># OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE</span>
-<span class="c"># OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</span>
-<span class="c">#</span>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (c) 2015, ParaTools, Inc.</span>
+<span class="c1"># All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Redistribution and use in source and binary forms, with or without</span>
+<span class="c1"># modification, are permitted provided that the following conditions are met:</span>
+<span class="c1"># (1) Redistributions of source code must retain the above copyright notice,</span>
+<span class="c1">#     this list of conditions and the following disclaimer.</span>
+<span class="c1"># (2) Redistributions in binary form must reproduce the above copyright notice,</span>
+<span class="c1">#     this list of conditions and the following disclaimer in the documentation</span>
+<span class="c1">#     and/or other materials provided with the distribution.</span>
+<span class="c1"># (3) Neither the name of ParaTools, Inc. nor the names of its contributors may</span>
+<span class="c1">#     be used to endorse or promote products derived from this software without</span>
+<span class="c1">#     specific prior written permission.</span>
+<span class="c1">#</span>
+<span class="c1"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
+<span class="c1"># AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</span>
+<span class="c1"># IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE</span>
+<span class="c1"># DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE</span>
+<span class="c1"># FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL</span>
+<span class="c1"># DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR</span>
+<span class="c1"># SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER</span>
+<span class="c1"># CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,</span>
+<span class="c1"># OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE</span>
+<span class="c1"># OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</span>
+<span class="c1">#</span>
 <span class="sd">&quot;&quot;&quot;``tau project create`` subcommand.&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">EXIT_SUCCESS</span>
@@ -91,17 +91,17 @@
         <span class="n">targ_ctrl</span> <span class="o">=</span> <span class="n">Target</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="n">PROJECT_STORAGE</span><span class="p">)</span>
         <span class="n">app_ctrl</span> <span class="o">=</span> <span class="n">Application</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="n">PROJECT_STORAGE</span><span class="p">)</span>
         <span class="n">meas_ctrl</span> <span class="o">=</span> <span class="n">Measurement</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="n">PROJECT_STORAGE</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">flag</span> <span class="ow">in</span> <span class="s">&#39;impl_targets&#39;</span><span class="p">,</span> <span class="s">&#39;impl_applications&#39;</span><span class="p">,</span> <span class="s">&#39;impl_measurements&#39;</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">flag</span> <span class="ow">in</span> <span class="s1">&#39;impl_targets&#39;</span><span class="p">,</span> <span class="s1">&#39;impl_applications&#39;</span><span class="p">,</span> <span class="s1">&#39;impl_measurements&#39;</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">flag</span><span class="p">,</span> <span class="p">[]):</span>
-                <span class="n">tar</span> <span class="o">=</span> <span class="n">targ_ctrl</span><span class="o">.</span><span class="n">one</span><span class="p">({</span><span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">})</span>
-                <span class="n">app</span> <span class="o">=</span> <span class="n">app_ctrl</span><span class="o">.</span><span class="n">one</span><span class="p">({</span><span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">})</span>
-                <span class="n">mes</span> <span class="o">=</span> <span class="n">meas_ctrl</span><span class="o">.</span><span class="n">one</span><span class="p">({</span><span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">})</span>
+                <span class="n">tar</span> <span class="o">=</span> <span class="n">targ_ctrl</span><span class="o">.</span><span class="n">one</span><span class="p">({</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">})</span>
+                <span class="n">app</span> <span class="o">=</span> <span class="n">app_ctrl</span><span class="o">.</span><span class="n">one</span><span class="p">({</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">})</span>
+                <span class="n">mes</span> <span class="o">=</span> <span class="n">meas_ctrl</span><span class="o">.</span><span class="n">one</span><span class="p">({</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">})</span>
                 <span class="n">tam</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">tar</span><span class="p">,</span> <span class="n">app</span><span class="p">,</span> <span class="n">mes</span><span class="p">])</span> <span class="o">-</span> <span class="nb">set</span><span class="p">([</span><span class="bp">None</span><span class="p">])</span>
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tam</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;&#39;</span><span class="si">%s</span><span class="s">&#39; is ambiguous.  Please use --target, --application,&quot;</span>
-                                      <span class="s">&quot; or --measurement to specify configuration type&quot;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;&#39;</span><span class="si">%s</span><span class="s2">&#39; is ambiguous.  Please use --target, --application,&quot;</span>
+                                      <span class="s2">&quot; or --measurement to specify configuration type&quot;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
                 <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">tam</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;&#39;</span><span class="si">%s</span><span class="s">&#39; is not a target, application, or measurement&quot;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;&#39;</span><span class="si">%s</span><span class="s2">&#39; is not a target, application, or measurement&quot;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
                 <span class="k">elif</span> <span class="n">tar</span><span class="p">:</span>
                     <span class="n">targets</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">tar</span><span class="p">)</span>
                 <span class="k">elif</span> <span class="n">app</span><span class="p">:</span>
@@ -118,54 +118,54 @@
             <span class="k">pass</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span> 
-                <span class="n">found</span> <span class="o">=</span> <span class="n">ctrl</span><span class="o">.</span><span class="n">one</span><span class="p">({</span><span class="s">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">})</span>
+                <span class="n">found</span> <span class="o">=</span> <span class="n">ctrl</span><span class="o">.</span><span class="n">one</span><span class="p">({</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">})</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">found</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&#39;There is no </span><span class="si">%s</span><span class="s"> named </span><span class="si">%s</span><span class="s">.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;There is no </span><span class="si">%s</span><span class="s1"> named </span><span class="si">%s</span><span class="s1">.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">acc</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">found</span><span class="p">)</span>
     
 <div class="viewcode-block" id="ProjectCreateCommand.construct_parser"><a class="viewcode-back" href="../../../../../tau.cli.commands.project.html#tau.cli.commands.project.create.ProjectCreateCommand.construct_parser">[docs]</a>    <span class="k">def</span> <span class="nf">construct_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">usage</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s"> &lt;project_name&gt; [targets] [applications] [measurements] [arguments]&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span>
+        <span class="n">usage</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> &lt;project_name&gt; [targets] [applications] [measurements] [arguments]&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span>
         <span class="n">parser</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">get_parser_from_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">prog</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">,</span> <span class="n">usage</span><span class="o">=</span><span class="n">usage</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">summary</span><span class="p">)</span>
-        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;impl_targets&#39;</span><span class="p">,</span>
-                            <span class="n">help</span><span class="o">=</span><span class="s">&quot;Target configurations in this project&quot;</span><span class="p">,</span>
-                            <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;[targets]&#39;</span><span class="p">,</span>
-                            <span class="n">nargs</span><span class="o">=</span><span class="s">&#39;*&#39;</span><span class="p">,</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;impl_targets&#39;</span><span class="p">,</span>
+                            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Target configurations in this project&quot;</span><span class="p">,</span>
+                            <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;[targets]&#39;</span><span class="p">,</span>
+                            <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;*&#39;</span><span class="p">,</span>
                             <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">)</span>
-        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;impl_applications&#39;</span><span class="p">,</span>
-                            <span class="n">help</span><span class="o">=</span><span class="s">&quot;Application configurations in this project&quot;</span><span class="p">,</span>
-                            <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;[applications]&#39;</span><span class="p">,</span>
-                            <span class="n">nargs</span><span class="o">=</span><span class="s">&#39;*&#39;</span><span class="p">,</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;impl_applications&#39;</span><span class="p">,</span>
+                            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Application configurations in this project&quot;</span><span class="p">,</span>
+                            <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;[applications]&#39;</span><span class="p">,</span>
+                            <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;*&#39;</span><span class="p">,</span>
                             <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">)</span>
-        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;impl_measurements&#39;</span><span class="p">,</span>
-                            <span class="n">help</span><span class="o">=</span><span class="s">&quot;Measurement configurations in this project&quot;</span><span class="p">,</span>
-                            <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;[measurements]&#39;</span><span class="p">,</span>
-                            <span class="n">nargs</span><span class="o">=</span><span class="s">&#39;*&#39;</span><span class="p">,</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;impl_measurements&#39;</span><span class="p">,</span>
+                            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Measurement configurations in this project&quot;</span><span class="p">,</span>
+                            <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;[measurements]&#39;</span><span class="p">,</span>
+                            <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;*&#39;</span><span class="p">,</span>
                             <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">)</span>
-        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--targets&#39;</span><span class="p">,</span>
-                            <span class="n">help</span><span class="o">=</span><span class="s">&quot;Target configurations in this project&quot;</span><span class="p">,</span>
-                            <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;t&#39;</span><span class="p">,</span>
-                            <span class="n">nargs</span><span class="o">=</span><span class="s">&#39;+&#39;</span><span class="p">,</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--targets&#39;</span><span class="p">,</span>
+                            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Target configurations in this project&quot;</span><span class="p">,</span>
+                            <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;t&#39;</span><span class="p">,</span>
+                            <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;+&#39;</span><span class="p">,</span>
                             <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">,</span>
-                            <span class="n">dest</span><span class="o">=</span><span class="s">&#39;target&#39;</span><span class="p">)</span>
-        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--applications&#39;</span><span class="p">,</span>
-                            <span class="n">help</span><span class="o">=</span><span class="s">&quot;Application configurations in this project&quot;</span><span class="p">,</span>
-                            <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;a&#39;</span><span class="p">,</span>
-                            <span class="n">nargs</span><span class="o">=</span><span class="s">&#39;+&#39;</span><span class="p">,</span>
+                            <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;target&#39;</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--applications&#39;</span><span class="p">,</span>
+                            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Application configurations in this project&quot;</span><span class="p">,</span>
+                            <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">,</span>
+                            <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;+&#39;</span><span class="p">,</span>
                             <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">,</span>
-                            <span class="n">dest</span><span class="o">=</span><span class="s">&#39;application&#39;</span><span class="p">)</span>
-        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--measurements&#39;</span><span class="p">,</span>
-                            <span class="n">help</span><span class="o">=</span><span class="s">&quot;Measurement configurations in this project&quot;</span><span class="p">,</span>
-                            <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;m&#39;</span><span class="p">,</span>
-                            <span class="n">nargs</span><span class="o">=</span><span class="s">&#39;+&#39;</span><span class="p">,</span>
+                            <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;application&#39;</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--measurements&#39;</span><span class="p">,</span>
+                            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Measurement configurations in this project&quot;</span><span class="p">,</span>
+                            <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;m&#39;</span><span class="p">,</span>
+                            <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;+&#39;</span><span class="p">,</span>
                             <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">,</span>
-                            <span class="n">dest</span><span class="o">=</span><span class="s">&#39;measurement&#39;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">parser</span>
+                            <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;measurement&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">parser</span></div>
 
-</div>
+
 <div class="viewcode-block" id="ProjectCreateCommand.main"><a class="viewcode-back" href="../../../../../tau.cli.commands.project.html#tau.cli.commands.project.create.ProjectCreateCommand.main">[docs]</a>    <span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">argv</span><span class="p">):</span>
         <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">argv</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Arguments: </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Arguments: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
     
         <span class="n">targets</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="n">applications</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
@@ -176,17 +176,17 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_parse_explicit</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">Measurement</span><span class="p">,</span> <span class="n">measurements</span><span class="p">)</span>
     
         <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="n">attr</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span> <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">attributes</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">attr</span><span class="p">)}</span>
-        <span class="n">data</span><span class="p">[</span><span class="s">&#39;targets&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">eid</span> <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">targets</span><span class="p">]</span>
-        <span class="n">data</span><span class="p">[</span><span class="s">&#39;applications&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">eid</span> <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">applications</span><span class="p">]</span>
-        <span class="n">data</span><span class="p">[</span><span class="s">&#39;measurements&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">eid</span> <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">measurements</span><span class="p">]</span>
+        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;targets&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">eid</span> <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">targets</span><span class="p">]</span>
+        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;applications&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">eid</span> <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">applications</span><span class="p">]</span>
+        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;measurements&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">eid</span> <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">measurements</span><span class="p">]</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">controller</span><span class="p">()</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
         <span class="k">except</span> <span class="n">UniqueAttributeError</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;A project named &#39;</span><span class="si">%s</span><span class="s">&#39; already exists.&quot;</span> <span class="o">%</span> <span class="n">args</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;A project named &#39;</span><span class="si">%s</span><span class="s2">&#39; already exists.&quot;</span> <span class="o">%</span> <span class="n">args</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
     
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Created a new project named &#39;</span><span class="si">%s</span><span class="s">&#39;.&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">EXIT_SUCCESS</span>
-</div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Created a new project named &#39;</span><span class="si">%s</span><span class="s2">&#39;.&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">EXIT_SUCCESS</span></div></div>
+
 <span class="n">COMMAND</span> <span class="o">=</span> <span class="n">ProjectCreateCommand</span><span class="p">(</span><span class="n">Project</span><span class="p">,</span> <span class="n">__name__</span><span class="p">)</span>    
 </pre></div>
 
@@ -201,7 +201,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
 </html>

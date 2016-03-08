@@ -56,7 +56,7 @@
 <p>TAU Commander follows the <a class="reference external" href="https://en.wikipedia.org/wiki/Model-view-controller">Model-View-Controller (MVC)</a> architectural pattern.
 Packages in <a class="reference internal" href="tau.model.html#module-tau.model" title="tau.model"><code class="xref py py-mod docutils literal"><span class="pre">tau.model</span></code></a> define models and controllers.  The <cite>model</cite> module
 declares the model attributes as a dictionary named <cite>ATTRIBUTES</cite> in the form:</p>
-<div class="highlight-python"><div class="highlight"><pre>&lt;attribute&gt;: {
+<div class="highlight-python"><div class="highlight"><pre><span></span>&lt;attribute&gt;: {
     property: value,
     [[property: value], ...]
 }
@@ -82,11 +82,11 @@ attributes.</p>
 <p>Associations, references, and attributes are constructed when <a class="reference internal" href="tau.model.html#module-tau.model" title="tau.model"><code class="xref py py-mod docutils literal"><span class="pre">tau.model</span></code></a>  is imported.</p>
 <p class="rubric">Examples</p>
 <p><em>One-sided relationship</em></p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Pet</span><span class="p">(</span><span class="n">Controller</span><span class="p">):</span>
-    <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;string&#39;</span><span class="p">},</span> <span class="s">&#39;hungry&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;bool&#39;</span><span class="p">}}</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Pet</span><span class="p">(</span><span class="n">Controller</span><span class="p">):</span>
+    <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">},</span> <span class="s1">&#39;hungry&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;bool&#39;</span><span class="p">}}</span>
 
 <span class="k">class</span> <span class="nc">Person</span><span class="p">(</span><span class="n">Controller</span><span class="p">):</span>
-    <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;string&#39;</span><span class="p">},</span> <span class="s">&#39;pet&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;model&#39;</span><span class="p">:</span> <span class="s">&#39;Pet&#39;</span><span class="p">}}</span>
+    <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">},</span> <span class="s1">&#39;pet&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="s1">&#39;Pet&#39;</span><span class="p">}}</span>
 </pre></div>
 </div>
 <p>We&#8217;ve related a Person to a Pet but not a Pet to a Person.  That is, we can query a Person
@@ -103,18 +103,18 @@ this relationship as:</p>
 </ul>
 </div></blockquote>
 <p>Some example data for this model:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span>
- <span class="s">&#39;Pet&#39;</span><span class="p">:</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;Fluffy&#39;</span><span class="p">,</span> <span class="s">&#39;hungry&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">}},</span>
- <span class="s">&#39;Person&#39;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;Bob&#39;</span><span class="p">,</span> <span class="s">&#39;pet&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}}</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{</span>
+ <span class="s1">&#39;Pet&#39;</span><span class="p">:</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Fluffy&#39;</span><span class="p">,</span> <span class="s1">&#39;hungry&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">}},</span>
+ <span class="s1">&#39;Person&#39;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Bob&#39;</span><span class="p">,</span> <span class="s1">&#39;pet&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p><em>One-to-one relationship</em></p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Husband</span><span class="p">(</span><span class="n">Controller</span><span class="p">):</span>
-    <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;string&#39;</span><span class="p">},</span> <span class="s">&#39;wife&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;model&#39;</span><span class="p">:</span> <span class="s">&#39;Wife&#39;</span><span class="p">}}</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Husband</span><span class="p">(</span><span class="n">Controller</span><span class="p">):</span>
+    <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">},</span> <span class="s1">&#39;wife&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="s1">&#39;Wife&#39;</span><span class="p">}}</span>
 
 <span class="k">class</span> <span class="nc">Wife</span><span class="p">(</span><span class="n">Controller</span><span class="p">):</span>
-    <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;string&#39;</span><span class="p">},</span> <span class="s">&#39;husband&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;model&#39;</span><span class="p">:</span> <span class="s">&#39;Husband&#39;</span><span class="p">}}</span>
+    <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">},</span> <span class="s1">&#39;husband&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="s1">&#39;Husband&#39;</span><span class="p">}}</span>
 </pre></div>
 </div>
 <p>We&#8217;ve related a Husband to a Wife.  The Husband may have only one Wife and the Wife may have
@@ -131,22 +131,22 @@ codify this relationship as:</p>
 </ul>
 </div></blockquote>
 <p>Example data:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span>
- <span class="s">&#39;Husband&#39;</span><span class="p">:</span> <span class="p">{</span><span class="mi">2</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;Filbert&#39;</span><span class="p">,</span> <span class="s">&#39;wife&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}},</span>
- <span class="s">&#39;Wife&#39;</span><span class="p">:</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;Matilda&#39;</span><span class="p">,</span> <span class="s">&#39;husband&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}}</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{</span>
+ <span class="s1">&#39;Husband&#39;</span><span class="p">:</span> <span class="p">{</span><span class="mi">2</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Filbert&#39;</span><span class="p">,</span> <span class="s1">&#39;wife&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}},</span>
+ <span class="s1">&#39;Wife&#39;</span><span class="p">:</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Matilda&#39;</span><span class="p">,</span> <span class="s1">&#39;husband&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p><em>One-to-many relationship</em></p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Brewery</span><span class="p">(</span><span class="n">Controller</span><span class="p">):</span>
-    <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;address&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;string&#39;</span><span class="p">},</span>
-                  <span class="s">&#39;brews&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;collection&#39;</span><span class="p">:</span> <span class="s">&#39;Beer&#39;</span><span class="p">,</span>
-                            <span class="s">&#39;via&#39;</span><span class="p">:</span> <span class="s">&#39;origin&#39;</span><span class="p">}}</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Brewery</span><span class="p">(</span><span class="n">Controller</span><span class="p">):</span>
+    <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;address&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">},</span>
+                  <span class="s1">&#39;brews&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;collection&#39;</span><span class="p">:</span> <span class="s1">&#39;Beer&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;via&#39;</span><span class="p">:</span> <span class="s1">&#39;origin&#39;</span><span class="p">}}</span>
 
 <span class="k">class</span> <span class="nc">Beer</span><span class="p">(</span><span class="n">Controller</span><span class="p">):</span>
-    <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;origin&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;model&#39;</span><span class="p">:</span> <span class="s">&#39;Brewery&#39;</span><span class="p">},</span>
-                  <span class="s">&#39;color&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;string&#39;</span><span class="p">},</span>
-                  <span class="s">&#39;ibu&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;int&#39;</span><span class="p">}}</span>
+    <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;origin&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="s1">&#39;Brewery&#39;</span><span class="p">},</span>
+                  <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">},</span>
+                  <span class="s1">&#39;ibu&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;int&#39;</span><span class="p">}}</span>
 </pre></div>
 </div>
 <p>We&#8217;ve related one Brewery to many Beers.  A Beer has only one Brewery but a Brewery has zero or
@@ -162,25 +162,25 @@ one-to-many relationship with another model.  The Brewery and Beer classes codif
 </ul>
 </div></blockquote>
 <p>Example data:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span>
- <span class="s">&#39;Brewery&#39;</span><span class="p">:</span> <span class="p">{</span><span class="mi">100</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;address&#39;</span><span class="p">:</span> <span class="s">&#39;4615 Hollins Ferry Rd, Halethorpe, MD 21227&#39;</span><span class="p">,</span>
-                   <span class="s">&#39;brews&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">14</span><span class="p">]}},</span>
- <span class="s">&#39;Beer&#39;</span><span class="p">:</span> <span class="p">{</span><span class="mi">10</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;origin&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="s">&#39;color&#39;</span><span class="p">:</span> <span class="s">&#39;gold&#39;</span><span class="p">,</span> <span class="s">&#39;ibu&#39;</span><span class="p">:</span> <span class="mi">45</span><span class="p">},</span>
-          <span class="mi">12</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;origin&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="s">&#39;color&#39;</span><span class="p">:</span> <span class="s">&#39;dark&#39;</span><span class="p">,</span> <span class="s">&#39;ibu&#39;</span><span class="p">:</span> <span class="mi">15</span><span class="p">},</span>
-          <span class="mi">14</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;origin&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="s">&#39;color&#39;</span><span class="p">:</span> <span class="s">&#39;pale&#39;</span><span class="p">,</span> <span class="s">&#39;ibu&#39;</span><span class="p">:</span> <span class="mi">30</span><span class="p">}}</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{</span>
+ <span class="s1">&#39;Brewery&#39;</span><span class="p">:</span> <span class="p">{</span><span class="mi">100</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;address&#39;</span><span class="p">:</span> <span class="s1">&#39;4615 Hollins Ferry Rd, Halethorpe, MD 21227&#39;</span><span class="p">,</span>
+                   <span class="s1">&#39;brews&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">14</span><span class="p">]}},</span>
+ <span class="s1">&#39;Beer&#39;</span><span class="p">:</span> <span class="p">{</span><span class="mi">10</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;origin&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;gold&#39;</span><span class="p">,</span> <span class="s1">&#39;ibu&#39;</span><span class="p">:</span> <span class="mi">45</span><span class="p">},</span>
+          <span class="mi">12</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;origin&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;dark&#39;</span><span class="p">,</span> <span class="s1">&#39;ibu&#39;</span><span class="p">:</span> <span class="mi">15</span><span class="p">},</span>
+          <span class="mi">14</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;origin&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;pale&#39;</span><span class="p">,</span> <span class="s1">&#39;ibu&#39;</span><span class="p">:</span> <span class="mi">30</span><span class="p">}}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p><em>Many-to-many relationship</em></p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Actor</span><span class="p">(</span><span class="n">Controller</span><span class="p">):</span>
-    <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;home_town&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;string&#39;</span><span class="p">},</span>
-                  <span class="s">&#39;appears_in&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;collection&#39;</span><span class="p">:</span> <span class="s">&#39;Movie&#39;</span><span class="p">,</span>
-                                 <span class="s">&#39;via&#39;</span><span class="p">:</span> <span class="s">&#39;cast&#39;</span><span class="p">}}</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Actor</span><span class="p">(</span><span class="n">Controller</span><span class="p">):</span>
+    <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;home_town&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">},</span>
+                  <span class="s1">&#39;appears_in&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;collection&#39;</span><span class="p">:</span> <span class="s1">&#39;Movie&#39;</span><span class="p">,</span>
+                                 <span class="s1">&#39;via&#39;</span><span class="p">:</span> <span class="s1">&#39;cast&#39;</span><span class="p">}}</span>
 
 <span class="k">class</span> <span class="nc">Movie</span><span class="p">(</span><span class="n">Controller</span><span class="p">):</span>
-    <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;title&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;string&#39;</span><span class="p">},</span>
-                  <span class="s">&#39;cast&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;collection&#39;</span><span class="p">:</span> <span class="s">&#39;Actor&#39;</span><span class="p">,</span>
-                           <span class="s">&#39;via&#39;</span><span class="p">:</span> <span class="s">&#39;appears_in&#39;</span><span class="p">}}</span>
+    <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">},</span>
+                  <span class="s1">&#39;cast&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;collection&#39;</span><span class="p">:</span> <span class="s1">&#39;Actor&#39;</span><span class="p">,</span>
+                           <span class="s1">&#39;via&#39;</span><span class="p">:</span> <span class="s1">&#39;appears_in&#39;</span><span class="p">}}</span>
 </pre></div>
 </div>
 <p>An Actor may appear in many Movies and a Movie may have many Actors.  Changing the <cite>cast</cite> of a Movie
@@ -243,7 +243,7 @@ codified as:</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>record</strong> (<a class="reference internal" href="tau.storage.html#tau.storage.AbstractStorage.Record" title="tau.storage.AbstractStorage.Record"><em>Record</em></a>) &#8211; Record to associate.</li>
 <li><strong>foreign_model</strong> (<a class="reference internal" href="#tau.mvc.model.Model" title="tau.mvc.model.Model"><em>Model</em></a>) &#8211; Foreign record&#8217;s data model.</li>
-<li><strong>affected</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Identifiers for the records that will be updated to associate with <cite>record</cite>.</li>
+<li><strong>affected</strong> (<a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Identifiers for the records that will be updated to associate with <cite>record</cite>.</li>
 <li><strong>via</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The name of the associated foreign attribute.</li>
 </ul>
 </td>
@@ -263,7 +263,7 @@ codified as:</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>record</strong> (<a class="reference internal" href="tau.storage.html#tau.storage.AbstractStorage.Record" title="tau.storage.AbstractStorage.Record"><em>Record</em></a>) &#8211; Record to disassociate.</li>
 <li><strong>foreign_model</strong> (<a class="reference internal" href="#tau.mvc.model.Model" title="tau.mvc.model.Model"><em>Model</em></a>) &#8211; Foreign record&#8217;s data model.</li>
-<li><strong>affected</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Identifiers for the records that will be updated to disassociate from <cite>record</cite>.</li>
+<li><strong>affected</strong> (<a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Identifiers for the records that will be updated to disassociate from <cite>record</cite>.</li>
 <li><strong>via</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The name of the associated foreign attribute.</li>
 </ul>
 </td>
@@ -348,7 +348,7 @@ and may contain eids of undefined records.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>keys</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Attributes to match.</li>
-<li><strong>eids</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Record identifiers to match.</li>
+<li><strong>eids</strong> (<a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Record identifiers to match.</li>
 </ul>
 </td>
 </tr>
@@ -361,20 +361,20 @@ and may contain eids of undefined records.</p>
 </tbody>
 </table>
 <p>Example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span>
- <span class="s">&#39;Brewery&#39;</span><span class="p">:</span> <span class="p">{</span><span class="mi">100</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;address&#39;</span><span class="p">:</span> <span class="s">&#39;4615 Hollins Ferry Rd, Halethorpe, MD 21227&#39;</span><span class="p">,</span>
-                   <span class="s">&#39;brews&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">14</span><span class="p">]}},</span>
- <span class="s">&#39;Beer&#39;</span><span class="p">:</span> <span class="p">{</span><span class="mi">10</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;origin&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="s">&#39;color&#39;</span><span class="p">:</span> <span class="s">&#39;gold&#39;</span><span class="p">,</span> <span class="s">&#39;ibu&#39;</span><span class="p">:</span> <span class="mi">45</span><span class="p">},</span>
-          <span class="mi">12</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;origin&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="s">&#39;color&#39;</span><span class="p">:</span> <span class="s">&#39;dark&#39;</span><span class="p">,</span> <span class="s">&#39;ibu&#39;</span><span class="p">:</span> <span class="mi">15</span><span class="p">},</span>
-          <span class="mi">14</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;origin&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="s">&#39;color&#39;</span><span class="p">:</span> <span class="s">&#39;pale&#39;</span><span class="p">,</span> <span class="s">&#39;ibu&#39;</span><span class="p">:</span> <span class="mi">30</span><span class="p">}}</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{</span>
+ <span class="s1">&#39;Brewery&#39;</span><span class="p">:</span> <span class="p">{</span><span class="mi">100</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;address&#39;</span><span class="p">:</span> <span class="s1">&#39;4615 Hollins Ferry Rd, Halethorpe, MD 21227&#39;</span><span class="p">,</span>
+                   <span class="s1">&#39;brews&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">14</span><span class="p">]}},</span>
+ <span class="s1">&#39;Beer&#39;</span><span class="p">:</span> <span class="p">{</span><span class="mi">10</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;origin&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;gold&#39;</span><span class="p">,</span> <span class="s1">&#39;ibu&#39;</span><span class="p">:</span> <span class="mi">45</span><span class="p">},</span>
+          <span class="mi">12</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;origin&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;dark&#39;</span><span class="p">,</span> <span class="s1">&#39;ibu&#39;</span><span class="p">:</span> <span class="mi">15</span><span class="p">},</span>
+          <span class="mi">14</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;origin&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;pale&#39;</span><span class="p">,</span> <span class="s1">&#39;ibu&#39;</span><span class="p">:</span> <span class="mi">30</span><span class="p">}}</span>
 <span class="p">}</span>
 
 <span class="n">Beer</span><span class="o">.</span><span class="n">export_records</span><span class="p">(</span><span class="n">eids</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">])</span>
 
 <span class="p">{</span>
- <span class="s">&#39;Brewery&#39;</span><span class="p">:</span> <span class="p">{</span><span class="mi">100</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;address&#39;</span><span class="p">:</span> <span class="s">&#39;4615 Hollins Ferry Rd, Halethorpe, MD 21227&#39;</span><span class="p">,</span>
-                   <span class="s">&#39;brews&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">14</span><span class="p">]}},</span>
- <span class="s">&#39;Beer&#39;</span><span class="p">:</span> <span class="p">{</span><span class="mi">10</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;origin&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="s">&#39;color&#39;</span><span class="p">:</span> <span class="s">&#39;gold&#39;</span><span class="p">,</span> <span class="s">&#39;ibu&#39;</span><span class="p">:</span> <span class="mi">45</span><span class="p">}}</span>
+ <span class="s1">&#39;Brewery&#39;</span><span class="p">:</span> <span class="p">{</span><span class="mi">100</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;address&#39;</span><span class="p">:</span> <span class="s1">&#39;4615 Hollins Ferry Rd, Halethorpe, MD 21227&#39;</span><span class="p">,</span>
+                   <span class="s1">&#39;brews&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">14</span><span class="p">]}},</span>
+ <span class="s1">&#39;Beer&#39;</span><span class="p">:</span> <span class="p">{</span><span class="mi">10</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;origin&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;gold&#39;</span><span class="p">,</span> <span class="s1">&#39;ibu&#39;</span><span class="p">:</span> <span class="mi">45</span><span class="p">}}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -403,13 +403,13 @@ and may contain eids of undefined records.</p>
 <dd><p>Merges associated data into the model record.</p>
 <p class="rubric">Example</p>
 <p>Suppose we have the following Person records:</p>
-<div class="highlight-python"><div class="highlight"><pre>1: {&#39;name&#39;: &#39;Katie&#39;, &#39;friends&#39;: [2, 3]}
+<div class="highlight-python"><div class="highlight"><pre><span></span>1: {&#39;name&#39;: &#39;Katie&#39;, &#39;friends&#39;: [2, 3]}
 2: {&#39;name&#39;: &#39;Ryan&#39;, &#39;friends&#39;: [1]}
 3: {&#39;name&#39;: &#39;John&#39;, &#39;friends&#39;: [1]}
 </pre></div>
 </div>
 <p>Populating <code class="docutils literal"><span class="pre">Person({'name':</span> <span class="pre">'Katie',</span> <span class="pre">'friends':</span> <span class="pre">[2,</span> <span class="pre">3]})</span></code> produces this dictionary:</p>
-<div class="highlight-python"><div class="highlight"><pre>{&#39;name&#39;: &#39;Katie&#39;,
+<div class="highlight-python"><div class="highlight"><pre><span></span>{&#39;name&#39;: &#39;Katie&#39;,
  &#39;friends&#39;: [Person({&#39;name&#39;: &#39;Ryan&#39;, &#39;friends&#39;: [1]}),
              Person({&#39;name&#39;: &#39;John&#39;, &#39;friends&#39;: [1]}]})
 </pre></div>
@@ -455,7 +455,7 @@ If attribute is not None, the value of the populated attribute.</td>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>fields</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Names of fields to unset.</li>
+<li><strong>fields</strong> (<a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Names of fields to unset.</li>
 <li><strong>keys</strong> &#8211; Fields or element identifiers to match.</li>
 </ul>
 </td>
@@ -554,7 +554,7 @@ compatible.  This routine checks the &#8216;compat&#8217; property of each attri
 compatibility.  &#8216;compat&#8217; is a dictionary where the keys are values or callables and the
 values are tuples of compatibility conditions.  If the attribute with the &#8216;compat&#8217; property
 is one of the key values then the conditions are checked.  The general form of &#8216;compat&#8217; is:</p>
-<div class="highlight-python"><div class="highlight"><pre>{
+<div class="highlight-python"><div class="highlight"><pre><span></span>{
 (value|callable): (condition, [condition, ...]),
 [(value|callable): (condition, [condition, ...]), ...]
 }
@@ -580,7 +580,7 @@ The two records are not compatible.</td>
 </table>
 <p class="rubric">Examples</p>
 <p>Suppose we have this data:</p>
-<div class="highlight-python"><div class="highlight"><pre>Programmer.attributes = {
+<div class="highlight-python"><div class="highlight"><pre><span></span>Programmer.attributes = {
     &#39;hungry&#39;: {
         &#39;type&#39;: &#39;boolean&#39;,
         &#39;compat&#39;: {True: (CheeseShop.require(&#39;have_cheese&#39;, True),
@@ -598,13 +598,13 @@ keith = Roommate({&#39;steals_food&#39;: True})
 </pre></div>
 </div>
 <p>These expressions raise <a class="reference internal" href="tau.html#tau.error.ConfigurationError" title="tau.error.ConfigurationError"><code class="xref any py py-exc docutils literal"><span class="pre">ConfigurationError</span></code></a>:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">bob</span><span class="o">.</span><span class="n">check_compatibility</span><span class="p">(</span><span class="n">world_o_cheese</span><span class="p">)</span>   <span class="c"># Because have_cheese == False</span>
-<span class="n">bob</span><span class="o">.</span><span class="n">check_compatibility</span><span class="p">(</span><span class="n">keith</span><span class="p">)</span>            <span class="c"># Because steals_food == True</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">bob</span><span class="o">.</span><span class="n">check_compatibility</span><span class="p">(</span><span class="n">world_o_cheese</span><span class="p">)</span>   <span class="c1"># Because have_cheese == False</span>
+<span class="n">bob</span><span class="o">.</span><span class="n">check_compatibility</span><span class="p">(</span><span class="n">keith</span><span class="p">)</span>            <span class="c1"># Because steals_food == True</span>
 </pre></div>
 </div>
 <p>These expressions generate warning messages:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">bob</span><span class="o">.</span><span class="n">check_compatibility</span><span class="p">(</span><span class="n">cheese_wizzard</span><span class="p">)</span>   <span class="c"># Because chedder != Wisconsin</span>
-<span class="n">bob</span><span class="o">.</span><span class="n">check_compatibility</span><span class="p">(</span><span class="n">louis</span><span class="p">)</span>            <span class="c"># Because holding_long_meeting == True</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">bob</span><span class="o">.</span><span class="n">check_compatibility</span><span class="p">(</span><span class="n">cheese_wizzard</span><span class="p">)</span>   <span class="c1"># Because chedder != Wisconsin</span>
+<span class="n">bob</span><span class="o">.</span><span class="n">check_compatibility</span><span class="p">(</span><span class="n">louis</span><span class="p">)</span>            <span class="c1"># Because holding_long_meeting == True</span>
 </pre></div>
 </div>
 <p>If <code class="docutils literal"><span class="pre">bob['hungry']</span> <span class="pre">==</span> <span class="pre">False</span></code> or if the &#8216;hungry&#8217; attribute were not set then all
@@ -660,10 +660,7 @@ See <code class="xref py py-func docutils literal"><span class="pre">tau.model.m
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">any:<cite>check_compatibility</cite>.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">Callable condition object for use with</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Callable condition object for use with <a class="reference internal" href="#tau.mvc.model.Model.check_compatibility" title="tau.mvc.model.Model.check_compatibility"><code class="xref any py py-meth docutils literal"><span class="pre">check_compatibility</span></code></a>.</p>
 </td>
 </tr>
 </tbody>
@@ -687,23 +684,21 @@ defined or equal to the specified value (if given).</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>*args</strong> &#8211; Corresponds to <cite>args</cite> in <a class="reference internal" href="#tau.mvc.model.Model.construct_condition" title="tau.mvc.model.Model.construct_condition"><code class="xref any py py-meth docutils literal"><span class="pre">construct_condition</span></code></a>.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">any:<cite>check_compatibility</cite></td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">Callable condition object for use with</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Callable condition object for use with <a class="reference internal" href="#tau.mvc.model.Model.check_compatibility" title="tau.mvc.model.Model.check_compatibility"><code class="xref any py py-meth docutils literal"><span class="pre">check_compatibility</span></code></a></td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">Examples</p>
 <p>&#8216;have_cheese&#8217; should not be True:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">CheeseShop</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>&#8216;have_cheese&#8217; should not be set to any value:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">CheeseShop</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s">&#39;have_cheese&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The value of &#8216;have_cheese&#8217; will be checked for correctness by &#8216;cheese_callback&#8217;:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">CheeseShop</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="n">cheese_callback</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="n">cheese_callback</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -720,23 +715,21 @@ undefined or not equal to the specified value (if given).</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>*args</strong> &#8211; Corresponds to <cite>args</cite> in <a class="reference internal" href="#tau.mvc.model.Model.construct_condition" title="tau.mvc.model.Model.construct_condition"><code class="xref any py py-meth docutils literal"><span class="pre">construct_condition</span></code></a>.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">any:<cite>check_compatibility</cite></td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">Callable condition object for use with</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Callable condition object for use with <a class="reference internal" href="#tau.mvc.model.Model.check_compatibility" title="tau.mvc.model.Model.check_compatibility"><code class="xref any py py-meth docutils literal"><span class="pre">check_compatibility</span></code></a></td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">Examples</p>
 <p>&#8216;have_cheese&#8217; should be True:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">CheeseShop</span><span class="o">.</span><span class="n">encourage</span><span class="p">(</span><span class="s">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">encourage</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>&#8216;have_cheese&#8217; should be set to any value:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">CheeseShop</span><span class="o">.</span><span class="n">encourage</span><span class="p">(</span><span class="s">&#39;have_cheese&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">encourage</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The value of &#8216;have_cheese&#8217; will be checked for correctness by &#8216;cheese_callback&#8217;:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">CheeseShop</span><span class="o">.</span><span class="n">encourage</span><span class="p">(</span><span class="s">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="n">cheese_callback</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">encourage</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="n">cheese_callback</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -753,23 +746,21 @@ defined or equal to the specified value (if given).</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>*args</strong> &#8211; Corresponds to <cite>args</cite> in <a class="reference internal" href="#tau.mvc.model.Model.construct_condition" title="tau.mvc.model.Model.construct_condition"><code class="xref any py py-meth docutils literal"><span class="pre">construct_condition</span></code></a>.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">any:<cite>check_compatibility</cite></td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">Callable condition object for use with</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Callable condition object for use with <a class="reference internal" href="#tau.mvc.model.Model.check_compatibility" title="tau.mvc.model.Model.check_compatibility"><code class="xref any py py-meth docutils literal"><span class="pre">check_compatibility</span></code></a></td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">Examples</p>
 <p>&#8216;yellow_cheese&#8217; must not be &#8216;American&#8217;:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">CheeseShop</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s">&#39;yellow_cheese&#39;</span><span class="p">,</span> <span class="s">&#39;American&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;yellow_cheese&#39;</span><span class="p">,</span> <span class="s1">&#39;American&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>&#8216;blue_cheese&#8217; must not be set to any value:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">CheeseShop</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s">&#39;blue_cheese&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;blue_cheese&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The value of &#8216;have_cheese&#8217; will be checked for correctness by &#8216;cheese_callback&#8217;:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">CheeseShop</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="n">cheese_callback</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="n">cheese_callback</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -819,23 +810,21 @@ undefined or not equal to the specified value (if given).</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>*args</strong> &#8211; Corresponds to <cite>args</cite> in <a class="reference internal" href="#tau.mvc.model.Model.construct_condition" title="tau.mvc.model.Model.construct_condition"><code class="xref any py py-meth docutils literal"><span class="pre">construct_condition</span></code></a>.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">any:<cite>check_compatibility</cite></td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">Callable condition object for use with</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Callable condition object for use with <a class="reference internal" href="#tau.mvc.model.Model.check_compatibility" title="tau.mvc.model.Model.check_compatibility"><code class="xref any py py-meth docutils literal"><span class="pre">check_compatibility</span></code></a></td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">Examples</p>
 <p>&#8216;have_cheese&#8217; must be True:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">CheeseShop</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>&#8216;have_cheese&#8217; must be set to any value:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">CheeseShop</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s">&#39;have_cheese&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The value of &#8216;have_cheese&#8217; will be checked for correctness by &#8216;cheese_callback&#8217;:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">CheeseShop</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="n">cheese_callback</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="n">cheese_callback</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -899,7 +888,7 @@ The given data doesn&#8217;t fit the model.</td>
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
 </html>
