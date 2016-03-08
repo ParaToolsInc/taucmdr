@@ -32,6 +32,7 @@ Handles system manipulation and status tasks, e.g. subprocess management or file
 
 import os
 import sys
+import time
 import subprocess
 import errno
 import shutil
@@ -66,6 +67,26 @@ def mkdirp(*args):
             if not (exc.errno == errno.EEXIST and os.path.isdir(path)):
                 raise
 
+def rmtree(path, ignore_errors=False, onerror=None, attempts=5):
+    """Wrapper around shutil.rmtree to work around stale or slow NFS directories.
+
+    Tries repeatedly to recursively remove `path` and sleeps between attempts.
+
+    Args:
+        path (str): A directory but not a symbolic link to a directory.
+        ignore_errors (bool): If True then errors resulting from failed removals will be ignored.
+                              If False or omitted, such errors are handled by calling a handler 
+                              specified by `onerror` or, if that is omitted, they raise an exception.
+        onerror: Callable that accepts three parameters: function, path, and excinfo.  See :any:shutil.rmtree.
+        attempts (int): Number of times to repeat shutil.rmtree before giving up.
+    """
+    for i in xrange(attempts-1):
+        try:
+            return shutil.rmtree(path)
+        except Exception as err:
+            LOGGER.warning("Unexpected error: %s" % err)
+            time.sleep(i+1)
+    shutil.rmtree(path, ignore_errors, onerror)
 
 def which(program):
     """Returns the full path to a program command.

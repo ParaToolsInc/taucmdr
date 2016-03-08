@@ -29,7 +29,6 @@
 
 import os
 import sys
-import shutil
 import hashlib
 import multiprocessing
 from lockfile import LockFile, NotLocked
@@ -201,7 +200,7 @@ class Installation(object):
         if reuse and os.path.isdir(src_prefix):
             LOGGER.info("Reusing %s source files found at '%s'", self.name, src_prefix)
         else:
-            shutil.rmtree(src_prefix, ignore_errors=True)
+            util.rmtree(src_prefix, ignore_errors=True)
             try:
                 src_prefix = util.extract(downloaded, self.archive_prefix)
             except IOError as err:
@@ -418,7 +417,7 @@ class AutotoolsInstallation(Installation):
 
         if os.path.isdir(self.install_prefix): 
             LOGGER.info("Cleaning %s installation prefix '%s'", self.name, self.install_prefix)
-            shutil.rmtree(self.install_prefix, ignore_errors=True)
+            util.rmtree(self.install_prefix, ignore_errors=True)
             
         self._prepare_src()
 
@@ -436,7 +435,7 @@ class AutotoolsInstallation(Installation):
             # Delete the decompressed source code to save space and clean up in preperation for
             # future reconfigurations.  The compressed source archive is retained.
             LOGGER.debug("Deleting '%s'", self.src_prefix)
-            shutil.rmtree(self.src_prefix, ignore_errors=True)
+            util.rmtree(self.src_prefix, ignore_errors=True)
 
         # Verify the new installation
         LOGGER.info("%s installation complete, verifying installation", self.name)

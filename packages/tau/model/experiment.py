@@ -33,7 +33,6 @@ The selected experiment will be used for application compilation and trial visua
 """
 
 import os
-import shutil
 from tau import logger, util
 from tau.error import ConfigurationError
 from tau.mvc.model import Model
@@ -126,7 +125,7 @@ class Experiment(Model):
     def on_delete(self):
         # pylint: disable=broad-except
         try:
-            shutil.rmtree(self.prefix)
+            util.rmtree(self.prefix)
         except Exception as err:
             if os.path.exists(self.prefix):
                 LOGGER.error("Could not remove experiment data at '%s': %s", self.prefix, err)

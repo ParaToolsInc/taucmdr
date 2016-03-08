@@ -29,8 +29,9 @@
 
 import os
 import platform
+from tau import util
 from tau import EXIT_SUCCESS, EXIT_WARNING
-from tau.error import InternalError
+from tau.error import InternalError, ConfigurationError
 from tau.cli import arguments
 from tau.cli.command import AbstractCommand
 from tau.model.project import Project, ProjectSelectionError
@@ -193,7 +194,11 @@ class InitializeCommand(AbstractCommand):
         except ProjectStorageError:
             self.logger.debug("No project found, initializing a new project.")
             PROJECT_STORAGE.connect_filesystem()
-            self._create_project(argv, args)
+            try:
+                self._create_project(argv, args)
+            except ConfigurationError:
+                util.rmtree(proj_ctrl.storage.prefix, ignore_errors=True)
+                raise
             return dashboard_cmd.main([])
         except ProjectSelectionError as err:
             err.value = "The project has been initialized but no project configuration is selected."
