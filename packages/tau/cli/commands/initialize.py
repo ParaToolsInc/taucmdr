@@ -197,6 +197,7 @@ class InitializeCommand(AbstractCommand):
             try:
                 self._create_project(argv, args)
             except ConfigurationError:
+                PROJECT_STORAGE.disconnect_filesystem()
                 util.rmtree(proj_ctrl.storage.prefix, ignore_errors=True)
                 raise
             return dashboard_cmd.main([])
