@@ -38,7 +38,7 @@ from tau.error import ConfigurationError
 from tau.mvc.model import Model
 from tau.model.trial import Trial
 from tau.model.project import Project
-from tau.storage.levels import USER_STORAGE, PROJECT_STORAGE, SYSTEM_STORAGE, STORAGE_LEVELS, ORDERED_LEVELS
+from tau.storage.levels import PROJECT_STORAGE, STORAGE_LEVELS, ORDERED_LEVELS
 from tau.cf.target import OperatingSystem, DARWIN_OS
 from tau.cf.software import SoftwarePackageError
 from tau.cf.software.tau_installation import TauInstallation
@@ -181,9 +181,9 @@ class Experiment(Model):
         measurement = populated['measurement']
         verbose = (logger.LOG_LEVEL == 'DEBUG')
         tau_args = (target.get('tau_source', None), 
-                      target['host_arch'], 
-                      target['host_os'], 
-                      target.compilers())
+                    target['host_arch'], 
+                    target['host_os'], 
+                    target.compilers())
         tau_kwargs = dict(verbose=verbose,
                           # TAU dependencies
                           pdt=dependencies['pdt'],
@@ -237,12 +237,11 @@ class Experiment(Model):
             else:
                 # Found installation
                 return tau
-        else:
-            tau = TauInstallation(prefix, *tau_args, **tau_kwargs)
-            with tau:
-                tau.install()
-                return tau
-    
+        tau = TauInstallation(prefix, *tau_args, **tau_kwargs)
+        with tau:
+            tau.install()
+            return tau
+
     def configure_tau_dependency(self, name, prefix):
         target = self.populate('target')
         cls_name = name.title() + 'Installation'
@@ -259,11 +258,10 @@ class Experiment(Model):
             else:
                 # Found installation
                 return inst
-        else:
-            inst = cls(prefix, *opts)
-            with inst:
-                inst.install()
-                return inst       
+        inst = cls(prefix, *opts)
+        with inst:
+            inst.install()
+            return inst       
 
     def configure(self):
         """Sets up the Experiment for a new trial.
@@ -284,10 +282,10 @@ class Experiment(Model):
                     prefix = storage.prefix
                     break
             else:
-                raise SofwarePackageError("%s storage is not writable" % project_data['storage_level'])
+                raise SoftwarePackageError("%s storage is not writable" % project_data['storage_level'])
         else:
             if not storage.is_writable():
-                raise SofwarePackageError("%s storage is not writable" % project_data['storage_level'])
+                raise SoftwarePackageError("%s storage is not writable" % project_data['storage_level'])
             else:
                 prefix = storage.prefix
 

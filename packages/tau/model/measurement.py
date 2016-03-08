@@ -33,6 +33,7 @@ the available data in a single run since overhead would be extreme.  Different
 measurements allow us to take different views of the application's performance.
 """
 
+import os
 from tau.error import ConfigurationError
 from tau.mvc.model import Model
 from tau.cf.compiler import INTEL_COMPILERS, GNU_COMPILERS
@@ -327,7 +328,7 @@ class Measurement(Model):
                                      "Specify %s, %s, %s, or %s" % (source_inst_flag, compiler_inst_flag, 
                                                                     sample_flag, link_only_flag))
         try:
-          select_inst_file = self['select_inst_file']
+            select_inst_file = self['select_inst_file']
         except KeyError:
             pass
         else:
