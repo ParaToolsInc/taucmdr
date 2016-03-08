@@ -1,0 +1,5 @@
+codecov==1.6.3
+coverage==4.0.3
+cx-Freeze==4.3.4
+pylint==1.4.4
+sphinx==1.3.6
