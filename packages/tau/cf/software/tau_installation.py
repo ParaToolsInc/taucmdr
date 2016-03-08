@@ -173,7 +173,7 @@ class TauInstallation(Installation):
             target_os (OperatingSystem): Target operating system description.
             compilers (InstalledCompilerSet): Compilers to use if software must be compiled.
             verbose (bool): True to enable TAU verbose output.
-            pdt_source (str): Path to PDT source, installation, or None.
+            pdt (str): Path to PDT source, installation, or None.
             binutils_source (str): Path to GNU binutils source, installation, or None.
             libunwind_source (str): Path to libunwind source, installation, or None.
             papi_source (str): Path to PAPI source, installation, or None.
@@ -361,17 +361,13 @@ class TauInstallation(Installation):
             fortran_magic = magic_map[fc_family]
         except KeyError:
             raise InternalError("Unknown compiler family for Fortran: '%s'" % fc_family)
-        
-        pdt_cxx_command = self.pdt.compilers[CXX_ROLE].info.command if self.pdt else ''
-            
+
         flags = [ flag for flag in  
                  ['-prefix=%s' % self.install_prefix,
                   '-arch=%s' % self.arch,
                   '-cc=%s' % cc_command,
                   '-c++=%s' % cxx_command,
-                  '-pdt_c++=%s' % pdt_cxx_command,
                   '-fortran=%s' % fortran_magic,
-                  '-pdt=%s' % self.pdt.install_prefix if self.pdt else '',
                   '-bfd=%s' % self.binutils.install_prefix if self.binutils else '',
                   '-papi=%s' % self.papi.install_prefix if self.papi else '',
                   '-unwind=%s' % self.libunwind.install_prefix if self.libunwind else '',
@@ -383,6 +379,9 @@ class TauInstallation(Installation):
                   '-cuda=%s' % self.cuda_prefix if self.cuda_prefix else '',
                   '-opencl=%s' % self.opencl_prefix if self.opencl_prefix else ''
                  ] if flag]
+        if self.pdt:
+          flags.append('-pdt=%s' % self.pdt.install_prefix)
+          flags.append('-pdt_c++=%s' % self.pdt.compilers[CXX_ROLE].info.command)
         if self.openmp_support:
             flags.append('-openmp')
             if self.measure_openmp == 'ompt':
