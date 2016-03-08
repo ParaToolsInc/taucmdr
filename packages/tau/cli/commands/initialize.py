@@ -48,18 +48,18 @@ from tau.cf.target import host, DARWIN_OS
 
 class InitializeCommand(AbstractCommand):
     """``tau initialize`` subcommand."""
-    
+
     def construct_parser(self):
-        
+
         def _default_target_name():
             node_name = platform.node()
             if not node_name:
                 return 'default_target'
             return node_name.split('.')[0]
-        
+
         usage = "%s [arguments]" % self.command
         parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
-        
+
         default_project_name = os.path.basename(os.getcwd()) or 'default_project'
         project_group = parser.add_argument_group('project arguments')
         project_group.add_argument('--project-name',
@@ -70,8 +70,7 @@ class InitializeCommand(AbstractCommand):
                                    help='location of installation directory',
                                    choices=STORAGE_LEVELS.keys(),
                                    metavar='<levels>', default=arguments.SUPPRESS)
-                                   
-        
+
         parser.merge(target_create_cmd.parser, group_title='target arguments', include_positional=False)
         target_group = parser.add_argument_group('target arguments')
         target_group.add_argument('--target-name',
@@ -150,7 +149,7 @@ class InitializeCommand(AbstractCommand):
         if not papi:
             target_argv.append('--papi=False')
         _safe_execute(target_create_cmd, target_argv)
-        
+
         application_argv = [application_name] + argv
         application_args, unknown = application_create_cmd.parser.parse_known_args(args=application_argv)
         application_argv = [application_name] + [arg for arg in argv if arg not in unknown]
@@ -159,43 +158,35 @@ class InitializeCommand(AbstractCommand):
         measurement_names = []
         measurement_args = ['--%s=True' % attr 
                             for attr in 'cuda', 'mpi', 'opencl' if getattr(application_args, attr, False)]
-        
+
         if args.sample and sample:
             _safe_execute(measurement_create_cmd, 
-                          ['profile-sample', '--profile=True', '--trace=False', '--sample=True',
+                          ['sample', '--profile=True', '--trace=False', '--sample=True',
                            '--source-inst=never', '--compiler-inst=never',
                            '--link-only=False'] + measurement_args)
-            measurement_names.extend(['profile-sample'])
+            measurement_names.extend(['sample'])
         if args.profile:
             _safe_execute(measurement_create_cmd, 
-                          ['profile-automatic', '--profile=True', '--trace=False', '--sample=False',
+                          ['instrument', '--profile=True', '--trace=False', '--sample=False',
                            '--source-inst=automatic', '--compiler-inst=%s' % comp_inst, 
                            '--link-only=False'] + measurement_args)
-            _safe_execute(measurement_create_cmd, 
-                          ['profile-manual', '--profile=True', '--trace=False', '--sample=False',
-                           '--source-inst=never', '--compiler-inst=never', 
-                           '--link-only=True'] + measurement_args)
-            measurement_names.extend(['profile-automatic', 'profile-manual'])
+            measurement_names.append('instrument')
         if args.trace:
             _safe_execute(measurement_create_cmd, 
-                          ['trace-automatic', '--profile=False', '--trace=True', '--sample=False', 
+                          ['trace', '--profile=False', '--trace=True', '--sample=False', 
                            '--source-inst=automatic', '--compiler-inst=%s' % comp_inst, 
                            '--link-only=False'] + measurement_args)
-            _safe_execute(measurement_create_cmd, 
-                          ['trace-manual', '--profile=False', '--trace=True', '--sample=False',
-                           '--source-inst=never', '--compiler-inst=never', 
-                           '--link-only=True'] + measurement_args)
-            measurement_names.extend(['trace-automatic', 'trace-manual'])
+            measurement_names.append('trace')
 
         select_cmd.main(['--project', project_name, '--target', target_name, 
                          '--application', application_name, '--measurement', measurement_names[0]])
-    
+
     def main(self, argv):
         args = self.parser.parse_args(args=argv)
         self.logger.debug('Arguments: %s', args)
         if not (args.profile or args.trace or args.sample):
             self.parser.error('You must specify at least one measurement.')
-        
+
         proj_ctrl = Project.controller()
         try:
             proj = proj_ctrl.selected()
