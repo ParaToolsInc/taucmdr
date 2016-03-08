@@ -10,10 +10,13 @@ set -o verbose
 git config user.name "Travis-CI-bot"
 git config user.email "info@paratools.com"
 
-git remote set-url origin https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git
+git remote -v
+git remote rm origin
+git remote add origin https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git
+git remote -v | sed 's#\(https://\)\(.*\)\(@github\.com/[^ ]*\)#\1SECRET\3#g'
 
 git fetch origin gh-pages > /dev/null 2>&1 && echo success || echo failure
-git fetch --unshallow ||true
+git fetch --unshallow origin ||echo "failed"
 git branch -a -vvv
 
 export PUSH_FLAGS='--quiet --force'
