@@ -195,14 +195,14 @@ class Trial(Model):
         except Exception as err:
             if os.path.exists(self.prefix):
                 LOGGER.error("Could not remove trial data at '%s': %s", self.prefix, err)
-    
+
     def profile_files(self):
         """Get this trial's profile files.
-        
+
         Returns paths to profile files (profile.X.Y.Z).  If the trial produced 
         MULTI__ directories then paths to every profile below every MULTI__ 
         directory are returned. 
-        
+
         Returns:
             list: Paths to profile files.
         """
@@ -212,12 +212,12 @@ class Trial(Model):
             profiles.extend(list_profiles(multi_dir))
         profiles.extend(list_profiles(self.prefix))
         return profiles
-    
+
     def trace_files(self):
         """Get this trial's trace files.
-        
+
         Returns paths to trace files: *.[trc,edf].
-        
+
         Returns:
             list: Paths to trace files.
         """
@@ -227,16 +227,16 @@ class Trial(Model):
 
     def execute_command(self, expr, cmd, cwd, env):
         """Execute a command as part of an experiment trial.
-        
+
         Creates a new subprocess for the command and checks for TAU data files
         when the subprocess exits.
-        
+
         Args:
             expr (Experiment): Experiment data.
             cmd (str): Command to profile, with command line arguments.
             cwd (str): Working directory to perform trial in.
             env (dict): Environment variables to set before performing the trial.
-            
+
         Returns:
             int: Subprocess return code.
         """
