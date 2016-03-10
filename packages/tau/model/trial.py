@@ -34,7 +34,6 @@ the performance data.
 
 import os
 import glob
-import shutil
 import errno
 from datetime import datetime
 from tau import logger, util
@@ -192,7 +191,7 @@ class Trial(Model):
     def on_delete(self):
         # pylint: disable=broad-except
         try:
-            shutil.rmtree(self.prefix)
+            util.rmtree(self.prefix)
         except Exception as err:
             if os.path.exists(self.prefix):
                 LOGGER.error("Could not remove trial data at '%s': %s", self.prefix, err)

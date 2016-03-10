@@ -27,18 +27,99 @@
 #
 """``tau measurement`` subcommand."""
 
+from texttable import Texttable
+from tau import logger, util
+from tau.cli.arguments import STORAGE_LEVEL_FLAG
 from tau.cli.cli_view import ListCommand
-from tau.model.project import Project
+from tau.cli.commands.target.list import COMMAND as target_list_cmd
+from tau.cli.commands.application.list import COMMAND as application_list_cmd
+from tau.cli.commands.measurement.list import COMMAND as measurement_list_cmd
+from tau.cli.commands.select import COMMAND as select_cmd
+from tau.storage.levels import STORAGE_LEVELS
+from tau.model.project import Project, ExperimentSelectionError
 
-# {'header': 'In Projects', 'function': }]
 
-def _name_list(attr):
-    return lambda x: ', '.join([p['name'] for p in x[attr]])
+class ProjectListCommand(ListCommand):
+    """Base class for the `list` subcommand of command line views."""
 
-DASHBOARD_COLUMNS = [{'header': 'Name', 'value': 'name', 'align': 'r'},
-                     {'header': 'Targets', 'function': _name_list('targets')},
-                     {'header': 'Applications', 'function': _name_list('applications')},
-                     {'header': 'Measurements', 'function': _name_list('measurements')},
-                     {'header': '# Experiments', 'function': lambda x: len(x['experiments'])}]
- 
-COMMAND = ListCommand(Project, __name__, dashboard_columns=DASHBOARD_COLUMNS)
+    def __init__(self):
+        def _name_list(attr):
+            return lambda x: ', '.join([p['name'] for p in x[attr]])
+        dashboard_columns = [{'header': 'Name', 'value': 'name', 'align': 'r'},
+                             {'header': 'Targets', 'function': _name_list('targets')},
+                             {'header': 'Applications', 'function': _name_list('applications')},
+                             {'header': 'Measurements', 'function': _name_list('measurements')},
+                             {'header': '# Experiments', 'function': lambda x: len(x['experiments'])}]
+        super(ProjectListCommand, self).__init__(Project, __name__, dashboard_columns=dashboard_columns)
+
+    def _print_experiments(self, proj):
+        parts = []
+        experiments = proj.populate('experiments')
+        if not experiments:
+            label = util.color_text('%s: No experiments' % proj['name'], color='red', attrs=['bold'])
+            msg = "%s.  Use `%s` to create a new experiment." % (label, select_cmd) 
+            parts.append(msg)
+        if experiments:
+            title = util.hline("Experiments in project '%s'" % proj['name'], 'cyan')
+            header_row = ['Experiment', 'Trials', 'Data Size']
+            rows = [header_row]
+            for expr in experiments:
+                rows.append([expr.title(), len(expr['trials']), util.human_size(expr.data_size())])
+            table = Texttable(logger.LINE_WIDTH)
+            table.add_rows(rows)
+            parts.extend([title, table.draw(), ''])
+        try:
+            expr = proj.experiment()
+        except ExperimentSelectionError:
+            pass
+        else:
+            if expr:
+                current = util.color_text('Current experiment: ', 'cyan') + expr.title()
+            else:
+                current = (util.color_text('No experiment: ', 'red') + 
+                           ('Use `%s` to configure a new experiment' % select_cmd))  
+            parts.append(current)
+        print '\n'.join(parts)
+
+    def main(self, argv):
+        """Command program entry point.
+
+        Args:
+            argv (list): Command line arguments.
+
+        Returns:
+            int: Process return code: non-zero if a problem occurred, 0 otherwise
+        """
+        args = self.parser.parse_args(args=argv)
+        self.logger.debug('Arguments: %s', args)
+        keys = getattr(args, 'keys', [])
+        levels = getattr(args, STORAGE_LEVEL_FLAG, [])
+        single = (len(keys) == 1 and len(levels) == 1)
+
+        if single:
+            proj_name = keys[0]
+            self.title_fmt = "Project Configuration (%(storage_path)s)"
+            target_list_cmd.title_fmt = "Targets in project '%s'" % proj_name
+            application_list_cmd.title_fmt = "Applications in project '%s'" % proj_name
+            measurement_list_cmd.title_fmt = "Measurements in project '%s'" % proj_name
+
+        retval = super(ProjectListCommand, self).main(argv)
+
+        if single:
+            storage = STORAGE_LEVELS[levels[0]]
+            ctrl = Project.controller(storage)
+            proj = ctrl.one({'name': keys[0]})
+            for cmd, prop in ((target_list_cmd, 'targets'),
+                              (application_list_cmd, 'applications'),
+                              (measurement_list_cmd, 'measurements')):
+                records = proj.populate(prop)
+                if records:
+                    cmd.main([record['name'] for record in records])
+                else:
+                    label = util.color_text('%s: No %s' % (proj['name'], prop), color='red', attrs=['bold'])
+                    print "%s.  Use `%s` to view available %s.\n" % (label, cmd, prop)
+            self._print_experiments(proj)
+        return retval
+
+COMMAND = ProjectListCommand()
+

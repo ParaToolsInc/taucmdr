@@ -102,6 +102,7 @@ class InstalledCompiler(KeyedRecord):
         command (str): Command that invokes the compiler, without path.
         path (str): Absolute path to folder containing the compiler command.
         info (CompilerInfo): Information about the compiler invoked by the compiler command.
+        wrapped (WrappedCompiler): Information about the wrapped compiler, if any.
     """
     
     __metaclass__ = InstalledCompilerCreator

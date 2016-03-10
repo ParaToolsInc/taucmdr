@@ -38,7 +38,6 @@ DASHBOARD_COLUMNS = [{'header': 'Name', 'value': 'name', 'align': 'r'},
                      {'header': 'CUDA', 'yesno': 'cuda'},
                      {'header': 'OpenCL', 'yesno': 'opencl'},
                      {'header': 'SHMEM', 'yesno': 'shmem'},
-                     {'header': 'MPC', 'yesno': 'mpc'},
-                     {'header': 'In Projects', 'function': lambda x: ', '.join([p['name'] for p in x['projects']])}]
+                     {'header': 'MPC', 'yesno': 'mpc'}]
 
 COMMAND = ListCommand(Application, __name__, dashboard_columns=DASHBOARD_COLUMNS)

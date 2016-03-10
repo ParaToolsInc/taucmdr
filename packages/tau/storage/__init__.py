@@ -61,6 +61,12 @@ class StorageRecord(object):
 
     def __iter__(self):
         return iter(self.element)
+
+    def items(self):
+        return self.element.items()
+
+    def keys(self):
+        return self.element.keys()
     
     def iteritems(self):
         return self.element.iteritems()

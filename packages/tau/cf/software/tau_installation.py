@@ -145,6 +145,7 @@ class TauInstallation(Installation):
                  io_inst,
                  keep_inst_files,
                  reuse_inst_files,
+                 select_inst_file,
                  # Measurement methods and options
                  profile,
                  trace,
@@ -172,7 +173,7 @@ class TauInstallation(Installation):
             target_os (OperatingSystem): Target operating system description.
             compilers (InstalledCompilerSet): Compilers to use if software must be compiled.
             verbose (bool): True to enable TAU verbose output.
-            pdt_source (str): Path to PDT source, installation, or None.
+            pdt (str): Path to PDT source, installation, or None.
             binutils_source (str): Path to GNU binutils source, installation, or None.
             libunwind_source (str): Path to libunwind source, installation, or None.
             papi_source (str): Path to PAPI source, installation, or None.
@@ -191,6 +192,7 @@ class TauInstallation(Installation):
             io_inst (bool): Enable or disable POSIX I/O instrumentation in TAU.
             keep_inst_files (bool): If True then do not remove instrumented source files after compilation.
             reuse_inst_files (bool): If True then reuse instrumented source files for compilation when available.
+            select_inst_file (str): Path to selective instrumentation file.
             profile (bool): Enable or disable profiling.
             trace (bool): Enable or disable tracing.
             sample (bool): Enable or disable event-based sampling.
@@ -237,6 +239,7 @@ class TauInstallation(Installation):
         self.io_inst = io_inst
         self.keep_inst_files = keep_inst_files
         self.reuse_inst_files = reuse_inst_files
+        self.select_inst_file = select_inst_file
         self.profile = profile
         self.trace = trace
         self.sample = sample
@@ -358,17 +361,13 @@ class TauInstallation(Installation):
             fortran_magic = magic_map[fc_family]
         except KeyError:
             raise InternalError("Unknown compiler family for Fortran: '%s'" % fc_family)
-        
-        pdt_cxx_command = self.pdt.compilers[CXX_ROLE].info.command if self.pdt else ''
-            
+
         flags = [ flag for flag in  
                  ['-prefix=%s' % self.install_prefix,
                   '-arch=%s' % self.arch,
                   '-cc=%s' % cc_command,
                   '-c++=%s' % cxx_command,
-                  '-pdt_c++=%s' % pdt_cxx_command,
                   '-fortran=%s' % fortran_magic,
-                  '-pdt=%s' % self.pdt.install_prefix if self.pdt else '',
                   '-bfd=%s' % self.binutils.install_prefix if self.binutils else '',
                   '-papi=%s' % self.papi.install_prefix if self.papi else '',
                   '-unwind=%s' % self.libunwind.install_prefix if self.libunwind else '',
@@ -380,6 +379,9 @@ class TauInstallation(Installation):
                   '-cuda=%s' % self.cuda_prefix if self.cuda_prefix else '',
                   '-opencl=%s' % self.opencl_prefix if self.opencl_prefix else ''
                  ] if flag]
+        if self.pdt:
+          flags.append('-pdt=%s' % self.pdt.install_prefix)
+          flags.append('-pdt_c++=%s' % self.pdt.compilers[CXX_ROLE].info.command)
         if self.openmp_support:
             flags.append('-openmp')
             if self.measure_openmp == 'ompt':
@@ -604,6 +606,9 @@ class TauInstallation(Installation):
             tau_opts.add('-optKeepFiles')
         if self.reuse_inst_files:
             tau_opts.add('-optReuseFiles')
+        if self.select_inst_file:
+            select_inst_file = os.path.realpath(os.path.abspath(self.select_inst_file))
+            tau_opts.add('-optTauSelectFile=%s' % select_inst_file)
         if self.io_inst:
             tau_opts.add('-optTrackIO')
         if self.sample or self.compiler_inst != 'never':

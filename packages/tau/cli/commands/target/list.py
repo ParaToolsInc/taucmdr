@@ -28,6 +28,9 @@
 """``tau target`` subcommand."""
 
 import os
+from tau.cf.compiler import CC_ROLE
+from tau.cf.compiler.mpi import MPI_CC_ROLE
+from tau.cf.compiler.installed import InstalledCompiler
 from tau.cli.cli_view import ListCommand
 from tau.model.target import Target
 
@@ -35,9 +38,9 @@ from tau.model.target import Target
 DASHBOARD_COLUMNS = [{'header': 'Name', 'value': 'name', 'align': 'r'},
                      {'header': 'Host OS', 'value': 'host_os'},
                      {'header': 'Host Arch.', 'value': 'host_arch'},
-                     {'header': 'C Compiler', 'function': lambda x: os.path.basename(x['CC']['path'])},
-                     {'header': 'C++ Compiler', 'function': lambda x: os.path.basename(x['CXX']['path'])},
-                     {'header': 'Fortran Compiler', 'function': lambda x: os.path.basename(x['FC']['path'])},
-                     {'header': 'In Projects', 'function': lambda x: ', '.join([p['name'] for p in x['projects']])}]
+                     {'header': 'Host Compilers', 'function': 
+                         lambda x: InstalledCompiler(x[CC_ROLE.keyword]['path']).info.family},
+                     {'header': 'MPI Compilers', 'function': 
+                         lambda x: InstalledCompiler(x[MPI_CC_ROLE.keyword]['path']).info.family}]
 
 COMMAND = ListCommand(Target, __name__, dashboard_columns=DASHBOARD_COLUMNS)
