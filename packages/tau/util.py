@@ -222,15 +222,22 @@ def archive_toplevel(archive):
     Args:
         archive (str): Path to archive file.
         
+    Raises:
+        IOError: `archive` could not be read.
+        
     Returns:
         str: Directory name.
     """
     LOGGER.debug("Determining top-level directory name in '%s'", archive)
-    with tarfile.open(archive) as fin:
+    try:
+        fin = tarfile.open(archive)
+    except tarfile.ReadError:
+        raise IOError
+    else:
         dirs = [d.name for d in fin.getmembers() if d.type == tarfile.DIRTYPE]
-    topdir = min(dirs, key=len)
-    LOGGER.debug("Top-level directory in '%s' is '%s'", archive, topdir)
-    return topdir
+        topdir = min(dirs, key=len)
+        LOGGER.debug("Top-level directory in '%s' is '%s'", archive, topdir)
+        return topdir
 
 
 def extract(archive, dest):
