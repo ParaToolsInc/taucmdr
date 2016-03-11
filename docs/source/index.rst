@@ -38,7 +38,7 @@ The TAU Commandments
 5. **Never** shalt thou develop on the master branch, for that is an abomination.
 6. **Never** shalt thou merge broken code to the master branch.
 7. **Never** shalt thou *just quickly fix this one thing because I have a hard deadline I forgot and now I really really really need this feature to be part of TAU Commander whatever the cost and oh God I broke it I broke it and everything is on fire*.
-
+8. **Never** shalt thou merge code into the master branch that is failing the continuous integration (CI) tests. At a *minimum*, one of the following must be fixed *on your topic branch* **prior** to merging with master: 1) The code that broke the build or failed the test(s) 2) the :doc:`continuous_integration` build 3) the `unit tests`_.
 
 Table of Contents
 =================
@@ -71,3 +71,4 @@ Modules
 .. _the TAU Commander website: http://www.taucommander.com/
 .. _TAU Performance System: http://tau.uoregon.edu/
 .. _pylint: http://www.pylint.org/
+.. _`unit tests`: ./unit_tests.html
