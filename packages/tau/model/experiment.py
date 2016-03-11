@@ -145,7 +145,7 @@ class Experiment(Model):
 
     def uses_pdt(self):
         measurement = self.populate('measurement')
-        return measurement['source_inst'] != 'never'
+        return measurement['source_inst'] == 'automatic'
     
     def uses_binutils(self):
         measurement = self.populate('measurement')
