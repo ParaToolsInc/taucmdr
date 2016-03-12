@@ -216,7 +216,7 @@ class ListCommand(AbstractCliView):
     """Base class for the `list` subcommand of command line views."""
     
     def __init__(self, controller, module_name, summary_fmt=None, help_page_fmt=None, group=None, 
-                 default_style='dashboard', dashboard_columns=None):
+                 default_style='dashboard', dashboard_columns=None, title_fmt=None):
         if not summary_fmt:
             summary_fmt = "Show %(model_name)s configuration data."
         super(ListCommand, self).__init__(controller, module_name, summary_fmt, help_page_fmt, group)
@@ -226,33 +226,32 @@ class ListCommand(AbstractCliView):
         if not dashboard_columns:
             dashboard_columns = [{'header': key_attr.capitalize(), 'value': key_attr}]
         self.dashboard_columns = dashboard_columns
+        self.title_fmt = title_fmt if title_fmt else "%(model_name)s Configurations (%(storage_path)s)"
 
     def short_format(self, models):
         """Format modeled records in short format.
-        
+
         Args:
             models: Modeled records to format.
-        
+
         Returns:
             str: Record data in short format.
         """
         self.logger.debug("Short format")
         return [str(model[self.model.key_attribute]) for model in models]
-    
+
     def dashboard_format(self, models):
         """Format modeled records in dashboard format.
-        
+
         Args:
             models: Modeled records to format.
-        
+ 
         Returns:
             str: Record data in dashboard format.
         """
         self.logger.debug("Dashboard format")
-        title = util.hline("%s Configurations (%s)" %
-                           (models[0].name.capitalize(), 
-                            models[0].storage),
-                           'cyan')
+        title = util.hline(self.title_fmt % {'model_name': models[0].name.capitalize(), 
+                                             'storage_path': models[0].storage}, 'cyan')
         header_row = [col['header'] for col in self.dashboard_columns]
         rows = [header_row]
         for model in models:

@@ -42,16 +42,16 @@ from tau.cf.target import host
 
 class TargetEditCommand(EditCommand):
     """``tau target edit`` subcommand."""
-    
+
     def parse_compiler_flags(self, args):
         """Parses host compiler flags out of the command line arguments.
-         
+
         Args:
-            args: Argument namespace containing command line arguments
-             
+            args: Argument namespace containing command line arguments.
+
         Returns:
-            Dictionary of installed compilers by role keyword string.
-             
+            dict: Installed compilers by role keyword string.
+
         Raises:
             ConfigurationError: Invalid command line arguments specified
         """
@@ -71,44 +71,31 @@ class TargetEditCommand(EditCommand):
             for comp in family_comps:
                 self.logger.debug("args.%s=%r", comp.info.role.keyword, comp.absolute_path)
                 setattr(args, comp.info.role.keyword, comp.absolute_path)
-     
+
         compiler_keys = set(CompilerRole.keys())
         all_keys = set(args.__dict__.keys())
         given_keys = compiler_keys & all_keys
-        missing_keys = compiler_keys - given_keys
         self.logger.debug("Given compilers: %s", given_keys)
-        self.logger.debug("Missing compilers: %s", missing_keys)
-         
-        compilers = dict([(key, InstalledCompiler(getattr(args, key))) for key in given_keys])
-        for key in missing_keys:
-            try:
-                compilers[key] = host.default_compiler(CompilerRole.find(key))
-            except ConfigurationError as err:
-                self.logger.debug(err)
-    
-        # Check that all required compilers were found
-        for role in CompilerRole.tau_required():
-            if role.keyword not in compilers:
-                raise ConfigurationError("%s compiler could not be found" % role.language,
-                                         "See 'compiler arguments' under `%s --help`" % COMMAND)
-                
+
+        compilers = {key: InstalledCompiler(getattr(args, key)) for key in given_keys}
+
         # Probe MPI compilers to discover wrapper flags
-        for args_attr, wrapped_attr in [('mpi_include_path', 'include_path'), 
-                                        ('mpi_library_path', 'library_path'),
-                                        ('mpi_libraries', 'libraries')]:
-            if not hasattr(args, args_attr):
-                probed = set()
-                for role in MPI_CC_ROLE, MPI_CXX_ROLE, MPI_FC_ROLE:
+        mpi_keys = set([getattr(role, 'keyword') for role in MPI_CC_ROLE, MPI_CXX_ROLE, MPI_FC_ROLE])
+        for key in (mpi_keys & given_keys):
+            for args_attr, wrapped_attr in [('mpi_include_path', 'include_path'), 
+                                            ('mpi_library_path', 'library_path'),
+                                            ('mpi_libraries', 'libraries')]:
+                if not hasattr(args, args_attr):
+                    probed = set()
                     try:
-                        comp = compilers[role.keyword]
+                        comp = compilers[key]
                     except KeyError:
-                        self.logger.debug("Not probing %s: not found", role)
+                        self.logger.debug("Not probing %s", key)
                     else:
                         probed.update(getattr(comp.wrapped, wrapped_attr))
-                setattr(args, args_attr, list(probed))
-    
+                    setattr(args, args_attr, list(probed))
         return compilers
-    
+
     def construct_parser(self):
         parser = super(TargetEditCommand, self).construct_parser()
         group = parser.add_argument_group('host arguments')
@@ -116,14 +103,14 @@ class TargetEditCommand(EditCommand):
                            help="select all host compilers automatically from the given family",
                            metavar='<family>',
                            dest='host_family',
-                           default=host.preferred_compilers().name,
+                           default=arguments.SUPPRESS,
                            choices=CompilerFamily.family_names())
         group = parser.add_argument_group('Message Passing Interface (MPI) arguments')
         group.add_argument('--mpi-compilers', 
                            help="select all MPI compilers automatically from the given family",
                            metavar='<family>',
                            dest='mpi_family',
-                           default=host.preferred_mpi_compilers().name,
+                           default=arguments.SUPPRESS,
                            choices=MpiCompilerFamily.family_names())
         return parser
     

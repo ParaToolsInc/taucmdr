@@ -88,7 +88,7 @@ as input.  Since we use <a class="reference external" href="http://sphinx-doc.or
 <p>The TAU Commander developer documentation is hosted on the project&#8217;s
 <a class="reference external" href="http://github.com/ParaToolsInc/taucmdr">github page</a>.  Use the documentation
 makefile to update these pages from the master branch.</p>
-<div class="highlight-python"><div class="highlight"><pre>$ cd docs
+<div class="highlight-python"><div class="highlight"><pre><span></span>$ cd docs
 $ make
 # Check for errors
 $ make update-github-pages
@@ -119,33 +119,33 @@ metadata module members that some Python parsers recognize, e.g.
 you&#8217;re setting a global variable of the form <code class="docutils literal"><span class="pre">__some_name__</span></code> you&#8217;re
 probably doing something wrong.</p>
 <p><strong>Example of a Correct File Header</strong></p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># -*- coding: utf-8 -*-</span>
-<span class="c">#</span>
-<span class="c"># Copyright (c) &lt;YEAR&gt;, ParaTools, Inc.</span>
-<span class="c"># All rights reserved.</span>
-<span class="c">#</span>
-<span class="c"># Redistribution and use in source and binary forms, with or without</span>
-<span class="c"># modification, are permitted provided that the following conditions are met:</span>
-<span class="c"># (1) Redistributions of source code must retain the above copyright notice,</span>
-<span class="c">#     this list of conditions and the following disclaimer.</span>
-<span class="c"># (2) Redistributions in binary form must reproduce the above copyright notice,</span>
-<span class="c">#     this list of conditions and the following disclaimer in the documentation</span>
-<span class="c">#     and/or other materials provided with the distribution.</span>
-<span class="c"># (3) Neither the name of ParaTools, Inc. nor the names of its contributors may</span>
-<span class="c">#     be used to endorse or promote products derived from this software without</span>
-<span class="c">#     specific prior written permission.</span>
-<span class="c">#</span>
-<span class="c"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
-<span class="c"># AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</span>
-<span class="c"># IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE</span>
-<span class="c"># DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE</span>
-<span class="c"># FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL</span>
-<span class="c"># DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR</span>
-<span class="c"># SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER</span>
-<span class="c"># CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,</span>
-<span class="c"># OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE</span>
-<span class="c"># OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</span>
-<span class="c">#</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (c) &lt;YEAR&gt;, ParaTools, Inc.</span>
+<span class="c1"># All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Redistribution and use in source and binary forms, with or without</span>
+<span class="c1"># modification, are permitted provided that the following conditions are met:</span>
+<span class="c1"># (1) Redistributions of source code must retain the above copyright notice,</span>
+<span class="c1">#     this list of conditions and the following disclaimer.</span>
+<span class="c1"># (2) Redistributions in binary form must reproduce the above copyright notice,</span>
+<span class="c1">#     this list of conditions and the following disclaimer in the documentation</span>
+<span class="c1">#     and/or other materials provided with the distribution.</span>
+<span class="c1"># (3) Neither the name of ParaTools, Inc. nor the names of its contributors may</span>
+<span class="c1">#     be used to endorse or promote products derived from this software without</span>
+<span class="c1">#     specific prior written permission.</span>
+<span class="c1">#</span>
+<span class="c1"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
+<span class="c1"># AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</span>
+<span class="c1"># IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE</span>
+<span class="c1"># DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE</span>
+<span class="c1"># FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL</span>
+<span class="c1"># DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR</span>
+<span class="c1"># SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER</span>
+<span class="c1"># CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,</span>
+<span class="c1"># OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE</span>
+<span class="c1"># OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</span>
+<span class="c1">#</span>
 <span class="sd">&quot;&quot;&quot;Short, one-line module description.</span>
 
 <span class="sd">Long module description.</span>
@@ -215,7 +215,7 @@ only returns None, this section is not required.</dd>
 <dt><strong>Raises:</strong></dt>
 <dd>List all exceptions that are relevant to the interface.</dd>
 </dl>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">fetch_bigtable_rows</span><span class="p">(</span><span class="n">big_table</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">other_silly_variable</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">fetch_bigtable_rows</span><span class="p">(</span><span class="n">big_table</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">other_silly_variable</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Fetches rows from a Bigtable.</span>
 
 <span class="sd">    Retrieves rows pertaining to the given keys from the Table instance</span>
@@ -254,7 +254,7 @@ only returns None, this section is not required.</dd>
 the class. If your class has public attributes, they should be
 documented here in an Attributes section and follow the same formatting
 as a function&#8217;s Args section.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">SampleClass</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SampleClass</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Summary of class here.</span>
 
 <span class="sd">    Longer class information....</span>
@@ -283,7 +283,7 @@ review</a>, you should comment
 it now. Complicated operations get a few lines of comments before the
 operations commence. Non-obvious ones get comments at the end of the
 line.</p>
-<div class="highlight-python"><div class="highlight"><pre># We use a weighted dictionary search to find out where i is in
+<div class="highlight-python"><div class="highlight"><pre><span></span># We use a weighted dictionary search to find out where i is in
 # the array.  We extrapolate position based on the largest num
 # in the array and the array size and then do binary search to
 # get the exact number.
@@ -296,15 +296,15 @@ from the code.</p>
 <p>On the other hand, never describe the code. Assume the person reading
 the code knows Python (though not what you&#8217;re trying to do) better than
 you do.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># BAD COMMENT: Now go through the b array and make sure whenever i occurs</span>
-<span class="c"># the next element is i+1</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># BAD COMMENT: Now go through the b array and make sure whenever i occurs</span>
+<span class="c1"># the next element is i+1</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="section" id="full-documentation-example">
 <h2><a class="toc-backref" href="#id11">Full Documentation Example</a><a class="headerlink" href="#full-documentation-example" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># -*- coding: utf-8 -*-</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># -*- coding: utf-8 -*-</span>
 <span class="sd">&quot;&quot;&quot;Example Google style docstrings.</span>
 
 <span class="sd">This module demonstrates documentation as specified by the `Google Python</span>
@@ -402,7 +402,7 @@ you do.</p>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">param1</span> <span class="o">==</span> <span class="n">param2</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;param1 may not be equal to param2&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;param1 may not be equal to param2&#39;</span><span class="p">)</span>
     <span class="k">return</span> <span class="bp">True</span>
 
 
@@ -499,10 +499,10 @@ you do.</p>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">attr1</span> <span class="o">=</span> <span class="n">param1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">attr2</span> <span class="o">=</span> <span class="n">param2</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">attr3</span> <span class="o">=</span> <span class="n">param3</span>  <span class="c">#: Doc comment *inline* with attribute</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attr3</span> <span class="o">=</span> <span class="n">param3</span>  <span class="c1">#: Doc comment *inline* with attribute</span>
 
-        <span class="c">#: List[str]: Doc comment *before* attribute, with type specified</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">attr4</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;attr4&#39;</span><span class="p">]</span>
+        <span class="c1">#: List[str]: Doc comment *before* attribute, with type specified</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attr4</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;attr4&#39;</span><span class="p">]</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">attr5</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="sd">&quot;&quot;&quot;Optional[str]: Docstring *after* attribute, with type specified.&quot;&quot;&quot;</span>
@@ -510,7 +510,7 @@ you do.</p>
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">readonly_property</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;str: Properties should be documented in their getter method.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="s">&#39;readonly_property&#39;</span>
+        <span class="k">return</span> <span class="s1">&#39;readonly_property&#39;</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">readwrite_property</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -520,7 +520,7 @@ you do.</p>
 <span class="sd">        If the setter method contains notable behavior, it should be</span>
 <span class="sd">        mentioned here.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">[</span><span class="s">&#39;readwrite_property&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;readwrite_property&#39;</span><span class="p">]</span>
 
     <span class="nd">@readwrite_property.setter</span>
     <span class="k">def</span> <span class="nf">readwrite_property</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
@@ -598,7 +598,7 @@ you do.</p>
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
 </html>

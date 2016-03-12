@@ -44,33 +44,33 @@
         
         
   <h1>Source code for tau.storage</h1><div class="highlight"><pre>
-<span class="c"># -*- coding: utf-8 -*-</span>
-<span class="c">#</span>
-<span class="c"># Copyright (c) 2015, ParaTools, Inc.</span>
-<span class="c"># All rights reserved.</span>
-<span class="c">#</span>
-<span class="c"># Redistribution and use in source and binary forms, with or without</span>
-<span class="c"># modification, are permitted provided that the following conditions are met:</span>
-<span class="c"># (1) Redistributions of source code must retain the above copyright notice,</span>
-<span class="c">#     this list of conditions and the following disclaimer.</span>
-<span class="c"># (2) Redistributions in binary form must reproduce the above copyright notice,</span>
-<span class="c">#     this list of conditions and the following disclaimer in the documentation</span>
-<span class="c">#     and/or other materials provided with the distribution.</span>
-<span class="c"># (3) Neither the name of ParaTools, Inc. nor the names of its contributors may</span>
-<span class="c">#     be used to endorse or promote products derived from this software without</span>
-<span class="c">#     specific prior written permission.</span>
-<span class="c">#</span>
-<span class="c"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
-<span class="c"># AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</span>
-<span class="c"># IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE</span>
-<span class="c"># DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE</span>
-<span class="c"># FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL</span>
-<span class="c"># DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR</span>
-<span class="c"># SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER</span>
-<span class="c"># CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,</span>
-<span class="c"># OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE</span>
-<span class="c"># OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</span>
-<span class="c">#</span>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (c) 2015, ParaTools, Inc.</span>
+<span class="c1"># All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Redistribution and use in source and binary forms, with or without</span>
+<span class="c1"># modification, are permitted provided that the following conditions are met:</span>
+<span class="c1"># (1) Redistributions of source code must retain the above copyright notice,</span>
+<span class="c1">#     this list of conditions and the following disclaimer.</span>
+<span class="c1"># (2) Redistributions in binary form must reproduce the above copyright notice,</span>
+<span class="c1">#     this list of conditions and the following disclaimer in the documentation</span>
+<span class="c1">#     and/or other materials provided with the distribution.</span>
+<span class="c1"># (3) Neither the name of ParaTools, Inc. nor the names of its contributors may</span>
+<span class="c1">#     be used to endorse or promote products derived from this software without</span>
+<span class="c1">#     specific prior written permission.</span>
+<span class="c1">#</span>
+<span class="c1"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
+<span class="c1"># AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</span>
+<span class="c1"># IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE</span>
+<span class="c1"># DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE</span>
+<span class="c1"># FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL</span>
+<span class="c1"># DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR</span>
+<span class="c1"># SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER</span>
+<span class="c1"># CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,</span>
+<span class="c1"># OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE</span>
+<span class="c1"># OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</span>
+<span class="c1">#</span>
 
 <span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span> <span class="nn">tau.error</span> <span class="kn">import</span> <span class="n">Error</span>
@@ -79,10 +79,10 @@
 <div class="viewcode-block" id="StorageError"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.StorageError">[docs]</a><span class="k">class</span> <span class="nc">StorageError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Indicates a failure in the storage system.&quot;&quot;&quot;</span>
 
-    <span class="n">message_fmt</span> <span class="o">=</span> <span class="p">(</span><span class="s">&quot;</span><span class="si">%(value)s</span><span class="se">\n</span><span class="s">&quot;</span>
-                   <span class="s">&quot;</span><span class="si">%(hints)s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+    <span class="n">message_fmt</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="si">%(value)s</span><span class="se">\n</span><span class="s2">&quot;</span>
+                   <span class="s2">&quot;</span><span class="si">%(hints)s</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
-</div>
+
 <div class="viewcode-block" id="StorageRecord"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.StorageRecord">[docs]</a><span class="k">class</span> <span class="nc">StorageRecord</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;A record in the storage container&#39;s database.</span>
 <span class="sd">    </span>
@@ -103,20 +103,26 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
     
 <div class="viewcode-block" id="StorageRecord.get"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.StorageRecord.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span>
-</div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span></div>
+
     <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="p">)</span>
+
+<div class="viewcode-block" id="StorageRecord.items"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.StorageRecord.items">[docs]</a>    <span class="k">def</span> <span class="nf">items</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="o">.</span><span class="n">items</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="StorageRecord.keys"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.StorageRecord.keys">[docs]</a>    <span class="k">def</span> <span class="nf">keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span></div>
     
 <div class="viewcode-block" id="StorageRecord.iteritems"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.StorageRecord.iteritems">[docs]</a>    <span class="k">def</span> <span class="nf">iteritems</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()</span>
-    </div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()</span></div>
+    
 <div class="viewcode-block" id="StorageRecord.iterkeys"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.StorageRecord.iterkeys">[docs]</a>    <span class="k">def</span> <span class="nf">iterkeys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="o">.</span><span class="n">iterkeys</span><span class="p">()</span>
- </div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="o">.</span><span class="n">iterkeys</span><span class="p">()</span></div>
+ 
 <div class="viewcode-block" id="StorageRecord.itervalues"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.StorageRecord.itervalues">[docs]</a>    <span class="k">def</span> <span class="nf">itervalues</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="o">.</span><span class="n">itervalues</span><span class="p">()</span>
- </div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="o">.</span><span class="n">itervalues</span><span class="p">()</span></div>
+ 
     <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="p">)</span>
     
@@ -124,9 +130,9 @@
         <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="p">)</span>
     
     <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="p">)</span></div>
 
-</div>
+
 <div class="viewcode-block" id="AbstractStorage"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage">[docs]</a><span class="k">class</span> <span class="nc">AbstractStorage</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Abstract base class for storage containers.</span>
 <span class="sd">    </span>
@@ -153,32 +159,32 @@
 
     <span class="nd">@abstractmethod</span>    
 <div class="viewcode-block" id="AbstractStorage.__getitem__"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.__getitem__">[docs]</a>    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Retrieve a value from the key/value store.&quot;&quot;&quot;</span>
-    </div>
+        <span class="sd">&quot;&quot;&quot;Retrieve a value from the key/value store.&quot;&quot;&quot;</span></div>
+    
     <span class="nd">@abstractmethod</span>
 <div class="viewcode-block" id="AbstractStorage.__setitem__"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.__setitem__">[docs]</a>    <span class="k">def</span> <span class="nf">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Store a value in the key/value store.&quot;&quot;&quot;</span>
-        </div>
+        <span class="sd">&quot;&quot;&quot;Store a value in the key/value store.&quot;&quot;&quot;</span></div>
+        
     <span class="nd">@abstractmethod</span>
 <div class="viewcode-block" id="AbstractStorage.__delitem__"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.__delitem__">[docs]</a>    <span class="k">def</span> <span class="nf">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Remove a value from the key/value store.&quot;&quot;&quot;</span>
-    </div>
+        <span class="sd">&quot;&quot;&quot;Remove a value from the key/value store.&quot;&quot;&quot;</span></div>
+    
     <span class="nd">@abstractmethod</span>
 <div class="viewcode-block" id="AbstractStorage.connect_filesystem"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.connect_filesystem">[docs]</a>    <span class="k">def</span> <span class="nf">connect_filesystem</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Prepares the store filesystem fore reading and writing.&quot;&quot;&quot;</span>
-</div>
+        <span class="sd">&quot;&quot;&quot;Prepares the store filesystem fore reading and writing.&quot;&quot;&quot;</span></div>
+
     <span class="nd">@abstractmethod</span>
 <div class="viewcode-block" id="AbstractStorage.disconnect_filesystem"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.disconnect_filesystem">[docs]</a>    <span class="k">def</span> <span class="nf">disconnect_filesystem</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Prepares the store filesystem fore reading and writing.&quot;&quot;&quot;</span>
-</div>
+        <span class="sd">&quot;&quot;&quot;Prepares the store filesystem fore reading and writing.&quot;&quot;&quot;</span></div>
+
     <span class="nd">@abstractmethod</span>
 <div class="viewcode-block" id="AbstractStorage.connect_database"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.connect_database">[docs]</a>    <span class="k">def</span> <span class="nf">connect_database</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Open the database for reading and writing.&quot;&quot;&quot;</span>
-</div>
+        <span class="sd">&quot;&quot;&quot;Open the database for reading and writing.&quot;&quot;&quot;</span></div>
+
     <span class="nd">@abstractmethod</span>
 <div class="viewcode-block" id="AbstractStorage.disconnect_database"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.disconnect_database">[docs]</a>    <span class="k">def</span> <span class="nf">disconnect_database</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Close the database for reading and writing.&quot;&quot;&quot;</span>
-</div>
+        <span class="sd">&quot;&quot;&quot;Close the database for reading and writing.&quot;&quot;&quot;</span></div>
+
     <span class="nd">@abstractmethod</span>
 <div class="viewcode-block" id="AbstractStorage.prefix"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.prefix">[docs]</a>    <span class="k">def</span> <span class="nf">prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get the filesystem prefix for file storage.</span>
@@ -188,16 +194,16 @@
 <span class="sd">        </span>
 <span class="sd">        Returns:</span>
 <span class="sd">            str: Absolute path in the filesystem.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-</div>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
     <span class="nd">@abstractmethod</span>
 <div class="viewcode-block" id="AbstractStorage.__enter__"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.__enter__">[docs]</a>    <span class="k">def</span> <span class="nf">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Initiates the database transaction.&quot;&quot;&quot;</span>
-</div>
+        <span class="sd">&quot;&quot;&quot;Initiates the database transaction.&quot;&quot;&quot;</span></div>
+
     <span class="nd">@abstractmethod</span>
 <div class="viewcode-block" id="AbstractStorage.__exit__"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.__exit__">[docs]</a>    <span class="k">def</span> <span class="nf">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ex_type</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">traceback</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Finalizes the database transaction.&quot;&quot;&quot;</span>
-        </div>
+        <span class="sd">&quot;&quot;&quot;Finalizes the database transaction.&quot;&quot;&quot;</span></div>
+        
     <span class="nd">@abstractmethod</span>
 <div class="viewcode-block" id="AbstractStorage.table"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.table">[docs]</a>    <span class="k">def</span> <span class="nf">table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return a handle to a table.</span>
@@ -209,8 +215,8 @@
 <span class="sd">            </span>
 <span class="sd">        Returns:</span>
 <span class="sd">            object: A database table object.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-</div>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
     <span class="nd">@abstractmethod</span>
 <div class="viewcode-block" id="AbstractStorage.count"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.count">[docs]</a>    <span class="k">def</span> <span class="nf">count</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Count the records in the database.</span>
@@ -220,8 +226,8 @@
 <span class="sd">            </span>
 <span class="sd">        Returns:</span>
 <span class="sd">            int: Number of records in the table.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-</div>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
     <span class="nd">@abstractmethod</span>    
 <div class="viewcode-block" id="AbstractStorage.get"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Find a single record.</span>
@@ -245,8 +251,8 @@
 <span class="sd">            </span>
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: Invalid value for `keys`.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-</div>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
     <span class="nd">@abstractmethod</span>
 <div class="viewcode-block" id="AbstractStorage.search"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.search">[docs]</a>    <span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Find multiple records.</span>
@@ -268,8 +274,8 @@
 <span class="sd">            </span>
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: Invalid value for `keys`.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-</div>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
     <span class="nd">@abstractmethod</span>
 <div class="viewcode-block" id="AbstractStorage.match"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.match">[docs]</a>    <span class="k">def</span> <span class="nf">match</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">test</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Find records where `field` matches `regex` or `test`.</span>
@@ -290,8 +296,8 @@
 <span class="sd">            </span>
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: Invalid value for `keys`.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-</div>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
     <span class="nd">@abstractmethod</span>
 <div class="viewcode-block" id="AbstractStorage.contains"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.contains">[docs]</a>    <span class="k">def</span> <span class="nf">contains</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Check if the specified table contains at least one matching record.</span>
@@ -312,8 +318,8 @@
 <span class="sd">            </span>
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: Invalid value for `keys`.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-</div>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
     <span class="nd">@abstractmethod</span>
 <div class="viewcode-block" id="AbstractStorage.insert"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.insert">[docs]</a>    <span class="k">def</span> <span class="nf">insert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Create a new record.</span>
@@ -326,8 +332,8 @@
 <span class="sd">            </span>
 <span class="sd">        Returns:</span>
 <span class="sd">            Record: The new record.       </span>
-<span class="sd">        &quot;&quot;&quot;</span>
-</div>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
     <span class="nd">@abstractmethod</span>
 <div class="viewcode-block" id="AbstractStorage.update"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fields</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Update records.</span>
@@ -346,8 +352,8 @@
 <span class="sd">            </span>
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: ``bool(keys) == False`` or invaild value for `keys`.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-</div>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
     <span class="nd">@abstractmethod</span>      
 <div class="viewcode-block" id="AbstractStorage.unset"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.unset">[docs]</a>    <span class="k">def</span> <span class="nf">unset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fields</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Update records by unsetting fields.</span>
@@ -369,8 +375,8 @@
 <span class="sd">            </span>
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: ``bool(keys) == False`` or invaild value for `keys`.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-</div>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
     <span class="nd">@abstractmethod</span>        
 <div class="viewcode-block" id="AbstractStorage.remove"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.remove">[docs]</a>    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Delete records.</span>
@@ -388,16 +394,18 @@
 <span class="sd">            </span>
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: ``bool(keys) == False`` or invaild value for `keys`.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-</div>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
     <span class="nd">@abstractmethod</span>
 <div class="viewcode-block" id="AbstractStorage.purge"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.purge">[docs]</a>    <span class="k">def</span> <span class="nf">purge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Delete all records.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-</pre></div></div></div>
+<span class="sd">        &quot;&quot;&quot;</span></div></div>
+
+
+</pre></div>
 
       </div>
       <div class="bottomnav" role="navigation" aria-label="bottom navigation">
@@ -410,7 +418,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
 </html>

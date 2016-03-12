@@ -32,6 +32,7 @@ Handles system manipulation and status tasks, e.g. subprocess management or file
 
 import os
 import sys
+import time
 import subprocess
 import errno
 import shutil
@@ -66,6 +67,26 @@ def mkdirp(*args):
             if not (exc.errno == errno.EEXIST and os.path.isdir(path)):
                 raise
 
+def rmtree(path, ignore_errors=False, onerror=None, attempts=5):
+    """Wrapper around shutil.rmtree to work around stale or slow NFS directories.
+
+    Tries repeatedly to recursively remove `path` and sleeps between attempts.
+
+    Args:
+        path (str): A directory but not a symbolic link to a directory.
+        ignore_errors (bool): If True then errors resulting from failed removals will be ignored.
+                              If False or omitted, such errors are handled by calling a handler 
+                              specified by `onerror` or, if that is omitted, they raise an exception.
+        onerror: Callable that accepts three parameters: function, path, and excinfo.  See :any:shutil.rmtree.
+        attempts (int): Number of times to repeat shutil.rmtree before giving up.
+    """
+    for i in xrange(attempts-1):
+        try:
+            return shutil.rmtree(path)
+        except Exception as err:
+            LOGGER.warning("Unexpected error: %s" % err)
+            time.sleep(i+1)
+    shutil.rmtree(path, ignore_errors, onerror)
 
 def which(program):
     """Returns the full path to a program command.
@@ -129,13 +150,12 @@ def download(src, dest):
         wget_cmd = [wget, src, '-O', dest] if wget else None
         for cmd in [curl_cmd, wget_cmd]:
             if cmd:
-                if create_subprocess(cmd, stdout=False) == 0:
+                if create_dl_subprocess(cmd, stdout=False) == 0:
                     return
                 LOGGER.warning("%s failed to download '%s'. Retrying with a different method...", cmd[0], src)                    
         # Fallback: this is usually **much** slower than curl or wget
         def _dl_progress(count, block_size, total_size):
-            sys.stdout.write("% 3.1f%% of %d bytes\r" % (
-                min(100, float(count * block_size) / total_size * 100), total_size))
+            progress_bar(count*block_size, total_size)
         try:
             urllib.urlretrieve(src, dest, reporthook=_dl_progress)
         except Exception as err:
@@ -262,6 +282,74 @@ def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True):
     retval = proc.returncode
     LOGGER.debug("%s returned %d", cmd, retval)
     return retval
+
+
+def create_dl_subprocess(cmd, cwd=None, env=None, stdout=True, log=True):
+    """Create a subprocess for downloading software.
+    
+    See :any:`subprocess.Popen`.
+    
+    Args:
+        cmd (list): Command and its command line arguments.
+        cwd (str): Change directory to `cwd` if given, otherwise use :any:`os.getcwd`.
+        env (dict): Environment variables to set before launching cmd.
+        stdout (bool): If True send subprocess stdout and stderr to this processes' stdout.
+        log (bool): If True send subprocess stdout and stderr to the debug log.
+        
+    Returns:
+        int: Subprocess return code.
+    """
+    if not cwd:
+        cwd = os.getcwd()
+    if not env:
+        # Don't accidentally unset all environment variables with an empty dict
+        subproc_env = None
+    else:
+        subproc_env = dict(os.environ)
+        for key, val in env.iteritems():
+            subproc_env[key] = val
+            LOGGER.debug("%s=%s", key, val)
+    if 'curl' in cmd[0]:
+        proc_output = subprocess.Popen(['curl','-sI', cmd[2], '--location'],
+                                       stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
+        file_size = int(proc_output.partition('Content-Length')[2].split()[1])
+    if 'wget' in cmd[0]:
+        proc_output = subprocess.Popen(['wget', cmd[1], '--spider', '--server-response'],
+                                       stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[1]
+        file_size = int(proc_output.partition('Content-Length')[2].split()[1])
+    DEVNULL = open(os.devnull, 'wb')
+    LOGGER.debug("Creating subprocess: cmd=%s, cwd='%s'\n", cmd, cwd)
+    proc = subprocess.Popen(cmd, cwd=cwd, env=subproc_env,
+                            stdout=DEVNULL,
+                            stderr=subprocess.STDOUT,
+                            bufsize=1)
+    while proc.poll() is None:
+        try:
+            current_size = os.stat(cmd[-1]).st_size
+        except:
+            current_size = 0
+        progress_bar(current_size, file_size)
+    proc.wait()
+    retval = proc.returncode
+    LOGGER.debug("%s returned %d", cmd, retval)
+    return retval
+
+
+def progress_bar(current_size, total_size):
+    """Display progress bar for download of software
+
+    Args:
+        current_size (int):  current size of downloaded file
+        total_size (int): total size of downloaded file
+
+    Returns: 
+    """
+
+    size = logger.get_terminal_size()
+    width = int(size[0]) - 10
+    percent = min(100, float(current_size) / total_size)
+    sys.stdout.write('[' + '>' * int(percent * width) + '-' * int((1 - percent) * width) + '] %3s%%\r'
+                     %(int(100*percent)))
 
 
 def human_size(num, suffix='B'):

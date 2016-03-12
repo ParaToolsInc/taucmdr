@@ -32,8 +32,22 @@ Functions used for unit tests of initialize.py.
 
 
 import unittest
-#from tau.cli.commands import initialize
+import os
+import time
+import shutil
+from tau.cli.commands import initialize
+
 
 class InitializeTest(unittest.TestCase):
+    current_time = time.strftime("%Y%m%d_%H%M%S")
+    @classmethod
+    def setUpClass(cls):
+        os.makedirs(cls.current_time)
+        os.chdir(cls.current_time)
     def test_initialize(self):
+        initialize.InitializeCommand(__name__)
         self.assertEqual(1, 1) 
+    @classmethod
+    def tearDownClass(cls):
+        os.chdir('..')
+        shutil.rmtree(cls.current_time)

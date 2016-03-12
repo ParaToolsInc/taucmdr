@@ -98,7 +98,7 @@ a subclass of <a class="reference internal" href="#tau.cli.command.AbstractComma
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Strings that identify the command.</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list">list</a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list">list</a></td>
 </tr>
 </tbody>
 </table>
@@ -124,7 +124,7 @@ command module.  Other strings map to subcommands of the command.</p>
 </tbody>
 </table>
 <p>Example:</p>
-<div class="highlight-python"><div class="highlight"><pre>_get_commands(&#39;tau.cli.commands.target&#39;) ==&gt;
+<div class="highlight-python"><div class="highlight"><pre><span></span>_get_commands(&#39;tau.cli.commands.target&#39;) ==&gt;
     {&#39;__module__&#39;: &lt;module &#39;tau.cli.commands.target&#39; from &#39;/home/jlinford/workspace/taucmdr/packages/tau/cli/commands/target/__init__.pyc&#39;&gt;,
      &#39;create&#39;: {&#39;__module__&#39;: &lt;module &#39;tau.cli.commands.target.create&#39; from &#39;/home/jlinford/workspace/taucmdr/packages/tau/cli/commands/target/create.pyc&#39;&gt;},
      &#39;delete&#39;: {&#39;__module__&#39;: &lt;module &#39;tau.cli.commands.target.delete&#39; from &#39;/home/jlinford/workspace/taucmdr/packages/tau/cli/commands/target/delete.pyc&#39;&gt;},
@@ -184,8 +184,8 @@ command (if any) will be invoked with the <code class="docutils literal"><span c
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>cmd</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; List of strings identifying the command, i.e. from <a class="reference internal" href="#tau.cli._command_as_list" title="tau.cli._command_as_list"><code class="xref any py py-func docutils literal"><span class="pre">_command_as_list</span></code></a>.</li>
-<li><strong>cmd_args</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Command line arguments to be parsed by command.</li>
+<li><strong>cmd</strong> (<a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; List of strings identifying the command, i.e. from <a class="reference internal" href="#tau.cli._command_as_list" title="tau.cli._command_as_list"><code class="xref any py py-func docutils literal"><span class="pre">_command_as_list</span></code></a>.</li>
+<li><strong>cmd_args</strong> (<a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Command line arguments to be parsed by command.</li>
 <li><strong>parent_module</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Dot-seperated name of the command&#8217;s parent.</li>
 </ul>
 </td>
@@ -216,7 +216,7 @@ command (if any) will be invoked with the <code class="docutils literal"><span c
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>cmd</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; List of strings identifying the command, i.e. from <a class="reference internal" href="#tau.cli._command_as_list" title="tau.cli._command_as_list"><code class="xref any py py-func docutils literal"><span class="pre">_command_as_list</span></code></a>.</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>cmd</strong> (<a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; List of strings identifying the command, i.e. from <a class="reference internal" href="#tau.cli._command_as_list" title="tau.cli._command_as_list"><code class="xref any py py-func docutils literal"><span class="pre">_command_as_list</span></code></a>.</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first simple">
@@ -379,7 +379,7 @@ command (if any) will be invoked with the <code class="docutils literal"><span c
 <p>Extensions to <a class="reference external" href="https://docs.python.org/library/argparse.html#module-argparse" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">argparse</span></code></a> to support the TAU Commander command line interface.</p>
 <dl class="class">
 <dt id="tau.cli.arguments.ArgparseHelpFormatter">
-<em class="property">class </em><code class="descclassname">tau.cli.arguments.</code><code class="descname">ArgparseHelpFormatter</code><span class="sig-paren">(</span><em>prog</em>, <em>indent_increment=2</em>, <em>max_help_position=30</em>, <em>width=162</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/arguments.html#ArgparseHelpFormatter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.arguments.ArgparseHelpFormatter" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.cli.arguments.</code><code class="descname">ArgparseHelpFormatter</code><span class="sig-paren">(</span><em>prog</em>, <em>indent_increment=2</em>, <em>max_help_position=30</em>, <em>width=74</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/arguments.html#ArgparseHelpFormatter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.arguments.ArgparseHelpFormatter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/argparse.html#argparse.RawDescriptionHelpFormatter" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">argparse.RawDescriptionHelpFormatter</span></code></a></p>
 <p>Custom help string formatter for argument parser.</p>
 <p>Provide proper help message alignment, line width, and formatting.
@@ -589,7 +589,7 @@ attribute properties, where the arguments to <a class="reference external" href=
 are specified as keyword arguments.</p>
 <p class="rubric">Examples</p>
 <p>Given this model attribute:</p>
-<div class="highlight-python"><div class="highlight"><pre>&#39;openmp&#39;: {
+<div class="highlight-python"><div class="highlight"><pre><span></span>&#39;openmp&#39;: {
     &#39;type&#39;: &#39;boolean&#39;,
     &#39;description&#39;: &#39;application uses OpenMP&#39;,
     &#39;default&#39;: False,
@@ -710,7 +710,7 @@ as the argument&#8217;s value if argument is not specified.</li>
 
 <dl class="class">
 <dt id="tau.cli.cli_view.ListCommand">
-<em class="property">class </em><code class="descclassname">tau.cli.cli_view.</code><code class="descname">ListCommand</code><span class="sig-paren">(</span><em>controller</em>, <em>module_name</em>, <em>summary_fmt=None</em>, <em>help_page_fmt=None</em>, <em>group=None</em>, <em>default_style='dashboard'</em>, <em>dashboard_columns=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/cli_view.html#ListCommand"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.cli_view.ListCommand" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.cli.cli_view.</code><code class="descname">ListCommand</code><span class="sig-paren">(</span><em>controller</em>, <em>module_name</em>, <em>summary_fmt=None</em>, <em>help_page_fmt=None</em>, <em>group=None</em>, <em>default_style='dashboard'</em>, <em>dashboard_columns=None</em>, <em>title_fmt=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/cli_view.html#ListCommand"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.cli_view.ListCommand" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#tau.cli.cli_view.AbstractCliView" title="tau.cli.cli_view.AbstractCliView"><code class="xref py py-class docutils literal"><span class="pre">tau.cli.cli_view.AbstractCliView</span></code></a></p>
 <p>Base class for the <cite>list</cite> subcommand of command line views.</p>
 <dl class="method">
@@ -739,14 +739,14 @@ as the argument&#8217;s value if argument is not specified.</li>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>ctrl</strong> (<a class="reference internal" href="tau.mvc.html#tau.mvc.controller.Controller" title="tau.mvc.controller.Controller"><em>Controller</em></a>) &#8211; Controller for the data model.</li>
 <li><strong>style</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Style in which to format records.</li>
-<li><strong>keys</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Keys to match to <code class="xref any docutils literal"><span class="pre">self.key_attr</span></code>.</li>
+<li><strong>keys</strong> (<a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Keys to match to <code class="xref any docutils literal"><span class="pre">self.key_attr</span></code>.</li>
 </ul>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Record data as formatted strings.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list">list</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list">list</a></p>
 </td>
 </tr>
 </tbody>
@@ -763,14 +763,14 @@ as the argument&#8217;s value if argument is not specified.</li>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>ctrl</strong> (<a class="reference internal" href="tau.mvc.html#tau.mvc.controller.Controller" title="tau.mvc.controller.Controller"><em>Controller</em></a>) &#8211; Controller for the data model.</li>
-<li><strong>keys</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Keys to match to <code class="xref any docutils literal"><span class="pre">self.key_attr</span></code>.</li>
+<li><strong>keys</strong> (<a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Keys to match to <code class="xref any docutils literal"><span class="pre">self.key_attr</span></code>.</li>
 </ul>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Model records.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list">list</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list">list</a></p>
 </td>
 </tr>
 </tbody>
@@ -844,7 +844,7 @@ as the argument&#8217;s value if argument is not specified.</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>argv</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Command line arguments.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>argv</strong> (<a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Command line arguments.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Process return code: non-zero if a problem occurred, 0 otherwise</td>
 </tr>
@@ -954,7 +954,7 @@ as the argument&#8217;s value if argument is not specified.</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>argv</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Command line arguments.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>argv</strong> (<a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Command line arguments.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Process return code: non-zero if a problem occurred, 0 otherwise</td>
 </tr>
@@ -1000,7 +1000,7 @@ as the argument&#8217;s value if argument is not specified.</li>
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
 </html>

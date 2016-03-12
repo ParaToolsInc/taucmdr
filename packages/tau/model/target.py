@@ -35,16 +35,32 @@ describes a specific set of system features.  For example, if both GNU and Intel
 compilers are installed then there will target configurations for each compiler family.
 """
 
+import os
+import glob
+from tau import util
 from tau.error import InternalError, ConfigurationError
 from tau.mvc.model import Model
 from tau.mvc.controller import Controller
 from tau.cf.compiler import CompilerRole, INTEL_COMPILERS
-from tau.cf.compiler.installed import InstalledCompilerSet
+from tau.cf.compiler.mpi import INTEL_MPI_COMPILERS
+from tau.cf.compiler.installed import InstalledCompilerSet, InstalledCompiler
 from tau.cf.target import host, DARWIN_OS, INTEL_KNC_ARCH
 from tau.model.compiler import Compiler
 
 
 def attributes():
+    def require_k1om():
+        def callback(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
+            k1om_ar = util.which('x86_64-k1om-linux-ar')
+            if not k1om_ar:
+                for path in glob.glob('/usr/linux-k1om-*'):
+                    k1om_ar = util.which(os.path.join(path, 'bin', 'x86_64-k1om-linux-ar'))
+                    if k1om_ar:
+                        break
+            if not k1om_ar:
+                raise ConfigurationError('k1om tools not found', 'Try installing on compute node', 'Install MIC SDK')
+        return callback
+
     from tau.model.project import Project
     from tau.cli.arguments import ParsePackagePathAction
     from tau.cf.target import Architecture, OperatingSystem
@@ -53,6 +69,12 @@ def attributes():
     knc_intel_only = require_compiler_family(INTEL_COMPILERS, 
                                              "You must use Intel compilers to target the Xeon Phi",
                                              "Try adding `--host-compilers=Intel` to the command line")
+    knc_intel_mpi_only = require_compiler_family(INTEL_MPI_COMPILERS,
+                                             "You must use Intel MPI compilers to target the Xeon Phi",
+                                             "Try adding `--mpi-compilers=Intel` to the command line")
+    knc_require_k1om = require_k1om()
+
+
 
     return {
         'projects': {
@@ -89,7 +111,11 @@ def attributes():
             'compat': {str(INTEL_KNC_ARCH): 
                        (Target.require('CC', knc_intel_only),
                         Target.require('CXX', knc_intel_only),
-                        Target.require('FC', knc_intel_only))}
+                        Target.require('FC', knc_intel_only),
+                        Target.require('host_arch', knc_require_k1om),
+                        Target.require('MPI_CC', knc_intel_mpi_only),
+                        Target.require('MPI_CXX', knc_intel_mpi_only),
+                        Target.require('MPI_FC', knc_intel_mpi_only))}
         },
         'CC': {
             'model': Compiler,
@@ -236,14 +262,14 @@ def attributes():
                          'metavar': '<path>',
                          'action': ParsePackagePathAction},
         },
-        'opencl': {
-            'type': 'string',
-            'description': 'path to OpenCL libraries and headers',
-            'argparse': {'flags': ('--opencl',),
-                         'group': 'software package',
-                         'metavar': '<path>',
-                         'action': ParsePackagePathAction},
-        },
+        #'opencl': {
+        #    'type': 'string',
+        #    'description': 'path to OpenCL libraries and headers',
+        #    'argparse': {'flags': ('--opencl',),
+        #                 'group': 'software package',
+        #                 'metavar': '<path>',
+        #                 'action': ParsePackagePathAction},
+        #},
         'tau_source': {
             'type': 'string',
             'description': 'path or URL to a TAU installation or archive file',
@@ -354,6 +380,12 @@ class Target(Model):
         compiler_ctrl = Compiler.controller(self.storage)
         given_compiler_eid = compiler_ctrl.register(given_compiler).eid
         target_compiler_eid = self[given_compiler.info.role.keyword]       
+        given_wrapped_compiler_path = compiler_ctrl.one(given_compiler_eid)['path']
+        given_compiler_path = InstalledCompiler(given_wrapped_compiler_path).wrapped
+        if given_compiler_path != None:
+            target_compiler_path = self.populate(attribute=given_compiler_path.info.role.keyword)['path']
+        else:
+            target_compiler_path = self.populate(attribute=given_compiler.info.role.keyword)['path']
         # Confirm target supports compiler
         if given_compiler_eid != target_compiler_eid:
             target_compiler = compiler_ctrl.one(target_compiler_eid).info()
@@ -371,5 +403,11 @@ class Target(Model):
                                      (self['name'], self['host_arch'], INTEL_KNC_ARCH),
                                      "Select a different target",
                                      "Create a new target with host architecture '%s'" % INTEL_KNC_ARCH)
-                
-            
+        # Confirm mpi wrapped compiler matches given compiler
+        if str(given_compiler_path) != str(target_compiler_path) and given_compiler_path != None:
+            raise ConfigurationError("Target '%s' is configured with %s, not %s" %
+                                     (self['name'], target_compiler_path, given_compiler_path),
+                                     "Select a different target",
+                                     "Compile with '%s' compiler" % given_compiler_path,
+                                     "Create a new target configured with '%s' compiler" %
+                                     target_compiler_path)

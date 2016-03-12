@@ -68,7 +68,7 @@ class _JsonFileStorage(tinydb.JSONStorage):
         else:
             self.readonly = False
             LOGGER.debug("'%s' opened read-write", path)
-            
+
     def write(self, *args, **kwargs):
         if self.readonly:
             raise ConfigurationError("Cannot write to '%s'" % self.path, "Check that you have `write` access.")
@@ -109,9 +109,14 @@ class LocalFileStorage(AbstractStorage):
         
     def __delitem__(self, key):
         self.remove({'key': key})
+
+    def is_writable(self):
+        """Check if the storage filesystem is writable."""
+        self.connect_filesystem()
+        return os.access(self.prefix, os.W_OK)
     
     def connect_filesystem(self, *args, **kwargs):
-        """Prepares the store filesystem fore reading and writing."""
+        """Prepares the store filesystem for reading and writing."""
         if not os.path.isdir(self._prefix):
             try:
                 util.mkdirp(self._prefix)
@@ -120,8 +125,8 @@ class LocalFileStorage(AbstractStorage):
             LOGGER.debug("Initialized %s filesystem prefix '%s'", self.name, self._prefix)
 
     def disconnect_filesystem(self, *args, **kwargs):
-        """Prepares the store filesystem fore reading and writing."""
-        pass
+        """Disconnects the store filesystem."""
+        self.disconnect_database()
 
     def connect_database(self, *args, **kwargs):
         """Open the database for reading and writing."""
@@ -139,6 +144,7 @@ class LocalFileStorage(AbstractStorage):
 
     def disconnect_database(self, *args, **kwargs):
         """Close the database for reading and writing."""
+        self._database.close()
         self._database = None
 
     @property

@@ -32,11 +32,7 @@ from tau import EXIT_SUCCESS
 from tau import logger, util
 from tau.cli import arguments
 from tau.cli.command import AbstractCommand
-from tau.cli.commands.select import COMMAND as select_cmd
 from tau.cli.commands.project.list import COMMAND as project_list_cmd
-from tau.cli.commands.target.list import COMMAND as target_list_cmd
-from tau.cli.commands.application.list import COMMAND as application_list_cmd
-from tau.cli.commands.measurement.list import COMMAND as measurement_list_cmd
 from tau.model.project import Project, ProjectSelectionError, ExperimentSelectionError
 
 
@@ -46,39 +42,10 @@ class DashboardCommand(AbstractCommand):
         usage = "%s [arguments]" % self.command
         return arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
 
-    def _print_experiments(self, proj):
-        parts = []
-        experiments = proj.populate('experiments')
-        if not experiments:
-            label = util.color_text('%s: No experiments' % proj['name'], color='red', attrs=['bold'])
-            msg = "%s.  Use `%s` to create a new experiment." % (label, select_cmd) 
-            parts.append(msg)
-        if experiments:
-            title = util.hline("Experiments in project '%s'" % proj['name'], 'cyan')
-            header_row = ['Experiment', 'Trials', 'Data Size']
-            rows = [header_row]
-            for expr in experiments:
-                rows.append([expr.title(), len(expr['trials']), util.human_size(expr.data_size())])
-            table = Texttable(logger.LINE_WIDTH)
-            table.add_rows(rows)
-            parts.extend([title, table.draw(), ''])
-        try:
-            expr = proj.experiment()
-        except ExperimentSelectionError:
-            pass
-        else:
-            if expr:
-                current = util.color_text('Current experiment: ', 'cyan') + expr.title()
-            else:
-                current = (util.color_text('No experiment: ', 'red') + 
-                           ('Use `%s` to configure a new experiment' % select_cmd))  
-            parts.append(current)
-        print '\n'.join(parts)
-    
     def main(self, argv):
         args = self.parser.parse_args(args=argv)
         self.logger.debug('Arguments: %s', args)
-        
+
         subargs = ['--dashboard']
         proj_ctrl = Project.controller()
         print
@@ -95,11 +62,7 @@ class DashboardCommand(AbstractCommand):
                 err.hints = ['Use `%s` to create a new project configuration.' % project_create_cmd]
             raise err
         else:
-            project_list_cmd.main(subargs)
-            target_list_cmd.main([targ['name'] for targ in proj.populate('targets')])
-            application_list_cmd.main([targ['name'] for targ in proj.populate('applications')])
-            measurement_list_cmd.main([targ['name'] for targ in proj.populate('measurements')])
-            self._print_experiments(proj)
+            project_list_cmd.main(subargs + [proj['name']])
         print
         return EXIT_SUCCESS
 

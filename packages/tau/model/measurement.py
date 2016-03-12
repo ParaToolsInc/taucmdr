@@ -33,6 +33,7 @@ the available data in a single run since overhead would be extreme.  Different
 measurements allow us to take different views of the application's performance.
 """
 
+import os
 from tau.error import ConfigurationError
 from tau.mvc.model import Model
 from tau.cf.compiler import INTEL_COMPILERS, GNU_COMPILERS
@@ -147,6 +148,16 @@ def attributes():
                          'const': True,
                          'action': ParseBooleanAction},
         },
+        'select_inst_file': {
+            'type': 'string',
+            'description': 'specify selective instrumentation file',
+            'argparse': {'flags': ('--select-inst-file',),
+                         'group': 'instrumentation',
+                         'metavar': 'path'},
+            'compat': {True:
+                       (Target.require('source_inst'),
+                        Target.exclude('source_inst', 'never'))},
+        },
         'mpi': {
             'type': 'boolean',
             'default': False,
@@ -169,8 +180,7 @@ def attributes():
             'argparse': {'flags': ('--openmp',),
                          'group': 'library',
                          'metavar': 'library',
-                         'choices': ('none', 'opari', 'ompt', 'gomp'),
-                         'nargs': 1},
+                         'choices': ('none', 'opari', 'ompt', 'gomp')},
             'compat': {'opari':
                        Application.require('openmp', True),
                        'ompt':
@@ -206,7 +216,8 @@ def attributes():
                          'nargs': '?',
                          'const': True,
                          'action': ParseBooleanAction},
-            'compat': {True: Target.require('opencl')}
+            'compat': {True: (Target.require('cuda'),
+                              Application.require('opencl'))}
         },
         'callpath': {
             'type': 'integer',
@@ -316,5 +327,11 @@ class Measurement(Model):
             raise ConfigurationError("At least one instrumentation method must be used",
                                      "Specify %s, %s, %s, or %s" % (source_inst_flag, compiler_inst_flag, 
                                                                     sample_flag, link_only_flag))
-
+        try:
+            select_inst_file = self['select_inst_file']
+        except KeyError:
+            pass
+        else:
+            if not os.path.exists(select_inst_file):
+                raise ConfigurationError("Selective instrumentation file '%s' not found" % select_inst_file)
 

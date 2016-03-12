@@ -54,7 +54,7 @@ class InstalledCompilerCreator(KeyedRecordCreator):
     to an installed compiler command.  On initialization, the instance
     invokes the compiler command to discover system-specific compiler
     characteristics.  This can be very expensive, so we change the
-    instance creation proceedure to only probe the compiler when the 
+    instance creation procedure to only probe the compiler when the 
     compiler command has never been seen before.  This avoids dupliate
     invocations in a case like::
     
@@ -81,7 +81,11 @@ class InstalledCompilerCreator(KeyedRecordCreator):
         if not absolute_path:
             raise ConfigurationError("'%s' missing or not executable." % command,
                                      "Check spelling, loaded modules, PATH environment variable, and file permissions")
-        return KeyedRecordCreator.__call__(cls, absolute_path)
+        try:
+           arch_args = args[1]
+        except:
+           arch_args = []
+        return KeyedRecordCreator.__call__(cls, absolute_path, arch_args)
 
 
 
@@ -98,13 +102,14 @@ class InstalledCompiler(KeyedRecord):
         command (str): Command that invokes the compiler, without path.
         path (str): Absolute path to folder containing the compiler command.
         info (CompilerInfo): Information about the compiler invoked by the compiler command.
+        wrapped (WrappedCompiler): Information about the wrapped compiler, if any.
     """
     
     __metaclass__ = InstalledCompilerCreator
     
     __key__ = 'absolute_path'
 
-    def __init__(self, absolute_path):
+    def __init__(self, absolute_path, arch_args=[]):
         """Probes the system to find an installed compiler.
         
         May check PATH, file permissions, or other conditions in the system
@@ -126,7 +131,7 @@ class InstalledCompiler(KeyedRecord):
             raise RuntimeError("Unknown compiler command '%s'" % self.absolute_path)
         if self.info.family.show_wrapper_flags:
             LOGGER.debug("Probing wrapper compiler '%s' to discover wrapped compiler", self.absolute_path)
-            cmd = [self.absolute_path] + self.info.family.show_wrapper_flags
+            cmd = [self.absolute_path] + self.info.family.show_wrapper_flags + arch_args
             LOGGER.debug("Creating subprocess: %s", cmd)
             try:
                 stdout = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
@@ -136,7 +141,7 @@ class InstalledCompiler(KeyedRecord):
                 LOGGER.debug(stdout)
                 LOGGER.debug("%s returned 0", cmd)
             args = stdout.split()
-            self.wrapped = WrappedCompiler(args[0])
+            self.wrapped = WrappedCompiler(args[0], arch_args)
             try:
                 self.wrapped.parse_args(args[1:], self.info.family)
             except IndexError:
@@ -182,8 +187,8 @@ class WrappedCompiler(InstalledCompiler):
         compiler_flags (list): Additional flags used when compiling with the wrapped compiler.
         libraries (list): Additional libraries to link when linking with the wrapped compiler.
     """
-    def __init__(self, absolute_path):
-        super(WrappedCompiler,self).__init__(absolute_path)
+    def __init__(self, absolute_path, arch_args):
+        super(WrappedCompiler,self).__init__(absolute_path, arch_args)
         self.include_path = []
         self.library_path = []
         self.compiler_flags = []
@@ -240,13 +245,13 @@ class InstalledCompilerFamily(KeyedRecord):
     
     __key__ = 'family'
     
-    def __init__(self, family):
+    def __init__(self, family, arch_args=[]):
         self.family = family
         self.commands = {}
         LOGGER.debug("Detecting %s compiler installation", family.name)
         for info in family:
             try:
-                comp = InstalledCompiler(info.command)
+                comp = InstalledCompiler(info.command, arch_args)
             except ConfigurationError as err:
                 LOGGER.debug(err)
             else:

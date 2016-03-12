@@ -29,13 +29,14 @@
 
 import os
 import platform
-from tau import EXIT_SUCCESS
-from tau.error import InternalError
+from tau import util
+from tau import EXIT_SUCCESS, EXIT_WARNING
+from tau.error import InternalError, ConfigurationError
 from tau.cli import arguments
 from tau.cli.command import AbstractCommand
 from tau.model.project import Project, ProjectSelectionError
 from tau.storage.project import ProjectStorageError
-from tau.storage.levels import PROJECT_STORAGE
+from tau.storage.levels import PROJECT_STORAGE, USER_STORAGE, STORAGE_LEVELS
 from tau.cli.arguments import ParseBooleanAction
 from tau.cli.commands.target.create import COMMAND as target_create_cmd
 from tau.cli.commands.application.create import COMMAND as application_create_cmd
@@ -48,25 +49,29 @@ from tau.cf.target import host, DARWIN_OS
 
 class InitializeCommand(AbstractCommand):
     """``tau initialize`` subcommand."""
-    
+
     def construct_parser(self):
-        
+
         def _default_target_name():
             node_name = platform.node()
             if not node_name:
                 return 'default_target'
             return node_name.split('.')[0]
-        
+
         usage = "%s [arguments]" % self.command
         parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
-        
+
         default_project_name = os.path.basename(os.getcwd()) or 'default_project'
         project_group = parser.add_argument_group('project arguments')
         project_group.add_argument('--project-name',
                                    help="Name of the new project",
                                    metavar='<name>',
                                    default=default_project_name)
-        
+        project_group.add_argument('--storage-level',
+                                   help='location of installation directory',
+                                   choices=STORAGE_LEVELS.keys(),
+                                   metavar='<levels>', default=arguments.SUPPRESS)
+
         parser.merge(target_create_cmd.parser, group_title='target arguments', include_positional=False)
         target_group = parser.add_argument_group('target arguments')
         target_group.add_argument('--target-name',
@@ -128,8 +133,13 @@ class InitializeCommand(AbstractCommand):
         project_name = args.project_name
         target_name = args.target_name
         application_name = args.application_name
-        
-        project_create_cmd.main([project_name])
+        try:
+            storage_level = args.storage_level
+        except:
+            project_create_cmd.main([project_name])
+        else:
+            project_create_cmd.main([project_name, '--storage-level', storage_level])
+
         select_cmd.main(['--project', project_name])
 
         target_argv = [target_name] + argv
@@ -140,7 +150,7 @@ class InitializeCommand(AbstractCommand):
         if not papi:
             target_argv.append('--papi=False')
         _safe_execute(target_create_cmd, target_argv)
-        
+
         application_argv = [application_name] + argv
         application_args, unknown = application_create_cmd.parser.parse_known_args(args=application_argv)
         application_argv = [application_name] + [arg for arg in argv if arg not in unknown]
@@ -149,55 +159,55 @@ class InitializeCommand(AbstractCommand):
         measurement_names = []
         measurement_args = ['--%s=True' % attr 
                             for attr in 'cuda', 'mpi', 'opencl' if getattr(application_args, attr, False)]
-        
+
         if args.sample and sample:
             _safe_execute(measurement_create_cmd, 
-                          ['profile-sample', '--profile=True', '--trace=False', '--sample=True',
+                          ['sample', '--profile=True', '--trace=False', '--sample=True',
                            '--source-inst=never', '--compiler-inst=never',
                            '--link-only=False'] + measurement_args)
-            measurement_names.extend(['profile-sample'])
+            measurement_names.extend(['sample'])
         if args.profile:
             _safe_execute(measurement_create_cmd, 
-                          ['profile-automatic', '--profile=True', '--trace=False', '--sample=False',
+                          ['instrument', '--profile=True', '--trace=False', '--sample=False',
                            '--source-inst=automatic', '--compiler-inst=%s' % comp_inst, 
                            '--link-only=False'] + measurement_args)
-            _safe_execute(measurement_create_cmd, 
-                          ['profile-manual', '--profile=True', '--trace=False', '--sample=False',
-                           '--source-inst=never', '--compiler-inst=never', 
-                           '--link-only=True'] + measurement_args)
-            measurement_names.extend(['profile-automatic', 'profile-manual'])
+            measurement_names.append('instrument')
         if args.trace:
             _safe_execute(measurement_create_cmd, 
-                          ['trace-automatic', '--profile=False', '--trace=True', '--sample=False', 
+                          ['trace', '--profile=False', '--trace=True', '--sample=False', 
                            '--source-inst=automatic', '--compiler-inst=%s' % comp_inst, 
                            '--link-only=False'] + measurement_args)
-            _safe_execute(measurement_create_cmd, 
-                          ['trace-manual', '--profile=False', '--trace=True', '--sample=False',
-                           '--source-inst=never', '--compiler-inst=never', 
-                           '--link-only=True'] + measurement_args)
-            measurement_names.extend(['trace-automatic', 'trace-manual'])
+            measurement_names.append('trace')
 
         select_cmd.main(['--project', project_name, '--target', target_name, 
                          '--application', application_name, '--measurement', measurement_names[0]])
-    
+
     def main(self, argv):
         args = self.parser.parse_args(args=argv)
         self.logger.debug('Arguments: %s', args)
         if not (args.profile or args.trace or args.sample):
             self.parser.error('You must specify at least one measurement.')
-        
+
         proj_ctrl = Project.controller()
         try:
             proj = proj_ctrl.selected()
         except ProjectStorageError:
             self.logger.debug("No project found, initializing a new project.")
             PROJECT_STORAGE.connect_filesystem()
-            self._create_project(argv, args)
+            try:
+                self._create_project(argv, args)
+            except ConfigurationError:
+                PROJECT_STORAGE.disconnect_filesystem()
+                util.rmtree(proj_ctrl.storage.prefix, ignore_errors=True)
+                raise
+            return dashboard_cmd.main([])
         except ProjectSelectionError as err:
             err.value = "The project has been initialized but no project configuration is selected."
             raise err
         else:
-            self.logger.info("Selected project: '%s'", proj['name'])
-        return dashboard_cmd.main([])
+            self.logger.warning("Tau is already initialized and the selected project is '%s'. Use commands like"
+                                " `tau application edit` to edit the selected project or delete"
+                                " '%s' to reset to a fresh environment.", proj['name'], proj_ctrl.storage.prefix)
+            return EXIT_WARNING
 
 COMMAND = InitializeCommand(__name__, summary_fmt="Initialize TAU Commander.")

@@ -162,7 +162,7 @@ C++ codes with &#8220;c++&#8221; instead of &#8220;CC&#8221; so that case-insens
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>(CompilerRole) Role these commands fill in the family.</strong> (<a class="reference internal" href="#tau.cf.compiler.CompilerInfo.role" title="tau.cf.compiler.CompilerInfo.role"><em>role</em></a>) &#8211; </li>
+<li><strong>role</strong> (<a class="reference internal" href="#tau.cf.compiler.CompilerRole" title="tau.cf.compiler.CompilerRole"><em>CompilerRole</em></a>) &#8211; </li>
 <li><strong>*commands</strong> &#8211; Command strings without arguments.</li>
 </ul>
 </td>
@@ -344,7 +344,7 @@ module detects installed compilers and can invoke the installed compiler to
 discover features that change from system to system.</p>
 <dl class="class">
 <dt id="tau.cf.compiler.installed.InstalledCompiler">
-<em class="property">class </em><code class="descclassname">tau.cf.compiler.installed.</code><code class="descname">InstalledCompiler</code><span class="sig-paren">(</span><em>absolute_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/compiler/installed.html#InstalledCompiler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.compiler.installed.InstalledCompiler" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.cf.compiler.installed.</code><code class="descname">InstalledCompiler</code><span class="sig-paren">(</span><em>absolute_path</em>, <em>arch_args=[]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/compiler/installed.html#InstalledCompiler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.compiler.installed.InstalledCompiler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="tau.cf.html#tau.cf.KeyedRecord" title="tau.cf.KeyedRecord"><code class="xref py py-class docutils literal"><span class="pre">tau.cf.KeyedRecord</span></code></a></p>
 <p>Information about an installed compiler command.</p>
 <p>There are relatively few well known compilers, but a potentially infinite
@@ -377,6 +377,13 @@ command (e.g. icc, gcc-4.2, etc.) with a compiler command in the knowledgebase.<
 <code class="descname">info</code><a class="headerlink" href="#tau.cf.compiler.installed.InstalledCompiler.info" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>CompilerInfo</em></p>
 <p>Information about the compiler invoked by the compiler command.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.cf.compiler.installed.InstalledCompiler.wrapped">
+<code class="descname">wrapped</code><a class="headerlink" href="#tau.cf.compiler.installed.InstalledCompiler.wrapped" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>WrappedCompiler</em></p>
+<p>Information about the wrapped compiler, if any.</p>
 </dd></dl>
 
 <dl class="method">
@@ -412,12 +419,12 @@ This may need to change since compiler wrappers can throw this off.</p>
 to an installed compiler command.  On initialization, the instance
 invokes the compiler command to discover system-specific compiler
 characteristics.  This can be very expensive, so we change the
-instance creation proceedure to only probe the compiler when the
+instance creation procedure to only probe the compiler when the
 compiler command has never been seen before.  This avoids dupliate
 invocations in a case like:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># `which icc` = &#39;/path/to/icc&#39;</span>
-<span class="n">a</span> <span class="o">=</span> <span class="n">InstalledCompiler</span><span class="p">(</span><span class="s">&#39;/path/to/icc&#39;</span><span class="p">)</span>
-<span class="n">b</span> <span class="o">=</span> <span class="n">InstalledCompiler</span><span class="p">(</span><span class="s">&#39;icc&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># `which icc` = &#39;/path/to/icc&#39;</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">InstalledCompiler</span><span class="p">(</span><span class="s1">&#39;/path/to/icc&#39;</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">InstalledCompiler</span><span class="p">(</span><span class="s1">&#39;icc&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Without this metaclass, <cite>a</cite> and <cite>b</cite> would be different instances
@@ -427,7 +434,7 @@ this metaclass, <code class="docutils literal"><span class="pre">b</span> <span 
 
 <dl class="class">
 <dt id="tau.cf.compiler.installed.InstalledCompilerFamily">
-<em class="property">class </em><code class="descclassname">tau.cf.compiler.installed.</code><code class="descname">InstalledCompilerFamily</code><span class="sig-paren">(</span><em>family</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/compiler/installed.html#InstalledCompilerFamily"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.compiler.installed.InstalledCompilerFamily" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.cf.compiler.installed.</code><code class="descname">InstalledCompilerFamily</code><span class="sig-paren">(</span><em>family</em>, <em>arch_args=[]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/compiler/installed.html#InstalledCompilerFamily"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.compiler.installed.InstalledCompilerFamily" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="tau.cf.html#tau.cf.KeyedRecord" title="tau.cf.KeyedRecord"><code class="xref py py-class docutils literal"><span class="pre">tau.cf.KeyedRecord</span></code></a></p>
 <p>Information about an installed compiler family.</p>
 <p>Compiler families are usually installed at a common prefix but there is no
@@ -505,7 +512,7 @@ one compiler in each required compiler role.</p>
 
 <dl class="class">
 <dt id="tau.cf.compiler.installed.WrappedCompiler">
-<em class="property">class </em><code class="descclassname">tau.cf.compiler.installed.</code><code class="descname">WrappedCompiler</code><span class="sig-paren">(</span><em>absolute_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/compiler/installed.html#WrappedCompiler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.compiler.installed.WrappedCompiler" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.cf.compiler.installed.</code><code class="descname">WrappedCompiler</code><span class="sig-paren">(</span><em>absolute_path</em>, <em>arch_args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/compiler/installed.html#WrappedCompiler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.compiler.installed.WrappedCompiler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#tau.cf.compiler.installed.InstalledCompiler" title="tau.cf.compiler.installed.InstalledCompiler"><code class="xref py py-class docutils literal"><span class="pre">tau.cf.compiler.installed.InstalledCompiler</span></code></a></p>
 <p>Information about the compiler wrapped by another compiler.</p>
 <p>It&#8217;s very common to wrap one compiler command with another.  For example, MPI compilers are usually
@@ -549,7 +556,7 @@ of our own.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>args</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Command line arguments added to the wrapped compiler.</li>
+<li><strong>args</strong> (<a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Command line arguments added to the wrapped compiler.</li>
 <li><strong>wrapper_family</strong> (<a class="reference internal" href="#tau.cf.compiler.CompilerFamily" title="tau.cf.compiler.CompilerFamily"><em>CompilerFamily</em></a>) &#8211; The compiler wrapper&#8217;s family.</li>
 </ul>
 </td>
@@ -630,7 +637,7 @@ records and keeps SHMEM compilers from mixing with host etc. compilers.</p>
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
 </html>
