@@ -245,7 +245,7 @@ def attributes():
             'type': 'boolean',
             'default': False,
             'description': 'measure heap memory usage',
-            'argparse': {'flags': ('--heap_usage',),
+            'argparse': {'flags': ('--heap-usage',),
                          'group': 'memory',
                          'metavar': 'T/F',
                          'nargs': '?',

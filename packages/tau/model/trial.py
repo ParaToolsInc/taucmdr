@@ -104,10 +104,10 @@ class TrialError(ConfigurationError):
 
 class TrialController(Controller):
     """Trial data controller."""
-    
+
     def perform(self, expr, cmd, cwd, env):
         """Performs a trial of an experiment.
-        
+
         Args:
             expr (Experiment): Experiment data.
             cmd (str): Command to profile, with command line arguments.
@@ -131,7 +131,7 @@ class TrialController(Controller):
                   'environment': 'FIXME',
                   'begin_time': begin_time}
         trial = self.create(fields)
-        
+
         # Tell TAU to send profiles and traces to the trial prefix
         env['PROFILEDIR'] = trial.prefix
         env['TRACEDIR'] = trial.prefix
@@ -171,9 +171,9 @@ class TrialController(Controller):
 
 class Trial(Model):
     """Trial data model."""
-    
+
     __attributes__ = attributes
-    
+
     __controller__ = TrialController
 
     @property
