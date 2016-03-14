@@ -288,7 +288,7 @@ If neither is given, return all records where <cite>field</cite> is set to any v
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Matching data records.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list">list</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list">list</a></p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211;
@@ -393,7 +393,7 @@ in <cite>keys</cite> may match or if False then all keys in <cite>keys</cite> mu
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Matching data records.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list">list</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list">list</a></p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211;
@@ -443,7 +443,7 @@ Use this method to remove a field from the record.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>fields</strong> (<a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Names of fields to remove from matching records.</li>
+<li><strong>fields</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Names of fields to remove from matching records.</li>
 <li><strong>keys</strong> &#8211; Fields or element identifiers to match.</li>
 <li><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the table to operate on.  See <a class="reference internal" href="#tau.storage.AbstractStorage.table" title="tau.storage.AbstractStorage.table"><code class="xref any py py-meth docutils literal"><span class="pre">AbstractStorage.table</span></code></a>.</li>
 <li><strong>match_any</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; Only applies if <cite>keys</cite> is a dictionary.  If True then any key
@@ -606,7 +606,7 @@ want to install software packages at the project level to avoid quotas or in sit
 where <a class="reference internal" href="tau.html#tau.USER_PREFIX" title="tau.USER_PREFIX"><code class="xref any py py-data docutils literal"><span class="pre">USER_PREFIX</span></code></a> is not accessible from cluster compute nodes.</p>
 <dl class="data">
 <dt id="tau.storage.levels.ORDERED_LEVELS">
-<code class="descclassname">tau.storage.levels.</code><code class="descname">ORDERED_LEVELS</code><em class="property"> = (&lt;tau.storage.project.ProjectStorage object at 0x2aac79f2cb50&gt;, &lt;tau.storage.local_file.LocalFileStorage object at 0x2aac79f2cd50&gt;, &lt;tau.storage.local_file.LocalFileStorage object at 0x2aac79f2c7d0&gt;)</em><a class="headerlink" href="#tau.storage.levels.ORDERED_LEVELS" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.storage.levels.</code><code class="descname">ORDERED_LEVELS</code><em class="property"> = (&lt;tau.storage.project.ProjectStorage object at 0x2b5942fc7a90&gt;, &lt;tau.storage.local_file.LocalFileStorage object at 0x2b5942fc7a50&gt;, &lt;tau.storage.local_file.LocalFileStorage object at 0x2b5942fc7a10&gt;)</em><a class="headerlink" href="#tau.storage.levels.ORDERED_LEVELS" title="Permalink to this definition">¶</a></dt>
 <dd><p>All storage levels in their preferred order.</p>
 </dd></dl>
 
@@ -618,7 +618,7 @@ where <a class="reference internal" href="tau.html#tau.USER_PREFIX" title="tau.U
 
 <dl class="data">
 <dt id="tau.storage.levels.STORAGE_LEVELS">
-<code class="descclassname">tau.storage.levels.</code><code class="descname">STORAGE_LEVELS</code><em class="property"> = {'project': &lt;tau.storage.project.ProjectStorage object at 0x2aac79f2cb50&gt;, 'user': &lt;tau.storage.local_file.LocalFileStorage object at 0x2aac79f2cd50&gt;, 'system': &lt;tau.storage.local_file.LocalFileStorage object at 0x2aac79f2c7d0&gt;}</em><a class="headerlink" href="#tau.storage.levels.STORAGE_LEVELS" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.storage.levels.</code><code class="descname">STORAGE_LEVELS</code><em class="property"> = {'project': &lt;tau.storage.project.ProjectStorage object at 0x2b5942fc7a90&gt;, 'user': &lt;tau.storage.local_file.LocalFileStorage object at 0x2b5942fc7a50&gt;, 'system': &lt;tau.storage.local_file.LocalFileStorage object at 0x2b5942fc7a10&gt;}</em><a class="headerlink" href="#tau.storage.levels.STORAGE_LEVELS" title="Permalink to this definition">¶</a></dt>
 <dd><p>All storage levels indexed by their names.</p>
 </dd></dl>
 
@@ -852,7 +852,7 @@ If neither is given, return all records where <cite>field</cite> is set to any v
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Matching data records.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list">list</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list">list</a></p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211;
@@ -944,7 +944,7 @@ in <cite>keys</cite> may match or if False then all keys in <cite>keys</cite> mu
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Matching data records.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list">list</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list">list</a></p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211;
@@ -980,7 +980,7 @@ Use this method to remove a field from the record.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>fields</strong> (<a class="reference internal" href="tau.cli.commands.target.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Names of fields to remove from matching records.</li>
+<li><strong>fields</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Names of fields to remove from matching records.</li>
 <li><strong>keys</strong> &#8211; Fields or element identifiers to match.</li>
 <li><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the table to operate on.  See <code class="xref any docutils literal"><span class="pre">AbstractDatabase.table</span></code>.</li>
 <li><strong>match_any</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; Only applies if <cite>keys</cite> is a dictionary.  If True then any key
