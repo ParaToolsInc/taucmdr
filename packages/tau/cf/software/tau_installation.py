@@ -380,8 +380,8 @@ class TauInstallation(Installation):
                   '-opencl=%s' % self.opencl_prefix if self.opencl_prefix else ''
                  ] if flag]
         if self.pdt:
-          flags.append('-pdt=%s' % self.pdt.install_prefix)
-          flags.append('-pdt_c++=%s' % self.pdt.compilers[CXX_ROLE].info.command)
+            flags.append('-pdt=%s' % self.pdt.install_prefix)
+            flags.append('-pdt_c++=%s' % self.pdt.compilers[CXX_ROLE].info.command)
         if self.openmp_support:
             flags.append('-openmp')
             if self.measure_openmp == 'ompt':
@@ -461,7 +461,7 @@ class TauInstallation(Installation):
             tags.append(compiler_tags[self.compilers[CXX_ROLE].info.family])
         except KeyError:
             pass
-        if self.source_inst != 'never':
+        if self.source_inst == 'automatic':
             tags.append('pdt')
         if len([met for met in self.metrics if 'PAPI' in met]):
             tags.append('papi')

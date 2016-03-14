@@ -117,8 +117,7 @@ def attributes():
                          'nargs': '?',
                          'choices': ('automatic', 'manual', 'never'),
                          'const': 'automatic'},
-            'compat': {lambda x: x in ('automatic', 'manual'):
-                       Target.exclude('pdt_source', None)}
+            'compat': {'automatic': Target.exclude('pdt_source', None)}
         },
         'compiler_inst': {
             'type': 'string',

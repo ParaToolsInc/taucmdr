@@ -82,9 +82,12 @@ class InstalledCompilerCreator(KeyedRecordCreator):
             raise ConfigurationError("'%s' missing or not executable." % command,
                                      "Check spelling, loaded modules, PATH environment variable, and file permissions")
         try:
-           arch_args = args[1]
-        except:
-           arch_args = []
+           arch_args = kwargs['arch_args']
+        except KeyError:
+           try:
+               arch_args = args[1]
+           except KeyError:
+               arch_args = []
         return KeyedRecordCreator.__call__(cls, absolute_path, arch_args)
 
 
@@ -109,7 +112,7 @@ class InstalledCompiler(KeyedRecord):
     
     __key__ = 'absolute_path'
 
-    def __init__(self, absolute_path, arch_args=[]):
+    def __init__(self, absolute_path, arch_args):
         """Probes the system to find an installed compiler.
         
         May check PATH, file permissions, or other conditions in the system
@@ -141,9 +144,16 @@ class InstalledCompiler(KeyedRecord):
                 LOGGER.debug(stdout)
                 LOGGER.debug("%s returned 0", cmd)
             args = stdout.split()
-            self.wrapped = WrappedCompiler(args[0], arch_args)
+            # Assume the first executable in `args` is the wrapped compiler
+            for idx, arg in enumerate(args):
+                if util.which(arg):
+                    LOGGER.debug("'%s' wraps '%s'", self.absolute_path, arg)
+                    break
+            else:
+                raise RuntimeError("Unexpected output from '%s':\n%s" % (' '.join(cmd), stdout))
+            self.wrapped = WrappedCompiler(args[idx], arch_args)
             try:
-                self.wrapped.parse_args(args[1:], self.info.family)
+                self.wrapped.parse_args(args[idx+1:], self.info.family)
             except IndexError:
                 raise RuntimeError("Unexpected output from '%s':\n%s" % (' '.join(cmd), stdout))
         else:
