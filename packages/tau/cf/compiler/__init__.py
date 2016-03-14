@@ -311,10 +311,9 @@ IBM_COMPILERS.add(CC_ROLE, 'xlc', )
 IBM_COMPILERS.add(CXX_ROLE, 'xlc++', 'xlC')
 IBM_COMPILERS.add(FC_ROLE, 'xlf')
 
-CRAY_COMPILERS = CompilerFamily('Cray')
+CRAY_COMPILERS = CompilerFamily('Cray', show_wrapper_flags=['-craype-verbose'])
 CRAY_COMPILERS.add(CC_ROLE, 'cc')
-CRAY_COMPILERS.add(CXX_ROLE, 'c++', 'cxx', 'CC')
+CRAY_COMPILERS.add(CXX_ROLE, 'CC', 'c++', 'cxx')
 CRAY_COMPILERS.add(FC_ROLE, 'ftn', 'f90', 'f77')
 CRAY_COMPILERS.add(UPC_ROLE, 'upc')
-
 

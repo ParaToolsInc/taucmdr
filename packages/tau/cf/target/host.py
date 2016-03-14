@@ -32,7 +32,9 @@ import platform
 from tau import logger
 from tau.error import ConfigurationError
 from tau.cf.target import Architecture, TauArch, OperatingSystem
-from tau.cf.target import IBM_BGP_ARCH, IBM_BGQ_ARCH, CRAY_CNL_OS, IBM_CNK_OS
+from tau.cf.target import IBM_BGP_ARCH, IBM_BGQ_ARCH
+from tau.cf.target import CRAY_CNL_OS, IBM_CNK_OS
+from tau.cf.target import TAU_ARCH_CRAYCNL, TAU_ARCH_BGP, TAU_ARCH_BGQ, TAU_ARCH_IBM64_LINUX, TAU_ARCH_MIC_LINUX
 from tau.cf.compiler.installed import InstalledCompilerFamily
  
 
@@ -143,14 +145,17 @@ def preferred_compilers():
     try:
         inst = preferred_compilers.inst
     except AttributeError:
-        from tau.cf.compiler import IBM_COMPILERS, GNU_COMPILERS, CRAY_COMPILERS 
+        from tau.cf.compiler import IBM_COMPILERS, GNU_COMPILERS, CRAY_COMPILERS, INTEL_COMPILERS
         host_tau_arch = tau_arch()
-        if host_tau_arch == 'craycnl':
+        if host_tau_arch is TAU_ARCH_CRAYCNL:
             LOGGER.debug("Prefering Cray compiler wrappers")
             inst = CRAY_COMPILERS
-        elif host_tau_arch in ['bgp', 'bgq']:
+        elif host_tau_arch in (TAU_ARCH_BGP, TAU_ARCH_BGQ, TAU_ARCH_IBM64_LINUX):
             LOGGER.debug("Prefering IBM compilers")
             inst = IBM_COMPILERS
+        elif host_tau_arch is TAU_ARCH_MIC_LINUX:
+            LOGGER.debug("Preferring Intel compilers")
+            inst = INTEL_COMPILERS
         else:
             LOGGER.debug("No preferred compilers for '%s'", host_tau_arch)
             inst = GNU_COMPILERS
@@ -173,12 +178,15 @@ def preferred_mpi_compilers():
     except AttributeError:
         from tau.cf.compiler.mpi import IBM_MPI_COMPILERS, CRAY_MPI_COMPILERS, SYSTEM_MPI_COMPILERS 
         host_tau_arch = tau_arch()
-        if host_tau_arch == 'craycnl':
+        if host_tau_arch is TAU_ARCH_CRAYCNL:
             LOGGER.debug("Prefering Cray MPI compilers")
             inst = CRAY_MPI_COMPILERS
-        elif host_tau_arch in ['bgp', 'bgq']:
+        elif host_tau_arch in (TAU_ARCH_BGP, TAU_ARCH_BGQ, TAU_ARCH_IBM64_LINUX):
             LOGGER.debug("Prefering IBM MPI compilers")
             inst = IBM_MPI_COMPILERS
+        elif host_tau_arch is TAU_ARCH_MIC_LINUX:
+            LOGGER.debug("Preferring Intel compilers")
+            inst = INTEL_MPI_COMPILERS
         else:
             LOGGER.debug("No preferred MPI compilers for '%s'", host_tau_arch)
             inst = SYSTEM_MPI_COMPILERS
