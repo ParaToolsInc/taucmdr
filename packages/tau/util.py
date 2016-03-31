@@ -80,6 +80,8 @@ def rmtree(path, ignore_errors=False, onerror=None, attempts=5):
         onerror: Callable that accepts three parameters: function, path, and excinfo.  See :any:shutil.rmtree.
         attempts (int): Number of times to repeat shutil.rmtree before giving up.
     """
+    if(not os.path.exists(path)):
+        return
     for i in xrange(attempts-1):
         try:
             return shutil.rmtree(path)
