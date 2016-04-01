@@ -86,7 +86,7 @@ class InstalledCompilerCreator(KeyedRecordCreator):
         except KeyError:
             try:
                 arch_args = args[1]
-            except KeyError:
+            except IndexError:
                 arch_args = []
         return KeyedRecordCreator.__call__(cls, absolute_path, arch_args)
 
@@ -112,7 +112,7 @@ class InstalledCompiler(KeyedRecord):
     
     __key__ = 'absolute_path'
 
-    def __init__(self, absolute_path, arch_args=None):
+    def __init__(self, absolute_path, arch_args):
         """Probes the system to find an installed compiler.
         
         May check PATH, file permissions, or other conditions in the system
@@ -124,8 +124,6 @@ class InstalledCompiler(KeyedRecord):
         Args:
             absolute_path (str): Absolute path to the compiler command.
         """
-        if not arch_args:
-            arch_args = []
         self._md5sum = None
         self.absolute_path = absolute_path
         self.path = os.path.dirname(absolute_path)
