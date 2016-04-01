@@ -153,7 +153,7 @@ def download(src, dest):
         wget_cmd = [wget, src, '-O', dest] if wget else None
         for cmd in [curl_cmd, wget_cmd]:
             if cmd:
-                if _create_dl_subprocess(cmd) == 0:
+                if _create_dl_subprocess(cmd, src) == 0:
                     return
                 LOGGER.warning("%s failed to download '%s'. Retrying with a different method...", cmd[0], src)                    
         # Fallback: this is usually **much** slower than curl or wget
@@ -163,14 +163,15 @@ def download(src, dest):
             LOGGER.warning("urllib failed to download '%s': %s", src, err)
             raise IOError("Failed to download '%s'" % src)
 
-def _create_dl_subprocess(cmd):
+def _create_dl_subprocess(cmd, src):
     LOGGER.debug("Creating subprocess: cmd=%s\n", cmd)
-    if 'curl' in cmd[0]:
-        proc_output = subprocess.Popen(['curl', '-sI', cmd[1], '--location'],
+    if cmd[0].endswith('curl'):
+        proc_output = subprocess.Popen(['curl', '-sI', src, '--location'],
                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
-    elif 'wget' in cmd[0]:
-        proc_output = subprocess.Popen(['wget', cmd[2], '--spider', '--server-response'],
+    elif cmd[0].endswith('wget'):
+        proc_output = subprocess.Popen(['wget', src, '--spider', '--server-response'],
                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[1]
+    LOGGER.debug(proc_output)
     try:
         file_size = int(proc_output.partition('Content-Length')[2].split()[1])
     except (ValueError, IndexError):
@@ -185,6 +186,7 @@ def _create_dl_subprocess(cmd):
                 current_size = 0
             progress_bar(current_size, 1, file_size)
         proc.wait()
+        sys.stdout.write('\n')
         retval = proc.returncode
         LOGGER.debug("%s returned %d", cmd, retval)
         return retval
@@ -200,7 +202,7 @@ def progress_bar(count, block_size, total_size):
         total_size (int): Total amount of work to be completed.
     """
     if total_size > 0:
-        width = logger.LINE_WIDTH
+        width = max(1, logger.LINE_WIDTH - 10)
         percent = min(100, float(count*block_size) / total_size)
         sys.stdout.write('[' + '>'*int(percent*width) + '-'*int((1-percent)*width) + '] %3s%%\r' % int(100*percent))
     else:
