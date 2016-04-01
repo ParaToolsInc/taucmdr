@@ -40,6 +40,7 @@ import urllib
 import pkgutil
 import tarfile
 import urlparse
+import itertools
 from zipimport import zipimporter
 from zipfile import ZipFile
 from termcolor import termcolor
@@ -173,7 +174,7 @@ def _create_dl_subprocess(cmd):
     try:
         file_size = int(proc_output.partition('Content-Length')[2].split()[1])
     except (ValueError, IndexError):
-        LOGGER.warning("Invalid response while download size")
+        LOGGER.warning("Invalid response while retrieving download file size")
         file_size = -1
     with open(os.devnull, 'wb') as devnull:
         proc = subprocess.Popen(cmd, stdout=devnull, stderr=subprocess.STDOUT)
@@ -187,14 +188,9 @@ def _create_dl_subprocess(cmd):
         retval = proc.returncode
         LOGGER.debug("%s returned %d", cmd, retval)
         return retval
-    
-def _spinner():
-    steps = ['|', '/', '-', '\\']
-    idx = 0
-    while True:
-        yield steps[idx]
-        idx = (idx + 1) % len(steps)
 
+    
+_spinner = itertools.cycle(['-', '/', '|', '\\']) # pylint: disable=invalid-name
 def progress_bar(count, block_size, total_size):
     """Show a bar or spinner on stdout to indicate progress.
     
@@ -208,7 +204,8 @@ def progress_bar(count, block_size, total_size):
         percent = min(100, float(count*block_size) / total_size)
         sys.stdout.write('[' + '>'*int(percent*width) + '-'*int((1-percent)*width) + '] %3s%%\r' % int(100*percent))
     else:
-        sys.stdout.write('[%s] UNKNOWN\r' % _spinner())
+        sys.stdout.write('[%s] UNKNOWN\r' % _spinner.next())
+    sys.stdout.flush()
 
 def archive_toplevel(archive):
     """Returns the name of the top-level directory in an archive.
