@@ -117,6 +117,8 @@ class TauInstallation(Installation):
     unusually complex to consider all the corner cases.  This is where most
     of the systemization of TAU is actually implemented so it can get ugly.
     """
+    # Settle down pylint.  This is a big, ugly class and there's not much we can do about it.
+    # pylint: disable=too-many-instance-attributes,too-many-arguments,too-many-locals
 
     def __init__(self, prefix, src, target_arch, target_os, compilers, 
                  verbose,
@@ -362,7 +364,7 @@ class TauInstallation(Installation):
         except KeyError:
             raise InternalError("Unknown compiler family for Fortran: '%s'" % fc_family)
 
-        flags = [ flag for flag in  
+        flags = [flag for flag in  
                  ['-prefix=%s' % self.install_prefix,
                   '-arch=%s' % self.arch,
                   '-cc=%s' % cc_command,
@@ -715,7 +717,9 @@ class TauInstallation(Installation):
                    variables to set before running the application command.
         """
         opts, env = self.runtime_config()
-        use_tau_exec = self.measure_opencl or (self.source_inst == 'never' and self.compiler_inst == 'never' and not self.link_only)
+        use_tau_exec = (self.measure_opencl or (self.source_inst == 'never' and 
+                                                self.compiler_inst == 'never' and 
+                                                not self.link_only))
         if use_tau_exec:
             tau_exec_opts = opts
             tags = self.get_makefile_tags()

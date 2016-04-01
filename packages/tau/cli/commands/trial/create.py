@@ -32,7 +32,7 @@ from tau.error import ConfigurationError
 from tau.cli import arguments
 from tau.cli.cli_view import CreateCommand
 from tau.model.trial import Trial
-from tau.model.project import Project, ProjectSelectionError
+from tau.model.project import Project
 
 
 LAUNCHERS = ['mpirun', 'mpiexec', 'ibrun', 'aprun']

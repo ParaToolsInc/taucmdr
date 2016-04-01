@@ -40,9 +40,9 @@ import urllib
 import pkgutil
 import tarfile
 import urlparse
-from termcolor import termcolor
 from zipimport import zipimporter
 from zipfile import ZipFile
+from termcolor import termcolor
 from tau import logger
 
 
@@ -80,13 +80,13 @@ def rmtree(path, ignore_errors=False, onerror=None, attempts=5):
         onerror: Callable that accepts three parameters: function, path, and excinfo.  See :any:shutil.rmtree.
         attempts (int): Number of times to repeat shutil.rmtree before giving up.
     """
-    if(not os.path.exists(path)):
+    if not os.path.exists(path):
         return
     for i in xrange(attempts-1):
         try:
             return shutil.rmtree(path)
-        except Exception as err:
-            LOGGER.warning("Unexpected error: %s" % err)
+        except Exception as err:        # pylint: disable=broad-except
+            LOGGER.warning("Unexpected error: %s", err)
             time.sleep(i+1)
     shutil.rmtree(path, ignore_errors, onerror)
 
@@ -165,7 +165,7 @@ def download(src, dest):
 def _create_dl_subprocess(cmd):
     LOGGER.debug("Creating subprocess: cmd=%s\n", cmd)
     if 'curl' in cmd[0]:
-        proc_output = subprocess.Popen(['curl','-sI', cmd[1], '--location'],
+        proc_output = subprocess.Popen(['curl', '-sI', cmd[1], '--location'],
                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
     elif 'wget' in cmd[0]:
         proc_output = subprocess.Popen(['wget', cmd[2], '--spider', '--server-response'],
@@ -284,7 +284,7 @@ def file_accessible(filepath, mode='r'):
     handle = None
     try:
         handle = open(filepath, mode)
-    except:
+    except:     # pylint: disable=bare-except
         return False
     else:
         return True
@@ -458,8 +458,7 @@ def walk_packages(path, prefix):
     :any:`pkgutil.walk_packages` silently fails to list modules and packages when
     they are in a zip file.  This implementation works around this.
     """
-    def seen(path, dct={}):
-        # pylint: disable=dangerous-default-value
+    def seen(path, dct={}):     # pylint: disable=dangerous-default-value
         if path in dct:
             return True
         dct[path] = True
@@ -497,11 +496,11 @@ def _zipimporter_iter_modules(archive, path):
 
 
 def _iter_modules(paths, prefix):
+    # pylint: disable=no-member,redefined-variable-type
     yielded = {}
     for path in paths:
         importer = pkgutil.get_importer(path)
         if isinstance(importer, zipimporter):
-            # pylint: disable=no-member
             archive = os.path.basename(importer.archive)
             iter_importer_modules = _zipimporter_iter_modules(archive, path)
         else:

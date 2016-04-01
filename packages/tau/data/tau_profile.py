@@ -47,14 +47,14 @@ class TauProfile(object):
         self.interval_events = {}
         self.aggregates = {}
         self.user_events = {}
-        with open(self.path) as fp:
-            self._parse_header(fp)
-            self._parse_metadata(fp)
-            self._parse_interval_events(fp)
-            self._parse_aggregates(fp)
-            self._parse_user_events(fp)
+        with open(self.path) as fd:
+            self._parse_header(fd)
+            self._parse_metadata(fd)
+            self._parse_interval_events(fd)
+            self._parse_aggregates(fd)
+            self._parse_user_events(fd)
 
-    def _parse_header(self, fp):
+    def _parse_header(self, fd):
         """Parse a TAU profile file's header.
 
         The first line of a TAU profile is formatted as <COUNT><SPACE><METRIC> where <COUNT> is an integer count of
@@ -62,19 +62,19 @@ class TauProfile(object):
         prepended with the garbage string "templated_functions_MULTI_".
 
         Args:
-            fp (file): An open profile file handle.
+            fd (file): An open profile file handle.
 
         Raises:
             DataFormatError: The profile file's header is invalid."
         """
         try:
-            interval_count, metric = fp.readline().split()
+            interval_count, metric = fd.readline().split()
             self.interval_count = int(interval_count)
             self.metric = metric.replace('templated_functions_MULTI_', '').strip()
         except ValueError:
             raise DataFormatError(self.path, "Invalid profile file header")
 
-    def _parse_metadata(self, fp):
+    def _parse_metadata(self, fd):
         """Parse a TAU profile file's metadata.
 
         Profile metadata appears on the second line of the file, which is formatted as <LABELS><SPACE><METADATA>.
@@ -83,20 +83,20 @@ class TauProfile(object):
         </attribute>...]</metadata> where NAME and VALUE are the name and value of the metadata attribute.
 
         Args:
-            fp (file): An open profile file handle.
+            fd (file): An open profile file handle.
 
         Raises:
             DataFormatError: The profile file's metadata is invalid."
         """
         metadata_start = "# Name Calls Subrs Excl Incl ProfileCalls #"
-        line = fp.readline()
+        line = fd.readline()
         if not line.startswith(metadata_start):
             raise DataFormatError(self.path, "Invalid metadata: line did not begin in the expected way")
         self.metadata = dict(re.findall('<attribute><name>(.+?)</name><value>(.*?)</value></attribute>', line))
         if not self.metadata:
             raise DataFormatError(self.path, "Invalid metadata line: can't parse metadata")
 
-    def _parse_interval_events(self, fp):
+    def _parse_interval_events(self, fd):
         """Parse a TAU profile file's interval events.
 
         There is one interval event per line.  Each event line is formatted as:
@@ -104,11 +104,11 @@ class TauProfile(object):
         The units of <EXCLUSIVE> and <INCLUSIVE> depend on the metric.  Time is probably in microseconds.
 
         Args:
-            fp (file): An open profile file handle.
+            fd (file): An open profile file handle.
         """
-        pattern = re.compile('^"([^"]+)"\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+GROUP="([^"]+)"\s*$')
-        for i in xrange(self.interval_count):
-            match = pattern.match(fp.readline())
+        pattern = re.compile(r'^"([^"]+)"\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+GROUP="([^"]+)"\s*$')
+        for _ in xrange(self.interval_count):
+            match = pattern.match(fd.readline())
             name = match.group(1).strip()
             groups = match.group(7).split('|')
             self.interval_events[name] = {'calls': int(match.group(2)),
@@ -118,18 +118,18 @@ class TauProfile(object):
                                           'profile_calls': int(match.group(6)),
                                           'groups': groups}
 
-    def _parse_aggregates(self, fp):
+    def _parse_aggregates(self, fd):
         """Parse a TAU profile file's aggregate events.
 
         There are no aggregates, this function just consumes one line of the profile file.
 
         Args:
-            fp (file): An open profile file handle.
+            fd (file): An open profile file handle.
         """
         # No aggregates at the moment
-        fp.readline()
+        fd.readline()
 
-    def _parse_user_events(self, fp):
+    def _parse_user_events(self, fd):
         """Parse a TAU profile file's atomic user events.
 
         There is one atomic user event per line.  Each event line is formatted as:
@@ -137,20 +137,20 @@ class TauProfile(object):
         <NAME> is a string, <COUNT> is an integer, all others are real numbers.
 
         Args:
-            fp (file): An open profile file handle.
+            fd (file): An open profile file handle.
         """
-        user_event_count, title = fp.readline().split()
+        user_event_count, title = fd.readline().split()
         self.user_event_count = int(user_event_count)
         if title != 'userevents':
             #error
             pass
         user_events_start = "# eventname numevents max min mean sumsqr"
-        if fp.readline() != user_events_start:
+        if fd.readline() != user_events_start:
             # error
             pass
-        pattern = re.compile('^"([^"]+)"\s+(\d+)\s+(.+)\s+(.+)\s+(.+)\s+(.+)\s*$')
-        for i in xrange(self.user_event_count):
-            match = pattern.match(fp.readline())
+        pattern = re.compile(r'^"([^"]+)"\s+(\d+)\s+(.+)\s+(.+)\s+(.+)\s+(.+)\s*$')
+        for _ in xrange(self.user_event_count):
+            match = pattern.match(fd.readline())
             name = match.group(1).strip()
             self.user_events[name] = {'count': int(match.group(2)),
                                       'max': float(match.group(3)),

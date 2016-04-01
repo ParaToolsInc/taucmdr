@@ -42,6 +42,14 @@ from tau.cf.target import host, DARWIN_OS
 
 
 def attributes():
+    """Construct attributes dictionary for the measurement model.
+    
+    We build the attributes in a function so that classes like ``tau.module.project.Project`` are
+    fully initialized and usable in the returned dictionary.
+    
+    Returns:
+        dict: Attributes dictionary.
+    """
     from tau.model.project import Project
     from tau.model.target import Target
     from tau.model.application import Application
@@ -318,7 +326,7 @@ class Measurement(Model):
                                      "Specify %s or %s or both" % (profile_flag, trace_flag))
         
         if ((self['source_inst'] == 'never') and (self['compiler_inst'] == 'never') and 
-            (not self['sample']) and (not self['link_only'])):
+                (not self['sample']) and (not self['link_only'])):
             source_inst_flag = get_flag('source_inst')
             compiler_inst_flag = get_flag('compiler_inst')
             sample_flag = get_flag('sample')

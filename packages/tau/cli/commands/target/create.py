@@ -56,7 +56,7 @@ class TargetCreateCommand(CreateCommand):
         Raises:
             ConfigurationError: Invalid command line arguments specified
         """
-        if getattr(args, 'host_arch')  == 'knc':
+        if getattr(args, 'host_arch') == 'knc':
             arch_args = ['-mmic']
         else:
             arch_args = []

@@ -53,7 +53,7 @@ class MpiCompilerFamily(CompilerFamily):
     def __init__(self, *args, **kwargs):
         if 'show_wrapper_flags' not in kwargs:
             kwargs['show_wrapper_flags'] = ['-show']
-        super(MpiCompilerFamily,self).__init__(*args, **kwargs)
+        super(MpiCompilerFamily, self).__init__(*args, **kwargs)
 
     @classmethod
     def preferred(cls):

@@ -38,6 +38,7 @@ from tau.model.measurement import Measurement
 
 
 class ProjectEditCommand(EditCommand):
+    """``tau project edit`` subcommand."""
 
     def construct_parser(self):
         usage = "%s <project_name> [arguments]" % self.command
@@ -93,32 +94,8 @@ class ProjectEditCommand(EditCommand):
                             default=arguments.SUPPRESS)
         return parser
 
-
-    def main(self, argv):
-        from tau.cli.commands.project.list import COMMAND as project_list
-
-        args = self.parser.parse_args(args=argv)
-        self.logger.debug('Arguments: %s', args)
-    
-        tar_ctrl = Target.controller(PROJECT_STORAGE)
-        app_ctrl = Application.controller(PROJECT_STORAGE)
-        meas_ctrl = Measurement.controller(PROJECT_STORAGE)
-        proj_ctrl = Project.controller()
-    
-        project_name = args.name
-        project = proj_ctrl.one({'name': project_name})
-        if not project:
-            self.parser.error("'%s' is not a project name. Type `%s` to see valid names." % 
-                              (project_name, project_list.command))
-    
-        updates = dict(project.element)
-        updates['name'] = getattr(args, 'new_name', project_name)
-        targets = set(project['targets'])
-        applications = set(project['applications'])
-        measurements = set(project['measurements'])
+    def _parse_add_args(self, args, tar_ctrl, app_ctrl, meas_ctrl, targets, applications, measurements):
         added = set()
-        removed = set()
-        
         for attr, ctrl, dest in [('add_targets', tar_ctrl, targets),
                                  ('add_applications', app_ctrl, applications),
                                  ('add_measurements', meas_ctrl, measurements)]:
@@ -148,7 +125,10 @@ class ProjectEditCommand(EditCommand):
                 applications.add(app.eid)
             elif mes:
                 measurements.add(mes.eid)
-    
+        return added
+
+    def _parse_remove_args(self, args, tar_ctrl, app_ctrl, meas_ctrl, targets, applications, measurements):
+        removed = set()
         for attr, ctrl, dest in [('remove_targets', tar_ctrl, targets),
                                  ('remove_applications', app_ctrl, applications),
                                  ('remove_measurements', meas_ctrl, measurements)]:
@@ -178,6 +158,33 @@ class ProjectEditCommand(EditCommand):
                 applications.remove(app.eid)
             elif mes:
                 measurements.remove(mes.eid)
+        return removed
+
+    def main(self, argv):
+        from tau.cli.commands.project.list import COMMAND as project_list
+
+        args = self.parser.parse_args(args=argv)
+        self.logger.debug('Arguments: %s', args)
+    
+        tar_ctrl = Target.controller(PROJECT_STORAGE)
+        app_ctrl = Application.controller(PROJECT_STORAGE)
+        meas_ctrl = Measurement.controller(PROJECT_STORAGE)
+        proj_ctrl = Project.controller()
+    
+        project_name = args.name
+        project = proj_ctrl.one({'name': project_name})
+        if not project:
+            self.parser.error("'%s' is not a project name. Type `%s` to see valid names." % 
+                              (project_name, project_list.command))
+    
+        updates = dict(project.element)
+        updates['name'] = getattr(args, 'new_name', project_name)
+        targets = set(project['targets'])
+        applications = set(project['applications'])
+        measurements = set(project['measurements'])
+        
+        added = self._parse_add_args(args, tar_ctrl, app_ctrl, meas_ctrl, targets, applications, measurements)
+        removed = self._parse_remove_args(args, tar_ctrl, app_ctrl, meas_ctrl, targets, applications, measurements)
     
         updates['targets'] = list(targets)
         updates['applications'] = list(applications)

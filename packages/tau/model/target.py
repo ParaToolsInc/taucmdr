@@ -48,7 +48,14 @@ from tau.cf.target import host, DARWIN_OS, INTEL_KNC_ARCH
 from tau.model.compiler import Compiler
 
 
-def knc_require_k1om(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
+def knc_require_k1om(*_):
+    """Compatibility checking callback for use with data models.
+
+    Requires that the Intel k1om tools be installed if the host architecture is KNC. 
+        
+    Raises:
+        ConfigurationError: Invalid compiler family specified in target configuration.
+    """
     k1om_ar = util.which('x86_64-k1om-linux-ar')
     if not k1om_ar:
         for path in glob.glob('/usr/linux-k1om-*'):
@@ -60,6 +67,14 @@ def knc_require_k1om(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
 
 
 def attributes():
+    """Construct attributes dictionary for the target model.
+    
+    We build the attributes in a function so that classes like ``tau.module.project.Project`` are
+    fully initialized and usable in the returned dictionary.
+    
+    Returns:
+        dict: Attributes dictionary.
+    """
     from tau.model.project import Project
     from tau.cli.arguments import ParsePackagePathAction
     from tau.cf.target import Architecture, OperatingSystem
@@ -69,8 +84,8 @@ def attributes():
                                              "You must use Intel compilers to target the Xeon Phi",
                                              "Try adding `--host-compilers=Intel` to the command line")
     knc_intel_mpi_only = require_compiler_family(INTEL_MPI_COMPILERS,
-                                             "You must use Intel MPI compilers to target the Xeon Phi",
-                                             "Try adding `--mpi-compilers=Intel` to the command line")
+                                                 "You must use Intel MPI compilers to target the Xeon Phi",
+                                                 "Try adding `--mpi-compilers=Intel` to the command line")
 
     host_os = host.operating_system()
     

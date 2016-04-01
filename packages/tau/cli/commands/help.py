@@ -28,7 +28,6 @@
 """``tau help`` subcommand."""
 
 import os
-import sys
 import mimetypes
 from tau import EXIT_SUCCESS, HELP_CONTACT, TAU_SCRIPT
 from tau import logger, util, cli
@@ -42,7 +41,6 @@ _SCRIPT_CMD = os.path.basename(TAU_SCRIPT)
 
 _GENERIC_HELP = "See '%s --help' or contact %s for assistance" % (_SCRIPT_CMD, HELP_CONTACT)
 
-# FIXME: Get commands from subcommands
 _KNOWN_FILES = {'makefile': ("makefile script",
                              "See 'tau make --help' for help building with make"),
                 'a.out': ("binary executable",

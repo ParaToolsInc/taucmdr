@@ -25,6 +25,15 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
+"""
+TAU Storage Containers.
+
+A storage container provides a record database, a persistent filesystem, and a key/value store.
+The database is accessed via member methods like :any:`insert`, :any:`search`, etc.
+The filesystem is accessed via its filesystem prefix (e.g. ``/usr/local/packages``) via :any:`prefix`.
+The key/value store is accessed via the `[]` operator, i.e. treat the storage object like a dictionary.
+"""
+
 
 from abc import ABCMeta, abstractmethod
 from tau.error import Error

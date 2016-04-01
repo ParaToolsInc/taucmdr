@@ -139,12 +139,10 @@ class InitializeCommand(AbstractCommand):
         project_name = args.project_name
         target_name = args.target_name
         application_name = args.application_name
-        try:
-            storage_level = args.storage_level
-        except:
-            project_create_cmd.main([project_name])
+        if hasattr(args, 'storage_level'):
+            project_create_cmd.main([project_name, '--storage-level', args.storage_level])
         else:
-            project_create_cmd.main([project_name, '--storage-level', storage_level])
+            project_create_cmd.main([project_name])
 
         select_cmd.main(['--project', project_name])
 

@@ -25,7 +25,6 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-from tau.storage import StorageError
 """A command line data `view`.
 
 See http://en.wikipedia.org/wiki/Model-view-controller
@@ -38,6 +37,7 @@ from termcolor import termcolor
 from tau import EXIT_SUCCESS
 from tau import logger, util, cli
 from tau.error import UniqueAttributeError, InternalError
+from tau.storage import StorageError
 from tau.storage.levels import SYSTEM_STORAGE, USER_STORAGE, PROJECT_STORAGE, STORAGE_LEVELS
 from tau.model.project import Project, ProjectSelectionError
 from tau.cli import arguments
@@ -53,6 +53,7 @@ class AbstractCliView(AbstractCommand):
         controller (class): The controller class for this view's data.
         model_name (str): The lower-case name of the model.
     """
+    # pylint: disable=abstract-method
 
     def __init__(self, model, module_name, summary_fmt=None, help_page_fmt=None, group=None):
         self.model = model
