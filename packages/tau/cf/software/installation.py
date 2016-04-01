@@ -35,7 +35,6 @@ from lockfile import LockFile, NotLocked
 from tau import logger, util
 from tau.error import ConfigurationError
 from tau.cf.software import SoftwarePackageError
-from tau.cf.compiler import CC_ROLE
 from tau.cf.target import Architecture, OperatingSystem 
 
 

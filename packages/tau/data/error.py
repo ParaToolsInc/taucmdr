@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
@@ -26,23 +25,14 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""TAU Commander command line program entry point.
+"""Error class for data format errors.
 
-Just patches through to tau.cli.commands.__main__
+TODO: Docs
 """
 
-if __name__ == '__main__':
-    import os
-    import sys
+from tau.error import Error
 
-    if getattr(sys, 'frozen', False):
-        __file__ = sys.executable
 
-    here = os.path.dirname(__file__)
-    os.environ['__TAU_HOME__'] = os.path.join(here, '..')
-    os.environ['__TAU_SCRIPT__'] = os.path.basename(__file__)
-    packages = os.path.join(here, '..', 'packages')
-    sys.path.insert(0, packages)
-
-    from tau.cli.commands.__main__ import COMMAND as cli_main_cmd
-    sys.exit(cli_main_cmd.main(sys.argv[1:]))
+class DataFormatError(Error):
+    """Indicates that the performance data is not in the expected format."""
+    pass

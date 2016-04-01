@@ -108,6 +108,8 @@ class TargetCreateCommand(CreateCommand):
                     except KeyError:
                         self.logger.debug("Not probing %s: not found", role)
                     else:
+                        self.logger.debug("%s: %s", role, comp)
+                        self.logger.debug("family: %s", comp.info.family)
                         probed.update(getattr(comp.wrapped, wrapped_attr))
                 setattr(args, args_attr, list(probed))
     

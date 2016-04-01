@@ -152,18 +152,63 @@ def download(src, dest):
         wget_cmd = [wget, src, '-O', dest] if wget else None
         for cmd in [curl_cmd, wget_cmd]:
             if cmd:
-                if create_dl_subprocess(cmd, stdout=False) == 0:
+                if _create_dl_subprocess(cmd) == 0:
                     return
                 LOGGER.warning("%s failed to download '%s'. Retrying with a different method...", cmd[0], src)                    
         # Fallback: this is usually **much** slower than curl or wget
-        def _dl_progress(count, block_size, total_size):
-            progress_bar(count*block_size, total_size)
         try:
-            urllib.urlretrieve(src, dest, reporthook=_dl_progress)
+            urllib.urlretrieve(src, dest, reporthook=progress_bar)
         except Exception as err:
             LOGGER.warning("urllib failed to download '%s': %s", src, err)
             raise IOError("Failed to download '%s'" % src)
 
+def _create_dl_subprocess(cmd):
+    LOGGER.debug("Creating subprocess: cmd=%s\n", cmd)
+    if 'curl' in cmd[0]:
+        proc_output = subprocess.Popen(['curl','-sI', cmd[1], '--location'],
+                                       stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
+    elif 'wget' in cmd[0]:
+        proc_output = subprocess.Popen(['wget', cmd[2], '--spider', '--server-response'],
+                                       stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[1]
+    try:
+        file_size = int(proc_output.partition('Content-Length')[2].split()[1])
+    except (ValueError, IndexError):
+        LOGGER.warning("Invalid response while download size")
+        file_size = -1
+    with open(os.devnull, 'wb') as devnull:
+        proc = subprocess.Popen(cmd, stdout=devnull, stderr=subprocess.STDOUT)
+        while proc.poll() is None:
+            try:
+                current_size = os.stat(cmd[-1]).st_size
+            except OSError:
+                current_size = 0
+            progress_bar(current_size, 1, file_size)
+        proc.wait()
+        retval = proc.returncode
+        LOGGER.debug("%s returned %d", cmd, retval)
+        return retval
+    
+def _spinner():
+    steps = ['|', '/', '-', '\\']
+    idx = 0
+    while True:
+        yield steps[idx]
+        idx = (idx + 1) % len(steps)
+
+def progress_bar(count, block_size, total_size):
+    """Show a bar or spinner on stdout to indicate progress.
+    
+    Args:
+        count (int): Number of blocks of `block_size` that have been completed
+        block_size (int): Size of a work block.
+        total_size (int): Total amount of work to be completed.
+    """
+    if total_size > 0:
+        width = logger.LINE_WIDTH
+        percent = min(100, float(count*block_size) / total_size)
+        sys.stdout.write('[' + '>'*int(percent*width) + '-'*int((1-percent)*width) + '] %3s%%\r' % int(100*percent))
+    else:
+        sys.stdout.write('[%s] UNKNOWN\r' % _spinner())
 
 def archive_toplevel(archive):
     """Returns the name of the top-level directory in an archive.
@@ -179,15 +224,22 @@ def archive_toplevel(archive):
     Args:
         archive (str): Path to archive file.
         
+    Raises:
+        IOError: `archive` could not be read.
+        
     Returns:
         str: Directory name.
     """
     LOGGER.debug("Determining top-level directory name in '%s'", archive)
-    with tarfile.open(archive) as fin:
+    try:
+        fin = tarfile.open(archive)
+    except tarfile.ReadError:
+        raise IOError
+    else:
         dirs = [d.name for d in fin.getmembers() if d.type == tarfile.DIRTYPE]
-    topdir = min(dirs, key=len)
-    LOGGER.debug("Top-level directory in '%s' is '%s'", archive, topdir)
-    return topdir
+        topdir = min(dirs, key=len)
+        LOGGER.debug("Top-level directory in '%s' is '%s'", archive, topdir)
+        return topdir
 
 
 def extract(archive, dest):
@@ -284,75 +336,7 @@ def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True):
     retval = proc.returncode
     LOGGER.debug("%s returned %d", cmd, retval)
     return retval
-
-
-def create_dl_subprocess(cmd, cwd=None, env=None, stdout=True, log=True):
-    """Create a subprocess for downloading software.
     
-    See :any:`subprocess.Popen`.
-    
-    Args:
-        cmd (list): Command and its command line arguments.
-        cwd (str): Change directory to `cwd` if given, otherwise use :any:`os.getcwd`.
-        env (dict): Environment variables to set before launching cmd.
-        stdout (bool): If True send subprocess stdout and stderr to this processes' stdout.
-        log (bool): If True send subprocess stdout and stderr to the debug log.
-        
-    Returns:
-        int: Subprocess return code.
-    """
-    if not cwd:
-        cwd = os.getcwd()
-    if not env:
-        # Don't accidentally unset all environment variables with an empty dict
-        subproc_env = None
-    else:
-        subproc_env = dict(os.environ)
-        for key, val in env.iteritems():
-            subproc_env[key] = val
-            LOGGER.debug("%s=%s", key, val)
-    if 'curl' in cmd[0]:
-        proc_output = subprocess.Popen(['curl','-sI', cmd[2], '--location'],
-                                       stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
-        file_size = int(proc_output.partition('Content-Length')[2].split()[1])
-    if 'wget' in cmd[0]:
-        proc_output = subprocess.Popen(['wget', cmd[1], '--spider', '--server-response'],
-                                       stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[1]
-        file_size = int(proc_output.partition('Content-Length')[2].split()[1])
-    DEVNULL = open(os.devnull, 'wb')
-    LOGGER.debug("Creating subprocess: cmd=%s, cwd='%s'\n", cmd, cwd)
-    proc = subprocess.Popen(cmd, cwd=cwd, env=subproc_env,
-                            stdout=DEVNULL,
-                            stderr=subprocess.STDOUT,
-                            bufsize=1)
-    while proc.poll() is None:
-        try:
-            current_size = os.stat(cmd[-1]).st_size
-        except:
-            current_size = 0
-        progress_bar(current_size, file_size)
-    proc.wait()
-    retval = proc.returncode
-    LOGGER.debug("%s returned %d", cmd, retval)
-    return retval
-
-
-def progress_bar(current_size, total_size):
-    """Display progress bar for download of software
-
-    Args:
-        current_size (int):  current size of downloaded file
-        total_size (int): total size of downloaded file
-
-    Returns: 
-    """
-
-    size = logger.get_terminal_size()
-    width = int(size[0]) - 10
-    percent = min(100, float(current_size) / total_size)
-    sys.stdout.write('[' + '>' * int(percent * width) + '-' * int((1 - percent) * width) + '] %3s%%\r'
-                     %(int(100*percent)))
-
 
 def human_size(num, suffix='B'):
     """Converts a byte count to human readable units.
