@@ -88,6 +88,9 @@ evaluation=10.0 - ((float(5 * warning + refactor + convention) / statement) * 10
 # used to format the message information. See doc for all details
 #msg-template=
 
+# Disable module dependency graphs since this just clutters the console.
+disable=RP0401,RP0402
+
 
 [TYPECHECK]
 
