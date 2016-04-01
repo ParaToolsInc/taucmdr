@@ -75,6 +75,15 @@
 
 
 <div class="viewcode-block" id="require_compiler_family"><a class="viewcode-back" href="../../tau.model.html#tau.model.require_compiler_family">[docs]</a><span class="k">def</span> <span class="nf">require_compiler_family</span><span class="p">(</span><span class="n">family</span><span class="p">,</span> <span class="o">*</span><span class="n">hints</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Creates a compatibility callback to check a compiler family.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        family (CompilerFamily): The required compiler family.</span>
+<span class="sd">        *hints: String hints to show the user when the check fails.</span>
+<span class="sd">        </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        callable: a compatibility checking callback for use with data models.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">callback</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">rhs</span><span class="p">,</span> <span class="n">rhs_attr</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Compatibility checking callback for use with data models.</span>
 

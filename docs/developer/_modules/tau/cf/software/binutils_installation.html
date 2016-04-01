@@ -103,32 +103,31 @@
                                                    <span class="n">target_arch</span><span class="p">,</span> <span class="n">target_os</span><span class="p">,</span> <span class="n">compilers</span><span class="p">,</span> <span class="n">SOURCES</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="n">LIBRARIES</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_configure_default</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flags</span><span class="p">,</span> <span class="n">env</span><span class="p">):</span>
-        <span class="c1"># pylint: disable=unused-argument,no-self-use</span>
+        <span class="c1"># pylint: disable=unused-argument</span>
         <span class="n">flags</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s1">&#39;CFLAGS=-fPIC&#39;</span><span class="p">,</span> <span class="s1">&#39;CXXFLAGS=-fPIC&#39;</span><span class="p">,</span>
                       <span class="s1">&#39;--disable-nls&#39;</span><span class="p">,</span> <span class="s1">&#39;--disable-werror&#39;</span><span class="p">])</span>
     
     <span class="k">def</span> <span class="nf">_configure_bgp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flags</span><span class="p">,</span> <span class="n">env</span><span class="p">):</span>
-        <span class="c1"># pylint: disable=unused-argument,no-self-use</span>
+        <span class="c1"># pylint: disable=unused-argument</span>
         <span class="n">flags</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s1">&#39;CFLAGS=-fPIC&#39;</span><span class="p">,</span> <span class="s1">&#39;CXXFLAGS=-fPIC&#39;</span><span class="p">,</span>
                       <span class="s1">&#39;CC=/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc-bgp-linux-gcc&#39;</span><span class="p">,</span>
                       <span class="s1">&#39;CXX=/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc-bgp-linux-g++&#39;</span><span class="p">,</span>
                       <span class="s1">&#39;--disable-nls&#39;</span><span class="p">,</span> <span class="s1">&#39;--disable-werror&#39;</span><span class="p">])</span>
         
     <span class="k">def</span> <span class="nf">_configure_bgq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flags</span><span class="p">,</span> <span class="n">env</span><span class="p">):</span>
-        <span class="c1"># pylint: disable=unused-argument,no-self-use</span>
+        <span class="c1"># pylint: disable=unused-argument</span>
         <span class="n">flags</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s1">&#39;CFLAGS=-fPIC&#39;</span><span class="p">,</span> <span class="s1">&#39;CXXFLAGS=-fPIC&#39;</span><span class="p">,</span>
                       <span class="s1">&#39;CC=/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc64-bgq-linux-gcc&#39;</span><span class="p">,</span>
                       <span class="s1">&#39;CXX=/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc64-bgq-linux-g++&#39;</span><span class="p">,</span>
                       <span class="s1">&#39;--disable-nls&#39;</span><span class="p">,</span> <span class="s1">&#39;--disable-werror&#39;</span><span class="p">])</span>
         
     <span class="k">def</span> <span class="nf">_configure_ibm64</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flags</span><span class="p">,</span> <span class="n">env</span><span class="p">):</span>
-        <span class="c1"># pylint: disable=unused-argument,no-self-use</span>
+        <span class="c1"># pylint: disable=unused-argument</span>
         <span class="n">flags</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s1">&#39;CFLAGS=-fPIC&#39;</span><span class="p">,</span> <span class="s1">&#39;CXXFLAGS=-fPIC&#39;</span><span class="p">,</span>
                       <span class="s1">&#39;--disable-nls&#39;</span><span class="p">,</span> <span class="s1">&#39;--disable-werror&#39;</span><span class="p">,</span>
                       <span class="s1">&#39;--disable-largefile&#39;</span><span class="p">])</span>
         
     <span class="k">def</span> <span class="nf">_configure_knc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flags</span><span class="p">,</span> <span class="n">env</span><span class="p">):</span>
-        <span class="c1"># pylint: disable=no-self-use</span>
         <span class="n">k1om_ar</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;x86_64-k1om-linux-ar&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">k1om_ar</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s1">&#39;/usr/linux-k1om-*&#39;</span><span class="p">):</span>
@@ -169,7 +168,7 @@
         <span class="k">for</span> <span class="n">hdr</span> <span class="ow">in</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src_prefix</span><span class="p">,</span> <span class="s1">&#39;include&#39;</span><span class="p">,</span> <span class="s1">&#39;*&#39;</span><span class="p">)):</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">hdr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">include_path</span><span class="p">)</span>
-            <span class="k">except</span><span class="p">:</span>
+            <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
                 <span class="n">dst</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">include_path</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">hdr</span><span class="p">))</span>
                 <span class="n">shutil</span><span class="o">.</span><span class="n">copytree</span><span class="p">(</span><span class="n">hdr</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span>
 

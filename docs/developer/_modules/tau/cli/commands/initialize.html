@@ -82,7 +82,7 @@
 <span class="kn">from</span> <span class="nn">tau.cli.command</span> <span class="kn">import</span> <span class="n">AbstractCommand</span>
 <span class="kn">from</span> <span class="nn">tau.model.project</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">ProjectSelectionError</span>
 <span class="kn">from</span> <span class="nn">tau.storage.project</span> <span class="kn">import</span> <span class="n">ProjectStorageError</span>
-<span class="kn">from</span> <span class="nn">tau.storage.levels</span> <span class="kn">import</span> <span class="n">PROJECT_STORAGE</span><span class="p">,</span> <span class="n">USER_STORAGE</span><span class="p">,</span> <span class="n">STORAGE_LEVELS</span>
+<span class="kn">from</span> <span class="nn">tau.storage.levels</span> <span class="kn">import</span> <span class="n">PROJECT_STORAGE</span><span class="p">,</span> <span class="n">STORAGE_LEVELS</span>
 <span class="kn">from</span> <span class="nn">tau.cli.arguments</span> <span class="kn">import</span> <span class="n">ParseBooleanAction</span>
 <span class="kn">from</span> <span class="nn">tau.cli.commands.target.create</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">target_create_cmd</span>
 <span class="kn">from</span> <span class="nn">tau.cli.commands.application.create</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">application_create_cmd</span>
@@ -106,6 +106,12 @@
 
         <span class="n">usage</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> [arguments]&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span>
         <span class="n">parser</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">get_parser</span><span class="p">(</span><span class="n">prog</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">,</span> <span class="n">usage</span><span class="o">=</span><span class="n">usage</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">summary</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--bare&#39;</span><span class="p">,</span>
+                            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Initialize project storage but don&#39;t configure anything&quot;</span><span class="p">,</span>
+                            <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;?&#39;</span><span class="p">,</span>
+                            <span class="n">const</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                            <span class="n">default</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                            <span class="n">action</span><span class="o">=</span><span class="n">ParseBooleanAction</span><span class="p">)</span>
 
         <span class="n">default_project_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">())</span> <span class="ow">or</span> <span class="s1">&#39;default_project&#39;</span>
         <span class="n">project_group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s1">&#39;project arguments&#39;</span><span class="p">)</span>
@@ -179,12 +185,10 @@
         <span class="n">project_name</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">project_name</span>
         <span class="n">target_name</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">target_name</span>
         <span class="n">application_name</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">application_name</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">storage_level</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">storage_level</span>
-        <span class="k">except</span><span class="p">:</span>
-            <span class="n">project_create_cmd</span><span class="o">.</span><span class="n">main</span><span class="p">([</span><span class="n">project_name</span><span class="p">])</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s1">&#39;storage_level&#39;</span><span class="p">):</span>
+            <span class="n">project_create_cmd</span><span class="o">.</span><span class="n">main</span><span class="p">([</span><span class="n">project_name</span><span class="p">,</span> <span class="s1">&#39;--storage-level&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">storage_level</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">project_create_cmd</span><span class="o">.</span><span class="n">main</span><span class="p">([</span><span class="n">project_name</span><span class="p">,</span> <span class="s1">&#39;--storage-level&#39;</span><span class="p">,</span> <span class="n">storage_level</span><span class="p">])</span>
+            <span class="n">project_create_cmd</span><span class="o">.</span><span class="n">main</span><span class="p">([</span><span class="n">project_name</span><span class="p">])</span>
 
         <span class="n">select_cmd</span><span class="o">.</span><span class="n">main</span><span class="p">([</span><span class="s1">&#39;--project&#39;</span><span class="p">,</span> <span class="n">project_name</span><span class="p">])</span>
 
@@ -240,12 +244,13 @@
         <span class="k">except</span> <span class="n">ProjectStorageError</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;No project found, initializing a new project.&quot;</span><span class="p">)</span>
             <span class="n">PROJECT_STORAGE</span><span class="o">.</span><span class="n">connect_filesystem</span><span class="p">()</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_create_project</span><span class="p">(</span><span class="n">argv</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
-            <span class="k">except</span> <span class="n">ConfigurationError</span><span class="p">:</span>
-                <span class="n">PROJECT_STORAGE</span><span class="o">.</span><span class="n">disconnect_filesystem</span><span class="p">()</span>
-                <span class="n">util</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">proj_ctrl</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-                <span class="k">raise</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">bare</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_create_project</span><span class="p">(</span><span class="n">argv</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+                <span class="k">except</span> <span class="n">ConfigurationError</span><span class="p">:</span>
+                    <span class="n">PROJECT_STORAGE</span><span class="o">.</span><span class="n">disconnect_filesystem</span><span class="p">()</span>
+                    <span class="n">util</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">proj_ctrl</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+                    <span class="k">raise</span>
             <span class="k">return</span> <span class="n">dashboard_cmd</span><span class="o">.</span><span class="n">main</span><span class="p">([])</span>
         <span class="k">except</span> <span class="n">ProjectSelectionError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
             <span class="n">err</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;The project has been initialized but no project configuration is selected.&quot;</span>

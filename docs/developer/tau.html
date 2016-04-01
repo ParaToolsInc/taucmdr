@@ -326,6 +326,12 @@ for system-level package installation paths. <strong>Do not</strong> change it o
 <li class="toctree-l2"><a class="reference internal" href="tau.cli.html#module-tau.cli.command">tau.cli.command module</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="tau.data.html">tau.data package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tau.data.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.data.html#module-tau.data.error">tau.data.error module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tau.data.html#module-tau.data.tau_profile">tau.data.tau_profile module</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="tau.gui.html">tau.gui package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tau.model.html">tau.model package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="tau.model.html#subpackages">Subpackages</a><ul>
@@ -854,9 +860,12 @@ This routine will return stupid results for archives with multiple top-level ele
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>archive</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Path to archive file.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Directory name.</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">IOError</span></code> &#8211;
+<cite>archive</cite> could not be read.</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)">str</a></td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Directory name.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)">str</a></td>
 </tr>
 </tbody>
 </table>
@@ -899,34 +908,6 @@ This routine will return stupid results for archives with multiple top-level ele
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)">str</a></p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="tau.util.create_dl_subprocess">
-<code class="descclassname">tau.util.</code><code class="descname">create_dl_subprocess</code><span class="sig-paren">(</span><em>cmd</em>, <em>cwd=None</em>, <em>env=None</em>, <em>stdout=True</em>, <em>log=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#create_dl_subprocess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.create_dl_subprocess" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a subprocess for downloading software.</p>
-<p>See <a class="reference external" href="https://docs.python.org/library/subprocess.html#subprocess.Popen" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">subprocess.Popen</span></code></a>.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>cmd</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Command and its command line arguments.</li>
-<li><strong>cwd</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Change directory to <cite>cwd</cite> if given, otherwise use <a class="reference external" href="https://docs.python.org/library/os.html#os.getcwd" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">os.getcwd</span></code></a>.</li>
-<li><strong>env</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Environment variables to set before launching cmd.</li>
-<li><strong>stdout</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True send subprocess stdout and stderr to this processes&#8217; stdout.</li>
-<li><strong>log</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True send subprocess stdout and stderr to the debug log.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Subprocess return code.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)">int</a></p>
 </td>
 </tr>
 </tbody>
@@ -1156,21 +1137,21 @@ Otherwise raise TypeError.</p>
 
 <dl class="function">
 <dt id="tau.util.progress_bar">
-<code class="descclassname">tau.util.</code><code class="descname">progress_bar</code><span class="sig-paren">(</span><em>current_size</em>, <em>total_size</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#progress_bar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.progress_bar" title="Permalink to this definition">¶</a></dt>
-<dd><p>Display progress bar for download of software</p>
+<code class="descclassname">tau.util.</code><code class="descname">progress_bar</code><span class="sig-paren">(</span><em>count</em>, <em>block_size</em>, <em>total_size</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#progress_bar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.progress_bar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show a bar or spinner on stdout to indicate progress.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>current_size</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; current size of downloaded file</li>
-<li><strong>total_size</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; total size of downloaded file</li>
+<li><strong>count</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Number of blocks of <cite>block_size</cite> that have been completed</li>
+<li><strong>block_size</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Size of a work block.</li>
+<li><strong>total_size</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Total amount of work to be completed.</li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<p>Returns:</p>
 </dd></dl>
 
 <dl class="function">

@@ -74,7 +74,6 @@
 <span class="sd">&quot;&quot;&quot;``tau help`` subcommand.&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">mimetypes</span>
 <span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">EXIT_SUCCESS</span><span class="p">,</span> <span class="n">HELP_CONTACT</span><span class="p">,</span> <span class="n">TAU_SCRIPT</span>
 <span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">util</span><span class="p">,</span> <span class="n">cli</span>
@@ -88,7 +87,6 @@
 
 <span class="n">_GENERIC_HELP</span> <span class="o">=</span> <span class="s2">&quot;See &#39;</span><span class="si">%s</span><span class="s2"> --help&#39; or contact </span><span class="si">%s</span><span class="s2"> for assistance&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">_SCRIPT_CMD</span><span class="p">,</span> <span class="n">HELP_CONTACT</span><span class="p">)</span>
 
-<span class="c1"># FIXME: Get commands from subcommands</span>
 <span class="n">_KNOWN_FILES</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;makefile&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;makefile script&quot;</span><span class="p">,</span>
                              <span class="s2">&quot;See &#39;tau make --help&#39; for help building with make&quot;</span><span class="p">),</span>
                 <span class="s1">&#39;a.out&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;binary executable&quot;</span><span class="p">,</span>

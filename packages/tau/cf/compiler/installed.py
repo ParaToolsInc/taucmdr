@@ -66,25 +66,19 @@ class InstalledCompilerCreator(KeyedRecordCreator):
     assigned to the same compiler and `icc` would be probed twice. With
     this metaclass, ``b is a == True`` and `icc` is only invoked once.
     """
-    def __call__(cls,  *args, **kwargs):
-        try:
-            command = kwargs['command']
-        except KeyError:
-            command = args[0]
-        assert isinstance(command, basestring)
-        if os.path.isabs(command):
+    def __call__(cls, absolute_path, arch_args=None):       # pylint: disable=arguments-differ
+        assert isinstance(absolute_path, basestring)
+        if os.path.isabs(absolute_path):
             try:
-                return cls.__instances__[command]
+                return cls.__instances__[absolute_path]
             except KeyError:
                 pass
-        absolute_path = util.which(command)
+        absolute_path = util.which(absolute_path)
         if not absolute_path:
-            raise ConfigurationError("'%s' missing or not executable." % command,
+            raise ConfigurationError("'%s' missing or not executable." % absolute_path,
                                      "Check spelling, loaded modules, PATH environment variable, and file permissions")
-        try:
-           arch_args = args[1]
-        except:
-           arch_args = []
+        if arch_args is None:
+            arch_args = []
         return KeyedRecordCreator.__call__(cls, absolute_path, arch_args)
 
 
@@ -109,7 +103,7 @@ class InstalledCompiler(KeyedRecord):
     
     __key__ = 'absolute_path'
 
-    def __init__(self, absolute_path, arch_args=[]):
+    def __init__(self, absolute_path, arch_args=None):
         """Probes the system to find an installed compiler.
         
         May check PATH, file permissions, or other conditions in the system
@@ -141,9 +135,18 @@ class InstalledCompiler(KeyedRecord):
                 LOGGER.debug(stdout)
                 LOGGER.debug("%s returned 0", cmd)
             args = stdout.split()
-            self.wrapped = WrappedCompiler(args[0], arch_args)
+            # Assume the first executable in `args` is the wrapped compiler
+            for idx, arg in enumerate(args):
+                if util.which(arg):
+                    LOGGER.debug("'%s' wraps '%s'", self.absolute_path, arg)
+                    break
+            else:
+                raise RuntimeError("Unexpected output from '%s':\n%s" % (' '.join(cmd), stdout))
+            # Relax pylint, idx is defined since we did not raise a RuntimeError
+            # pylint: disable=undefined-loop-variable
+            self.wrapped = WrappedCompiler(args[idx], arch_args)
             try:
-                self.wrapped.parse_args(args[1:], self.info.family)
+                self.wrapped.parse_args(args[idx+1:], self.info.family)
             except IndexError:
                 raise RuntimeError("Unexpected output from '%s':\n%s" % (' '.join(cmd), stdout))
         else:
@@ -188,7 +191,7 @@ class WrappedCompiler(InstalledCompiler):
         libraries (list): Additional libraries to link when linking with the wrapped compiler.
     """
     def __init__(self, absolute_path, arch_args):
-        super(WrappedCompiler,self).__init__(absolute_path, arch_args)
+        super(WrappedCompiler, self).__init__(absolute_path, arch_args)
         self.include_path = []
         self.library_path = []
         self.compiler_flags = []
@@ -245,13 +248,13 @@ class InstalledCompilerFamily(KeyedRecord):
     
     __key__ = 'family'
     
-    def __init__(self, family, arch_args=[]):
+    def __init__(self, family, arch_args=None):
         self.family = family
         self.commands = {}
         LOGGER.debug("Detecting %s compiler installation", family.name)
         for info in family:
             try:
-                comp = InstalledCompiler(info.command, arch_args)
+                comp = InstalledCompiler(info.command, arch_args or [])
             except ConfigurationError as err:
                 LOGGER.debug(err)
             else:

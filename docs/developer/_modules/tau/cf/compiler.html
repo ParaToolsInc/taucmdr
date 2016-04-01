@@ -357,12 +357,11 @@
 <span class="n">IBM_COMPILERS</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">CXX_ROLE</span><span class="p">,</span> <span class="s1">&#39;xlc++&#39;</span><span class="p">,</span> <span class="s1">&#39;xlC&#39;</span><span class="p">)</span>
 <span class="n">IBM_COMPILERS</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">FC_ROLE</span><span class="p">,</span> <span class="s1">&#39;xlf&#39;</span><span class="p">)</span>
 
-<span class="n">CRAY_COMPILERS</span> <span class="o">=</span> <span class="n">CompilerFamily</span><span class="p">(</span><span class="s1">&#39;Cray&#39;</span><span class="p">)</span>
+<span class="n">CRAY_COMPILERS</span> <span class="o">=</span> <span class="n">CompilerFamily</span><span class="p">(</span><span class="s1">&#39;Cray&#39;</span><span class="p">,</span> <span class="n">show_wrapper_flags</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;-craype-verbose&#39;</span><span class="p">])</span>
 <span class="n">CRAY_COMPILERS</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">CC_ROLE</span><span class="p">,</span> <span class="s1">&#39;cc&#39;</span><span class="p">)</span>
-<span class="n">CRAY_COMPILERS</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">CXX_ROLE</span><span class="p">,</span> <span class="s1">&#39;c++&#39;</span><span class="p">,</span> <span class="s1">&#39;cxx&#39;</span><span class="p">,</span> <span class="s1">&#39;CC&#39;</span><span class="p">)</span>
+<span class="n">CRAY_COMPILERS</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">CXX_ROLE</span><span class="p">,</span> <span class="s1">&#39;CC&#39;</span><span class="p">,</span> <span class="s1">&#39;c++&#39;</span><span class="p">,</span> <span class="s1">&#39;cxx&#39;</span><span class="p">)</span>
 <span class="n">CRAY_COMPILERS</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">FC_ROLE</span><span class="p">,</span> <span class="s1">&#39;ftn&#39;</span><span class="p">,</span> <span class="s1">&#39;f90&#39;</span><span class="p">,</span> <span class="s1">&#39;f77&#39;</span><span class="p">)</span>
 <span class="n">CRAY_COMPILERS</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">UPC_ROLE</span><span class="p">,</span> <span class="s1">&#39;upc&#39;</span><span class="p">)</span>
-
 
 </pre></div>
 

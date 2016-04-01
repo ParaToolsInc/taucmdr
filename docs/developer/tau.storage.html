@@ -51,6 +51,11 @@
         
   <div class="section" id="module-tau.storage">
 <span id="tau-storage-package"></span><h1>tau.storage package<a class="headerlink" href="#module-tau.storage" title="Permalink to this headline">¶</a></h1>
+<p>TAU Storage Containers.</p>
+<p>A storage container provides a record database, a persistent filesystem, and a key/value store.
+The database is accessed via member methods like <a class="reference internal" href="#tau.storage.AbstractStorage.insert" title="tau.storage.AbstractStorage.insert"><code class="xref any py py-meth docutils literal"><span class="pre">insert</span></code></a>, <a class="reference internal" href="search.html"><span>Search Page</span></a>, etc.
+The filesystem is accessed via its filesystem prefix (e.g. <code class="docutils literal"><span class="pre">/usr/local/packages</span></code>) via <a class="reference internal" href="tau.model.html#tau.model.trial.Trial.prefix" title="tau.model.trial.Trial.prefix"><code class="xref any py py-attr docutils literal"><span class="pre">prefix</span></code></a>.
+The key/value store is accessed via the <cite>[]</cite> operator, i.e. treat the storage object like a dictionary.</p>
 <dl class="class">
 <dt id="tau.storage.AbstractStorage">
 <em class="property">class </em><code class="descclassname">tau.storage.</code><code class="descname">AbstractStorage</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage" title="Permalink to this definition">¶</a></dt>
@@ -606,7 +611,7 @@ want to install software packages at the project level to avoid quotas or in sit
 where <a class="reference internal" href="tau.html#tau.USER_PREFIX" title="tau.USER_PREFIX"><code class="xref any py py-data docutils literal"><span class="pre">USER_PREFIX</span></code></a> is not accessible from cluster compute nodes.</p>
 <dl class="data">
 <dt id="tau.storage.levels.ORDERED_LEVELS">
-<code class="descclassname">tau.storage.levels.</code><code class="descname">ORDERED_LEVELS</code><em class="property"> = (&lt;tau.storage.project.ProjectStorage object at 0x2b5942fc7a90&gt;, &lt;tau.storage.local_file.LocalFileStorage object at 0x2b5942fc7a50&gt;, &lt;tau.storage.local_file.LocalFileStorage object at 0x2b5942fc7a10&gt;)</em><a class="headerlink" href="#tau.storage.levels.ORDERED_LEVELS" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.storage.levels.</code><code class="descname">ORDERED_LEVELS</code><em class="property"> = (&lt;tau.storage.project.ProjectStorage object at 0x2b30692c7fd0&gt;, &lt;tau.storage.local_file.LocalFileStorage object at 0x2b30692c7e10&gt;, &lt;tau.storage.local_file.LocalFileStorage object at 0x2b30692c7c50&gt;)</em><a class="headerlink" href="#tau.storage.levels.ORDERED_LEVELS" title="Permalink to this definition">¶</a></dt>
 <dd><p>All storage levels in their preferred order.</p>
 </dd></dl>
 
@@ -618,7 +623,7 @@ where <a class="reference internal" href="tau.html#tau.USER_PREFIX" title="tau.U
 
 <dl class="data">
 <dt id="tau.storage.levels.STORAGE_LEVELS">
-<code class="descclassname">tau.storage.levels.</code><code class="descname">STORAGE_LEVELS</code><em class="property"> = {'project': &lt;tau.storage.project.ProjectStorage object at 0x2b5942fc7a90&gt;, 'user': &lt;tau.storage.local_file.LocalFileStorage object at 0x2b5942fc7a50&gt;, 'system': &lt;tau.storage.local_file.LocalFileStorage object at 0x2b5942fc7a10&gt;}</em><a class="headerlink" href="#tau.storage.levels.STORAGE_LEVELS" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.storage.levels.</code><code class="descname">STORAGE_LEVELS</code><em class="property"> = {'project': &lt;tau.storage.project.ProjectStorage object at 0x2b30692c7fd0&gt;, 'user': &lt;tau.storage.local_file.LocalFileStorage object at 0x2b30692c7e10&gt;, 'system': &lt;tau.storage.local_file.LocalFileStorage object at 0x2b30692c7c50&gt;}</em><a class="headerlink" href="#tau.storage.levels.STORAGE_LEVELS" title="Permalink to this definition">¶</a></dt>
 <dd><p>All storage levels indexed by their names.</p>
 </dd></dl>
 
@@ -637,6 +642,9 @@ where <a class="reference internal" href="tau.html#tau.USER_PREFIX" title="tau.U
 </div>
 <div class="section" id="module-tau.storage.local_file">
 <span id="tau-storage-local-file-module"></span><h2>tau.storage.local_file module<a class="headerlink" href="#module-tau.storage.local_file" title="Permalink to this headline">¶</a></h2>
+<p>Local file backend for storage containers.</p>
+<p>A persistant, transactional record storage system useing <code class="xref py py-class docutils literal"><span class="pre">TinyDB</span></code> for
+both the database and the key/value store.</p>
 <dl class="class">
 <dt id="tau.storage.local_file.LocalFileStorage">
 <em class="property">class </em><code class="descclassname">tau.storage.local_file.</code><code class="descname">LocalFileStorage</code><span class="sig-paren">(</span><em>name</em>, <em>prefix</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage/local_file.html#LocalFileStorage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.local_file.LocalFileStorage" title="Permalink to this definition">¶</a></dt>
@@ -1049,6 +1057,10 @@ This isn&#8217;t the case for system-level storage and possibly others.</p>
 </div>
 <div class="section" id="module-tau.storage.project">
 <span id="tau-storage-project-module"></span><h2>tau.storage.project module<a class="headerlink" href="#module-tau.storage.project" title="Permalink to this headline">¶</a></h2>
+<p>TAU project storage container</p>
+<p>Project-level records define the project and its member components.  The user may also
+want to install software packages at the project level to avoid quotas or in situations
+where <a class="reference internal" href="tau.html#tau.USER_PREFIX" title="tau.USER_PREFIX"><code class="xref any py py-data docutils literal"><span class="pre">USER_PREFIX</span></code></a> is not accessible from cluster compute nodes.</p>
 <dl class="class">
 <dt id="tau.storage.project.ProjectStorage">
 <em class="property">class </em><code class="descclassname">tau.storage.project.</code><code class="descname">ProjectStorage</code><a class="reference internal" href="_modules/tau/storage/project.html#ProjectStorage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.project.ProjectStorage" title="Permalink to this definition">¶</a></dt>

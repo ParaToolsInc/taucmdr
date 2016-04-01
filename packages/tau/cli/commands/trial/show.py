@@ -27,7 +27,6 @@
 #
 """``tau trial show`` subcommand."""
 
-from tau.error import ConfigurationError
 from tau.cli import arguments
 from tau.cli.command import AbstractCommand
 from tau.model.project import Project

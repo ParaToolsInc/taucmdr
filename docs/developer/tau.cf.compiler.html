@@ -344,7 +344,7 @@ module detects installed compilers and can invoke the installed compiler to
 discover features that change from system to system.</p>
 <dl class="class">
 <dt id="tau.cf.compiler.installed.InstalledCompiler">
-<em class="property">class </em><code class="descclassname">tau.cf.compiler.installed.</code><code class="descname">InstalledCompiler</code><span class="sig-paren">(</span><em>absolute_path</em>, <em>arch_args=[]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/compiler/installed.html#InstalledCompiler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.compiler.installed.InstalledCompiler" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.cf.compiler.installed.</code><code class="descname">InstalledCompiler</code><span class="sig-paren">(</span><em>absolute_path</em>, <em>arch_args=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/compiler/installed.html#InstalledCompiler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.compiler.installed.InstalledCompiler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="tau.cf.html#tau.cf.KeyedRecord" title="tau.cf.KeyedRecord"><code class="xref py py-class docutils literal"><span class="pre">tau.cf.KeyedRecord</span></code></a></p>
 <p>Information about an installed compiler command.</p>
 <p>There are relatively few well known compilers, but a potentially infinite
@@ -434,7 +434,7 @@ this metaclass, <code class="docutils literal"><span class="pre">b</span> <span 
 
 <dl class="class">
 <dt id="tau.cf.compiler.installed.InstalledCompilerFamily">
-<em class="property">class </em><code class="descclassname">tau.cf.compiler.installed.</code><code class="descname">InstalledCompilerFamily</code><span class="sig-paren">(</span><em>family</em>, <em>arch_args=[]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/compiler/installed.html#InstalledCompilerFamily"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.compiler.installed.InstalledCompilerFamily" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.cf.compiler.installed.</code><code class="descname">InstalledCompilerFamily</code><span class="sig-paren">(</span><em>family</em>, <em>arch_args=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/compiler/installed.html#InstalledCompilerFamily"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.compiler.installed.InstalledCompilerFamily" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="tau.cf.html#tau.cf.KeyedRecord" title="tau.cf.KeyedRecord"><code class="xref py py-class docutils literal"><span class="pre">tau.cf.KeyedRecord</span></code></a></p>
 <p>Information about an installed compiler family.</p>
 <p>Compiler families are usually installed at a common prefix but there is no

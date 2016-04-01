@@ -27,7 +27,6 @@
 #
 """Software managment common objects."""
 
-# TODO: See http://scalability-llnl.github.io/spack/
 
 from tau.error import ConfigurationError
 

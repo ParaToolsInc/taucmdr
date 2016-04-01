@@ -94,19 +94,33 @@
 <span class="kn">from</span> <span class="nn">tau.model.compiler</span> <span class="kn">import</span> <span class="n">Compiler</span>
 
 
-<div class="viewcode-block" id="attributes"><a class="viewcode-back" href="../../../tau.model.html#tau.model.target.attributes">[docs]</a><span class="k">def</span> <span class="nf">attributes</span><span class="p">():</span>
-    <span class="k">def</span> <span class="nf">require_k1om</span><span class="p">():</span>
-        <span class="k">def</span> <span class="nf">callback</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">rhs</span><span class="p">,</span> <span class="n">rhs_attr</span><span class="p">):</span>
-            <span class="n">k1om_ar</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;x86_64-k1om-linux-ar&#39;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">k1om_ar</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s1">&#39;/usr/linux-k1om-*&#39;</span><span class="p">):</span>
-                    <span class="n">k1om_ar</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;bin&#39;</span><span class="p">,</span> <span class="s1">&#39;x86_64-k1om-linux-ar&#39;</span><span class="p">))</span>
-                    <span class="k">if</span> <span class="n">k1om_ar</span><span class="p">:</span>
-                        <span class="k">break</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">k1om_ar</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s1">&#39;k1om tools not found&#39;</span><span class="p">,</span> <span class="s1">&#39;Try installing on compute node&#39;</span><span class="p">,</span> <span class="s1">&#39;Install MIC SDK&#39;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">callback</span>
+<div class="viewcode-block" id="knc_require_k1om"><a class="viewcode-back" href="../../../tau.model.html#tau.model.target.knc_require_k1om">[docs]</a><span class="k">def</span> <span class="nf">knc_require_k1om</span><span class="p">(</span><span class="o">*</span><span class="n">_</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compatibility checking callback for use with data models.</span>
 
+<span class="sd">    Requires that the Intel k1om tools be installed if the host architecture is KNC. </span>
+<span class="sd">        </span>
+<span class="sd">    Raises:</span>
+<span class="sd">        ConfigurationError: Invalid compiler family specified in target configuration.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">k1om_ar</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;x86_64-k1om-linux-ar&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">k1om_ar</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s1">&#39;/usr/linux-k1om-*&#39;</span><span class="p">):</span>
+            <span class="n">k1om_ar</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;bin&#39;</span><span class="p">,</span> <span class="s1">&#39;x86_64-k1om-linux-ar&#39;</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">k1om_ar</span><span class="p">:</span>
+                <span class="k">break</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s1">&#39;k1om tools not found&#39;</span><span class="p">,</span> <span class="s1">&#39;Try installing on compute node&#39;</span><span class="p">,</span> <span class="s1">&#39;Install MIC SDK&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="attributes"><a class="viewcode-back" href="../../../tau.model.html#tau.model.target.attributes">[docs]</a><span class="k">def</span> <span class="nf">attributes</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Construct attributes dictionary for the target model.</span>
+<span class="sd">    </span>
+<span class="sd">    We build the attributes in a function so that classes like ``tau.module.project.Project`` are</span>
+<span class="sd">    fully initialized and usable in the returned dictionary.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: Attributes dictionary.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">from</span> <span class="nn">tau.model.project</span> <span class="kn">import</span> <span class="n">Project</span>
     <span class="kn">from</span> <span class="nn">tau.cli.arguments</span> <span class="kn">import</span> <span class="n">ParsePackagePathAction</span>
     <span class="kn">from</span> <span class="nn">tau.cf.target</span> <span class="kn">import</span> <span class="n">Architecture</span><span class="p">,</span> <span class="n">OperatingSystem</span>
@@ -116,12 +130,11 @@
                                              <span class="s2">&quot;You must use Intel compilers to target the Xeon Phi&quot;</span><span class="p">,</span>
                                              <span class="s2">&quot;Try adding `--host-compilers=Intel` to the command line&quot;</span><span class="p">)</span>
     <span class="n">knc_intel_mpi_only</span> <span class="o">=</span> <span class="n">require_compiler_family</span><span class="p">(</span><span class="n">INTEL_MPI_COMPILERS</span><span class="p">,</span>
-                                             <span class="s2">&quot;You must use Intel MPI compilers to target the Xeon Phi&quot;</span><span class="p">,</span>
-                                             <span class="s2">&quot;Try adding `--mpi-compilers=Intel` to the command line&quot;</span><span class="p">)</span>
-    <span class="n">knc_require_k1om</span> <span class="o">=</span> <span class="n">require_k1om</span><span class="p">()</span>
+                                                 <span class="s2">&quot;You must use Intel MPI compilers to target the Xeon Phi&quot;</span><span class="p">,</span>
+                                                 <span class="s2">&quot;Try adding `--mpi-compilers=Intel` to the command line&quot;</span><span class="p">)</span>
 
-
-
+    <span class="n">host_os</span> <span class="o">=</span> <span class="n">host</span><span class="o">.</span><span class="n">operating_system</span><span class="p">()</span>
+    
     <span class="k">return</span> <span class="p">{</span>
         <span class="s1">&#39;projects&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;collection&#39;</span><span class="p">:</span> <span class="n">Project</span><span class="p">,</span>
@@ -139,7 +152,7 @@
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
             <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;host operating system&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="n">host</span><span class="o">.</span><span class="n">operating_system</span><span class="p">()</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="n">host_os</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--host-os&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;host&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;os&gt;&#39;</span><span class="p">,</span>
@@ -337,7 +350,7 @@
         <span class="s1">&#39;binutils_source&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;path or URL to a GNU binutils installation or archive file&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="s1">&#39;download&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="s1">&#39;download&#39;</span> <span class="k">if</span> <span class="n">host_os</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">DARWIN_OS</span> <span class="k">else</span> <span class="bp">None</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--binutils&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;software package&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;(&lt;path&gt;|&lt;url&gt;|download|None)&#39;</span><span class="p">,</span>
@@ -356,7 +369,7 @@
         <span class="s1">&#39;papi_source&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;path or URL to a PAPI installation or archive file&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="s1">&#39;download&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="s1">&#39;download&#39;</span> <span class="k">if</span> <span class="n">host_os</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">DARWIN_OS</span> <span class="k">else</span> <span class="bp">None</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--papi&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;software package&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;(&lt;path&gt;|&lt;url&gt;|download|None)&#39;</span><span class="p">,</span>

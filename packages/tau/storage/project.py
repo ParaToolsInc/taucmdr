@@ -25,6 +25,13 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
+"""TAU project storage container
+
+Project-level records define the project and its member components.  The user may also
+want to install software packages at the project level to avoid quotas or in situations
+where :any:`USER_PREFIX` is not accessible from cluster compute nodes.
+"""
+
 
 import os
 from tau import logger, util

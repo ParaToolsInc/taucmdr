@@ -108,9 +108,10 @@ class MutableGroupArgumentParser(argparse.ArgumentParser):
         for action in parser._actions:
             optional = bool(action.option_strings)
             storage = '-'+STORAGE_LEVEL_FLAG in action.option_strings
-            if ((not include_storage and storage) or 
-                (not include_optional and optional) or 
-                (not include_positional and not optional)):
+            # pylint: disable=too-many-boolean-expressions
+            if ((not include_storage and storage) or
+                    (not include_optional and optional) or
+                    (not include_positional and not optional)):
                 continue
             try:
                 group._add_action(action)
@@ -193,10 +194,7 @@ class ParsePackagePathAction(argparse.Action):
                 if not (os.path.isdir(value) or util.file_accessible(value)):
                     raise argparse.ArgumentError(self, "Boolean, 'download', valid path, or URL required: %s" % value)
         else:
-            if flag_as_bool == True:
-                value = 'download'
-            elif flag_as_bool == False:
-                value = None
+            value = 'download' if flag_as_bool else None
         setattr(namespace, self.dest, value)
 
 

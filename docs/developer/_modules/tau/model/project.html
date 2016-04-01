@@ -84,7 +84,7 @@
 <span class="kn">from</span> <span class="nn">tau.error</span> <span class="kn">import</span> <span class="n">InternalError</span><span class="p">,</span> <span class="n">ConfigurationError</span>
 <span class="kn">from</span> <span class="nn">tau.mvc.model</span> <span class="kn">import</span> <span class="n">Model</span>
 <span class="kn">from</span> <span class="nn">tau.mvc.controller</span> <span class="kn">import</span> <span class="n">Controller</span>
-<span class="kn">from</span> <span class="nn">tau.storage.levels</span> <span class="kn">import</span> <span class="n">PROJECT_STORAGE</span><span class="p">,</span> <span class="n">USER_STORAGE</span><span class="p">,</span> <span class="n">STORAGE_LEVELS</span>
+<span class="kn">from</span> <span class="nn">tau.storage.levels</span> <span class="kn">import</span> <span class="n">PROJECT_STORAGE</span><span class="p">,</span> <span class="n">STORAGE_LEVELS</span>
 
 
 <span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
@@ -133,8 +133,7 @@
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span> <span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--storage-level&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;choices&#39;</span> <span class="p">:</span> <span class="n">STORAGE_LEVELS</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span>
                          <span class="s1">&#39;metavar&#39;</span> <span class="p">:</span> <span class="s1">&#39;&lt;level&gt;&#39;</span><span class="p">,</span>
-                         <span class="s1">&#39;action&#39;</span> <span class="p">:</span> <span class="s1">&#39;store&#39;</span>
-            <span class="p">},</span>
+                         <span class="s1">&#39;action&#39;</span> <span class="p">:</span> <span class="s1">&#39;store&#39;</span><span class="p">}</span>
         <span class="p">}</span>
     <span class="p">}</span></div>
 

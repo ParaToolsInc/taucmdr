@@ -88,6 +88,14 @@
 
 
 <div class="viewcode-block" id="attributes"><a class="viewcode-back" href="../../../tau.model.html#tau.model.measurement.attributes">[docs]</a><span class="k">def</span> <span class="nf">attributes</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Construct attributes dictionary for the measurement model.</span>
+<span class="sd">    </span>
+<span class="sd">    We build the attributes in a function so that classes like ``tau.module.project.Project`` are</span>
+<span class="sd">    fully initialized and usable in the returned dictionary.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: Attributes dictionary.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">from</span> <span class="nn">tau.model.project</span> <span class="kn">import</span> <span class="n">Project</span>
     <span class="kn">from</span> <span class="nn">tau.model.target</span> <span class="kn">import</span> <span class="n">Target</span>
     <span class="kn">from</span> <span class="nn">tau.model.application</span> <span class="kn">import</span> <span class="n">Application</span>
@@ -163,8 +171,7 @@
                          <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;?&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;choices&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;automatic&#39;</span><span class="p">,</span> <span class="s1">&#39;manual&#39;</span><span class="p">,</span> <span class="s1">&#39;never&#39;</span><span class="p">),</span>
                          <span class="s1">&#39;const&#39;</span><span class="p">:</span> <span class="s1">&#39;automatic&#39;</span><span class="p">},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;automatic&#39;</span><span class="p">,</span> <span class="s1">&#39;manual&#39;</span><span class="p">):</span>
-                       <span class="n">Target</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;pdt_source&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)}</span>
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;automatic&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;pdt_source&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)}</span>
         <span class="p">},</span>
         <span class="s1">&#39;compiler_inst&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
@@ -291,7 +298,7 @@
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
             <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;measure heap memory usage&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--heap_usage&#39;</span><span class="p">,),</span>
+            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--heap-usage&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;memory&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;T/F&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;?&#39;</span><span class="p">,</span>
@@ -365,7 +372,7 @@
                                      <span class="s2">&quot;Specify </span><span class="si">%s</span><span class="s2"> or </span><span class="si">%s</span><span class="s2"> or both&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">profile_flag</span><span class="p">,</span> <span class="n">trace_flag</span><span class="p">))</span>
         
         <span class="k">if</span> <span class="p">((</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;source_inst&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;never&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;compiler_inst&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;never&#39;</span><span class="p">)</span> <span class="ow">and</span> 
-            <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;sample&#39;</span><span class="p">])</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;link_only&#39;</span><span class="p">])):</span>
+                <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;sample&#39;</span><span class="p">])</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;link_only&#39;</span><span class="p">])):</span>
             <span class="n">source_inst_flag</span> <span class="o">=</span> <span class="n">get_flag</span><span class="p">(</span><span class="s1">&#39;source_inst&#39;</span><span class="p">)</span>
             <span class="n">compiler_inst_flag</span> <span class="o">=</span> <span class="n">get_flag</span><span class="p">(</span><span class="s1">&#39;compiler_inst&#39;</span><span class="p">)</span>
             <span class="n">sample_flag</span> <span class="o">=</span> <span class="n">get_flag</span><span class="p">(</span><span class="s1">&#39;sample&#39;</span><span class="p">)</span>

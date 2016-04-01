@@ -186,12 +186,11 @@
 <div class="viewcode-block" id="Experiment.uses_tau"><a class="viewcode-back" href="../../../tau.model.html#tau.model.experiment.Experiment.uses_tau">[docs]</a>    <span class="k">def</span> <span class="nf">uses_tau</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># For now, all experiments use TAU</span>
         <span class="c1"># This might change if we ever re-use this for something like ThreadSpotter</span>
-        <span class="c1"># pylint: disable=no-self-use</span>
         <span class="k">return</span> <span class="bp">True</span></div>
 
 <div class="viewcode-block" id="Experiment.uses_pdt"><a class="viewcode-back" href="../../../tau.model.html#tau.model.experiment.Experiment.uses_pdt">[docs]</a>    <span class="k">def</span> <span class="nf">uses_pdt</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">measurement</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="s1">&#39;measurement&#39;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">measurement</span><span class="p">[</span><span class="s1">&#39;source_inst&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;never&#39;</span></div>
+        <span class="k">return</span> <span class="n">measurement</span><span class="p">[</span><span class="s1">&#39;source_inst&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;automatic&#39;</span></div>
     
 <div class="viewcode-block" id="Experiment.uses_binutils"><a class="viewcode-back" href="../../../tau.model.html#tau.model.experiment.Experiment.uses_binutils">[docs]</a>    <span class="k">def</span> <span class="nf">uses_binutils</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">measurement</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="s1">&#39;measurement&#39;</span><span class="p">)</span>
@@ -289,6 +288,16 @@
             <span class="k">return</span> <span class="n">tau</span></div>
 
 <div class="viewcode-block" id="Experiment.configure_tau_dependency"><a class="viewcode-back" href="../../../tau.model.html#tau.model.experiment.Experiment.configure_tau_dependency">[docs]</a>    <span class="k">def</span> <span class="nf">configure_tau_dependency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Installs dependency packages for TAU, e.g. PDT.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): Name of the dependency to install.  </span>
+<span class="sd">                        Must have a matching tau.cf.software.&lt;name&gt;_installation module.</span>
+<span class="sd">            prefix (str): Installation prefix.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Installation: A new installation instance for the installed dependency.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="s1">&#39;target&#39;</span><span class="p">)</span>
         <span class="n">cls_name</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">title</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;Installation&#39;</span>
         <span class="n">pkg</span> <span class="o">=</span> <span class="nb">__import__</span><span class="p">(</span><span class="s1">&#39;tau.cf.software.</span><span class="si">%s</span><span class="s1">_installation&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="nb">globals</span><span class="p">(),</span> <span class="nb">locals</span><span class="p">(),</span> <span class="p">[</span><span class="n">cls_name</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
@@ -408,7 +417,7 @@
             <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="n">trial_numbers</span><span class="p">:</span>
                 <span class="n">found</span> <span class="o">=</span> <span class="n">Trial</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">({</span><span class="s1">&#39;experiment&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">eid</span><span class="p">,</span> <span class="s1">&#39;number&#39;</span><span class="p">:</span> <span class="n">num</span><span class="p">})</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">found</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;No trial number </span><span class="si">%d</span><span class="s2"> in experiment </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">num</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">()))</span>
+                    <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;No trial number </span><span class="si">%d</span><span class="s2"> in experiment </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">num</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
                 <span class="n">trials</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">found</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">trials</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="s1">&#39;trials&#39;</span><span class="p">)</span>

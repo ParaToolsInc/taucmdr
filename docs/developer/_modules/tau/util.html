@@ -86,9 +86,10 @@
 <span class="kn">import</span> <span class="nn">pkgutil</span>
 <span class="kn">import</span> <span class="nn">tarfile</span>
 <span class="kn">import</span> <span class="nn">urlparse</span>
-<span class="kn">from</span> <span class="nn">termcolor</span> <span class="kn">import</span> <span class="n">termcolor</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
 <span class="kn">from</span> <span class="nn">zipimport</span> <span class="kn">import</span> <span class="n">zipimporter</span>
 <span class="kn">from</span> <span class="nn">zipfile</span> <span class="kn">import</span> <span class="n">ZipFile</span>
+<span class="kn">from</span> <span class="nn">termcolor</span> <span class="kn">import</span> <span class="n">termcolor</span>
 <span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">logger</span>
 
 
@@ -126,11 +127,13 @@
 <span class="sd">        onerror: Callable that accepts three parameters: function, path, and excinfo.  See :any:shutil.rmtree.</span>
 <span class="sd">        attempts (int): Number of times to repeat shutil.rmtree before giving up.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+        <span class="k">return</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">attempts</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
-            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Unexpected error: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">err</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>        <span class="c1"># pylint: disable=broad-except</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Unexpected error: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
             <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="p">,</span> <span class="n">onerror</span><span class="p">)</span></div>
 
@@ -196,18 +199,61 @@
         <span class="n">wget_cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">wget</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="s1">&#39;-O&#39;</span><span class="p">,</span> <span class="n">dest</span><span class="p">]</span> <span class="k">if</span> <span class="n">wget</span> <span class="k">else</span> <span class="bp">None</span>
         <span class="k">for</span> <span class="n">cmd</span> <span class="ow">in</span> <span class="p">[</span><span class="n">curl_cmd</span><span class="p">,</span> <span class="n">wget_cmd</span><span class="p">]:</span>
             <span class="k">if</span> <span class="n">cmd</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">create_dl_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">_create_dl_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">src</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="k">return</span>
                 <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> failed to download &#39;</span><span class="si">%s</span><span class="s2">&#39;. Retrying with a different method...&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">src</span><span class="p">)</span>                    
         <span class="c1"># Fallback: this is usually **much** slower than curl or wget</span>
-        <span class="k">def</span> <span class="nf">_dl_progress</span><span class="p">(</span><span class="n">count</span><span class="p">,</span> <span class="n">block_size</span><span class="p">,</span> <span class="n">total_size</span><span class="p">):</span>
-            <span class="n">progress_bar</span><span class="p">(</span><span class="n">count</span><span class="o">*</span><span class="n">block_size</span><span class="p">,</span> <span class="n">total_size</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">urllib</span><span class="o">.</span><span class="n">urlretrieve</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dest</span><span class="p">,</span> <span class="n">reporthook</span><span class="o">=</span><span class="n">_dl_progress</span><span class="p">)</span>
+            <span class="n">urllib</span><span class="o">.</span><span class="n">urlretrieve</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dest</span><span class="p">,</span> <span class="n">reporthook</span><span class="o">=</span><span class="n">progress_bar</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
             <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;urllib failed to download &#39;</span><span class="si">%s</span><span class="s2">&#39;: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
             <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;Failed to download &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">src</span><span class="p">)</span></div>
 
+<span class="k">def</span> <span class="nf">_create_dl_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">src</span><span class="p">):</span>
+    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Creating subprocess: cmd=</span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;curl&#39;</span><span class="p">):</span>
+        <span class="n">proc_output</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">([</span><span class="s1">&#39;curl&#39;</span><span class="p">,</span> <span class="s1">&#39;-sI&#39;</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="s1">&#39;--location&#39;</span><span class="p">],</span>
+                                       <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">)</span><span class="o">.</span><span class="n">communicate</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;wget&#39;</span><span class="p">):</span>
+        <span class="n">proc_output</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">([</span><span class="s1">&#39;wget&#39;</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="s1">&#39;--spider&#39;</span><span class="p">,</span> <span class="s1">&#39;--server-response&#39;</span><span class="p">],</span>
+                                       <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">)</span><span class="o">.</span><span class="n">communicate</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">proc_output</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">file_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">proc_output</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s1">&#39;Content-Length&#39;</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">IndexError</span><span class="p">):</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Invalid response while retrieving download file size&quot;</span><span class="p">)</span>
+        <span class="n">file_size</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">devnull</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">devnull</span><span class="p">:</span>
+        <span class="n">proc</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">devnull</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">STDOUT</span><span class="p">)</span>
+        <span class="k">while</span> <span class="n">proc</span><span class="o">.</span><span class="n">poll</span><span class="p">()</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">current_size</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">cmd</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">st_size</span>
+            <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+                <span class="n">current_size</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">progress_bar</span><span class="p">(</span><span class="n">current_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">file_size</span><span class="p">)</span>
+        <span class="n">proc</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">retval</span> <span class="o">=</span> <span class="n">proc</span><span class="o">.</span><span class="n">returncode</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> returned </span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">retval</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">retval</span>
+
+    
+<span class="n">_spinner</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">cycle</span><span class="p">([</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="s1">&#39;|&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&#39;</span><span class="p">])</span> <span class="c1"># pylint: disable=invalid-name</span>
+<div class="viewcode-block" id="progress_bar"><a class="viewcode-back" href="../../tau.html#tau.util.progress_bar">[docs]</a><span class="k">def</span> <span class="nf">progress_bar</span><span class="p">(</span><span class="n">count</span><span class="p">,</span> <span class="n">block_size</span><span class="p">,</span> <span class="n">total_size</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Show a bar or spinner on stdout to indicate progress.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        count (int): Number of blocks of `block_size` that have been completed</span>
+<span class="sd">        block_size (int): Size of a work block.</span>
+<span class="sd">        total_size (int): Total amount of work to be completed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">total_size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">logger</span><span class="o">.</span><span class="n">LINE_WIDTH</span> <span class="o">-</span> <span class="mi">10</span><span class="p">)</span>
+        <span class="n">percent</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">count</span><span class="o">*</span><span class="n">block_size</span><span class="p">)</span> <span class="o">/</span> <span class="n">total_size</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;[&#39;</span> <span class="o">+</span> <span class="s1">&#39;&gt;&#39;</span><span class="o">*</span><span class="nb">int</span><span class="p">(</span><span class="n">percent</span><span class="o">*</span><span class="n">width</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;-&#39;</span><span class="o">*</span><span class="nb">int</span><span class="p">((</span><span class="mi">1</span><span class="o">-</span><span class="n">percent</span><span class="p">)</span><span class="o">*</span><span class="n">width</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;] </span><span class="si">%3s%%</span><span class="se">\r</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="nb">int</span><span class="p">(</span><span class="mi">100</span><span class="o">*</span><span class="n">percent</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;[</span><span class="si">%s</span><span class="s1">] UNKNOWN</span><span class="se">\r</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">_spinner</span><span class="o">.</span><span class="n">next</span><span class="p">())</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="archive_toplevel"><a class="viewcode-back" href="../../tau.html#tau.util.archive_toplevel">[docs]</a><span class="k">def</span> <span class="nf">archive_toplevel</span><span class="p">(</span><span class="n">archive</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Returns the name of the top-level directory in an archive.</span>
@@ -223,15 +269,22 @@
 <span class="sd">    Args:</span>
 <span class="sd">        archive (str): Path to archive file.</span>
 <span class="sd">        </span>
+<span class="sd">    Raises:</span>
+<span class="sd">        IOError: `archive` could not be read.</span>
+<span class="sd">        </span>
 <span class="sd">    Returns:</span>
 <span class="sd">        str: Directory name.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Determining top-level directory name in &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">archive</span><span class="p">)</span>
-    <span class="k">with</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">archive</span><span class="p">)</span> <span class="k">as</span> <span class="n">fin</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">fin</span> <span class="o">=</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">archive</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">ReadError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">IOError</span>
+    <span class="k">else</span><span class="p">:</span>
         <span class="n">dirs</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">fin</span><span class="o">.</span><span class="n">getmembers</span><span class="p">()</span> <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">DIRTYPE</span><span class="p">]</span>
-    <span class="n">topdir</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">dirs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="nb">len</span><span class="p">)</span>
-    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Top-level directory in &#39;</span><span class="si">%s</span><span class="s2">&#39; is &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">archive</span><span class="p">,</span> <span class="n">topdir</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">topdir</span></div>
+        <span class="n">topdir</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">dirs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="nb">len</span><span class="p">)</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Top-level directory in &#39;</span><span class="si">%s</span><span class="s2">&#39; is &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">archive</span><span class="p">,</span> <span class="n">topdir</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">topdir</span></div>
 
 
 <div class="viewcode-block" id="extract"><a class="viewcode-back" href="../../tau.html#tau.util.extract">[docs]</a><span class="k">def</span> <span class="nf">extract</span><span class="p">(</span><span class="n">archive</span><span class="p">,</span> <span class="n">dest</span><span class="p">):</span>
@@ -276,7 +329,7 @@
     <span class="n">handle</span> <span class="o">=</span> <span class="bp">None</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">handle</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span>
-    <span class="k">except</span><span class="p">:</span>
+    <span class="k">except</span><span class="p">:</span>     <span class="c1"># pylint: disable=bare-except</span>
         <span class="k">return</span> <span class="bp">False</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">True</span>
@@ -328,75 +381,7 @@
     <span class="n">retval</span> <span class="o">=</span> <span class="n">proc</span><span class="o">.</span><span class="n">returncode</span>
     <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> returned </span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">retval</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">retval</span></div>
-
-
-<div class="viewcode-block" id="create_dl_subprocess"><a class="viewcode-back" href="../../tau.html#tau.util.create_dl_subprocess">[docs]</a><span class="k">def</span> <span class="nf">create_dl_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Create a subprocess for downloading software.</span>
-<span class="sd">    </span>
-<span class="sd">    See :any:`subprocess.Popen`.</span>
-<span class="sd">    </span>
-<span class="sd">    Args:</span>
-<span class="sd">        cmd (list): Command and its command line arguments.</span>
-<span class="sd">        cwd (str): Change directory to `cwd` if given, otherwise use :any:`os.getcwd`.</span>
-<span class="sd">        env (dict): Environment variables to set before launching cmd.</span>
-<span class="sd">        stdout (bool): If True send subprocess stdout and stderr to this processes&#39; stdout.</span>
-<span class="sd">        log (bool): If True send subprocess stdout and stderr to the debug log.</span>
-<span class="sd">        </span>
-<span class="sd">    Returns:</span>
-<span class="sd">        int: Subprocess return code.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">cwd</span><span class="p">:</span>
-        <span class="n">cwd</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">env</span><span class="p">:</span>
-        <span class="c1"># Don&#39;t accidentally unset all environment variables with an empty dict</span>
-        <span class="n">subproc_env</span> <span class="o">=</span> <span class="bp">None</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">subproc_env</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">env</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
-            <span class="n">subproc_env</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
-            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
-    <span class="k">if</span> <span class="s1">&#39;curl&#39;</span> <span class="ow">in</span> <span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-        <span class="n">proc_output</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">([</span><span class="s1">&#39;curl&#39;</span><span class="p">,</span><span class="s1">&#39;-sI&#39;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="s1">&#39;--location&#39;</span><span class="p">],</span>
-                                       <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">)</span><span class="o">.</span><span class="n">communicate</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">file_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">proc_output</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s1">&#39;Content-Length&#39;</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span>
-    <span class="k">if</span> <span class="s1">&#39;wget&#39;</span> <span class="ow">in</span> <span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-        <span class="n">proc_output</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">([</span><span class="s1">&#39;wget&#39;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;--spider&#39;</span><span class="p">,</span> <span class="s1">&#39;--server-response&#39;</span><span class="p">],</span>
-                                       <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">)</span><span class="o">.</span><span class="n">communicate</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span>
-        <span class="n">file_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">proc_output</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s1">&#39;Content-Length&#39;</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span>
-    <span class="n">DEVNULL</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">devnull</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span>
-    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Creating subprocess: cmd=</span><span class="si">%s</span><span class="s2">, cwd=&#39;</span><span class="si">%s</span><span class="s2">&#39;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="p">)</span>
-    <span class="n">proc</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">cwd</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">subproc_env</span><span class="p">,</span>
-                            <span class="n">stdout</span><span class="o">=</span><span class="n">DEVNULL</span><span class="p">,</span>
-                            <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">STDOUT</span><span class="p">,</span>
-                            <span class="n">bufsize</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="k">while</span> <span class="n">proc</span><span class="o">.</span><span class="n">poll</span><span class="p">()</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">current_size</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">cmd</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">st_size</span>
-        <span class="k">except</span><span class="p">:</span>
-            <span class="n">current_size</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">progress_bar</span><span class="p">(</span><span class="n">current_size</span><span class="p">,</span> <span class="n">file_size</span><span class="p">)</span>
-    <span class="n">proc</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
-    <span class="n">retval</span> <span class="o">=</span> <span class="n">proc</span><span class="o">.</span><span class="n">returncode</span>
-    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> returned </span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">retval</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">retval</span></div>
-
-
-<div class="viewcode-block" id="progress_bar"><a class="viewcode-back" href="../../tau.html#tau.util.progress_bar">[docs]</a><span class="k">def</span> <span class="nf">progress_bar</span><span class="p">(</span><span class="n">current_size</span><span class="p">,</span> <span class="n">total_size</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Display progress bar for download of software</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        current_size (int):  current size of downloaded file</span>
-<span class="sd">        total_size (int): total size of downloaded file</span>
-
-<span class="sd">    Returns: </span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="n">size</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_terminal_size</span><span class="p">()</span>
-    <span class="n">width</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="mi">10</span>
-    <span class="n">percent</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">current_size</span><span class="p">)</span> <span class="o">/</span> <span class="n">total_size</span><span class="p">)</span>
-    <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;[&#39;</span> <span class="o">+</span> <span class="s1">&#39;&gt;&#39;</span> <span class="o">*</span> <span class="nb">int</span><span class="p">(</span><span class="n">percent</span> <span class="o">*</span> <span class="n">width</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="nb">int</span><span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">percent</span><span class="p">)</span> <span class="o">*</span> <span class="n">width</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;] </span><span class="si">%3s%%</span><span class="se">\r</span><span class="s1">&#39;</span>
-                     <span class="o">%</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="mi">100</span><span class="o">*</span><span class="n">percent</span><span class="p">)))</span></div>
-
+    
 
 <div class="viewcode-block" id="human_size"><a class="viewcode-back" href="../../tau.html#tau.util.human_size">[docs]</a><span class="k">def</span> <span class="nf">human_size</span><span class="p">(</span><span class="n">num</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;B&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Converts a byte count to human readable units.</span>
@@ -518,8 +503,7 @@
 <span class="sd">    :any:`pkgutil.walk_packages` silently fails to list modules and packages when</span>
 <span class="sd">    they are in a zip file.  This implementation works around this.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">seen</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">dct</span><span class="o">=</span><span class="p">{}):</span>
-        <span class="c1"># pylint: disable=dangerous-default-value</span>
+    <span class="k">def</span> <span class="nf">seen</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">dct</span><span class="o">=</span><span class="p">{}):</span>     <span class="c1"># pylint: disable=dangerous-default-value</span>
         <span class="k">if</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">dct</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">True</span>
         <span class="n">dct</span><span class="p">[</span><span class="n">path</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
@@ -557,11 +541,11 @@
 
 
 <span class="k">def</span> <span class="nf">_iter_modules</span><span class="p">(</span><span class="n">paths</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>
+    <span class="c1"># pylint: disable=no-member,redefined-variable-type</span>
     <span class="n">yielded</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
         <span class="n">importer</span> <span class="o">=</span> <span class="n">pkgutil</span><span class="o">.</span><span class="n">get_importer</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">importer</span><span class="p">,</span> <span class="n">zipimporter</span><span class="p">):</span>
-            <span class="c1"># pylint: disable=no-member</span>
             <span class="n">archive</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">importer</span><span class="o">.</span><span class="n">archive</span><span class="p">)</span>
             <span class="n">iter_importer_modules</span> <span class="o">=</span> <span class="n">_zipimporter_iter_modules</span><span class="p">(</span><span class="n">archive</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>

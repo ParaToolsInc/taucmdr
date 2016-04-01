@@ -27,13 +27,11 @@
 #
 """``tau dashboard`` subcommand."""
 
-from texttable import Texttable
 from tau import EXIT_SUCCESS
-from tau import logger, util
 from tau.cli import arguments
 from tau.cli.command import AbstractCommand
 from tau.cli.commands.project.list import COMMAND as project_list_cmd
-from tau.model.project import Project, ProjectSelectionError, ExperimentSelectionError
+from tau.model.project import Project, ProjectSelectionError
 
 
 class DashboardCommand(AbstractCommand):

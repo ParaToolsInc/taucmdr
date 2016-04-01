@@ -56,7 +56,7 @@ class TargetCreateCommand(CreateCommand):
         Raises:
             ConfigurationError: Invalid command line arguments specified
         """
-        if getattr(args, 'host_arch')  == 'knc':
+        if getattr(args, 'host_arch') == 'knc':
             arch_args = ['-mmic']
         else:
             arch_args = []
@@ -108,6 +108,8 @@ class TargetCreateCommand(CreateCommand):
                     except KeyError:
                         self.logger.debug("Not probing %s: not found", role)
                     else:
+                        self.logger.debug("%s: %s", role, comp)
+                        self.logger.debug("family: %s", comp.info.family)
                         probed.update(getattr(comp.wrapped, wrapped_attr))
                 setattr(args, args_attr, list(probed))
     

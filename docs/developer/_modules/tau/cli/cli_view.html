@@ -71,7 +71,6 @@
 <span class="c1"># OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE</span>
 <span class="c1"># OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</span>
 <span class="c1">#</span>
-<span class="kn">from</span> <span class="nn">tau.storage</span> <span class="kn">import</span> <span class="n">StorageError</span>
 <span class="sd">&quot;&quot;&quot;A command line data `view`.</span>
 
 <span class="sd">See http://en.wikipedia.org/wiki/Model-view-controller</span>
@@ -84,6 +83,7 @@
 <span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">EXIT_SUCCESS</span>
 <span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">util</span><span class="p">,</span> <span class="n">cli</span>
 <span class="kn">from</span> <span class="nn">tau.error</span> <span class="kn">import</span> <span class="n">UniqueAttributeError</span><span class="p">,</span> <span class="n">InternalError</span>
+<span class="kn">from</span> <span class="nn">tau.storage</span> <span class="kn">import</span> <span class="n">StorageError</span>
 <span class="kn">from</span> <span class="nn">tau.storage.levels</span> <span class="kn">import</span> <span class="n">SYSTEM_STORAGE</span><span class="p">,</span> <span class="n">USER_STORAGE</span><span class="p">,</span> <span class="n">PROJECT_STORAGE</span><span class="p">,</span> <span class="n">STORAGE_LEVELS</span>
 <span class="kn">from</span> <span class="nn">tau.model.project</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">ProjectSelectionError</span>
 <span class="kn">from</span> <span class="nn">tau.cli</span> <span class="kn">import</span> <span class="n">arguments</span>
@@ -99,6 +99,7 @@
 <span class="sd">        controller (class): The controller class for this view&#39;s data.</span>
 <span class="sd">        model_name (str): The lower-case name of the model.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># pylint: disable=abstract-method</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">module_name</span><span class="p">,</span> <span class="n">summary_fmt</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">help_page_fmt</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>

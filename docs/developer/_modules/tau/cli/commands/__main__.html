@@ -138,30 +138,30 @@
                             <span class="n">default</span><span class="o">=</span><span class="s1">&#39;INFO&#39;</span><span class="p">,</span>
                             <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_const&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">parser</span></div>
-     
+
 <div class="viewcode-block" id="MainCommand.main"><a class="viewcode-back" href="../../../../tau.cli.commands.html#tau.cli.commands.__main__.MainCommand.main">[docs]</a>    <span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">argv</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Program entry point.</span>
-<span class="sd">         </span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            argv (list): Command line arguments.</span>
-<span class="sd">             </span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            int: Process return code: non-zero if a problem occurred, 0 otherwise</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">argv</span><span class="p">)</span>
         <span class="n">cmd</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">command</span>
         <span class="n">cmd_args</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">options</span>
-     
+
         <span class="n">logger</span><span class="o">.</span><span class="n">set_log_level</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Arguments: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Verbosity level: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="o">.</span><span class="n">LOG_LEVEL</span><span class="p">)</span>
-     
+
         <span class="c1"># Try to execute as a TAU command</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">cli</span><span class="o">.</span><span class="n">execute_command</span><span class="p">([</span><span class="n">cmd</span><span class="p">],</span> <span class="n">cmd_args</span><span class="p">)</span>
         <span class="k">except</span> <span class="n">UnknownCommandError</span><span class="p">:</span>
             <span class="k">pass</span>
-     
+
         <span class="c1"># Check shortcuts</span>
         <span class="n">shortcut</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="k">if</span> <span class="n">build_command</span><span class="o">.</span><span class="n">is_compatible</span><span class="p">(</span><span class="n">cmd</span><span class="p">):</span>

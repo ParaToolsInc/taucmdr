@@ -89,7 +89,7 @@ COMMANDS = {None:
               'pdtf90disp',
               'pdtflint',
               'taucpdisp',
-              'xmlgen']} }
+              'xmlgen']}}
 
 
 class PdtInstallation(AutotoolsInstallation):

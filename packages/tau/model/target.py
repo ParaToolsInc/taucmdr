@@ -48,19 +48,33 @@ from tau.cf.target import host, DARWIN_OS, INTEL_KNC_ARCH
 from tau.model.compiler import Compiler
 
 
-def attributes():
-    def require_k1om():
-        def callback(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
-            k1om_ar = util.which('x86_64-k1om-linux-ar')
-            if not k1om_ar:
-                for path in glob.glob('/usr/linux-k1om-*'):
-                    k1om_ar = util.which(os.path.join(path, 'bin', 'x86_64-k1om-linux-ar'))
-                    if k1om_ar:
-                        break
-            if not k1om_ar:
-                raise ConfigurationError('k1om tools not found', 'Try installing on compute node', 'Install MIC SDK')
-        return callback
+def knc_require_k1om(*_):
+    """Compatibility checking callback for use with data models.
 
+    Requires that the Intel k1om tools be installed if the host architecture is KNC. 
+        
+    Raises:
+        ConfigurationError: Invalid compiler family specified in target configuration.
+    """
+    k1om_ar = util.which('x86_64-k1om-linux-ar')
+    if not k1om_ar:
+        for path in glob.glob('/usr/linux-k1om-*'):
+            k1om_ar = util.which(os.path.join(path, 'bin', 'x86_64-k1om-linux-ar'))
+            if k1om_ar:
+                break
+        else:
+            raise ConfigurationError('k1om tools not found', 'Try installing on compute node', 'Install MIC SDK')
+
+
+def attributes():
+    """Construct attributes dictionary for the target model.
+    
+    We build the attributes in a function so that classes like ``tau.module.project.Project`` are
+    fully initialized and usable in the returned dictionary.
+    
+    Returns:
+        dict: Attributes dictionary.
+    """
     from tau.model.project import Project
     from tau.cli.arguments import ParsePackagePathAction
     from tau.cf.target import Architecture, OperatingSystem
@@ -70,12 +84,11 @@ def attributes():
                                              "You must use Intel compilers to target the Xeon Phi",
                                              "Try adding `--host-compilers=Intel` to the command line")
     knc_intel_mpi_only = require_compiler_family(INTEL_MPI_COMPILERS,
-                                             "You must use Intel MPI compilers to target the Xeon Phi",
-                                             "Try adding `--mpi-compilers=Intel` to the command line")
-    knc_require_k1om = require_k1om()
+                                                 "You must use Intel MPI compilers to target the Xeon Phi",
+                                                 "Try adding `--mpi-compilers=Intel` to the command line")
 
-
-
+    host_os = host.operating_system()
+    
     return {
         'projects': {
             'collection': Project,
@@ -93,7 +106,7 @@ def attributes():
             'type': 'string',
             'required': True,
             'description': 'host operating system',
-            'default': host.operating_system().name,
+            'default': host_os.name,
             'argparse': {'flags': ('--host-os',),
                          'group': 'host',
                          'metavar': '<os>',
@@ -291,7 +304,7 @@ def attributes():
         'binutils_source': {
             'type': 'string',
             'description': 'path or URL to a GNU binutils installation or archive file',
-            'default': 'download',
+            'default': 'download' if host_os is not DARWIN_OS else None,
             'argparse': {'flags': ('--binutils',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
@@ -310,7 +323,7 @@ def attributes():
         'papi_source': {
             'type': 'string',
             'description': 'path or URL to a PAPI installation or archive file',
-            'default': 'download',
+            'default': 'download' if host_os is not DARWIN_OS else None,
             'argparse': {'flags': ('--papi',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',

@@ -1,0 +1,194 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tau.data package &mdash; TAU Commander Developer Documentation</title>
+    
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
+    <link rel="up" title="tau package" href="tau.html" />
+    <link rel="next" title="tau.gui package" href="tau.gui.html" />
+    <link rel="prev" title="tau.cli.tests package" href="tau.cli.tests.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="index.html">
+          <span>TAU Commander Developer Documentation</span></a></h1>
+        <h2 class="heading"><span>tau.data package</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="tau.cli.tests.html">tau.cli.tests package</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="tau.gui.html">tau.gui package</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="module-tau.data">
+<span id="tau-data-package"></span><h1>tau.data package<a class="headerlink" href="#module-tau.data" title="Permalink to this headline">¶</a></h1>
+<p>Performance data formats.</p>
+<p>TODO: Docs</p>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-tau.data.error">
+<span id="tau-data-error-module"></span><h2>tau.data.error module<a class="headerlink" href="#module-tau.data.error" title="Permalink to this headline">¶</a></h2>
+<p>Error class for data format errors.</p>
+<p>TODO: Docs</p>
+<dl class="exception">
+<dt id="tau.data.error.DataFormatError">
+<em class="property">exception </em><code class="descclassname">tau.data.error.</code><code class="descname">DataFormatError</code><span class="sig-paren">(</span><em>value</em>, <em>*hints</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/data/error.html#DataFormatError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.data.error.DataFormatError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="tau.html#tau.error.Error" title="tau.error.Error"><code class="xref py py-class docutils literal"><span class="pre">tau.error.Error</span></code></a></p>
+<p>Indicates that the performance data is not in the expected format.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-tau.data.tau_profile">
+<span id="tau-data-tau-profile-module"></span><h2>tau.data.tau_profile module<a class="headerlink" href="#module-tau.data.tau_profile" title="Permalink to this headline">¶</a></h2>
+<p>TAU&#8217;s default profile file format.</p>
+<p>TODO: Docs</p>
+<dl class="class">
+<dt id="tau.data.tau_profile.TauProfile">
+<em class="property">class </em><code class="descclassname">tau.data.tau_profile.</code><code class="descname">TauProfile</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/data/tau_profile.html#TauProfile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.data.tau_profile.TauProfile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>TODO: Docs</p>
+<dl class="method">
+<dt id="tau.data.tau_profile.TauProfile._parse_aggregates">
+<code class="descname">_parse_aggregates</code><span class="sig-paren">(</span><em>fd</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/data/tau_profile.html#TauProfile._parse_aggregates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.data.tau_profile.TauProfile._parse_aggregates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse a TAU profile file&#8217;s aggregate events.</p>
+<p>There are no aggregates, this function just consumes one line of the profile file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fd</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#file" title="(in Python v2.7)"><em>file</em></a>) &#8211; An open profile file handle.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.data.tau_profile.TauProfile._parse_header">
+<code class="descname">_parse_header</code><span class="sig-paren">(</span><em>fd</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/data/tau_profile.html#TauProfile._parse_header"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.data.tau_profile.TauProfile._parse_header" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse a TAU profile file&#8217;s header.</p>
+<p>The first line of a TAU profile is formatted as &lt;COUNT&gt;&lt;SPACE&gt;&lt;METRIC&gt; where &lt;COUNT&gt; is an integer count of
+the interval events in the profile, &lt;SPACE&gt; is whitespace, and &lt;METRIC&gt; is the name of the profiled metric
+prepended with the garbage string &#8220;<a href="#id1"><span class="problematic" id="id2">templated_functions_MULTI_</span></a>&#8221;.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fd</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#file" title="(in Python v2.7)"><em>file</em></a>) &#8211; An open profile file handle.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">DataFormatError</span></code> &#8211;
+The profile file&#8217;s header is invalid.&#8221;</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.data.tau_profile.TauProfile._parse_interval_events">
+<code class="descname">_parse_interval_events</code><span class="sig-paren">(</span><em>fd</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/data/tau_profile.html#TauProfile._parse_interval_events"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.data.tau_profile.TauProfile._parse_interval_events" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse a TAU profile file&#8217;s interval events.</p>
+<p>There is one interval event per line.  Each event line is formatted as:
+&#8220;&lt;NAME&gt;&#8221; &lt;CALLS&gt; &lt;SUBCALLS&gt; &lt;EXCLUSIVE&gt; &lt;INCLUSIVE&gt; &lt;PROFILECALLS&gt; GROUP=&#8221;&lt;GROUPS&gt;&#8221;
+The units of &lt;EXCLUSIVE&gt; and &lt;INCLUSIVE&gt; depend on the metric.  Time is probably in microseconds.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fd</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#file" title="(in Python v2.7)"><em>file</em></a>) &#8211; An open profile file handle.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.data.tau_profile.TauProfile._parse_metadata">
+<code class="descname">_parse_metadata</code><span class="sig-paren">(</span><em>fd</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/data/tau_profile.html#TauProfile._parse_metadata"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.data.tau_profile.TauProfile._parse_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse a TAU profile file&#8217;s metadata.</p>
+<p>Profile metadata appears on the second line of the file, which is formatted as &lt;LABELS&gt;&lt;SPACE&gt;&lt;METADATA&gt;.
+&lt;LABELS&gt; is the garbage string &#8220;# Name Calls Subrs Excl Incl ProfileCalls #&#8221;. &lt;SPACE&gt; is whitespace.
+&lt;METADATA&gt; is structured data of the form &lt;metadata&gt;[&lt;attribute&gt;&lt;name&gt;NAME&lt;/name&gt;&lt;value&gt;VALUE&lt;/value&gt;
+&lt;/attribute&gt;...]&lt;/metadata&gt; where NAME and VALUE are the name and value of the metadata attribute.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fd</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#file" title="(in Python v2.7)"><em>file</em></a>) &#8211; An open profile file handle.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">DataFormatError</span></code> &#8211;
+The profile file&#8217;s metadata is invalid.&#8221;</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.data.tau_profile.TauProfile._parse_user_events">
+<code class="descname">_parse_user_events</code><span class="sig-paren">(</span><em>fd</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/data/tau_profile.html#TauProfile._parse_user_events"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.data.tau_profile.TauProfile._parse_user_events" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse a TAU profile file&#8217;s atomic user events.</p>
+<p>There is one atomic user event per line.  Each event line is formatted as:
+&#8220;&lt;NAME&gt;&#8221; &lt;COUNT&gt; &lt;MAX&gt; &lt;MIN&gt; &lt;MEAN&gt; &lt;SUMSQUARE&gt;
+&lt;NAME&gt; is a string, &lt;COUNT&gt; is an integer, all others are real numbers.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fd</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#file" title="(in Python v2.7)"><em>file</em></a>) &#8211; An open profile file handle.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="tau.cli.tests.html">tau.cli.tests package</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="tau.gui.html">tau.gui package</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015 ParaTools, Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+    </div>
+  </body>
+</html>
