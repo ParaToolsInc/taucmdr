@@ -40,11 +40,12 @@ a rotating debug file in the user's TAU Commander project prefix, typically "~/.
 import os
 import sys
 import errno
-import logging
 import textwrap
 import socket
 import platform
 import string
+import logging
+from logging import handlers
 from datetime import datetime
 from termcolor import termcolor
 from tau import USER_PREFIX
@@ -355,7 +356,7 @@ if not len(_ROOT_LOGGER.handlers):
             pass
         else:
             raise
-    _FILE_HANDLER = logging.handlers.TimedRotatingFileHandler(LOG_FILE, when='D', interval=1, backupCount=3)
+    _FILE_HANDLER = handlers.TimedRotatingFileHandler(LOG_FILE, when='D', interval=1, backupCount=3)
     _FILE_HANDLER.setFormatter(LogFormatter(line_width=120, line_marker=LINE_MARKER, allow_colors=False))
     _FILE_HANDLER.setLevel(logging.DEBUG)
 
