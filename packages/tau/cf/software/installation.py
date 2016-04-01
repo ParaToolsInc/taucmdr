@@ -190,7 +190,7 @@ class Installation(object):
         except IOError as err:
             LOGGER.info("Cannot read %s archive file '%s': %s", self.name, downloaded, err)
             if reuse:
-                LOGGER.info("Trying to download a fresh copy of '%s'", self.src)
+                LOGGER.info("Downloading a fresh copy of '%s'", self.src)
                 self._prepare_src(reuse=False)
                 return
             else:

@@ -42,28 +42,21 @@ class ModelMeta(type):
         if dct['__module__'] != __name__:
             # Each Model subclass has its own relationships
             dct.update({'associations': dict(), 'references': set()})
-            # The default controller class is Controller
-            if dct.get('__controller__', NotImplemented) is NotImplemented:
-                dct['__controller__'] = Controller
             # The default model name is the class name
-            if dct.get('name', NotImplemented) is NotImplemented:
+            if dct.get('name', None) is None:
                 dct['name'] = name
             # Model subclasses must define __attributes__ as a callable.
             # We make the callable a staticmethod to prevent method binding.
             try:
-                __attributes__ = dct['__attributes__']
+                dct['__attributes__'] = staticmethod(dct['__attributes__']) 
             except KeyError: 
                 raise InternalError("Model class %s does not define '__attributes__'" % name)
-            else:
-                dct['__attributes__'] = staticmethod(__attributes__)
             # Replace attributes with a callable property (defined below).  This is to guarantee 
             # that model attributes won't be constructed until all Model subclasses have been constructed.
-            if dct.get('attributes', NotImplemented) is NotImplemented:
-                dct['attributes'] = ModelMeta.attributes
+            dct['attributes'] = ModelMeta.attributes
             # Replace key_attribute with a callable property (defined below). This is to set
             # the key_attribute member after the model attributes have been constructed.
-            if dct.get('key_attribute', NotImplemented) is NotImplemented:
-                dct['key_attribute'] = ModelMeta.key_attribute
+            dct['key_attribute'] = ModelMeta.key_attribute
         return type.__new__(mcs, name, bases, dct)
 
     @property
@@ -108,13 +101,14 @@ class Model(StorageRecord):
     """
     
     __metaclass__ = ModelMeta
-    __controller__ = NotImplemented
+    __controller__ = Controller
     __attributes__ = NotImplemented
-    name = NotImplemented
-    associations = NotImplemented
-    references = NotImplemented
-    attributes = NotImplemented
-    key_attribute = NotImplemented
+    
+    name = None
+    associations = {}
+    references = set()
+    attributes = {}
+    key_attribute = None
     
     def __init__(self, record):
         super(Model, self).__init__(record.storage, record.eid, record.element)
