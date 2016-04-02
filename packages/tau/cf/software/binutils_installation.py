@@ -57,32 +57,31 @@ class BinutilsInstallation(AutotoolsInstallation):
                                                    target_arch, target_os, compilers, SOURCES, None, LIBRARIES)
 
     def _configure_default(self, flags, env):
-        # pylint: disable=unused-argument,no-self-use
+        # pylint: disable=unused-argument
         flags.extend(['CFLAGS=-fPIC', 'CXXFLAGS=-fPIC',
                       '--disable-nls', '--disable-werror'])
     
     def _configure_bgp(self, flags, env):
-        # pylint: disable=unused-argument,no-self-use
+        # pylint: disable=unused-argument
         flags.extend(['CFLAGS=-fPIC', 'CXXFLAGS=-fPIC',
                       'CC=/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc-bgp-linux-gcc',
                       'CXX=/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc-bgp-linux-g++',
                       '--disable-nls', '--disable-werror'])
         
     def _configure_bgq(self, flags, env):
-        # pylint: disable=unused-argument,no-self-use
+        # pylint: disable=unused-argument
         flags.extend(['CFLAGS=-fPIC', 'CXXFLAGS=-fPIC',
                       'CC=/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc64-bgq-linux-gcc',
                       'CXX=/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc64-bgq-linux-g++',
                       '--disable-nls', '--disable-werror'])
         
     def _configure_ibm64(self, flags, env):
-        # pylint: disable=unused-argument,no-self-use
+        # pylint: disable=unused-argument
         flags.extend(['CFLAGS=-fPIC', 'CXXFLAGS=-fPIC',
                       '--disable-nls', '--disable-werror',
                       '--disable-largefile'])
         
     def _configure_knc(self, flags, env):
-        # pylint: disable=no-self-use
         k1om_ar = util.which('x86_64-k1om-linux-ar')
         if not k1om_ar:
             for path in glob.glob('/usr/linux-k1om-*'):
@@ -123,7 +122,7 @@ class BinutilsInstallation(AutotoolsInstallation):
         for hdr in glob.glob(os.path.join(self.src_prefix, 'include', '*')):
             try:
                 shutil.copy(hdr, self.include_path)
-            except:
+            except IOError:
                 dst = os.path.join(self.include_path, os.path.basename(hdr))
                 shutil.copytree(hdr, dst)
 

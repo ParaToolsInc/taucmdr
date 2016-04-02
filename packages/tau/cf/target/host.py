@@ -176,20 +176,20 @@ def preferred_mpi_compilers():
     try:
         inst = preferred_mpi_compilers.inst
     except AttributeError:
-        from tau.cf.compiler.mpi import IBM_MPI_COMPILERS, CRAY_MPI_COMPILERS, SYSTEM_MPI_COMPILERS 
+        from tau.cf.compiler import mpi
         host_tau_arch = tau_arch()
         if host_tau_arch is TAU_ARCH_CRAYCNL:
             LOGGER.debug("Prefering Cray MPI compilers")
-            inst = CRAY_MPI_COMPILERS
+            inst = mpi.CRAY_MPI_COMPILERS
         elif host_tau_arch in (TAU_ARCH_BGP, TAU_ARCH_BGQ, TAU_ARCH_IBM64_LINUX):
             LOGGER.debug("Prefering IBM MPI compilers")
-            inst = IBM_MPI_COMPILERS
+            inst = mpi.IBM_MPI_COMPILERS
         elif host_tau_arch is TAU_ARCH_MIC_LINUX:
             LOGGER.debug("Preferring Intel compilers")
-            inst = INTEL_MPI_COMPILERS
+            inst = mpi.INTEL_MPI_COMPILERS
         else:
             LOGGER.debug("No preferred MPI compilers for '%s'", host_tau_arch)
-            inst = SYSTEM_MPI_COMPILERS
+            inst = mpi.SYSTEM_MPI_COMPILERS
         preferred_mpi_compilers.inst = inst
     return inst
 

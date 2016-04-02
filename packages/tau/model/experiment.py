@@ -140,12 +140,11 @@ class Experiment(Model):
     def uses_tau(self):
         # For now, all experiments use TAU
         # This might change if we ever re-use this for something like ThreadSpotter
-        # pylint: disable=no-self-use
         return True
 
     def uses_pdt(self):
         measurement = self.populate('measurement')
-        return measurement['source_inst'] != 'never'
+        return measurement['source_inst'] == 'automatic'
     
     def uses_binutils(self):
         measurement = self.populate('measurement')
@@ -243,6 +242,16 @@ class Experiment(Model):
             return tau
 
     def configure_tau_dependency(self, name, prefix):
+        """Installs dependency packages for TAU, e.g. PDT.
+        
+        Args:
+            name (str): Name of the dependency to install.  
+                        Must have a matching tau.cf.software.<name>_installation module.
+            prefix (str): Installation prefix.
+        
+        Returns:
+            Installation: A new installation instance for the installed dependency.
+        """
         target = self.populate('target')
         cls_name = name.title() + 'Installation'
         pkg = __import__('tau.cf.software.%s_installation' % name.lower(), globals(), locals(), [cls_name], -1)
@@ -362,7 +371,7 @@ class Experiment(Model):
             for num in trial_numbers:
                 found = Trial.controller(self.storage).one({'experiment': self.eid, 'number': num})
                 if not found:
-                    raise ConfigurationError("No trial number %d in experiment %s" % (num, self.name()))
+                    raise ConfigurationError("No trial number %d in experiment %s" % (num, self.name))
                 trials.append(found)
         else:
             trials = self.populate('trials')

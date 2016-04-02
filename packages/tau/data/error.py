@@ -25,21 +25,14 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""``tau target`` subcommand."""
+"""Error class for data format errors.
 
-from tau.cf.compiler import CC_ROLE
-from tau.cf.compiler.mpi import MPI_CC_ROLE
-from tau.cf.compiler.installed import InstalledCompiler
-from tau.cli.cli_view import ListCommand
-from tau.model.target import Target
+TODO: Docs
+"""
+
+from tau.error import Error
 
 
-DASHBOARD_COLUMNS = [{'header': 'Name', 'value': 'name', 'align': 'r'},
-                     {'header': 'Host OS', 'value': 'host_os'},
-                     {'header': 'Host Arch.', 'value': 'host_arch'},
-                     {'header': 'Host Compilers', 'function': 
-                      lambda x: InstalledCompiler(x[CC_ROLE.keyword]['path']).info.family},
-                     {'header': 'MPI Compilers', 'function': 
-                      lambda x: InstalledCompiler(x[MPI_CC_ROLE.keyword]['path']).info.family}]
-
-COMMAND = ListCommand(Target, __name__, dashboard_columns=DASHBOARD_COLUMNS)
+class DataFormatError(Error):
+    """Indicates that the performance data is not in the expected format."""
+    pass

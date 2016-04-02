@@ -27,7 +27,6 @@
 #
 """``tau build`` subcommand."""
 
-from tau.error import ConfigurationError
 from tau.cli import arguments
 from tau.cli.command import AbstractCommand
 from tau.cf.compiler import CompilerFamily, CompilerInfo

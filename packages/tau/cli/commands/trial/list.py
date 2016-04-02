@@ -35,10 +35,6 @@ DASHBOARD_COLUMNS = [{'header': 'Experiment', 'function': lambda x: x['experimen
                      {'header': 'Number', 'value': 'number'},
                      {'header': 'Data Size', 'value': 'data_size'},
                      {'header': 'Command', 'value': 'command'},
-                     {'header': 'In Directory', 'value': 'cwd'},
-#                      {'header': 'Began At', 'value': 'begin_time'},
-#                      {'header': 'Ended At', 'value': 'end_time'},
-#                      {'header': 'Return Code', 'value': 'return_code'}
-                     ]
+                     {'header': 'In Directory', 'value': 'cwd'}]
 
 COMMAND = ListCommand(Trial, __name__, dashboard_columns=DASHBOARD_COLUMNS)

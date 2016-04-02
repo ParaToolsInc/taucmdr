@@ -36,7 +36,7 @@ from tau.cli import arguments
 from tau.cli.command import AbstractCommand
 from tau.model.project import Project, ProjectSelectionError
 from tau.storage.project import ProjectStorageError
-from tau.storage.levels import PROJECT_STORAGE, USER_STORAGE, STORAGE_LEVELS
+from tau.storage.levels import PROJECT_STORAGE, STORAGE_LEVELS
 from tau.cli.arguments import ParseBooleanAction
 from tau.cli.commands.target.create import COMMAND as target_create_cmd
 from tau.cli.commands.application.create import COMMAND as application_create_cmd
@@ -60,6 +60,12 @@ class InitializeCommand(AbstractCommand):
 
         usage = "%s [arguments]" % self.command
         parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
+        parser.add_argument('--bare',
+                            help="Initialize project storage but don't configure anything",
+                            nargs='?',
+                            const=True,
+                            default=False,
+                            action=ParseBooleanAction)
 
         default_project_name = os.path.basename(os.getcwd()) or 'default_project'
         project_group = parser.add_argument_group('project arguments')
@@ -133,12 +139,10 @@ class InitializeCommand(AbstractCommand):
         project_name = args.project_name
         target_name = args.target_name
         application_name = args.application_name
-        try:
-            storage_level = args.storage_level
-        except:
-            project_create_cmd.main([project_name])
+        if hasattr(args, 'storage_level'):
+            project_create_cmd.main([project_name, '--storage-level', args.storage_level])
         else:
-            project_create_cmd.main([project_name, '--storage-level', storage_level])
+            project_create_cmd.main([project_name])
 
         select_cmd.main(['--project', project_name])
 
@@ -194,12 +198,13 @@ class InitializeCommand(AbstractCommand):
         except ProjectStorageError:
             self.logger.debug("No project found, initializing a new project.")
             PROJECT_STORAGE.connect_filesystem()
-            try:
-                self._create_project(argv, args)
-            except ConfigurationError:
-                PROJECT_STORAGE.disconnect_filesystem()
-                util.rmtree(proj_ctrl.storage.prefix, ignore_errors=True)
-                raise
+            if not args.bare:
+                try:
+                    self._create_project(argv, args)
+                except ConfigurationError:
+                    PROJECT_STORAGE.disconnect_filesystem()
+                    util.rmtree(proj_ctrl.storage.prefix, ignore_errors=True)
+                    raise
             return dashboard_cmd.main([])
         except ProjectSelectionError as err:
             err.value = "The project has been initialized but no project configuration is selected."

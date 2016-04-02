@@ -40,14 +40,14 @@ a rotating debug file in the user's TAU Commander project prefix, typically "~/.
 import os
 import sys
 import errno
-import logging
 import textwrap
 import socket
 import platform
 import string
-from termcolor import termcolor
-from datetime import datetime
+import logging
 from logging import handlers
+from datetime import datetime
+from termcolor import termcolor
 from tau import USER_PREFIX
 
 
@@ -86,14 +86,14 @@ def _get_term_size_windows():
     try:
         from ctypes import windll, create_string_buffer
         # stdin handle is -10, stdout -11, stderr -12
-        h = windll.kernel32.GetStdHandle(-12)
+        handle = windll.kernel32.GetStdHandle(-12)
         csbi = create_string_buffer(22)
-        res = windll.kernel32.GetConsoleScreenBufferInfo(h, csbi)
-    except:
+        res = windll.kernel32.GetConsoleScreenBufferInfo(handle, csbi)
+    except:     # pylint: disable=bare-except  
         return None
     if res:
         import struct
-        (_,_,_,_,_, left,top,right,bottom, _,_) = struct.unpack("hhhhHhhhhhh", csbi.raw)
+        (_, _, _, _, _, left, top, right, bottom, _, _) = struct.unpack("hhhhHhhhhhh", csbi.raw)
         sizex = right - left + 1
         sizey = bottom - top + 1
         return sizex, sizey
@@ -119,7 +119,7 @@ def _get_term_size_tput():
         output = proc.communicate(input=None)
         rows = int(output[0])
         return (cols, rows)
-    except:
+    except:     # pylint: disable=bare-except 
         return None
 
 
@@ -138,7 +138,7 @@ def _get_term_size_posix():
             import termios
             import struct
             dims = struct.unpack('hh', fcntl.ioctl(fd, termios.TIOCGWINSZ, '1234'))
-        except:
+        except:     # pylint: disable=bare-except 
             return None
         return dims
     dims = ioctl_GWINSZ(0) or ioctl_GWINSZ(1) or ioctl_GWINSZ(2)
@@ -147,7 +147,7 @@ def _get_term_size_posix():
             fd = os.open(os.ctermid(), os.O_RDONLY)
             dims = ioctl_GWINSZ(fd)
             os.close(fd)
-        except:
+        except:     # pylint: disable=bare-except 
             pass
     if not dims:
         return None
