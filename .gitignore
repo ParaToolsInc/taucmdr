@@ -44,6 +44,7 @@ local.properties
 .target
 .texlipse
 .ptp-sync
+.ptp-sync-folder
 
 # TAU Commander registry files
 registry
