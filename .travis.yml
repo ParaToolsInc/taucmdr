@@ -1,0 +1,68 @@
+language: python
+
+branches:
+  except:
+    - gh-pages
+
+git:
+  depth: 99999
+
+sudo: false
+os:
+  - linux
+
+cache:
+    directories:
+        - "$HOME/.cache/pip"
+        - "$HOME/.pyenv"
+
+env:
+  - PYENV_VERSION='2.7.9' OS='Ubuntu Precise' # Add more python versions to this array to expand test matrix
+
+matrix:
+  include:
+    - language: generic
+      os: osx
+      osx_image: xcode7.1 # Corresponds to 10.10.x (Yosemite)
+      env:
+        - PYENV_VERSION='2.7.9' OS='OS X Yosemite'
+    - language: generic
+      os: osx
+      osx_image: xcode7.2 # Corresponds to 10.11.x (El Capitan)
+      env:
+        - PYENV_VERSION='2.7.9' OS='OS X El Capitan'
+
+install:
+  - source .travis/install.sh
+  - python --version
+
+script: # Currently pylint is bombing with negative scores. This might be due to a bad python environment and/or updates needed in pylintrc
+  - coverage run runtests
+  - make -C docs
+#  - [[ -n ${TAU_PY_CHANGED_FILES} ]] && pylint --rcfile=pylintrc $TAU_PY_CHANGED_FILES # pylint changed files only... WIP
+#  - pylint --rcfile=pylintrc packages/tau # Ensure global pylint compliance eventually... WIP
+
+after_success:
+  - codecov --env PYENV_VERSION OS
+
+deploy:
+  provider: script
+  script: .travis/deploy-docs.sh
+  skip_cleanup: true
+  on:
+    branch: master
+    condition: $TRAVIS_OS_NAME = linux &&  $PYENV_VERSION = '2.7.9'
+    repo: ParaToolsInc/taucmdr # Don't try to deploy on private forks
+
+notifications:
+  webhooks:
+    urls: # gitter.im announcement
+      secure: TQIzGX9yWDc+ayKNpWmNjCCucaGCwt9CYeThbzdmGsA30hJkRRuDNdx5ZDvknRktV+h+QYgLGLR3ueVUuGL0/kf23vPUZD6kTTY0c3ZJ4fonDx5Ydr+zhc1iJzO/Ord1tnY5xxfvKpfWEUekFQT5SSJMt61CQoNmVSDdTDpFcMC4GEzeQD6fdP0BxgiFvw4UOnfU/poM9OmjaVdKoFyax1+gub4mC/GG9faxK6IdtOAtPsGcUOpzBypwj3NRGgDuq+jErnvm3tLitVJz8h1ab5eQMgTAlCK8q3w7x/WaWxsVXnErjDqJIGs9mpxmyOJERoRv7hQdlAZtKlIZsdGpE7O9B9ooBE/zAfRqGHee5CsA/UKx6XDt9h0rYt/zNJ5RcIrbHRZMilwdC4PXXjN7FNNkpDp0LhhpzM19tZx9+Zb/QAGOTwIDq5adQfiF9ctE7OAlvqnSbvhTL0bzLmYthIURc9nBks4uqUAKq/LEnHz2CgiL8fGaJbUXqGSBc/prKYREa9ckfBdjFfngSnLBJB6oLKQBGRA/Y8thi7etu8TZD9CsWcBJhXFJTPkFArFkJVRpURNpQ0OIS54q0bmTW+dPbSJ95v2GEttCuAIyqDgffuwqqVYx0KmaMHKvxUGx0Mu8uC9Mo5FLEDiM05mE/lAgkK9wgwbgFW+A5g2t7x8=
+    on_success: change  # options: [always|never|change]
+    on_failure: always
+    on_start: always
+  slack:
+    secure: t0NM8J4361OMrUZSrXA8ECvMm7qulTmAwJhCoZz8+UkdEkRB9ubEc9Ka+BYALpDlbjrUaHzvsJdBhnNJNazQQN659KadjLYqtUbEvlL0+TkYar7WzNJnlB71ysxE8WGph2+KEo7Ld97ruvYURxUzedn9E/ZXRhSmqwbq/gVKdy2+To0EwXJ3n70LvyUW8RtU/NSmWSmeRSiidxAslG14aOKBhHuyUeLA60C+L42qf1BUKZYZc7jv14Tq8fnKkPQa/UHqMyyp8cWpNAvAm+UUjUoyq4Yt487TGMaXKpg9Z0XNHY8B67OXp0v20Vl2RdzwKtT958SpRXPx8/FOa3lA0i1/3uixsm10MNOZxjjwBMcdmj4l+eqfEMBDW2V1oBIUOHn++tIy7Wh25qWtBJB6H9PGcACL75B8czuutdzi20tfBcgmoB+DEiiiXvsvMAdHl2DTIkU4ts9hQmq1ZoNizLX8NO7slCjtg/pztdR8ABe4Dq7/mgNkKpeAyH0gtstPePJdTq/A7EGUOtC3shacZCsct5sF5hZpFW4wpOraI5kC6zHhV/r2fpnQ/r1jOQfpT5hZeTS0JdLUGm58awQg3N0Z+prTGj6fJRz7bBpyII3klBshdlwXWpxkS3r13HWCiJrayVEf76uruGQg8ica9167lEDSfoISESO2TDyrXw0=
+    on_success: change  # options: [always|never|change]
+    on_failure: always
+    on_start: always
