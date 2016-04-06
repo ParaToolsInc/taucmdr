@@ -66,16 +66,16 @@ class InstalledCompilerCreator(KeyedRecordCreator):
     assigned to the same compiler and `icc` would be probed twice. With
     this metaclass, ``b is a == True`` and `icc` is only invoked once.
     """
-    def __call__(cls, absolute_path, arch_args=None):       # pylint: disable=arguments-differ
-        assert isinstance(absolute_path, basestring)
-        if os.path.isabs(absolute_path):
+    def __call__(cls, path, arch_args=None):       # pylint: disable=arguments-differ
+        assert isinstance(path, basestring)
+        if os.path.isabs(path):
             try:
-                return cls.__instances__[absolute_path]
+                return cls.__instances__[path]
             except KeyError:
                 pass
-        absolute_path = util.which(absolute_path)
+        absolute_path = util.which(path)
         if not absolute_path:
-            raise ConfigurationError("'%s' missing or not executable." % absolute_path,
+            raise ConfigurationError("'%s' missing or not executable." % path,
                                      "Check spelling, loaded modules, PATH environment variable, and file permissions")
         if arch_args is None:
             arch_args = []
@@ -123,7 +123,9 @@ class InstalledCompiler(KeyedRecord):
             self.info = CompilerInfo.find(self.command)
         except KeyError:
             raise RuntimeError("Unknown compiler command '%s'" % self.absolute_path)
-        if self.info.family.show_wrapper_flags:
+        if not self.info.family.show_wrapper_flags:
+            self.wrapped = None
+        else:
             LOGGER.debug("Probing wrapper compiler '%s' to discover wrapped compiler", self.absolute_path)
             cmd = [self.absolute_path] + self.info.family.show_wrapper_flags + arch_args
             LOGGER.debug("Creating subprocess: %s", cmd)
@@ -131,27 +133,20 @@ class InstalledCompiler(KeyedRecord):
                 stdout = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
             except subprocess.CalledProcessError as err:
                 raise RuntimeError("%s failed with return code %d: %s" % (cmd, err.returncode, err.output))
-            else:
-                LOGGER.debug(stdout)
-                LOGGER.debug("%s returned 0", cmd)
-            args = stdout.split()
-            # Assume the first executable in `args` is the wrapped compiler
-            for idx, arg in enumerate(args):
-                if util.which(arg):
-                    LOGGER.debug("'%s' wraps '%s'", self.absolute_path, arg)
-                    break
-            else:
-                raise RuntimeError("Unexpected output from '%s':\n%s" % (' '.join(cmd), stdout))
-            # Relax pylint, idx is defined since we did not raise a RuntimeError
-            # pylint: disable=undefined-loop-variable
-            self.wrapped = WrappedCompiler(args[idx], arch_args)
-            try:
-                self.wrapped.parse_args(args[idx+1:], self.info.family)
-            except IndexError:
-                raise RuntimeError("Unexpected output from '%s':\n%s" % (' '.join(cmd), stdout))
-        else:
-            self.wrapped = None
-
+            LOGGER.debug(stdout)
+            LOGGER.debug("%s returned 0", cmd)
+            # Assume the longest line starting with an executable is the wrapped compiler followed by arguments.
+            for line in sorted(stdout.split('\n'), key=len, reverse=True):
+                parts = line.split()
+                if util.which(parts[0]):
+                    LOGGER.debug("'%s' wraps '%s'", self.absolute_path, parts[0])
+                    self.wrapped = WrappedCompiler(parts[0], arch_args)
+                    try:
+                        self.wrapped.parse_args(parts[1:], self.info.family)
+                    except IndexError:
+                        raise RuntimeError("Unexpected output from '%s':\n%s" % (' '.join(cmd), stdout))
+                    else:
+                        return
 
     def md5sum(self):
         """Calculate the MD5 checksum of the installed compiler command executable.
@@ -254,7 +249,7 @@ class InstalledCompilerFamily(KeyedRecord):
         LOGGER.debug("Detecting %s compiler installation", family.name)
         for info in family:
             try:
-                comp = InstalledCompiler(info.command, arch_args or [])
+                comp = InstalledCompiler(info.command, arch_args)
             except ConfigurationError as err:
                 LOGGER.debug(err)
             else:

@@ -45,13 +45,22 @@ def attributes():
         'path': {
             'type': 'string',
             'required': True,
-            'unique': True,
             'description': "absolute path to the compiler command"
+        },
+        'family': {
+            'type': 'string',
+            'required': True,
+            'description': "compiler's family name"
+        },
+        'role': {
+            'type': 'string',
+            'required': True,
+            'description': "role this command plays in the compiler family, e.g. CXX or MPI_CC"
         },
         'md5': {
             'type': 'string',
             'required': True,
-            'description': "checksum of the compiler command file"
+            'description': "checksum of the compiler command"
         }
     }
 
@@ -71,10 +80,12 @@ class CompilerController(Controller):
             Compiler: Data controller for the installed compiler's data.
         """
         path = comp.absolute_path
+        family = str(comp.info.family)
+        role = str(comp.info.role)
         md5sum = comp.md5sum()
-        found = self.one({'path': path})
+        found = self.one({'path': path, 'family': family, 'role': role})
         if not found:
-            found = self.create({'path': path, 'md5': md5sum})
+            found = self.create({'path': path, 'family': family, 'role': role, 'md5': md5sum})
         else:
             if md5sum != found['md5']:
                 LOGGER.warning("%s '%s' has changed!  MD5 sum was %s, but now it's %s", 
@@ -96,7 +107,7 @@ class Compiler(Model):
             InstalledCompiler: Information about the installed compiler command.
         """
         from tau.cf.compiler.installed import InstalledCompiler
-        comp = InstalledCompiler(self['path'])
+        comp = InstalledCompiler(self['path'], self['family'], self['role'])
         if comp.md5sum() != self['md5']:
             LOGGER.warning("%s '%s' has changed!", comp.info.short_descr, comp.command)
         return comp

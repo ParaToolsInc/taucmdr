@@ -81,8 +81,7 @@ IBM_MPI_COMPILERS.add(MPI_CC_ROLE, 'mpixlc')
 IBM_MPI_COMPILERS.add(MPI_CXX_ROLE, 'mpixlc++', 'mpixlC')
 IBM_MPI_COMPILERS.add(MPI_FC_ROLE, 'mpixlf77')
 
-CRAY_MPI_COMPILERS = MpiCompilerFamily('Cray', show_wrapper_flags=['-craype-verbose'])
+CRAY_MPI_COMPILERS = MpiCompilerFamily('Cray', show_wrapper_flags=['-craype-verbose', '--version'])
 CRAY_MPI_COMPILERS.add(MPI_CC_ROLE, 'cc')
 CRAY_MPI_COMPILERS.add(MPI_CXX_ROLE, 'CC')
 CRAY_MPI_COMPILERS.add(MPI_FC_ROLE, 'ftn')
-
