@@ -11,6 +11,13 @@ sudo: false
 os:
   - linux
 
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - gfortran
+
 cache:
     directories:
         - "$HOME/.cache/pip"
@@ -40,15 +47,29 @@ matrix:
 install:
   - source .travis/install.sh
   - python --version
+  - export PATH="${PWD}/bin:$PATH"
+  - if [ "X$TRAVIS_OS_NAME" = "Xosx" ] ; then brew update ; brew install --force-bottle gcc ; fi
+  - sudo apt-get update && sudo apt-get install -qq gfortran || true
 
 script: # Currently pylint is bombing with negative scores. This might be due to a bad python environment and/or updates needed in pylintrc
   - coverage run runtests
   - make -C docs
-#  - [[ -n ${TAU_PY_CHANGED_FILES} ]] && pylint --rcfile=pylintrc $TAU_PY_CHANGED_FILES # pylint changed files only... WIP
+  - |
+    tau initialize --storage-level user > tau_init.log &
+    tau_init_PID=$!
+    echo "tau_init.log will be displayed upon failure"
+    while ps -p $tau_init_PID > /dev/null; do
+      echo "Still initializing TAU commander..."
+      sleep 300 # prevent Travis-CI abort due to inactivity or excessive logging
+    done
+  #  - [[ -n ${TAU_PY_CHANGED_FILES} ]] && pylint --rcfile=pylintrc $TAU_PY_CHANGED_FILES # pylint changed files only... WIP
 #  - pylint --rcfile=pylintrc packages/tau # Ensure global pylint compliance eventually... WIP
 
 after_success:
   - codecov --env PYENV_VERSION OS
+
+after_failure:
+  - cat tau_init.log
 
 deploy:
   provider: script
