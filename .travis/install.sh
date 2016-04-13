@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #set -o pipefail
 #set -o errexit
 #set -o verbose
@@ -18,9 +18,9 @@ if [ ! -d "$PYENV_ROOT/.git" ]; then # pyenv install script failed, try manual i
     git clone --no-checkout -v https://github.com/yyuu/pyenv.git "$HOME/tmp"
     mv "$HOME/tmp/.git" "$PYENV_ROOT/"
     rmdir "$HOME/tmp"
-    cd "$PYENV_ROOT"
+    cd "$PYENV_ROOT" || exit 1
     git reset --hard HEAD
-    cd -
+    cd - || exit 1
 fi
 
 ls -a ~/.pyenv
@@ -32,8 +32,8 @@ eval "$(pyenv virtualenv-init -)"
 pyenv update ||true
 
 export PYENV_VERSION="${PYENV_VERSION:-2.7.9}"
-pyenv install -s ${PYENV_VERSION}
-pyenv global ${PYENV_VERSION}
+pyenv install -s "${PYENV_VERSION}"
+pyenv global "${PYENV_VERSION}"
 pyenv rehash
 pyenv versions
 pyenv which pip
@@ -41,6 +41,8 @@ pyenv which pip
 # Create a clean virtualenv to isolate the environment from Travis-CI defaults
 python -m pip install --user virtualenv
 python -m virtualenv "$HOME/.venv"
+
+# shellcheck source=~/.venv/bin/activate disable=SC1090
 source "$HOME/.venv/bin/activate"
 
 # Install development requirements enumerated in requirements.txt
@@ -58,7 +60,7 @@ export PR=${TRAVIS_PULL_REQUEST:-false}
 
 # Be carefull here; pull requests with forced pushes can potentially
 # cause issues
-_diff_range="$(sed 's/\.\.\./../' <<< $COMMIT_RANGE )"
+_diff_range="${COMMIT_RANGE/.../..}" # use bash parameter expansion rather than sed
 if [ "$PR" != "false" ]; then # Use github API to get changed files
   [ "X$MY_OS" = "Xosx" ] && (brew update > /dev/null || true ; brew install jq || true)
   _files_changed=($(curl "https://api.github.com/repos/$REPO_SLUG/pulls/$PR/files" 2> /dev/null | \
@@ -106,11 +108,13 @@ for f in "${TAU_PY_CHANGED_FILES[@]}"; do
     echo "    $f"
 done
 
-tmp=${FILES_CHANGED[@]}
+tmp=${FILES_CHANGED[*]}
 unset FILES_CHANGED
-export FILES_CHANGED=$(sort -u <<< ${tmp}) # Can't export array variables
+FILES_CHANGED=$(sort -u <<< "${tmp}") # Can't export array variables
+export FILES_CHANGED
 echo "Files changed: ${FILES_CHANGED:-<none>}"
-tmp=${TAU_PY_CHANGED_FILES[@]}
+tmp=${TAU_PY_CHANGED_FILES[*]}
 unset TAU_PY_CHANGED_FILES
-export TAU_PY_CHANGED_FILES=$(sort -u <<< ${tmp})
+TAU_PY_CHANGED_FILES=$(sort -u <<< "${tmp}")
+export TAU_PY_CHANGED_FILES
 echo "TAU Commander changed python files: ${TAU_PY_CHANGED_FILES:-<none>}"
