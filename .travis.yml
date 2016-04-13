@@ -16,21 +16,26 @@ cache:
         - "$HOME/.cache/pip"
         - "$HOME/.pyenv"
 
+# Add more python versions to this array to expand test matrix for Precise
 env:
-  - PYENV_VERSION='2.7.9' OS='Ubuntu Precise' # Add more python versions to this array to expand test matrix
+  - PYENV_VERSION='2.7.9' OS='Ubuntu Precise'
 
+# Matrix include is single entry only, so a new one for each add'l config is required
 matrix:
   include:
     - language: generic
+      os: linux
+      sudo: required
+      dist: trusty
+      env: PYENV_VERSION='2.7.9' OS='Ubuntu Trusty'
+    - language: generic
       os: osx
       osx_image: xcode7.1 # Corresponds to 10.10.x (Yosemite)
-      env:
-        - PYENV_VERSION='2.7.9' OS='OS X Yosemite'
+      env: PYENV_VERSION='2.7.9' OS='OS X Yosemite'
     - language: generic
       os: osx
       osx_image: xcode7.2 # Corresponds to 10.11.x (El Capitan)
-      env:
-        - PYENV_VERSION='2.7.9' OS='OS X El Capitan'
+      env: PYENV_VERSION='2.7.9' OS='OS X El Capitan'
 
 install:
   - source .travis/install.sh
@@ -67,4 +72,3 @@ notifications:
     on_success: always  # options: [always|never|change]
     on_failure: always
     on_start: always
-
