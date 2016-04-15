@@ -91,27 +91,37 @@ def rmtree(path, ignore_errors=False, onerror=None, attempts=5):
             time.sleep(i+1)
     shutil.rmtree(path, ignore_errors, onerror)
 
-def which(program):
+def _is_exec(fpath):
+    return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+
+_which_cache = {}
+def which(program, use_cached=True):
     """Returns the full path to a program command.
     
     Program must exist and be executable.
     Searches the system PATH and the current directory.
+    Caches the result.
     
     Args:
         program (str): program to find.
+        use_cached (bool): If False then don't use cached results.
         
     Returns:
         str: Full path to program or None if program can't be found.
     """
     if not program:
         return None
-    def is_exec(fpath):
-        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+    if use_cached:
+        try:
+            return _which_cache[program]
+        except KeyError:
+            pass
     fpath, _ = os.path.split(program)
     if fpath:
         abs_program = os.path.abspath(program)
         if is_exec(abs_program):
             LOGGER.debug("which(%s) = '%s'", program, abs_program)
+            _which_cache[program] = abs_program
             return abs_program
     else:
         for path in os.environ['PATH'].split(os.pathsep):
@@ -119,8 +129,10 @@ def which(program):
             exe_file = os.path.join(path, program)
             if is_exec(exe_file):
                 LOGGER.debug("which(%s) = '%s'", program, exe_file)
+                _which_cache[program] = exe_file
                 return exe_file
     LOGGER.debug("which(%s): command not found", program)
+    _which_cache[program] = None
     return None
 
 
