@@ -45,45 +45,45 @@ from tau.cf.compiler import CompilerInfo, CompilerRole
 LOGGER = logger.get_logger(__name__)
 
 
-class InstalledCompilerCreator(KeyedRecordCreator):
-    """Metaclass to create a new :any:`InstalledCompiler` instance.
-    
-    This metaclass greatly improves TAU Commander performance.
-    
-    InstalledCompiler instances are constructed with an absolute path
-    to an installed compiler command.  On initialization, the instance
-    invokes the compiler command to discover system-specific compiler
-    characteristics.  This can be very expensive, so we change the
-    instance creation procedure to only probe the compiler when the 
-    compiler command has never been seen before.  This avoids dupliate
-    invocations in a case like::
-    
-        # `which icc` = '/path/to/icc'
-        a = InstalledCompiler('/path/to/icc')
-        b = InstalledCompiler('icc')    
-    
-    Without this metaclass, `a` and `b` would be different instances
-    assigned to the same compiler and `icc` would be probed twice. With
-    this metaclass, ``b is a == True`` and `icc` is only invoked once.
-    """
-    def __call__(cls, path, arch_args=None):       # pylint: disable=arguments-differ
-        assert isinstance(path, basestring)
-        if os.path.isabs(path):
-            try:
-                return cls.__instances__[path]
-            except KeyError:
-                pass
-        absolute_path = util.which(path)
-        if not absolute_path:
-            raise ConfigurationError("'%s' missing or not executable." % path,
-                                     "Check spelling, loaded modules, PATH environment variable, and file permissions")
-        if arch_args is None:
-            arch_args = []
-        return KeyedRecordCreator.__call__(cls, absolute_path, arch_args)
+# class InstalledCompilerCreator(KeyedRecordCreator):
+#     """Metaclass to create a new :any:`InstalledCompiler` instance.
+#     
+#     This metaclass greatly improves TAU Commander performance.
+#     
+#     InstalledCompiler instances are constructed with an absolute path
+#     to an installed compiler command.  On initialization, the instance
+#     invokes the compiler command to discover system-specific compiler
+#     characteristics.  This can be very expensive, so we change the
+#     instance creation procedure to only probe the compiler when the 
+#     compiler command has never been seen before.  This avoids dupliate
+#     invocations in a case like::
+#     
+#         # `which icc` = '/path/to/icc'
+#         a = InstalledCompiler('/path/to/icc')
+#         b = InstalledCompiler('icc')    
+#     
+#     Without this metaclass, `a` and `b` would be different instances
+#     assigned to the same compiler and `icc` would be probed twice. With
+#     this metaclass, ``b is a == True`` and `icc` is only invoked once.
+#     """
+#     def __call__(cls, path, arch_args=None):       # pylint: disable=arguments-differ
+#         assert isinstance(path, basestring)
+#         if os.path.isabs(path):
+#             try:
+#                 return cls.__instances__[path]
+#             except KeyError:
+#                 pass
+#         absolute_path = util.which(path)
+#         if not absolute_path:
+#             raise ConfigurationError("'%s' missing or not executable." % path,
+#                                      "Check spelling, loaded modules, PATH environment variable, and file permissions")
+#         if arch_args is None:
+#             arch_args = []
+#         return KeyedRecordCreator.__call__(cls, absolute_path, arch_args)
 
 
 
-class InstalledCompiler(KeyedRecord):
+class InstalledCompiler(object): #KeyedRecord):
     """Information about an installed compiler command.
     
     There are relatively few well known compilers, but a potentially infinite
@@ -99,11 +99,11 @@ class InstalledCompiler(KeyedRecord):
         wrapped (WrappedCompiler): Information about the wrapped compiler, if any.
     """
     
-    __metaclass__ = InstalledCompilerCreator
-    
-    __key__ = 'absolute_path'
+#     __metaclass__ = InstalledCompilerCreator
+#     
+#     __key__ = 'absolute_path'
 
-    def __init__(self, absolute_path, arch_args=None):
+    def __init__(self, absolute_path, info, arch_args=None):
         """Probes the system to find an installed compiler.
         
         May check PATH, file permissions, or other conditions in the system
@@ -119,34 +119,35 @@ class InstalledCompiler(KeyedRecord):
         self.absolute_path = absolute_path
         self.path = os.path.dirname(absolute_path)
         self.command = os.path.basename(absolute_path)
-        try:
-            self.info = CompilerInfo.find(self.command)
-        except KeyError:
-            raise RuntimeError("Unknown compiler command '%s'" % self.absolute_path)
-        if not self.info.family.show_wrapper_flags:
-            self.wrapped = None
+        self.info = info
+        if self.info.family.show_wrapper_flags:
+            self._probe(arch_args)
         else:
-            LOGGER.debug("Probing wrapper compiler '%s' to discover wrapped compiler", self.absolute_path)
-            cmd = [self.absolute_path] + self.info.family.show_wrapper_flags + arch_args
-            LOGGER.debug("Creating subprocess: %s", cmd)
-            try:
-                stdout = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-            except subprocess.CalledProcessError as err:
-                raise RuntimeError("%s failed with return code %d: %s" % (cmd, err.returncode, err.output))
-            LOGGER.debug(stdout)
-            LOGGER.debug("%s returned 0", cmd)
-            # Assume the longest line starting with an executable is the wrapped compiler followed by arguments.
-            for line in sorted(stdout.split('\n'), key=len, reverse=True):
-                parts = line.split()
-                if util.which(parts[0]):
-                    LOGGER.debug("'%s' wraps '%s'", self.absolute_path, parts[0])
-                    self.wrapped = WrappedCompiler(parts[0], arch_args)
-                    try:
-                        self.wrapped.parse_args(parts[1:], self.info.family)
-                    except IndexError:
-                        raise RuntimeError("Unexpected output from '%s':\n%s" % (' '.join(cmd), stdout))
-                    else:
-                        return
+            self.wrapped = None
+
+    def _probe(self, arch_args):
+        LOGGER.debug("Probing wrapper compiler '%s' to discover wrapped compiler", self.absolute_path)
+        cmd = [self.absolute_path] + self.info.family.show_wrapper_flags + arch_args
+        LOGGER.debug("Creating subprocess: %s", cmd)
+        try:
+            stdout = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError as err:
+            raise RuntimeError("%s failed with return code %d: %s" % (cmd, err.returncode, err.output))
+        LOGGER.debug(stdout)
+        LOGGER.debug("%s returned 0", cmd)
+        # Assume the longest line starting with an executable is the wrapped compiler followed by arguments.
+        for line in sorted(stdout.split('\n'), key=len, reverse=True):
+            parts = line.split()
+            if util.which(parts[0]):
+                LOGGER.debug("'%s' wraps '%s'", self.absolute_path, parts[0])
+                self.wrapped = WrappedCompiler(parts[0], arch_args)
+                try:
+                    self.wrapped.parse_args(parts[1:], self.info.family)
+                except IndexError:
+                    raise RuntimeError("Unexpected output from '%s':\n%s" % (' '.join(cmd), stdout))
+                else:
+                    return
+
 
     def md5sum(self):
         """Calculate the MD5 checksum of the installed compiler command executable.
