@@ -119,7 +119,7 @@ def which(program, use_cached=True):
     fpath, _ = os.path.split(program)
     if fpath:
         abs_program = os.path.abspath(program)
-        if is_exec(abs_program):
+        if _is_exec(abs_program):
             LOGGER.debug("which(%s) = '%s'", program, abs_program)
             _which_cache[program] = abs_program
             return abs_program
@@ -127,7 +127,7 @@ def which(program, use_cached=True):
         for path in os.environ['PATH'].split(os.pathsep):
             path = path.strip('"')
             exe_file = os.path.join(path, program)
-            if is_exec(exe_file):
+            if _is_exec(exe_file):
                 LOGGER.debug("which(%s) = '%s'", program, exe_file)
                 _which_cache[program] = exe_file
                 return exe_file
