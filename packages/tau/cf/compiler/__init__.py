@@ -58,6 +58,8 @@ characteristics, hence we do not need to invoke the compiler to identify it.
 """
 
 import os
+import re
+import subprocess
 from tau import logger
 from tau.cf import TrackedInstance, KeyedRecord
 from tau.error import InternalError 
@@ -85,8 +87,10 @@ class CompilerRole(KeyedRecord):
     def __init__(self, keyword, language, required=False):
         self.keyword = keyword
         self.language = language
+        # FIXME: Required should move to software.tau_installation
         self.required = required
 
+    # FIXME: Required should move to software.tau_installation
     @classmethod
     def tau_required(cls):
         """Iterate over roles that must be filled to get TAU to compile."""
@@ -114,55 +118,45 @@ class CompilerInfo(TrackedInstance):
         self.role = role
         self.short_descr = "%s %s compiler" % (family.name, role.language)
         
-    def __str__(self):
-        return self.command
-    
-    def __len__(self):
-        return len(self.command)
-    
     @classmethod
-    def find(cls, command, family=None, role=None):
-        """Find compiler info that matches the given command.
-        
-        If an exact match cannot be found then information for the longest command
-        contained in the passed command is returned.
-        
-        Examples:
-            find("gcc-4.7-x86_64") returns info for "gcc" from possible candidates ["gcc", "cc"].
+    def find(cls, command=None, family=None, role=None):
+        """Find CompilerInfo instances that matches the given command and/or family and/or role.
         
         Args:
-            command (str): Absolute or relative path to a compiler command.
-            family (CompilerFamily): If provided, find compiler info only in the given family.
-            role (CompilerRole): If provided, find compiler info only in the given role.
+            command (str): A compiler command without path.
+            family (CompilerFamily): Compiler family to search for.
+            role (CompilerRole): Compiler role to search for.
 
         Returns:
-            CompilerInfo: The matching compiler information.
-            
-        Raises:
-            KeyError: No compiler information is known for the given command.
+            list: CompilerInfo instances matching given compiler information.
         """
-        command = os.path.basename(command)
-        instances = family if family else cls.all()
-        for inst in instances:
-            if (inst.command == command) and (not role or (role and inst.role == role)):
-                return inst
-        # Guess that the longest string is the best match
-        LOGGER.debug("No compiler info exactly matches %s, trying approximate match", command)
-        candidates = [inst for inst in instances 
-                      if (inst.command in command) and (not role or (role and inst.role == role))]
-        if not candidates:
-            raise KeyError
-        match = max(candidates, key=len)
-        LOGGER.debug("Matched info for %s to %s", match, command)
-        return match
-
+        assert command is None or isinstance(command, basestring)
+        assert family is None or isinstance(family, CompilerFamily)
+        assert role is None or isinstance(role, CompilerRole)
+        if command and family and role:
+            return [info for info in family.members[role] if info.command == command]
+        elif command and family:
+            return [info for info_list in family.members.itervalues() for info in info_list if info.command == command]
+        elif command and role:
+            return [info for info in cls.all() if (info.role is role and info.command == command)]
+        elif family and role:
+            return family.members[role]
+        elif command:
+            return [info for info in cls.all() if info.command == command]
+        elif family:
+            return [info for info_list in family.members.itervalues() for info in info_list]
+        elif role:
+            return [info for info in cls.all() if info.role is role]
+        else:
+            return []
+    
 
 class CompilerFamily(KeyedRecord):
     """Information about a compiler family.
     
     A compiler's family creates associations between different compiler commands
     and assigns compilers to roles.  All compiler commands within a family accept
-    similar arguments, and produce binary compatible object files.
+    similar arguments, and produce compatible object files.
 
     Attributes:
         name (str): Family name, e.g. "Intel".
@@ -175,20 +169,23 @@ class CompilerFamily(KeyedRecord):
     
     __key__ = 'name'
     
+    _probe_cache = {}
+    
     def __init__(self, name,
                  version_flags=None,
                  include_path_flags=None, 
                  library_path_flags=None, 
                  link_library_flags=None,
-                 show_wrapper_flags=None):
-        self._info_by_command = {}
-        self._info_by_role = {}
+                 show_wrapper_flags=None,
+                 family_regex=None):
         self.name = name
-        self.version_flags = version_flags or ['--version']
+        self.family_regex = family_regex
+        self.version_flags = version_flags or ['--version', '-E']
         self.include_path_flags = include_path_flags or ['-I']
         self.library_path_flags = library_path_flags or ['-L']
         self.link_library_flags = link_library_flags or ['-l']
-        self.show_wrapper_flags = show_wrapper_flags # Default is None
+        self.show_wrapper_flags = show_wrapper_flags or []
+        self.members = {}
 
     @classmethod
     def all(cls):
@@ -200,7 +197,8 @@ class CompilerFamily(KeyedRecord):
         Yields:
            A CompilerFamily object.
         """
-        preferred = cls.preferred()
+        from tau.cf.target import host
+        preferred = host.preferred_compilers()
         yield preferred
         # Settle down pylint... the __instances__ member is created by the metaclass
         # pylint: disable=no-member
@@ -209,47 +207,50 @@ class CompilerFamily(KeyedRecord):
                 yield instance
                 
     @classmethod
-    def preferred(cls):
-        """Return the host's preferred compiler family."""
-        from tau.cf.target import host
-        return host.preferred_compilers()
-
-    @classmethod
     def family_names(cls):
         """Return an alphabetical list of all known compiler family names."""
-        return sorted([str(inst) for inst in cls.all()])
+        return sorted([inst.name for inst in cls.all()])
     
-    def __contains__(self, item):
-        """Tests if a command is in the family or a role has been filled.
-        
-        Args:
-            item: The absolute path to a compiler command as a string, or a CompilerRole instance.
-            
-        Returns:
-            If a string is given then return True if the string is the absolute path to a compiler
-            that is in this family.  If a CompilerRole instance is given, return True if at least
-            one compiler in the family fills the role.  Return False in all other cases.
+    @classmethod
+    def probe(cls, absolute_path):
         """
-        if isinstance(item, basestring):
-            return item in self._info_by_command
-        else:
-            return item.keyword in self._info_by_role
-    
-    def __iter__(self):
-        """Yield information about all compilers in the family.
-        
-        May yield zero, one, or more CompilerInfo objects for any role,
-        but it will yield each CompilerInfo object only once.
+        TODO: Docs
         """
-        for info in self._info_by_command.itervalues():
-            yield info
+        try:
+            return cls._probe_cache[absolute_path]
+        except KeyError:
+            pass
+        last_version_flags = None
+        for family in cls.all():
+            if family.family_regex:
+                if family.version_flags != last_version_flags:
+                    LOGGER.debug("Probing compiler '%s' to discover compiler family", absolute_path)
+                    cmd = [absolute_path] + family.version_flags
+                    LOGGER.debug("Creating subprocess: %s", cmd)
+                    try:
+                        stdout = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+                    except subprocess.CalledProcessError as err:
+                        LOGGER.debug("%s failed with return code %d: %s", cmd, err.returncode, err.output)
+                        continue
+                    LOGGER.debug(stdout)
+                    LOGGER.debug("%s returned 0", cmd)
+                    last_version_flags = family.version_flags
+                if re.search(family.family_regex, stdout):
+                    LOGGER.debug("'%s' is a %s compiler", absolute_path, family.name)
+                    cls._probe_cache[absolute_path] = family
+                    return family
+                LOGGER.debug("'%s' is not a %s compiler", absolute_path, family.name)
+        cls._probe_cache[absolute_path] = None
+        return None
 
     def add(self, role, *commands):
         """Register compiler commands in the given role.
         
-        Commands should be ordered by preference.  For example, we prefer to build
+        Commands should be ordered by preference.  For example, if we prefer to build
         C++ codes with "c++" instead of "CC" so that case-insensitive file systems
-        (looking at you OS X) don't try to use a C compiler for C++ codes. 
+        (looking at you OS X) don't try to use a C compiler for C++ codes::
+        
+            family.add(CXX_ROLE, 'c++', 'CC')
         
         Args:
             role (CompilerRole) Role these commands fill in the family.
@@ -258,26 +259,8 @@ class CompilerFamily(KeyedRecord):
         assert isinstance(role, CompilerRole)
         for command in commands:
             assert isinstance(command, basestring)
-            if command in self._info_by_command:
-                raise InternalError('Command %s already a member of %s' % (command, self.name))
             info = CompilerInfo(command, self, role)
-            self._info_by_command[command] = info
-            self._info_by_role.setdefault(role.keyword, []).append(info)
-    
-    def members(self, key):
-        """Get the compiler with the specified command or all compilers in the specified role.
-         
-        Args:
-            key: Compiler command string or CompilerRole instance
-
-        Returns:
-            If `key` is a string, return the CompilerInfo instance matching the command string.
-            If `key` is a CompilerRole, return a list of CompilerInfo instances in the specified role. 
-        """
-        if isinstance(key, basestring):
-            return self._info_by_command[key]
-        else:
-            return self._info_by_role[key.keyword]        
+            self.members.setdefault(role, []).append(info)
 
 
 CC_ROLE = CompilerRole('CC', 'C', True)
@@ -291,18 +274,18 @@ SYSTEM_COMPILERS.add(CXX_ROLE, 'c++', 'cxx', 'CC')
 SYSTEM_COMPILERS.add(FC_ROLE, 'ftn', 'f90', 'f77')
 SYSTEM_COMPILERS.add(UPC_ROLE, 'upc')
 
-GNU_COMPILERS = CompilerFamily('GNU')
+GNU_COMPILERS = CompilerFamily('GNU', family_regex=r'Free Software Foundation, Inc')
 GNU_COMPILERS.add(CC_ROLE, 'gcc')
 GNU_COMPILERS.add(CXX_ROLE, 'g++')
 GNU_COMPILERS.add(FC_ROLE, 'gfortran')
 GNU_COMPILERS.add(UPC_ROLE, 'gupc')
 
-INTEL_COMPILERS = CompilerFamily('Intel')
+INTEL_COMPILERS = CompilerFamily('Intel', family_regex=r'Intel Corporation')
 INTEL_COMPILERS.add(CC_ROLE, 'icc')
 INTEL_COMPILERS.add(CXX_ROLE, 'icpc')
 INTEL_COMPILERS.add(FC_ROLE, 'ifort')
 
-PGI_COMPILERS = CompilerFamily('PGI')
+PGI_COMPILERS = CompilerFamily('PGI', family_regex=r'The Portland Group')
 PGI_COMPILERS.add(CC_ROLE, 'pgcc')
 PGI_COMPILERS.add(CXX_ROLE, 'pgc++', 'pgcxx', 'pgCC')
 PGI_COMPILERS.add(FC_ROLE, 'pgf90', 'pgf77')
@@ -312,7 +295,7 @@ IBM_COMPILERS.add(CC_ROLE, 'xlc')
 IBM_COMPILERS.add(CXX_ROLE, 'xlc++', 'xlC')
 IBM_COMPILERS.add(FC_ROLE, 'xlf')
 
-CRAY_COMPILERS = CompilerFamily('Cray')
+CRAY_COMPILERS = CompilerFamily('Cray', show_wrapper_flags=['-craype-verbose', '--version'])
 CRAY_COMPILERS.add(CC_ROLE, 'cc')
 CRAY_COMPILERS.add(CXX_ROLE, 'CC')
 CRAY_COMPILERS.add(FC_ROLE, 'ftn')

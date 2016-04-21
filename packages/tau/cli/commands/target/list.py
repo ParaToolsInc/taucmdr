@@ -29,7 +29,6 @@
 
 from tau.cf.compiler import CC_ROLE
 from tau.cf.compiler.mpi import MPI_CC_ROLE
-from tau.cf.compiler.installed import InstalledCompiler
 from tau.cli.cli_view import ListCommand
 from tau.model.target import Target
 
@@ -38,8 +37,8 @@ DASHBOARD_COLUMNS = [{'header': 'Name', 'value': 'name', 'align': 'r'},
                      {'header': 'Host OS', 'value': 'host_os'},
                      {'header': 'Host Arch.', 'value': 'host_arch'},
                      {'header': 'Host Compilers', 'function': 
-                      lambda x: InstalledCompiler(x[CC_ROLE.keyword]['path']).info.family},
+                      lambda data: data[CC_ROLE.keyword]['family']},
                      {'header': 'MPI Compilers', 'function': 
-                      lambda x: InstalledCompiler(x[MPI_CC_ROLE.keyword]['path']).info.family}]
+                      lambda data: data[MPI_CC_ROLE.keyword]['family']}]
 
 COMMAND = ListCommand(Target, __name__, dashboard_columns=DASHBOARD_COLUMNS)

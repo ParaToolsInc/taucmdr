@@ -36,7 +36,7 @@ from tau import logger, util
 from tau.error import ConfigurationError, InternalError
 from tau.cf.software import SoftwarePackageError
 from tau.cf.software.installation import Installation, parallel_make_flags
-from tau.cf.compiler import SYSTEM_COMPILERS, GNU_COMPILERS, INTEL_COMPILERS, PGI_COMPILERS
+from tau.cf.compiler import SYSTEM_COMPILERS, GNU_COMPILERS, INTEL_COMPILERS, PGI_COMPILERS, CRAY_COMPILERS
 from tau.cf.compiler import CC_ROLE, CXX_ROLE, FC_ROLE, UPC_ROLE
 from tau.cf.compiler.mpi import SYSTEM_MPI_COMPILERS, INTEL_MPI_COMPILERS
 from tau.cf.compiler.mpi import MPI_CC_ROLE, MPI_CXX_ROLE, MPI_FC_ROLE
@@ -356,7 +356,7 @@ class TauInstallation(Installation):
         magic_map = {GNU_COMPILERS: 'gfortran',
                      INTEL_COMPILERS: 'intel',
                      PGI_COMPILERS: 'pgi',
-                     SYSTEM_COMPILERS: 'ftn',
+                     CRAY_COMPILERS: 'cray',
                      SYSTEM_MPI_COMPILERS: 'mpif90',
                      INTEL_MPI_COMPILERS: 'mpiifort'}
         try:
@@ -443,24 +443,24 @@ class TauInstallation(Installation):
         LOGGER.info('%s installation complete', self.name)
         return self.verify()
 
-    def get_makefile_tags(self):
-        """Get makefile tags for this TAU installation.
+    def get_tags(self):
+        """Get tags for this TAU installation.
 
-        Each TAU Makefile is identified by its tags.  Tags are also used by
-        tau_exec to load the correct version of the TAU shared object library.
-
-        Tags can appear in the makefile name in any order so the order of the
-        tags returned by this function will likely not match the order they
-        appear in the makefile name or tau_exec command line.
+        Each TAU configuration (makefile, library, Python bindings, etc.) is identified by its tags.
+        Tags can appear in the makefile name in any order so the order of the tags returned by this 
+        function will likely not match the order they appear in the makefile name or tau_exec command line.
 
         Returns:
             list: Makefile tags, e.g. ['papi', 'pdt', 'icpc']
         """
         tags = []
+        cxx_compiler = self.compilers[CXX_ROLE] 
+        while cxx_compiler.wrapped:
+            cxx_compiler = cxx_compiler.wrapped            
         compiler_tags = {INTEL_COMPILERS: 'intel' if self.target_os == CRAY_CNL_OS else 'icpc', 
                          PGI_COMPILERS: 'pgi'}
         try:
-            tags.append(compiler_tags[self.compilers[CXX_ROLE].info.family])
+            tags.append(compiler_tags[cxx_compiler.info.family])
         except KeyError:
             pass
         if self.source_inst == 'automatic':
@@ -516,7 +516,7 @@ class TauInstallation(Installation):
         """
         tau_makefiles = glob.glob(os.path.join(self.lib_path, 'Makefile.tau*'))
         LOGGER.debug("Found makefiles: '%s'", tau_makefiles)
-        config_tags = self.get_makefile_tags()
+        config_tags = self.get_tags()
         LOGGER.debug("Searching for makefile with tags: %s", config_tags)
         approx_tags = None
         approx_makefile = None
@@ -667,7 +667,8 @@ class TauInstallation(Installation):
             str: Command for TAU compiler wrapper without path or arguments.
         """
         use_wrapper = (self.source_inst != 'never' or
-                       self.compiler_inst != 'never')
+                       self.compiler_inst != 'never' or
+                       self.target_os is CRAY_CNL_OS)
         if use_wrapper:
             return TAU_COMPILER_WRAPPERS[compiler.info.role]
         else:
@@ -722,7 +723,7 @@ class TauInstallation(Installation):
                                                 not self.link_only))
         if use_tau_exec:
             tau_exec_opts = opts
-            tags = self.get_makefile_tags()
+            tags = self.get_tags()
             if not self.mpi_support:
                 tags.add('serial')
             if self.opencl_support:

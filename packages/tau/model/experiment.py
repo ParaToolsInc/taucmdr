@@ -42,7 +42,6 @@ from tau.storage.levels import PROJECT_STORAGE, STORAGE_LEVELS, ORDERED_LEVELS
 from tau.cf.target import OperatingSystem, DARWIN_OS
 from tau.cf.software import SoftwarePackageError
 from tau.cf.software.tau_installation import TauInstallation
-from tau.cf.compiler.installed import InstalledCompiler
 
 
 LOGGER = logger.get_logger(__name__)
@@ -86,9 +85,6 @@ class Experiment(Model):
     
     __attributes__ = attributes
 
-    def __init__(self, *args, **kwargs):
-        super(Experiment, self).__init__(*args, **kwargs)
-        
     @classmethod
     def controller(cls, storage=PROJECT_STORAGE):
         return cls.__controller__(cls, storage)
@@ -252,6 +248,7 @@ class Experiment(Model):
         Returns:
             Installation: A new installation instance for the installed dependency.
         """
+        LOGGER.debug("Configuring TAU dependency '%s' at prefix '%s'", name, prefix)
         target = self.populate('target')
         cls_name = name.title() + 'Installation'
         pkg = __import__('tau.cf.software.%s_installation' % name.lower(), globals(), locals(), [cls_name], -1)
@@ -281,6 +278,7 @@ class Experiment(Model):
         Returns:
             TauInstallation: Object handle for the TAU installation. 
         """
+        LOGGER.debug("Configuring experiment %s", self.title())
         project_data = self.populate('project')
         try:
             storage = STORAGE_LEVELS[project_data['storage_level']]
@@ -324,11 +322,9 @@ class Experiment(Model):
         """
         LOGGER.debug("Managed build: %s", [compiler_cmd] + compiler_args)
         target = self.populate('target')
-        given_compiler = InstalledCompiler(compiler_cmd)
-        target.check_compiler(given_compiler, compiler_args)
-        
+        target_compiler = target.check_compiler(compiler_cmd, compiler_args)
         tau = self.configure()
-        return tau.compile(given_compiler, compiler_args)
+        return tau.compile(target_compiler, compiler_args)
         
     def managed_run(self, launcher_cmd, application_cmd):
         """Uses this experiment to run an application command.

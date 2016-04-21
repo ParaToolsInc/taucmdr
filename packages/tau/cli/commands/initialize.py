@@ -65,6 +65,7 @@ class InitializeCommand(AbstractCommand):
                             nargs='?',
                             const=True,
                             default=False,
+                            metavar='T/F',
                             action=ParseBooleanAction)
 
         default_project_name = os.path.basename(os.getcwd()) or 'default_project'

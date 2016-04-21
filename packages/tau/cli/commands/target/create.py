@@ -37,7 +37,7 @@ from tau.model.compiler import Compiler
 from tau.model.project import Project, ProjectSelectionError
 from tau.cf.compiler import CompilerFamily, CompilerRole
 from tau.cf.compiler.mpi import MpiCompilerFamily, MPI_CXX_ROLE, MPI_CC_ROLE, MPI_FC_ROLE
-from tau.cf.compiler.installed import InstalledCompiler, InstalledCompilerFamily
+from tau.cf.compiler.installed import InstalledCompilerFamily
 from tau.cf.target import host
 
 
@@ -56,10 +56,7 @@ class TargetCreateCommand(CreateCommand):
         Raises:
             ConfigurationError: Invalid command line arguments specified
         """
-        if getattr(args, 'host_arch') == 'knc':
-            arch_args = ['-mmic']
-        else:
-            arch_args = []
+        compilers = {}
         for family_attr, family_cls in [('host_family', CompilerFamily), ('mpi_family', MpiCompilerFamily)]:
             try:
                 family_arg = getattr(args, family_attr)
@@ -70,12 +67,13 @@ class TargetCreateCommand(CreateCommand):
             else:
                 delattr(args, family_attr)
             try:
-                family_comps = InstalledCompilerFamily(family_cls(family_arg), arch_args)
+                family_comps = InstalledCompilerFamily(family_cls(family_arg))
             except KeyError:
                 self.parser.error("Invalid compiler family: %s" % family_arg)
             for comp in family_comps:
                 self.logger.debug("args.%s=%r", comp.info.role.keyword, comp.absolute_path)
                 setattr(args, comp.info.role.keyword, comp.absolute_path)
+                compilers[comp.info.role] = comp
      
         compiler_keys = set(CompilerRole.keys())
         all_keys = set(args.__dict__.keys())
@@ -83,16 +81,19 @@ class TargetCreateCommand(CreateCommand):
         missing_keys = compiler_keys - given_keys
         self.logger.debug("Given compilers: %s", given_keys)
         self.logger.debug("Missing compilers: %s", missing_keys)
-        compilers = dict([(key, InstalledCompiler(getattr(args, key), arch_args)) for key in given_keys])
+
+        # TODO: probe given compilers
+        
         for key in missing_keys:
+            role = CompilerRole.find(key)
             try:
-                compilers[key] = host.default_compiler(CompilerRole.find(key))
+                compilers[role] = host.default_compiler(role)
             except ConfigurationError as err:
                 self.logger.debug(err)
     
         # Check that all required compilers were found
         for role in CompilerRole.tau_required():
-            if role.keyword not in compilers:
+            if role not in compilers:
                 raise ConfigurationError("%s compiler could not be found" % role.language,
                                          "See 'compiler arguments' under `%s --help`" % COMMAND)
                 
@@ -104,15 +105,13 @@ class TargetCreateCommand(CreateCommand):
                 probed = set()
                 for role in MPI_CC_ROLE, MPI_CXX_ROLE, MPI_FC_ROLE:
                     try:
-                        comp = compilers[role.keyword]
+                        comp = compilers[role]
                     except KeyError:
                         self.logger.debug("Not probing %s: not found", role)
                     else:
-                        self.logger.debug("%s: %s", role, comp)
-                        self.logger.debug("family: %s", comp.info.family)
+                        #self.logger.debug("%s: %s '%s'", role, comp.info.short_descr, comp.absolute_path)
                         probed.update(getattr(comp.wrapped, wrapped_attr))
                 setattr(args, args_attr, list(probed))
-    
         return compilers
     
     def construct_parser(self):

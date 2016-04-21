@@ -111,6 +111,7 @@ def which(program, use_cached=True):
     """
     if not program:
         return None
+    assert isinstance(program, basestring)
     if use_cached:
         try:
             return _which_cache[program]
