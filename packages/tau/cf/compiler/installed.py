@@ -65,14 +65,14 @@ class InstalledCompilerCreator(type):
     assigned to the same compiler and `icc` would be probed twice. With
     this metaclass, ``b is a == True`` and `icc` is only invoked once.
     """
-    def __call__(cls, absolute_path, info):
+    def __call__(cls, absolute_path, info, **kwargs):
         assert isinstance(absolute_path, basestring) and os.path.isabs(absolute_path)
         assert isinstance(info, CompilerInfo)
         try:
             instance = cls.__instances__[absolute_path, info]
         except KeyError: 
             LOGGER.debug("No cached compiler installation info for '%s'", absolute_path)
-            instance = super(InstalledCompilerCreator, cls).__call__(absolute_path, info)
+            instance = super(InstalledCompilerCreator, cls).__call__(absolute_path, info, **kwargs)
             cls.__instances__[absolute_path, info] = instance
         else:
             LOGGER.debug("Using cached compiler installation info for '%s'", absolute_path)
@@ -92,7 +92,7 @@ class InstalledCompiler(object):
         info (CompilerInfo): Information about the compiler invoked by the compiler command.
         command (str): Command that invokes the compiler, without path.
         path (str): Absolute path to folder containing the compiler command.
-        uid (str): A unique identifier for the insatlled compiler.
+        uid (str): A unique identifier for the installed compiler.
         wrapped (InstalledCompiler): Information about the wrapped compiler, if any.
         include_path (list): Paths to search for include files when compiling with the wrapped compiler.
         library_path (list): Paths to search for libraries when linking with the wrapped compiler.
@@ -104,31 +104,61 @@ class InstalledCompiler(object):
     
     __instances__ = {}
 
-    def __init__(self, absolute_path, info):
-        """Probes the system for information about an installed compiler.
+    def __init__(self, absolute_path, info, uid=None,
+                 wrapped=None, include_path=None, library_path=None, compiler_flags=None, libraries=None):
+        """Initializes the InstalledCompiler instance.
         
-        May check PATH, file permissions, or other conditions in the system
-        to determine if a compiler command is present and executable.
+        Any information not provided on the argument list may be probed from the system.
+        This can be **VERY** expensive and may involve invoking the compiler, checking PATH, file permissions, 
+        or other conditions in the system to determine if a compiler command is present and executable.
+        If this compiler command wraps another command, that command may also be probed.  The probes recurse
+        to the "root" compiler that doesn't wrap any other command.  In fact, the probe is so expensive we
+        emit an INFO-level message whenever it happens.
         
-        Calculates the MD5 checksum of the installed compiler command executable.       
+        :any:`uid` uniquely identifies this compiler as installed in the system.  If the compiler's installation
+        changes substantially (e.g. significant version upgrades or changes in the compiler wrapper) then the UID
+        will change as well.
+        
         TAU is highly dependent on the compiler used to install TAU.  If that compiler
         changes, or the user tries to "fake out" TAU Commander by renaming compiler
-        commands, then the user should be warned that the compiler has changed. 
+        commands, then the user should be warned that the compiler has changed.
         
-        If this compiler command wraps another command, may also attempt to discover
-        information about the wrapped compiler as well.
+        Args:
+            absolute_path (str): Absolute path to the compiler command.
+            info (CompilerInfo): Information about the compiler invoked by the compiler command.
+            uid (str): A unique identifier for the installed compiler.
+            wrapped (InstalledCompiler): Information about the wrapped compiler or None.  If this is None then
+                                         all wrapper path arguments (i.e. `include_path`) are ignored.
+            include_path (list): Paths to search for include files when compiling with the wrapped compiler.
+                                 Ignored if :any:`wrapped` is None.
+            library_path (list): Paths to search for libraries when linking with the wrapped compiler.
+                                 Ignored if :any:`wrapped` is None.
+            compiler_flags (list): Additional flags used when compiling with the wrapped compiler.
+                                 Ignored if :any:`wrapped` is None.
+            libraries (list): Additional libraries to link when linking with the wrapped compiler.
+                                 Ignored if :any:`wrapped` is None.
         """
         self.absolute_path = absolute_path
         self.info = info
         self.command = os.path.basename(absolute_path)
         self.path = os.path.dirname(absolute_path)
-        self.include_path = []
-        self.library_path = []
-        self.compiler_flags = []
-        self.libraries = []
-        self.wrapped = self._probe_wrapper()
-        self.uid = self._calculate_uid()       
-
+        if wrapped:
+            assert isinstance(wrapped, InstalledCompiler)
+            self.include_path = include_path or []
+            self.library_path = library_path or []
+            self.compiler_flags = compiler_flags or []
+            self.libraries = libraries or []
+            self.wrapped = wrapped
+        else:
+            self.include_path = []
+            self.library_path = []
+            self.compiler_flags = []
+            self.libraries = []
+            self.wrapped = self._probe_wrapper()
+        if uid:
+            self.uid = uid
+        else:
+            self.uid = self._calculate_uid()       
 
     def _calculate_uid(self):
         LOGGER.debug("Calculating UID of '%s'", self.absolute_path)
@@ -142,19 +172,21 @@ class InstalledCompiler(object):
                 for value in getattr(self, attr):
                     uid.update(value)
         return uid.hexdigest()
-    
+
     def _probe_wrapper(self):
         if not self.info.family.show_wrapper_flags:
             LOGGER.debug("Not probing wrapper: family '%s' does not provide flags to show wrapper flags", 
                          self.info.family.name)
             return None
-        LOGGER.debug("Probing wrapper compiler '%s' to discover wrapped compiler", self.absolute_path)
+        LOGGER.info("Probing %s '%s' to discover wrapped compiler", self.info.short_descr, self.absolute_path)
         cmd = [self.absolute_path] + self.info.family.show_wrapper_flags
         LOGGER.debug("Creating subprocess: %s", cmd)
         try:
             stdout = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as err:
-            raise RuntimeError("%s failed with return code %d: %s" % (cmd, err.returncode, err.output))
+            LOGGER.warning("Unable to identify compiler wrapped by wrapper '%s'."
+                           " TAU will attempt to continue but may fail later on.", self.absolute_path)
+            return None
         LOGGER.debug(stdout)
         LOGGER.debug("%s returned 0", cmd)
         # Assume the longest line starting with an executable is the wrapped compiler followed by arguments.
@@ -166,7 +198,7 @@ class InstalledCompiler(object):
             wrapped_absolute_path = util.which(wrapped_command)
             if not wrapped_absolute_path:
                 continue
-            LOGGER.debug("'%s' wraps '%s'", self.absolute_path, wrapped_absolute_path)
+            LOGGER.info("  '%s' wraps '%s'", self.absolute_path, wrapped_absolute_path)
             wrapped = self._probe_wrapped(wrapped_absolute_path, wrapped_args)
             if wrapped:
                 break

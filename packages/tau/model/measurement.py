@@ -155,10 +155,10 @@ def attributes():
                          'const': True,
                          'action': ParseBooleanAction},
         },
-        'select_inst_file': {
+        'select_file': {
             'type': 'string',
             'description': 'specify selective instrumentation file',
-            'argparse': {'flags': ('--select-inst-file',),
+            'argparse': {'flags': ('--select-file',),
                          'group': 'instrumentation',
                          'metavar': 'path'},
             'compat': {True:
@@ -335,10 +335,11 @@ class Measurement(Model):
                                      "Specify %s, %s, %s, or %s" % (source_inst_flag, compiler_inst_flag, 
                                                                     sample_flag, link_only_flag))
         try:
-            select_inst_file = self['select_inst_file']
+            select_file = self['select_file']
         except KeyError:
             pass
         else:
-            if not os.path.exists(select_inst_file):
-                raise ConfigurationError("Selective instrumentation file '%s' not found" % select_inst_file)
+            if not os.path.exists(select_file):
+                raise ConfigurationError("Selective instrumentation file '%s' not found" % select_file)
+
 

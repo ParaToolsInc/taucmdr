@@ -139,8 +139,12 @@ class Compiler(Model):
 
     __controller__ = CompilerController
     
-    def installation_info(self):
-        """Probes the system for information on this compiler command.
+    def installation_info(self, probe=False):
+        """Gets information about this compiler installation.
+        
+        Args:
+            probe (bool): If True then probe the system to confirm that the installed compiler matches the
+                          data recorded in the database.  If False then use the recorded data without verification.
         
         Returns:
             InstalledCompiler: Information about the installed compiler command.
@@ -153,11 +157,26 @@ class Compiler(Model):
             family = CompilerFamily.find(self['family'])
         info_list = CompilerInfo.find(command, family, role)
         if len(info_list) != 1:
-            raise InternalError("Zero or more than one CompilerInfo object matches '%s'" % self)
-        comp = InstalledCompiler(self['path'], info_list[0])
-        if comp.uid != self['uid']:
-            LOGGER.warning("%s '%s' has changed!"
-                           " The unique ID was %s when the TAU project was created, but now it's %s."
-                           " TAU will attempt to continue but may fail later on.", 
-                           comp.info.short_descr, comp.absolute_path, self['uid'], comp.uid)
+            raise InternalError("Zero or more than one CompilerInfo objects match '%s'" % self)
+        if probe:
+            comp = InstalledCompiler(self['path'], info_list[0])
+            if comp.uid != self['uid']:
+                LOGGER.warning("%s '%s' has changed!"
+                               " The unique ID was %s when the TAU project was created, but now it's %s."
+                               " TAU will attempt to continue but may fail later on.", 
+                               comp.info.short_descr, comp.absolute_path, self['uid'], comp.uid)
+        else:
+            LOGGER.debug("NOT verifying compiler information for '%s'", self['path'])
+            try:
+                wrapped = self.populate('wrapped')
+            except KeyError:
+                comp = InstalledCompiler(self['path'], info_list[0], uid=self['uid'])
+            else:
+                comp = InstalledCompiler(self['path'], info_list[0], 
+                                         wrapped=wrapped.installation_info(probe), 
+                                         include_path=self['include_path'], 
+                                         library_path=self['library_path'], 
+                                         compiler_flags=self['compiler_flags'], 
+                                         libraries=self['libraries'],
+                                         uid=self['uid'])
         return comp

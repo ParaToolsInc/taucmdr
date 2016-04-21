@@ -43,7 +43,7 @@ from tau.mvc.model import Model
 from tau.mvc.controller import Controller
 from tau.cf.compiler import CompilerRole, INTEL_COMPILERS
 from tau.cf.compiler.mpi import INTEL_MPI_COMPILERS
-from tau.cf.compiler.installed import InstalledCompilerSet, InstalledCompiler
+from tau.cf.compiler.installed import InstalledCompilerSet
 from tau.cf.target import host, DARWIN_OS, INTEL_KNC_ARCH
 from tau.model.compiler import Compiler
 
@@ -366,7 +366,7 @@ class Target(Model):
     
     def compilers(self):
         """Get information about the compilers used by this target configuration.
-         
+        
         Returns:
             InstalledCompilerSet: Collection of installed compilers used by this target.
         """
@@ -379,6 +379,7 @@ class Target(Model):
                 except KeyError:
                     continue
                 compilers[role.keyword] = compiler_record.installation_info()
+                LOGGER.debug("compilers[%s] = '%s'", role.keyword, compilers[role.keyword].absolute_path)
                 eids.append(compiler_record.eid)
             missing = [role for role in CompilerRole.tau_required() if role.keyword not in compilers]
             if missing:
@@ -416,18 +417,18 @@ class Target(Model):
                 continue
             # Target was configured with this compiler
             if compiler_record['path'] == absolute_path:
-                installed_comp = compiler_record.installation_info()
+                installed_comp = compiler_record.installation_info(probe=True)
             else:
                 # Target was configured with a wrapper compiler so check if that wrapper wraps this compiler
                 while 'wrapped' in compiler_record:
                     compiler_record = compiler_ctrl.one(compiler_record['wrapped'])
                     if compiler_record['path'] == absolute_path:
-                        installed_comp = compiler_record.installation_info()
+                        installed_comp = compiler_record.installation_info(probe=True)
                         break
             if installed_comp:
                 LOGGER.debug("'%s' appears to be a %s", compiler_cmd, installed_comp.info.short_descr)
                 break
-        else: 
+        else:
             parts = ["No compiler in target '%s' matches '%s'." % (self['name'], compiler_cmd),
                      "The known compiler commands are:"]
             parts.extend('  %s (%s)' % (comp.absolute_path, comp.info.short_descr) for _, comp in self.compilers())

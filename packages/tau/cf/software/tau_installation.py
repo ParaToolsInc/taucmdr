@@ -147,7 +147,7 @@ class TauInstallation(Installation):
                  io_inst,
                  keep_inst_files,
                  reuse_inst_files,
-                 select_inst_file,
+                 select_file,
                  # Measurement methods and options
                  profile,
                  trace,
@@ -194,7 +194,7 @@ class TauInstallation(Installation):
             io_inst (bool): Enable or disable POSIX I/O instrumentation in TAU.
             keep_inst_files (bool): If True then do not remove instrumented source files after compilation.
             reuse_inst_files (bool): If True then reuse instrumented source files for compilation when available.
-            select_inst_file (str): Path to selective instrumentation file.
+            select_file (str): Path to selective instrumentation file.
             profile (bool): Enable or disable profiling.
             trace (bool): Enable or disable tracing.
             sample (bool): Enable or disable event-based sampling.
@@ -241,7 +241,7 @@ class TauInstallation(Installation):
         self.io_inst = io_inst
         self.keep_inst_files = keep_inst_files
         self.reuse_inst_files = reuse_inst_files
-        self.select_inst_file = select_inst_file
+        self.select_file = select_file
         self.profile = profile
         self.trace = trace
         self.sample = sample
@@ -297,9 +297,10 @@ class TauInstallation(Installation):
         # Check for iowrapper
         if self.io_inst:
             iowrap_libs = glob.glob(os.path.join(self.lib_path, 'shared', 'libTAU-iowrap*'))
-            LOGGER.debug("Found iowrap libraries: %s", iowrap_libs)
-            if not iowrap_libs:
-                raise SoftwarePackageError("iowrap libraries not found")
+            LOGGER.debug("Found iowrap shared libraries: %s", iowrap_libs)
+            iowrap_link_options = os.path.join(self.lib_path, 'wrappers', 'io_wrapper', 'link_options.tau')
+            if not iowrap_libs and not os.path.exists(iowrap_link_options):
+                raise SoftwarePackageError("iowrap libraries or link options not found")
         LOGGER.debug("TAU installation at '%s' is valid", self.install_prefix)
         return True
     
@@ -608,9 +609,9 @@ class TauInstallation(Installation):
             tau_opts.add('-optKeepFiles')
         if self.reuse_inst_files:
             tau_opts.add('-optReuseFiles')
-        if self.select_inst_file:
-            select_inst_file = os.path.realpath(os.path.abspath(self.select_inst_file))
-            tau_opts.add('-optTauSelectFile=%s' % select_inst_file)
+        if self.select_file:
+            select_file = os.path.realpath(os.path.abspath(self.select_file))
+            tau_opts.add('-optTauSelectFile=%s' % select_file)
         if self.io_inst:
             tau_opts.add('-optTrackIO')
         if self.sample or self.compiler_inst != 'never':
