@@ -23,9 +23,6 @@ if [ ! -d "$PYENV_ROOT/.git" ]; then # pyenv install script failed, try manual i
     cd - || exit 1
 fi
 
-ls -a ~/.pyenv
-ls ~/.pyenv/bin
-
 eval "$(pyenv init -)"
 eval "$(pyenv virtualenv-init -)"
 
