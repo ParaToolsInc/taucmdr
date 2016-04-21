@@ -62,7 +62,12 @@ script: # Currently pylint is bombing with negative scores. This might be due to
       echo "Still initializing TAU commander..."
       sleep 300 # prevent Travis-CI abort due to inactivity or excessive logging
     done
-  #  - [[ -n ${TAU_PY_CHANGED_FILES} ]] && pylint --rcfile=pylintrc $TAU_PY_CHANGED_FILES # pylint changed files only... WIP
+  - |
+    if [[ -n ${TAU_PY_CHANGED_FILES} ]] ; then
+      for f in "${TAU_PY_CHANGED_FILES}"; do
+        pylint --rcfile=pylintrc $f
+      done
+    fi # pylint changed files only...
 #  - pylint --rcfile=pylintrc packages/tau # Ensure global pylint compliance eventually... WIP
 
 after_success:
