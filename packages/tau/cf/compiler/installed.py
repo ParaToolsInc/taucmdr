@@ -183,7 +183,7 @@ class InstalledCompiler(object):
         LOGGER.debug("Creating subprocess: %s", cmd)
         try:
             stdout = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-        except subprocess.CalledProcessError as err:
+        except subprocess.CalledProcessError:
             LOGGER.warning("Unable to identify compiler wrapped by wrapper '%s'."
                            " TAU will attempt to continue but may fail later on.", self.absolute_path)
             return None
