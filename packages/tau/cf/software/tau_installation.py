@@ -36,7 +36,7 @@ from tau import logger, util
 from tau.error import ConfigurationError, InternalError
 from tau.cf.software import SoftwarePackageError
 from tau.cf.software.installation import Installation, parallel_make_flags
-from tau.cf.compiler import SYSTEM_COMPILERS, GNU_COMPILERS, INTEL_COMPILERS, PGI_COMPILERS, CRAY_COMPILERS
+from tau.cf.compiler import GNU_COMPILERS, INTEL_COMPILERS, PGI_COMPILERS, CRAY_COMPILERS
 from tau.cf.compiler import CC_ROLE, CXX_ROLE, FC_ROLE, UPC_ROLE
 from tau.cf.compiler.mpi import SYSTEM_MPI_COMPILERS, INTEL_MPI_COMPILERS
 from tau.cf.compiler.mpi import MPI_CC_ROLE, MPI_CXX_ROLE, MPI_FC_ROLE
@@ -322,7 +322,7 @@ class TauInstallation(Installation):
             # so don't even bother trying.  Pass as much of this as we can and hope for the best.
             cc_command = self.compilers[MPI_CC_ROLE].wrapped.info.command
             cxx_command = self.compilers[MPI_CXX_ROLE].wrapped.info.command
-            fc_family = self.compilers[MPI_FC_ROLE].wrapped.info.family
+            ftn_comp = self.compilers[MPI_FC_ROLE].wrapped if FC_ROLE in self.compilers else None
             if self.mpi_include_path:
                 # Unfortunately, TAU's configure script can only accept one path on -mpiinc
                 # and it expects the compiler's include path argument (e.g. "-I") to be omitted
@@ -350,27 +350,30 @@ class TauInstallation(Installation):
             # around these problems e.g. 'gcc-4.9' becomes 'gcc' 
             cc_command = self.compilers[CC_ROLE].info.command
             cxx_command = self.compilers[CXX_ROLE].info.command
-            fc_family = self.compilers[FC_ROLE].info.family
+            fc_comp = self.compilers[FC_ROLE].info.family if FC_ROLE in self.compilers else None
 
         # TAU's configure script can't detect Fortran compiler from the compiler
         # command so translate Fortran compiler command into TAU's funkey magic words
-        magic_map = {GNU_COMPILERS: 'gfortran',
-                     INTEL_COMPILERS: 'intel',
-                     PGI_COMPILERS: 'pgi',
-                     CRAY_COMPILERS: 'cray',
-                     SYSTEM_MPI_COMPILERS: 'mpif90',
-                     INTEL_MPI_COMPILERS: 'mpiifort'}
-        try:
-            fortran_magic = magic_map[fc_family]
-        except KeyError:
-            raise InternalError("Unknown compiler family for Fortran: '%s'" % fc_family)
+        fortran_magic = None
+        if fc_comp:
+            fc_family = fc_comp.info.family
+            fc_magic_map = {GNU_COMPILERS: 'gfortran',
+                            INTEL_COMPILERS: 'intel',
+                            PGI_COMPILERS: 'pgi',
+                            CRAY_COMPILERS: 'cray',
+                            SYSTEM_MPI_COMPILERS: 'mpif90',
+                            INTEL_MPI_COMPILERS: 'mpiifort'}
+            try:
+                fortran_magic = fc_magic_map[fc_family]
+            except KeyError:
+                raise InternalError("Unknown compiler family for Fortran: '%s'" % fc_family)
 
         flags = [flag for flag in  
                  ['-prefix=%s' % self.install_prefix,
                   '-arch=%s' % self.arch,
                   '-cc=%s' % cc_command,
                   '-c++=%s' % cxx_command,
-                  '-fortran=%s' % fortran_magic,
+                  '-fortran=%s' % fortran_magic if fortran_magic else '',
                   '-bfd=%s' % self.binutils.install_prefix if self.binutils else '',
                   '-papi=%s' % self.papi.install_prefix if self.papi else '',
                   '-unwind=%s' % self.libunwind.install_prefix if self.libunwind else '',

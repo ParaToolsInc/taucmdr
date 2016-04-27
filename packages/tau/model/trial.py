@@ -118,19 +118,17 @@ class TrialController(Controller):
             headline = '\n{:=<{}}\n'.format('== %s %s at %s ==' % (mark, name, time), logger.LINE_WIDTH)
             LOGGER.info(headline)
 
-        cmd_str = ' '.join(cmd)
         begin_time = str(datetime.utcnow())
         trial_number = expr.next_trial_number()
         LOGGER.debug("New trial number is %d", trial_number)
 
         banner('BEGIN', expr.title(), begin_time)
-        fields = {'number': trial_number,
-                  'experiment': expr.eid,
-                  'command': cmd_str,
-                  'cwd': cwd,
-                  'environment': 'FIXME',
-                  'begin_time': begin_time}
-        trial = self.create(fields)
+        trial = self.create({'number': trial_number,
+                             'experiment': expr.eid,
+                             'command': ' '.join(cmd),
+                             'cwd': cwd,
+                             'environment': 'FIXME',
+                             'begin_time': begin_time})
 
         # Tell TAU to send profiles and traces to the trial prefix
         env['PROFILEDIR'] = trial.prefix
@@ -159,6 +157,24 @@ class TrialController(Controller):
         profiles = trial.profile_files()
         if profiles:
             LOGGER.info("Trial produced %d profile files.", len(profiles))
+            negative_profiles = [prof for prof in profiles if 'profile.-1' in prof]
+            if negative_profiles:
+                LOGGER.warning("Trial %s produced a profile with negative node number!"
+                               " This usually indicates that process-level parallelism was not initialized,"
+                               " (e.g. MPI_Init() was not called) or there was a problem in instrumentation."
+                               " Check the compilation output and verify that MPI_Init (or similar) was called.",
+                               trial_number)
+                for fname in negative_profiles:
+                    new_name = fname.replace(".-1.", ".0.") 
+                    if not os.path.exists(new_name):
+                        LOGGER.info("Renaming %s to %s", fname, new_name)
+                        os.rename(fname, new_name)
+                    else:
+                        raise ConfigurationError("The profile numbers for trial %d are wrong.",
+                                                 "Check that the application configuration is correct.",
+                                                 "Check that the measurement configuration is correct.",
+                                                 "Check for instrumentation failure in the compilation log.")
+                
         elif measurement['profile']:
             raise TrialError("Application completed successfuly but did not produce any profiles.")
         traces = trial.trace_files()

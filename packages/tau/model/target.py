@@ -151,7 +151,7 @@ def attributes():
         },
         'FC': {
             'model': Compiler,
-            'required': True,
+            'required': False,
             'description': 'Host Fortran compiler command',
             'argparse': {'flags': ('--fc',),
                          'group': 'host',

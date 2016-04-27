@@ -138,7 +138,7 @@ class CompilerInfo(TrackedInstance):
         elif command and family:
             return [info for info_list in family.members.itervalues() for info in info_list if info.command == command]
         elif command and role:
-            return [info for info in cls.all() if (info.role is role and info.command == command)]
+            return [info for info in cls.all() if info.role is role and info.command == command]
         elif family and role:
             return family.members[role]
         elif command:
@@ -265,7 +265,7 @@ class CompilerFamily(KeyedRecord):
 
 CC_ROLE = CompilerRole('CC', 'C', True)
 CXX_ROLE = CompilerRole('CXX', 'C++', True)
-FC_ROLE = CompilerRole('FC', 'Fortran', True)
+FC_ROLE = CompilerRole('FC', 'Fortran')
 UPC_ROLE = CompilerRole('UPC', 'Universal Parallel C')
 
 SYSTEM_COMPILERS = CompilerFamily('System')

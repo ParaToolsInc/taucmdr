@@ -39,6 +39,6 @@ DASHBOARD_COLUMNS = [{'header': 'Name', 'value': 'name', 'align': 'r'},
                      {'header': 'Host Compilers', 'function': 
                       lambda data: data[CC_ROLE.keyword]['family']},
                      {'header': 'MPI Compilers', 'function': 
-                      lambda data: data[MPI_CC_ROLE.keyword]['family']}]
+                      lambda data: data.get(MPI_CC_ROLE.keyword, {'family': 'None'})['family']}]
 
 COMMAND = ListCommand(Target, __name__, dashboard_columns=DASHBOARD_COLUMNS)
