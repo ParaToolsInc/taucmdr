@@ -134,15 +134,36 @@ class TrialController(Controller):
         env['PROFILEDIR'] = trial.prefix
         env['TRACEDIR'] = trial.prefix
 
-        try:
-            retval = trial.execute_command(expr, cmd, cwd, env)
-        except:
-            self.delete(trial.eid)
-            raise
-        finally:
-            end_time = str(datetime.utcnow())
-            self.update({'end_time': end_time, 'return_code': retval}, trial.eid)
-            banner('END', expr.name, end_time)
+        target = expr.populate('target')
+        host_arch = target['host_arch']
+
+        if host_arch == 'knc':
+            knc_env = '"'
+            for key in env:
+                knc_env = knc_env +('%s=%s ' %(key,env[key]))
+            knc_env = knc_env + '"'
+            cmd.insert(0, 'micnativeloadex')
+            cmd.append('-e')
+            cmd.append(knc_env)
+            try:
+                retval = trial.execute_command(expr, cmd, cwd, env)
+            except:
+                self.delete(trial.eid)
+                raise
+            finally:
+                end_time = str(datetime.utcnow())
+                self.update({'end_time': end_time, 'return_code': retval}, trial.eid)
+                banner('END', expr.name, end_time)
+        else:
+            try:
+                retval = trial.execute_command(expr, cmd, cwd, env)
+            except:
+                self.delete(trial.eid)
+                raise
+            finally:
+                end_time = str(datetime.utcnow())
+                self.update({'end_time': end_time, 'return_code': retval}, trial.eid)
+                banner('END', expr.name, end_time)
         if retval != 0:
             raise TrialError("Program died without producing performance data.",
                              "Verify that the right input parameters were specified.",
