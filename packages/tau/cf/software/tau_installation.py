@@ -809,4 +809,3 @@ class TauInstallation(Installation):
             raise ConfigurationError("Trace visualizer failed to open '%s'" % path,
                                      "Check Java installation, X11 installation,"
                                      " network connectivity, and file permissions")
-            

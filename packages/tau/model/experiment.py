@@ -33,6 +33,7 @@ The selected experiment will be used for application compilation and trial visua
 """
 
 import os
+import shutil
 from tau import logger, util
 from tau.error import ConfigurationError
 from tau.mvc.model import Model
@@ -392,4 +393,52 @@ class Experiment(Model):
                 tau.show_profile(prefix, profile_tool)
             if meas['trace']:
                 tau.show_trace(prefix, trace_tool)
+                
+    def export(self, export_location=None, profile_format=None, trial_numbers=None):
+        """Export experiment trial data.
+        
+        Exports the most recent trial or all trials with given numbers.
+        
+        Args:
+            export_location (str): Name of the visualization or data processing tool for profiles, e.g. `pprof`.
+            profile_format (str): Name of the visualization or data processing tool for traces, e.g. `vampir`.
+            trial_numbers (list): Numbers of trials to show.
+            
+        Raises:
+            ConfigurationError: Invalid trial numbers or no trial data for this experiment.
+        """
+        if trial_numbers:
+            trials = []
+            for num in trial_numbers:
+                found = Trial.controller(self.storage).one({'experiment': self.eid, 'number': num})
+                if not found:
+                    raise ConfigurationError("No trial number %d in experiment %s" % (num, self.name))
+                trials.append(found)
+        else:
+            trials = self.populate('trials')
+            if trials:
+                found = trials[0]
+                for trial in trials[1:]:
+                    if trial['begin_time'] > found['begin_time']:
+                        found = trial
+                trials = [found]
+        if not trials:
+            raise ConfigurationError("No trials in experiment %s" % self.title(), "See `tau trial create --help`")
+
+        if export_location is None:
+            export_location = os.getcwd()
+
+        tau = self.configure()
+        meas = self.populate('measurement')
+        for trial in trials:
+            prefix = trial.prefix
+            if profile_format == 'ppk':
+                cmd = 'paraprof', '--pack', `trial['number']`+'.ppk', prefix
+                retval = util.create_subprocess(cmd, log=False)
+                shutil.move(`trial['number']`+'.ppk', export_location)
+            else:
+                if(os.path.exists(export_location)):
+                    shutil.copytree(prefix,export_location+'/trial'+`trial['number']`)
+                else:
+                    shutil.copytree(prefix,export_location)
                 
