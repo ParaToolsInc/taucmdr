@@ -209,4 +209,4 @@ class SelectCommand(AbstractCommand):
         return EXIT_SUCCESS
 
 
-COMMAND = SelectCommand(__name__, summary_fmt="Select project components for the next experiment.")
+COMMAND = SelectCommand(__name__, summary_fmt="Select project components for the next experiment.\nAvailable components of each type may be viewed using the 'tau dashboard' command.")
