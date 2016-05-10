@@ -94,7 +94,7 @@ def rmtree(path, ignore_errors=False, onerror=None, attempts=5):
 def _is_exec(fpath):
     return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
 
-_which_cache = {}
+_WHICH_CACHE = {}
 def which(program, use_cached=True):
     """Returns the full path to a program command.
     
@@ -114,7 +114,7 @@ def which(program, use_cached=True):
     assert isinstance(program, basestring)
     if use_cached:
         try:
-            return _which_cache[program]
+            return _WHICH_CACHE[program]
         except KeyError:
             pass
     fpath, _ = os.path.split(program)
@@ -122,7 +122,7 @@ def which(program, use_cached=True):
         abs_program = os.path.abspath(program)
         if _is_exec(abs_program):
             LOGGER.debug("which(%s) = '%s'", program, abs_program)
-            _which_cache[program] = abs_program
+            _WHICH_CACHE[program] = abs_program
             return abs_program
     else:
         for path in os.environ['PATH'].split(os.pathsep):
@@ -130,10 +130,10 @@ def which(program, use_cached=True):
             exe_file = os.path.join(path, program)
             if _is_exec(exe_file):
                 LOGGER.debug("which(%s) = '%s'", program, exe_file)
-                _which_cache[program] = exe_file
+                _WHICH_CACHE[program] = exe_file
                 return exe_file
     LOGGER.debug("which(%s): command not found", program)
-    _which_cache[program] = None
+    _WHICH_CACHE[program] = None
     return None
 
 
