@@ -158,8 +158,9 @@ class Compiler(Model):
         info_list = CompilerInfo.find(command, family, role)
         if len(info_list) != 1:
             raise InternalError("Zero or more than one CompilerInfo objects match '%s'" % self)
+        info = info_list[0]
         if probe:
-            comp = InstalledCompiler(self['path'], info_list[0])
+            comp = InstalledCompiler(self['path'], info)
             if comp.uid != self['uid']:
                 LOGGER.warning("%s '%s' has changed!"
                                " The unique ID was %s when the TAU project was created, but now it's %s."
@@ -170,9 +171,9 @@ class Compiler(Model):
             try:
                 wrapped = self.populate('wrapped')
             except KeyError:
-                comp = InstalledCompiler(self['path'], info_list[0], uid=self['uid'])
+                comp = InstalledCompiler(self['path'], info, uid=self['uid'])
             else:
-                comp = InstalledCompiler(self['path'], info_list[0], 
+                comp = InstalledCompiler(self['path'], info, 
                                          wrapped=wrapped.installation_info(probe), 
                                          include_path=self['include_path'], 
                                          library_path=self['library_path'], 
