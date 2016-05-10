@@ -425,9 +425,6 @@ class Experiment(Model):
         if not trials:
             raise ConfigurationError("No trials in experiment %s" % self.title(), "See `tau trial create --help`")
 
-        if export_location is None:
-            export_location = os.getcwd()
-
         tau = self.configure()
         meas = self.populate('measurement')
         for trial in trials:
@@ -435,10 +432,12 @@ class Experiment(Model):
             if profile_format == 'ppk':
                 cmd = 'paraprof', '--pack', `trial['number']`+'.ppk', prefix
                 retval = util.create_subprocess(cmd, log=False)
-                shutil.move(`trial['number']`+'.ppk', export_location)
+                if export_location is not None:
+                    shutil.move(`trial['number']`+'.ppk', export_location)
             else:
+                if export_location is None:
+                    export_location = os.getcwd()
                 if(os.path.exists(export_location)):
                     shutil.copytree(prefix,export_location+'/trial'+`trial['number']`)
                 else:
                     shutil.copytree(prefix,export_location)
-                
