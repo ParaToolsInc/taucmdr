@@ -322,7 +322,7 @@ class TauInstallation(Installation):
             # so don't even bother trying.  Pass as much of this as we can and hope for the best.
             cc_command = self.compilers[MPI_CC_ROLE].wrapped.info.command
             cxx_command = self.compilers[MPI_CXX_ROLE].wrapped.info.command
-            ftn_comp = self.compilers[MPI_FC_ROLE].wrapped if FC_ROLE in self.compilers else None
+            fc_comp = self.compilers[MPI_FC_ROLE].wrapped if FC_ROLE in self.compilers else None
             if self.mpi_include_path:
                 # Unfortunately, TAU's configure script can only accept one path on -mpiinc
                 # and it expects the compiler's include path argument (e.g. "-I") to be omitted
