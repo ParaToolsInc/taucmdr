@@ -65,6 +65,7 @@ def attributes():
         'projects': {
             'collection': Project,
             'via': 'measurements',
+            'rebuild_required': True,
             'description': "projects using this measurement"
         },
         'name': {
@@ -72,6 +73,7 @@ def attributes():
             'type': 'string',
             'unique': True,
             'description': "measurement configuration name",
+            'rebuild_required': False,
             'argparse': {'help': 'measurement configuration name',
                          'metavar': '<measurement_name>'},
         
@@ -80,6 +82,7 @@ def attributes():
             'type': 'boolean',
             'default': True,
             'description': "generate application profiles",
+            'rebuild_required': True,
             'argparse': {'flags': ('--profile',),
                          'group': 'output format',
                          'metavar': 'T/F',
@@ -91,6 +94,7 @@ def attributes():
             'type': 'boolean',
             'default': False,
             'description': "generate application traces",
+            'rebuild_required': True,
             'argparse': {'flags': ('--trace',),
                          'group': 'output format',
                          'metavar': 'T/F',
@@ -109,6 +113,7 @@ def attributes():
                          'nargs': '?',
                          'const': True,
                          'action': ParseBooleanAction},
+            'rebuild_required': False,
             'compat': {True: (Target.require('binutils_source'),
                               Target.exclude('binutils_source', None),
                               Target.require('libunwind_source'),
@@ -125,6 +130,7 @@ def attributes():
                          'nargs': '?',
                          'choices': ('automatic', 'manual', 'never'),
                          'const': 'automatic'},
+            'rebuild_required': True,
             'compat': {'automatic': Target.exclude('pdt_source', None)}
         },
         'compiler_inst': {
@@ -137,6 +143,7 @@ def attributes():
                          'nargs': '?',
                          'choices': ('always', 'fallback', 'never'),
                          'const': 'always'},
+            'rebuild_required': True,
             'compat': {lambda x: x in ('always', 'fallback'):
                        (Target.require('binutils_source'),
                         Target.exclude('binutils_source', None),
@@ -148,6 +155,7 @@ def attributes():
             'type': 'boolean',
             'default': False,
             'description': "don't instrument, only link the TAU library to the application",
+            'rebuild_required': False,
             'argparse': {'flags': ('--link-only',),
                          'group': 'instrumentation',
                          'metavar': 'T/F',
@@ -161,6 +169,7 @@ def attributes():
             'argparse': {'flags': ('--select-inst-file',),
                          'group': 'instrumentation',
                          'metavar': 'path'},
+            'rebuild_required': True,
             'compat': {True:
                        (Target.require('source_inst'),
                         Target.exclude('source_inst', 'never'))},
@@ -175,6 +184,7 @@ def attributes():
                          'nargs': '?',
                          'const': True,
                          'action': ParseBooleanAction},
+            'rebuild_required': True,
             'compat': {True:
                        (Target.require('MPI_CC'),
                         Target.require('MPI_CXX'),
@@ -188,6 +198,7 @@ def attributes():
                          'group': 'library',
                          'metavar': 'library',
                          'choices': ('none', 'opari', 'ompt', 'gomp')},
+            'rebuild_required': True,
             'compat': {'opari':
                        Application.require('openmp', True),
                        'ompt':
@@ -211,6 +222,7 @@ def attributes():
                          'nargs': '?',
                          'const': True,
                          'action': ParseBooleanAction},
+            'rebuild_required': True,
             'compat': {True: Target.require('cuda')}
         },
         'opencl': {
@@ -223,6 +235,7 @@ def attributes():
                          'nargs': '?',
                          'const': True,
                          'action': ParseBooleanAction},
+            'rebuild_required': True,
             'compat': {True: (Target.require('cuda'),
                               Application.require('opencl'))}
         },
@@ -230,6 +243,7 @@ def attributes():
             'type': 'integer',
             'default': 2,
             'description': 'maximum depth for callpath recording',
+            'rebuild_required': False,
             'argparse': {'flags': ('--callpath',),
                          'group': 'data',
                          'metavar': 'depth',
@@ -241,6 +255,7 @@ def attributes():
             'type': 'boolean',
             'default': False,
             'description': 'measure time spent in POSIX I/O calls',
+            'rebuild_required': True,
             'argparse': {'flags': ('--io',),
                          'group': 'library',
                          'metavar': 'T/F',
@@ -252,6 +267,7 @@ def attributes():
             'type': 'boolean',
             'default': False,
             'description': 'measure heap memory usage',
+            'rebuild_required': True,
             'argparse': {'flags': ('--heap-usage',),
                          'group': 'memory',
                          'metavar': 'T/F',
@@ -263,6 +279,7 @@ def attributes():
             'type': 'boolean',
             'default': False,
             'description': 'record memory allocation and deallocation events',
+            'rebuild_required': True,
             'argparse': {'flags': ('--memory-alloc',),
                          'group': 'memory',
                          'metavar': 'T/F',
@@ -274,6 +291,7 @@ def attributes():
             'type': 'array',
             'default': ['TIME'],
             'description': 'performance metrics to gather, e.g. TIME, PAPI_FP_INS',
+            'rebuild_required': False,
             'argparse': {'flags': ('--metrics',),
                          'group': 'data',
                          'metavar': '<METRIC>',
@@ -286,6 +304,7 @@ def attributes():
             'type': 'boolean',
             'default': False,
             'description': "don't remove instrumented files after compilation",
+            'rebuild_required': False,
             'argparse': {'flags': ('--keep-inst-files',),
                          'group': 'instrumentation',
                          'metavar': 'T/F',
@@ -298,6 +317,7 @@ def attributes():
             'type': 'boolean',
             'default': False,
             'description': 'reuse and preserve instrumented files after compilation',
+            'rebuild_required': False,
             'argparse': {'flags': ('--reuse-inst-files',),
                          'group': 'instrumentation',
                          'metavar': 'T/F',

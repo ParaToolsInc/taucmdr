@@ -182,7 +182,17 @@ class SelectCommand(AbstractCommand):
         app = self._parse_explicit(args, Application, applications, proj, 'applications')
         meas = self._parse_explicit(args, Measurement, measurements, proj, 'measurements')
 
+        # compare measurements
         proj_ctrl = Project.controller()
+        meas_ctrl = Measurement.controller(PROJECT_STORAGE)
+        old_meas_id = proj_ctrl.selected().experiment()['measurement']
+        meas_old = proj.populate('measurements')[old_meas_id-1]
+        rebuild_required = False
+        for attr in meas.keys():
+           if meas[attr] != meas_old[attr] and Measurement.attributes[attr]['rebuild_required']:
+               msg = "Attribute %s has changed from %s to %s so rebuild of application is required." %(attr, meas_old[attr], meas[attr])
+               rebuild_required = True
+               break
         if not (targ and app and meas):
             proj_ctrl.select(proj)
             self.logger.info("Selected project '%s'. No experiment.", proj['name'])
@@ -206,6 +216,12 @@ class SelectCommand(AbstractCommand):
                              populated['target']['name'],
                              populated['application']['name'],
                              populated['measurement']['name'])
+
+            # Check if rebuild of application is required
+            if(rebuild_required):
+                self.logger.info(msg)
+            else:
+                self.logger.info("Rebuild not required.")
         return EXIT_SUCCESS
 
 
