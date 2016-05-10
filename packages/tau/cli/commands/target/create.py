@@ -27,6 +27,7 @@
 #
 """``tau target create`` subcommand."""
 
+from tau import util
 from tau.error import ConfigurationError
 from tau.storage.levels import STORAGE_LEVELS
 from tau.cli import arguments
@@ -35,7 +36,7 @@ from tau.model.target import Target
 from tau.model.compiler import Compiler
 from tau.cf.compiler import CompilerFamily, CompilerRole
 from tau.cf.compiler.mpi import MpiCompilerFamily, MPI_CXX_ROLE, MPI_CC_ROLE, MPI_FC_ROLE
-from tau.cf.compiler.installed import InstalledCompilerFamily
+from tau.cf.compiler.installed import InstalledCompiler, InstalledCompilerFamily
 from tau.cf.target import host
 
 
@@ -54,7 +55,22 @@ class TargetCreateCommand(CreateCommand):
         Raises:
             ConfigurationError: Invalid command line arguments specified
         """
+        compiler_keys = set(CompilerRole.keys())
+        all_keys = set(args.__dict__.keys())
+        given_keys = compiler_keys & all_keys
+        missing_keys = compiler_keys - given_keys
+        self.logger.debug("Given compilers: %s", given_keys)
+        self.logger.debug("Missing compilers: %s", missing_keys)
         compilers = {}
+
+        for key in given_keys:
+            absolute_path = util.which(getattr(args, key))
+            if not absolute_path:
+                self.parser.error("Invalid compiler command: %s")
+            role = CompilerRole.find(key)
+            
+            compilers[role] = InstalledCompiler(absolute_path, info)
+        
         for family_attr, family_cls in [('host_family', CompilerFamily), ('mpi_family', MpiCompilerFamily)]:
             try:
                 family_arg = getattr(args, family_attr)
@@ -73,15 +89,6 @@ class TargetCreateCommand(CreateCommand):
                 setattr(args, comp.info.role.keyword, comp.absolute_path)
                 compilers[comp.info.role] = comp
      
-        compiler_keys = set(CompilerRole.keys())
-        all_keys = set(args.__dict__.keys())
-        given_keys = compiler_keys & all_keys
-        missing_keys = compiler_keys - given_keys
-        self.logger.debug("Given compilers: %s", given_keys)
-        self.logger.debug("Missing compilers: %s", missing_keys)
-
-        # TODO: probe given compilers
-        
         for key in missing_keys:
             role = CompilerRole.find(key)
             try:

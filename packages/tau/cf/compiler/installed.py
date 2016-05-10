@@ -41,7 +41,6 @@ from tau.error import InternalError, ConfigurationError
 from tau.cf import KeyedRecord
 from tau.cf.compiler import CompilerRole, CompilerFamily, CompilerInfo
 
-
 LOGGER = logger.get_logger(__name__)
 
 
@@ -104,8 +103,8 @@ class InstalledCompiler(object):
     
     __instances__ = {}
 
-    def __init__(self, absolute_path, info, uid=None,
-                 wrapped=None, include_path=None, library_path=None, compiler_flags=None, libraries=None):
+    def __init__(self, absolute_path, info, 
+                 uid=None, wrapped=None, include_path=None, library_path=None, compiler_flags=None, libraries=None):
         """Initializes the InstalledCompiler instance.
         
         Any information not provided on the argument list may be probed from the system.
@@ -259,6 +258,26 @@ class InstalledCompiler(object):
         LOGGER.debug("Wrapper include path: %s", self.include_path)
         LOGGER.debug("Wrapper library path: %s", self.library_path)
         LOGGER.debug("Wrapper libraries: %s", self.libraries)
+
+    @classmethod
+    def probe(cls, command, family=None, role=None):
+        """Probe the system to discover information about an installed compiler.
+        
+        Args:
+            command (str): Absolute or relative path to an installed compiler command.
+            family (CompilerFamilY): 
+        """
+        absolute_path = util.which(command)
+        command = os.path.basename(absolute_path)
+        if not family:
+            family = CompilerFamily.probe(absolute_path)
+        info_list = CompilerInfo.find(command, family, role)
+        if len(info_list) > 1:
+            raise ConfigurationError("%s compiler '%s' is ambiguous: could be any of %s"  % 
+                                     (family.name, absolute_path, [info.short_descr for info in info_list]))
+        elif len(info_list) == 0:
+            raise ConfigurationError("Unknown %s compiler '%s'" % (family.name, absolute_path))
+        return InstalledCompiler(absolute_path, info_list[0])
 
 
 class InstalledCompilerFamily(object):
