@@ -435,7 +435,7 @@ class Target(Model):
             hints = ("Try one of the valid compiler commands",
                      "Create and select a new taret configuration that uses the '%s' compiler" % compiler_cmd,
                      "Check loaded modules and the PATH environment variable")
-            raise ConfigurationError('\n'.join(parts)  % (self['name'], compiler_cmd), *hints)
+            raise ConfigurationError('\n'.join(parts), *hints)
 
         # Handle special cases where a compiler flag isn't compatible with the target
         if '-mmic' in compiler_args and self['host_arch'] != str(INTEL_KNC_ARCH):
