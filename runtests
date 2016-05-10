@@ -45,7 +45,8 @@ if __name__ == '__main__':
     packages = os.path.join(here, 'packages')
     sys.path.insert(0, packages)
     sys.path.insert(0, os.path.join(packages, 'tau'))
-    
-    suite = unittest.TestLoader().discover('packages', 'test*py')
-    unittest.TextTestRunner(verbosity=2).run(suite)
+
+    from tau import tests
+    suite = unittest.TestLoader().discover(os.path.join('packages', 'tau'), 'test*py')
+    tests.TestRunner(verbosity=1, buffer=True).run(suite)
 

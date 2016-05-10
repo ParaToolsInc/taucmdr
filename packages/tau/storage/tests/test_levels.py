@@ -30,10 +30,8 @@
 Functions used for unit tests of levels.py.
 """
 
+from tau import tests
 
-import unittest
-#from tau.storage import levels
-
-class LevelsTest(unittest.TestCase):
-    def test_levels(self):
-        self.assertEqual(1, 1) 
+@tests.not_implemented
+class LevelsTest(tests.TestCase):
+    pass
