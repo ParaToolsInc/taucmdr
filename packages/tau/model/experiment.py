@@ -431,7 +431,9 @@ class Experiment(Model):
             prefix = trial.prefix
             if profile_format == 'ppk':
                 cmd = 'paraprof', '--pack', `trial['number']`+'.ppk', prefix
-                retval = util.create_subprocess(cmd, log=False)
+                retval = tau.pack_profile(cmd)
+                if retval != 0:
+                    raise ConfigurationError("paraprof failed to open '%s'" % prefix)
                 if export_location is not None:
                     shutil.move(`trial['number']`+'.ppk', export_location)
             else:
