@@ -30,10 +30,8 @@
 Functions used for unit tests of project.py.
 """
 
+from tau import tests
 
-import unittest
-#from tau.storage import project
-
-class ProjectTest(unittest.TestCase):
-    def test_project(self):
-        self.assertEqual(1, 1) 
+@tests.not_implemented
+class ProjectTest(tests.TestCase):
+    pass
