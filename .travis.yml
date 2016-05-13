@@ -51,7 +51,7 @@ install:
   - if [ "X$TRAVIS_OS_NAME" = "Xosx" ] ; then brew update ; brew install --force-bottle gcc ; fi
   - sudo apt-get update && sudo apt-get install -qq gfortran || true
 
-script: # Currently pylint is bombing with negative scores. This might be due to a bad python environment and/or updates needed in pylintrc
+script:
   - coverage run runtests
   - make -C docs
   - |
@@ -68,7 +68,7 @@ script: # Currently pylint is bombing with negative scores. This might be due to
         pylint --rcfile=pylintrc $f
       done
     fi # pylint changed files only...
-#  - pylint --rcfile=pylintrc packages/tau # Ensure global pylint compliance eventually... WIP
+  - pylint --rcfile=pylintrc packages/tau # Ensure global pylint compliance eventually... WIP
 
 after_success:
   - codecov --env PYENV_VERSION OS
