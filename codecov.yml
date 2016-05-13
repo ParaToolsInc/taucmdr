@@ -1,0 +1,20 @@
+# find more documentation at: https://codecov.io/gh/ParaToolsInc/taucmdr/settings/yaml
+# Validate this file with: `curl --data-binary @codecov.yml https://codecov.io/validate`
+comment:
+  layout: header, changes, diff, sunburst, uncovered
+coverage:
+  notify:
+    gitter:
+      default:
+        branches:
+        - !gh-pages
+        threshold: '0.01'
+        url: https://webhooks.gitter.im/e/9ae8d323bc3f66f5d179
+  status:
+    patch: false
+    changes: false
+    project:
+      default:
+        branches:
+          - !gh-pages
+        target: auto
