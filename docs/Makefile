@@ -57,5 +57,6 @@ update-github-pages:
 	git checkout $(LOCAL_BRANCH)
 
 clean:
-	rm -rf $(BUILD_DIR)
-
+	rm -rf $(BUILD_DIR)*
+	rm -f $(SOURCE_DIR)tau.rst
+	rm -f $(SOURCE_DIR)modules.rst
