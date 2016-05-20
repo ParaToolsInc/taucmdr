@@ -36,9 +36,10 @@ from tau import logger, util
 from tau.error import ConfigurationError, InternalError
 from tau.cf.software import SoftwarePackageError
 from tau.cf.software.installation import Installation, parallel_make_flags
-from tau.cf.compiler import GNU_COMPILERS, INTEL_COMPILERS, PGI_COMPILERS, CRAY_COMPILERS
+from tau.cf.compiler import GNU_COMPILERS, INTEL_COMPILERS, PGI_COMPILERS, CRAY_COMPILERS 
+from tau.cf.compiler import IBM_COMPILERS, IBM_BGQ_COMPILERS
 from tau.cf.compiler import CC_ROLE, CXX_ROLE, FC_ROLE, UPC_ROLE
-from tau.cf.compiler.mpi import SYSTEM_MPI_COMPILERS, INTEL_MPI_COMPILERS
+from tau.cf.compiler.mpi import SYSTEM_MPI_COMPILERS, INTEL_MPI_COMPILERS, IBM_MPI_COMPILERS
 from tau.cf.compiler.mpi import MPI_CC_ROLE, MPI_CXX_ROLE, MPI_FC_ROLE
 from tau.cf.target import TauArch, CRAY_CNL_OS
 
@@ -361,11 +362,15 @@ class TauInstallation(Installation):
                             INTEL_COMPILERS: 'intel',
                             PGI_COMPILERS: 'pgi',
                             CRAY_COMPILERS: 'cray',
+                            IBM_COMPILERS: 'ibm',
+                            IBM_BGQ_COMPILERS: 'ibm',
                             SYSTEM_MPI_COMPILERS: 'mpif90',
-                            INTEL_MPI_COMPILERS: 'mpiifort'}
+                            INTEL_MPI_COMPILERS: 'mpiifort',
+                            IBM_MPI_COMPILERS: 'ibm'}
             try:
                 fortran_magic = fc_magic_map[fc_family]
             except KeyError:
+                LOGGER.warning("Can't determine TAU magic word for %s %s", fc_comp.info.short_descr, fc_comp)
                 raise InternalError("Unknown compiler family for Fortran: '%s'" % fc_family)
 
         flags = [flag for flag in  
