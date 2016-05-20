@@ -58,6 +58,7 @@ installed
 
 # Misc
 *~
+.DS_Store
 benchmarks
 
 # Python coverage data
