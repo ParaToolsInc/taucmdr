@@ -175,9 +175,9 @@ class Compiler(Model):
             else:
                 comp = InstalledCompiler(self['path'], info, 
                                          wrapped=wrapped.installation_info(probe), 
-                                         include_path=self['include_path'], 
-                                         library_path=self['library_path'], 
-                                         compiler_flags=self['compiler_flags'], 
-                                         libraries=self['libraries'],
+                                         include_path=self.get('include_path', None), 
+                                         library_path=self.get('library_path', None), 
+                                         compiler_flags=self.get('compiler_flags', None), 
+                                         libraries=self.get('libraries', None),
                                          uid=self['uid'])
         return comp
