@@ -37,7 +37,7 @@ from tau.error import ConfigurationError, InternalError
 from tau.cf.software import SoftwarePackageError
 from tau.cf.software.installation import Installation, parallel_make_flags
 from tau.cf.compiler import GNU_COMPILERS, INTEL_COMPILERS, PGI_COMPILERS, CRAY_COMPILERS 
-from tau.cf.compiler import IBM_COMPILERS, IBM_BGQ_COMPILERS
+from tau.cf.compiler import IBM_COMPILERS, IBM_BG_COMPILERS
 from tau.cf.compiler import CC_ROLE, CXX_ROLE, FC_ROLE, UPC_ROLE
 from tau.cf.compiler.mpi import SYSTEM_MPI_COMPILERS, INTEL_MPI_COMPILERS, IBM_MPI_COMPILERS
 from tau.cf.compiler.mpi import MPI_CC_ROLE, MPI_CXX_ROLE, MPI_FC_ROLE
@@ -274,8 +274,7 @@ class TauInstallation(Installation):
         super(TauInstallation, self).verify()
 
         # Open TAU makefile and check BFDINCLUDE, UNWIND_INC, PAPIDIR, etc.
-        makefile = self.get_makefile()
-        with open(makefile, 'r') as fin:
+        with open(self.get_makefile(), 'r') as fin:
             for line in fin:
                 if self.binutils and ('BFDINCLUDE=' in line):
                     bfd_inc = line.split('=')[1].strip().strip("-I")
@@ -363,7 +362,7 @@ class TauInstallation(Installation):
                             PGI_COMPILERS: 'pgi',
                             CRAY_COMPILERS: 'cray',
                             IBM_COMPILERS: 'ibm',
-                            IBM_BGQ_COMPILERS: 'ibm',
+                            IBM_BG_COMPILERS: 'ibm',
                             SYSTEM_MPI_COMPILERS: 'mpif90',
                             INTEL_MPI_COMPILERS: 'mpiifort',
                             IBM_MPI_COMPILERS: 'ibm'}
@@ -434,7 +433,7 @@ class TauInstallation(Installation):
             try:
                 return self.verify()
             except SoftwarePackageError as err:
-                raise SoftwarePackageError("%s installation at '%s' is missing or broken: %s" % 
+                raise SoftwarePackageError("invalid %s installation at '%s': %s" % 
                                            (self.name, self.install_prefix, err),
                                            "Specify source code path or URL to enable broken package reinstallation.")
         elif not force_reinstall:
@@ -497,15 +496,10 @@ class TauInstallation(Installation):
         return set(tags)
     
     def _incompatible_tags(self):
-        """Returns a set of makefile tags incompatible with the specified config.
-        
-        Some tags, e.g. PDT, force actions to occur that should not.
-        """
+        """Returns a set of makefile tags incompatible with the specified config."""
         tags = []
         if not self.mpi_support:
             tags.append('mpi')
-        if self.source_inst == 'never':
-            tags.append('pdt')
         if self.measure_openmp != 'opari':
             tags.append('opari')
         if not self.openmp_support:
