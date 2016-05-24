@@ -35,9 +35,9 @@ from tau.cli import arguments
 from tau.cli.cli_view import CreateCommand
 from tau.model.target import Target
 from tau.model.compiler import Compiler
-from tau.cf.compiler import CompilerFamily, CompilerRole
+from tau.cf.compiler import CompilerFamily, CompilerRole, CompilerInfo, CC_ROLE, CXX_ROLE
 from tau.cf.compiler.mpi import MpiCompilerFamily, MPI_CXX_ROLE, MPI_CC_ROLE, MPI_FC_ROLE
-from tau.cf.compiler.installed import InstalledCompilerFamily
+from tau.cf.compiler.installed import InstalledCompiler, InstalledCompilerFamily
 from tau.cf.target import host
 from tau.cf.target import Architecture, OperatingSystem, TauArch 
 
@@ -57,23 +57,24 @@ class TargetCreateCommand(CreateCommand):
             ConfigurationError: Invalid command line arguments specified
         """
         compilers = {}
-        for family_attr, family_cls in [('host_family', CompilerFamily), ('mpi_family', MpiCompilerFamily)]:
-            try:
-                family_arg = getattr(args, family_attr)
-            except AttributeError as err:
-                # User didn't specify that argument, but that's OK
-                self.logger.debug(err)
-                continue
-            else:
-                delattr(args, family_attr)
-            try:
-                family_comps = InstalledCompilerFamily(family_cls(family_arg))
-            except KeyError:
-                self.parser.error("Invalid compiler family: %s" % family_arg)
-            for comp in family_comps:
-                self.logger.debug("args.%s=%r", comp.info.role.keyword, comp.absolute_path)
-                setattr(args, comp.info.role.keyword, comp.absolute_path)
-                compilers[comp.info.role] = comp
+        if not hasattr(args, "tau_makefile"):
+            for family_attr, family_cls in [('host_family', CompilerFamily), ('mpi_family', MpiCompilerFamily)]:
+                try:
+                    family_arg = getattr(args, family_attr)
+                except AttributeError as err:
+                    # User didn't specify that argument, but that's OK
+                    self.logger.debug(err)
+                    continue
+                else:
+                    delattr(args, family_attr)
+                try:
+                    family_comps = InstalledCompilerFamily(family_cls(family_arg))
+                except KeyError:
+                    self.parser.error("Invalid compiler family: %s" % family_arg)
+                for comp in family_comps:
+                    self.logger.debug("args.%s=%r", comp.info.role.keyword, comp.absolute_path)
+                    setattr(args, comp.info.role.keyword, comp.absolute_path)
+                    compilers[comp.info.role] = comp
      
         compiler_keys = set(CompilerRole.keys())
         all_keys = set(args.__dict__.keys())
@@ -82,7 +83,14 @@ class TargetCreateCommand(CreateCommand):
         self.logger.debug("Given compilers: %s", given_keys)
         self.logger.debug("Missing compilers: %s", missing_keys)
 
-        # TODO: probe given compilers
+        for key in given_keys:
+            absolute_path = util.which(getattr(args, key))
+            command = os.path.basename(absolute_path)
+            role = CompilerRole.find(key)
+            matching_info = CompilerInfo.find(command=command, role=role)
+            if not matching_info:
+                raise ConfigurationError("Unrecognized %s compiler '%s'" % (key, absolute_path))
+            compilers[role] = InstalledCompiler(absolute_path, matching_info[0])
         
         for key in missing_keys:
             role = CompilerRole.find(key)
@@ -116,10 +124,8 @@ class TargetCreateCommand(CreateCommand):
     
     def _parse_tau_makefile(self, args):
         makefile = args.tau_makefile
-        del args.tau_makefile
         if not util.file_accessible(makefile):
             self.parser.error("Invalid TAU makefile: %s" % makefile)
-        # Set host architecture and OS from TAU makefile
         tau_arch_name = os.path.basename(os.path.dirname(os.path.dirname(makefile)))
         try:
             tau_arch = TauArch.find(tau_arch_name)
@@ -134,29 +140,52 @@ class TargetCreateCommand(CreateCommand):
         args.tau_source = os.path.abspath(os.path.join(os.path.dirname(makefile), '..', '..'))
         self.logger.info("  --tau='%s'", args.tau_source)
         with open(makefile, 'r') as fin:
-            parts = (("BFDINCLUDE", "binutils_source", lambda x: os.path.dirname(x.lstrip("-I"))), 
-                     ("UNWIND_INC", "libunwind_source", lambda x: os.path.dirname(x.lstrip("-I"))),
-                     ("PAPIDIR", "papi_source", os.path.abspath),
-                     ("PDTDIR", "pdt_source", os.path.abspath),
-                     ("SCOREPDIR", "scorep_source", os.path.abspath))
+            compiler_parts = ("FULL_CC", "FULL_CXX", "TAU_F90")
+            package_parts = {"BFDINCLUDE": ("binutils_source", lambda x: os.path.dirname(x.lstrip("-I"))), 
+                             "UNWIND_INC": ("libunwind_source", lambda x: os.path.dirname(x.lstrip("-I"))),
+                             "PAPIDIR": ("papi_source", os.path.abspath),
+                             "PDTDIR": ("pdt_source", os.path.abspath),
+                             "SCOREPDIR": ("scorep_source", os.path.abspath)}
+            tau_r = ''
             for line in fin:
-                for key, attr, operator in parts:
-                    if line.startswith(key + '='):
-                        try:
-                            prefix = line.split('=')[1].strip()
-                        except KeyError:
-                            self.logger.warning("%s in '%s' is invalid", key, makefile)
+                if line.startswith('#'):
+                    continue
+                try:
+                    key, val = [x.strip() for x in line.split('=', 1)]
+                except ValueError:
+                    continue
+                if key == 'TAU_R':
+                    tau_r = val.split()[0]
+                elif key in compiler_parts:
+                    path = util.which(val.strip().split()[0].replace('$(TAU_R)', tau_r))
+                    if not path:
+                        self.logger.warning("Failed to parse %s in TAU Makefile '%s'", key, makefile)
+                        continue
+                    matching_info = CompilerInfo.find(os.path.basename(path))
+                    if matching_info:
+                        if len(matching_info) > 1:
+                            self.logger.warning("Ambiguous compiler '%s' in TAU Makefile '%s'", path, makefile)
+                        comp = InstalledCompiler(path, matching_info[0])
+                        attr = comp.info.role.keyword
+                        setattr(args, attr, comp.absolute_path)
+                        self.logger.info("  --%s='%s'", attr.lower().replace("_", "-"), comp.absolute_path)
+                        while comp.wrapped:
+                            comp = comp.wrapped
+                            attr = comp.info.role.keyword
+                            setattr(args, attr, comp.absolute_path)
+                            self.logger.info("  --%s='%s'", attr.lower().replace("_", "-"), comp.absolute_path)
+                elif key in package_parts:
+                    attr, operator = package_parts[key]
+                    path = val.strip()
+                    if not path:
+                        path = "None"
+                    else:
+                        path = operator(path)
+                        if not os.path.exists(path):
+                            self.logger.warning("'%s' referenced by TAU Makefile '%s' doesn't exist",  path, makefile)
                             continue
-                        if not prefix:
-                            prefix = "None"
-                        else:
-                            prefix = operator(prefix)
-                            if not os.path.exists(prefix):
-                                self.logger.warning("'%s' referenced by TAU Makefile '%s' doesn't exist",  
-                                                    prefix, makefile)
-                                continue
-                        setattr(args, attr, prefix)
-                        self.logger.info("  --%s='%s'", attr.rstrip("_source"), prefix)
+                    setattr(args, attr, path)
+                    self.logger.info("  --%s='%s'", attr.replace("_source", ""), path)
 
     def construct_parser(self):
         parser = super(TargetCreateCommand, self).construct_parser()
@@ -174,9 +203,10 @@ class TargetCreateCommand(CreateCommand):
                            dest='mpi_family',
                            default=host.preferred_mpi_compilers().name,
                            choices=MpiCompilerFamily.family_names())
-        parser.add_argument('--tau-makefile',
-                            help="Automatically populate target software configuration from a TAU Makefile",
+        parser.add_argument('--from-tau-makefile',
+                            help="Populate target configuration from a TAU Makefile",
                             metavar='<path>',
+                            dest='tau_makefile',
                             default=arguments.SUPPRESS)
         return parser
     
@@ -187,11 +217,11 @@ class TargetCreateCommand(CreateCommand):
 
         if hasattr(args, "tau_makefile"):
             self._parse_tau_makefile(args)
-            self.logger.debug('Arguments after parsing TAU Makefile: %s', args)            
-
+            self.logger.debug('Arguments after parsing TAU Makefile: %s', args)
+        
         compilers = self.parse_compiler_flags(args)
         self.logger.debug('Arguments after parsing compiler flags: %s', args)
-        
+
         data = {attr: getattr(args, attr) for attr in self.model.attributes if hasattr(args, attr)}
         for keyword, comp in compilers.iteritems():
             self.logger.debug("%s=%s (%s)", keyword, comp.absolute_path, comp.info.short_descr)
