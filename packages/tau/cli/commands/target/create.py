@@ -27,6 +27,8 @@
 #
 """``tau target create`` subcommand."""
 
+import os
+from tau import util
 from tau.error import ConfigurationError
 from tau.storage.levels import STORAGE_LEVELS
 from tau.cli import arguments
@@ -37,7 +39,7 @@ from tau.cf.compiler import CompilerFamily, CompilerRole
 from tau.cf.compiler.mpi import MpiCompilerFamily, MPI_CXX_ROLE, MPI_CC_ROLE, MPI_FC_ROLE
 from tau.cf.compiler.installed import InstalledCompilerFamily
 from tau.cf.target import host
-
+from tau.cf.target import Architecture, OperatingSystem, TauArch 
 
 class TargetCreateCommand(CreateCommand):
     """``tau target create`` subcommand."""
@@ -112,6 +114,50 @@ class TargetCreateCommand(CreateCommand):
                 setattr(args, args_attr, list(probed))
         return compilers
     
+    def _parse_tau_makefile(self, args):
+        makefile = args.tau_makefile
+        del args.tau_makefile
+        if not util.file_accessible(makefile):
+            self.parser.error("Invalid TAU makefile: %s" % makefile)
+        # Set host architecture and OS from TAU makefile
+        tau_arch_name = os.path.basename(os.path.dirname(os.path.dirname(makefile)))
+        try:
+            tau_arch = TauArch.find(tau_arch_name)
+        except KeyError:
+            raise ConfigurationError("TAU Makefile '%s' targets an unrecognized TAU architecture: %s" % 
+                                     (makefile, tau_arch_name))
+        self.logger.info("Parsing TAU Makefile '%s' to populate command line arguments:", makefile)
+        args.host_arch = tau_arch.architecture.name
+        self.logger.info("  --host-arch='%s'", args.host_arch)
+        args.host_os = tau_arch.operating_system.name
+        self.logger.info("  --host-os='%s'", args.host_os)
+        args.tau_source = os.path.abspath(os.path.join(os.path.dirname(makefile), '..', '..'))
+        self.logger.info("  --tau='%s'", args.tau_source)
+        with open(makefile, 'r') as fin:
+            parts = (("BFDINCLUDE", "binutils_source", lambda x: os.path.dirname(x.lstrip("-I"))), 
+                     ("UNWIND_INC", "libunwind_source", lambda x: os.path.dirname(x.lstrip("-I"))),
+                     ("PAPIDIR", "papi_source", os.path.abspath),
+                     ("PDTDIR", "pdt_source", os.path.abspath),
+                     ("SCOREPDIR", "scorep_source", os.path.abspath))
+            for line in fin:
+                for key, attr, operator in parts:
+                    if line.startswith(key + '='):
+                        try:
+                            prefix = line.split('=')[1].strip()
+                        except KeyError:
+                            self.logger.warning("%s in '%s' is invalid", key, makefile)
+                            continue
+                        if not prefix:
+                            prefix = "None"
+                        else:
+                            prefix = operator(prefix)
+                            if not os.path.exists(prefix):
+                                self.logger.warning("'%s' referenced by TAU Makefile '%s' doesn't exist",  
+                                                    prefix, makefile)
+                                continue
+                        setattr(args, attr, prefix)
+                        self.logger.info("  --%s='%s'", attr.rstrip("_source"), prefix)
+
     def construct_parser(self):
         parser = super(TargetCreateCommand, self).construct_parser()
         group = parser.add_argument_group('host arguments')
@@ -128,12 +174,20 @@ class TargetCreateCommand(CreateCommand):
                            dest='mpi_family',
                            default=host.preferred_mpi_compilers().name,
                            choices=MpiCompilerFamily.family_names())
+        parser.add_argument('--tau-makefile',
+                            help="Automatically populate target software configuration from a TAU Makefile",
+                            metavar='<path>',
+                            default=arguments.SUPPRESS)
         return parser
     
     def main(self, argv):
         args = self.parser.parse_args(args=argv)
         self.logger.debug('Arguments: %s', args)
         store = STORAGE_LEVELS[getattr(args, arguments.STORAGE_LEVEL_FLAG)[0]]
+
+        if hasattr(args, "tau_makefile"):
+            self._parse_tau_makefile(args)
+            self.logger.debug('Arguments after parsing TAU Makefile: %s', args)            
 
         compilers = self.parse_compiler_flags(args)
         self.logger.debug('Arguments after parsing compiler flags: %s', args)
