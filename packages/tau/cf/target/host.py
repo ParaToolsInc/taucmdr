@@ -145,12 +145,15 @@ def preferred_compilers():
     try:
         inst = preferred_compilers.inst
     except AttributeError:
-        from tau.cf.compiler import IBM_COMPILERS, GNU_COMPILERS, CRAY_COMPILERS, INTEL_COMPILERS
+        from tau.cf.compiler import IBM_COMPILERS, GNU_COMPILERS, CRAY_COMPILERS, INTEL_COMPILERS, IBM_BG_COMPILERS
         host_tau_arch = tau_arch()
         if host_tau_arch is TAU_ARCH_CRAYCNL:
             LOGGER.debug("Preferring Cray compiler wrappers")
             inst = CRAY_COMPILERS
-        elif host_tau_arch in (TAU_ARCH_BGP, TAU_ARCH_BGQ, TAU_ARCH_IBM64_LINUX):
+        elif host_tau_arch in (TAU_ARCH_BGP, TAU_ARCH_BGQ):
+            LOGGER.debug("Preferring IBM compilers")
+            inst = IBM_BG_COMPILERS
+        elif host_tau_arch is TAU_ARCH_IBM64_LINUX:
             LOGGER.debug("Preferring IBM compilers")
             inst = IBM_COMPILERS
         elif host_tau_arch is TAU_ARCH_MIC_LINUX:
