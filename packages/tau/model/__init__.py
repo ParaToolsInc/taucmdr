@@ -63,8 +63,8 @@ def require_compiler_family(family, *hints):
             compiler_record = rhs.populate(rhs_attr)
         except KeyError:
             raise ConfigurationError("%s but it is undefined" % msg)
-        given_family = compiler_record['family']
-        if given_family is not family:
+        given_family_name = compiler_record['family']
+        if given_family_name != family.name:
             raise ConfigurationError("%s but it is a %s compiler" % (msg, given_family), *hints)
     return callback
 
