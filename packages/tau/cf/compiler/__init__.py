@@ -296,12 +296,12 @@ IBM_COMPILERS.add(CC_ROLE, 'xlc')
 IBM_COMPILERS.add(CXX_ROLE, 'xlc++', 'xlC')
 IBM_COMPILERS.add(FC_ROLE, 'xlf')
 
-IBM_BGQ_COMPILERS = CompilerFamily('IBM_BGQ')
-IBM_BGQ_COMPILERS.add(CC_ROLE, 'bgxlc', 'bgxlc_r', 'bgcc', 'bgcc_r', 'bgc89', 'bgc89_r', 'bgc99', 'bgc99_r')
-IBM_BGQ_COMPILERS.add(CXX_ROLE, 'bgxlc++', 'bgxlc++_r', 'bgxlC', 'bgxlC_r')
-IBM_BGQ_COMPILERS.add(FC_ROLE, 'bgxlf', 'bgxlf_r', 'bgf77', 'bgfort77', 'bgxlf90', 'bgxlf90_r', 'bgf90', 
-                      'bgxlf95', 'bgxlf95_r', 'bgf95', 'bgxlf2003', 'bgxlf2003_r', 'bgf2003', 'bgxlf2008', 
-                      'bgxlf2008_r', 'bgf2008')
+IBM_BG_COMPILERS = CompilerFamily('BlueGene')
+IBM_BG_COMPILERS.add(CC_ROLE, 'bgxlc', 'bgxlc_r', 'bgcc', 'bgcc_r', 'bgc89', 'bgc89_r', 'bgc99', 'bgc99_r')
+IBM_BG_COMPILERS.add(CXX_ROLE, 'bgxlc++', 'bgxlc++_r', 'bgxlC', 'bgxlC_r')
+IBM_BG_COMPILERS.add(FC_ROLE, 'bgxlf', 'bgxlf_r', 'bgf77', 'bgfort77', 'bgxlf90', 'bgxlf90_r', 'bgf90', 
+                     'bgxlf95', 'bgxlf95_r', 'bgf95', 'bgxlf2003', 'bgxlf2003_r', 'bgf2003', 'bgxlf2008', 
+                     'bgxlf2008_r', 'bgf2008')
 
 CRAY_COMPILERS = CompilerFamily('Cray', show_wrapper_flags=['-craype-verbose', '--version', '-E'])
 CRAY_COMPILERS.add(CC_ROLE, 'cc')
