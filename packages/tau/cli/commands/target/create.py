@@ -56,7 +56,14 @@ class TargetCreateCommand(CreateCommand):
         Raises:
             ConfigurationError: Invalid command line arguments specified
         """
+        compiler_keys = set(CompilerRole.keys())
+        all_keys = set(args.__dict__.keys())
+        given_keys = compiler_keys & all_keys
+        missing_keys = compiler_keys - given_keys
+        self.logger.debug("Given compilers: %s", given_keys)
+        self.logger.debug("Missing compilers: %s", missing_keys)
         compilers = {}
+
         if not hasattr(args, "tau_makefile"):
             for family_attr, family_cls in [('host_family', CompilerFamily), ('mpi_family', MpiCompilerFamily)]:
                 try:
@@ -75,22 +82,14 @@ class TargetCreateCommand(CreateCommand):
                     self.logger.debug("args.%s=%r", comp.info.role.keyword, comp.absolute_path)
                     setattr(args, comp.info.role.keyword, comp.absolute_path)
                     compilers[comp.info.role] = comp
-     
-        compiler_keys = set(CompilerRole.keys())
-        all_keys = set(args.__dict__.keys())
-        given_keys = compiler_keys & all_keys
-        missing_keys = compiler_keys - given_keys
-        self.logger.debug("Given compilers: %s", given_keys)
-        self.logger.debug("Missing compilers: %s", missing_keys)
-
+ 
         for key in given_keys:
             absolute_path = util.which(getattr(args, key))
+            if not absolute_path:
+                self.parser.error("Invalid compiler command: %s")
             command = os.path.basename(absolute_path)
             role = CompilerRole.find(key)
-            matching_info = CompilerInfo.find(command=command, role=role)
-            if not matching_info:
-                raise ConfigurationError("Unrecognized %s compiler '%s'" % (key, absolute_path))
-            compilers[role] = InstalledCompiler(absolute_path, matching_info[0])
+            compilers[role] = InstalledCompiler.probe(absolute_path, role=role)
         
         for key in missing_keys:
             role = CompilerRole.find(key)

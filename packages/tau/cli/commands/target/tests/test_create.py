@@ -30,10 +30,34 @@
 Functions used for unit tests of create.py.
 """
 
+from tau import tests
+from tau.cli.commands.target.create import COMMAND as create_cmd
 
-import unittest
-#from tau.cli.commands.target import create
+class CreateTest(tests.TestCase):
+    """Unit tests for `tau target create`"""
 
-class CreateTest(unittest.TestCase):
-    def test_create(self):
-        self.assertEqual(1, 1) 
+    def test_no_project(self):
+        from tau.storage.project import ProjectStorageError
+        argv = ['test_no_project']
+        self.assertRaises(ProjectStorageError, create_cmd.main, argv)
+
+    def test_no_args(self):
+        retval, stdout, stderr = tests.exec_command(self, create_cmd, [])
+        self.assertNotEqual(0, retval)
+        self.assertFalse(stdout)
+        self.assertIn('error: too few arguments', stderr)
+
+    def test_h_arg(self):
+        retval, stdout, stderr = tests.exec_command(self, create_cmd, ['-h'])
+        self.assertEqual(0, retval)
+        self.assertIn('Create target configurations.', stdout)
+        self.assertIn('show this help message and exit', stdout)
+        self.assertFalse(stderr)
+
+    def test_help_arg(self):
+        retval, stdout, stderr = tests.exec_command(self, create_cmd, ['--help'])
+        self.assertEqual(0, retval)
+        self.assertIn('Create target configurations.', stdout)
+        self.assertIn('show this help message and exit', stdout)
+        self.assertFalse(stderr)
+        
