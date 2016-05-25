@@ -99,7 +99,11 @@ class InstalledCompiler(object):
         libraries (list): Additional libraries to link when linking with the wrapped compiler.
     """
     
-    __metaclass__ = InstalledCompilerCreator
+    # FIXME: Caching breaks compiler wrapper probing on cori
+    # FIXME: `tau init` with PrgEnv-intel
+    # FIXME: `module swap PrgEnv-intel PrgEnv-gnu`
+    # FIXME: tau cc foo.c # No warnings, Intel TAU config applied to GNU compiler
+    # __metaclass__ = InstalledCompilerCreator
     
     __instances__ = {}
 
@@ -157,7 +161,7 @@ class InstalledCompiler(object):
         if uid:
             self.uid = uid
         else:
-            self.uid = self._calculate_uid()       
+            self.uid = self._calculate_uid()
 
     def _calculate_uid(self):
         LOGGER.debug("Calculating UID of '%s'", self.absolute_path)
