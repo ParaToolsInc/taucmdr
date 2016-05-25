@@ -36,7 +36,6 @@ import os
 import time
 import shutil
 from tau.cli.commands import build, initialize
-from tau.model.compiler import Compiler
 from tau.storage.levels import PROJECT_STORAGE
 
 class BuildTest(unittest.TestCase):

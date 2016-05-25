@@ -35,8 +35,8 @@ import unittest
 import os
 import time
 import shutil
-from tau.cf.software import binutils_installation
-from tau.cf.software.installation import AutotoolsInstallation
+#from tau.cf.software import binutils_installation
+#from tau.cf.software.installation import AutotoolsInstallation
 
 class BinutilsInstallationTest(unittest.TestCase):
     current_time = time.strftime("%Y%m%d_%H%M%S")

@@ -32,7 +32,7 @@ Functions used for unit tests of controller.py.
 
 
 import unittest
-from tau.mvc import controller
+#from tau.mvc import controller
 
 class ControllerTest(unittest.TestCase):
     def test_controller(self):
