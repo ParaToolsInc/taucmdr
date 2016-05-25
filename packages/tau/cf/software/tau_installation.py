@@ -811,3 +811,7 @@ class TauInstallation(Installation):
             raise ConfigurationError("Trace visualizer failed to open '%s'" % path,
                                      "Check Java installation, X11 installation,"
                                      " network connectivity, and file permissions")
+
+    def pack_profile(self, cmd):
+        _, env = super(TauInstallation, self).runtime_config()
+        return util.create_subprocess(cmd, env=env, log=False)
