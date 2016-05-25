@@ -184,13 +184,13 @@ class SelectCommand(AbstractCommand):
 
         # compare measurements
         proj_ctrl = Project.controller()
-        meas_ctrl = Measurement.controller(PROJECT_STORAGE)
         old_meas_id = proj_ctrl.selected().experiment()['measurement']
         meas_old = proj.populate('measurements')[old_meas_id-1]
         rebuild_required = False
-        for attr in meas.keys():
-           if meas[attr] != meas_old[attr] and Measurement.attributes[attr]['rebuild_required']:
-               msg = "Attribute %s has changed from %s to %s so rebuild of application is required." %(attr, meas_old[attr], meas[attr])
+        for attr, value in meas.iteritems():
+           if value != meas_old[attr] and Measurement.attributes[attr]['application_rebuild']:
+               msg = ("%s in measurement changed from %s to %s. Please recompile your application." % 
+                      (attr, meas_old[attr], meas[attr]))
                rebuild_required = True
                break
         if not (targ and app and meas):
@@ -220,8 +220,6 @@ class SelectCommand(AbstractCommand):
             # Check if rebuild of application is required
             if(rebuild_required):
                 self.logger.info(msg)
-            else:
-                self.logger.info("Rebuild not required.")
         return EXIT_SUCCESS
 
 
