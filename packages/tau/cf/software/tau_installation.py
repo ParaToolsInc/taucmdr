@@ -746,7 +746,7 @@ class TauInstallation(Installation):
             int: Return code of the visualization tool.
         """
         LOGGER.debug("Showing profile files at '%s'", path)
-        _, env = super(TauInstallation, self).runtime_config()
+        _, env = self.runtime_config()
         if tool_name:
             tools = [tool_name]
         else:
@@ -780,7 +780,7 @@ class TauInstallation(Installation):
             int: Return code of the visualization tool.
         """
         LOGGER.debug("Showing trace files at '%s'", path)
-        _, env = super(TauInstallation, self).runtime_config()
+        _, env = self.runtime_config()
         if tool_name is None:
             tool_name = 'jumpshot'
         elif tool_name != 'jumpshot':
@@ -812,6 +812,20 @@ class TauInstallation(Installation):
                                      "Check Java installation, X11 installation,"
                                      " network connectivity, and file permissions")
 
-    def pack_profile(self, cmd):
-        _, env = super(TauInstallation, self).runtime_config()
-        return util.create_subprocess(cmd, env=env, log=False)
+    def pack_profiles(self, prefix, ppk_file):
+        """Create a PPK file from profile.* files.
+        
+        Args:
+            prefix (str): Path to the directory containing profile.* files.
+            ppk_file (str): Absolute path to the PPK file that will be created.
+        
+        Raises:
+            ConfigurationError: paraprof failed to pack the profiles.
+        """
+        _, env = self.runtime_config()
+        cmd = ['paraprof', '--pack', ppk_file]
+        retval = util.create_subprocess(cmd, cwd=prefix, env=env)
+        if retval:
+            raise ConfigurationError("ParaProf command '%s' failed in '%s'" % (' '.join(cmd), prefix),
+                                     "Make sure Java is installed and working",
+                                     "Install the most recent Java from http://java.com")

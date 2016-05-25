@@ -62,6 +62,10 @@ tauprofile.xml
 *.slog2
 *.trc
 *.edf
+*.ppk
+*.zip
+*.tar.*
+*.tgz
 
 # Misc
 *~
