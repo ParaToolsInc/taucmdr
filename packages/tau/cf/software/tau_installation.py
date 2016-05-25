@@ -643,7 +643,7 @@ class TauInstallation(Installation):
         env['TAU_TRACE'] = str(int(self.trace))
         env['TAU_SAMPLE'] = str(int(self.sample))
         env['TAU_TRACK_HEAP'] = str(int(self.measure_heap_usage))
-        
+        env['TAU_METRICS'] = os.pathsep.join(self.metrics)
         if self.callpath_depth > 0:
             env['TAU_CALLPATH'] = '1'
             env['TAU_CALLPATH_DEPTH'] = str(self.callpath_depth)
@@ -657,7 +657,6 @@ class TauInstallation(Installation):
             opts.append('-opencl')
         if self.io_inst:
             opts.append('-io')
-        env['TAU_METRICS'] = os.pathsep.join(self.metrics)
         return list(set(opts)), env
 
     def get_compiler_command(self, compiler):
@@ -721,9 +720,8 @@ class TauInstallation(Installation):
                    variables to set before running the application command.
         """
         opts, env = self.runtime_config()
-        use_tau_exec = (self.measure_opencl or (self.source_inst == 'never' and 
-                                                self.compiler_inst == 'never' and 
-                                                not self.link_only))
+        use_tau_exec = (self.measure_opencl or
+                        (self.source_inst == 'never' and self.compiler_inst == 'never' and not self.link_only))
         if use_tau_exec:
             tau_exec_opts = opts
             tags = self.get_tags()

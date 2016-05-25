@@ -56,10 +56,21 @@ installed
 *.inst.*
 *.pdb
 
+# TAU profiles / traces
+profile.*
+tauprofile.xml
+*.slog2
+*.trc
+*.edf
+
 # Misc
 *~
 .DS_Store
 benchmarks
+*.cobaltlog
+*.output
+*.error
+*.
 
 # Python coverage data
 .coverage
