@@ -27,9 +27,11 @@
 #
 """``tau trial export`` subcommand."""
 
+import os
 from tau.cli import arguments
 from tau.cli.command import AbstractCommand
 from tau.model.project import Project
+from tau.model.experiment import PROFILE_EXPORT_FORMATS
 
 class TrialExportCommand(AbstractCommand):
     """``tau trial export`` subcommand."""
@@ -38,13 +40,14 @@ class TrialExportCommand(AbstractCommand):
         usage = "%s [trial_number] [trial_number] ... [arguments]" % self.command
         parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
         parser.add_argument('--export-location', 
-                            help="specify location to export profiles",
-                            metavar='export_location',
-                            default=arguments.SUPPRESS)
+                            help="location to store exported trial data",
+                            metavar='<path>',
+                            default=os.getcwd())
         parser.add_argument('--profile-format', 
                             help="specify format of profiles",
-                            metavar='profile_format',
-                            default=arguments.SUPPRESS)
+                            metavar='<format>',
+                            default=PROFILE_EXPORT_FORMATS[0],
+                            choices=PROFILE_EXPORT_FORMATS)
         parser.add_argument('numbers', 
                             help="show details for specified trials",
                             metavar='trial_number',
@@ -55,23 +58,18 @@ class TrialExportCommand(AbstractCommand):
     def main(self, argv):
         args = self.parser.parse_args(args=argv)
         self.logger.debug('Arguments: %s', args)
-    
+        
         proj_ctrl = Project.controller()
         proj = proj_ctrl.selected()
         expr = proj.experiment()
-        try:
-            str_numbers = args.numbers
-        except AttributeError:
-            numbers = None
-        else:
-            numbers = []
-            for num in str_numbers:
-                try:
-                    numbers.append(int(num))
-                except ValueError:
-                    self.parser.error("Invalid trial number: %s" % num)
-        export_location = getattr(args, 'export_location', None)
-        profile_format = getattr(args, 'profile_format', None)
+        numbers = []
+        for num in getattr(args, 'numbers', []):
+            try:
+                numbers.append(int(num))
+            except ValueError:
+                self.parser.error("Invalid trial number: %s" % num)
+        export_location = args.export_location
+        profile_format = args.profile_format
         return expr.export(trial_numbers=numbers, export_location=export_location, profile_format=profile_format)
 
 COMMAND = TrialExportCommand(__name__, summary_fmt="Export trial data.")

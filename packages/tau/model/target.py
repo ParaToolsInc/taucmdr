@@ -409,6 +409,7 @@ class Target(Model):
         compiler_ctrl = Compiler.controller(self.storage)
         absolute_path = util.which(compiler_cmd)
         installed_comp = None
+        known_compilers = [comp for _, comp in self.compilers()]
         # Check that this target supports the given compiler
         for role in CompilerRole.all():
             try:
@@ -422,8 +423,12 @@ class Target(Model):
                 # Target was configured with a wrapper compiler so check if that wrapper wraps this compiler
                 while 'wrapped' in compiler_record:
                     compiler_record = compiler_ctrl.one(compiler_record['wrapped'])
-                    if compiler_record['path'] == absolute_path:
-                        installed_comp = compiler_record.installation_info(probe=True)
+                    comp = compiler_record.installation_info(probe=True)
+                    known_compilers.append(comp)
+                    compiler_path = compiler_record['path']
+                    if (absolute_path and (compiler_path == absolute_path) or 
+                        (not absolute_path and (os.path.basename(compiler_path) == compiler_cmd))):
+                        installed_comp = comp
                         break
             if installed_comp:
                 LOGGER.debug("'%s' appears to be a %s", compiler_cmd, installed_comp.info.short_descr)
@@ -431,9 +436,9 @@ class Target(Model):
         else:
             parts = ["No compiler in target '%s' matches '%s'." % (self['name'], compiler_cmd),
                      "The known compiler commands are:"]
-            parts.extend('  %s (%s)' % (comp.absolute_path, comp.info.short_descr) for _, comp in self.compilers())
+            parts.extend('  %s (%s)' % (comp.absolute_path, comp.info.short_descr) for comp in known_compilers)
             hints = ("Try one of the valid compiler commands",
-                     "Create and select a new taret configuration that uses the '%s' compiler" % compiler_cmd,
+                     "Create and select a new target configuration that uses the '%s' compiler" % compiler_cmd,
                      "Check loaded modules and the PATH environment variable")
             raise ConfigurationError('\n'.join(parts), *hints)
 

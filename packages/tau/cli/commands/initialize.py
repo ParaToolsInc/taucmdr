@@ -51,7 +51,11 @@ class InitializeCommand(AbstractCommand):
     """``tau initialize`` subcommand."""
 
     def construct_parser(self):
-
+        """Constructs the command line argument parser.
+         
+        Returns:
+            A command line argument parser instance.
+        """
         def _default_target_name():
             node_name = platform.node()
             if not node_name:
@@ -118,12 +122,19 @@ class InitializeCommand(AbstractCommand):
                                        action=ParseBooleanAction)
         return parser
 
-    def _create_project(self, argv, args):
+    def _create_project(self, args):
+        project_name = args.project_name
+        if hasattr(args, 'storage_level'):
+            project_create_cmd.main([project_name, '--storage-level', args.storage_level])
+        else:
+            project_create_cmd.main([project_name])
+        select_cmd.main(['--project', project_name])
+        
+    def _populate_project(self, argv, args):
         def _safe_execute(cmd, argv):
             retval = cmd.main(argv)
             if retval != EXIT_SUCCESS:
                 raise InternalError("return code %s: %s %s" % (retval, cmd, ' '.join(argv)))
-
         if host.operating_system() is DARWIN_OS:
             self.logger.info("Darwin OS detected: disabling PAPI, binutils, "
                              "compiler-based instrumentation, and sampling.")
@@ -136,16 +147,9 @@ class InitializeCommand(AbstractCommand):
             binutils = True
             sample = True
             comp_inst = 'fallback'
-
         project_name = args.project_name
         target_name = args.target_name
         application_name = args.application_name
-        if hasattr(args, 'storage_level'):
-            project_create_cmd.main([project_name, '--storage-level', args.storage_level])
-        else:
-            project_create_cmd.main([project_name])
-
-        select_cmd.main(['--project', project_name])
 
         target_argv = [target_name] + argv
         _, unknown = target_create_cmd.parser.parse_known_args(args=target_argv)
@@ -199,13 +203,14 @@ class InitializeCommand(AbstractCommand):
         except ProjectStorageError:
             self.logger.debug("No project found, initializing a new project.")
             PROJECT_STORAGE.connect_filesystem()
+            try:
+                self._create_project(args)
+            except ConfigurationError:
+                PROJECT_STORAGE.disconnect_filesystem()
+                util.rmtree(proj_ctrl.storage.prefix, ignore_errors=True)
+                raise
             if not args.bare:
-                try:
-                    self._create_project(argv, args)
-                except ConfigurationError:
-                    PROJECT_STORAGE.disconnect_filesystem()
-                    util.rmtree(proj_ctrl.storage.prefix, ignore_errors=True)
-                    raise
+                self._populate_project(argv, args)
             return dashboard_cmd.main([])
         except ProjectSelectionError as err:
             err.value = "The project has been initialized but no project configuration is selected."

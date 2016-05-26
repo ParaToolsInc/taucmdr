@@ -13,6 +13,7 @@ Subpackages
 
     tau.cf
     tau.cli
+    tau.data
     tau.gui
     tau.model
     tau.mvc

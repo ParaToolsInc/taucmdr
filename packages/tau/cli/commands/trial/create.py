@@ -35,7 +35,7 @@ from tau.model.trial import Trial
 from tau.model.project import Project
 
 
-LAUNCHERS = ['mpirun', 'mpiexec', 'ibrun', 'aprun']
+LAUNCHERS = ['mpirun', 'mpiexec', 'ibrun', 'aprun', 'qsub', 'srun']
 
 
 class TrialCreateCommand(CreateCommand):
@@ -91,6 +91,8 @@ class TrialCreateCommand(CreateCommand):
             else:
                 launcher_cmd = application_cmd[:idx]
                 application_cmd = application_cmd[idx+1:]
+        self.logger.debug('Launcher: %s' % launcher_cmd)
+        self.logger.debug('Application: %s' % application_cmd)
         return launcher_cmd, application_cmd
 
     def main(self, argv):

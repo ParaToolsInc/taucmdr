@@ -36,9 +36,10 @@ from tau import logger, util
 from tau.error import ConfigurationError, InternalError
 from tau.cf.software import SoftwarePackageError
 from tau.cf.software.installation import Installation, parallel_make_flags
-from tau.cf.compiler import GNU_COMPILERS, INTEL_COMPILERS, PGI_COMPILERS, CRAY_COMPILERS
+from tau.cf.compiler import GNU_COMPILERS, INTEL_COMPILERS, PGI_COMPILERS, CRAY_COMPILERS 
+from tau.cf.compiler import IBM_COMPILERS, IBM_BG_COMPILERS
 from tau.cf.compiler import CC_ROLE, CXX_ROLE, FC_ROLE, UPC_ROLE
-from tau.cf.compiler.mpi import SYSTEM_MPI_COMPILERS, INTEL_MPI_COMPILERS
+from tau.cf.compiler.mpi import SYSTEM_MPI_COMPILERS, INTEL_MPI_COMPILERS, IBM_MPI_COMPILERS
 from tau.cf.compiler.mpi import MPI_CC_ROLE, MPI_CXX_ROLE, MPI_FC_ROLE
 from tau.cf.target import TauArch, CRAY_CNL_OS
 
@@ -273,8 +274,7 @@ class TauInstallation(Installation):
         super(TauInstallation, self).verify()
 
         # Open TAU makefile and check BFDINCLUDE, UNWIND_INC, PAPIDIR, etc.
-        makefile = self.get_makefile()
-        with open(makefile, 'r') as fin:
+        with open(self.get_makefile(), 'r') as fin:
             for line in fin:
                 if self.binutils and ('BFDINCLUDE=' in line):
                     bfd_inc = line.split('=')[1].strip().strip("-I")
@@ -361,11 +361,15 @@ class TauInstallation(Installation):
                             INTEL_COMPILERS: 'intel',
                             PGI_COMPILERS: 'pgi',
                             CRAY_COMPILERS: 'cray',
+                            IBM_COMPILERS: 'ibm',
+                            IBM_BG_COMPILERS: 'ibm',
                             SYSTEM_MPI_COMPILERS: 'mpif90',
-                            INTEL_MPI_COMPILERS: 'mpiifort'}
+                            INTEL_MPI_COMPILERS: 'mpiifort',
+                            IBM_MPI_COMPILERS: 'ibm'}
             try:
                 fortran_magic = fc_magic_map[fc_family]
             except KeyError:
+                LOGGER.warning("Can't determine TAU magic word for %s %s", fc_comp.info.short_descr, fc_comp)
                 raise InternalError("Unknown compiler family for Fortran: '%s'" % fc_family)
 
         flags = [flag for flag in  
@@ -429,7 +433,7 @@ class TauInstallation(Installation):
             try:
                 return self.verify()
             except SoftwarePackageError as err:
-                raise SoftwarePackageError("%s installation at '%s' is missing or broken: %s" % 
+                raise SoftwarePackageError("invalid %s installation at '%s': %s" % 
                                            (self.name, self.install_prefix, err),
                                            "Specify source code path or URL to enable broken package reinstallation.")
         elif not force_reinstall:
@@ -492,15 +496,17 @@ class TauInstallation(Installation):
         return set(tags)
     
     def _incompatible_tags(self):
-        """Returns a set of makefile tags incompatible with the specified config.
-        
-        Some tags, e.g. PDT, force actions to occur that should not.
-        """
+        """Returns a set of makefile tags incompatible with the specified config."""
         tags = []
+        cxx_compiler = self.compilers[CXX_ROLE] 
+        while cxx_compiler.wrapped:
+            cxx_compiler = cxx_compiler.wrapped            
+        compiler_tags = {INTEL_COMPILERS: 'intel' if self.target_os == CRAY_CNL_OS else 'icpc', 
+                         PGI_COMPILERS: 'pgi'}
+        compiler_tag = compiler_tags.get(cxx_compiler.info.family, None)
+        tags.extend(tag for tag in compiler_tags.itervalues() if tag != compiler_tag)
         if not self.mpi_support:
             tags.append('mpi')
-        if self.source_inst == 'never':
-            tags.append('pdt')
         if self.measure_openmp != 'opari':
             tags.append('opari')
         if not self.openmp_support:
@@ -644,7 +650,7 @@ class TauInstallation(Installation):
         env['TAU_TRACE'] = str(int(self.trace))
         env['TAU_SAMPLE'] = str(int(self.sample))
         env['TAU_TRACK_HEAP'] = str(int(self.measure_heap_usage))
-        
+        env['TAU_METRICS'] = os.pathsep.join(self.metrics)
         if self.callpath_depth > 0:
             env['TAU_CALLPATH'] = '1'
             env['TAU_CALLPATH_DEPTH'] = str(self.callpath_depth)
@@ -658,7 +664,6 @@ class TauInstallation(Installation):
             opts.append('-opencl')
         if self.io_inst:
             opts.append('-io')
-        env['TAU_METRICS'] = os.pathsep.join(self.metrics)
         return list(set(opts)), env
 
     def get_compiler_command(self, compiler):
@@ -722,9 +727,8 @@ class TauInstallation(Installation):
                    variables to set before running the application command.
         """
         opts, env = self.runtime_config()
-        use_tau_exec = (self.measure_opencl or (self.source_inst == 'never' and 
-                                                self.compiler_inst == 'never' and 
-                                                not self.link_only))
+        use_tau_exec = (self.measure_opencl or
+                        (self.source_inst == 'never' and self.compiler_inst == 'never' and not self.link_only))
         if use_tau_exec:
             tau_exec_opts = opts
             tags = self.get_tags()
@@ -749,7 +753,7 @@ class TauInstallation(Installation):
             int: Return code of the visualization tool.
         """
         LOGGER.debug("Showing profile files at '%s'", path)
-        _, env = super(TauInstallation, self).runtime_config()
+        _, env = self.runtime_config()
         if tool_name:
             tools = [tool_name]
         else:
@@ -783,7 +787,7 @@ class TauInstallation(Installation):
             int: Return code of the visualization tool.
         """
         LOGGER.debug("Showing trace files at '%s'", path)
-        _, env = super(TauInstallation, self).runtime_config()
+        _, env = self.runtime_config()
         if tool_name is None:
             tool_name = 'jumpshot'
         elif tool_name != 'jumpshot':
@@ -814,3 +818,21 @@ class TauInstallation(Installation):
             raise ConfigurationError("Trace visualizer failed to open '%s'" % path,
                                      "Check Java installation, X11 installation,"
                                      " network connectivity, and file permissions")
+
+    def pack_profiles(self, prefix, ppk_file):
+        """Create a PPK file from profile.* files.
+        
+        Args:
+            prefix (str): Path to the directory containing profile.* files.
+            ppk_file (str): Absolute path to the PPK file that will be created.
+        
+        Raises:
+            ConfigurationError: paraprof failed to pack the profiles.
+        """
+        _, env = self.runtime_config()
+        cmd = ['paraprof', '--pack', ppk_file]
+        retval = util.create_subprocess(cmd, cwd=prefix, env=env)
+        if retval:
+            raise ConfigurationError("ParaProf command '%s' failed in '%s'" % (' '.join(cmd), prefix),
+                                     "Make sure Java is installed and working",
+                                     "Install the most recent Java from http://java.com")

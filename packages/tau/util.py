@@ -282,6 +282,23 @@ def extract(archive, dest):
     LOGGER.debug("Created '%s'", full_dest)
     return full_dest
 
+def archive(format, dest, contents):
+    """Creates a new archive file in the specified format.
+    
+    Args:
+        format (str): Archive format, e.g. 'zip' or 'tgz'.
+        dest (str): Path to the archive file that will be created.
+    """
+    if format == 'zip':
+        with ZipFile(dest, 'w') as fp:
+            fp.comment = "Created by TAU Commander"
+            for file in contents:
+                fp.write(file)
+    elif format in ('tar', 'tgz', 'tar.bz2'):
+        mode_map = {'tar': 'w', 'tgz': 'w:gz', 'tar.bz2': 'w:bz2'}
+        with tarfile.open(dest, mode_map[format]) as fp:
+            for file in contents:
+                fp.add(file)
 
 def file_accessible(filepath, mode='r'):
     """Check if a file is accessable.
