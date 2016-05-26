@@ -77,6 +77,7 @@ class TrackedInstance(object):
         """Iterate over class instances."""
         for instance in cls.__instances__:
             yield instance
+    
 
 
 class KeyedRecordCreator(type):

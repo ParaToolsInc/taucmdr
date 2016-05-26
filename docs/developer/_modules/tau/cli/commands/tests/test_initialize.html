@@ -77,26 +77,23 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 
-<span class="kn">import</span> <span class="nn">unittest</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">import</span> <span class="nn">shutil</span>
-<span class="kn">from</span> <span class="nn">tau.cli.commands</span> <span class="kn">import</span> <span class="n">initialize</span>
+<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">tests</span>
+<span class="kn">from</span> <span class="nn">tau.cli.commands.initialize</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">initialize_cmd</span>
 
 
-<div class="viewcode-block" id="InitializeTest"><a class="viewcode-back" href="../../../../../tau.cli.commands.tests.html#tau.cli.commands.tests.test_initialize.InitializeTest">[docs]</a><span class="k">class</span> <span class="nc">InitializeTest</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
-    <span class="n">current_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">_%H%M%S&quot;</span><span class="p">)</span>
-    <span class="nd">@classmethod</span>
-<div class="viewcode-block" id="InitializeTest.setUpClass"><a class="viewcode-back" href="../../../../../tau.cli.commands.tests.html#tau.cli.commands.tests.test_initialize.InitializeTest.setUpClass">[docs]</a>    <span class="k">def</span> <span class="nf">setUpClass</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">current_time</span><span class="p">)</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">current_time</span><span class="p">)</span></div>
-<div class="viewcode-block" id="InitializeTest.test_initialize"><a class="viewcode-back" href="../../../../../tau.cli.commands.tests.html#tau.cli.commands.tests.test_initialize.InitializeTest.test_initialize">[docs]</a>    <span class="k">def</span> <span class="nf">test_initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">initialize</span><span class="o">.</span><span class="n">InitializeCommand</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> </div>
-    <span class="nd">@classmethod</span>
-<div class="viewcode-block" id="InitializeTest.tearDownClass"><a class="viewcode-back" href="../../../../../tau.cli.commands.tests.html#tau.cli.commands.tests.test_initialize.InitializeTest.tearDownClass">[docs]</a>    <span class="k">def</span> <span class="nf">tearDownClass</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="s1">&#39;..&#39;</span><span class="p">)</span>
-        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">current_time</span><span class="p">)</span></div></div>
+<div class="viewcode-block" id="InitializeTest"><a class="viewcode-back" href="../../../../../tau.cli.commands.tests.html#tau.cli.commands.tests.test_initialize.InitializeTest">[docs]</a><span class="k">class</span> <span class="nc">InitializeTest</span><span class="p">(</span><span class="n">tests</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Unit tests for `tau target create`&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="InitializeTest.test_bare"><a class="viewcode-back" href="../../../../../tau.cli.commands.tests.html#tau.cli.commands.tests.test_initialize.InitializeTest.test_bare">[docs]</a>    <span class="k">def</span> <span class="nf">test_bare</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">retval</span><span class="p">,</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="n">tests</span><span class="o">.</span><span class="n">exec_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">initialize_cmd</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;--bare&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">retval</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;Created a new project named&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;Project Configuration&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;No targets&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;No applications&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;No measurements&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;No experiments&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">stderr</span><span class="p">)</span></div></div>
 </pre></div>
 
       </div>

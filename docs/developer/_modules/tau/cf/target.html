@@ -220,8 +220,8 @@
 <span class="sd">    </span>
 <span class="sd">    Attributes:</span>
 <span class="sd">        name (str): Name of the TAU architecture (the magic word)</span>
-<span class="sd">        architecture (str): Architecture object for this TAU architecture.</span>
-<span class="sd">        operating_system (str): OperatingSystem object for this TAU architecture.</span>
+<span class="sd">        architecture (Architecture): Architecture object for this TAU architecture.</span>
+<span class="sd">        operating_system (OperatingSystem): OperatingSystem object for this TAU architecture.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     
     <span class="n">__key__</span> <span class="o">=</span> <span class="s1">&#39;name&#39;</span>
@@ -261,8 +261,8 @@
 <span class="n">X86_64_ARCH</span> <span class="o">=</span> <span class="n">Architecture</span><span class="p">(</span><span class="s1">&#39;x86_64&#39;</span><span class="p">,</span> <span class="s1">&#39;x86_64&#39;</span><span class="p">)</span>
 <span class="n">INTEL_KNC_ARCH</span> <span class="o">=</span> <span class="n">Architecture</span><span class="p">(</span><span class="s1">&#39;knc&#39;</span><span class="p">,</span> <span class="s1">&#39;Intel Knights Corner&#39;</span><span class="p">)</span>
 <span class="c1">#INTEL_KNL_ARCH = Architecture(&#39;knl&#39;, &#39;Intel Knights Landing&#39;)</span>
-<span class="n">IBM_BGP_ARCH</span> <span class="o">=</span> <span class="n">Architecture</span><span class="p">(</span><span class="s1">&#39;bgp&#39;</span><span class="p">,</span> <span class="s1">&#39;IBM BlueGene/P&#39;</span><span class="p">)</span>
-<span class="n">IBM_BGQ_ARCH</span> <span class="o">=</span> <span class="n">Architecture</span><span class="p">(</span><span class="s1">&#39;bgq&#39;</span><span class="p">,</span> <span class="s1">&#39;IBM BlueGene/Q&#39;</span><span class="p">)</span>
+<span class="n">IBM_BGP_ARCH</span> <span class="o">=</span> <span class="n">Architecture</span><span class="p">(</span><span class="s1">&#39;BGP&#39;</span><span class="p">,</span> <span class="s1">&#39;IBM BlueGene/P&#39;</span><span class="p">)</span>
+<span class="n">IBM_BGQ_ARCH</span> <span class="o">=</span> <span class="n">Architecture</span><span class="p">(</span><span class="s1">&#39;BGQ&#39;</span><span class="p">,</span> <span class="s1">&#39;IBM BlueGene/Q&#39;</span><span class="p">)</span>
 <span class="n">IBM64_ARCH</span> <span class="o">=</span> <span class="n">Architecture</span><span class="p">(</span><span class="s1">&#39;ibm64&#39;</span><span class="p">,</span> <span class="s1">&#39;IBM 64-bit Power&#39;</span><span class="p">)</span>
 <span class="n">ARM32_ARCH</span> <span class="o">=</span> <span class="n">Architecture</span><span class="p">(</span><span class="s1">&#39;arm32&#39;</span><span class="p">,</span> <span class="s1">&#39;32-bit ARM&#39;</span><span class="p">)</span>
 <span class="n">ARM64_ARCH</span> <span class="o">=</span> <span class="n">Architecture</span><span class="p">(</span><span class="s1">&#39;arm64&#39;</span><span class="p">,</span> <span class="s1">&#39;64-bit ARM&#39;</span><span class="p">)</span>

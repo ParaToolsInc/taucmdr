@@ -32,6 +32,14 @@ tau.cli.commands.trial.delete module
     :undoc-members:
     :show-inheritance:
 
+tau.cli.commands.trial.export module
+------------------------------------
+
+.. automodule:: tau.cli.commands.trial.export
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 tau.cli.commands.trial.list module
 ----------------------------------
 

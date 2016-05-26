@@ -50,6 +50,7 @@ Table of Contents
    style
    documentation
    new_feature
+   new_compiler
    unit_tests
 
 * :ref:`genindex`

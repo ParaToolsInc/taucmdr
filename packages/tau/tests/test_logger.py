@@ -31,9 +31,8 @@ Functions used for unit tests of logger.py.
 """
 
 
-import unittest
-from tau import logger
+from tau import tests
 
-class GetTerminalSizeTest(unittest.TestCase):
-    def test_sizeistuple(self):
-        self.assertIsInstance(logger.get_terminal_size(), tuple)
+@tests.not_implemented
+class LoggerTest(tests.TestCase):
+    pass

@@ -76,13 +76,37 @@
 <span class="sd">Functions used for unit tests of create.py.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
+<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">tests</span>
+<span class="kn">from</span> <span class="nn">tau.cli.commands.target.create</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">create_cmd</span>
 
-<span class="kn">import</span> <span class="nn">unittest</span>
-<span class="c1">#from tau.cli.commands.target import create</span>
+<div class="viewcode-block" id="CreateTest"><a class="viewcode-back" href="../../../../../../tau.cli.commands.target.tests.html#tau.cli.commands.target.tests.test_create.CreateTest">[docs]</a><span class="k">class</span> <span class="nc">CreateTest</span><span class="p">(</span><span class="n">tests</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Unit tests for `tau target create`&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="CreateTest"><a class="viewcode-back" href="../../../../../../tau.cli.commands.target.tests.html#tau.cli.commands.target.tests.test_create.CreateTest">[docs]</a><span class="k">class</span> <span class="nc">CreateTest</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
-<div class="viewcode-block" id="CreateTest.test_create"><a class="viewcode-back" href="../../../../../../tau.cli.commands.target.tests.html#tau.cli.commands.target.tests.test_create.CreateTest.test_create">[docs]</a>    <span class="k">def</span> <span class="nf">test_create</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> </div></div>
+<div class="viewcode-block" id="CreateTest.test_no_project"><a class="viewcode-back" href="../../../../../../tau.cli.commands.target.tests.html#tau.cli.commands.target.tests.test_create.CreateTest.test_no_project">[docs]</a>    <span class="k">def</span> <span class="nf">test_no_project</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">tau.storage.project</span> <span class="kn">import</span> <span class="n">ProjectStorageError</span>
+        <span class="n">argv</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;test_no_project&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">ProjectStorageError</span><span class="p">,</span> <span class="n">create_cmd</span><span class="o">.</span><span class="n">main</span><span class="p">,</span> <span class="n">argv</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CreateTest.test_no_args"><a class="viewcode-back" href="../../../../../../tau.cli.commands.target.tests.html#tau.cli.commands.target.tests.test_create.CreateTest.test_no_args">[docs]</a>    <span class="k">def</span> <span class="nf">test_no_args</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">retval</span><span class="p">,</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="n">tests</span><span class="o">.</span><span class="n">exec_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">create_cmd</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertNotEqual</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">retval</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">stdout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;error: too few arguments&#39;</span><span class="p">,</span> <span class="n">stderr</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CreateTest.test_h_arg"><a class="viewcode-back" href="../../../../../../tau.cli.commands.target.tests.html#tau.cli.commands.target.tests.test_create.CreateTest.test_h_arg">[docs]</a>    <span class="k">def</span> <span class="nf">test_h_arg</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">retval</span><span class="p">,</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="n">tests</span><span class="o">.</span><span class="n">exec_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">create_cmd</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;-h&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">retval</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;Create target configurations.&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;show this help message and exit&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">stderr</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CreateTest.test_help_arg"><a class="viewcode-back" href="../../../../../../tau.cli.commands.target.tests.html#tau.cli.commands.target.tests.test_create.CreateTest.test_help_arg">[docs]</a>    <span class="k">def</span> <span class="nf">test_help_arg</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">retval</span><span class="p">,</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="n">tests</span><span class="o">.</span><span class="n">exec_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">create_cmd</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;--help&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">retval</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;Create target configurations.&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;show this help message and exit&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">stderr</span><span class="p">)</span></div></div>
+        
 </pre></div>
 
       </div>

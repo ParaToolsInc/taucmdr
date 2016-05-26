@@ -1,0 +1,228 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tau.tests &mdash; TAU Commander Developer Documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+    <link rel="top" title="TAU Commander Developer Documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><img class="rightlogo" src="../../_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="../../index.html">
+          <span>TAU Commander Developer Documentation</span></a></h1>
+        <h2 class="heading"><span>tau.tests</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        <a class="uplink" href="../../index.html">Contents</a>
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <h1>Source code for tau.tests</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (c) 2016, ParaTools, Inc.</span>
+<span class="c1"># All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Redistribution and use in source and binary forms, with or without</span>
+<span class="c1"># modification, are permitted provided that the following conditions are met:</span>
+<span class="c1"># (1) Redistributions of source code must retain the above copyright notice,</span>
+<span class="c1">#     this list of conditions and the following disclaimer.</span>
+<span class="c1"># (2) Redistributions in binary form must reproduce the above copyright notice,</span>
+<span class="c1">#     this list of conditions and the following disclaimer in the documentation</span>
+<span class="c1">#     and/or other materials provided with the distribution.</span>
+<span class="c1"># (3) Neither the name of ParaTools, Inc. nor the names of its contributors may</span>
+<span class="c1">#     be used to endorse or promote products derived from this software without</span>
+<span class="c1">#     specific prior written permission.</span>
+<span class="c1">#</span>
+<span class="c1"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
+<span class="c1"># AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</span>
+<span class="c1"># IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE</span>
+<span class="c1"># DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE</span>
+<span class="c1"># FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL</span>
+<span class="c1"># DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR</span>
+<span class="c1"># SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER</span>
+<span class="c1"># CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,</span>
+<span class="c1"># OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE</span>
+<span class="c1"># OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</span>
+<span class="c1">#</span>
+<span class="sd">&quot;&quot;&quot;Unit test initializations and utility functions.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">atexit</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
+<span class="kn">import</span> <span class="nn">unittest</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">logger</span>
+
+<span class="n">_DIR_STACK</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">_CWD_STACK</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">_TEMPDIR_STACK</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">_NOT_IMPLEMENTED</span> <span class="o">=</span> <span class="p">[]</span>
+
+<div class="viewcode-block" id="get_stdout"><a class="viewcode-back" href="../../tau.tests.html#tau.tests.get_stdout">[docs]</a><span class="k">def</span> <span class="nf">get_stdout</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Get data written to unit test stdout.</span>
+<span class="sd">    </span>
+<span class="sd">    :any:`unittest` replaces sys.stdout with a StringIO instance when running in buffered mode.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        str: Data written to sys.stdout while the test was running.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># unittest replaces sys.stdout and sys.stderr with StringIO instances when</span>
+    <span class="c1"># running in buffered mode, but pylint doesn&#39;t know that.  </span>
+    <span class="c1"># pylint: disable=no-member</span>
+    <span class="k">return</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="get_stderr"><a class="viewcode-back" href="../../tau.tests.html#tau.tests.get_stderr">[docs]</a><span class="k">def</span> <span class="nf">get_stderr</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Get data written to unit test stderr.</span>
+<span class="sd">    </span>
+<span class="sd">    :any:`unittest` replaces sys.stderr with a StringIO instance when running in buffered mode.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        str: Data written to sys.stderr while the test was running.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># unittest replaces sys.stdout and sys.stderr with StringIO instances when</span>
+    <span class="c1"># running in buffered mode, but pylint doesn&#39;t know that.  </span>
+    <span class="c1"># pylint: disable=no-member</span>
+    <span class="k">return</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="exec_command"><a class="viewcode-back" href="../../tau.tests.html#tau.tests.exec_command">[docs]</a><span class="k">def</span> <span class="nf">exec_command</span><span class="p">(</span><span class="n">testcase</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">argv</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Execute a command&#39;s main() routine and return the exit code, stdout, and stderr data.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        testcase (unittest.TestCase): TestCase instance executing the command.</span>
+<span class="sd">        cmd (type): A command instance that has a `main` callable attribute.</span>
+<span class="sd">        argv (list): Arguments to pass to cmd.main()</span>
+<span class="sd">        </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        tuple: (retval, stdout, stderr) results of running the command.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="s2">&quot;getvalue&quot;</span><span class="p">):</span>
+        <span class="n">testcase</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="s2">&quot;Test must be run in buffered mode&quot;</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">retval</span> <span class="o">=</span> <span class="n">cmd</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">SystemExit</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+        <span class="n">retval</span> <span class="o">=</span> <span class="n">err</span><span class="o">.</span><span class="n">code</span>
+    <span class="k">return</span> <span class="n">retval</span><span class="p">,</span> <span class="n">get_stdout</span><span class="p">(),</span> <span class="n">get_stderr</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="push_test_workdir"><a class="viewcode-back" href="../../tau.tests.html#tau.tests.push_test_workdir">[docs]</a><span class="k">def</span> <span class="nf">push_test_workdir</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Create a new working directory for a unit test.</span>
+<span class="sd">    </span>
+<span class="sd">    Sets the current working directory and :any:`tempfile.tempdir` to the newly created test directory.</span>
+<span class="sd">    </span>
+<span class="sd">    Directories created via this method are tracked.  If any of them exist when the program exits then</span>
+<span class="sd">    an error message is shown for each.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">()</span>
+    <span class="n">_DIR_STACK</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="n">_CWD_STACK</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">())</span>
+    <span class="n">_TEMPDIR_STACK</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tempfile</span><span class="o">.</span><span class="n">tempdir</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="n">tempfile</span><span class="o">.</span><span class="n">tempdir</span> <span class="o">=</span> <span class="n">path</span></div>
+
+<div class="viewcode-block" id="pop_test_workdir"><a class="viewcode-back" href="../../tau.tests.html#tau.tests.pop_test_workdir">[docs]</a><span class="k">def</span> <span class="nf">pop_test_workdir</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Recursively deletes the most recently created unit test working directory.</span>
+<span class="sd">    </span>
+<span class="sd">    Restores the current working directory and :any:`tempfile.tempdir` to their values before</span>
+<span class="sd">    :any:`push_test_workdir` was called.</span>
+<span class="sd">    &quot;&quot;&quot;</span> 
+    <span class="k">def</span> <span class="nf">onerror</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">excinfo</span><span class="p">):</span>
+        <span class="c1"># pylint: disable=unused-argument</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">ERROR: Failed to clean up testing directory </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span>
+    <span class="n">tempfile</span><span class="o">.</span><span class="n">tempdir</span> <span class="o">=</span> <span class="n">_TEMPDIR_STACK</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">_CWD_STACK</span><span class="o">.</span><span class="n">pop</span><span class="p">())</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">_DIR_STACK</span><span class="o">.</span><span class="n">pop</span><span class="p">(),</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">onerror</span><span class="o">=</span><span class="n">onerror</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="cleanup"><a class="viewcode-back" href="../../tau.tests.html#tau.tests.cleanup">[docs]</a><span class="k">def</span> <span class="nf">cleanup</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Finish </span>
+<span class="sd">    </span>
+<span class="sd">    Checks that any files or directories created during testing have been removed.&quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">_DIR_STACK</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">ERROR: Test directory &#39;</span><span class="si">%s</span><span class="s2">&#39; was not cleaned up</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span></div>
+
+<span class="n">atexit</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">cleanup</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="not_implemented"><a class="viewcode-back" href="../../tau.tests.html#tau.tests.not_implemented">[docs]</a><span class="k">def</span> <span class="nf">not_implemented</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Decorator for TestCase classes to indicate that the tests have not been written (yet).&quot;&quot;&quot;</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">: tests have not been implemented&quot;</span> <span class="o">%</span> <span class="n">cls</span><span class="o">.</span><span class="n">__name__</span>
+    <span class="n">_NOT_IMPLEMENTED</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">unittest</span><span class="o">.</span><span class="n">skip</span><span class="p">(</span><span class="n">msg</span><span class="p">)(</span><span class="n">cls</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestCase"><a class="viewcode-back" href="../../tau.tests.html#tau.tests.TestCase">[docs]</a><span class="k">class</span> <span class="nc">TestCase</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base class for unit tests.</span>
+<span class="sd">    </span>
+<span class="sd">    Performs tests in a temporary directory and reconfigures :any:`tau.logger` to work with :any:`unittest`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="TestCase.setUpClass"><a class="viewcode-back" href="../../tau.tests.html#tau.tests.TestCase.setUpClass">[docs]</a>    <span class="k">def</span> <span class="nf">setUpClass</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="n">push_test_workdir</span><span class="p">()</span>
+        <span class="c1"># Reset stdout logger handler to use buffered unittest stdout</span>
+        <span class="c1"># pylint: disable=protected-access</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">_orig_stream</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">_STDOUT_HANDLER</span><span class="o">.</span><span class="n">stream</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">_STDOUT_HANDLER</span><span class="o">.</span><span class="n">stream</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span></div>
+        
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="TestCase.tearDownClass"><a class="viewcode-back" href="../../tau.tests.html#tau.tests.TestCase.tearDownClass">[docs]</a>    <span class="k">def</span> <span class="nf">tearDownClass</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="c1"># Restore original stream to stdout logger handler</span>
+        <span class="c1"># pylint: disable=protected-access</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">_STDOUT_HANDLER</span><span class="o">.</span><span class="n">stream</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">_orig_stream</span>
+        <span class="n">pop_test_workdir</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="TestRunner"><a class="viewcode-back" href="../../tau.tests.html#tau.tests.TestRunner">[docs]</a><span class="k">class</span> <span class="nc">TestRunner</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TextTestRunner</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Test suite runner.&quot;&quot;&quot;</span>
+    
+    
+<div class="viewcode-block" id="TestRunner.run"><a class="viewcode-back" href="../../tau.tests.html#tau.tests.TestRunner.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test</span><span class="p">):</span>
+        <span class="n">retval</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">TestRunner</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">test</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">_NOT_IMPLEMENTED</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s2">&quot;WARNING: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">item</span>
+        <span class="k">return</span> <span class="n">retval</span></div></div>
+    
+    
+</pre></div>
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        <a class="uplink" href="../../index.html">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015 ParaTools, Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+    </div>
+  </body>
+</html>

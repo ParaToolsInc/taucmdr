@@ -296,6 +296,7 @@ for system-level package installation paths. <strong>Do not</strong> change it o
 <li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.trial.html#submodules">Submodules</a></li>
 <li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.create">tau.cli.commands.trial.create module</a></li>
 <li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.delete">tau.cli.commands.trial.delete module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.export">tau.cli.commands.trial.export module</a></li>
 <li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list">tau.cli.commands.trial.list module</a></li>
 <li class="toctree-l6"><a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.show">tau.cli.commands.trial.show module</a></li>
 </ul>
@@ -915,6 +916,25 @@ This routine will return stupid results for archives with multiple top-level ele
 </dd></dl>
 
 <dl class="function">
+<dt id="tau.util.create_archive">
+<code class="descclassname">tau.util.</code><code class="descname">create_archive</code><span class="sig-paren">(</span><em>fmt</em>, <em>dest</em>, <em>items</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#create_archive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.create_archive" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new archive file in the specified format.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fmt</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Archive fmt, e.g. &#8216;zip&#8217; or &#8216;tgz&#8217;.</li>
+<li><strong>dest</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Path to the archive file that will be created.</li>
+<li><strong>items</strong> (<a class="reference internal" href="tau.cli.commands.trial.html#module-tau.cli.commands.trial.list" title="tau.cli.commands.trial.list"><em>list</em></a>) &#8211; Items (i.e. files or folders) to add to the archive.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="tau.util.create_subprocess">
 <code class="descclassname">tau.util.</code><code class="descname">create_subprocess</code><span class="sig-paren">(</span><em>cmd</em>, <em>cwd=None</em>, <em>env=None</em>, <em>stdout=True</em>, <em>log=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#create_subprocess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.create_subprocess" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a subprocess.</p>
@@ -967,8 +987,8 @@ File copy or download failed.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="tau.util.extract">
-<code class="descclassname">tau.util.</code><code class="descname">extract</code><span class="sig-paren">(</span><em>archive</em>, <em>dest</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#extract"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.extract" title="Permalink to this definition">¶</a></dt>
+<dt id="tau.util.extract_archive">
+<code class="descclassname">tau.util.</code><code class="descname">extract_archive</code><span class="sig-paren">(</span><em>archive</em>, <em>dest</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#extract_archive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.extract_archive" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extracts archive file to dest.</p>
 <p>Supports compressed and uncompressed tar archives. Destination folder will
 be created if it doesn&#8217;t exist.</p>
@@ -1188,19 +1208,26 @@ they are in a zip file.  This implementation works around this.</p>
 
 <dl class="function">
 <dt id="tau.util.which">
-<code class="descclassname">tau.util.</code><code class="descname">which</code><span class="sig-paren">(</span><em>program</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#which"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.which" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.util.</code><code class="descname">which</code><span class="sig-paren">(</span><em>program</em>, <em>use_cached=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#which"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.which" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the full path to a program command.</p>
 <p>Program must exist and be executable.
-Searches the system PATH and the current directory.</p>
+Searches the system PATH and the current directory.
+Caches the result.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>program</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; program to find.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>program</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; program to find.</li>
+<li><strong>use_cached</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If False then don&#8217;t use cached results.</li>
+</ul>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Full path to program or None if program can&#8217;t be found.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Full path to program or None if program can&#8217;t be found.</p>
+</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)">str</a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)">str</a></p>
+</td>
 </tr>
 </tbody>
 </table>

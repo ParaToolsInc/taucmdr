@@ -26,7 +26,7 @@
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
     <link rel="top" title="TAU Commander Developer Documentation" href="../../../index.html" />
-    <link rel="up" title="Module code" href="../../index.html" /> 
+    <link rel="up" title="tau.tests" href="../tests.html" /> 
   </head>
   <body role="document">
       <div class="header" role="banner"><img class="rightlogo" src="../../../_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="../../../index.html">
@@ -77,45 +77,55 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 
-<span class="kn">import</span> <span class="nn">unittest</span>
-<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">util</span>
+<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">util</span><span class="p">,</span> <span class="n">tests</span>
 
 
-<div class="viewcode-block" id="HumanSizeTest"><a class="viewcode-back" href="../../../tau.tests.html#tau.tests.test_util.HumanSizeTest">[docs]</a><span class="k">class</span> <span class="nc">HumanSizeTest</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+<div class="viewcode-block" id="HumanSizeTest"><a class="viewcode-back" href="../../../tau.tests.html#tau.tests.test_util.HumanSizeTest">[docs]</a><span class="k">class</span> <span class="nc">HumanSizeTest</span><span class="p">(</span><span class="n">tests</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Class to test the human_size function in utils.&quot;&quot;&quot;</span>
+    
 <div class="viewcode-block" id="HumanSizeTest.test_humansize"><a class="viewcode-back" href="../../../tau.tests.html#tau.tests.test_util.HumanSizeTest.test_humansize">[docs]</a>    <span class="k">def</span> <span class="nf">test_humansize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">human_size</span><span class="p">(</span><span class="mi">20000000</span><span class="p">),</span> <span class="s1">&#39;19.1MiB&#39;</span><span class="p">)</span> 
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">TypeError</span><span class="p">):</span>
             <span class="n">util</span><span class="o">.</span><span class="n">human_size</span><span class="p">(</span><span class="s1">&#39;abc&#39;</span><span class="p">)</span></div></div>
 
-<div class="viewcode-block" id="ParseBoolTest"><a class="viewcode-back" href="../../../tau.tests.html#tau.tests.test_util.ParseBoolTest">[docs]</a><span class="k">class</span> <span class="nc">ParseBoolTest</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+
+<div class="viewcode-block" id="ParseBoolTest"><a class="viewcode-back" href="../../../tau.tests.html#tau.tests.test_util.ParseBoolTest">[docs]</a><span class="k">class</span> <span class="nc">ParseBoolTest</span><span class="p">(</span><span class="n">tests</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Class to test the parse_bool function in utils.&quot;&quot;&quot;</span>
+    
 <div class="viewcode-block" id="ParseBoolTest.test_true"><a class="viewcode-back" href="../../../tau.tests.html#tau.tests.test_util.ParseBoolTest.test_true">[docs]</a>    <span class="k">def</span> <span class="nf">test_true</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">parse_bool</span><span class="p">(</span><span class="s1">&#39;yes&#39;</span><span class="p">))</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">TypeError</span><span class="p">):</span>
             <span class="n">util</span><span class="o">.</span><span class="n">parse_bool</span><span class="p">(</span><span class="s1">&#39;ye&#39;</span><span class="p">)</span></div>
+    
 <div class="viewcode-block" id="ParseBoolTest.test_false"><a class="viewcode-back" href="../../../tau.tests.html#tau.tests.test_util.ParseBoolTest.test_false">[docs]</a>    <span class="k">def</span> <span class="nf">test_false</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">parse_bool</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">))</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">TypeError</span><span class="p">):</span>
             <span class="n">util</span><span class="o">.</span><span class="n">parse_bool</span><span class="p">(</span><span class="s1">&#39;offf&#39;</span><span class="p">)</span></div>
+    
 <div class="viewcode-block" id="ParseBoolTest.test_extendtrue"><a class="viewcode-back" href="../../../tau.tests.html#tau.tests.test_util.ParseBoolTest.test_extendtrue">[docs]</a>    <span class="k">def</span> <span class="nf">test_extendtrue</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">parse_bool</span><span class="p">(</span><span class="s1">&#39;2&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;correct&#39;</span><span class="p">,</span> <span class="s1">&#39;2&#39;</span><span class="p">,</span> <span class="s1">&#39;3&#39;</span><span class="p">,</span> <span class="s1">&#39;4&#39;</span><span class="p">,</span> <span class="s1">&#39;5&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;incorrect&#39;</span><span class="p">]))</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">TypeError</span><span class="p">):</span>
             <span class="n">util</span><span class="o">.</span><span class="n">parse_bool</span><span class="p">(</span><span class="s1">&#39;6&#39;</span><span class="p">)</span></div>
+    
 <div class="viewcode-block" id="ParseBoolTest.test_extendfalse"><a class="viewcode-back" href="../../../tau.tests.html#tau.tests.test_util.ParseBoolTest.test_extendfalse">[docs]</a>    <span class="k">def</span> <span class="nf">test_extendfalse</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">parse_bool</span><span class="p">(</span><span class="s1">&#39;incorrect&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;correct&#39;</span><span class="p">,</span> <span class="s1">&#39;2&#39;</span><span class="p">,</span> <span class="s1">&#39;3&#39;</span><span class="p">,</span> <span class="s1">&#39;4&#39;</span><span class="p">,</span> <span class="s1">&#39;5&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;incorrect&#39;</span><span class="p">]))</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">TypeError</span><span class="p">):</span>
             <span class="n">util</span><span class="o">.</span><span class="n">parse_bool</span><span class="p">(</span><span class="s1">&#39;incorect&#39;</span><span class="p">)</span></div></div>
 
-<div class="viewcode-block" id="IsUrlTest"><a class="viewcode-back" href="../../../tau.tests.html#tau.tests.test_util.IsUrlTest">[docs]</a><span class="k">class</span> <span class="nc">IsUrlTest</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+
+<div class="viewcode-block" id="IsUrlTest"><a class="viewcode-back" href="../../../tau.tests.html#tau.tests.test_util.IsUrlTest">[docs]</a><span class="k">class</span> <span class="nc">IsUrlTest</span><span class="p">(</span><span class="n">tests</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Class to test the is_url function in utils.&quot;&quot;&quot;</span>
+    
 <div class="viewcode-block" id="IsUrlTest.test_true"><a class="viewcode-back" href="../../../tau.tests.html#tau.tests.test_util.IsUrlTest.test_true">[docs]</a>    <span class="k">def</span> <span class="nf">test_true</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">is_url</span><span class="p">(</span><span class="s2">&quot;http://www.paratools.com&quot;</span><span class="p">))</span></div>
+    
 <div class="viewcode-block" id="IsUrlTest.test_false"><a class="viewcode-back" href="../../../tau.tests.html#tau.tests.test_util.IsUrlTest.test_false">[docs]</a>    <span class="k">def</span> <span class="nf">test_false</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">is_url</span><span class="p">(</span><span class="s2">&quot;www.paratools.com&quot;</span><span class="p">))</span></div></div>
 
-<div class="viewcode-block" id="CamelCaseTest"><a class="viewcode-back" href="../../../tau.tests.html#tau.tests.test_util.CamelCaseTest">[docs]</a><span class="k">class</span> <span class="nc">CamelCaseTest</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+
+<div class="viewcode-block" id="CamelCaseTest"><a class="viewcode-back" href="../../../tau.tests.html#tau.tests.test_util.CamelCaseTest">[docs]</a><span class="k">class</span> <span class="nc">CamelCaseTest</span><span class="p">(</span><span class="n">tests</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Class to test the camelcase function in utils.&quot;&quot;&quot;</span>
+
 <div class="viewcode-block" id="CamelCaseTest.test_camelcase"><a class="viewcode-back" href="../../../tau.tests.html#tau.tests.test_util.CamelCaseTest.test_camelcase">[docs]</a>    <span class="k">def</span> <span class="nf">test_camelcase</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">camelcase</span><span class="p">(</span><span class="s2">&quot;abc_def_ghi&quot;</span><span class="p">),</span> <span class="s2">&quot;AbcDefGhi&quot;</span><span class="p">)</span></div></div>
 </pre></div>

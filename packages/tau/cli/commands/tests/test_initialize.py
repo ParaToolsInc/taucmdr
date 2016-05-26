@@ -31,23 +31,20 @@ Functions used for unit tests of initialize.py.
 """
 
 
-import unittest
-import os
-import time
-import shutil
-from tau.cli.commands import initialize
+from tau import tests
+from tau.cli.commands.initialize import COMMAND as initialize_cmd
 
 
-class InitializeTest(unittest.TestCase):
-    current_time = time.strftime("%Y%m%d_%H%M%S")
-    @classmethod
-    def setUpClass(cls):
-        os.makedirs(cls.current_time)
-        os.chdir(cls.current_time)
-    def test_initialize(self):
-        initialize.InitializeCommand(__name__)
-        self.assertEqual(1, 1) 
-    @classmethod
-    def tearDownClass(cls):
-        os.chdir('..')
-        shutil.rmtree(cls.current_time)
+class InitializeTest(tests.TestCase):
+    """Unit tests for `tau target create`"""
+
+    def test_bare(self):
+        retval, stdout, stderr = tests.exec_command(self, initialize_cmd, ['--bare'])
+        self.assertEqual(0, retval)
+        self.assertIn('Created a new project named', stdout)
+        self.assertIn('Project Configuration', stdout)
+        self.assertIn('No targets', stdout)
+        self.assertIn('No applications', stdout)
+        self.assertIn('No measurements', stdout)
+        self.assertIn('No experiments', stdout)
+        self.assertFalse(stderr)

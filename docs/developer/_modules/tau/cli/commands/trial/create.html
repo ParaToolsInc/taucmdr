@@ -81,7 +81,7 @@
 <span class="kn">from</span> <span class="nn">tau.model.project</span> <span class="kn">import</span> <span class="n">Project</span>
 
 
-<span class="n">LAUNCHERS</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;mpirun&#39;</span><span class="p">,</span> <span class="s1">&#39;mpiexec&#39;</span><span class="p">,</span> <span class="s1">&#39;ibrun&#39;</span><span class="p">,</span> <span class="s1">&#39;aprun&#39;</span><span class="p">]</span>
+<span class="n">LAUNCHERS</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;mpirun&#39;</span><span class="p">,</span> <span class="s1">&#39;mpiexec&#39;</span><span class="p">,</span> <span class="s1">&#39;ibrun&#39;</span><span class="p">,</span> <span class="s1">&#39;aprun&#39;</span><span class="p">,</span> <span class="s1">&#39;qsub&#39;</span><span class="p">,</span> <span class="s1">&#39;srun&#39;</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="TrialCreateCommand"><a class="viewcode-back" href="../../../../../tau.cli.commands.trial.html#tau.cli.commands.trial.create.TrialCreateCommand">[docs]</a><span class="k">class</span> <span class="nc">TrialCreateCommand</span><span class="p">(</span><span class="n">CreateCommand</span><span class="p">):</span>
@@ -137,6 +137,8 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">launcher_cmd</span> <span class="o">=</span> <span class="n">application_cmd</span><span class="p">[:</span><span class="n">idx</span><span class="p">]</span>
                 <span class="n">application_cmd</span> <span class="o">=</span> <span class="n">application_cmd</span><span class="p">[</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Launcher: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">launcher_cmd</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Application: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">application_cmd</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">launcher_cmd</span><span class="p">,</span> <span class="n">application_cmd</span>
 
 <div class="viewcode-block" id="TrialCreateCommand.main"><a class="viewcode-back" href="../../../../../tau.cli.commands.trial.html#tau.cli.commands.trial.create.TrialCreateCommand.main">[docs]</a>    <span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">argv</span><span class="p">):</span>

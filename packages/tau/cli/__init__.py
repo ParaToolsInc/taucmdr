@@ -179,7 +179,7 @@ def commands_description(package_name=COMMANDS_PACKAGE_NAME):
             command_obj = module.COMMAND
         except AttributeError:
             continue 
-        descr = command_obj.summary
+        descr = command_obj.summary.split('\n')[0]
         group = command_obj.group
         name = '{:<14}'.format(cmd)
         groups.setdefault(group, []).append('  %s  %s' % (name, descr))

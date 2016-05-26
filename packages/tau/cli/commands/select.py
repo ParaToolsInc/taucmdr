@@ -31,7 +31,7 @@ from tau import EXIT_SUCCESS
 from tau.cli import arguments
 from tau.error import ConfigurationError, InternalError
 from tau.storage.levels import PROJECT_STORAGE
-from tau.model.project import Project, ProjectSelectionError
+from tau.model.project import Project, ProjectSelectionError, ExperimentSelectionError
 from tau.model.target import Target
 from tau.model.application import Application
 from tau.model.measurement import Measurement
@@ -183,6 +183,19 @@ class SelectCommand(AbstractCommand):
         meas = self._parse_explicit(args, Measurement, measurements, proj, 'measurements')
 
         proj_ctrl = Project.controller()
+        rebuild_required = False
+        try:
+            meas_old = proj_ctrl.selected().experiment().populate('measurement')
+        except (ProjectSelectionError, ExperimentSelectionError):
+            pass
+        else:
+            for attr, value in meas.iteritems():
+                if value != meas_old[attr] and Measurement.attributes[attr]['application_rebuild']:
+                    msg = ("%s in measurement changed from '%s' to '%s'. Please recompile your application." % 
+                           (attr, meas_old[attr], meas[attr]))
+                    rebuild_required = True
+                    break
+
         if not (targ and app and meas):
             proj_ctrl.select(proj)
             self.logger.info("Selected project '%s'. No experiment.", proj['name'])
@@ -206,7 +219,12 @@ class SelectCommand(AbstractCommand):
                              populated['target']['name'],
                              populated['application']['name'],
                              populated['measurement']['name'])
+
+            if rebuild_required:
+                self.logger.info(msg)
         return EXIT_SUCCESS
 
 
-COMMAND = SelectCommand(__name__, summary_fmt="Select project components for the next experiment.")
+COMMAND = SelectCommand(__name__, 
+                        summary_fmt=("Select project components for the next experiment.\n"
+                                     "Available components may be viewed via the `dashboard` subcommand."))

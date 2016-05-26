@@ -37,6 +37,7 @@ DASHBOARD_COLUMNS = [{'header': 'Name', 'value': 'name', 'align': 'r'},
                      {'header': 'Source Inst.', 'value': 'source_inst'},
                      {'header': 'Compiler Inst.', 'value': 'compiler_inst'},
                      {'header': 'OpenMP Inst.', 'value': 'openmp'},
+                     {'header': 'I/O Inst.', 'yesno': 'io'},
                      {'header': 'Wrap MPI', 'yesno': 'mpi'}]
  
 COMMAND = ListCommand(Measurement, __name__, dashboard_columns=DASHBOARD_COLUMNS)

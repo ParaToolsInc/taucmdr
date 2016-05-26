@@ -77,7 +77,7 @@
 <span class="kn">from</span> <span class="nn">tau.cli</span> <span class="kn">import</span> <span class="n">arguments</span>
 <span class="kn">from</span> <span class="nn">tau.error</span> <span class="kn">import</span> <span class="n">ConfigurationError</span><span class="p">,</span> <span class="n">InternalError</span>
 <span class="kn">from</span> <span class="nn">tau.storage.levels</span> <span class="kn">import</span> <span class="n">PROJECT_STORAGE</span>
-<span class="kn">from</span> <span class="nn">tau.model.project</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">ProjectSelectionError</span>
+<span class="kn">from</span> <span class="nn">tau.model.project</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">ProjectSelectionError</span><span class="p">,</span> <span class="n">ExperimentSelectionError</span>
 <span class="kn">from</span> <span class="nn">tau.model.target</span> <span class="kn">import</span> <span class="n">Target</span>
 <span class="kn">from</span> <span class="nn">tau.model.application</span> <span class="kn">import</span> <span class="n">Application</span>
 <span class="kn">from</span> <span class="nn">tau.model.measurement</span> <span class="kn">import</span> <span class="n">Measurement</span>
@@ -229,6 +229,19 @@
         <span class="n">meas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_explicit</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">Measurement</span><span class="p">,</span> <span class="n">measurements</span><span class="p">,</span> <span class="n">proj</span><span class="p">,</span> <span class="s1">&#39;measurements&#39;</span><span class="p">)</span>
 
         <span class="n">proj_ctrl</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">controller</span><span class="p">()</span>
+        <span class="n">rebuild_required</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">meas_old</span> <span class="o">=</span> <span class="n">proj_ctrl</span><span class="o">.</span><span class="n">selected</span><span class="p">()</span><span class="o">.</span><span class="n">experiment</span><span class="p">()</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="s1">&#39;measurement&#39;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">ProjectSelectionError</span><span class="p">,</span> <span class="n">ExperimentSelectionError</span><span class="p">):</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">meas</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">value</span> <span class="o">!=</span> <span class="n">meas_old</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span> <span class="ow">and</span> <span class="n">Measurement</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="n">attr</span><span class="p">][</span><span class="s1">&#39;application_rebuild&#39;</span><span class="p">]:</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> in measurement changed from &#39;</span><span class="si">%s</span><span class="s2">&#39; to &#39;</span><span class="si">%s</span><span class="s2">&#39;. Please recompile your application.&quot;</span> <span class="o">%</span> 
+                           <span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">meas_old</span><span class="p">[</span><span class="n">attr</span><span class="p">],</span> <span class="n">meas</span><span class="p">[</span><span class="n">attr</span><span class="p">]))</span>
+                    <span class="n">rebuild_required</span> <span class="o">=</span> <span class="bp">True</span>
+                    <span class="k">break</span>
+
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">targ</span> <span class="ow">and</span> <span class="n">app</span> <span class="ow">and</span> <span class="n">meas</span><span class="p">):</span>
             <span class="n">proj_ctrl</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">proj</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Selected project &#39;</span><span class="si">%s</span><span class="s2">&#39;. No experiment.&quot;</span><span class="p">,</span> <span class="n">proj</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
@@ -252,10 +265,15 @@
                              <span class="n">populated</span><span class="p">[</span><span class="s1">&#39;target&#39;</span><span class="p">][</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
                              <span class="n">populated</span><span class="p">[</span><span class="s1">&#39;application&#39;</span><span class="p">][</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
                              <span class="n">populated</span><span class="p">[</span><span class="s1">&#39;measurement&#39;</span><span class="p">][</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+
+            <span class="k">if</span> <span class="n">rebuild_required</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">EXIT_SUCCESS</span></div></div>
 
 
-<span class="n">COMMAND</span> <span class="o">=</span> <span class="n">SelectCommand</span><span class="p">(</span><span class="n">__name__</span><span class="p">,</span> <span class="n">summary_fmt</span><span class="o">=</span><span class="s2">&quot;Select project components for the next experiment.&quot;</span><span class="p">)</span>
+<span class="n">COMMAND</span> <span class="o">=</span> <span class="n">SelectCommand</span><span class="p">(</span><span class="n">__name__</span><span class="p">,</span> 
+                        <span class="n">summary_fmt</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Select project components for the next experiment.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                                     <span class="s2">&quot;Available components may be viewed via the `dashboard` subcommand.&quot;</span><span class="p">))</span>
 </pre></div>
 
       </div>

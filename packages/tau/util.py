@@ -91,36 +91,49 @@ def rmtree(path, ignore_errors=False, onerror=None, attempts=5):
             time.sleep(i+1)
     shutil.rmtree(path, ignore_errors, onerror)
 
-def which(program):
+def _is_exec(fpath):
+    return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+
+_WHICH_CACHE = {}
+def which(program, use_cached=True):
     """Returns the full path to a program command.
     
     Program must exist and be executable.
     Searches the system PATH and the current directory.
+    Caches the result.
     
     Args:
         program (str): program to find.
+        use_cached (bool): If False then don't use cached results.
         
     Returns:
         str: Full path to program or None if program can't be found.
     """
     if not program:
         return None
-    def is_exec(fpath):
-        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+    assert isinstance(program, basestring)
+    if use_cached:
+        try:
+            return _WHICH_CACHE[program]
+        except KeyError:
+            pass
     fpath, _ = os.path.split(program)
     if fpath:
         abs_program = os.path.abspath(program)
-        if is_exec(abs_program):
+        if _is_exec(abs_program):
             LOGGER.debug("which(%s) = '%s'", program, abs_program)
+            _WHICH_CACHE[program] = abs_program
             return abs_program
     else:
         for path in os.environ['PATH'].split(os.pathsep):
             path = path.strip('"')
             exe_file = os.path.join(path, program)
-            if is_exec(exe_file):
+            if _is_exec(exe_file):
                 LOGGER.debug("which(%s) = '%s'", program, exe_file)
+                _WHICH_CACHE[program] = exe_file
                 return exe_file
     LOGGER.debug("which(%s): command not found", program)
+    _WHICH_CACHE[program] = None
     return None
 
 
@@ -241,7 +254,7 @@ def archive_toplevel(archive):
         return topdir
 
 
-def extract(archive, dest):
+def extract_archive(archive, dest):
     """Extracts archive file to dest.
     
     Supports compressed and uncompressed tar archives. Destination folder will
@@ -269,6 +282,24 @@ def extract(archive, dest):
     LOGGER.debug("Created '%s'", full_dest)
     return full_dest
 
+def create_archive(fmt, dest, items):
+    """Creates a new archive file in the specified format.
+    
+    Args:
+        fmt (str): Archive fmt, e.g. 'zip' or 'tgz'.
+        dest (str): Path to the archive file that will be created.
+        items (list): Items (i.e. files or folders) to add to the archive. 
+    """
+    if fmt == 'zip':
+        with ZipFile(dest, 'w') as archive:
+            archive.comment = "Created by TAU Commander"
+            for item in items:
+                archive.write(item)
+    elif fmt in ('tar', 'tgz', 'tar.bz2'):
+        mode_map = {'tar': 'w', 'tgz': 'w:gz', 'tar.bz2': 'w:bz2'}
+        with tarfile.open(dest, mode_map[fmt]) as archive:
+            for item in items:
+                archive.add(item)
 
 def file_accessible(filepath, mode='r'):
     """Check if a file is accessable.

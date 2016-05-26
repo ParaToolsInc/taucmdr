@@ -65,6 +65,7 @@ def attributes():
         'projects': {
             'collection': Project,
             'via': 'measurements',
+            'application_rebuild': False,
             'description': "projects using this measurement"
         },
         'name': {
@@ -72,6 +73,7 @@ def attributes():
             'type': 'string',
             'unique': True,
             'description': "measurement configuration name",
+            'application_rebuild': False,
             'argparse': {'help': 'measurement configuration name',
                          'metavar': '<measurement_name>'},
         
@@ -80,6 +82,7 @@ def attributes():
             'type': 'boolean',
             'default': True,
             'description': "generate application profiles",
+            'application_rebuild': False,
             'argparse': {'flags': ('--profile',),
                          'group': 'output format',
                          'metavar': 'T/F',
@@ -91,6 +94,7 @@ def attributes():
             'type': 'boolean',
             'default': False,
             'description': "generate application traces",
+            'application_rebuild': False,
             'argparse': {'flags': ('--trace',),
                          'group': 'output format',
                          'metavar': 'T/F',
@@ -109,6 +113,7 @@ def attributes():
                          'nargs': '?',
                          'const': True,
                          'action': ParseBooleanAction},
+            'application_rebuild': False,
             'compat': {True: (Target.require('binutils_source'),
                               Target.exclude('binutils_source', None),
                               Target.require('libunwind_source'),
@@ -125,6 +130,7 @@ def attributes():
                          'nargs': '?',
                          'choices': ('automatic', 'manual', 'never'),
                          'const': 'automatic'},
+            'application_rebuild': True,
             'compat': {'automatic': Target.exclude('pdt_source', None)}
         },
         'compiler_inst': {
@@ -137,6 +143,7 @@ def attributes():
                          'nargs': '?',
                          'choices': ('always', 'fallback', 'never'),
                          'const': 'always'},
+            'application_rebuild': True,
             'compat': {lambda x: x in ('always', 'fallback'):
                        (Target.require('binutils_source'),
                         Target.exclude('binutils_source', None),
@@ -148,6 +155,7 @@ def attributes():
             'type': 'boolean',
             'default': False,
             'description': "don't instrument, only link the TAU library to the application",
+            'application_rebuild': True,
             'argparse': {'flags': ('--link-only',),
                          'group': 'instrumentation',
                          'metavar': 'T/F',
@@ -155,12 +163,13 @@ def attributes():
                          'const': True,
                          'action': ParseBooleanAction},
         },
-        'select_inst_file': {
+        'select_file': {
             'type': 'string',
             'description': 'specify selective instrumentation file',
-            'argparse': {'flags': ('--select-inst-file',),
+            'argparse': {'flags': ('--select-file',),
                          'group': 'instrumentation',
                          'metavar': 'path'},
+            'application_rebuild': True,
             'compat': {True:
                        (Target.require('source_inst'),
                         Target.exclude('source_inst', 'never'))},
@@ -175,6 +184,7 @@ def attributes():
                          'nargs': '?',
                          'const': True,
                          'action': ParseBooleanAction},
+            'application_rebuild': True,
             'compat': {True:
                        (Target.require('MPI_CC'),
                         Target.require('MPI_CXX'),
@@ -188,6 +198,7 @@ def attributes():
                          'group': 'library',
                          'metavar': 'library',
                          'choices': ('none', 'opari', 'ompt', 'gomp')},
+            'application_rebuild': True,
             'compat': {'opari':
                        Application.require('openmp', True),
                        'ompt':
@@ -211,6 +222,7 @@ def attributes():
                          'nargs': '?',
                          'const': True,
                          'action': ParseBooleanAction},
+            'application_rebuild': False,
             'compat': {True: Target.require('cuda')}
         },
         'opencl': {
@@ -223,6 +235,7 @@ def attributes():
                          'nargs': '?',
                          'const': True,
                          'action': ParseBooleanAction},
+            'application_rebuild': False,
             'compat': {True: (Target.require('cuda'),
                               Application.require('opencl'))}
         },
@@ -230,6 +243,7 @@ def attributes():
             'type': 'integer',
             'default': 2,
             'description': 'maximum depth for callpath recording',
+            'application_rebuild': False,
             'argparse': {'flags': ('--callpath',),
                          'group': 'data',
                          'metavar': 'depth',
@@ -241,6 +255,7 @@ def attributes():
             'type': 'boolean',
             'default': False,
             'description': 'measure time spent in POSIX I/O calls',
+            'application_rebuild': True,
             'argparse': {'flags': ('--io',),
                          'group': 'library',
                          'metavar': 'T/F',
@@ -252,6 +267,7 @@ def attributes():
             'type': 'boolean',
             'default': False,
             'description': 'measure heap memory usage',
+            'application_rebuild': False,
             'argparse': {'flags': ('--heap-usage',),
                          'group': 'memory',
                          'metavar': 'T/F',
@@ -263,6 +279,7 @@ def attributes():
             'type': 'boolean',
             'default': False,
             'description': 'record memory allocation and deallocation events',
+            'application_rebuild': True,
             'argparse': {'flags': ('--memory-alloc',),
                          'group': 'memory',
                          'metavar': 'T/F',
@@ -274,6 +291,7 @@ def attributes():
             'type': 'array',
             'default': ['TIME'],
             'description': 'performance metrics to gather, e.g. TIME, PAPI_FP_INS',
+            'application_rebuild': False,
             'argparse': {'flags': ('--metrics',),
                          'group': 'data',
                          'metavar': '<METRIC>',
@@ -286,6 +304,7 @@ def attributes():
             'type': 'boolean',
             'default': False,
             'description': "don't remove instrumented files after compilation",
+            'application_rebuild': False,
             'argparse': {'flags': ('--keep-inst-files',),
                          'group': 'instrumentation',
                          'metavar': 'T/F',
@@ -298,6 +317,7 @@ def attributes():
             'type': 'boolean',
             'default': False,
             'description': 'reuse and preserve instrumented files after compilation',
+            'application_rebuild': False,
             'argparse': {'flags': ('--reuse-inst-files',),
                          'group': 'instrumentation',
                          'metavar': 'T/F',
@@ -335,10 +355,11 @@ class Measurement(Model):
                                      "Specify %s, %s, %s, or %s" % (source_inst_flag, compiler_inst_flag, 
                                                                     sample_flag, link_only_flag))
         try:
-            select_inst_file = self['select_inst_file']
+            select_file = self['select_file']
         except KeyError:
             pass
         else:
-            if not os.path.exists(select_inst_file):
-                raise ConfigurationError("Selective instrumentation file '%s' not found" % select_inst_file)
+            if not os.path.exists(select_file):
+                raise ConfigurationError("Selective instrumentation file '%s' not found" % select_file)
+
 

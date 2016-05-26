@@ -83,15 +83,18 @@
 
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">glob</span>
-<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">util</span>
+<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">util</span>
 <span class="kn">from</span> <span class="nn">tau.error</span> <span class="kn">import</span> <span class="n">InternalError</span><span class="p">,</span> <span class="n">ConfigurationError</span>
 <span class="kn">from</span> <span class="nn">tau.mvc.model</span> <span class="kn">import</span> <span class="n">Model</span>
 <span class="kn">from</span> <span class="nn">tau.mvc.controller</span> <span class="kn">import</span> <span class="n">Controller</span>
 <span class="kn">from</span> <span class="nn">tau.cf.compiler</span> <span class="kn">import</span> <span class="n">CompilerRole</span><span class="p">,</span> <span class="n">INTEL_COMPILERS</span>
 <span class="kn">from</span> <span class="nn">tau.cf.compiler.mpi</span> <span class="kn">import</span> <span class="n">INTEL_MPI_COMPILERS</span>
-<span class="kn">from</span> <span class="nn">tau.cf.compiler.installed</span> <span class="kn">import</span> <span class="n">InstalledCompilerSet</span><span class="p">,</span> <span class="n">InstalledCompiler</span>
+<span class="kn">from</span> <span class="nn">tau.cf.compiler.installed</span> <span class="kn">import</span> <span class="n">InstalledCompilerSet</span>
 <span class="kn">from</span> <span class="nn">tau.cf.target</span> <span class="kn">import</span> <span class="n">host</span><span class="p">,</span> <span class="n">DARWIN_OS</span><span class="p">,</span> <span class="n">INTEL_KNC_ARCH</span>
 <span class="kn">from</span> <span class="nn">tau.model.compiler</span> <span class="kn">import</span> <span class="n">Compiler</span>
+
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="knc_require_k1om"><a class="viewcode-back" href="../../../tau.model.html#tau.model.target.knc_require_k1om">[docs]</a><span class="k">def</span> <span class="nf">knc_require_k1om</span><span class="p">(</span><span class="o">*</span><span class="n">_</span><span class="p">):</span>
@@ -194,7 +197,7 @@
         <span class="p">},</span>
         <span class="s1">&#39;FC&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="n">Compiler</span><span class="p">,</span>
-            <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+            <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;Host Fortran compiler command&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--fc&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;host&#39;</span><span class="p">,</span>
@@ -398,6 +401,10 @@
 
     <span class="n">__controller__</span> <span class="o">=</span> <span class="n">TargetController</span>
     
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Target</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_compilers</span> <span class="o">=</span> <span class="bp">None</span>
+    
 <div class="viewcode-block" id="Target.on_create"><a class="viewcode-back" href="../../../tau.model.html#tau.model.target.Target.on_create">[docs]</a>    <span class="k">def</span> <span class="nf">on_create</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Target</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">on_create</span><span class="p">()</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;tau_source&#39;</span><span class="p">]:</span>
@@ -405,56 +412,82 @@
     
 <div class="viewcode-block" id="Target.compilers"><a class="viewcode-back" href="../../../tau.model.html#tau.model.target.Target.compilers">[docs]</a>    <span class="k">def</span> <span class="nf">compilers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get information about the compilers used by this target configuration.</span>
-<span class="sd">         </span>
+<span class="sd">        </span>
 <span class="sd">        Returns:</span>
 <span class="sd">            InstalledCompilerSet: Collection of installed compilers used by this target.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">eids</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">compilers</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="k">for</span> <span class="n">role</span> <span class="ow">in</span> <span class="n">CompilerRole</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">compiler_command</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="n">attribute</span><span class="o">=</span><span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-                <span class="k">continue</span>
-            <span class="n">compilers</span><span class="p">[</span><span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="p">]</span> <span class="o">=</span> <span class="n">compiler_command</span><span class="o">.</span><span class="n">info</span><span class="p">()</span>
-            <span class="n">eids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">compiler_command</span><span class="o">.</span><span class="n">eid</span><span class="p">)</span>
-        <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span><span class="n">role</span><span class="o">.</span><span class="n">keyword</span> <span class="k">for</span> <span class="n">role</span> <span class="ow">in</span> <span class="n">CompilerRole</span><span class="o">.</span><span class="n">tau_required</span><span class="p">()</span> <span class="k">if</span> <span class="n">role</span><span class="o">.</span><span class="n">keyword</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">compilers</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">InternalError</span><span class="p">(</span><span class="s2">&quot;Target &#39;</span><span class="si">%s</span><span class="s2">&#39; is missing required compilers: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">missing</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">InstalledCompilerSet</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">eids</span><span class="p">]),</span> <span class="o">**</span><span class="n">compilers</span><span class="p">)</span></div>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compilers</span><span class="p">:</span>
+            <span class="n">eids</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">compilers</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">role</span> <span class="ow">in</span> <span class="n">CompilerRole</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">compiler_record</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">compilers</span><span class="p">[</span><span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="p">]</span> <span class="o">=</span> <span class="n">compiler_record</span><span class="o">.</span><span class="n">installation_info</span><span class="p">()</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;compilers[</span><span class="si">%s</span><span class="s2">] = &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="p">,</span> <span class="n">compilers</span><span class="p">[</span><span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="p">]</span><span class="o">.</span><span class="n">absolute_path</span><span class="p">)</span>
+                <span class="n">eids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">compiler_record</span><span class="o">.</span><span class="n">eid</span><span class="p">)</span>
+            <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span><span class="n">role</span> <span class="k">for</span> <span class="n">role</span> <span class="ow">in</span> <span class="n">CompilerRole</span><span class="o">.</span><span class="n">tau_required</span><span class="p">()</span> <span class="k">if</span> <span class="n">role</span><span class="o">.</span><span class="n">keyword</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">compilers</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">InternalError</span><span class="p">(</span><span class="s2">&quot;Target &#39;</span><span class="si">%s</span><span class="s2">&#39; is missing required compilers: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">missing</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_compilers</span> <span class="o">=</span> <span class="n">InstalledCompilerSet</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">eids</span><span class="p">)]),</span> <span class="o">**</span><span class="n">compilers</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compilers</span></div>
 
-<div class="viewcode-block" id="Target.check_compiler"><a class="viewcode-back" href="../../../tau.model.html#tau.model.target.Target.check_compiler">[docs]</a>    <span class="k">def</span> <span class="nf">check_compiler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">given_compiler</span><span class="p">,</span> <span class="n">compiler_args</span><span class="p">):</span>
+<div class="viewcode-block" id="Target.check_compiler"><a class="viewcode-back" href="../../../tau.model.html#tau.model.target.Target.check_compiler">[docs]</a>    <span class="k">def</span> <span class="nf">check_compiler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">compiler_cmd</span><span class="p">,</span> <span class="n">compiler_args</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Checks a compiler command its arguments for compatibility with this target configuration.</span>
 <span class="sd">        </span>
 <span class="sd">        Checks that the given compiler matches one of the compilers used in the target.</span>
 <span class="sd">        Also performs any special checkes for invalid compiler arguments, e.g. -mmic is only for native KNC.</span>
 <span class="sd">        </span>
+<span class="sd">        If the given compiler command and arguments are compatible with this target then information about</span>
+<span class="sd">        the compiler installation is returned as an :any:`InstalledCompiler` instance.</span>
+<span class="sd">        </span>
 <span class="sd">        Args:</span>
-<span class="sd">            given_compiler (str): The compiler command as passed by the user.</span>
+<span class="sd">            compiler_cmd (str): The compiler command as passed by the user.</span>
 <span class="sd">            compiler_args (list): Compiler command line arguments.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            InstalledCompiler: Information about the installed compiler.</span>
 <span class="sd">            </span>
 <span class="sd">        Raises:</span>
 <span class="sd">            ConfigurationError: The compiler or command line arguments are incompatible with this target.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">compiler_ctrl</span> <span class="o">=</span> <span class="n">Compiler</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="p">)</span>
-        <span class="n">given_compiler_eid</span> <span class="o">=</span> <span class="n">compiler_ctrl</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">given_compiler</span><span class="p">)</span><span class="o">.</span><span class="n">eid</span>
-        <span class="n">target_compiler_eid</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">given_compiler</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="p">]</span>       
-        <span class="n">given_wrapped_compiler_path</span> <span class="o">=</span> <span class="n">compiler_ctrl</span><span class="o">.</span><span class="n">one</span><span class="p">(</span><span class="n">given_compiler_eid</span><span class="p">)[</span><span class="s1">&#39;path&#39;</span><span class="p">]</span>
-        <span class="n">given_compiler_path</span> <span class="o">=</span> <span class="n">InstalledCompiler</span><span class="p">(</span><span class="n">given_wrapped_compiler_path</span><span class="p">)</span><span class="o">.</span><span class="n">wrapped</span>
-        <span class="k">if</span> <span class="n">given_compiler_path</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="n">target_compiler_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="n">attribute</span><span class="o">=</span><span class="n">given_compiler_path</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="p">)[</span><span class="s1">&#39;path&#39;</span><span class="p">]</span>
+        <span class="n">absolute_path</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="n">compiler_cmd</span><span class="p">)</span>
+        <span class="n">installed_comp</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">known_compilers</span> <span class="o">=</span> <span class="p">[</span><span class="n">comp</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">compilers</span><span class="p">()]</span>
+        <span class="c1"># Check that this target supports the given compiler</span>
+        <span class="k">for</span> <span class="n">role</span> <span class="ow">in</span> <span class="n">CompilerRole</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">compiler_record</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="c1"># Target was configured with this compiler</span>
+            <span class="k">if</span> <span class="n">compiler_record</span><span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">absolute_path</span><span class="p">:</span>
+                <span class="n">installed_comp</span> <span class="o">=</span> <span class="n">compiler_record</span><span class="o">.</span><span class="n">installation_info</span><span class="p">(</span><span class="n">probe</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Target was configured with a wrapper compiler so check if that wrapper wraps this compiler</span>
+                <span class="k">while</span> <span class="s1">&#39;wrapped&#39;</span> <span class="ow">in</span> <span class="n">compiler_record</span><span class="p">:</span>
+                    <span class="n">compiler_record</span> <span class="o">=</span> <span class="n">compiler_ctrl</span><span class="o">.</span><span class="n">one</span><span class="p">(</span><span class="n">compiler_record</span><span class="p">[</span><span class="s1">&#39;wrapped&#39;</span><span class="p">])</span>
+                    <span class="n">comp</span> <span class="o">=</span> <span class="n">compiler_record</span><span class="o">.</span><span class="n">installation_info</span><span class="p">(</span><span class="n">probe</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+                    <span class="n">known_compilers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">comp</span><span class="p">)</span>
+                    <span class="n">compiler_path</span> <span class="o">=</span> <span class="n">compiler_record</span><span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">absolute_path</span> <span class="ow">and</span> <span class="p">(</span><span class="n">compiler_path</span> <span class="o">==</span> <span class="n">absolute_path</span><span class="p">)</span> <span class="ow">or</span> 
+                            <span class="p">(</span><span class="ow">not</span> <span class="n">absolute_path</span> <span class="ow">and</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">compiler_path</span><span class="p">)</span> <span class="o">==</span> <span class="n">compiler_cmd</span><span class="p">))):</span>
+                        <span class="n">installed_comp</span> <span class="o">=</span> <span class="n">comp</span>
+                        <span class="k">break</span>
+            <span class="k">if</span> <span class="n">installed_comp</span><span class="p">:</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;&#39;</span><span class="si">%s</span><span class="s2">&#39; appears to be a </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">compiler_cmd</span><span class="p">,</span> <span class="n">installed_comp</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">short_descr</span><span class="p">)</span>
+                <span class="k">break</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">target_compiler_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="n">attribute</span><span class="o">=</span><span class="n">given_compiler</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="p">)[</span><span class="s1">&#39;path&#39;</span><span class="p">]</span>
-        <span class="c1"># Confirm target supports compiler</span>
-        <span class="k">if</span> <span class="n">given_compiler_eid</span> <span class="o">!=</span> <span class="n">target_compiler_eid</span><span class="p">:</span>
-            <span class="n">target_compiler</span> <span class="o">=</span> <span class="n">compiler_ctrl</span><span class="o">.</span><span class="n">one</span><span class="p">(</span><span class="n">target_compiler_eid</span><span class="p">)</span><span class="o">.</span><span class="n">info</span><span class="p">()</span>
-            <span class="n">target_info_abs</span> <span class="o">=</span> <span class="n">target_compiler</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">short_descr</span><span class="p">,</span> <span class="n">target_compiler</span><span class="o">.</span><span class="n">absolute_path</span>
-            <span class="n">given_info_abs</span> <span class="o">=</span> <span class="n">given_compiler</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">short_descr</span><span class="p">,</span> <span class="n">given_compiler</span><span class="o">.</span><span class="n">absolute_path</span>
-            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Target &#39;</span><span class="si">%s</span><span class="s2">&#39; is configured with </span><span class="si">%s</span><span class="s2"> &#39;</span><span class="si">%s</span><span class="s2">&#39;, not </span><span class="si">%s</span><span class="s2"> &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span>
-                                     <span class="nb">tuple</span><span class="p">([</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">target_info_abs</span><span class="p">)</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">given_info_abs</span><span class="p">)),</span>
-                                     <span class="s2">&quot;Select a different target&quot;</span><span class="p">,</span>
-                                     <span class="s2">&quot;Compile with </span><span class="si">%s</span><span class="s2"> &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">target_info_abs</span><span class="p">,</span>
-                                     <span class="s2">&quot;Create a new target configured with </span><span class="si">%s</span><span class="s2"> &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">given_info_abs</span><span class="p">)</span>
+            <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;No compiler in target &#39;</span><span class="si">%s</span><span class="s2">&#39; matches &#39;</span><span class="si">%s</span><span class="s2">&#39;.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">compiler_cmd</span><span class="p">),</span>
+                     <span class="s2">&quot;The known compiler commands are:&quot;</span><span class="p">]</span>
+            <span class="n">parts</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="s1">&#39;  </span><span class="si">%s</span><span class="s1"> (</span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">comp</span><span class="o">.</span><span class="n">absolute_path</span><span class="p">,</span> <span class="n">comp</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">short_descr</span><span class="p">)</span> <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="n">known_compilers</span><span class="p">)</span>
+            <span class="n">hints</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Try one of the valid compiler commands&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;Create and select a new target configuration that uses the &#39;</span><span class="si">%s</span><span class="s2">&#39; compiler&quot;</span> <span class="o">%</span> <span class="n">compiler_cmd</span><span class="p">,</span>
+                     <span class="s2">&quot;Check loaded modules and the PATH environment variable&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">),</span> <span class="o">*</span><span class="n">hints</span><span class="p">)</span>
+
         <span class="c1"># Handle special cases where a compiler flag isn&#39;t compatible with the target</span>
         <span class="k">if</span> <span class="s1">&#39;-mmic&#39;</span> <span class="ow">in</span> <span class="n">compiler_args</span> <span class="ow">and</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;host_arch&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="nb">str</span><span class="p">(</span><span class="n">INTEL_KNC_ARCH</span><span class="p">):</span>
             <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Host architecture of target &#39;</span><span class="si">%s</span><span class="s2">&#39; is &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span>
@@ -462,14 +495,9 @@
                                      <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;host_arch&#39;</span><span class="p">],</span> <span class="n">INTEL_KNC_ARCH</span><span class="p">),</span>
                                      <span class="s2">&quot;Select a different target&quot;</span><span class="p">,</span>
                                      <span class="s2">&quot;Create a new target with host architecture &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">INTEL_KNC_ARCH</span><span class="p">)</span>
-        <span class="c1"># Confirm mpi wrapped compiler matches given compiler</span>
-        <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">given_compiler_path</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">str</span><span class="p">(</span><span class="n">target_compiler_path</span><span class="p">)</span> <span class="ow">and</span> <span class="n">given_compiler_path</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Target &#39;</span><span class="si">%s</span><span class="s2">&#39; is configured with </span><span class="si">%s</span><span class="s2">, not </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span>
-                                     <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">target_compiler_path</span><span class="p">,</span> <span class="n">given_compiler_path</span><span class="p">),</span>
-                                     <span class="s2">&quot;Select a different target&quot;</span><span class="p">,</span>
-                                     <span class="s2">&quot;Compile with &#39;</span><span class="si">%s</span><span class="s2">&#39; compiler&quot;</span> <span class="o">%</span> <span class="n">given_compiler_path</span><span class="p">,</span>
-                                     <span class="s2">&quot;Create a new target configured with &#39;</span><span class="si">%s</span><span class="s2">&#39; compiler&quot;</span> <span class="o">%</span>
-                                     <span class="n">target_compiler_path</span><span class="p">)</span></div></div>
+
+        <span class="k">return</span> <span class="n">installed_comp</span></div></div>
+
 </pre></div>
 
       </div>

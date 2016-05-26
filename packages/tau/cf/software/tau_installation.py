@@ -36,9 +36,10 @@ from tau import logger, util
 from tau.error import ConfigurationError, InternalError
 from tau.cf.software import SoftwarePackageError
 from tau.cf.software.installation import Installation, parallel_make_flags
-from tau.cf.compiler import SYSTEM_COMPILERS, GNU_COMPILERS, INTEL_COMPILERS, PGI_COMPILERS
+from tau.cf.compiler import GNU_COMPILERS, INTEL_COMPILERS, PGI_COMPILERS, CRAY_COMPILERS 
+from tau.cf.compiler import IBM_COMPILERS, IBM_BG_COMPILERS
 from tau.cf.compiler import CC_ROLE, CXX_ROLE, FC_ROLE, UPC_ROLE
-from tau.cf.compiler.mpi import SYSTEM_MPI_COMPILERS, INTEL_MPI_COMPILERS
+from tau.cf.compiler.mpi import SYSTEM_MPI_COMPILERS, INTEL_MPI_COMPILERS, IBM_MPI_COMPILERS
 from tau.cf.compiler.mpi import MPI_CC_ROLE, MPI_CXX_ROLE, MPI_FC_ROLE
 from tau.cf.target import TauArch, CRAY_CNL_OS
 
@@ -147,7 +148,7 @@ class TauInstallation(Installation):
                  io_inst,
                  keep_inst_files,
                  reuse_inst_files,
-                 select_inst_file,
+                 select_file,
                  # Measurement methods and options
                  profile,
                  trace,
@@ -194,7 +195,7 @@ class TauInstallation(Installation):
             io_inst (bool): Enable or disable POSIX I/O instrumentation in TAU.
             keep_inst_files (bool): If True then do not remove instrumented source files after compilation.
             reuse_inst_files (bool): If True then reuse instrumented source files for compilation when available.
-            select_inst_file (str): Path to selective instrumentation file.
+            select_file (str): Path to selective instrumentation file.
             profile (bool): Enable or disable profiling.
             trace (bool): Enable or disable tracing.
             sample (bool): Enable or disable event-based sampling.
@@ -241,7 +242,7 @@ class TauInstallation(Installation):
         self.io_inst = io_inst
         self.keep_inst_files = keep_inst_files
         self.reuse_inst_files = reuse_inst_files
-        self.select_inst_file = select_inst_file
+        self.select_file = select_file
         self.profile = profile
         self.trace = trace
         self.sample = sample
@@ -273,8 +274,7 @@ class TauInstallation(Installation):
         super(TauInstallation, self).verify()
 
         # Open TAU makefile and check BFDINCLUDE, UNWIND_INC, PAPIDIR, etc.
-        makefile = self.get_makefile()
-        with open(makefile, 'r') as fin:
+        with open(self.get_makefile(), 'r') as fin:
             for line in fin:
                 if self.binutils and ('BFDINCLUDE=' in line):
                     bfd_inc = line.split('=')[1].strip().strip("-I")
@@ -297,9 +297,10 @@ class TauInstallation(Installation):
         # Check for iowrapper
         if self.io_inst:
             iowrap_libs = glob.glob(os.path.join(self.lib_path, 'shared', 'libTAU-iowrap*'))
-            LOGGER.debug("Found iowrap libraries: %s", iowrap_libs)
-            if not iowrap_libs:
-                raise SoftwarePackageError("iowrap libraries not found")
+            LOGGER.debug("Found iowrap shared libraries: %s", iowrap_libs)
+            iowrap_link_options = os.path.join(self.lib_path, 'wrappers', 'io_wrapper', 'link_options.tau')
+            if not iowrap_libs and not os.path.exists(iowrap_link_options):
+                raise SoftwarePackageError("iowrap libraries or link options not found")
         LOGGER.debug("TAU installation at '%s' is valid", self.install_prefix)
         return True
     
@@ -321,7 +322,7 @@ class TauInstallation(Installation):
             # so don't even bother trying.  Pass as much of this as we can and hope for the best.
             cc_command = self.compilers[MPI_CC_ROLE].wrapped.info.command
             cxx_command = self.compilers[MPI_CXX_ROLE].wrapped.info.command
-            fc_family = self.compilers[MPI_FC_ROLE].wrapped.info.family
+            fc_comp = self.compilers[MPI_FC_ROLE].wrapped if FC_ROLE in self.compilers else None
             if self.mpi_include_path:
                 # Unfortunately, TAU's configure script can only accept one path on -mpiinc
                 # and it expects the compiler's include path argument (e.g. "-I") to be omitted
@@ -349,27 +350,34 @@ class TauInstallation(Installation):
             # around these problems e.g. 'gcc-4.9' becomes 'gcc' 
             cc_command = self.compilers[CC_ROLE].info.command
             cxx_command = self.compilers[CXX_ROLE].info.command
-            fc_family = self.compilers[FC_ROLE].info.family
+            fc_comp = self.compilers[FC_ROLE].info.family if FC_ROLE in self.compilers else None
 
         # TAU's configure script can't detect Fortran compiler from the compiler
         # command so translate Fortran compiler command into TAU's funkey magic words
-        magic_map = {GNU_COMPILERS: 'gfortran',
-                     INTEL_COMPILERS: 'intel',
-                     PGI_COMPILERS: 'pgi',
-                     SYSTEM_COMPILERS: 'ftn',
-                     SYSTEM_MPI_COMPILERS: 'mpif90',
-                     INTEL_MPI_COMPILERS: 'mpiifort'}
-        try:
-            fortran_magic = magic_map[fc_family]
-        except KeyError:
-            raise InternalError("Unknown compiler family for Fortran: '%s'" % fc_family)
+        fortran_magic = None
+        if fc_comp:
+            fc_family = fc_comp.info.family
+            fc_magic_map = {GNU_COMPILERS: 'gfortran',
+                            INTEL_COMPILERS: 'intel',
+                            PGI_COMPILERS: 'pgi',
+                            CRAY_COMPILERS: 'cray',
+                            IBM_COMPILERS: 'ibm',
+                            IBM_BG_COMPILERS: 'ibm',
+                            SYSTEM_MPI_COMPILERS: 'mpif90',
+                            INTEL_MPI_COMPILERS: 'mpiifort',
+                            IBM_MPI_COMPILERS: 'ibm'}
+            try:
+                fortran_magic = fc_magic_map[fc_family]
+            except KeyError:
+                LOGGER.warning("Can't determine TAU magic word for %s %s", fc_comp.info.short_descr, fc_comp)
+                raise InternalError("Unknown compiler family for Fortran: '%s'" % fc_family)
 
         flags = [flag for flag in  
                  ['-prefix=%s' % self.install_prefix,
                   '-arch=%s' % self.arch,
                   '-cc=%s' % cc_command,
                   '-c++=%s' % cxx_command,
-                  '-fortran=%s' % fortran_magic,
+                  '-fortran=%s' % fortran_magic if fortran_magic else '',
                   '-bfd=%s' % self.binutils.install_prefix if self.binutils else '',
                   '-papi=%s' % self.papi.install_prefix if self.papi else '',
                   '-unwind=%s' % self.libunwind.install_prefix if self.libunwind else '',
@@ -425,7 +433,7 @@ class TauInstallation(Installation):
             try:
                 return self.verify()
             except SoftwarePackageError as err:
-                raise SoftwarePackageError("%s installation at '%s' is missing or broken: %s" % 
+                raise SoftwarePackageError("invalid %s installation at '%s': %s" % 
                                            (self.name, self.install_prefix, err),
                                            "Specify source code path or URL to enable broken package reinstallation.")
         elif not force_reinstall:
@@ -443,24 +451,24 @@ class TauInstallation(Installation):
         LOGGER.info('%s installation complete', self.name)
         return self.verify()
 
-    def get_makefile_tags(self):
-        """Get makefile tags for this TAU installation.
+    def get_tags(self):
+        """Get tags for this TAU installation.
 
-        Each TAU Makefile is identified by its tags.  Tags are also used by
-        tau_exec to load the correct version of the TAU shared object library.
-
-        Tags can appear in the makefile name in any order so the order of the
-        tags returned by this function will likely not match the order they
-        appear in the makefile name or tau_exec command line.
+        Each TAU configuration (makefile, library, Python bindings, etc.) is identified by its tags.
+        Tags can appear in the makefile name in any order so the order of the tags returned by this 
+        function will likely not match the order they appear in the makefile name or tau_exec command line.
 
         Returns:
             list: Makefile tags, e.g. ['papi', 'pdt', 'icpc']
         """
         tags = []
+        cxx_compiler = self.compilers[CXX_ROLE] 
+        while cxx_compiler.wrapped:
+            cxx_compiler = cxx_compiler.wrapped            
         compiler_tags = {INTEL_COMPILERS: 'intel' if self.target_os == CRAY_CNL_OS else 'icpc', 
                          PGI_COMPILERS: 'pgi'}
         try:
-            tags.append(compiler_tags[self.compilers[CXX_ROLE].info.family])
+            tags.append(compiler_tags[cxx_compiler.info.family])
         except KeyError:
             pass
         if self.source_inst == 'automatic':
@@ -488,15 +496,17 @@ class TauInstallation(Installation):
         return set(tags)
     
     def _incompatible_tags(self):
-        """Returns a set of makefile tags incompatible with the specified config.
-        
-        Some tags, e.g. PDT, force actions to occur that should not.
-        """
+        """Returns a set of makefile tags incompatible with the specified config."""
         tags = []
+        cxx_compiler = self.compilers[CXX_ROLE] 
+        while cxx_compiler.wrapped:
+            cxx_compiler = cxx_compiler.wrapped            
+        compiler_tags = {INTEL_COMPILERS: 'intel' if self.target_os == CRAY_CNL_OS else 'icpc', 
+                         PGI_COMPILERS: 'pgi'}
+        compiler_tag = compiler_tags.get(cxx_compiler.info.family, None)
+        tags.extend(tag for tag in compiler_tags.itervalues() if tag != compiler_tag)
         if not self.mpi_support:
             tags.append('mpi')
-        if self.source_inst == 'never':
-            tags.append('pdt')
         if self.measure_openmp != 'opari':
             tags.append('opari')
         if not self.openmp_support:
@@ -516,7 +526,7 @@ class TauInstallation(Installation):
         """
         tau_makefiles = glob.glob(os.path.join(self.lib_path, 'Makefile.tau*'))
         LOGGER.debug("Found makefiles: '%s'", tau_makefiles)
-        config_tags = self.get_makefile_tags()
+        config_tags = self.get_tags()
         LOGGER.debug("Searching for makefile with tags: %s", config_tags)
         approx_tags = None
         approx_makefile = None
@@ -608,9 +618,9 @@ class TauInstallation(Installation):
             tau_opts.add('-optKeepFiles')
         if self.reuse_inst_files:
             tau_opts.add('-optReuseFiles')
-        if self.select_inst_file:
-            select_inst_file = os.path.realpath(os.path.abspath(self.select_inst_file))
-            tau_opts.add('-optTauSelectFile=%s' % select_inst_file)
+        if self.select_file:
+            select_file = os.path.realpath(os.path.abspath(self.select_file))
+            tau_opts.add('-optTauSelectFile=%s' % select_file)
         if self.io_inst:
             tau_opts.add('-optTrackIO')
         if self.sample or self.compiler_inst != 'never':
@@ -640,7 +650,7 @@ class TauInstallation(Installation):
         env['TAU_TRACE'] = str(int(self.trace))
         env['TAU_SAMPLE'] = str(int(self.sample))
         env['TAU_TRACK_HEAP'] = str(int(self.measure_heap_usage))
-        
+        env['TAU_METRICS'] = os.pathsep.join(self.metrics)
         if self.callpath_depth > 0:
             env['TAU_CALLPATH'] = '1'
             env['TAU_CALLPATH_DEPTH'] = str(self.callpath_depth)
@@ -654,7 +664,6 @@ class TauInstallation(Installation):
             opts.append('-opencl')
         if self.io_inst:
             opts.append('-io')
-        env['TAU_METRICS'] = os.pathsep.join(self.metrics)
         return list(set(opts)), env
 
     def get_compiler_command(self, compiler):
@@ -667,7 +676,8 @@ class TauInstallation(Installation):
             str: Command for TAU compiler wrapper without path or arguments.
         """
         use_wrapper = (self.source_inst != 'never' or
-                       self.compiler_inst != 'never')
+                       self.compiler_inst != 'never' or
+                       self.target_os is CRAY_CNL_OS)
         if use_wrapper:
             return TAU_COMPILER_WRAPPERS[compiler.info.role]
         else:
@@ -717,12 +727,11 @@ class TauInstallation(Installation):
                    variables to set before running the application command.
         """
         opts, env = self.runtime_config()
-        use_tau_exec = (self.measure_opencl or (self.source_inst == 'never' and 
-                                                self.compiler_inst == 'never' and 
-                                                not self.link_only))
+        use_tau_exec = (self.measure_opencl or
+                        (self.source_inst == 'never' and self.compiler_inst == 'never' and not self.link_only))
         if use_tau_exec:
             tau_exec_opts = opts
-            tags = self.get_makefile_tags()
+            tags = self.get_tags()
             if not self.mpi_support:
                 tags.add('serial')
             if self.opencl_support:
@@ -744,7 +753,7 @@ class TauInstallation(Installation):
             int: Return code of the visualization tool.
         """
         LOGGER.debug("Showing profile files at '%s'", path)
-        _, env = super(TauInstallation, self).runtime_config()
+        _, env = self.runtime_config()
         if tool_name:
             tools = [tool_name]
         else:
@@ -778,7 +787,7 @@ class TauInstallation(Installation):
             int: Return code of the visualization tool.
         """
         LOGGER.debug("Showing trace files at '%s'", path)
-        _, env = super(TauInstallation, self).runtime_config()
+        _, env = self.runtime_config()
         if tool_name is None:
             tool_name = 'jumpshot'
         elif tool_name != 'jumpshot':
@@ -809,4 +818,21 @@ class TauInstallation(Installation):
             raise ConfigurationError("Trace visualizer failed to open '%s'" % path,
                                      "Check Java installation, X11 installation,"
                                      " network connectivity, and file permissions")
-            
+
+    def pack_profiles(self, prefix, ppk_file):
+        """Create a PPK file from profile.* files.
+        
+        Args:
+            prefix (str): Path to the directory containing profile.* files.
+            ppk_file (str): Absolute path to the PPK file that will be created.
+        
+        Raises:
+            ConfigurationError: paraprof failed to pack the profiles.
+        """
+        _, env = self.runtime_config()
+        cmd = ['paraprof', '--pack', ppk_file]
+        retval = util.create_subprocess(cmd, cwd=prefix, env=env)
+        if retval:
+            raise ConfigurationError("ParaProf command '%s' failed in '%s'" % (' '.join(cmd), prefix),
+                                     "Make sure Java is installed and working",
+                                     "Install the most recent Java from http://java.com")

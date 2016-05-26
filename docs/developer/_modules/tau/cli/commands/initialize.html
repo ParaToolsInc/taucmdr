@@ -97,7 +97,11 @@
     <span class="sd">&quot;&quot;&quot;``tau initialize`` subcommand.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="InitializeCommand.construct_parser"><a class="viewcode-back" href="../../../../tau.cli.commands.html#tau.cli.commands.initialize.InitializeCommand.construct_parser">[docs]</a>    <span class="k">def</span> <span class="nf">construct_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-
+        <span class="sd">&quot;&quot;&quot;Constructs the command line argument parser.</span>
+<span class="sd">         </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            A command line argument parser instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">def</span> <span class="nf">_default_target_name</span><span class="p">():</span>
             <span class="n">node_name</span> <span class="o">=</span> <span class="n">platform</span><span class="o">.</span><span class="n">node</span><span class="p">()</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">node_name</span><span class="p">:</span>
@@ -111,6 +115,7 @@
                             <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;?&#39;</span><span class="p">,</span>
                             <span class="n">const</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
                             <span class="n">default</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                            <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;T/F&#39;</span><span class="p">,</span>
                             <span class="n">action</span><span class="o">=</span><span class="n">ParseBooleanAction</span><span class="p">)</span>
 
         <span class="n">default_project_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">())</span> <span class="ow">or</span> <span class="s1">&#39;default_project&#39;</span>
@@ -163,12 +168,19 @@
                                        <span class="n">action</span><span class="o">=</span><span class="n">ParseBooleanAction</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">parser</span></div>
 
-    <span class="k">def</span> <span class="nf">_create_project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">argv</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_create_project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
+        <span class="n">project_name</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">project_name</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s1">&#39;storage_level&#39;</span><span class="p">):</span>
+            <span class="n">project_create_cmd</span><span class="o">.</span><span class="n">main</span><span class="p">([</span><span class="n">project_name</span><span class="p">,</span> <span class="s1">&#39;--storage-level&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">storage_level</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">project_create_cmd</span><span class="o">.</span><span class="n">main</span><span class="p">([</span><span class="n">project_name</span><span class="p">])</span>
+        <span class="n">select_cmd</span><span class="o">.</span><span class="n">main</span><span class="p">([</span><span class="s1">&#39;--project&#39;</span><span class="p">,</span> <span class="n">project_name</span><span class="p">])</span>
+        
+    <span class="k">def</span> <span class="nf">_populate_project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">argv</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
         <span class="k">def</span> <span class="nf">_safe_execute</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">argv</span><span class="p">):</span>
             <span class="n">retval</span> <span class="o">=</span> <span class="n">cmd</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">retval</span> <span class="o">!=</span> <span class="n">EXIT_SUCCESS</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">InternalError</span><span class="p">(</span><span class="s2">&quot;return code </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">retval</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">argv</span><span class="p">)))</span>
-
         <span class="k">if</span> <span class="n">host</span><span class="o">.</span><span class="n">operating_system</span><span class="p">()</span> <span class="ow">is</span> <span class="n">DARWIN_OS</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Darwin OS detected: disabling PAPI, binutils, &quot;</span>
                              <span class="s2">&quot;compiler-based instrumentation, and sampling.&quot;</span><span class="p">)</span>
@@ -181,16 +193,9 @@
             <span class="n">binutils</span> <span class="o">=</span> <span class="bp">True</span>
             <span class="n">sample</span> <span class="o">=</span> <span class="bp">True</span>
             <span class="n">comp_inst</span> <span class="o">=</span> <span class="s1">&#39;fallback&#39;</span>
-
         <span class="n">project_name</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">project_name</span>
         <span class="n">target_name</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">target_name</span>
         <span class="n">application_name</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">application_name</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s1">&#39;storage_level&#39;</span><span class="p">):</span>
-            <span class="n">project_create_cmd</span><span class="o">.</span><span class="n">main</span><span class="p">([</span><span class="n">project_name</span><span class="p">,</span> <span class="s1">&#39;--storage-level&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">storage_level</span><span class="p">])</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">project_create_cmd</span><span class="o">.</span><span class="n">main</span><span class="p">([</span><span class="n">project_name</span><span class="p">])</span>
-
-        <span class="n">select_cmd</span><span class="o">.</span><span class="n">main</span><span class="p">([</span><span class="s1">&#39;--project&#39;</span><span class="p">,</span> <span class="n">project_name</span><span class="p">])</span>
 
         <span class="n">target_argv</span> <span class="o">=</span> <span class="p">[</span><span class="n">target_name</span><span class="p">]</span> <span class="o">+</span> <span class="n">argv</span>
         <span class="n">_</span><span class="p">,</span> <span class="n">unknown</span> <span class="o">=</span> <span class="n">target_create_cmd</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">parse_known_args</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">target_argv</span><span class="p">)</span>
@@ -244,13 +249,14 @@
         <span class="k">except</span> <span class="n">ProjectStorageError</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;No project found, initializing a new project.&quot;</span><span class="p">)</span>
             <span class="n">PROJECT_STORAGE</span><span class="o">.</span><span class="n">connect_filesystem</span><span class="p">()</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_create_project</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">ConfigurationError</span><span class="p">:</span>
+                <span class="n">PROJECT_STORAGE</span><span class="o">.</span><span class="n">disconnect_filesystem</span><span class="p">()</span>
+                <span class="n">util</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">proj_ctrl</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+                <span class="k">raise</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">bare</span><span class="p">:</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_create_project</span><span class="p">(</span><span class="n">argv</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
-                <span class="k">except</span> <span class="n">ConfigurationError</span><span class="p">:</span>
-                    <span class="n">PROJECT_STORAGE</span><span class="o">.</span><span class="n">disconnect_filesystem</span><span class="p">()</span>
-                    <span class="n">util</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">proj_ctrl</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-                    <span class="k">raise</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_populate_project</span><span class="p">(</span><span class="n">argv</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">dashboard_cmd</span><span class="o">.</span><span class="n">main</span><span class="p">([])</span>
         <span class="k">except</span> <span class="n">ProjectSelectionError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
             <span class="n">err</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;The project has been initialized but no project configuration is selected.&quot;</span>

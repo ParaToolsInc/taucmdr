@@ -191,13 +191,16 @@
     <span class="k">try</span><span class="p">:</span>
         <span class="n">inst</span> <span class="o">=</span> <span class="n">preferred_compilers</span><span class="o">.</span><span class="n">inst</span>
     <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
-        <span class="kn">from</span> <span class="nn">tau.cf.compiler</span> <span class="kn">import</span> <span class="n">IBM_COMPILERS</span><span class="p">,</span> <span class="n">GNU_COMPILERS</span><span class="p">,</span> <span class="n">CRAY_COMPILERS</span><span class="p">,</span> <span class="n">INTEL_COMPILERS</span>
+        <span class="kn">from</span> <span class="nn">tau.cf.compiler</span> <span class="kn">import</span> <span class="n">IBM_COMPILERS</span><span class="p">,</span> <span class="n">GNU_COMPILERS</span><span class="p">,</span> <span class="n">CRAY_COMPILERS</span><span class="p">,</span> <span class="n">INTEL_COMPILERS</span><span class="p">,</span> <span class="n">IBM_BG_COMPILERS</span>
         <span class="n">host_tau_arch</span> <span class="o">=</span> <span class="n">tau_arch</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">host_tau_arch</span> <span class="ow">is</span> <span class="n">TAU_ARCH_CRAYCNL</span><span class="p">:</span>
-            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Prefering Cray compiler wrappers&quot;</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Preferring Cray compiler wrappers&quot;</span><span class="p">)</span>
             <span class="n">inst</span> <span class="o">=</span> <span class="n">CRAY_COMPILERS</span>
-        <span class="k">elif</span> <span class="n">host_tau_arch</span> <span class="ow">in</span> <span class="p">(</span><span class="n">TAU_ARCH_BGP</span><span class="p">,</span> <span class="n">TAU_ARCH_BGQ</span><span class="p">,</span> <span class="n">TAU_ARCH_IBM64_LINUX</span><span class="p">):</span>
-            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Prefering IBM compilers&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">host_tau_arch</span> <span class="ow">in</span> <span class="p">(</span><span class="n">TAU_ARCH_BGP</span><span class="p">,</span> <span class="n">TAU_ARCH_BGQ</span><span class="p">):</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Preferring IBM compilers&quot;</span><span class="p">)</span>
+            <span class="n">inst</span> <span class="o">=</span> <span class="n">IBM_BG_COMPILERS</span>
+        <span class="k">elif</span> <span class="n">host_tau_arch</span> <span class="ow">is</span> <span class="n">TAU_ARCH_IBM64_LINUX</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Preferring IBM compilers&quot;</span><span class="p">)</span>
             <span class="n">inst</span> <span class="o">=</span> <span class="n">IBM_COMPILERS</span>
         <span class="k">elif</span> <span class="n">host_tau_arch</span> <span class="ow">is</span> <span class="n">TAU_ARCH_MIC_LINUX</span><span class="p">:</span>
             <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Preferring Intel compilers&quot;</span><span class="p">)</span>
@@ -225,10 +228,10 @@
         <span class="kn">from</span> <span class="nn">tau.cf.compiler</span> <span class="kn">import</span> <span class="n">mpi</span>
         <span class="n">host_tau_arch</span> <span class="o">=</span> <span class="n">tau_arch</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">host_tau_arch</span> <span class="ow">is</span> <span class="n">TAU_ARCH_CRAYCNL</span><span class="p">:</span>
-            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Prefering Cray MPI compilers&quot;</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Preferring Cray MPI compilers&quot;</span><span class="p">)</span>
             <span class="n">inst</span> <span class="o">=</span> <span class="n">mpi</span><span class="o">.</span><span class="n">CRAY_MPI_COMPILERS</span>
         <span class="k">elif</span> <span class="n">host_tau_arch</span> <span class="ow">in</span> <span class="p">(</span><span class="n">TAU_ARCH_BGP</span><span class="p">,</span> <span class="n">TAU_ARCH_BGQ</span><span class="p">,</span> <span class="n">TAU_ARCH_IBM64_LINUX</span><span class="p">):</span>
-            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Prefering IBM MPI compilers&quot;</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Preferring IBM MPI compilers&quot;</span><span class="p">)</span>
             <span class="n">inst</span> <span class="o">=</span> <span class="n">mpi</span><span class="o">.</span><span class="n">IBM_MPI_COMPILERS</span>
         <span class="k">elif</span> <span class="n">host_tau_arch</span> <span class="ow">is</span> <span class="n">TAU_ARCH_MIC_LINUX</span><span class="p">:</span>
             <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Preferring Intel compilers&quot;</span><span class="p">)</span>

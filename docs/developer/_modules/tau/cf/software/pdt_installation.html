@@ -81,7 +81,7 @@
 <span class="kn">from</span> <span class="nn">tau.cf.software</span> <span class="kn">import</span> <span class="n">SoftwarePackageError</span>
 <span class="kn">from</span> <span class="nn">tau.cf.software.installation</span> <span class="kn">import</span> <span class="n">AutotoolsInstallation</span>
 <span class="kn">from</span> <span class="nn">tau.cf.compiler</span> <span class="kn">import</span> <span class="n">CXX_ROLE</span><span class="p">,</span> <span class="n">GNU_COMPILERS</span><span class="p">,</span> <span class="n">INTEL_COMPILERS</span><span class="p">,</span> <span class="n">PGI_COMPILERS</span>
-<span class="kn">from</span> <span class="nn">tau.cf.target</span> <span class="kn">import</span> <span class="n">TAU_ARCH_APPLE</span><span class="p">,</span> <span class="n">X86_64_ARCH</span><span class="p">,</span> <span class="n">LINUX_OS</span><span class="p">,</span> <span class="n">TauArch</span>
+<span class="kn">from</span> <span class="nn">tau.cf.target</span> <span class="kn">import</span> <span class="n">TAU_ARCH_APPLE</span><span class="p">,</span> <span class="n">TAU_ARCH_BGQ</span><span class="p">,</span> <span class="n">X86_64_ARCH</span><span class="p">,</span> <span class="n">LINUX_OS</span><span class="p">,</span> <span class="n">TauArch</span>
 
 
 <span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
@@ -135,6 +135,29 @@
               <span class="s1">&#39;pdtf90disp&#39;</span><span class="p">,</span>
               <span class="s1">&#39;pdtflint&#39;</span><span class="p">,</span>
               <span class="s1">&#39;taucpdisp&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;xmlgen&#39;</span><span class="p">]},</span>
+            <span class="n">TAU_ARCH_BGQ</span><span class="o">.</span><span class="n">architecture</span><span class="p">:</span>
+            <span class="p">{</span><span class="n">TAU_ARCH_BGQ</span><span class="o">.</span><span class="n">operating_system</span><span class="p">:</span>
+             <span class="p">[</span><span class="s1">&#39;cparse&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;cxxparse&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;edg44-c-roseparse&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;edg44-cxx-roseparse&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;edg44-upcparse&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;edgcpfe&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;f90fe&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;f90parse&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;f95parse&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;gfparse&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;pdbcomment&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;pdbconv&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;pdbhtml&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;pdbmerge&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;pdbstmt&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;pdbtree&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;pdtf90disp&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;pdtflint&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;taucpdisp&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;tau_instrumentor&#39;</span><span class="p">,</span>
               <span class="s1">&#39;xmlgen&#39;</span><span class="p">]}}</span>
 
 

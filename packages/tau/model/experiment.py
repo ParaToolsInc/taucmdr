@@ -42,10 +42,11 @@ from tau.storage.levels import PROJECT_STORAGE, STORAGE_LEVELS, ORDERED_LEVELS
 from tau.cf.target import OperatingSystem, DARWIN_OS
 from tau.cf.software import SoftwarePackageError
 from tau.cf.software.tau_installation import TauInstallation
-from tau.cf.compiler.installed import InstalledCompiler
 
 
 LOGGER = logger.get_logger(__name__)
+
+PROFILE_EXPORT_FORMATS = ['ppk', 'zip', 'tar', 'tgz', 'tar.bz2']
 
 
 def attributes():   
@@ -86,9 +87,6 @@ class Experiment(Model):
     
     __attributes__ = attributes
 
-    def __init__(self, *args, **kwargs):
-        super(Experiment, self).__init__(*args, **kwargs)
-        
     @classmethod
     def controller(cls, storage=PROJECT_STORAGE):
         return cls.__controller__(cls, storage)
@@ -209,7 +207,7 @@ class Experiment(Model):
                           io_inst=measurement['io'],
                           keep_inst_files=measurement['keep_inst_files'],
                           reuse_inst_files=measurement['reuse_inst_files'],
-                          select_inst_file=measurement.get('select_inst_file', None),
+                          select_file=measurement.get('select_file', None),
                           # Measurement methods and options
                           profile=measurement['profile'],
                           trace=measurement['trace'],
@@ -252,6 +250,7 @@ class Experiment(Model):
         Returns:
             Installation: A new installation instance for the installed dependency.
         """
+        LOGGER.debug("Configuring TAU dependency '%s' at prefix '%s'", name, prefix)
         target = self.populate('target')
         cls_name = name.title() + 'Installation'
         pkg = __import__('tau.cf.software.%s_installation' % name.lower(), globals(), locals(), [cls_name], -1)
@@ -281,6 +280,7 @@ class Experiment(Model):
         Returns:
             TauInstallation: Object handle for the TAU installation. 
         """
+        LOGGER.debug("Configuring experiment %s", self.title())
         project_data = self.populate('project')
         try:
             storage = STORAGE_LEVELS[project_data['storage_level']]
@@ -324,11 +324,9 @@ class Experiment(Model):
         """
         LOGGER.debug("Managed build: %s", [compiler_cmd] + compiler_args)
         target = self.populate('target')
-        given_compiler = InstalledCompiler(compiler_cmd)
-        target.check_compiler(given_compiler, compiler_args)
-        
+        target_compiler = target.check_compiler(compiler_cmd, compiler_args)
         tau = self.configure()
-        return tau.compile(given_compiler, compiler_args)
+        return tau.compile(target_compiler, compiler_args)
         
     def managed_run(self, launcher_cmd, application_cmd):
         """Uses this experiment to run an application command.
@@ -353,18 +351,19 @@ class Experiment(Model):
         cmd, env = tau.get_application_command(launcher_cmd, application_cmd)
         return Trial.controller(self.storage).perform(self, cmd, os.getcwd(), env)
 
-    def show(self, profile_tool=None, trace_tool=None, trial_numbers=None):
-        """Show experiment trial data.
+    def _get_trials(self, trial_numbers=None):
+        """Returns trial data for the given trial numbers.  
         
-        Shows the most recent trial or all trials with given numbers.
+        If no trial numbers are given, return the most recent trial.
         
         Args:
-            profile_tool (str): Name of the visualization or data processing tool for profiles, e.g. `pprof`.
-            trace_tool (str): Name of the visualization or data processing tool for traces, e.g. `vampir`.
-            trial_numbers (list): Numbers of trials to show.
+            trial_numbers (list): List of numbers of trials to retrieve or None.
+            
+        Returns:
+            list: Trial data.
             
         Raises:
-            ConfigurationError: Invalid trial numbers or no trial data for this experiment.
+            ConfigurationError: Invalid trial number or no trials in this experiment.
         """
         if trial_numbers:
             trials = []
@@ -383,13 +382,65 @@ class Experiment(Model):
                 trials = [found]
         if not trials:
             raise ConfigurationError("No trials in experiment %s" % self.title(), "See `tau trial create --help`")
-
+        return trials
+    
+    def show(self, profile_tool=None, trace_tool=None, trial_numbers=None):
+        """Show experiment trial data.
+        
+        Shows the most recent trial or all trials with given numbers.
+        
+        Args:
+            profile_tool (str): Name of the visualization or data processing tool for profiles, e.g. `pprof`.
+            trace_tool (str): Name of the visualization or data processing tool for traces, e.g. `vampir`.
+            trial_numbers (list): Numbers of trials to show.
+            
+        Raises:
+            ConfigurationError: Invalid trial numbers or no trial data for this experiment.
+        """
         tau = self.configure()
         meas = self.populate('measurement')
-        for trial in trials:
+        for trial in self._get_trials(trial_numbers):
             prefix = trial.prefix
             if meas['profile']:
                 tau.show_profile(prefix, profile_tool)
             if meas['trace']:
                 tau.show_trace(prefix, trace_tool)
                 
+    def export(self, profile_format=PROFILE_EXPORT_FORMATS[0], trial_numbers=None, export_location=None):
+        """Export experiment trial data.
+        
+        Exports the most recent trial or all trials with given numbers.
+        
+        Args:
+            profile_format (str): File format for exported profiles, see :any:`PROFILE_EXPORT_FORMATS` 
+            export_location (str): Directory to contain exported profiles.
+            trial_numbers (list): Numbers of trials to show.
+            
+        Raises:
+            ConfigurationError: Invalid trial numbers or no trial data for this experiment.
+        """
+        assert profile_format in PROFILE_EXPORT_FORMATS
+        if not export_location:
+            export_location = os.getcwd()
+        populated = self.populate()
+        expr_name = '%s_%s_%s' % (populated['target']['name'],
+                                  populated['application']['name'],
+                                  populated['measurement']['name'])
+        if profile_format == 'ppk':
+            tau = self.configure()
+            for trial in self._get_trials(trial_numbers):
+                ppk_file = expr_name + '_trial' + str(trial['number']) + '.ppk'
+                tau.pack_profiles(trial.prefix, os.path.join(export_location, ppk_file))
+        elif profile_format in ('zip', 'tar', 'tgz', 'tar.bz2'):
+            for trial in self._get_trials(trial_numbers):
+                trial_number = str(trial['number'])
+                archive_file = expr_name + '_trial' + trial_number + '.' + profile_format
+                profile_files = [os.path.join(trial_number, os.path.basename(x)) for x in trial.profile_files()]
+                old_cwd = os.getcwd()
+                os.chdir(os.path.dirname(trial.prefix))
+                try:
+                    util.create_archive(profile_format, os.path.join(export_location, archive_file), profile_files)
+                finally:
+                    os.chdir(old_cwd)
+        else:
+            raise ConfigurationError("Invalid profile format: %s" % profile_format)

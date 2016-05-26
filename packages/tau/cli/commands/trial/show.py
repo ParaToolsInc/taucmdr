@@ -38,16 +38,16 @@ class TrialShowCommand(AbstractCommand):
         usage = "%s [trial_number] [trial_number] ... [arguments]" % self.command
         parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
         parser.add_argument('--profile-tool', 
-                            help="specify reporting or visualization tool for profiles",
-                            metavar='profile_tool',
+                            help="specify reporting or visualization tool for profiles; defaults to 'paraprof' GUI, 'pprof' prints text summary",
+                            metavar='<profile_tool>',
                             default=arguments.SUPPRESS)
         parser.add_argument('--trace-tool', 
                             help="specify reporting or visualization tool for traces",
-                            metavar='trace_tool',
+                            metavar='<trace_tool>',
                             default=arguments.SUPPRESS)
         parser.add_argument('numbers', 
                             help="show details for specified trials",
-                            metavar='trial_number',
+                            metavar='<trial_number>',
                             nargs='*',
                             default=arguments.SUPPRESS)
         return parser
