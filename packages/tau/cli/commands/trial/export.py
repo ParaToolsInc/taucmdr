@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2016, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -25,50 +25,51 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""``tau build`` subcommand."""
+"""``tau trial export`` subcommand."""
 
+import os
 from tau.cli import arguments
 from tau.cli.command import AbstractCommand
-from tau.cf.compiler import CompilerInfo
 from tau.model.project import Project
+from tau.model.experiment import PROFILE_EXPORT_FORMATS
 
-
-class BuildCommand(AbstractCommand):
-    """``tau build`` subcommand."""
+class TrialExportCommand(AbstractCommand):
+    """``tau trial export`` subcommand."""
     
-    @staticmethod
-    def is_compatible(cmd):
-        """Check if this subcommand can work with the given command.
-        
-        Args:
-            cmd (str): A command from the command line, e.g. sys.argv[1].
-
-        Returns:
-            bool: True if this subcommand is compatible with `cmd`.
-        """
-        return cmd in [info.command for info in CompilerInfo.all()]
-
     def construct_parser(self):
-        parts = ['  %s  %s' % ('{:<15}'.format(comp.command), comp.short_descr) for comp in CompilerInfo.all()]
-        epilog = "known compiler commands and their roles:\n%s\n" % '\n'.join(sorted(parts))
-        usage = "%s <command> [arguments]" % self.command
-        parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary, epilog=epilog)
-        parser.add_argument('cmd',
-                            help="Compiler or linker command, e.g. 'gcc'",
-                            metavar='<command>')
-        parser.add_argument('cmd_args', 
-                            help="Compiler arguments",
-                            metavar='[arguments]',
-                            nargs=arguments.REMAINDER)
+        usage = "%s [trial_number] [trial_number] ... [arguments]" % self.command
+        parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
+        parser.add_argument('--export-location', 
+                            help="location to store exported trial data",
+                            metavar='<path>',
+                            default=os.getcwd())
+        parser.add_argument('--profile-format', 
+                            help="specify format of profiles",
+                            metavar='<format>',
+                            default=PROFILE_EXPORT_FORMATS[0],
+                            choices=PROFILE_EXPORT_FORMATS)
+        parser.add_argument('numbers', 
+                            help="show details for specified trials",
+                            metavar='trial_number',
+                            nargs='*',
+                            default=arguments.SUPPRESS)
         return parser
 
     def main(self, argv):
         args = self.parser.parse_args(args=argv)
         self.logger.debug('Arguments: %s', args)
+        
         proj_ctrl = Project.controller()
         proj = proj_ctrl.selected()
         expr = proj.experiment()
-        return expr.managed_build(args.cmd, args.cmd_args)
+        numbers = []
+        for num in getattr(args, 'numbers', []):
+            try:
+                numbers.append(int(num))
+            except ValueError:
+                self.parser.error("Invalid trial number: %s" % num)
+        export_location = args.export_location
+        profile_format = args.profile_format
+        return expr.export(trial_numbers=numbers, export_location=export_location, profile_format=profile_format)
 
-
-COMMAND = BuildCommand(__name__, summary_fmt="Instrument programs during compilation and/or linking.")
+COMMAND = TrialExportCommand(__name__, summary_fmt="Export trial data.")

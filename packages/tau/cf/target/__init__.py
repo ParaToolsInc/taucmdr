@@ -174,8 +174,8 @@ class TauArch(KeyedRecord):
     
     Attributes:
         name (str): Name of the TAU architecture (the magic word)
-        architecture (str): Architecture object for this TAU architecture.
-        operating_system (str): OperatingSystem object for this TAU architecture.
+        architecture (Architecture): Architecture object for this TAU architecture.
+        operating_system (OperatingSystem): OperatingSystem object for this TAU architecture.
     """
     
     __key__ = 'name'
@@ -215,8 +215,8 @@ ANDROID_OS = OperatingSystem('Android', 'Android')
 X86_64_ARCH = Architecture('x86_64', 'x86_64')
 INTEL_KNC_ARCH = Architecture('knc', 'Intel Knights Corner')
 #INTEL_KNL_ARCH = Architecture('knl', 'Intel Knights Landing')
-IBM_BGP_ARCH = Architecture('bgp', 'IBM BlueGene/P')
-IBM_BGQ_ARCH = Architecture('bgq', 'IBM BlueGene/Q')
+IBM_BGP_ARCH = Architecture('BGP', 'IBM BlueGene/P')
+IBM_BGQ_ARCH = Architecture('BGQ', 'IBM BlueGene/Q')
 IBM64_ARCH = Architecture('ibm64', 'IBM 64-bit Power')
 ARM32_ARCH = Architecture('arm32', '32-bit ARM')
 ARM64_ARCH = Architecture('arm64', '64-bit ARM')

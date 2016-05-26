@@ -35,7 +35,7 @@ from tau import logger, util
 from tau.cf.software import SoftwarePackageError
 from tau.cf.software.installation import AutotoolsInstallation
 from tau.cf.compiler import CXX_ROLE, GNU_COMPILERS, INTEL_COMPILERS, PGI_COMPILERS
-from tau.cf.target import TAU_ARCH_APPLE, X86_64_ARCH, LINUX_OS, TauArch
+from tau.cf.target import TAU_ARCH_APPLE, TAU_ARCH_BGQ, X86_64_ARCH, LINUX_OS, TauArch
 
 
 LOGGER = logger.get_logger(__name__)
@@ -89,6 +89,29 @@ COMMANDS = {None:
               'pdtf90disp',
               'pdtflint',
               'taucpdisp',
+              'xmlgen']},
+            TAU_ARCH_BGQ.architecture:
+            {TAU_ARCH_BGQ.operating_system:
+             ['cparse',
+              'cxxparse',
+              'edg44-c-roseparse',
+              'edg44-cxx-roseparse',
+              'edg44-upcparse',
+              'edgcpfe',
+              'f90fe',
+              'f90parse',
+              'f95parse',
+              'gfparse',
+              'pdbcomment',
+              'pdbconv',
+              'pdbhtml',
+              'pdbmerge',
+              'pdbstmt',
+              'pdbtree',
+              'pdtf90disp',
+              'pdtflint',
+              'taucpdisp',
+              'tau_instrumentor',
               'xmlgen']}}
 
 

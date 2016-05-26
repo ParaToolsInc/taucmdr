@@ -145,13 +145,16 @@ def preferred_compilers():
     try:
         inst = preferred_compilers.inst
     except AttributeError:
-        from tau.cf.compiler import IBM_COMPILERS, GNU_COMPILERS, CRAY_COMPILERS, INTEL_COMPILERS
+        from tau.cf.compiler import IBM_COMPILERS, GNU_COMPILERS, CRAY_COMPILERS, INTEL_COMPILERS, IBM_BG_COMPILERS
         host_tau_arch = tau_arch()
         if host_tau_arch is TAU_ARCH_CRAYCNL:
-            LOGGER.debug("Prefering Cray compiler wrappers")
+            LOGGER.debug("Preferring Cray compiler wrappers")
             inst = CRAY_COMPILERS
-        elif host_tau_arch in (TAU_ARCH_BGP, TAU_ARCH_BGQ, TAU_ARCH_IBM64_LINUX):
-            LOGGER.debug("Prefering IBM compilers")
+        elif host_tau_arch in (TAU_ARCH_BGP, TAU_ARCH_BGQ):
+            LOGGER.debug("Preferring IBM compilers")
+            inst = IBM_BG_COMPILERS
+        elif host_tau_arch is TAU_ARCH_IBM64_LINUX:
+            LOGGER.debug("Preferring IBM compilers")
             inst = IBM_COMPILERS
         elif host_tau_arch is TAU_ARCH_MIC_LINUX:
             LOGGER.debug("Preferring Intel compilers")
@@ -179,10 +182,10 @@ def preferred_mpi_compilers():
         from tau.cf.compiler import mpi
         host_tau_arch = tau_arch()
         if host_tau_arch is TAU_ARCH_CRAYCNL:
-            LOGGER.debug("Prefering Cray MPI compilers")
+            LOGGER.debug("Preferring Cray MPI compilers")
             inst = mpi.CRAY_MPI_COMPILERS
         elif host_tau_arch in (TAU_ARCH_BGP, TAU_ARCH_BGQ, TAU_ARCH_IBM64_LINUX):
-            LOGGER.debug("Prefering IBM MPI compilers")
+            LOGGER.debug("Preferring IBM MPI compilers")
             inst = mpi.IBM_MPI_COMPILERS
         elif host_tau_arch is TAU_ARCH_MIC_LINUX:
             LOGGER.debug("Preferring Intel compilers")

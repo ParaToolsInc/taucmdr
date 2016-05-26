@@ -83,8 +83,11 @@ class RootCommand(AbstractCliView):
                             nargs=arguments.REMAINDER)
         return parser
 
+    def parse_args(self, argv):
+        return self.parser.parse_args(args=argv)
+
     def main(self, argv):
-        args = self.parser.parse_args(args=argv)
+        args = self.parse_args(argv)
         return cli.execute_command([args.subcommand], args.options, self.module_name)
     
     
@@ -105,15 +108,26 @@ class CreateCommand(AbstractCliView):
                                                  description=self.summary)
         arguments.add_storage_flags(parser, "create", self.model_name)
         return parser
-
-    def main(self, argv):
-        args = self.parser.parse_args(args=argv)
-        self.logger.debug('Arguments: %s', args)
-        store = STORAGE_LEVELS[getattr(args, arguments.STORAGE_LEVEL_FLAG)[0]]
+    
+    def parse_args(self, argv):
+        return self.parser.parse_args(args=argv)
+    
+    def create_record(self, store, data):
+        """Create the model record.
+        
+        Args:
+            store (AbstractStorage): Storage to contain the record.
+            data (dict): Record data.
+            
+        Returns:
+            int: :any:`EXIT_SUCCESS` if successful.
+        
+        Raises:
+            UniqueAttributeError: A record with the same unique attribute already exists.
+        """
         ctrl = self.model.controller(store)
         key_attr = self.model.key_attribute
-        key = getattr(args, key_attr)
-        data = {attr: getattr(args, attr) for attr in self.model.attributes if hasattr(args, attr)}
+        key = data[key_attr]
         try:
             ctrl.create(data)
         except UniqueAttributeError:
@@ -132,6 +146,12 @@ class CreateCommand(AbstractCliView):
             self.logger.info("Created a new %s-level %s: '%s'.", ctrl.storage.name, self.model_name, key)
         return EXIT_SUCCESS
 
+    def main(self, argv):
+        args = self.parse_args(argv)
+        self.logger.debug('Arguments: %s', args)
+        store = STORAGE_LEVELS[getattr(args, arguments.STORAGE_LEVEL_FLAG)[0]]
+        data = {attr: getattr(args, attr) for attr in self.model.attributes if hasattr(args, attr)}
+        return self.create_record(store, data)
 
 class DeleteCommand(AbstractCliView):
     """Base class for the `delete` subcommand of command line views."""
@@ -156,18 +176,24 @@ class DeleteCommand(AbstractCliView):
         arguments.add_storage_flags(parser, "delete", self.model_name)
         return parser
 
-    def main(self, argv):
-        args = self.parser.parse_args(args=argv)
-        self.logger.debug('Arguments: %s', args)
-        store = STORAGE_LEVELS[getattr(args, arguments.STORAGE_LEVEL_FLAG)[0]]
-        ctrl = self.model.controller(store)
+    def parse_args(self, argv):
+        return self.parser.parse_args(args=argv)
+
+    def delete_record(self, store, key):
         key_attr = self.model.key_attribute
-        key = getattr(args, key_attr)
+        ctrl = self.model.controller(store)
         if not ctrl.exists({key_attr: key}):
             self.parser.error("No %s-level %s with %s='%s'." % (store.name, self.model_name, key_attr, key))
         ctrl.delete({key_attr: key})
         self.logger.info("Deleted %s '%s'", self.model_name, key)
         return EXIT_SUCCESS
+    
+    def main(self, argv):
+        args = self.parse_args(argv)
+        self.logger.debug('Arguments: %s', args)
+        store = STORAGE_LEVELS[getattr(args, arguments.STORAGE_LEVEL_FLAG)[0]]
+        key = getattr(args, self.model.key_attribute)
+        return self.delete_record(store, key)
 
 
 class EditCommand(AbstractCliView):
@@ -194,24 +220,30 @@ class EditCommand(AbstractCliView):
         arguments.add_storage_flags(parser, "modify", self.model_name)
         return parser
 
-    def main(self, argv):
-        args = self.parser.parse_args(args=argv)
-        self.logger.debug('Arguments: %s', args)
-        store = STORAGE_LEVELS[getattr(args, arguments.STORAGE_LEVEL_FLAG)[0]]
+    def parse_args(self, argv):
+        return self.parser.parse_args(args=argv)
+    
+    def update_record(self, store, data, key):
         ctrl = self.model.controller(store)
         key_attr = self.model.key_attribute
-        key = getattr(args, key_attr)
         if not ctrl.exists({key_attr: key}):
             self.parser.error("No %s-level %s with %s='%s'." % (ctrl.storage.name, self.model_name, key_attr, key)) 
+        ctrl.update(data, {key_attr: key})
+        self.logger.info("Updated %s '%s'", self.model_name, key)
+        return EXIT_SUCCESS
+        
+    def main(self, argv):
+        args = self.parse_args(argv)
+        self.logger.debug('Arguments: %s', args)
+        store = STORAGE_LEVELS[getattr(args, arguments.STORAGE_LEVEL_FLAG)[0]]
         data = {attr: getattr(args, attr) for attr in self.model.attributes if hasattr(args, attr)}
+        key_attr = self.model.key_attribute
         try:
             data[key_attr] = args.new_key
         except AttributeError:
             pass
-        ctrl.update(data, {key_attr: key})
-        self.logger.info("Updated %s '%s'", self.model_name, key)
-        return EXIT_SUCCESS
-
+        key = getattr(args, key_attr)
+        return self.update_record(store, data, key)
 
 class ListCommand(AbstractCliView):
     """Base class for the `list` subcommand of command line views."""
@@ -337,29 +369,29 @@ class ListCommand(AbstractCliView):
         arguments.add_storage_flags(parser, "show", self.model_name, plural=True, exclusive=False)
         return parser
     
-    def main(self, argv):
-        """Command program entry point.
+    def parse_args(self, argv):
+        return self.parser.parse_args(args=argv)
+    
+    def list_records(self, storage_levels, keys, style):
+        """Shows record data via `print`.
         
         Args:
-            argv (list): Command line arguments.
+            storage_levels (list): Storage levels to query, e.g. ['user', 'project']
+            keys (list): Keys to match to :any:`self.key_attr`.
+            style (str): Style in which to format records.
             
         Returns:
-            int: Process return code: non-zero if a problem occurred, 0 otherwise
+            int: :any:`EXIT_SUCCESS` if successful.
         """
-        args = self.parser.parse_args(args=argv)
-        self.logger.debug('Arguments: %s', args)
-        
+            
         project_ctl = self.model.controller(PROJECT_STORAGE)
         user_ctl = self.model.controller(USER_STORAGE)
         system_ctl = self.model.controller(SYSTEM_STORAGE)
         
-        storage_levels = getattr(args, arguments.STORAGE_LEVEL_FLAG)
         system = SYSTEM_STORAGE.name in storage_levels
         user = USER_STORAGE.name in storage_levels
         project = PROJECT_STORAGE.name in storage_levels or not (user or system)
-        keys = getattr(args, 'keys', None)
-        style = getattr(args, 'style', None) or self.default_style
-        
+
         parts = []
         if system:
             parts.extend(self._format_records(system_ctl, style, keys))
@@ -377,6 +409,14 @@ class ListCommand(AbstractCliView):
                 parts.extend(self._count_records(project_ctl))
         print '\n'.join(parts)
         return EXIT_SUCCESS
+        
+    def main(self, argv):
+        args = self.parse_args(argv)
+        self.logger.debug('Arguments: %s', args)
+        keys = getattr(args, 'keys', None)
+        style = getattr(args, 'style', None) or self.default_style
+        storage_levels = getattr(args, arguments.STORAGE_LEVEL_FLAG)
+        return self.list_records(storage_levels, keys, style)
     
     def _retrieve_records(self, ctrl, keys):
         """Retrieve modeled data from the controller.
