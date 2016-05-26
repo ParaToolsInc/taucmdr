@@ -130,6 +130,7 @@ class CompilerInfo(TrackedInstance):
         Returns:
             list: CompilerInfo instances matching given compiler information.
         """
+        # pylint: disable=too-many-return-statements
         assert command is None or isinstance(command, basestring)
         assert family is None or isinstance(family, CompilerFamily)
         assert role is None or isinstance(role, CompilerRole)

@@ -113,6 +113,18 @@ class CreateCommand(AbstractCliView):
         return self.parser.parse_args(args=argv)
     
     def create_record(self, store, data):
+        """Create the model record.
+        
+        Args:
+            store (AbstractStorage): Storage to contain the record.
+            data (dict): Record data.
+            
+        Returns:
+            int: :any:`EXIT_SUCCESS` if successful.
+        
+        Raises:
+            UniqueAttributeError: A record with the same unique attribute already exists.
+        """
         ctrl = self.model.controller(store)
         key_attr = self.model.key_attribute
         key = data[key_attr]
@@ -361,6 +373,17 @@ class ListCommand(AbstractCliView):
         return self.parser.parse_args(args=argv)
     
     def list_records(self, storage_levels, keys, style):
+        """Shows record data via `print`.
+        
+        Args:
+            storage_levels (list): Storage levels to query, e.g. ['user', 'project']
+            keys (list): Keys to match to :any:`self.key_attr`.
+            style (str): Style in which to format records.
+            
+        Returns:
+            int: :any:`EXIT_SUCCESS` if successful.
+        """
+            
         project_ctl = self.model.controller(PROJECT_STORAGE)
         user_ctl = self.model.controller(USER_STORAGE)
         system_ctl = self.model.controller(SYSTEM_STORAGE)

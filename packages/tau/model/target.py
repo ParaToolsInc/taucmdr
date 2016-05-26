@@ -427,7 +427,7 @@ class Target(Model):
                     known_compilers.append(comp)
                     compiler_path = compiler_record['path']
                     if (absolute_path and (compiler_path == absolute_path) or 
-                        (not absolute_path and (os.path.basename(compiler_path) == compiler_cmd))):
+                            (not absolute_path and (os.path.basename(compiler_path) == compiler_cmd))):
                         installed_comp = comp
                         break
             if installed_comp:

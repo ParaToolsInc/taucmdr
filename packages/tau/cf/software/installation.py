@@ -201,7 +201,7 @@ class Installation(object):
         else:
             util.rmtree(src_prefix, ignore_errors=True)
             try:
-                src_prefix = util.extract(downloaded, self.archive_prefix)
+                src_prefix = util.extract_archive(downloaded, self.archive_prefix)
             except IOError as err:
                 raise ConfigurationError("Cannot extract source archive '%s': %s" % (downloaded, err),
                                          "Check that the file or directory is accessable")

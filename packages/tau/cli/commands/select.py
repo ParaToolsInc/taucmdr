@@ -185,17 +185,16 @@ class SelectCommand(AbstractCommand):
         proj_ctrl = Project.controller()
         rebuild_required = False
         try:
-            old_meas_id = proj_ctrl.selected().experiment()['measurement']
+            meas_old = proj_ctrl.selected().experiment().populate('measurement')
         except (ProjectSelectionError, ExperimentSelectionError):
             pass
         else:
-            meas_old = proj.populate('measurements')[old_meas_id-1]
             for attr, value in meas.iteritems():
-               if value != meas_old[attr] and Measurement.attributes[attr]['application_rebuild']:
-                   msg = ("%s in measurement changed from %s to %s. Please recompile your application." % 
-                          (attr, meas_old[attr], meas[attr]))
-                   rebuild_required = True
-                   break
+                if value != meas_old[attr] and Measurement.attributes[attr]['application_rebuild']:
+                    msg = ("%s in measurement changed from '%s' to '%s'. Please recompile your application." % 
+                           (attr, meas_old[attr], meas[attr]))
+                    rebuild_required = True
+                    break
 
         if not (targ and app and meas):
             proj_ctrl.select(proj)
@@ -221,7 +220,7 @@ class SelectCommand(AbstractCommand):
                              populated['application']['name'],
                              populated['measurement']['name'])
 
-            if(rebuild_required):
+            if rebuild_required:
                 self.logger.info(msg)
         return EXIT_SUCCESS
 

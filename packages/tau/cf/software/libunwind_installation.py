@@ -33,12 +33,11 @@ instrumentation, and other measurement approaches.
 
 import os
 import sys
-import glob
 import fileinput
-from tau import logger, util
+from tau import logger
 from tau.cf.software.installation import AutotoolsInstallation
 from tau.cf.compiler import CC_ROLE, CXX_ROLE
-from tau.cf.target import INTEL_KNC_ARCH, ARM64_ARCH, IBM_BGQ_ARCH, CRAY_CNL_OS
+from tau.cf.target import ARM64_ARCH, IBM_BGQ_ARCH, CRAY_CNL_OS
 
 
 LOGGER = logger.get_logger(__name__)
@@ -92,6 +91,6 @@ class LibunwindInstallation(AutotoolsInstallation):
         super(LibunwindInstallation, self).make_install(flags, env, parallel)
         lib64_path = os.path.join(self.install_prefix, 'lib64')
         lib_path = os.path.join(self.install_prefix, 'lib')
-        if (os.path.isdir(lib64_path) and not os.path.isdir(lib_path)): 
+        if os.path.isdir(lib64_path) and not os.path.isdir(lib_path): 
             os.symlink(lib64_path, lib_path)
 

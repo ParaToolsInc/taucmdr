@@ -35,11 +35,11 @@ from tau.cli import arguments
 from tau.cli.cli_view import CreateCommand
 from tau.model.target import Target
 from tau.model.compiler import Compiler
-from tau.cf.compiler import CompilerFamily, CompilerRole, CompilerInfo, CC_ROLE, CXX_ROLE
+from tau.cf.compiler import CompilerFamily, CompilerRole, CompilerInfo
 from tau.cf.compiler.mpi import MpiCompilerFamily, MPI_CXX_ROLE, MPI_CC_ROLE, MPI_FC_ROLE
 from tau.cf.compiler.installed import InstalledCompiler, InstalledCompilerFamily
 from tau.cf.target import host
-from tau.cf.target import Architecture, OperatingSystem, TauArch 
+from tau.cf.target import TauArch
 
 class TargetCreateCommand(CreateCommand):
     """``tau target create`` subcommand."""
@@ -87,7 +87,6 @@ class TargetCreateCommand(CreateCommand):
             absolute_path = util.which(getattr(args, key))
             if not absolute_path:
                 self.parser.error("Invalid compiler command: %s")
-            command = os.path.basename(absolute_path)
             role = CompilerRole.find(key)
             compilers[role] = InstalledCompiler.probe(absolute_path, role=role)
         
@@ -181,7 +180,7 @@ class TargetCreateCommand(CreateCommand):
                     else:
                         path = operator(path)
                         if not os.path.exists(path):
-                            self.logger.warning("'%s' referenced by TAU Makefile '%s' doesn't exist",  path, makefile)
+                            self.logger.warning("'%s' referenced by TAU Makefile '%s' doesn't exist", path, makefile)
                             continue
                     setattr(args, attr, path)
                     self.logger.info("  --%s='%s'", attr.replace("_source", ""), path)

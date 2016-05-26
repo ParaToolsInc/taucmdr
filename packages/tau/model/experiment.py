@@ -33,7 +33,6 @@ The selected experiment will be used for application compilation and trial visua
 """
 
 import os
-import shutil
 from tau import logger, util
 from tau.error import ConfigurationError
 from tau.mvc.model import Model
@@ -420,7 +419,7 @@ class Experiment(Model):
         Raises:
             ConfigurationError: Invalid trial numbers or no trial data for this experiment.
         """
-        assert (profile_format in PROFILE_EXPORT_FORMATS)
+        assert profile_format in PROFILE_EXPORT_FORMATS
         if not export_location:
             export_location = os.getcwd()
         populated = self.populate()
@@ -440,7 +439,7 @@ class Experiment(Model):
                 old_cwd = os.getcwd()
                 os.chdir(os.path.dirname(trial.prefix))
                 try:
-                    util.archive(profile_format, os.path.join(export_location, archive_file), profile_files)
+                    util.create_archive(profile_format, os.path.join(export_location, archive_file), profile_files)
                 finally:
                     os.chdir(old_cwd)
         else:
