@@ -85,7 +85,7 @@ def attributes():
  
     knc_intel_only = require_compiler_family(INTEL_COMPILERS, 
                                              "You must use Intel compilers to target the Xeon Phi",
-                                             "Try adding `--host-compilers=Intel` to the command line")
+                                             "Try adding `--compilers=Intel` to the command line")
     knc_intel_mpi_only = require_compiler_family(INTEL_MPI_COMPILERS,
                                                  "You must use Intel MPI compilers to target the Xeon Phi",
                                                  "Try adding `--mpi-compilers=Intel` to the command line")
@@ -110,7 +110,7 @@ def attributes():
             'required': True,
             'description': 'host operating system',
             'default': host_os.name,
-            'argparse': {'flags': ('--host-os',),
+            'argparse': {'flags': ('--os',),
                          'group': 'host',
                          'metavar': '<os>',
                          'choices': OperatingSystem.keys()}
@@ -120,7 +120,7 @@ def attributes():
             'required': True,
             'description': 'host architecture',
             'default': host.architecture().name,
-            'argparse': {'flags': ('--host-arch',),
+            'argparse': {'flags': ('--arch',),
                          'group': 'host',
                          'metavar': '<arch>',
                          'choices': Architecture.keys()},
@@ -336,6 +336,7 @@ def attributes():
         'scorep_source': {
             'type': 'string',
             'description': 'path or URL to a Score-P installation or archive file',
+            'default': 'download',
             'argparse': {'flags': ('--score-p',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
