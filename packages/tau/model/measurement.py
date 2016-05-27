@@ -294,7 +294,7 @@ def attributes():
             'application_rebuild': False,
             'argparse': {'flags': ('--metrics',),
                          'group': 'data',
-                         'metavar': '<METRIC>',
+                         'metavar': '<metric>',
                          'nargs': '+'},
             'compat': {lambda metrics: bool(len([met for met in metrics if 'PAPI' in met])):
                        (Target.require('papi_source'), 

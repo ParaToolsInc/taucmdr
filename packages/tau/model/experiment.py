@@ -326,6 +326,14 @@ class Experiment(Model):
         target = self.populate('target')
         target_compiler = target.check_compiler(compiler_cmd, compiler_args)
         tau = self.configure()
+        try:
+            proj = self.populate('project')
+            tau.force_tau_options = proj['force_tau_options']
+        except KeyError:
+            pass
+        else:
+            LOGGER.info("Project '%s' forcibly adding '%s' to TAU_OPTIONS", 
+                        proj['name'], ' '.join(tau.force_tau_options))
         return tau.compile(target_compiler, compiler_args)
         
     def managed_run(self, launcher_cmd, application_cmd):

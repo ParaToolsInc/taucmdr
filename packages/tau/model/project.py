@@ -88,6 +88,15 @@ def attributes():
                          'choices' : STORAGE_LEVELS.keys(),
                          'metavar' : '<level>',
                          'action' : 'store'}
+        },
+        'force_tau_options': {
+            'type': 'array',
+            'description': "forcibly add options to TAU_OPTIONS environment variable (not recommended)",
+            'application_rebuild': True,
+            'argparse': {'flags': ('--force-tau-options',),
+                         'metavar': '<option>',
+                         'nargs': '+'},
+            'compat': {True: Project.discourage('force_tau_options')}
         }
     }
 
