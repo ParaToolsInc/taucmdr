@@ -40,9 +40,10 @@ import urllib
 import pkgutil
 import tarfile
 import urlparse
-from termcolor import termcolor
+import itertools
 from zipimport import zipimporter
 from zipfile import ZipFile
+from termcolor import termcolor
 from tau import logger
 
 
@@ -80,46 +81,59 @@ def rmtree(path, ignore_errors=False, onerror=None, attempts=5):
         onerror: Callable that accepts three parameters: function, path, and excinfo.  See :any:shutil.rmtree.
         attempts (int): Number of times to repeat shutil.rmtree before giving up.
     """
-    if(not os.path.exists(path)):
+    if not os.path.exists(path):
         return
     for i in xrange(attempts-1):
         try:
             return shutil.rmtree(path)
-        except Exception as err:
-            LOGGER.warning("Unexpected error: %s" % err)
+        except Exception as err:        # pylint: disable=broad-except
+            LOGGER.warning("Unexpected error: %s", err)
             time.sleep(i+1)
     shutil.rmtree(path, ignore_errors, onerror)
 
-def which(program):
+def _is_exec(fpath):
+    return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+
+_WHICH_CACHE = {}
+def which(program, use_cached=True):
     """Returns the full path to a program command.
     
     Program must exist and be executable.
     Searches the system PATH and the current directory.
+    Caches the result.
     
     Args:
         program (str): program to find.
+        use_cached (bool): If False then don't use cached results.
         
     Returns:
         str: Full path to program or None if program can't be found.
     """
     if not program:
         return None
-    def is_exec(fpath):
-        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+    assert isinstance(program, basestring)
+    if use_cached:
+        try:
+            return _WHICH_CACHE[program]
+        except KeyError:
+            pass
     fpath, _ = os.path.split(program)
     if fpath:
         abs_program = os.path.abspath(program)
-        if is_exec(abs_program):
+        if _is_exec(abs_program):
             LOGGER.debug("which(%s) = '%s'", program, abs_program)
+            _WHICH_CACHE[program] = abs_program
             return abs_program
     else:
         for path in os.environ['PATH'].split(os.pathsep):
             path = path.strip('"')
             exe_file = os.path.join(path, program)
-            if is_exec(exe_file):
+            if _is_exec(exe_file):
                 LOGGER.debug("which(%s) = '%s'", program, exe_file)
+                _WHICH_CACHE[program] = exe_file
                 return exe_file
     LOGGER.debug("which(%s): command not found", program)
+    _WHICH_CACHE[program] = None
     return None
 
 
@@ -152,18 +166,61 @@ def download(src, dest):
         wget_cmd = [wget, src, '-O', dest] if wget else None
         for cmd in [curl_cmd, wget_cmd]:
             if cmd:
-                if create_dl_subprocess(cmd, stdout=False) == 0:
+                if _create_dl_subprocess(cmd, src) == 0:
                     return
                 LOGGER.warning("%s failed to download '%s'. Retrying with a different method...", cmd[0], src)                    
         # Fallback: this is usually **much** slower than curl or wget
-        def _dl_progress(count, block_size, total_size):
-            progress_bar(count*block_size, total_size)
         try:
-            urllib.urlretrieve(src, dest, reporthook=_dl_progress)
+            urllib.urlretrieve(src, dest, reporthook=progress_bar)
         except Exception as err:
             LOGGER.warning("urllib failed to download '%s': %s", src, err)
             raise IOError("Failed to download '%s'" % src)
 
+def _create_dl_subprocess(cmd, src):
+    LOGGER.debug("Creating subprocess: cmd=%s\n", cmd)
+    if cmd[0].endswith('curl'):
+        proc_output = subprocess.Popen(['curl', '-sI', src, '--location'],
+                                       stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
+    elif cmd[0].endswith('wget'):
+        proc_output = subprocess.Popen(['wget', src, '--spider', '--server-response'],
+                                       stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[1]
+    LOGGER.debug(proc_output)
+    try:
+        file_size = int(proc_output.partition('Content-Length')[2].split()[1])
+    except (ValueError, IndexError):
+        LOGGER.warning("Invalid response while retrieving download file size")
+        file_size = -1
+    with open(os.devnull, 'wb') as devnull:
+        proc = subprocess.Popen(cmd, stdout=devnull, stderr=subprocess.STDOUT)
+        while proc.poll() is None:
+            try:
+                current_size = os.stat(cmd[-1]).st_size
+            except OSError:
+                current_size = 0
+            progress_bar(current_size, 1, file_size)
+        proc.wait()
+        sys.stdout.write('\n')
+        retval = proc.returncode
+        LOGGER.debug("%s returned %d", cmd, retval)
+        return retval
+
+    
+_spinner = itertools.cycle(['-', '/', '|', '\\']) # pylint: disable=invalid-name
+def progress_bar(count, block_size, total_size):
+    """Show a bar or spinner on stdout to indicate progress.
+    
+    Args:
+        count (int): Number of blocks of `block_size` that have been completed
+        block_size (int): Size of a work block.
+        total_size (int): Total amount of work to be completed.
+    """
+    if total_size > 0:
+        width = max(1, logger.LINE_WIDTH - 10)
+        percent = min(100, float(count*block_size) / total_size)
+        sys.stdout.write('[' + '>'*int(percent*width) + '-'*int((1-percent)*width) + '] %3s%%\r' % int(100*percent))
+    else:
+        sys.stdout.write('[%s] UNKNOWN\r' % _spinner.next())
+    sys.stdout.flush()
 
 def archive_toplevel(archive):
     """Returns the name of the top-level directory in an archive.
@@ -179,15 +236,22 @@ def archive_toplevel(archive):
     Args:
         archive (str): Path to archive file.
         
+    Raises:
+        IOError: `archive` could not be read.
+        
     Returns:
         str: Directory name.
     """
     LOGGER.debug("Determining top-level directory name in '%s'", archive)
-    with tarfile.open(archive) as fin:
+    try:
+        fin = tarfile.open(archive)
+    except tarfile.ReadError:
+        raise IOError
+    else:
         dirs = [d.name for d in fin.getmembers() if d.type == tarfile.DIRTYPE]
-    topdir = min(dirs, key=len)
-    LOGGER.debug("Top-level directory in '%s' is '%s'", archive, topdir)
-    return topdir
+        topdir = min(dirs, key=len)
+        LOGGER.debug("Top-level directory in '%s' is '%s'", archive, topdir)
+        return topdir
 
 
 def extract(archive, dest):
@@ -232,7 +296,7 @@ def file_accessible(filepath, mode='r'):
     handle = None
     try:
         handle = open(filepath, mode)
-    except:
+    except:     # pylint: disable=bare-except
         return False
     else:
         return True
@@ -284,75 +348,7 @@ def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True):
     retval = proc.returncode
     LOGGER.debug("%s returned %d", cmd, retval)
     return retval
-
-
-def create_dl_subprocess(cmd, cwd=None, env=None, stdout=True, log=True):
-    """Create a subprocess for downloading software.
     
-    See :any:`subprocess.Popen`.
-    
-    Args:
-        cmd (list): Command and its command line arguments.
-        cwd (str): Change directory to `cwd` if given, otherwise use :any:`os.getcwd`.
-        env (dict): Environment variables to set before launching cmd.
-        stdout (bool): If True send subprocess stdout and stderr to this processes' stdout.
-        log (bool): If True send subprocess stdout and stderr to the debug log.
-        
-    Returns:
-        int: Subprocess return code.
-    """
-    if not cwd:
-        cwd = os.getcwd()
-    if not env:
-        # Don't accidentally unset all environment variables with an empty dict
-        subproc_env = None
-    else:
-        subproc_env = dict(os.environ)
-        for key, val in env.iteritems():
-            subproc_env[key] = val
-            LOGGER.debug("%s=%s", key, val)
-    if 'curl' in cmd[0]:
-        proc_output = subprocess.Popen(['curl','-sI', cmd[2], '--location'],
-                                       stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
-        file_size = int(proc_output.partition('Content-Length')[2].split()[1])
-    if 'wget' in cmd[0]:
-        proc_output = subprocess.Popen(['wget', cmd[1], '--spider', '--server-response'],
-                                       stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[1]
-        file_size = int(proc_output.partition('Content-Length')[2].split()[1])
-    DEVNULL = open(os.devnull, 'wb')
-    LOGGER.debug("Creating subprocess: cmd=%s, cwd='%s'\n", cmd, cwd)
-    proc = subprocess.Popen(cmd, cwd=cwd, env=subproc_env,
-                            stdout=DEVNULL,
-                            stderr=subprocess.STDOUT,
-                            bufsize=1)
-    while proc.poll() is None:
-        try:
-            current_size = os.stat(cmd[-1]).st_size
-        except:
-            current_size = 0
-        progress_bar(current_size, file_size)
-    proc.wait()
-    retval = proc.returncode
-    LOGGER.debug("%s returned %d", cmd, retval)
-    return retval
-
-
-def progress_bar(current_size, total_size):
-    """Display progress bar for download of software
-
-    Args:
-        current_size (int):  current size of downloaded file
-        total_size (int): total size of downloaded file
-
-    Returns: 
-    """
-
-    size = logger.get_terminal_size()
-    width = int(size[0]) - 10
-    percent = min(100, float(current_size) / total_size)
-    sys.stdout.write('[' + '>' * int(percent * width) + '-' * int((1 - percent) * width) + '] %3s%%\r'
-                     %(int(100*percent)))
-
 
 def human_size(num, suffix='B'):
     """Converts a byte count to human readable units.
@@ -474,8 +470,7 @@ def walk_packages(path, prefix):
     :any:`pkgutil.walk_packages` silently fails to list modules and packages when
     they are in a zip file.  This implementation works around this.
     """
-    def seen(path, dct={}):
-        # pylint: disable=dangerous-default-value
+    def seen(path, dct={}):     # pylint: disable=dangerous-default-value
         if path in dct:
             return True
         dct[path] = True
@@ -513,11 +508,11 @@ def _zipimporter_iter_modules(archive, path):
 
 
 def _iter_modules(paths, prefix):
+    # pylint: disable=no-member,redefined-variable-type
     yielded = {}
     for path in paths:
         importer = pkgutil.get_importer(path)
         if isinstance(importer, zipimporter):
-            # pylint: disable=no-member
             archive = os.path.basename(importer.archive)
             iter_importer_modules = _zipimporter_iter_modules(archive, path)
         else:

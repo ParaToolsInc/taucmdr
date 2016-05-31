@@ -27,11 +27,9 @@
 #
 """``tau build`` subcommand."""
 
-from tau.error import ConfigurationError
 from tau.cli import arguments
 from tau.cli.command import AbstractCommand
-from tau.cf.compiler import CompilerFamily, CompilerInfo
-from tau.cf.compiler.mpi import MpiCompilerFamily
+from tau.cf.compiler import CompilerInfo
 from tau.model.project import Project
 
 
@@ -51,11 +49,8 @@ class BuildCommand(AbstractCommand):
         return cmd in [info.command for info in CompilerInfo.all()]
 
     def construct_parser(self):
-        family_containers = CompilerFamily, MpiCompilerFamily
-        known_compilers = [comp for container in family_containers for family in container.all() for comp in family]
-        parts = ['  %s  %s' % ('{:<15}'.format(comp.command), comp.short_descr) for comp in known_compilers]
-        compilers_help = '\n'.join(parts)
-        epilog = "known compiler commands:\n%s\n" % compilers_help
+        parts = ['  %s  %s' % ('{:<15}'.format(comp.command), comp.short_descr) for comp in CompilerInfo.all()]
+        epilog = "known compiler commands and their roles:\n%s\n" % '\n'.join(sorted(parts))
         usage = "%s <command> [arguments]" % self.command
         parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary, epilog=epilog)
         parser.add_argument('cmd',

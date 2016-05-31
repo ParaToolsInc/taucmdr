@@ -33,6 +33,7 @@ The selected experiment will be used for application compilation and trial visua
 """
 
 import os
+import shutil
 from tau import logger, util
 from tau.error import ConfigurationError
 from tau.mvc.model import Model
@@ -42,7 +43,6 @@ from tau.storage.levels import PROJECT_STORAGE, STORAGE_LEVELS, ORDERED_LEVELS
 from tau.cf.target import OperatingSystem, DARWIN_OS
 from tau.cf.software import SoftwarePackageError
 from tau.cf.software.tau_installation import TauInstallation
-from tau.cf.compiler.installed import InstalledCompiler
 
 
 LOGGER = logger.get_logger(__name__)
@@ -86,9 +86,6 @@ class Experiment(Model):
     
     __attributes__ = attributes
 
-    def __init__(self, *args, **kwargs):
-        super(Experiment, self).__init__(*args, **kwargs)
-        
     @classmethod
     def controller(cls, storage=PROJECT_STORAGE):
         return cls.__controller__(cls, storage)
@@ -140,12 +137,11 @@ class Experiment(Model):
     def uses_tau(self):
         # For now, all experiments use TAU
         # This might change if we ever re-use this for something like ThreadSpotter
-        # pylint: disable=no-self-use
         return True
 
     def uses_pdt(self):
         measurement = self.populate('measurement')
-        return measurement['source_inst'] != 'never'
+        return measurement['source_inst'] == 'automatic'
     
     def uses_binutils(self):
         measurement = self.populate('measurement')
@@ -210,7 +206,7 @@ class Experiment(Model):
                           io_inst=measurement['io'],
                           keep_inst_files=measurement['keep_inst_files'],
                           reuse_inst_files=measurement['reuse_inst_files'],
-                          select_inst_file=measurement.get('select_inst_file', None),
+                          select_file=measurement.get('select_file', None),
                           # Measurement methods and options
                           profile=measurement['profile'],
                           trace=measurement['trace'],
@@ -243,6 +239,17 @@ class Experiment(Model):
             return tau
 
     def configure_tau_dependency(self, name, prefix):
+        """Installs dependency packages for TAU, e.g. PDT.
+        
+        Args:
+            name (str): Name of the dependency to install.  
+                        Must have a matching tau.cf.software.<name>_installation module.
+            prefix (str): Installation prefix.
+        
+        Returns:
+            Installation: A new installation instance for the installed dependency.
+        """
+        LOGGER.debug("Configuring TAU dependency '%s' at prefix '%s'", name, prefix)
         target = self.populate('target')
         cls_name = name.title() + 'Installation'
         pkg = __import__('tau.cf.software.%s_installation' % name.lower(), globals(), locals(), [cls_name], -1)
@@ -272,6 +279,7 @@ class Experiment(Model):
         Returns:
             TauInstallation: Object handle for the TAU installation. 
         """
+        LOGGER.debug("Configuring experiment %s", self.title())
         project_data = self.populate('project')
         try:
             storage = STORAGE_LEVELS[project_data['storage_level']]
@@ -315,11 +323,9 @@ class Experiment(Model):
         """
         LOGGER.debug("Managed build: %s", [compiler_cmd] + compiler_args)
         target = self.populate('target')
-        given_compiler = InstalledCompiler(compiler_cmd)
-        target.check_compiler(given_compiler, compiler_args)
-        
+        target_compiler = target.check_compiler(compiler_cmd, compiler_args)
         tau = self.configure()
-        return tau.compile(given_compiler, compiler_args)
+        return tau.compile(target_compiler, compiler_args)
         
     def managed_run(self, launcher_cmd, application_cmd):
         """Uses this experiment to run an application command.
@@ -362,7 +368,7 @@ class Experiment(Model):
             for num in trial_numbers:
                 found = Trial.controller(self.storage).one({'experiment': self.eid, 'number': num})
                 if not found:
-                    raise ConfigurationError("No trial number %d in experiment %s" % (num, self.name()))
+                    raise ConfigurationError("No trial number %d in experiment %s" % (num, self.name))
                 trials.append(found)
         else:
             trials = self.populate('trials')
@@ -383,4 +389,52 @@ class Experiment(Model):
                 tau.show_profile(prefix, profile_tool)
             if meas['trace']:
                 tau.show_trace(prefix, trace_tool)
+                
+    def export(self, export_location=None, profile_format=None, trial_numbers=None):
+        """Export experiment trial data.
+        
+        Exports the most recent trial or all trials with given numbers.
+        
+        Args:
+            export_location (str): Name of the visualization or data processing tool for profiles, e.g. `pprof`.
+            profile_format (str): Name of the visualization or data processing tool for traces, e.g. `vampir`.
+            trial_numbers (list): Numbers of trials to show.
+            
+        Raises:
+            ConfigurationError: Invalid trial numbers or no trial data for this experiment.
+        """
+        if trial_numbers:
+            trials = []
+            for num in trial_numbers:
+                found = Trial.controller(self.storage).one({'experiment': self.eid, 'number': num})
+                if not found:
+                    raise ConfigurationError("No trial number %d in experiment %s" % (num, self.name))
+                trials.append(found)
+        else:
+            trials = self.populate('trials')
+            if trials:
+                found = trials[0]
+                for trial in trials[1:]:
+                    if trial['begin_time'] > found['begin_time']:
+                        found = trial
+                trials = [found]
+        if not trials:
+            raise ConfigurationError("No trials in experiment %s" % self.title(), "See `tau trial create --help`")
+
+        if export_location is None:
+            export_location = os.getcwd()
+
+        tau = self.configure()
+        meas = self.populate('measurement')
+        for trial in trials:
+            prefix = trial.prefix
+            if profile_format == 'ppk':
+                cmd = 'paraprof', '--pack', `trial['number']`+'.ppk', prefix
+                retval = util.create_subprocess(cmd, log=False)
+                shutil.move(`trial['number']`+'.ppk', export_location)
+            else:
+                if(os.path.exists(export_location)):
+                    shutil.copytree(prefix,export_location+'/trial'+`trial['number']`)
+                else:
+                    shutil.copytree(prefix,export_location)
                 

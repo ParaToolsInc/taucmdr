@@ -42,6 +42,14 @@ from tau.cf.target import host, DARWIN_OS
 
 
 def attributes():
+    """Construct attributes dictionary for the measurement model.
+    
+    We build the attributes in a function so that classes like ``tau.module.project.Project`` are
+    fully initialized and usable in the returned dictionary.
+    
+    Returns:
+        dict: Attributes dictionary.
+    """
     from tau.model.project import Project
     from tau.model.target import Target
     from tau.model.application import Application
@@ -117,8 +125,7 @@ def attributes():
                          'nargs': '?',
                          'choices': ('automatic', 'manual', 'never'),
                          'const': 'automatic'},
-            'compat': {lambda x: x in ('automatic', 'manual'):
-                       Target.exclude('pdt_source', None)}
+            'compat': {'automatic': Target.exclude('pdt_source', None)}
         },
         'compiler_inst': {
             'type': 'string',
@@ -148,10 +155,10 @@ def attributes():
                          'const': True,
                          'action': ParseBooleanAction},
         },
-        'select_inst_file': {
+        'select_file': {
             'type': 'string',
             'description': 'specify selective instrumentation file',
-            'argparse': {'flags': ('--select-inst-file',),
+            'argparse': {'flags': ('--select-file',),
                          'group': 'instrumentation',
                          'metavar': 'path'},
             'compat': {True:
@@ -245,7 +252,7 @@ def attributes():
             'type': 'boolean',
             'default': False,
             'description': 'measure heap memory usage',
-            'argparse': {'flags': ('--heap_usage',),
+            'argparse': {'flags': ('--heap-usage',),
                          'group': 'memory',
                          'metavar': 'T/F',
                          'nargs': '?',
@@ -319,7 +326,7 @@ class Measurement(Model):
                                      "Specify %s or %s or both" % (profile_flag, trace_flag))
         
         if ((self['source_inst'] == 'never') and (self['compiler_inst'] == 'never') and 
-            (not self['sample']) and (not self['link_only'])):
+                (not self['sample']) and (not self['link_only'])):
             source_inst_flag = get_flag('source_inst')
             compiler_inst_flag = get_flag('compiler_inst')
             sample_flag = get_flag('sample')
@@ -328,10 +335,11 @@ class Measurement(Model):
                                      "Specify %s, %s, %s, or %s" % (source_inst_flag, compiler_inst_flag, 
                                                                     sample_flag, link_only_flag))
         try:
-            select_inst_file = self['select_inst_file']
+            select_file = self['select_file']
         except KeyError:
             pass
         else:
-            if not os.path.exists(select_inst_file):
-                raise ConfigurationError("Selective instrumentation file '%s' not found" % select_inst_file)
+            if not os.path.exists(select_file):
+                raise ConfigurationError("Selective instrumentation file '%s' not found" % select_file)
+
 

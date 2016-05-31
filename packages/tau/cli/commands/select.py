@@ -209,4 +209,6 @@ class SelectCommand(AbstractCommand):
         return EXIT_SUCCESS
 
 
-COMMAND = SelectCommand(__name__, summary_fmt="Select project components for the next experiment.")
+COMMAND = SelectCommand(__name__, 
+                        summary_fmt=("Select project components for the next experiment.\n"
+                                     "Available components may be viewed via the `dashboard` subcommand."))

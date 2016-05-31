@@ -53,7 +53,7 @@ class MpiCompilerFamily(CompilerFamily):
     def __init__(self, *args, **kwargs):
         if 'show_wrapper_flags' not in kwargs:
             kwargs['show_wrapper_flags'] = ['-show']
-        super(MpiCompilerFamily,self).__init__(*args, **kwargs)
+        super(MpiCompilerFamily, self).__init__(*args, **kwargs)
 
     @classmethod
     def preferred(cls):
@@ -81,7 +81,7 @@ IBM_MPI_COMPILERS.add(MPI_CC_ROLE, 'mpixlc')
 IBM_MPI_COMPILERS.add(MPI_CXX_ROLE, 'mpixlc++', 'mpixlC')
 IBM_MPI_COMPILERS.add(MPI_FC_ROLE, 'mpixlf77')
 
-CRAY_MPI_COMPILERS = MpiCompilerFamily('Cray', show_wrapper_flags=['-craype-verbose'])
+CRAY_MPI_COMPILERS = MpiCompilerFamily('Cray', show_wrapper_flags=['-craype-verbose', '--version', '-E'])
 CRAY_MPI_COMPILERS.add(MPI_CC_ROLE, 'cc')
 CRAY_MPI_COMPILERS.add(MPI_CXX_ROLE, 'CC')
 CRAY_MPI_COMPILERS.add(MPI_FC_ROLE, 'ftn')

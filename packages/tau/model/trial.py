@@ -104,10 +104,10 @@ class TrialError(ConfigurationError):
 
 class TrialController(Controller):
     """Trial data controller."""
-    
+
     def perform(self, expr, cmd, cwd, env):
         """Performs a trial of an experiment.
-        
+
         Args:
             expr (Experiment): Experiment data.
             cmd (str): Command to profile, with command line arguments.
@@ -118,23 +118,24 @@ class TrialController(Controller):
             headline = '\n{:=<{}}\n'.format('== %s %s at %s ==' % (mark, name, time), logger.LINE_WIDTH)
             LOGGER.info(headline)
 
-        cmd_str = ' '.join(cmd)
         begin_time = str(datetime.utcnow())
         trial_number = expr.next_trial_number()
         LOGGER.debug("New trial number is %d", trial_number)
 
         banner('BEGIN', expr.title(), begin_time)
-        fields = {'number': trial_number,
-                  'experiment': expr.eid,
-                  'command': cmd_str,
-                  'cwd': cwd,
-                  'environment': 'FIXME',
-                  'begin_time': begin_time}
-        trial = self.create(fields)
-        
+        trial = self.create({'number': trial_number,
+                             'experiment': expr.eid,
+                             'command': ' '.join(cmd),
+                             'cwd': cwd,
+                             'environment': 'FIXME',
+                             'begin_time': begin_time})
+
         # Tell TAU to send profiles and traces to the trial prefix
         env['PROFILEDIR'] = trial.prefix
         env['TRACEDIR'] = trial.prefix
+
+        target = expr.populate('target')
+        host_arch = target['host_arch']
 
         try:
             retval = trial.execute_command(expr, cmd, cwd, env)
@@ -159,6 +160,24 @@ class TrialController(Controller):
         profiles = trial.profile_files()
         if profiles:
             LOGGER.info("Trial produced %d profile files.", len(profiles))
+            negative_profiles = [prof for prof in profiles if 'profile.-1' in prof]
+            if negative_profiles:
+                LOGGER.warning("Trial %s produced a profile with negative node number!"
+                               " This usually indicates that process-level parallelism was not initialized,"
+                               " (e.g. MPI_Init() was not called) or there was a problem in instrumentation."
+                               " Check the compilation output and verify that MPI_Init (or similar) was called.",
+                               trial_number)
+                for fname in negative_profiles:
+                    new_name = fname.replace(".-1.", ".0.") 
+                    if not os.path.exists(new_name):
+                        LOGGER.info("Renaming %s to %s", fname, new_name)
+                        os.rename(fname, new_name)
+                    else:
+                        raise ConfigurationError("The profile numbers for trial %d are wrong.",
+                                                 "Check that the application configuration is correct.",
+                                                 "Check that the measurement configuration is correct.",
+                                                 "Check for instrumentation failure in the compilation log.")
+                
         elif measurement['profile']:
             raise TrialError("Application completed successfuly but did not produce any profiles.")
         traces = trial.trace_files()
@@ -171,9 +190,9 @@ class TrialController(Controller):
 
 class Trial(Model):
     """Trial data model."""
-    
+
     __attributes__ = attributes
-    
+
     __controller__ = TrialController
 
     @property
@@ -195,14 +214,14 @@ class Trial(Model):
         except Exception as err:
             if os.path.exists(self.prefix):
                 LOGGER.error("Could not remove trial data at '%s': %s", self.prefix, err)
-    
+
     def profile_files(self):
         """Get this trial's profile files.
-        
+
         Returns paths to profile files (profile.X.Y.Z).  If the trial produced 
         MULTI__ directories then paths to every profile below every MULTI__ 
         directory are returned. 
-        
+
         Returns:
             list: Paths to profile files.
         """
@@ -212,12 +231,12 @@ class Trial(Model):
             profiles.extend(list_profiles(multi_dir))
         profiles.extend(list_profiles(self.prefix))
         return profiles
-    
+
     def trace_files(self):
         """Get this trial's trace files.
-        
+
         Returns paths to trace files: *.[trc,edf].
-        
+
         Returns:
             list: Paths to trace files.
         """
@@ -227,16 +246,16 @@ class Trial(Model):
 
     def execute_command(self, expr, cmd, cwd, env):
         """Execute a command as part of an experiment trial.
-        
+
         Creates a new subprocess for the command and checks for TAU data files
         when the subprocess exits.
-        
+
         Args:
             expr (Experiment): Experiment data.
             cmd (str): Command to profile, with command line arguments.
             cwd (str): Working directory to perform trial in.
             env (dict): Environment variables to set before performing the trial.
-            
+
         Returns:
             int: Subprocess return code.
         """

@@ -55,14 +55,16 @@ deploy:
     repo: ParaToolsInc/taucmdr # Don't try to deploy on private forks
 
 notifications:
+  email:
+    recipients:
+      - taucmdr-notify@paratools.com
+    on_success: always  # options: [always|never|change]
+    on_failure: always
+    on_start: always
   webhooks:
     urls: # gitter.im announcement
       secure: TQIzGX9yWDc+ayKNpWmNjCCucaGCwt9CYeThbzdmGsA30hJkRRuDNdx5ZDvknRktV+h+QYgLGLR3ueVUuGL0/kf23vPUZD6kTTY0c3ZJ4fonDx5Ydr+zhc1iJzO/Ord1tnY5xxfvKpfWEUekFQT5SSJMt61CQoNmVSDdTDpFcMC4GEzeQD6fdP0BxgiFvw4UOnfU/poM9OmjaVdKoFyax1+gub4mC/GG9faxK6IdtOAtPsGcUOpzBypwj3NRGgDuq+jErnvm3tLitVJz8h1ab5eQMgTAlCK8q3w7x/WaWxsVXnErjDqJIGs9mpxmyOJERoRv7hQdlAZtKlIZsdGpE7O9B9ooBE/zAfRqGHee5CsA/UKx6XDt9h0rYt/zNJ5RcIrbHRZMilwdC4PXXjN7FNNkpDp0LhhpzM19tZx9+Zb/QAGOTwIDq5adQfiF9ctE7OAlvqnSbvhTL0bzLmYthIURc9nBks4uqUAKq/LEnHz2CgiL8fGaJbUXqGSBc/prKYREa9ckfBdjFfngSnLBJB6oLKQBGRA/Y8thi7etu8TZD9CsWcBJhXFJTPkFArFkJVRpURNpQ0OIS54q0bmTW+dPbSJ95v2GEttCuAIyqDgffuwqqVYx0KmaMHKvxUGx0Mu8uC9Mo5FLEDiM05mE/lAgkK9wgwbgFW+A5g2t7x8=
     on_success: always  # options: [always|never|change]
     on_failure: always
     on_start: always
-  slack:
-    secure: E4ITz2VVvn6v3RbgkJNjRuxx84IAXlGlm1+MOrpco+tmnbz4Q8A+3FPF2X4Lf9Hb99/LbXv/uFO+Zp6qWZSngcUPmNf9VHQTPaIu3nSDQ1+Jy/hpCutV1vNEURTb+aZoqX5VOKjWHtuTPT0Flb+kGLS6h7wHwKbJkgvSHPreHH/Gwn837OZUzzuJd8MEr3d91PEC29xjAE3/mmgesk5eayrmxA5srV8jRizLXSCLLRUDfKMVXBT1iVEoY4MPFgpM3x5Fa/D27OOdJKAEE7S5iaGDACdj5O3n/dPSDDDx7F+Z2SwLh6NmFuon7jktc2ow9ApDRlwU4f2NKAQOT3VpGFA0oq/S7AHe6uQVOf/yJgUNM0qFw54NK7obWpSkETBRdiSh1g5pSZAh4a+sRWn0PcnesPP1c58O4gfZf4XJqBnw3P2XKNOmjzyN+kLza3b9DIc9MgbFmQ/9pDzjF141+HL5oopRS6CPqTLG6tD1M+27MJ8tBZLyEv44SJRXxfhkfR1f+zKkkx8xcGRDNnRqdJyIfX3SNCBXTHKodYZqXP+0HnCCrJdrV/IMqZvb0qxStWhbnp3kROefFS2OoM9jVAwYfuWPedzlfrMW/m+Poc/KV2Q4gVyILcwBiMRs/Ng4T8mV9uOROelxnDAsDaaWiyvBljnnUFhktsR8TmbLlPw=
-    on_success: always  # options: [always|never|change]
-    on_failure: always
-    on_start: always
+

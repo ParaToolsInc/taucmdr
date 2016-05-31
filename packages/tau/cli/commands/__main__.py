@@ -92,30 +92,30 @@ class MainCommand(AbstractCommand):
                             default='INFO',
                             action='store_const')
         return parser
-     
+
     def main(self, argv):
         """Program entry point.
-         
+
         Args:
             argv (list): Command line arguments.
-             
+
         Returns:
             int: Process return code: non-zero if a problem occurred, 0 otherwise
         """
-        args = self.parser.parse_args()
+        args = self.parser.parse_args(args=argv)
         cmd = args.command
         cmd_args = args.options
-     
+
         logger.set_log_level(args.verbose)
         LOGGER.debug('Arguments: %s', args)
         LOGGER.debug('Verbosity level: %s', logger.LOG_LEVEL)
-     
+
         # Try to execute as a TAU command
         try:
             return cli.execute_command([cmd], cmd_args)
         except UnknownCommandError:
             pass
-     
+
         # Check shortcuts
         shortcut = None
         if build_command.is_compatible(cmd):

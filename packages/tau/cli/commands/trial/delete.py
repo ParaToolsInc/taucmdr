@@ -28,7 +28,6 @@
 """``tau trial delete`` subcommand."""
 
 from tau import EXIT_SUCCESS
-from tau.error import ConfigurationError
 from tau.cli import arguments
 from tau.cli.cli_view import DeleteCommand
 from tau.model.trial import Trial

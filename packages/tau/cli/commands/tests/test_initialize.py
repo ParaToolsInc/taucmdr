@@ -31,30 +31,25 @@ Functions used for unit tests of initialize.py.
 """
 
 
-import unittest
-import os
-import time
-import shutil
-from tau.cli.commands import initialize
-from tau.storage.levels import PROJECT_STORAGE
+from tau import tests
+from tau.cli.commands.initialize import COMMAND as initialize_cmd
 
-class InitializeTest(unittest.TestCase):
-    current_time = time.strftime("%Y%m%d_%H%M%S")
-    @classmethod
-    def setUpClass(cls):
-        #try:
-        #    shutil.rmtree('.system')
-        #except:
-        #    pass
-        os.makedirs('tmp/'+cls.current_time)
-        os.chdir('tmp/'+cls.current_time)
+
+class InitializeTest(tests.TestCase):
+    """Unit tests for `tau target create`"""
+
+    def test_bare(self):
+        retval, stdout, stderr = tests.exec_command(self, initialize_cmd, ['--bare'])
+        self.assertEqual(0, retval)
+        self.assertIn('Created a new project named', stdout)
+        self.assertIn('Project Configuration', stdout)
+        self.assertIn('No targets', stdout)
+        self.assertIn('No applications', stdout)
+        self.assertIn('No measurements', stdout)
+        self.assertIn('No experiments', stdout)
+        self.assertFalse(stderr)
+
     def test_initialize(self):
         argv = ['--storage-level', 'project']
-        retval = initialize.COMMAND.main(argv)
+        retval, _, _ = tests.exec_command(self, initialize_cmd, argv)
         self.assertEqual(retval, 0)
-    @classmethod
-    def tearDownClass(cls):
-        os.chdir('../..')
-        shutil.rmtree('tmp')
-        PROJECT_STORAGE._prefix = None
-        PROJECT_STORAGE.disconnect_filesystem()

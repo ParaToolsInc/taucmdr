@@ -56,7 +56,7 @@ void freeMatrix(double** matrix, int rows, int cols) {
   free(matrix);
 }
 
-__inline double multiply(double a, double b) {
+double multiply(double a, double b) {
   return a * b;
 }
 

@@ -30,10 +30,8 @@
 Functions used for unit tests of error.py.
 """
 
+from tau import tests
 
-import unittest
-#from tau import error
-
-class ErrorTest(unittest.TestCase):
-    def test_error(self):
-        self.assertEqual(1, 1)
+@tests.not_implemented
+class ErrorTest(tests.TestCase):
+    pass

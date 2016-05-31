@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2016, ParaTools, Inc.
+# Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -25,13 +25,14 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""Test functions.
+"""Error class for data format errors.
 
-Functions used for unit tests of project.py.
+TODO: Docs
 """
 
-from tau import tests
+from tau.error import Error
 
-@tests.not_implemented
-class ProjectTest(tests.TestCase):
+
+class DataFormatError(Error):
+    """Indicates that the performance data is not in the expected format."""
     pass

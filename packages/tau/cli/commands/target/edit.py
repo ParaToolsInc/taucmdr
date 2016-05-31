@@ -28,7 +28,6 @@
 """``tau target edit`` subcommand."""
 
 from tau import EXIT_SUCCESS
-from tau.error import ConfigurationError
 from tau.storage.levels import STORAGE_LEVELS
 from tau.cli import arguments
 from tau.cli.cli_view import EditCommand
@@ -37,7 +36,6 @@ from tau.model.compiler import Compiler
 from tau.cf.compiler import CompilerFamily, CompilerRole
 from tau.cf.compiler.mpi import MpiCompilerFamily, MPI_CXX_ROLE, MPI_CC_ROLE, MPI_FC_ROLE
 from tau.cf.compiler.installed import InstalledCompiler, InstalledCompilerFamily
-from tau.cf.target import host
 
 
 class TargetEditCommand(EditCommand):
@@ -81,7 +79,7 @@ class TargetEditCommand(EditCommand):
 
         # Probe MPI compilers to discover wrapper flags
         mpi_keys = set([getattr(role, 'keyword') for role in MPI_CC_ROLE, MPI_CXX_ROLE, MPI_FC_ROLE])
-        for key in (mpi_keys & given_keys):
+        for key in mpi_keys & given_keys:
             for args_attr, wrapped_attr in [('mpi_include_path', 'include_path'), 
                                             ('mpi_library_path', 'library_path'),
                                             ('mpi_libraries', 'libraries')]:

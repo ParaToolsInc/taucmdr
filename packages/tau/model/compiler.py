@@ -32,26 +32,64 @@ source code and TAU itself.  If the system compiler changes TAU can break entire
 This data tracks the system compilers so we can warn the user if they have changed.
 """
 
+import os
 from tau import logger
+from tau.error import InternalError
 from tau.mvc.model import Model
 from tau.mvc.controller import Controller
-
+from tau.cf.compiler import CompilerFamily, CompilerRole, CompilerInfo
+from tau.cf.compiler.mpi import MpiCompilerFamily
+from tau.cf.compiler.installed import InstalledCompiler
 
 LOGGER = logger.get_logger(__name__)
 
 
 def attributes():
     return {
+        'uid': {
+            'type': 'string',
+            'required': True,
+            'description': "unique identifier of the compiler command"
+        },
         'path': {
             'type': 'string',
             'required': True,
-            'unique': True,
             'description': "absolute path to the compiler command"
         },
-        'md5': {
+        'family': {
             'type': 'string',
             'required': True,
-            'description': "checksum of the compiler command file"
+            'description': "compiler's family"
+        },
+        'role': {
+            'type': 'string',
+            'required': True,
+            'description': "role this command plays in the compiler family, e.g. CXX or MPI_CC"
+        },
+        'wrapped': {
+            'model': Compiler,
+            'required': False,
+            'description': "compiler wrapped by this compiler"
+        },
+        'include_path': {
+            'type': 'array',
+            'required': False,
+            'description': "extra paths to search for include files when compiling with this compiler"
+        },
+        'library_path': {
+            'type': 'array',
+            'required': False,
+            'description': "extra paths to search for libraries when compiling with this compiler"
+        },
+        'compiler_flags': {
+            'type': 'array',
+            'required': False,
+            'description': "extra flags to use when compiling with this compiler"
+        },
+        'libraries': {
+            'type': 'array',
+            'required': False,
+            'description': "extra libraries to link when compiling with this compiler"
         }
     }
 
@@ -60,25 +98,37 @@ class CompilerController(Controller):
     """Compiler data controller."""
     
     def register(self, comp):
-        """Records information about a compiler command in the database.
+        """Records information about an installed compiler command in the database.
         
-        If the given compiler has already been registered then do not update the database.
+        If the compiler has already been registered then do not update the database.
         
         Args:
-            comp (InstalledCompiler): Information about the installed compiler command.
+            comp (InstalledCompiler): Information about an installed compiler.
             
         Returns:
             Compiler: Data controller for the installed compiler's data.
         """
-        path = comp.absolute_path
-        md5sum = comp.md5sum()
-        found = self.one({'path': path})
+        found = self.one({'uid': comp.uid})
         if not found:
-            found = self.create({'path': path, 'md5': md5sum})
-        else:
-            if md5sum != found['md5']:
-                LOGGER.warning("%s '%s' has changed!  MD5 sum was %s, but now it's %s", 
-                               comp.info.short_descr, comp.command, found['md5'], md5sum)
+            LOGGER.debug("Registering compiler '%s' (%s)", comp.absolute_path, comp.info.short_descr)
+            data = {'path': comp.absolute_path, 
+                    'family': comp.info.family.name, 
+                    'role': comp.info.role.keyword}
+            for attr in 'include_path', 'library_path', 'compiler_flags', 'libraries':
+                value = getattr(comp, attr)
+                if value:
+                    data[attr] = value 
+            if comp.wrapped:
+                data['wrapped'] = self.register(comp.wrapped).eid
+            found = self.one(data)
+            if not found:
+                data['uid'] = comp.uid
+                found = self.create(data)
+            elif found['uid'] != comp.uid:
+                LOGGER.warning("%s '%s' has changed!"
+                               " The unique ID was %s when the TAU project was created, but now it's %s."
+                               " TAU will attempt to continue but may fail later on.", 
+                               comp.info.short_descr, comp.absolute_path, found['uid'], comp.uid)
         return found
 
 
@@ -89,15 +139,45 @@ class Compiler(Model):
 
     __controller__ = CompilerController
     
-    def info(self):
-        """Probes the system for information on this compiler command.
+    def installation_info(self, probe=False):
+        """Gets information about this compiler installation.
+        
+        Args:
+            probe (bool): If True then probe the system to confirm that the installed compiler matches the
+                          data recorded in the database.  If False then use the recorded data without verification.
         
         Returns:
             InstalledCompiler: Information about the installed compiler command.
         """
-        from tau.cf.compiler.installed import InstalledCompiler
-        comp = InstalledCompiler(self['path'])
-        if comp.md5sum() != self['md5']:
-            LOGGER.warning("%s '%s' has changed!", comp.info.short_descr, comp.command)
+        command = os.path.basename(self['path'])
+        role = CompilerRole.find(self['role'])
+        if role.keyword.startswith('MPI_'):
+            family = MpiCompilerFamily.find(self['family'])
+        else:
+            family = CompilerFamily.find(self['family'])
+        info_list = CompilerInfo.find(command, family, role)
+        if len(info_list) != 1:
+            raise InternalError("Zero or more than one CompilerInfo objects match '%s'" % self)
+        info = info_list[0]
+        if probe:
+            comp = InstalledCompiler(self['path'], info)
+            if comp.uid != self['uid']:
+                LOGGER.warning("%s '%s' has changed!"
+                               " The unique ID was %s when the TAU project was created, but now it's %s."
+                               " TAU will attempt to continue but may fail later on.", 
+                               comp.info.short_descr, comp.absolute_path, self['uid'], comp.uid)
+        else:
+            LOGGER.debug("NOT verifying compiler information for '%s'", self['path'])
+            try:
+                wrapped = self.populate('wrapped')
+            except KeyError:
+                comp = InstalledCompiler(self['path'], info, uid=self['uid'])
+            else:
+                comp = InstalledCompiler(self['path'], info, 
+                                         wrapped=wrapped.installation_info(probe), 
+                                         include_path=self['include_path'], 
+                                         library_path=self['library_path'], 
+                                         compiler_flags=self['compiler_flags'], 
+                                         libraries=self['libraries'],
+                                         uid=self['uid'])
         return comp
-

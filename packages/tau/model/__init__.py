@@ -29,6 +29,15 @@
 
 
 def require_compiler_family(family, *hints):
+    """Creates a compatibility callback to check a compiler family.
+    
+    Args:
+        family (CompilerFamily): The required compiler family.
+        *hints: String hints to show the user when the check fails.
+        
+    Returns:
+        callable: a compatibility checking callback for use with data models.
+    """
     def callback(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
         """Compatibility checking callback for use with data models.
 
@@ -45,7 +54,6 @@ def require_compiler_family(family, *hints):
             ConfigurationError: Invalid compiler family specified in target configuration.
         """
         from tau.error import ConfigurationError
-        from tau.cf.compiler.installed import InstalledCompiler
 
         lhs_name = lhs.name.lower()
         rhs_name = rhs.name.lower()
@@ -55,9 +63,8 @@ def require_compiler_family(family, *hints):
             compiler_record = rhs.populate(rhs_attr)
         except KeyError:
             raise ConfigurationError("%s but it is undefined" % msg)
-        given_compiler = InstalledCompiler(compiler_record['path'])
-        given_family = given_compiler.info.family
-        if given_family is not family:
+        given_family_name = compiler_record['family']
+        if given_family_name != family.name:
             raise ConfigurationError("%s but it is a %s compiler" % (msg, given_family), *hints)
     return callback
 

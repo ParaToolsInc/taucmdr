@@ -25,6 +25,12 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
+"""
+Local file backend for storage containers.
+
+A persistant, transactional record storage system useing :py:class:`TinyDB` for 
+both the database and the key/value store.
+"""
 
 import os
 import json
