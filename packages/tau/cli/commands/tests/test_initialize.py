@@ -42,10 +42,10 @@ class InitializeTest(unittest.TestCase):
     current_time = time.strftime("%Y%m%d_%H%M%S")
     @classmethod
     def setUpClass(cls):
-        try:
-            shutil.rmtree('.system')
-        except:
-            pass
+        #try:
+        #    shutil.rmtree('.system')
+        #except:
+        #    pass
         os.makedirs('tmp/'+cls.current_time)
         os.chdir('tmp/'+cls.current_time)
     def test_initialize(self):

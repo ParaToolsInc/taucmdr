@@ -32,8 +32,34 @@ Functions used for unit tests of delete.py.
 
 
 import unittest
-#from tau.cli.commands.trial import delete
+import os
+import time
+import shutil
+from tau.cli.commands import build, initialize
+from tau.cli.commands.trial import delete, create
+from tau.storage.levels import PROJECT_STORAGE
 
 class DeleteTest(unittest.TestCase):
+    current_time = time.strftime("%Y%m%d_%H%M%S")
+    @classmethod
+    def setUpClass(cls):
+        pass
+        os.makedirs('tmp/'+cls.current_time)
+        shutil.copyfile('.testfiles/hello.c', 'tmp/'+cls.current_time+'/hello.c')
+        os.chdir('tmp/'+cls.current_time)
+        argv = ['--storage-level', 'project']
+        initialize.COMMAND.main(argv)
+        argv = ['gcc', 'hello.c']
+        build.COMMAND.main(argv)
     def test_delete(self):
-        self.assertEqual(1, 1) 
+        argv = ['./a.out']
+        create.COMMAND.main(argv)
+        argv = [0]
+        retval = delete.COMMAND.main(argv)
+        self.assertEqual(retval, 0) 
+    @classmethod
+    def tearDownClass(cls):
+        os.chdir('../..')
+        shutil.rmtree('tmp')
+        PROJECT_STORAGE._prefix = None
+        PROJECT_STORAGE.disconnect_filesystem()
