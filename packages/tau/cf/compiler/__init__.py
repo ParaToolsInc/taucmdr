@@ -130,6 +130,7 @@ class CompilerInfo(TrackedInstance):
         Returns:
             list: CompilerInfo instances matching given compiler information.
         """
+        # pylint: disable=too-many-return-statements
         assert command is None or isinstance(command, basestring)
         assert family is None or isinstance(family, CompilerFamily)
         assert role is None or isinstance(role, CompilerRole)
@@ -160,6 +161,7 @@ class CompilerFamily(KeyedRecord):
 
     Attributes:
         name (str): Family name, e.g. "Intel".
+        family_regex (str): Regular expression identifying compiler family in compiler version string.
         version_flags (list): Command line flags that show the compiler version, e.g. '--version'.
         include_path_flags (list): Command line flags that add a directory to the compiler's include path, e.g. '-I'. 
         library_path_flags (list): Command line flags that add a directory to the compiler's library path, e.g. '-L'.
@@ -294,6 +296,13 @@ IBM_COMPILERS = CompilerFamily('IBM')
 IBM_COMPILERS.add(CC_ROLE, 'xlc')
 IBM_COMPILERS.add(CXX_ROLE, 'xlc++', 'xlC')
 IBM_COMPILERS.add(FC_ROLE, 'xlf')
+
+IBM_BG_COMPILERS = CompilerFamily('BlueGene')
+IBM_BG_COMPILERS.add(CC_ROLE, 'bgxlc', 'bgxlc_r', 'bgcc', 'bgcc_r', 'bgc89', 'bgc89_r', 'bgc99', 'bgc99_r')
+IBM_BG_COMPILERS.add(CXX_ROLE, 'bgxlc++', 'bgxlc++_r', 'bgxlC', 'bgxlC_r')
+IBM_BG_COMPILERS.add(FC_ROLE, 'bgxlf', 'bgxlf_r', 'bgf77', 'bgfort77', 'bgxlf90', 'bgxlf90_r', 'bgf90', 
+                     'bgxlf95', 'bgxlf95_r', 'bgf95', 'bgxlf2003', 'bgxlf2003_r', 'bgf2003', 'bgxlf2008', 
+                     'bgxlf2008_r', 'bgf2008')
 
 CRAY_COMPILERS = CompilerFamily('Cray', show_wrapper_flags=['-craype-verbose', '--version', '-E'])
 CRAY_COMPILERS.add(CC_ROLE, 'cc')

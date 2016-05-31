@@ -254,7 +254,7 @@ def archive_toplevel(archive):
         return topdir
 
 
-def extract(archive, dest):
+def extract_archive(archive, dest):
     """Extracts archive file to dest.
     
     Supports compressed and uncompressed tar archives. Destination folder will
@@ -282,6 +282,24 @@ def extract(archive, dest):
     LOGGER.debug("Created '%s'", full_dest)
     return full_dest
 
+def create_archive(fmt, dest, items):
+    """Creates a new archive file in the specified format.
+    
+    Args:
+        fmt (str): Archive fmt, e.g. 'zip' or 'tgz'.
+        dest (str): Path to the archive file that will be created.
+        items (list): Items (i.e. files or folders) to add to the archive. 
+    """
+    if fmt == 'zip':
+        with ZipFile(dest, 'w') as archive:
+            archive.comment = "Created by TAU Commander"
+            for item in items:
+                archive.write(item)
+    elif fmt in ('tar', 'tgz', 'tar.bz2'):
+        mode_map = {'tar': 'w', 'tgz': 'w:gz', 'tar.bz2': 'w:bz2'}
+        with tarfile.open(dest, mode_map[fmt]) as archive:
+            for item in items:
+                archive.add(item)
 
 def file_accessible(filepath, mode='r'):
     """Check if a file is accessable.

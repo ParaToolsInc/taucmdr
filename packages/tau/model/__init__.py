@@ -65,6 +65,6 @@ def require_compiler_family(family, *hints):
             raise ConfigurationError("%s but it is undefined" % msg)
         given_family_name = compiler_record['family']
         if given_family_name != family.name:
-            raise ConfigurationError("%s but it is a %s compiler" % (msg, given_family), *hints)
+            raise ConfigurationError("%s but it is a %s compiler" % (msg, given_family_name), *hints)
     return callback
 

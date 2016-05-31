@@ -134,9 +134,6 @@ class TrialController(Controller):
         env['PROFILEDIR'] = trial.prefix
         env['TRACEDIR'] = trial.prefix
 
-        target = expr.populate('target')
-        host_arch = target['host_arch']
-
         try:
             retval = trial.execute_command(expr, cmd, cwd, env)
         except:

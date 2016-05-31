@@ -34,7 +34,7 @@ This data tracks the system compilers so we can warn the user if they have chang
 
 import os
 from tau import logger
-from tau.error import InternalError
+from tau.error import InternalError, ConfigurationError
 from tau.mvc.model import Model
 from tau.mvc.controller import Controller
 from tau.cf.compiler import CompilerFamily, CompilerRole, CompilerInfo
@@ -139,6 +139,59 @@ class Compiler(Model):
 
     __controller__ = CompilerController
     
+    def _verify_core_attrs(self, comp, msg_parts):
+        fatal = False
+        if comp.absolute_path != self['path']:
+            msg_parts.append("Compiler moved from '%s' to '%s'." % (self['path'], comp.absolute_path))
+        if comp.info.family.name != self['family']:
+            fatal = True
+            msg_parts.append("It was a %s compiler but now it's a %s compiler." % 
+                             (self['family'], comp.info.family.name))
+        if comp.info.role.keyword != self['role']:
+            msg_parts.append("It was a %s compiler but now it's a %s compiler." % 
+                             (self['role'], comp.info.role.keyword))
+        return fatal
+
+    def _verify(self, comp):
+        if comp.uid == self['uid']:
+            return
+        msg_parts = ["%s '%s' has changed:" % (comp.info.short_descr, comp.absolute_path)]
+        fatal = self._verify_core_attrs(comp, msg_parts)
+        if not fatal:
+            self_wrapped = self.get('wrapped', False)
+            if comp.wrapped and not self_wrapped:
+                fatal = True
+                msg_parts.append("It has changed to a compiler wrapper.")
+            elif not comp.wrapped and self_wrapped:
+                fatal = True
+                msg_parts.append("It has changed from a compiler wrapper to a regular compiler.")
+            elif comp.wrapped and self_wrapped:
+                new_wrapped = comp.wrapped
+                while new_wrapped.wrapped:
+                    new_wrapped = new_wrapped.wrapped
+                old_wrapped = self.populate('wrapped')
+                while 'wrapped' in old_wrapped:
+                    old_wrapped = self.populate('wrapped')
+                fatal = fatal or old_wrapped._verify_core_attrs(new_wrapped, msg_parts) # pylint: disable=protected-access
+                if not fatal:
+                    if sorted(comp.include_path) != sorted(self['include_path']):
+                        msg_parts.append("Include path has changed.")
+                    if sorted(comp.library_path) != sorted(self['library_path']):
+                        msg_parts.append('Library path has changed.')
+                    if sorted(comp.compiler_flags) != sorted(self['compiler_flags']):
+                        msg_parts.append('Compiler flags have changed.')
+                    if sorted(comp.libraries) != sorted(self['libraries']):
+                        msg_parts.append('Linked libraries have changed.')
+        msg = "\n  ".join(msg_parts)
+        if fatal:
+            raise ConfigurationError(msg, 
+                                     "Check loaded environment modules", 
+                                     "Check loaded software environment", 
+                                     "Check the PATH environment variable",
+                                     "Contact your system administrator")
+        else:
+            LOGGER.warning(msg + "\nAttempting to continue.")
+    
     def installation_info(self, probe=False):
         """Gets information about this compiler installation.
         
@@ -161,11 +214,7 @@ class Compiler(Model):
         info = info_list[0]
         if probe:
             comp = InstalledCompiler(self['path'], info)
-            if comp.uid != self['uid']:
-                LOGGER.warning("%s '%s' has changed!"
-                               " The unique ID was %s when the TAU project was created, but now it's %s."
-                               " TAU will attempt to continue but may fail later on.", 
-                               comp.info.short_descr, comp.absolute_path, self['uid'], comp.uid)
+            self._verify(comp)
         else:
             LOGGER.debug("NOT verifying compiler information for '%s'", self['path'])
             try:
@@ -175,9 +224,9 @@ class Compiler(Model):
             else:
                 comp = InstalledCompiler(self['path'], info, 
                                          wrapped=wrapped.installation_info(probe), 
-                                         include_path=self['include_path'], 
-                                         library_path=self['library_path'], 
-                                         compiler_flags=self['compiler_flags'], 
-                                         libraries=self['libraries'],
+                                         include_path=self.get('include_path', None), 
+                                         library_path=self.get('library_path', None), 
+                                         compiler_flags=self.get('compiler_flags', None), 
+                                         libraries=self.get('libraries', None),
                                          uid=self['uid'])
         return comp

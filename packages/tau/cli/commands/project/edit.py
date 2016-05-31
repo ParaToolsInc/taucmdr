@@ -189,6 +189,11 @@ class ProjectEditCommand(EditCommand):
         updates['targets'] = list(targets)
         updates['applications'] = list(applications)
         updates['measurements'] = list(measurements)
+        
+        try:
+            updates['force_tau_options'] = args.force_tau_options
+        except AttributeError:
+            pass
     
         proj_ctrl.update(updates, {'name': project_name})
         for model in added:
@@ -197,6 +202,11 @@ class ProjectEditCommand(EditCommand):
         for model in removed:
             self.logger.info("Removed %s '%s' from project configuration '%s'.", 
                              model.name.lower(), model[model.key_attribute], project_name)
+        if updates['force_tau_options'][0].lower().strip() == 'none':
+            proj_ctrl.unset(['force_tau_options'], {'name': project_name})
+            self.logger.info("Removed 'force-tau-options' from project configuration '%s'.", project_name)
+        else:
+            self.logger.info("Added 'force-tau-options' to project configuration '%s'.", project_name)
         return EXIT_SUCCESS
 
 COMMAND = ProjectEditCommand(Project, __name__)
