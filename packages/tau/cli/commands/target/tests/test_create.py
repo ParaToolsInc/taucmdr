@@ -31,29 +31,11 @@ Functions used for unit tests of create.py.
 """
 
 
-import unittest
-import os
-import time
-import shutil
-from tau.cli.commands import initialize
+from tau import tests
 from tau.cli.commands.target import create
-from tau.storage.levels import PROJECT_STORAGE
 
-class CreateTest(unittest.TestCase):
-    current_time = time.strftime("%Y%m%d_%H%M%S")
-    @classmethod
-    def setUpClass(cls):
-        os.makedirs('tmp/'+cls.current_time)
-        os.chdir('tmp/'+cls.current_time)
-        argv = ['--storage-level', 'project']
-        initialize.COMMAND.main(argv)
+class CreateTest(tests.TestCase):
     def test_create(self):
-        argv = ['targ01']
-        retval = create.COMMAND.main(argv)
+        argv = ['targ02']
+        retval, stdout, stderr = tests.exec_command(self, create.COMMAND, argv)
         self.assertEqual(retval, 0) 
-    @classmethod
-    def tearDownClass(cls):
-        os.chdir('../..')
-        shutil.rmtree('tmp')
-        PROJECT_STORAGE._prefix = None
-        PROJECT_STORAGE.disconnect_filesystem()

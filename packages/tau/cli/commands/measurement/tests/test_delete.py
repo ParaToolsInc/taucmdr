@@ -45,7 +45,8 @@ class DeleteTest(unittest.TestCase):
     def setUpClass(cls):
         os.makedirs('tmp/'+cls.current_time)
         os.chdir('tmp/'+cls.current_time)
-        argv = ['--storage-level', 'project']
+        #argv = ['--storage-level', 'project']
+        argv = []
         initialize.COMMAND.main(argv)
     def test_delete(self):
         argv = ['sample']

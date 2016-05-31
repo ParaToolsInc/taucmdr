@@ -31,34 +31,17 @@ Functions used for unit tests of list.py.
 """
 
 
-import unittest
-import os
-import time
 import shutil
-from tau.cli.commands import build, initialize
+from tau import tests, TAU_HOME
+from tau.cli.commands import build
 from tau.cli.commands.trial import list, create
-from tau.storage.levels import PROJECT_STORAGE
 
-class ListTest(unittest.TestCase):
-    current_time = time.strftime("%Y%m%d_%H%M%S")
-    @classmethod
-    def setUpClass(cls):
-        pass
-        os.makedirs('tmp/'+cls.current_time)
-        shutil.copyfile('.testfiles/hello.c', 'tmp/'+cls.current_time+'/hello.c')
-        os.chdir('tmp/'+cls.current_time)
-        argv = ['--storage-level', 'project']
-        initialize.COMMAND.main(argv)
-        argv = ['gcc', 'hello.c']
-        build.COMMAND.main(argv)
-        argv = ['./a.out']
-        create.COMMAND.main(argv)
+class ListTest(tests.TestCase):
     def test_list(self):
-        retval = list.COMMAND.main([])
+        shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests._DIR_STACK[0]+'/hello.c')
+        argv = ['gcc', 'hello.c']
+        tests.exec_command(self, build.COMMAND, argv)
+        argv = ['./a.out']
+        tests.exec_command(self, create.COMMAND, argv)
+        retval, stdout, stderr = tests.exec_command(self, list.COMMAND, [])
         self.assertEqual(retval, 0)
-    @classmethod
-    def tearDownClass(cls):
-        os.chdir('../..')
-        shutil.rmtree('tmp')
-        PROJECT_STORAGE._prefix = None
-        PROJECT_STORAGE.disconnect_filesystem()

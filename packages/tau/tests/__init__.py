@@ -35,11 +35,15 @@ import tempfile
 import unittest
 import warnings
 from tau import logger
+import tau
+from tau.cli.commands import initialize
+from tau.storage.levels import PROJECT_STORAGE
 
 _DIR_STACK = []
 _CWD_STACK = []
 _TEMPDIR_STACK = []
 _NOT_IMPLEMENTED = []
+_SYSTEM_DIR = None
 
 def get_stdout():
     """Get data written to unit test stdout.
@@ -94,6 +98,10 @@ def push_test_workdir():
     Directories created via this method are tracked.  If any of them exist when the program exits then
     an error message is shown for each.
     """
+    #if not os.path.exists('tmp'):
+    #    os.makedirs('tmp')
+    #prefix = os.getcwd() + '/tmp/'
+    #path = tempfile.mkdtemp(prefix=prefix)
     path = tempfile.mkdtemp()
     _DIR_STACK.append(path)
     _CWD_STACK.append(os.getcwd())
@@ -130,6 +138,13 @@ def not_implemented(cls):
     _NOT_IMPLEMENTED.append(msg)
     return unittest.skip(msg)(cls)
 
+def fresh_tau():
+    """ Reset to fresh environment to test `tau initialize`."""
+    shutil.rmtree(os.getcwd()+'/.tau')
+    PROJECT_STORAGE._prefix = None
+    PROJECT_STORAGE.disconnect_filesystem()
+
+
 class TestCase(unittest.TestCase):
     """Base class for unit tests.
     
@@ -138,16 +153,23 @@ class TestCase(unittest.TestCase):
     
     @classmethod
     def setUpClass(cls):
+        global _SYSTEM_DIR
+        if _SYSTEM_DIR is None:
+            _SYSTEM_DIR = tempfile.mkdtemp()
+        tau.SYSTEM_PREFIX = _SYSTEM_DIR
         push_test_workdir()
         # Reset stdout logger handler to use buffered unittest stdout
         # pylint: disable=protected-access
         cls._orig_stream = logger._STDOUT_HANDLER.stream
         logger._STDOUT_HANDLER.stream = sys.stdout
+        initialize.COMMAND.main(['--project-name', 'proj1', '--target-name', 'targ1'])
         
     @classmethod
     def tearDownClass(cls):
         # Restore original stream to stdout logger handler
         # pylint: disable=protected-access
+        PROJECT_STORAGE._prefix = None
+        PROJECT_STORAGE.disconnect_filesystem()
         logger._STDOUT_HANDLER.stream = cls._orig_stream
         pop_test_workdir()
 

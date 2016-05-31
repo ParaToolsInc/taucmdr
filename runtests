@@ -39,14 +39,14 @@ if __name__ == '__main__':
     if getattr(sys, 'frozen', False):
         __file__ = sys.executable
 
-    here = os.path.dirname(__file__)
+    here = os.path.realpath(os.path.dirname(__file__))
     os.environ['__TAU_HOME__'] = os.path.join(here)
     os.environ['__TAU_SCRIPT__'] = os.path.basename(__file__)
     packages = os.path.join(here, 'packages')
     sys.path.insert(0, packages)
     sys.path.insert(0, os.path.join(packages, 'tau'))
 
+
     from tau import tests
     suite = unittest.TestLoader().discover(os.path.join('packages', 'tau'), 'test*py')
     tests.TestRunner(verbosity=1, buffer=True).run(suite)
-

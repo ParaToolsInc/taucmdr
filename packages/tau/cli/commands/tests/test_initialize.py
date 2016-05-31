@@ -36,9 +36,10 @@ from tau.cli.commands.initialize import COMMAND as initialize_cmd
 
 
 class InitializeTest(tests.TestCase):
-    """Unit tests for `tau target create`"""
+    """Unit tests for `tau initialize`"""
 
     def test_bare(self):
+        tests.fresh_tau()
         retval, stdout, stderr = tests.exec_command(self, initialize_cmd, ['--bare'])
         self.assertEqual(0, retval)
         self.assertIn('Created a new project named', stdout)
@@ -51,5 +52,5 @@ class InitializeTest(tests.TestCase):
 
     def test_initialize(self):
         argv = ['--storage-level', 'project']
-        retval, _, _ = tests.exec_command(self, initialize_cmd, argv)
+        retval, stdout, stderr = tests.exec_command(self, initialize_cmd, argv)
         self.assertEqual(retval, 0)
