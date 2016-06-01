@@ -34,7 +34,10 @@ import atexit
 import tempfile
 import unittest
 import warnings
+import tau
 from tau import logger, EXIT_SUCCESS, EXIT_FAILURE
+from tau.cli.commands import initialize
+from tau.storage.levels import PROJECT_STORAGE
 
 _DIR_STACK = []
 _CWD_STACK = []
@@ -130,23 +133,44 @@ def not_implemented(cls):
     _NOT_IMPLEMENTED.append(msg)
     return unittest.skip(msg)(cls)
 
+
+def reset_project_storage(project_name='proj1', target_name='targ1'):
+    """Delete and recreate project storage.
+    
+    Effectively the same as::
+    
+        > rm -rf .tau
+        > tau init --project-name=proj1 --target-name=targ1
+    
+    Args:
+        project_name (str): New project's name.
+        target_name (str): New target's name.
+    """
+    PROJECT_STORAGE.destroy(ignore_errors=True)
+    initialize.COMMAND.main(['--project-name', project_name, '--target-name', target_name])
+
 class TestCase(unittest.TestCase):
     """Base class for unit tests.
     
     Performs tests in a temporary directory and reconfigures :any:`tau.logger` to work with :any:`unittest`.
     """
     
+    _SYSTEM_DIR = tempfile.mkdtemp()
+    
     @classmethod
     def setUpClass(cls):
+        tau.SYSTEM_PREFIX = TestCase._SYSTEM_DIR
         push_test_workdir()
         # Reset stdout logger handler to use buffered unittest stdout
         # pylint: disable=protected-access
         cls._orig_stream = logger._STDOUT_HANDLER.stream
         logger._STDOUT_HANDLER.stream = sys.stdout
-        
+        reset_project_storage()
+
     @classmethod
     def tearDownClass(cls):
-        # Restore original stream to stdout logger handler
+        PROJECT_STORAGE.destroy()
+        # Reset stdout logger handler to use original stdout
         # pylint: disable=protected-access
         logger._STDOUT_HANDLER.stream = cls._orig_stream
         pop_test_workdir()
@@ -162,5 +186,3 @@ class TestRunner(unittest.TextTestRunner):
         if result.wasSuccessful():
             return EXIT_SUCCESS
         return EXIT_FAILURE
-    
-    

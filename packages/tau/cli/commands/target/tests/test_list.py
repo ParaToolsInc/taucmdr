@@ -31,9 +31,10 @@ Functions used for unit tests of list.py.
 """
 
 
-import unittest
-#from tau.cli.commands.target import list
+from tau import tests
+from tau.cli.commands.target import list
 
-class ListTest(unittest.TestCase):
+class ListTest(tests.TestCase):
     def test_list(self):
-        self.assertEqual(1, 1) 
+        retval, stdout, stderr = tests.exec_command(self, list.COMMAND, [])
+        self.assertEqual(retval, 0) 

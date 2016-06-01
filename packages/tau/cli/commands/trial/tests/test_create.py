@@ -31,9 +31,16 @@ Functions used for unit tests of create.py.
 """
 
 
-import unittest
-#from tau.cli.commands.trial import create
+import shutil
+from tau import tests, TAU_HOME
+from tau.cli.commands import build
+from tau.cli.commands.trial import create
 
-class CreateTest(unittest.TestCase):
+class CreateTest(tests.TestCase):
     def test_create(self):
-        self.assertEqual(1, 1) 
+        shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests._DIR_STACK[0]+'/hello.c')
+        argv = ['gcc', 'hello.c']
+        tests.exec_command(self, build.COMMAND, argv)
+        argv = ['./a.out']
+        retval, stdout, stderr = tests.exec_command(self, create.COMMAND, argv)
+        self.assertEqual(retval, 0)

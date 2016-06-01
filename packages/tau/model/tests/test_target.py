@@ -32,8 +32,8 @@ Functions used for unit tests of target.py.
 
 
 import unittest
-#from tau.model import target
+from tau.model import target
 
 class TargetTest(unittest.TestCase):
     def test_target(self):
-        self.assertEqual(1, 1) 
+        self.assertEqual(any(target.attributes()), 1) 

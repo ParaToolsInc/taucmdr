@@ -32,8 +32,8 @@ Functions used for unit tests of application.py.
 
 
 import unittest
-#from tau.model import application
+from tau.model import application
 
 class ApplicationTest(unittest.TestCase):
-    def test_application(self):
-        self.assertEqual(1, 1) 
+    def test_attributes_not_empty(self):
+        self.assertEqual(any(application.attributes()), 1) 

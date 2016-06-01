@@ -134,11 +134,11 @@ class AbstractStorage(object):
     
     @abstractmethod
     def connect_filesystem(self, *args, **kwargs):
-        """Prepares the store filesystem fore reading and writing."""
+        """Prepares the store filesystem for reading and writing."""
 
     @abstractmethod
     def disconnect_filesystem(self, *args, **kwargs):
-        """Prepares the store filesystem fore reading and writing."""
+        """Makes the store filesystem unreadable and unwritable."""
 
     @abstractmethod
     def connect_database(self, *args, **kwargs):

@@ -31,9 +31,12 @@ Functions used for unit tests of help.py.
 """
 
 
-import unittest
-#from tau.cli.commands import help
+from tau import tests
+from tau.cli.commands import help, initialize
+from tau.storage.levels import PROJECT_STORAGE
 
-class HelpTest(unittest.TestCase):
+class HelpTest(tests.TestCase):
     def test_help(self):
-        self.assertEqual(1, 1) 
+        argv = ['build']
+        retval, stdout, stderr = tests.exec_command(self, help.COMMAND, argv)
+        self.assertEqual(retval, 0) 

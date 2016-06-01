@@ -32,8 +32,29 @@ Functions used for unit tests of edit.py.
 
 
 import unittest
-#from tau.cli.commands.application import edit
+import os
+import time
+import shutil
+from tau.cli.commands import initialize
+from tau.cli.commands.application import edit
+from tau.storage.levels import PROJECT_STORAGE
 
 class EditTest(unittest.TestCase):
+    current_time = time.strftime("%Y%m%d_%H%M%S")
+    @classmethod
+    def setUpClass(cls):
+        os.makedirs('tmp/'+cls.current_time)
+        os.chdir('tmp/'+cls.current_time)
+        #argv = ['--storage-level', 'project']
+        argv = []
+        initialize.COMMAND.main(argv)
     def test_edit(self):
-        self.assertEqual(1, 1) 
+        argv = [os.path.split(os.getcwd())[1], '--new-name', 'test02']
+        retval = edit.COMMAND.main(argv)
+        self.assertEqual(retval, 0) 
+    @classmethod
+    def tearDownClass(cls):
+        os.chdir('../..')
+        shutil.rmtree('tmp')
+        PROJECT_STORAGE._prefix = None
+        PROJECT_STORAGE.disconnect_filesystem()
