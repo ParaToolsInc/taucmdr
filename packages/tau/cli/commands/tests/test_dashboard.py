@@ -38,5 +38,5 @@ from tau.storage.levels import PROJECT_STORAGE
 class DashboardTest(tests.TestCase):
     def test_dashboard(self):
         argv = []
-        retval, stdout, stderr = tests.exec_command(self, dashboard.COMMAND, argv)
+        retval, stdout, stderr = self.exec_command(dashboard.COMMAND, argv)
         self.assertEqual(retval, 0)

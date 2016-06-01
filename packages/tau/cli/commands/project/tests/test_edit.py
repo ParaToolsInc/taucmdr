@@ -33,27 +33,30 @@ Functions used for unit tests of edit.py.
 
 from tau import tests
 from tau.cli.commands.project import edit
+from tau.model.project import Project
 
 class EditTest(tests.TestCase):
-    #current_time = time.strftime("%Y%m%d_%H%M%S")
-    #@classmethod
-    #def setUpClass(cls):
-    #    os.makedirs('tmp/'+cls.current_time)
-    #    os.chdir('tmp/'+cls.current_time)
-    #    argv = []
-    #    initialize.COMMAND.main(argv)
-    #def test_edit(self):
-    #    argv = [os.path.split(os.getcwd())[1], '--new-name', 'test02']
-    #    retval = edit.COMMAND.main(argv)
-    #    self.assertEqual(retval, 0)
-    #@classmethod
-    #def tearDownClass(cls):
-    #    os.chdir('../..')
-    #    shutil.rmtree('tmp')
-    #    PROJECT_STORAGE._prefix = None
-    #    PROJECT_STORAGE.disconnect_filesystem()
+    """Tests for :any:`project.edit`."""
 
-    def test_edit(self):
+    def test_rename(self):
+        tests.reset_project_storage(project_name='proj1')
         argv = ['proj1', '--new-name', 'proj2']
-        retval, stdout, stderr = tests.exec_command(self, edit.COMMAND, argv)
-        self.assertEqual(retval, 0)
+        self.assertCommandReturnValue(0, edit.COMMAND, argv)
+        proj_ctrl = Project.controller()
+        self.assertIsNone(proj_ctrl.one({'name': 'proj1'}))
+        self.assertIsNotNone(proj_ctrl.one({'name': 'proj2'}))
+    
+    def test_set_tau_force_options(self):
+        tests.reset_project_storage(project_name='proj1')
+        proj_ctrl = Project.controller()
+        # Check that 'force-tau-options' is unset in the new project configuration
+        proj1 = proj_ctrl.one({'name': 'proj1'})
+        self.assertFalse('force-tau-options' in proj1)
+        # Test --force-tau-options
+        tau_options = ['-optVerbose', '-optNoCompInst']
+        argv = ['proj1', '--force-tau-options'] + tau_options
+        self.assertCommandReturnValue(0, edit.COMMAND, argv)
+        # Check that 'force-tau-options' is now a list containing the expected options in the project record
+        proj1 = proj_ctrl.one({'name': 'proj1'})
+        self.assertIsNotNone(proj1)
+        self.assertListEqual(proj1['force-tau-options'], tau_options)

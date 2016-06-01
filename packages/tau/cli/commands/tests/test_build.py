@@ -41,6 +41,6 @@ class BuildTest(tests.TestCase):
         shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests._DIR_STACK[0]+'/hello.c')
         ## Need to change gcc to system compiler
         #argv = ['gcc', 'hello.c']
-        #retval, stdout, stderr = tests.exec_command(self, build.COMMAND, argv)
+        #retval, stdout, stderr = self.exec_command(build.COMMAND, argv)
         retval = 0
         self.assertEqual(retval, 0)

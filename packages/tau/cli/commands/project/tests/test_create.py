@@ -39,5 +39,5 @@ class CreateTest(tests.TestCase):
 
     def test_create(self):
         argv = ['test01']
-        retval, stdout, stderr = tests.exec_command(self, create.COMMAND, argv)
+        retval, stdout, stderr = self.exec_command(create.COMMAND, argv)
         self.assertEqual(retval, 0) 

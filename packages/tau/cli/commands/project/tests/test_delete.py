@@ -38,5 +38,5 @@ class DeleteTest(tests.TestCase):
 
     def test_delete(self):
         argv = ['proj1']
-        retval, _, _ = tests.exec_command(self, delete.COMMAND, argv)
+        retval, _, _ = self.exec_command(delete.COMMAND, argv)
         self.assertEqual(0, retval)

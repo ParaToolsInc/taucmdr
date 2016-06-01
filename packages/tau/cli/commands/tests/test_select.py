@@ -38,5 +38,5 @@ from tau.storage.levels import PROJECT_STORAGE
 class SelectTest(tests.TestCase):
     def test_select(self):
         argv = ['sample']
-        retval, stdout, stderr = tests.exec_command(self, select.COMMAND, argv)
+        retval, stdout, stderr = self.exec_command(select.COMMAND, argv)
         self.assertEqual(retval, 0) 

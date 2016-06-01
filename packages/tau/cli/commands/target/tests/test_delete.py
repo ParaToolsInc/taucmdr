@@ -39,5 +39,5 @@ from tau.storage.levels import PROJECT_STORAGE
 class DeleteTest(tests.TestCase):
     def setUpClass(cls):
         argv = ['targ1']
-        retval, stdout, stderr = tests.exec_command(self, delete.COMMAND, argv)
+        retval, stdout, stderr = self.exec_command(delete.COMMAND, argv)
         self.assertEqual(retval, 0) 

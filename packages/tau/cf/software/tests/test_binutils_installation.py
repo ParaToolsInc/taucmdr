@@ -30,24 +30,8 @@
 Functions used for unit tests of binutils_installation.py
 """
 
+from tau import tests
 
-import unittest
-import os
-import time
-import shutil
-#from tau.cf.software import binutils_installation
-#from tau.cf.software.installation import AutotoolsInstallation
-
-class BinutilsInstallationTest(unittest.TestCase):
-    current_time = time.strftime("%Y%m%d_%H%M%S")
-    @classmethod
-    def setUpClass(cls):
-        os.makedirs('tmp/'+cls.current_time)
-        os.chdir('tmp/'+cls.current_time)
-    def test_binutils_installation(self):
-        #binutils_installation.BinutilsInstallation(AutotoolsInstallation)
-        self.assertEqual(1, 1)
-    @classmethod
-    def tearDownClass(cls):
-        os.chdir('../..')
-        shutil.rmtree('tmp')
+@tests.not_implemented
+class BinutilsInstallationTest(tests.TestCase):
+    pass 

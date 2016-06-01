@@ -37,5 +37,5 @@ from tau.cli.commands.target import edit
 class EditTest(tests.TestCase):
     def test_edit(self):
         argv = ['targ1', '--new-name', 'targ2']
-        retval, stdout, stderr = tests.exec_command(self, edit.COMMAND, argv)
+        retval, stdout, stderr = self.exec_command(edit.COMMAND, argv)
         self.assertEqual(retval, 0)

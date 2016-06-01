@@ -31,9 +31,8 @@ Functions used for unit tests of model.py.
 """
 
 
-import unittest
-#from tau.mvc import model
+from tau import tests
 
-class ModelTest(unittest.TestCase):
-    def test_model(self):
-        self.assertEqual(1, 1) 
+@tests.not_implemented
+class ModelTest(tests.TestCase):
+    pass 
