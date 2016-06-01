@@ -31,9 +31,29 @@ Functions used for unit tests of edit.py.
 """
 
 
-import unittest
-#from tau.cli.commands.project import edit
+from tau import tests
+from tau.cli.commands.project import edit
 
-class EditTest(unittest.TestCase):
+class EditTest(tests.TestCase):
+    #current_time = time.strftime("%Y%m%d_%H%M%S")
+    #@classmethod
+    #def setUpClass(cls):
+    #    os.makedirs('tmp/'+cls.current_time)
+    #    os.chdir('tmp/'+cls.current_time)
+    #    argv = []
+    #    initialize.COMMAND.main(argv)
+    #def test_edit(self):
+    #    argv = [os.path.split(os.getcwd())[1], '--new-name', 'test02']
+    #    retval = edit.COMMAND.main(argv)
+    #    self.assertEqual(retval, 0)
+    #@classmethod
+    #def tearDownClass(cls):
+    #    os.chdir('../..')
+    #    shutil.rmtree('tmp')
+    #    PROJECT_STORAGE._prefix = None
+    #    PROJECT_STORAGE.disconnect_filesystem()
+
     def test_edit(self):
-        self.assertEqual(1, 1) 
+        argv = ['proj1', '--new-name', 'proj2']
+        retval, stdout, stderr = tests.exec_command(self, edit.COMMAND, argv)
+        self.assertEqual(retval, 0)

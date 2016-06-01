@@ -32,8 +32,8 @@ Functions used for unit tests of trial.py.
 
 
 import unittest
-#from tau.model import trial
+from tau.model import trial
 
 class TrialTest(unittest.TestCase):
     def test_trial(self):
-        self.assertEqual(1, 1) 
+        self.assertEqual(any(trial.attributes()), 1) 

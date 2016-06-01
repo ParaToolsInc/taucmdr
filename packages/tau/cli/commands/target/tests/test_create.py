@@ -36,6 +36,11 @@ from tau.cli.commands.target.create import COMMAND as create_cmd
 class CreateTest(tests.TestCase):
     """Unit tests for `tau target create`"""
 
+    def test_create(self):
+        argv = ['targ02']
+        retval, stdout, stderr = tests.exec_command(self, create_cmd, argv)
+        self.assertEqual(retval, 0) 
+
     def test_no_project(self):
         from tau.storage.project import ProjectStorageError
         argv = ['test_no_project']
@@ -60,4 +65,3 @@ class CreateTest(tests.TestCase):
         self.assertIn('Create target configurations.', stdout)
         self.assertIn('show this help message and exit', stdout)
         self.assertFalse(stderr)
-        
