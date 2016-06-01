@@ -34,6 +34,7 @@ where :any:`USER_PREFIX` is not accessible from cluster compute nodes.
 
 
 import os
+import shutil
 from tau import logger, util
 from tau import SYSTEM_PREFIX, USER_PREFIX, PROJECT_DIR
 from tau.storage import StorageError
@@ -72,7 +73,7 @@ class ProjectStorage(LocalFileStorage):
     
     def __init__(self):
         super(ProjectStorage, self).__init__('project', None)
-        
+    
     def connect_filesystem(self, *args, **kwargs):
         """Prepares the store filesystem for reading and writing."""
         try:
@@ -88,6 +89,20 @@ class ProjectStorage(LocalFileStorage):
             with open(os.path.join(self.prefix, '.gitignore'), 'w+') as fout:
                 fout.write('/*\n')
             LOGGER.debug("Initialized %s filesystem prefix '%s'", self.name, project_prefix)
+
+    def destroy(self, *args, **kwargs):
+        """Disconnects the database and filesystem and recursively deletes the filesystem.
+        
+        Args:
+            *args: Passed through to :any:`disconnect_filesystem`.
+            **kwargs: Keyword arguments for :any:`disconnect_filesystem` or :any:`shutil.rmtree`.
+        """
+        self.disconnect_filesystem(*args, **kwargs)
+        ignore_errors = kwargs.pop('ignore_errors', False)
+        onerror = kwargs.pop('onerror', None)
+        if self._prefix:
+            shutil.rmtree(self._prefix, ignore_errors=ignore_errors, onerror=onerror)
+            self._prefix = None
 
     @property
     def prefix(self):
