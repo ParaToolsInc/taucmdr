@@ -34,7 +34,7 @@ import atexit
 import tempfile
 import unittest
 import warnings
-from tau import logger
+from tau import logger, EXIT_SUCCESS, EXIT_FAILURE
 
 _DIR_STACK = []
 _CWD_STACK = []
@@ -155,11 +155,12 @@ class TestCase(unittest.TestCase):
 class TestRunner(unittest.TextTestRunner):
     """Test suite runner."""
     
-    
     def run(self, test):
-        retval = super(TestRunner, self).run(test)
+        result = super(TestRunner, self).run(test)
         for item in _NOT_IMPLEMENTED:
             print "WARNING: %s" % item
-        return retval
+        if result.wasSuccessful():
+            return EXIT_SUCCESS
+        return EXIT_FAILURE
     
     
