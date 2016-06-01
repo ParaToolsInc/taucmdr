@@ -31,6 +31,8 @@
 Setup for unit testing.
 """
 
+import sys
+
 if __name__ == '__main__':
     import os
     import sys
@@ -48,5 +50,5 @@ if __name__ == '__main__':
 
     from tau import tests
     suite = unittest.TestLoader().discover(os.path.join('packages', 'tau'), 'test*py')
-    tests.TestRunner(verbosity=1, buffer=True).run(suite)
+    sys.exit(tests.TestRunner(verbosity=1, buffer=True).run(suite))
 
