@@ -43,7 +43,6 @@ _DIR_STACK = []
 _CWD_STACK = []
 _TEMPDIR_STACK = []
 _NOT_IMPLEMENTED = []
-_SYSTEM_DIR = None
 
 def get_stdout():
     """Get data written to unit test stdout.
@@ -98,10 +97,6 @@ def push_test_workdir():
     Directories created via this method are tracked.  If any of them exist when the program exits then
     an error message is shown for each.
     """
-    #if not os.path.exists('tmp'):
-    #    os.makedirs('tmp')
-    #prefix = os.getcwd() + '/tmp/'
-    #path = tempfile.mkdtemp(prefix=prefix)
     path = tempfile.mkdtemp()
     _DIR_STACK.append(path)
     _CWD_STACK.append(os.getcwd())
@@ -138,12 +133,21 @@ def not_implemented(cls):
     _NOT_IMPLEMENTED.append(msg)
     return unittest.skip(msg)(cls)
 
-def fresh_tau():
-    """ Reset to fresh environment to test `tau initialize`."""
-    shutil.rmtree(os.getcwd()+'/.tau')
-    PROJECT_STORAGE._prefix = None
-    PROJECT_STORAGE.disconnect_filesystem()
 
+def reset_project_storage(project_name='proj1', target_name='targ1'):
+    """Delete and recreate project storage.
+    
+    Effectively the same as::
+    
+        > rm -rf .tau
+        > tau init --project-name=proj1 --target-name=targ1
+    
+    Args:
+        project_name (str): New project's name.
+        target_name (str): New target's name.
+    """
+    PROJECT_STORAGE.destroy(ignore_errors=True)
+    initialize.COMMAND.main(['--project-name', project_name, '--target-name', target_name])
 
 class TestCase(unittest.TestCase):
     """Base class for unit tests.
@@ -151,25 +155,23 @@ class TestCase(unittest.TestCase):
     Performs tests in a temporary directory and reconfigures :any:`tau.logger` to work with :any:`unittest`.
     """
     
+    _SYSTEM_DIR = tempfile.mkdtemp()
+    
     @classmethod
     def setUpClass(cls):
-        global _SYSTEM_DIR
-        if _SYSTEM_DIR is None:
-            _SYSTEM_DIR = tempfile.mkdtemp()
-        tau.SYSTEM_PREFIX = _SYSTEM_DIR
+        tau.SYSTEM_PREFIX = TestCase._SYSTEM_DIR
         push_test_workdir()
         # Reset stdout logger handler to use buffered unittest stdout
         # pylint: disable=protected-access
         cls._orig_stream = logger._STDOUT_HANDLER.stream
         logger._STDOUT_HANDLER.stream = sys.stdout
-        initialize.COMMAND.main(['--project-name', 'proj1', '--target-name', 'targ1'])
-        
+        reset_project_storage()
+
     @classmethod
     def tearDownClass(cls):
-        # Restore original stream to stdout logger handler
+        PROJECT_STORAGE.destroy()
+        # Reset stdout logger handler to use original stdout
         # pylint: disable=protected-access
-        PROJECT_STORAGE._prefix = None
-        PROJECT_STORAGE.disconnect_filesystem()
         logger._STDOUT_HANDLER.stream = cls._orig_stream
         pop_test_workdir()
 
@@ -177,11 +179,8 @@ class TestCase(unittest.TestCase):
 class TestRunner(unittest.TextTestRunner):
     """Test suite runner."""
     
-    
     def run(self, test):
         retval = super(TestRunner, self).run(test)
         for item in _NOT_IMPLEMENTED:
             print "WARNING: %s" % item
         return retval
-    
-    
