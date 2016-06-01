@@ -48,5 +48,5 @@ if __name__ == '__main__':
 
 
     from tau import tests
-    suite = unittest.TestLoader().discover(os.path.join('packages', 'tau'), 'test*py')
+    suite = unittest.TestLoader().discover(os.path.join(here, 'packages', 'tau'), 'test*py')
     tests.TestRunner(verbosity=1, buffer=True).run(suite)
