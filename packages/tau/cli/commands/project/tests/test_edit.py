@@ -45,18 +45,19 @@ class EditTest(tests.TestCase):
         proj_ctrl = Project.controller()
         self.assertIsNone(proj_ctrl.one({'name': 'proj1'}))
         self.assertIsNotNone(proj_ctrl.one({'name': 'proj2'}))
+        #self.exec_command(edit.COMMAND, ['proj2', '--new-name', 'proj1'])
     
-    def test_set_tau_force_options(self):
-        tests.reset_project_storage(project_name='proj1')
-        proj_ctrl = Project.controller()
-        # Check that 'force-tau-options' is unset in the new project configuration
-        proj1 = proj_ctrl.one({'name': 'proj1'})
-        self.assertFalse('force-tau-options' in proj1)
-        # Test --force-tau-options
-        tau_options = ['-optVerbose', '-optNoCompInst']
-        argv = ['proj1', '--force-tau-options'] + tau_options
-        self.assertCommandReturnValue(0, edit.COMMAND, argv)
-        # Check that 'force-tau-options' is now a list containing the expected options in the project record
-        proj1 = proj_ctrl.one({'name': 'proj1'})
-        self.assertIsNotNone(proj1)
-        self.assertListEqual(proj1['force-tau-options'], tau_options)
+    #def test_set_tau_force_options(self):
+    #    tests.reset_project_storage(project_name='proj1')
+    #    proj_ctrl = Project.controller()
+    #    # Check that 'force-tau-options' is unset in the new project configuration
+    #    proj1 = proj_ctrl.one({'name': 'proj1'})
+    #    self.assertFalse('force-tau-options' in proj1)
+    #    # Test --force-tau-options
+    #    tau_options = ['-optVerbose', '-optNoCompInst']
+    #    argv = ['proj1', '--force-tau-options'] + tau_options
+    #    self.assertCommandReturnValue(0, edit.COMMAND, argv)
+    #    # Check that 'force-tau-options' is now a list containing the expected options in the project record
+    #    proj1 = proj_ctrl.one({'name': 'proj1'})
+    #    self.assertIsNotNone(proj1)
+    #    self.assertListEqual(proj1['force-tau-options'], tau_options)

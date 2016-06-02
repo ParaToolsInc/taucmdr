@@ -31,9 +31,9 @@ Functions used for unit tests of experiment.py.
 """
 
 
-import unittest
+from tau import tests
 from tau.model import experiment 
 
-class ExperimentTest(unittest.TestCase):
+class ExperimentTest(tests.TestCase):
     def test_attribute_not_emty(self):
         self.assertEqual(any(experiment.attributes()), 1) 

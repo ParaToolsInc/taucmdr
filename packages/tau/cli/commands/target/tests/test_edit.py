@@ -36,6 +36,6 @@ from tau.cli.commands.target import edit
 
 class EditTest(tests.TestCase):
     def test_edit(self):
+        tests.reset_project_storage(project_name='proj1')
         argv = ['targ1', '--new-name', 'targ2']
-        retval, stdout, stderr = self.exec_command(edit.COMMAND, argv)
-        self.assertEqual(retval, 0)
+        self.assertCommandReturnValue(0, edit.COMMAND, argv)

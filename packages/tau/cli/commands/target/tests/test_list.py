@@ -32,9 +32,9 @@ Functions used for unit tests of list.py.
 
 
 from tau import tests
+# pylint: disable=redefined-builtin
 from tau.cli.commands.target import list
 
 class ListTest(tests.TestCase):
     def test_list(self):
-        retval, stdout, stderr = self.exec_command(list.COMMAND, [])
-        self.assertEqual(retval, 0) 
+        self.assertCommandReturnValue(0, list.COMMAND, [])

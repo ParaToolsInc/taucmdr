@@ -31,30 +31,12 @@ Functions used for unit tests of list.py.
 """
 
 
-import unittest
-import os
-import time
-import shutil
-from tau.cli.commands import initialize
+from tau import tests
+# pylint: disable=redefined-builtin
 from tau.cli.commands.measurement import list
-from tau.storage.levels import PROJECT_STORAGE
 
-class ListTest(unittest.TestCase):
-    current_time = time.strftime("%Y%m%d_%H%M%S")
-    @classmethod
-    def setUpClass(cls):
-        os.makedirs('tmp/'+cls.current_time)
-        os.chdir('tmp/'+cls.current_time)
-        #argv = ['--storage-level', 'project']
-        argv = []
-        initialize.COMMAND.main(argv)
+class ListTest(tests.TestCase):
     def test_list(self):
-        argv = []
-        retval = list.COMMAND.main(argv)
+        tests.reset_project_storage(project_name='proj1')
+        retval = list.COMMAND.main([])
         self.assertEqual(retval, 0) 
-    @classmethod
-    def tearDownClass(cls):
-        os.chdir('../..')
-        shutil.rmtree('tmp')
-        PROJECT_STORAGE._prefix = None
-        PROJECT_STORAGE.disconnect_filesystem()

@@ -31,24 +31,33 @@ Functions used for unit tests of host.py.
 """
 
 
-import unittest
+from tau import tests
 from tau.cf.compiler import CC_ROLE
 from tau.cf.target import host
 
-class HostTest(unittest.TestCase):
+class HostTest(tests.TestCase):
+    """Tests for host.py"""
+    
     def test_architecture_not_empty(self):
         self.assertNotEqual(host.architecture(), '')
+
     def test_os_not_empty(self):
         self.assertNotEqual(host.operating_system(), '')
+
     def test_tau_arch_not_empty(self):
         self.assertNotEqual(host.tau_arch(), '')
+
     def test_preferred_compilers_not_empty(self):
         self.assertNotEqual(host.preferred_compilers(), '')
-    def test_preffered_mpi_compilers_not_empty(self):
+
+    def test_prefered_mpi_compilers_not_empty(self):
         self.assertNotEqual(host.preferred_mpi_compilers(), '')
+
     def test_default_compilers_not_empty(self):
         self.assertNotEqual(host.default_compilers(), '')
+
     def test_default_mpi_compilers_not_empty(self):
         self.assertNotEqual(host.default_mpi_compilers(), '')
+
     def test_default_compiler_not_empty(self):
         self.assertNotEqual(host.default_compiler(CC_ROLE), '')

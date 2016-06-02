@@ -31,9 +31,9 @@ Functions used for unit tests of command.py.
 """
 
 
-import unittest
+from tau import tests
 #from tau.cli import command
 
-class CommandTest(unittest.TestCase):
+class CommandTest(tests.TestCase):
     def test_command(self):
         self.assertEqual(1, 1) 

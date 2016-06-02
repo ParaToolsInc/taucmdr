@@ -31,9 +31,10 @@ Functions used for unit tests of papi_installation.py.
 """
 
 
-import unittest
+from tau import tests
 #from tau.cf.software import papi_installation
 
-class PapiInstallationTest(unittest.TestCase):
+class PapiInstallationTest(tests.TestCase):
     def test_papi_installation(self):
+        tests.reset_project_storage(project_name='proj1')
         self.assertEqual(1, 1)

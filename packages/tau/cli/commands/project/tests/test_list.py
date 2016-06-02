@@ -32,9 +32,9 @@ Functions used for unit tests of list.py.
 
 
 from tau import tests
-from tau.cli.commands.project import list
+from tau.cli.commands.project.list import COMMAND as list_cmd
 
 class ListTest(tests.TestCase):
     def test_list(self):
-        retval, stdout, stderr = self.exec_command(list.COMMAND, [])
-        self.assertEqual(retval, 0) 
+        tests.reset_project_storage(project_name='proj1')
+        self.assertCommandReturnValue(0, list_cmd, [])

@@ -38,11 +38,11 @@ from tau.cli.commands.trial import show, create
 
 class ShowTest(tests.TestCase):
     def test_show(self):
+        tests.reset_project_storage(project_name='proj1')
+        # pylint: disable=protected-access
         shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests._DIR_STACK[0]+'/hello.c')
         argv = ['gcc', 'hello.c']
         self.exec_command(build.COMMAND, argv)
-        argv = ['./a.out']
-        self.exec_command(create.COMMAND, argv)
+        self.exec_command(create.COMMAND, ['./a.out'])
         argv = ['0', '--profile-tool', 'pprof']
-        retval, stdout, stderr = self.exec_command(show.COMMAND, argv)
-        self.assertEqual(retval, None)
+        self.assertCommandReturnValue(None, show.COMMAND, argv)

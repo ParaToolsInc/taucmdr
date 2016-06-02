@@ -38,11 +38,10 @@ from tau.cli.commands.trial import delete, create
 
 class DeleteTest(tests.TestCase):
     def test_delete(self):
+        tests.reset_project_storage(project_name='proj1')
+        # pylint: disable=protected-access
         shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests._DIR_STACK[0]+'/hello.c')
         argv = ['gcc', 'hello.c']
         self.exec_command(build.COMMAND, argv)
-        argv = ['./a.out']
-        self.exec_command(create.COMMAND, argv)
-        argv = ['0']
-        retval, stdout, stderr = self.exec_command(delete.COMMAND, argv)
-        self.assertEqual(retval, 0) 
+        self.exec_command(create.COMMAND, ['./a.out'])
+        self.assertCommandReturnValue(0, delete.COMMAND, ['0'])

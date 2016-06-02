@@ -37,31 +37,29 @@ class CreateTest(tests.TestCase):
     """Unit tests for `tau target create`"""
 
     def test_create(self):
+        tests.reset_project_storage(project_name='proj1')
         argv = ['targ02']
-        retval, _, _ = self.exec_command(create_cmd, argv)
-        self.assertEqual(retval, 0) 
+        self.assertCommandReturnValue(0, create_cmd, argv)
 
-    def test_no_project(self):
-        from tau.storage.project import ProjectStorageError
-        argv = ['test_no_project']
-        self.assertRaises(ProjectStorageError, create_cmd.main, argv)
+    #def test_no_project(self):
+    #    tests.reset_project_storage(project_name='proj1')
+    #    from tau.storage.project import ProjectStorageError
+    #    argv = ['test_no_project']
+    #    self.assertRaises(ProjectStorageError, create_cmd.main, argv)
 
     def test_no_args(self):
-        retval, stdout, stderr = self.exec_command(create_cmd, [])
-        self.assertNotEqual(0, retval)
-        self.assertFalse(stdout)
+        tests.reset_project_storage(project_name='proj1')
+        _, _, stderr = self.exec_command(create_cmd, [])
         self.assertIn('error: too few arguments', stderr)
 
     def test_h_arg(self):
-        retval, stdout, stderr = self.exec_command(create_cmd, ['-h'])
-        self.assertEqual(0, retval)
+        tests.reset_project_storage(project_name='proj1')
+        stdout, _ = self.assertCommandReturnValue(0, create_cmd, ['-h'])
         self.assertIn('Create target configurations.', stdout)
         self.assertIn('show this help message and exit', stdout)
-        self.assertFalse(stderr)
 
     def test_help_arg(self):
-        retval, stdout, stderr = self.exec_command(create_cmd, ['--help'])
-        self.assertEqual(0, retval)
+        tests.reset_project_storage(project_name='proj1')
+        stdout, _ = self.assertCommandReturnValue(0, create_cmd, ['--help'])
         self.assertIn('Create target configurations.', stdout)
         self.assertIn('show this help message and exit', stdout)
-        self.assertFalse(stderr)
