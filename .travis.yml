@@ -17,6 +17,7 @@ addons:
       - ubuntu-toolchain-r-test
     packages:
       - gfortran
+      - bc
 
 cache:
     directories:
@@ -50,7 +51,7 @@ install:
   - python --version
   - export PATH="${PWD}/bin:$PATH"
   - if [ "X$TRAVIS_OS_NAME" = "Xosx" ] ; then brew update ; brew install --force-bottle gcc ; fi
-  - sudo apt-get update && sudo apt-get install -qq gfortran || true
+  - sudo apt-get update && sudo apt-get install -qq gfortran bc || true
 
 script:
   - coverage run runtests ${TAU_PY_CHANGED_FILES:-} # just lint touched files
