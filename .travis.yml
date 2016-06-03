@@ -20,6 +20,7 @@ addons:
 
 cache:
     directories:
+        - "$HOME/.pylint.d"
         - "$HOME/.cache/pip"
         - "$HOME/.pyenv"
 
@@ -52,9 +53,26 @@ install:
   - sudo apt-get update && sudo apt-get install -qq gfortran || true
 
 script:
-  - coverage run runtests
+  - coverage run runtests ${TAU_PY_CHANGED_FILES:-} # just lint touched files
+  - |
+    set -o errexit
+    set -o pipefail
+    # pylint returns non-zero even when score > 9
+    pylint --rcfile=pylintrc -r y -j 4 packages/tau > report.txt || true
+    score=$(sed -n 's/^[[:blank:]]*[yY]our code has been rated at \(-\{0,1\}[0-9]\{1,\}\.\{0,1\}[0-9]*\)\/10.*/\1/p' report.txt)
+    cat report.txt
+    if [[ $(echo "$score > 9" | bc -l) == 0 ]]; then
+      # bc returns 0 for false, 1 for true... don't blame me I just work here...
+      echo "Unacceptable pylint score: $score <= 9!"
+      false # throw an error
+    else
+      echo "Pylint score of $score is acceptable."
+    fi
+    set +o pipefail
+    set +o errexit
   - make -C docs
   - |
+    set -o errexit
     tau initialize --storage-level user > tau_init.log &
     tau_init_PID=$!
     echo "tau_init.log will be displayed upon failure"
@@ -62,18 +80,13 @@ script:
       echo "Still initializing TAU commander..."
       sleep ${SLEEP_INTERVAL:-300} # prevent Travis-CI abort due to inactivity or excessive logging
     done
-  - |
-    if [[ -n ${TAU_PY_CHANGED_FILES} ]] ; then
-      for f in "${TAU_PY_CHANGED_FILES}"; do
-        pylint --rcfile=pylintrc $f
-      done
-    fi # pylint changed files only...
-  - pylint --rcfile=pylintrc packages/tau # Ensure global pylint compliance eventually... WIP
+    set +o errexit
 
 after_success:
   - codecov --env PYENV_VERSION OS
 
 after_failure:
+  - cat "${HOME}/.tau/debug_log"
   - cat tau_init.log
 
 deploy:
