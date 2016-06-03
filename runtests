@@ -28,27 +28,141 @@
 #
 """TAU Commander command line entry point for unit testing.
 
-Setup for unit testing.
+Setup for unit testing and global pylint-ing. By default this runs
+all of the unit tests and pylints the entire tau package. If positional
+command line arguments are passed, then the entire unit-test suite is
+still run, but only the specified paths are linted.
+
+Args:
+    Optional files/packages to lint with Pylint. If none are specified
+    the entire tau package is linted
 """
 
+import os
 import sys
 
-if __name__ == '__main__':
-    import os
-    import sys
+__all__ = ['run_tests', 'lint']
+
+if getattr(sys, 'frozen', False):
+    __file__ = sys.executable
+
+# setup some private utility variables
+_HERE = os.path.dirname(__file__)
+_PACKAGES = os.path.join(_HERE, 'packages')
+_TAU_PKG = os.path.join(_PACKAGES, 'tau')
+
+# update python path to find modules
+sys.path.insert(0, _PACKAGES)
+sys.path.insert(0, os.path.join(_PACKAGES, 'tau'))
+
+
+def run_tests(pkg_loc=None):
+    """Function to find and run all TAU Commander unit tests
+
+    Run all the TAU Commander unit tests, and return an exit code to indicate success (0) or
+    failure (non-zero).
+
+    Args:
+        pkg_loc: Optional. Path to the tau commander tau package. Defaults to ./packages/tau
+
+    Returns: An integer indicating success (0) or failure (non-zero).
+    """
     import unittest
-    
-    if getattr(sys, 'frozen', False):
-        __file__ = sys.executable
-
-    here = os.path.dirname(__file__)
-    os.environ['__TAU_HOME__'] = os.path.join(here)
+    from tau import tests # unless linted with tau, this causes an import error pylint: disable=import-error
+    os.environ['__TAU_HOME__'] = os.path.join(_HERE)
     os.environ['__TAU_SCRIPT__'] = os.path.basename(__file__)
-    packages = os.path.join(here, 'packages')
-    sys.path.insert(0, packages)
-    sys.path.insert(0, os.path.join(packages, 'tau'))
+    if pkg_loc is None:
+        pkg_loc = _TAU_PKG
+    sys.stdout.write('\n\n**** Now running unit tests, hold tight... ****\n\n')
+    sys.stdout.write('     Processing: %s\n'% pkg_loc)
+    suite = unittest.TestLoader().discover(pkg_loc, 'test*py')
+    return tests.TestRunner(verbosity=1, buffer=True).run(suite)
 
-    from tau import tests
-    suite = unittest.TestLoader().discover(os.path.join('packages', 'tau'), 'test*py')
-    sys.exit(tests.TestRunner(verbosity=1, buffer=True).run(suite))
 
+def lint(path_s, pylint_flags=None, rcfile=None, j_cpus=None):
+    """Function to execute pylint on the given path(s) or file(s)
+
+    A function to run pylint on selected files or the entirety of the TAU Commander package.
+
+    Args:
+        path_s: a list of path(s) and/or file(s) to lint
+        pylint_flags: list of additional flags to pass to pylint
+        rcfile: The pylintrc file to use, defaults to ./pylintrc
+        j_cpus: The number of cores to run pylint with. Defaults to 1.5*n_cpus
+
+    Returns:
+        A dict containing the following keys:
+            score: float <= 10.0, must be > 9 to pass
+            fatal: True if a fatal message was issued
+            error: True if an error message was issued
+            warning: True if a warning message was issued
+            refactor: True if a refactor message was issued
+            convention: True if a convention message was issued
+    """
+    from multiprocessing import cpu_count
+    import re
+    from subprocess import Popen, PIPE
+    if len(path_s) == 0:
+        # default to linting this script as well as bin/tau
+        path_s = [sys.argv[0], _TAU_PKG, os.path.join(_HERE, 'bin', 'tau')]
+    if pylint_flags is None:
+        extra_flags = []
+    else:
+        extra_flags = pylint_flags
+    if rcfile is None:
+        rcfile = os.path.join(_HERE, 'pylintrc')
+    if j_cpus is None:
+        j_cpus = str(int(1.5*cpu_count()))
+    sys.stdout.write('\n**** Now running pylint on %s, hold tight... ****\n' % ', '.join(path_s))
+    args = ["pylint", "-r", "y", "-j", j_cpus, "--rcfile=" + rcfile] + extra_flags + path_s
+    proc = Popen(args, bufsize=0, stdout=PIPE)
+    proc.wait()
+    returncode = proc.returncode
+    output = proc.stdout.read()
+    lines = output.rstrip().split('\n')
+    report = lines[-1]
+    output = os.linesep.join([s for s in output.splitlines() if s]) # remove empty lines
+    try:
+        score = re.search(r'^ *[yY]our code has been rated at (-??\d+\.?\d+)/10', report).group(1)
+        if returncode == 0:
+            # no errors found, so just print the final score (of 10)
+            sys.stdout.write(report + '\n')
+        else:
+            sys.stdout.write(output + '\n')
+        if float(score) <= 9:
+            sys.stderr.write('XXXX Project\'s score of %s is too low, must be greater than 9! XXXX\n' % score)
+    except AttributeError:
+        sys.stderr.write('XXXX No score found while parsing pylint output for %s !!! XXXX\n' % path_s)
+        score = 10.0
+    result = {}
+    result['score'] = score
+    # See the pylint manpage for details of pylint exit returncode
+    result['fatal'] = returncode & 1 != 0
+    result['error'] = returncode & 2 != 0
+    result['warning'] = returncode & 4 != 0
+    result['refactor'] = returncode & 8 != 0
+    result['convention'] = returncode & 16 != 0
+    return result
+
+
+if __name__ == '__main__':
+
+    STATUS = run_tests()
+    BAD_PATHS = []
+    if len(sys.argv) > 1:
+        # lint each file/module individually, may need to disable import errors...
+        for path in sys.argv[1:]:
+            LINT_RESULT = lint([path]) #, pylint_flags=['-d', 'import-error'])
+            if float(LINT_RESULT['score']) <= 9:
+                STATUS += 1
+                BAD_PATHS += [path]
+        if len(BAD_PATHS) == 0:
+            sys.stdout.write('\nNo individual files/paths had scores less than 9!\n')
+        else:
+            sys.stdout.write('\nThe following files/paths violated coding standards and must be fixed:\n')
+            sys.stdout.write('%s\n' % BAD_PATHS)
+    else:
+        LINT_RESULT = lint(sys.argv[1:])
+    if LINT_RESULT['score'] <= 9:
+        STATUS += 1
+    sys.exit(STATUS)
