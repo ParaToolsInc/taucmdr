@@ -107,11 +107,12 @@ done
 
 tmp=${FILES_CHANGED[*]}
 unset FILES_CHANGED
-FILES_CHANGED=$(sort -u <<< "${tmp}") # Can't export array variables
+# can't export arrays...
+FILES_CHANGED=$(sort -u <<< "${tmp}") # shellcheck disable=SC2178
 export FILES_CHANGED
 echo "Files changed: ${FILES_CHANGED:-<none>}"
 tmp=${TAU_PY_CHANGED_FILES[*]}
 unset TAU_PY_CHANGED_FILES
-TAU_PY_CHANGED_FILES=$(sort -u <<< "${tmp}")
+TAU_PY_CHANGED_FILES=$(sort -u <<< "${tmp}") # shellcheck disable=SC2178
 export TAU_PY_CHANGED_FILES
 echo "TAU Commander changed python files: ${TAU_PY_CHANGED_FILES:-<none>}"
