@@ -1673,6 +1673,6 @@ operations that should not be executed when the file is being
 .. _docstrings: https://www.python.org/dev/peps/pep-0257/
 .. _Sphinx: http://sphinx-doc.org/
 .. _reStructuredText: http://docutils.sourceforge.net/rst.html
-.. _EAFP Style: <http://stackoverflow.com/a/1835844>
+.. _EAFP Style: <http://stackoverflow.com/a/11360880/403516>
 
 
