@@ -3,6 +3,8 @@
 #set -o errexit
 #set -o verbose
 
+shopt -s checkwinsize # ensure that the shell updates the window size...
+
 # Install pyenv to globally manage python versions
 # See https://github.com/yyuu/pyenv for further details
 echo "$PYENV_ROOT"
@@ -35,12 +37,16 @@ pyenv rehash
 pyenv versions
 pyenv which pip
 
-# Create a clean virtualenv to isolate the environment from Travis-CI defaults
-python -m pip install --user virtualenv
-python -m virtualenv "$HOME/.venv"
+if [[ "X${USE_VENV:-No}" == X[yY]* ]]; then
+  # Create a clean virtualenv to isolate the environment from Travis-CI defaults
+  python -m pip install --user virtualenv
+  python -m virtualenv "$HOME/.venv"
 
-# shellcheck source=~/.venv/bin/activate disable=SC1090
-source "$HOME/.venv/bin/activate"
+  # shellcheck source=~/.venv/bin/activate disable=SC1090
+  source "$HOME/.venv/bin/activate"
+fi
+
+resize # make sure pyenv or venv didn't do anything strange
 
 # Install development requirements enumerated in requirements.txt
 pip install -r requirements.txt
