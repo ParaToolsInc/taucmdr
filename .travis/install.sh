@@ -49,7 +49,13 @@ export PATH="$PWD/bin:$PATH"
 
 
 ### Determine the files changed in the commit range being tested
-export MY_OS=${TRAVIS_OS_NAME}
+if [[ "X$(uname -s)" == "XDarwin" ]]; then
+  this_os=osx
+else
+  this_os=linux
+fi
+
+export MY_OS=${TRAVIS_OS_NAME:-${this_os}}
 export REPO_SLUG=${TRAVIS_REPO_SLUG:-ParaToolsInc/taucmdr}
 export GIT_COMMIT=${TRAVIS_COMMIT:-"$(git rev-parse HEAD)"}
 export COMMIT_RANGE=${TRAVIS_COMMIT_RANGE:-"$(git rev-parse HEAD)^..$(git rev-parse HEAD)"}
