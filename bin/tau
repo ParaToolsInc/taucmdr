@@ -38,7 +38,7 @@ if __name__ == '__main__':
     if getattr(sys, 'frozen', False):
         __file__ = sys.executable
 
-    _HERE = os.path.dirname(__file__)
+    _HERE = os.path.realpath(os.path.dirname(__file__))
     os.environ['__TAU_HOME__'] = os.path.join(_HERE, '..')
     os.environ['__TAU_SCRIPT__'] = os.path.basename(__file__)
     _PACKAGES = os.path.join(_HERE, '..', 'packages')

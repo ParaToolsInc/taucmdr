@@ -47,7 +47,7 @@ if getattr(sys, 'frozen', False):
     __file__ = sys.executable
 
 # setup some private utility variables
-_HERE = os.path.dirname(__file__)
+_HERE = os.path.realpath(os.path.dirname(__file__))
 _PACKAGES = os.path.join(_HERE, 'packages')
 _TAU_PKG = os.path.join(_PACKAGES, 'tau')
 

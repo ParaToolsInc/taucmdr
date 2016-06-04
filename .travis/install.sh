@@ -3,8 +3,6 @@
 #set -o errexit
 #set -o verbose
 
-shopt -s checkwinsize # ensure that the shell updates the window size...
-
 # Install pyenv to globally manage python versions
 # See https://github.com/yyuu/pyenv for further details
 echo "$PYENV_ROOT"
@@ -45,8 +43,6 @@ if [[ "X${USE_VENV:-No}" == X[yY]* ]]; then
   # shellcheck source=~/.venv/bin/activate disable=SC1090
   source "$HOME/.venv/bin/activate"
 fi
-
-resize # make sure pyenv or venv didn't do anything strange
 
 # Install development requirements enumerated in requirements.txt
 pip install -r requirements.txt
