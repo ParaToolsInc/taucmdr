@@ -38,11 +38,11 @@ if __name__ == '__main__':
     if getattr(sys, 'frozen', False):
         __file__ = sys.executable
 
-    here = os.path.dirname(__file__)
-    os.environ['__TAU_HOME__'] = os.path.join(here, '..')
+    _HERE = os.path.dirname(__file__)
+    os.environ['__TAU_HOME__'] = os.path.join(_HERE, '..')
     os.environ['__TAU_SCRIPT__'] = os.path.basename(__file__)
-    packages = os.path.join(here, '..', 'packages')
-    sys.path.insert(0, packages)
+    _PACKAGES = os.path.join(_HERE, '..', 'packages')
+    sys.path.insert(0, _PACKAGES)
 
     from tau.cli.commands.__main__ import COMMAND as cli_main_cmd
     sys.exit(cli_main_cmd.main(sys.argv[1:]))
