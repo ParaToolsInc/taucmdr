@@ -21,9 +21,10 @@ addons:
 
 cache:
     directories:
-        - "$HOME/.pylint.d"
-        - "$HOME/.cache/pip"
-        - "$HOME/.pyenv"
+      - "$HOME/.local"
+      - "$HOME/.pylint.d"
+      - "$HOME/.cache/pip"
+      - "$HOME/.pyenv"
 
 # Add more python versions to this array to expand test matrix for Precise
 env:
@@ -32,7 +33,7 @@ env:
 # Matrix include is single entry only, so a new one for each add'l config is required
 matrix:
   include:
-    - language: generic
+    - language: python
       os: linux
       sudo: required
       dist: trusty

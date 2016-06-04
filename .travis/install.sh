@@ -3,37 +3,39 @@
 #set -o errexit
 #set -o verbose
 
-# Install pyenv to globally manage python versions
-# See https://github.com/yyuu/pyenv for further details
-echo "$PYENV_ROOT"
+if [[ "X${USE_PYENV:-No}" == X[Yy]* ]]; then
+  # Install pyenv to globally manage python versions
+  # See https://github.com/yyuu/pyenv for further details
+  echo "$PYENV_ROOT"
 
-export PYENV_ROOT="$HOME/.pyenv"
-export PATH="$PYENV_ROOT/bin:$PATH"
+  export PYENV_ROOT="$HOME/.pyenv"
+  export PATH="$PYENV_ROOT/bin:$PATH"
 
-if [ ! -x "$PYENV_ROOT/bin/pyenv" ]; then
+  if [ ! -x "$PYENV_ROOT/bin/pyenv" ]; then
     curl -L https://raw.githubusercontent.com/yyuu/pyenv-installer/master/bin/pyenv-installer | bash
-fi
+  fi
 
-if [ ! -d "$PYENV_ROOT/.git" ]; then # pyenv install script failed, try manual install
+  if [ ! -d "$PYENV_ROOT/.git" ]; then # pyenv install script failed, try manual install
     git clone --no-checkout -v https://github.com/yyuu/pyenv.git "$HOME/tmp"
     mv "$HOME/tmp/.git" "$PYENV_ROOT/"
     rmdir "$HOME/tmp"
     cd "$PYENV_ROOT" || exit 1
     git reset --hard HEAD
     cd - || exit 1
+  fi
+
+  eval "$(pyenv init -)"
+  eval "$(pyenv virtualenv-init -)"
+
+  pyenv update ||true
+
+  export PYENV_VERSION="${PYENV_VERSION:-2.7.9}"
+  pyenv install -s "${PYENV_VERSION}"
+  pyenv global "${PYENV_VERSION}"
+  pyenv rehash
+  pyenv versions
+  pyenv which pip
 fi
-
-eval "$(pyenv init -)"
-eval "$(pyenv virtualenv-init -)"
-
-pyenv update ||true
-
-export PYENV_VERSION="${PYENV_VERSION:-2.7.9}"
-pyenv install -s "${PYENV_VERSION}"
-pyenv global "${PYENV_VERSION}"
-pyenv rehash
-pyenv versions
-pyenv which pip
 
 if [[ "X${USE_VENV:-No}" == X[yY]* ]]; then
   # Create a clean virtualenv to isolate the environment from Travis-CI defaults
@@ -48,7 +50,7 @@ fi
 pip install -r requirements.txt
 
 export PATH="$PWD/bin:$PATH"
-
+export PATH="$HOME/.local/bin:$PATH"
 
 ### Determine the files changed in the commit range being tested
 if [[ "X$(uname -s)" == "XDarwin" ]]; then
