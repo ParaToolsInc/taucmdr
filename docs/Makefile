@@ -46,7 +46,7 @@ $(PACKAGE_REST_FILE): $(SOURCE_FILES)
 	sphinx-apidoc -M -P -f -o $(SOURCE_DIR) $(PROJECT_DIR)
 
 update-github-pages: 
-	git checkout $(DOCS_BRANCH)
+	git checkout $(CHECKOUT_FLAGS) $(DOCS_BRANCH) # force when local changes on Travis-CI
 	git checkout $(LOCAL_BRANCH) $(PROJECT_DIR) $(HERE)
 	-git rm -f .gitignore
 	$(MAKE) all
@@ -54,8 +54,9 @@ update-github-pages:
 	git add -u $(HERE)
 	git commit -m "$(COMMIT_MSG)" # Override on Travis-CI w/ environment var.
 	git push $(PUSH_FLAGS) origin $(DOCS-BRANCH) $(HIDE_TOKEN)
-	git checkout $(LOCAL_BRANCH)
+	git checkout $(CHECKOUT_FLAGS) $(LOCAL_BRANCH)
 
 clean:
-	rm -rf $(BUILD_DIR)
-
+	rm -rf $(BUILD_DIR)*
+	rm -f $(SOURCE_DIR)tau.rst
+	rm -f $(SOURCE_DIR)modules.rst

@@ -19,6 +19,7 @@ git fetch origin gh-pages > /dev/null 2>&1 && echo success || echo failure
 git branch -a -vvv || echo "git branch fails if on detatched head"
 
 export PUSH_FLAGS='--quiet --force'
+export CHECKOUT_FLAGS='--force'
 export HIDE_TOKEN='> /dev/null 2>&1'
 export COMMIT_MSG="Updated documentation on Travis-CI job $TRAVIS_JOB_NUMBER at commit $TRAVIS_COMMIT"
 make -C docs update-github-pages
