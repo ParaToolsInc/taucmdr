@@ -30,7 +30,9 @@ if [[ "X${USE_PYENV:-No}" == X[Yy]* ]]; then
   pyenv update ||true
 
   export PYENV_VERSION="${PYENV_VERSION:-2.7.9}"
-  pyenv install -s "${PYENV_VERSION}"
+  if [[ "${PYENV_VERSION:-2.7.9}" != "system" ]] ; then
+    pyenv install -s "${PYENV_VERSION}"
+  fi
   pyenv global "${PYENV_VERSION}"
   pyenv rehash
   pyenv versions

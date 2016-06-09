@@ -1,4 +1,6 @@
 language: python
+virtualenv:
+  system_site_packages: true
 
 branches:
   except:
@@ -18,6 +20,9 @@ addons:
     packages:
       - gfortran
       - bc
+      - python
+      - python-pip
+      - python-virtualenv
 
 cache:
     directories:
@@ -29,6 +34,7 @@ cache:
 # Add more python versions to this array to expand test matrix for Precise
 env:
   - PYENV_VERSION='2.7.9' OS='Ubuntu Precise'
+  - PYENV_VERSION='system' OS='Ubuntu Precise'
 
 # Matrix include is single entry only, so a new one for each add'l config is required
 matrix:
@@ -46,6 +52,19 @@ matrix:
       os: osx
       osx_image: xcode7.2 # Corresponds to 10.11.x (El Capitan)
       env: PYENV_VERSION='2.7.9' OS='OS X El Capitan'
+    - language: python
+      os: linux
+      sudo: required
+      dist: trusty
+      env: PYENV_VERSION='system' OS='Ubuntu Trusty'
+    - language: generic
+      os: osx
+      osx_image: xcode7.1 # Corresponds to 10.10.x (Yosemite)
+      env: PYENV_VERSION='system' OS='OS X Yosemite'
+    - language: generic
+      os: osx
+      osx_image: xcode7.2 # Corresponds to 10.11.x (El Capitan)
+      env: PYENV_VERSION='system' OS='OS X El Capitan'
   allow_failures:
     - env: PYENV_VERSION='2.7.9' OS='Ubuntu Trusty'
     - env: PYENV_VERSION='2.7.9' OS='OS X Yosemite'
@@ -56,7 +75,7 @@ install:
   - python --version
   - export PATH="${PWD}/bin:$PATH"
   - if [ "X$TRAVIS_OS_NAME" = "Xosx" ] ; then brew update ; brew install --force-bottle gcc ; fi
-  - sudo apt-get update && sudo apt-get install -qq gfortran bc || true
+  - sudo apt-get update && sudo apt-get install -qq python-pip python-virtualenv gfortran bc || true
 
 script:
   - coverage run runtests ${TAU_PY_CHANGED_FILES:-} # just lint touched files
