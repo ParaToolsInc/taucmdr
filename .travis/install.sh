@@ -12,11 +12,11 @@ if [[ "X${USE_PYENV:-No}" == X[Yy]* ]]; then
   export PATH="$PYENV_ROOT/bin:$PATH"
 
   if [ ! -x "$PYENV_ROOT/bin/pyenv" ]; then
-    curl -L https://raw.githubusercontent.com/yyuu/pyenv-installer/master/bin/pyenv-installer | bash
+    curl -s -S -L https://raw.githubusercontent.com/yyuu/pyenv-installer/master/bin/pyenv-installer | bash
   fi
 
   if [ ! -d "$PYENV_ROOT/.git" ]; then # pyenv install script failed, try manual install
-    git clone --no-checkout -v https://github.com/yyuu/pyenv.git "$HOME/tmp"
+    git clone --no-checkout -q -v https://github.com/yyuu/pyenv.git "$HOME/tmp"
     mv "$HOME/tmp/.git" "$PYENV_ROOT/"
     rmdir "$HOME/tmp"
     cd "$PYENV_ROOT" || exit 1
@@ -39,7 +39,7 @@ fi
 
 if [[ "X${USE_VENV:-No}" == X[yY]* ]]; then
   # Create a clean virtualenv to isolate the environment from Travis-CI defaults
-  python -m pip install --user virtualenv
+  python -m pip install -q --log pip-installs.log --user virtualenv
   python -m virtualenv "$HOME/.venv"
 
   # shellcheck source=~/.venv/bin/activate disable=SC1090
@@ -47,7 +47,7 @@ if [[ "X${USE_VENV:-No}" == X[yY]* ]]; then
 fi
 
 # Install development requirements enumerated in requirements.txt
-pip install -r requirements.txt
+pip install -q --log pip-installs.log -r requirements.txt
 
 export PATH="$PWD/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
@@ -70,7 +70,7 @@ export PR=${TRAVIS_PULL_REQUEST:-false}
 _diff_range="${COMMIT_RANGE/.../..}" # use bash parameter expansion rather than sed
 if [ "$PR" != "false" ]; then # Use github API to get changed files
   [ "X$MY_OS" = "Xosx" ] && (brew update > /dev/null || true ; brew install jq || true)
-  _files_changed=($(curl "https://api.github.com/repos/$REPO_SLUG/pulls/$PR/files" 2> /dev/null | \
+  _files_changed=($(curl -s -S "https://api.github.com/repos/$REPO_SLUG/pulls/$PR/files" 2> /dev/null | \
 			 jq '.[] | .filename' | tr '"' ' '))
   if [[ ${#_files_changed[@]} -eq 0 || -z ${_files_changed[@]} ]]; then
     echo "Using git to determine changed files"
