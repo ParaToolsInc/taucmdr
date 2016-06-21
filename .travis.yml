@@ -1,4 +1,6 @@
 language: python
+virtualenv:
+  system_site_packages: true
 
 branches:
   except:
@@ -11,39 +13,110 @@ sudo: false
 os:
   - linux
 
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - gfortran
+      - bc
+      - python
+      - python-pip
+      - python-virtualenv
+
 cache:
     directories:
-        - "$HOME/.cache/pip"
-        - "$HOME/.pyenv"
+      - "$HOME/.local"
+      - "$HOME/.pylint.d"
+      - "$HOME/.cache/pip"
+      - "$HOME/.pyenv"
 
+# Add more python versions to this array to expand test matrix for Precise
 env:
-  - PYENV_VERSION='2.7.9' OS='Ubuntu Precise' # Add more python versions to this array to expand test matrix
+  - PYENV_VERSION='2.7.9' OS='Ubuntu Precise'
+  - PYENV_VERSION='system' OS='Ubuntu Precise'
 
+# Matrix include is single entry only, so a new one for each add'l config is required
 matrix:
   include:
+    - language: python
+      os: linux
+      sudo: required
+      dist: trusty
+      env: PYENV_VERSION='2.7.9' OS='Ubuntu Trusty'
     - language: generic
       os: osx
       osx_image: xcode7.1 # Corresponds to 10.10.x (Yosemite)
-      env:
-        - PYENV_VERSION='2.7.9' OS='OS X Yosemite'
+      env: PYENV_VERSION='2.7.9' OS='OS X Yosemite'
     - language: generic
       os: osx
       osx_image: xcode7.2 # Corresponds to 10.11.x (El Capitan)
-      env:
-        - PYENV_VERSION='2.7.9' OS='OS X El Capitan'
+      env: PYENV_VERSION='2.7.9' OS='OS X El Capitan'
+    - language: python
+      os: linux
+      sudo: required
+      dist: trusty
+      env: PYENV_VERSION='system' OS='Ubuntu Trusty'
+    - language: generic
+      os: osx
+      osx_image: xcode7.1 # Corresponds to 10.10.x (Yosemite)
+      env: PYENV_VERSION='system' OS='OS X Yosemite'
+    - language: generic
+      os: osx
+      osx_image: xcode7.2 # Corresponds to 10.11.x (El Capitan)
+      env: PYENV_VERSION='system' OS='OS X El Capitan'
+  allow_failures:
+    - env: PYENV_VERSION='2.7.9' OS='Ubuntu Trusty'
+    - env: PYENV_VERSION='2.7.9' OS='OS X Yosemite'
+    - env: PYENV_VERSION='2.7.9' OS='OS X El Capitan'
 
 install:
   - source .travis/install.sh
   - python --version
+  - export PATH="${PWD}/bin:$PATH"
+  - if [ "X$TRAVIS_OS_NAME" = "Xosx" ] ; then brew update ; brew install --force-bottle gcc ; fi
+  - sudo apt-get update && sudo apt-get install -qq python-pip python-virtualenv gfortran bc || true
 
-script: # Currently pylint is bombing with negative scores. This might be due to a bad python environment and/or updates needed in pylintrc
-  - coverage run runtests
+script:
+  - coverage run runtests ${TAU_PY_CHANGED_FILES:-} # just lint touched files
+  - |
+    set -o errexit
+    set -o pipefail
+    # pylint returns non-zero even when score > 9
+    pylint --rcfile=pylintrc -r y -j 4 packages/tau > report.txt || true
+    score=$(sed -n 's/^[[:blank:]]*[yY]our code has been rated at \(-\{0,1\}[0-9]\{1,\}\.\{0,1\}[0-9]*\)\/10.*/\1/p' report.txt)
+    cat report.txt
+    if [[ $(echo "$score > 9" | bc -l) == 0 ]]; then
+      # bc returns 0 for false, 1 for true... don't blame me I just work here...
+      echo "Unacceptable pylint score: $score <= 9!"
+      false # throw an error
+    else
+      echo "Pylint score of $score is acceptable."
+    fi
+    set +o pipefail
+    set +o errexit
   - make -C docs
-#  - [[ -n ${TAU_PY_CHANGED_FILES} ]] && pylint --rcfile=pylintrc $TAU_PY_CHANGED_FILES # pylint changed files only... WIP
-#  - pylint --rcfile=pylintrc packages/tau # Ensure global pylint compliance eventually... WIP
+  - |
+    set -o errexit
+    tau initialize --storage-level user > tau_init.log &
+    tau_init_PID=$!
+    echo "tau_init.log will be displayed upon failure"
+    while ps -p $tau_init_PID > /dev/null; do
+      echo "Still initializing TAU commander..."
+      sleep ${SLEEP_INTERVAL:-300} # prevent Travis-CI abort due to inactivity or excessive logging
+    done
+    set +o errexit
 
 after_success:
   - codecov --env PYENV_VERSION OS
+  - |
+    [[ "X${USE_VENV:-No}" == X[yY]* ]] && deactivate
+
+after_failure:
+  - |
+    [[ "X${USE_VENV:-No}" == X[yY]* ]] && deactivate
+  - cat "${HOME}/.tau/debug_log"
+  - cat tau_init.log
 
 deploy:
   provider: script
@@ -67,4 +140,3 @@ notifications:
     on_success: always  # options: [always|never|change]
     on_failure: always
     on_start: always
-

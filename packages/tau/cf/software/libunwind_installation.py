@@ -43,7 +43,8 @@ from tau.cf.target import ARM64_ARCH, IBM_BGQ_ARCH, CRAY_CNL_OS
 LOGGER = logger.get_logger(__name__)
 
 SOURCES = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-1.1.tar.gz',
-           ARM64_ARCH: {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-arm64-1.1.tgz'}}
+           ARM64_ARCH: {None:
+                        'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-arm64-1.1.tgz'}}
 
 LIBRARIES = {None: ['libunwind.a']}
 
