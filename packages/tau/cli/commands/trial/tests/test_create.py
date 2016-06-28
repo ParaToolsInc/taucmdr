@@ -40,9 +40,9 @@ class CreateTest(tests.TestCase):
     """Tests for :any:`trial.create`."""
 
     def test_create(self):
-        tests.reset_project_storage(project_name='proj1')
+        tests.reset_project_storage()
         shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests.get_test_workdir()+'/hello.c')
-        self.exec_command(build_cmd, ['gcc', 'hello.c'])
+        self.assertCommandReturnValue(0, build_cmd, ['gcc', 'hello.c'])
         stdout, stderr = self.assertCommandReturnValue(0, create_cmd, ['./a.out'])
         self.assertIn('BEGIN', stdout)
         self.assertIn('END Experiment', stdout)
