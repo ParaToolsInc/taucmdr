@@ -31,9 +31,9 @@ Functions used for unit tests of project.py.
 """
 
 
-import unittest
+from tau import tests
 from tau.model import project
 
-class ProjectTest(unittest.TestCase):
+class ProjectTest(tests.TestCase):
     def test_project(self):
         self.assertEqual(any(project.attributes()), 1) 

@@ -31,30 +31,31 @@ Functions used for unit tests of edit.py.
 """
 
 
-import unittest
-import os
-import time
-import shutil
-from tau.cli.commands import initialize
+from tau import tests
 from tau.cli.commands.application import edit
-from tau.storage.levels import PROJECT_STORAGE
 
-class EditTest(unittest.TestCase):
-    current_time = time.strftime("%Y%m%d_%H%M%S")
-    @classmethod
-    def setUpClass(cls):
-        os.makedirs('tmp/'+cls.current_time)
-        os.chdir('tmp/'+cls.current_time)
-        #argv = ['--storage-level', 'project']
-        argv = []
-        initialize.COMMAND.main(argv)
+class EditTest(tests.TestCase):
+    """Tests for :any:`application.edit`."""
+
     def test_edit(self):
-        argv = [os.path.split(os.getcwd())[1], '--new-name', 'test02']
-        retval = edit.COMMAND.main(argv)
-        self.assertEqual(retval, 0) 
-    @classmethod
-    def tearDownClass(cls):
-        os.chdir('../..')
-        shutil.rmtree('tmp')
-        PROJECT_STORAGE._prefix = None
-        PROJECT_STORAGE.disconnect_filesystem()
+        tests.reset_project_storage(project_name='proj1')
+        argv = ['app1', '--new-name', 'app2']
+        stdout, stderr = self.assertCommandReturnValue(0, edit.COMMAND, argv)
+        self.assertIn('Updated application', stdout)
+        argv = ['app2', '--new-name', 'app1']
+        self.exec_command(edit.COMMAND, argv)
+        self.assertFalse(stderr)
+
+    def test_wrongname(self):
+        tests.reset_project_storage(project_name='proj1')
+        argv = ['app2', '--new-name', 'app3']
+        _, _, stderr = self.exec_command(edit.COMMAND, argv)
+        self.assertIn('application edit <application_name> [arguments]', stderr)
+        self.assertIn('application edit: error: No project-level application with name', stderr)
+        
+    def test_wrongarg(self):
+        tests.reset_project_storage(project_name='proj1')
+        argv = ['app1', '--mpi', 'T']
+        _, _, stderr = self.exec_command(edit.COMMAND, argv)
+        self.assertIn('application edit <application_name> [arguments]', stderr)
+        self.assertIn('application edit: error: unrecognized arguments', stderr)

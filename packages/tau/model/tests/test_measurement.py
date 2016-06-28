@@ -31,9 +31,9 @@ Functions used for unit tests of measurement.py.
 """
 
 
-import unittest
+from tau import tests
 #from tau.model import measurement
 
-class MeasurementTest(unittest.TestCase):
+class MeasurementTest(tests.TestCase):
     def test_measurement(self):
         self.assertEqual(1, 1) 

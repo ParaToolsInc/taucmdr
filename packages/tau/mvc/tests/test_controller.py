@@ -31,9 +31,9 @@ Functions used for unit tests of controller.py.
 """
 
 
-import unittest
+from tau import tests
 #from tau.mvc import controller
 
-class ControllerTest(unittest.TestCase):
+class ControllerTest(tests.TestCase):
     def test_controller(self):
         self.assertEqual(1, 1) 

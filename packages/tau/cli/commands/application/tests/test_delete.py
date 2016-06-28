@@ -31,30 +31,21 @@ Functions used for unit tests of delete.py.
 """
 
 
-import unittest
-import os
-import time
-import shutil
-from tau.cli.commands import initialize
-from tau.cli.commands.application import delete
-from tau.storage.levels import PROJECT_STORAGE
+from tau import tests
+from tau.cli.commands.application import delete, create
 
-class DeleteTest(unittest.TestCase):
-    current_time = time.strftime("%Y%m%d_%H%M%S")
-    @classmethod
-    def setUpClass(cls):
-        os.makedirs('tmp/'+cls.current_time)
-        os.chdir('tmp/'+cls.current_time)
-        #argv = ['--storage-level', 'project']
-        argv = []
-        initialize.COMMAND.main(argv)
+class DeleteTest(tests.TestCase):
+    """Tests for :any:`application.delete`."""
+
     def test_delete(self):
-        argv = [os.path.split(os.getcwd())[1]]
-        retval = delete.COMMAND.main(argv)
-        self.assertEqual(retval, 0) 
-    @classmethod
-    def tearDownClass(cls):
-        os.chdir('../..')
-        shutil.rmtree('tmp')
-        PROJECT_STORAGE._prefix = None
-        PROJECT_STORAGE.disconnect_filesystem()
+        tests.reset_project_storage(project_name='proj1')
+        self.exec_command(create.COMMAND, ['app2'])
+        stdout, stderr = self.assertCommandReturnValue(0, delete.COMMAND, ['app2'])
+        self.assertIn('Deleted application', stdout)
+        self.assertFalse(stderr)
+
+    def test_wrongname(self):
+        tests.reset_project_storage(project_name='proj1')
+        _, _, stderr = self.exec_command(delete.COMMAND, ['app2'])
+        self.assertIn('application delete <application_name> [arguments]', stderr)
+        self.assertIn('application delete: error: No project-level application with name', stderr)

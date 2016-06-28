@@ -33,14 +33,25 @@ Functions used for unit tests of create.py.
 
 import shutil
 from tau import tests, TAU_HOME
-from tau.cli.commands import build
-from tau.cli.commands.trial import create
+from tau.cli.commands.build import COMMAND as build_cmd
+from tau.cli.commands.trial.create import COMMAND as create_cmd
 
 class CreateTest(tests.TestCase):
+    """Tests for :any:`trial.create`."""
+
     def test_create(self):
+        tests.reset_project_storage(project_name='proj1')
+        # pylint: disable=protected-access
         shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests._DIR_STACK[0]+'/hello.c')
-        argv = ['gcc', 'hello.c']
-        self.exec_command(build.COMMAND, argv)
-        argv = ['./a.out']
-        retval, stdout, stderr = self.exec_command(create.COMMAND, argv)
-        self.assertEqual(retval, 0)
+        self.exec_command(build_cmd, ['gcc', 'hello.c'])
+        stdout, stderr = self.assertCommandReturnValue(0, create_cmd, ['./a.out'])
+        self.assertIn('BEGIN', stdout)
+        self.assertIn('END Experiment', stdout)
+        self.assertIn('Trial produced', stdout)
+        self.assertIn('profile files', stdout)
+        self.assertFalse(stderr)
+        
+    #def test_noexecutable(self):
+    #    tests.reset_project_storage(project_name='proj1')
+    #    _, _, stderr = self.exec_command(create_cmd, ['./b.out'])
+    #    self.assertIn('Cannot find executable', stderr)

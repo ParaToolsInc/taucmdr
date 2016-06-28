@@ -32,11 +32,21 @@ Functions used for unit tests of delete.py.
 
 
 from tau import tests
-from tau.cli.commands.project import delete
+from tau.cli.commands.project.delete import COMMAND as delete_cmd
+from tau.cli.commands.project.create import COMMAND as create_cmd
 
 class DeleteTest(tests.TestCase):
+    """Tests for :any:`project.delete`."""
 
     def test_delete(self):
-        argv = ['proj1']
-        retval, _, _ = self.exec_command(delete.COMMAND, argv)
-        self.assertEqual(0, retval)
+        tests.reset_project_storage(project_name='proj1')
+        self.exec_command(create_cmd, ['proj2'])
+        stdout, stderr = self.assertCommandReturnValue(0, delete_cmd, ['proj2'])
+        self.assertIn('Deleted project', stdout)
+        self.assertFalse(stderr)
+        
+    def test_wrongname(self):
+        tests.reset_project_storage(project_name='proj1')
+        _, _, stderr = self.exec_command(delete_cmd, ['proj2'])
+        self.assertIn('project delete <project_name> [arguments]', stderr)
+        self.assertIn('project delete: error: No project-level project with name', stderr)

@@ -37,12 +37,21 @@ from tau.cli.commands import build
 from tau.cli.commands.trial import delete, create
 
 class DeleteTest(tests.TestCase):
+    """Tests for :any:`trial.delete`."""
+
     def test_delete(self):
+        tests.reset_project_storage(project_name='proj1')
+        # pylint: disable=protected-access
         shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests._DIR_STACK[0]+'/hello.c')
         argv = ['gcc', 'hello.c']
         self.exec_command(build.COMMAND, argv)
-        argv = ['./a.out']
-        self.exec_command(create.COMMAND, argv)
-        argv = ['0']
-        retval, stdout, stderr = self.exec_command(delete.COMMAND, argv)
-        self.assertEqual(retval, 0) 
+        self.exec_command(create.COMMAND, ['./a.out'])
+        stdout, stderr = self.assertCommandReturnValue(0, delete.COMMAND, ['0'])
+        self.assertIn('Deleted trial 0', stdout)
+        self.assertFalse(stderr)
+        
+    def test_wrongnumber(self):
+        tests.reset_project_storage(project_name='proj1')
+        _, _, stderr = self.exec_command(delete.COMMAND, ['-1'])
+        self.assertIn('trial delete <trial_number> [arguments]', stderr)
+        self.assertIn('trial delete: error: No trial number -1 in the current experiment.', stderr)

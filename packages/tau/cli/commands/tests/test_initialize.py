@@ -51,4 +51,5 @@ class InitializeTest(tests.TestCase):
         self.assertFalse(stderr)
 
     def test_initialize(self):
+        PROJECT_STORAGE.destroy()
         self.assertCommandReturnValue(0, initialize_cmd, ['--storage-level', 'project'])

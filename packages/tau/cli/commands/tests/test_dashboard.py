@@ -32,11 +32,9 @@ Functions used for unit tests of dashboard.py.
 
 
 from tau import tests
-from tau.cli.commands import dashboard, initialize
-from tau.storage.levels import PROJECT_STORAGE
+from tau.cli.commands import dashboard
 
 class DashboardTest(tests.TestCase):
     def test_dashboard(self):
-        argv = []
-        retval, stdout, stderr = self.exec_command(dashboard.COMMAND, argv)
-        self.assertEqual(retval, 0)
+        tests.reset_project_storage(project_name='proj1')
+        self.assertCommandReturnValue(0, dashboard.COMMAND, [])

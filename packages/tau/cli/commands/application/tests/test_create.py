@@ -31,30 +31,21 @@ Functions used for unit tests of create.py.
 """
 
 
-import unittest
-import os
-import time
-import shutil
-from tau.cli.commands import initialize
-from tau.cli.commands.application import create
-from tau.storage.levels import PROJECT_STORAGE
+from tau import tests
+from tau.cli.commands.application.create import COMMAND as create_cmd
 
-class CreateTest(unittest.TestCase):
-    current_time = time.strftime("%Y%m%d_%H%M%S")
-    @classmethod
-    def setUpClass(cls):
-        os.makedirs('tmp/'+cls.current_time)
-        os.chdir('tmp/'+cls.current_time)
-        #argv = ['--storage-level', 'project']
-        argv = []
-        initialize.COMMAND.main(argv)
+class CreateTest(tests.TestCase):
+    """Tests for :any:`application.create`."""
+
     def test_create(self):
-        argv = ['test01']
-        retval = create.COMMAND.main(argv)
-        self.assertEqual(retval, 0) 
-    @classmethod
-    def tearDownClass(cls):
-        os.chdir('../..')
-        shutil.rmtree('tmp')
-        PROJECT_STORAGE._prefix = None
-        PROJECT_STORAGE.disconnect_filesystem()
+        tests.reset_project_storage(project_name='proj1')
+        stdout, stderr = self.assertCommandReturnValue(0, create_cmd, ['test01'])
+        self.assertIn('Added application \'test01\' to project configuration', stdout)
+        self.assertFalse(stderr)
+        
+    def test_duplicatename(self):
+        tests.reset_project_storage(project_name='proj1')
+        _, _, stderr = self.exec_command(create_cmd, ['app1'])
+        self.assertIn('application create <application_name> [arguments]', stderr)
+        self.assertIn('application create: error: A application with name', stderr)
+        self.assertIn('already exists', stderr)

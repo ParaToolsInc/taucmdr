@@ -112,7 +112,10 @@ class ProjectListCommand(ListCommand):
             for cmd, prop in ((target_list_cmd, 'targets'),
                               (application_list_cmd, 'applications'),
                               (measurement_list_cmd, 'measurements')):
-                records = proj.populate(prop)
+                try:
+                    records = proj.populate(prop)
+                except:     # pylint: disable=bare-except
+                    return retval
                 if records:
                     cmd.main([record['name'] for record in records])
                 else:

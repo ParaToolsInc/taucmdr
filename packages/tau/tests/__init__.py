@@ -115,7 +115,7 @@ def not_implemented(cls):
     return unittest.skip(msg)(cls)
 
 
-def reset_project_storage(project_name='proj1', target_name='targ1'):
+def reset_project_storage(project_name='proj1', target_name='targ1', app_name = 'app1'):
     """Delete and recreate project storage.
     
     Effectively the same as::
@@ -128,7 +128,7 @@ def reset_project_storage(project_name='proj1', target_name='targ1'):
         target_name (str): New target's name.
     """
     PROJECT_STORAGE.destroy(ignore_errors=True)
-    initialize.COMMAND.main(['--project-name', project_name, '--target-name', target_name])
+    initialize.COMMAND.main(['--project-name', project_name, '--target-name', target_name, '--application-name', app_name])
 
 class TestCase(unittest.TestCase):
     """Base class for unit tests.

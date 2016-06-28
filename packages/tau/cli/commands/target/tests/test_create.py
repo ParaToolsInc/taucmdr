@@ -34,34 +34,41 @@ from tau import tests
 from tau.cli.commands.target.create import COMMAND as create_cmd
 
 class CreateTest(tests.TestCase):
-    """Unit tests for `tau target create`"""
+    """Tests for :any:`target.create`."""
 
     def test_create(self):
+        tests.reset_project_storage(project_name='proj1')
         argv = ['targ02']
-        retval, _, _ = self.exec_command(create_cmd, argv)
-        self.assertEqual(retval, 0) 
+        stdout, stderr = self.assertCommandReturnValue(0, create_cmd, argv)
+        self.assertIn('Added target \'targ02\' to project configuration \'proj1\'', stdout)
+        self.assertFalse(stderr)
 
-    def test_no_project(self):
-        from tau.storage.project import ProjectStorageError
-        argv = ['test_no_project']
-        self.assertRaises(ProjectStorageError, create_cmd.main, argv)
+    #def test_no_project(self):
+    #    tests.reset_project_storage(project_name='proj1')
+    #    from tau.storage.project import ProjectStorageError
+    #    argv = ['test_no_project']
+    #    self.assertRaises(ProjectStorageError, create_cmd.main, argv)
 
     def test_no_args(self):
-        retval, stdout, stderr = self.exec_command(create_cmd, [])
-        self.assertNotEqual(0, retval)
-        self.assertFalse(stdout)
+        tests.reset_project_storage(project_name='proj1')
+        _, _, stderr = self.exec_command(create_cmd, [])
         self.assertIn('error: too few arguments', stderr)
 
     def test_h_arg(self):
-        retval, stdout, stderr = self.exec_command(create_cmd, ['-h'])
-        self.assertEqual(0, retval)
+        tests.reset_project_storage(project_name='proj1')
+        stdout, _ = self.assertCommandReturnValue(0, create_cmd, ['-h'])
         self.assertIn('Create target configurations.', stdout)
         self.assertIn('show this help message and exit', stdout)
-        self.assertFalse(stderr)
 
     def test_help_arg(self):
-        retval, stdout, stderr = self.exec_command(create_cmd, ['--help'])
-        self.assertEqual(0, retval)
+        tests.reset_project_storage(project_name='proj1')
+        stdout, _ = self.assertCommandReturnValue(0, create_cmd, ['--help'])
         self.assertIn('Create target configurations.', stdout)
         self.assertIn('show this help message and exit', stdout)
-        self.assertFalse(stderr)
+
+    def test_duplicatename(self):
+        tests.reset_project_storage(project_name='proj1')
+        _, _, stderr = self.exec_command(create_cmd, ['targ1'])
+        self.assertIn('target create <target_name> [arguments]', stderr)
+        self.assertIn('target create: error: A target with name', stderr)
+        self.assertIn('already exists', stderr)

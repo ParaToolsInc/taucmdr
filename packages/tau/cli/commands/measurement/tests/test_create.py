@@ -31,30 +31,21 @@ Functions used for unit tests of create.py.
 """
 
 
-import unittest
-import os
-import time
-import shutil
-from tau.cli.commands import initialize
+from tau import tests
 from tau.cli.commands.measurement import create
-from tau.storage.levels import PROJECT_STORAGE
 
-class CreateTest(unittest.TestCase):
-    current_time = time.strftime("%Y%m%d_%H%M%S")
-    @classmethod
-    def setUpClass(cls):
-        os.makedirs('tmp/'+cls.current_time)
-        os.chdir('tmp/'+cls.current_time)
-        #argv = ['--storage-level', 'project']
-        argv = []
-        initialize.COMMAND.main(argv)
+class CreateTest(tests.TestCase):
+    """Tests for :any:`measurement.create`."""
+
     def test_create(self):
-        argv = ['meas01']
-        retval = create.COMMAND.main(argv)
-        self.assertEqual(retval, 0) 
-    @classmethod
-    def tearDownClass(cls):
-        os.chdir('../..')
-        shutil.rmtree('tmp')
-        PROJECT_STORAGE._prefix = None
-        PROJECT_STORAGE.disconnect_filesystem()
+        tests.reset_project_storage(project_name='proj1')
+        stdout, stderr = self.assertCommandReturnValue(0, create.COMMAND, ['meas01'])
+        self.assertIn('Added measurement \'meas01\' to project configuration', stdout)
+        self.assertFalse(stderr)
+        
+    def test_duplicatename(self):
+        tests.reset_project_storage(project_name='proj1')
+        _, _, stderr = self.exec_command(create.COMMAND, ['sample'])
+        self.assertIn('measurement create <measurement_name> [arguments]', stderr)
+        self.assertIn('measurement create: error: A measurement with name', stderr)
+        self.assertIn('already exists', stderr)
