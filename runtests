@@ -28,15 +28,15 @@
 #
 """TAU Commander command line entry point for unit testing.
 
-Setup for unit testing.
+Program driver for unit testing.
 """
 
-import sys
 
 if __name__ == '__main__':
     import os
     import sys
     import unittest
+    import argparse
     
     if getattr(sys, 'frozen', False):
         __file__ = sys.executable
@@ -48,7 +48,11 @@ if __name__ == '__main__':
     sys.path.insert(0, packages)
     sys.path.insert(0, os.path.join(packages, 'tau'))
 
+    parser = argparse.ArgumentParser(description='Run unit tests.')
+    parser.add_argument('--verbose', '-v', action='count',
+                        help='Increase test runner verbosity (may be specified multiple times).')
+    args = parser.parse_args()
 
     from tau import tests
     suite = unittest.TestLoader().discover(os.path.join(here, 'packages', 'tau'), 'test*py')
-    sys.exit(tests.TestRunner(verbosity=1, buffer=True).run(suite))
+    sys.exit(tests.TestRunner(verbosity=args.verbose, buffer=True).run(suite))
