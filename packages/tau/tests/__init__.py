@@ -97,6 +97,10 @@ def pop_test_workdir():
     tempfile.tempdir = _TEMPDIR_STACK.pop()
     os.chdir(_CWD_STACK.pop())
     shutil.rmtree(_DIR_STACK.pop(), ignore_errors=False, onerror=onerror)
+    
+def get_test_workdir():
+    """Return the current unit test's working directory."""
+    return _DIR_STACK[0]
 
 def cleanup():
     """Finish 
@@ -115,7 +119,7 @@ def not_implemented(cls):
     return unittest.skip(msg)(cls)
 
 
-def reset_project_storage(project_name='proj1', target_name='targ1', app_name = 'app1'):
+def reset_project_storage(project_name='proj1', target_name='targ1', app_name='app1'):
     """Delete and recreate project storage.
     
     Effectively the same as::
@@ -128,7 +132,9 @@ def reset_project_storage(project_name='proj1', target_name='targ1', app_name = 
         target_name (str): New target's name.
     """
     PROJECT_STORAGE.destroy(ignore_errors=True)
-    initialize.COMMAND.main(['--project-name', project_name, '--target-name', target_name, '--application-name', app_name])
+    initialize.COMMAND.main(['--project-name', project_name, 
+                             '--target-name', target_name, 
+                             '--application-name', app_name])
 
 class TestCase(unittest.TestCase):
     """Base class for unit tests.

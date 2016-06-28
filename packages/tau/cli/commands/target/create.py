@@ -121,6 +121,8 @@ class TargetCreateCommand(CreateCommand):
         return compilers
     
     def _parse_tau_makefile(self, args):
+        # Parsing a TAU Makefile is a really hairy operation, so let's lift the limit on statements
+        # pylint: disable=too-many-statements
         makefile = args.tau_makefile
         if not util.file_accessible(makefile):
             self.parser.error("Invalid TAU makefile: %s" % makefile)

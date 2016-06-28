@@ -32,11 +32,10 @@ Functions used for unit tests of help.py.
 
 
 from tau import tests
-# pylint: disable=redefined-builtin
-from tau.cli.commands import help
+from tau.cli.commands.help import COMMAND as HELP_COMMAND
 
 class HelpTest(tests.TestCase):
     def test_help(self):
         tests.reset_project_storage(project_name='proj1')
         argv = ['build']
-        self.assertCommandReturnValue(0, help.COMMAND, argv)
+        self.assertCommandReturnValue(0, HELP_COMMAND, argv)

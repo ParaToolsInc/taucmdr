@@ -37,10 +37,10 @@ from tau.cli.commands import build
 from tau.cli.commands.trial import show, create
 
 class ShowTest(tests.TestCase):
+    
     def test_show(self):
         tests.reset_project_storage(project_name='proj1')
-        # pylint: disable=protected-access
-        shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests._DIR_STACK[0]+'/hello.c')
+        shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests.get_test_workdir()+'/hello.c')
         argv = ['gcc', 'hello.c']
         self.exec_command(build.COMMAND, argv)
         self.exec_command(create.COMMAND, ['./a.out'])

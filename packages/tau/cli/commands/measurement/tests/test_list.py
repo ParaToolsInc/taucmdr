@@ -32,15 +32,14 @@ Functions used for unit tests of list.py.
 
 
 from tau import tests
-# pylint: disable=redefined-builtin
-from tau.cli.commands.measurement import list
+from tau.cli.commands.measurement.list import COMMAND as LIST_COMMAND
 
 class ListTest(tests.TestCase):
     """Tests for :any:`measurement.list`."""
 
     def test_list(self):
         tests.reset_project_storage(project_name='proj1')
-        stdout, stderr = self.assertCommandReturnValue(0, list.COMMAND, [])
+        stdout, stderr = self.assertCommandReturnValue(0, LIST_COMMAND, [])
         self.assertIn('sample', stdout)
         self.assertIn('instrument', stdout)
         self.assertIn('trace', stdout)
@@ -48,5 +47,5 @@ class ListTest(tests.TestCase):
 
     def test_wrongname(self):
         tests.reset_project_storage(project_name='proj1')
-        _, stdout, _ = self.exec_command(list.COMMAND, ['meas1'])
+        _, stdout, _ = self.exec_command(LIST_COMMAND, ['meas1'])
         self.assertIn('No measurements', stdout)

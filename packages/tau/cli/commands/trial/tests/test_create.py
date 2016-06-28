@@ -41,8 +41,7 @@ class CreateTest(tests.TestCase):
 
     def test_create(self):
         tests.reset_project_storage(project_name='proj1')
-        # pylint: disable=protected-access
-        shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests._DIR_STACK[0]+'/hello.c')
+        shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests.get_test_workdir()+'/hello.c')
         self.exec_command(build_cmd, ['gcc', 'hello.c'])
         stdout, stderr = self.assertCommandReturnValue(0, create_cmd, ['./a.out'])
         self.assertIn('BEGIN', stdout)
@@ -51,7 +50,3 @@ class CreateTest(tests.TestCase):
         self.assertIn('profile files', stdout)
         self.assertFalse(stderr)
         
-    #def test_noexecutable(self):
-    #    tests.reset_project_storage(project_name='proj1')
-    #    _, _, stderr = self.exec_command(create_cmd, ['./b.out'])
-    #    self.assertIn('Cannot find executable', stderr)

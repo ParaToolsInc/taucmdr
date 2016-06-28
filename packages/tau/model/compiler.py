@@ -172,7 +172,9 @@ class Compiler(Model):
                 old_wrapped = self.populate('wrapped')
                 while 'wrapped' in old_wrapped:
                     old_wrapped = self.populate('wrapped')
-                fatal = fatal or old_wrapped._verify_core_attrs(new_wrapped, msg_parts) # pylint: disable=protected-access
+                # old_wrapped is a Compiler instance, hence this isn't really a protected access violation 
+                # pylint: disable=protected-access
+                fatal = fatal or old_wrapped._verify_core_attrs(new_wrapped, msg_parts)
                 if not fatal:
                     if sorted(comp.include_path) != sorted(self['include_path']):
                         msg_parts.append("Include path has changed.")

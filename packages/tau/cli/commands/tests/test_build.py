@@ -38,8 +38,7 @@ from tau.cli.commands import build
 class BuildTest(tests.TestCase):
     def test_build(self):
         tests.reset_project_storage(project_name='proj1')
-        # pylint: disable=protected-access
-        shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests._DIR_STACK[0]+'/hello.c')
+        shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests.get_test_workdir()+'/hello.c')
         # Need to change gcc to system compiler
         argv = ['gcc', 'hello.c']
         self.assertCommandReturnValue(0, build.COMMAND, argv)

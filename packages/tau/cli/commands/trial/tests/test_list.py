@@ -34,25 +34,24 @@ Functions used for unit tests of list.py.
 import shutil
 from tau import tests, TAU_HOME
 from tau.cli.commands import build
-# pylint: disable=redefined-builtin
-from tau.cli.commands.trial import list, create
+from tau.cli.commands.trial.list import COMMAND as LIST_COMMAND
+from tau.cli.commands.trial.create import COMMAND as CREATE_COMMAND
 
 class ListTest(tests.TestCase):
     """Tests for :any:`trial.list`."""
     
     def test_list(self):
         tests.reset_project_storage(project_name='proj1')
-        # pylint: disable=protected-access
-        shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests._DIR_STACK[0]+'/hello.c')
+        shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests.get_test_workdir()+'/hello.c')
         argv = ['gcc', 'hello.c']
         self.exec_command(build.COMMAND, argv)
-        self.exec_command(create.COMMAND, ['./a.out'])
-        stdout, stderr = self.assertCommandReturnValue(0, list.COMMAND, [])
+        self.exec_command(CREATE_COMMAND, ['./a.out'])
+        stdout, stderr = self.assertCommandReturnValue(0, LIST_COMMAND, [])
         self.assertIn('./a.out', stdout)
         self.assertIn('0', stdout)
         self.assertFalse(stderr)
-        
+
     def test_wrongnumber(self):
         tests.reset_project_storage(project_name='proj1')
-        _, stdout, _ = self.exec_command(list.COMMAND, ['0'])
+        _, stdout, _ = self.exec_command(LIST_COMMAND, ['0'])
         self.assertIn('No trials', stdout)
