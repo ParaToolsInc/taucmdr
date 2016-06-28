@@ -30,8 +30,8 @@
 Functions used for unit tests of binutils_installation.py
 """
 
-from tau import tests
+from tau.tests import TestCase, not_implemented
 
-@tests.not_implemented
-class BinutilsInstallationTest(tests.TestCase):
-    pass 
+@not_implemented
+class BinutilsInstallationTest(TestCase):
+    pass

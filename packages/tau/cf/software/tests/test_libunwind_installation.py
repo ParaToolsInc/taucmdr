@@ -31,9 +31,8 @@ Functions used for unit tests of libunwind_installation.py.
 """
 
 
-import unittest
-#from tau.cf.software import libunwind_installation
+from tau.tests import TestCase, not_implemented
 
-class LibunwindInstallationTest(unittest.TestCase):
-    def test_libunwind_installation(self):
-        self.assertEqual(1, 1)
+@not_implemented
+class LibunwindInstallationTest(TestCase):
+    pass

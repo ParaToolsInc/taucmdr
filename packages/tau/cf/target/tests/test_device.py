@@ -31,9 +31,8 @@ Functions used for unit tests of device.py.
 """
 
 
-import unittest
-#from tau.cf.target import device
+from tau.tests import TestCase, not_implemented
 
-class DeviceTest(unittest.TestCase):
-    def test_device(self):
-        self.assertEqual(1, 1)
+@not_implemented
+class DeviceTest(TestCase):
+    pass
