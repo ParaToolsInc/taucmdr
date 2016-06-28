@@ -38,13 +38,13 @@ class CreateTest(tests.TestCase):
     """Tests for :any:`measurement.create`."""
 
     def test_create(self):
-        tests.reset_project_storage(project_name='proj1')
+        self.reset_project_storage(project_name='proj1')
         stdout, stderr = self.assertCommandReturnValue(0, create.COMMAND, ['meas01'])
         self.assertIn('Added measurement \'meas01\' to project configuration', stdout)
         self.assertFalse(stderr)
         
     def test_duplicatename(self):
-        tests.reset_project_storage(project_name='proj1')
+        self.reset_project_storage(project_name='proj1')
         self.assertCommandReturnValue(0, create.COMMAND, ['meas01'])
         _, _, stderr = self.exec_command(create.COMMAND, ['meas01'])
         self.assertIn('measurement create <measurement_name> [arguments]', stderr)

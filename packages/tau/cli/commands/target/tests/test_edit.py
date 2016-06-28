@@ -38,28 +38,28 @@ class EditTest(tests.TestCase):
     """Tests for :any:`target.delete`."""
 
     def test_edit(self):
-        tests.reset_project_storage(project_name='proj1')
+        self.reset_project_storage(project_name='proj1')
         argv = ['targ1', '--new-name', 'targ2']
         stdout, stderr = self.assertCommandReturnValue(0, edit.COMMAND, argv)
         self.assertIn('Updated target \'targ1\'', stdout)
         self.assertFalse(stderr)
 
     def test_wrongname(self):
-        tests.reset_project_storage(project_name='proj1')
+        self.reset_project_storage(project_name='proj1')
         argv = ['targ2', '--new-name', 'targ3']
         _, _, stderr = self.exec_command(edit.COMMAND, argv)
         self.assertIn('target edit <target_name> [arguments]', stderr)
         self.assertIn('target edit: error: No project-level target with name', stderr)
 
     def test_wrongarg(self):
-        tests.reset_project_storage(project_name='proj1')
+        self.reset_project_storage(project_name='proj1')
         argv = ['app1', '--arg', 'T']
         _, _, stderr = self.exec_command(edit.COMMAND, argv)
         self.assertIn('target edit <target_name> [arguments]', stderr)
         self.assertIn('target edit: error: unrecognized arguments: --arg', stderr)
         
     def test_ambiguousarg(self):
-        tests.reset_project_storage(project_name='proj1')
+        self.reset_project_storage(project_name='proj1')
         argv = ['targ1', '--mpi', 'T']
         _, _, stderr = self.exec_command(edit.COMMAND, argv)
         self.assertIn('target edit <target_name> [arguments]', stderr)

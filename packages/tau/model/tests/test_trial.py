@@ -36,5 +36,5 @@ from tau.model import trial
 
 class TrialTest(tests.TestCase):
     def test_trial(self):
-        tests.reset_project_storage(project_name='proj1')
+        self.reset_project_storage(project_name='proj1')
         self.assertEqual(any(trial.attributes()), 1) 

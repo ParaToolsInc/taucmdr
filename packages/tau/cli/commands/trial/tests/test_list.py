@@ -41,7 +41,7 @@ class ListTest(tests.TestCase):
     """Tests for :any:`trial.list`."""
     
     def test_list(self):
-        tests.reset_project_storage(project_name='proj1')
+        self.reset_project_storage(project_name='proj1')
         shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests.get_test_workdir()+'/hello.c')
         argv = ['gcc', 'hello.c']
         self.exec_command(build.COMMAND, argv)
@@ -52,6 +52,6 @@ class ListTest(tests.TestCase):
         self.assertFalse(stderr)
 
     def test_wrongnumber(self):
-        tests.reset_project_storage(project_name='proj1')
+        self.reset_project_storage(project_name='proj1')
         _, stdout, _ = self.exec_command(LIST_COMMAND, ['0'])
         self.assertIn('No trials', stdout)

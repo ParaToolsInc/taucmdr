@@ -38,12 +38,12 @@ class ListTest(tests.TestCase):
     """Tests for :any:`target.list`."""
 
     def test_list(self):
-        tests.reset_project_storage(project_name='proj1')
+        self.reset_project_storage(project_name='proj1')
         stdout, stderr = self.assertCommandReturnValue(0, LIST_COMMAND, [])
         self.assertIn('targ1', stdout)
         self.assertFalse(stderr)
 
     def test_wrongname(self):
-        tests.reset_project_storage(project_name='proj1')
+        self.reset_project_storage(project_name='proj1')
         _, stdout, _ = self.exec_command(LIST_COMMAND, ['targ2'])
         self.assertIn('No targets', stdout)

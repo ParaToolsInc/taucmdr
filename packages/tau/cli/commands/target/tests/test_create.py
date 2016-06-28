@@ -37,37 +37,37 @@ class CreateTest(tests.TestCase):
     """Tests for :any:`target.create`."""
 
     def test_create(self):
-        tests.reset_project_storage(project_name='proj1')
+        self.reset_project_storage(project_name='proj1')
         argv = ['targ02']
         stdout, stderr = self.assertCommandReturnValue(0, create_cmd, argv)
         self.assertIn('Added target \'targ02\' to project configuration \'proj1\'', stdout)
         self.assertFalse(stderr)
 
     #def test_no_project(self):
-    #    tests.reset_project_storage(project_name='proj1')
+    #    self.reset_project_storage(project_name='proj1')
     #    from tau.storage.project import ProjectStorageError
     #    argv = ['test_no_project']
     #    self.assertRaises(ProjectStorageError, create_cmd.main, argv)
 
     def test_no_args(self):
-        tests.reset_project_storage(project_name='proj1')
+        self.reset_project_storage(project_name='proj1')
         _, _, stderr = self.exec_command(create_cmd, [])
         self.assertIn('error: too few arguments', stderr)
 
     def test_h_arg(self):
-        tests.reset_project_storage(project_name='proj1')
+        self.reset_project_storage(project_name='proj1')
         stdout, _ = self.assertCommandReturnValue(0, create_cmd, ['-h'])
         self.assertIn('Create target configurations.', stdout)
         self.assertIn('show this help message and exit', stdout)
 
     def test_help_arg(self):
-        tests.reset_project_storage(project_name='proj1')
+        self.reset_project_storage(project_name='proj1')
         stdout, _ = self.assertCommandReturnValue(0, create_cmd, ['--help'])
         self.assertIn('Create target configurations.', stdout)
         self.assertIn('show this help message and exit', stdout)
 
     def test_duplicatename(self):
-        tests.reset_project_storage(project_name='proj1')
+        self.reset_project_storage(project_name='proj1')
         _, _, stderr = self.exec_command(create_cmd, ['targ1'])
         self.assertIn('target create <target_name> [arguments]', stderr)
         self.assertIn('target create: error: A target with name', stderr)

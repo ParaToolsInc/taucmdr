@@ -39,7 +39,7 @@ class ListTest(tests.TestCase):
     """Tests for :any:`measurement.list`."""
 
     def test_list(self):
-        tests.reset_project_storage(bare=True)
+        self.reset_project_storage(bare=True)
         name = 'meas01'
         self.assertCommandReturnValue(0, CREATE_COMMAND, [name])
         stdout, stderr = self.assertCommandReturnValue(0, LIST_COMMAND, [])
@@ -47,7 +47,7 @@ class ListTest(tests.TestCase):
         self.assertFalse(stderr)
 
     def test_wrongname(self):
-        tests.reset_project_storage()
+        self.reset_project_storage()
         _, stdout, _ = self.exec_command(LIST_COMMAND, ['INVALID_NAME'])
         self.assertIn('No measurements', stdout)
 

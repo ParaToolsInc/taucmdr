@@ -36,5 +36,5 @@ from tau.cli.commands import dashboard
 
 class DashboardTest(tests.TestCase):
     def test_dashboard(self):
-        tests.reset_project_storage(project_name='proj1')
+        self.reset_project_storage(project_name='proj1')
         self.assertCommandReturnValue(0, dashboard.COMMAND, [])

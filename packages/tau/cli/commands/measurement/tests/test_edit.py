@@ -39,7 +39,7 @@ class EditTest(tests.TestCase):
     """Tests for :any:`measurement.edit`."""
 
     def test_edit(self):
-        tests.reset_project_storage(project_name='proj1')
+        self.reset_project_storage(project_name='proj1')
         old_name = 'meas01'
         new_name = 'meas02'
         self.assertCommandReturnValue(0, CREATE_COMMAND, [old_name])
@@ -48,14 +48,14 @@ class EditTest(tests.TestCase):
         self.assertFalse(stderr)       
 
     def test_wrongname(self):
-        tests.reset_project_storage(project_name='proj1')
+        self.reset_project_storage(project_name='proj1')
         argv = ['meas1', '--new-name', 'meas2']
         _, _, stderr = self.exec_command(EDIT_COMMAND, argv)
         self.assertIn('measurement edit <measurement_name> [arguments]', stderr)
         self.assertIn('measurement edit: error: No project-level measurement with name', stderr)
         
     def test_wrongarg(self):
-        tests.reset_project_storage(project_name='proj1')
+        self.reset_project_storage(project_name='proj1')
         name = 'meas01'
         self.assertCommandReturnValue(0, CREATE_COMMAND, [name])
         _, _, stderr = self.exec_command(EDIT_COMMAND, ['meas01', '--use-mpi', 'T'])

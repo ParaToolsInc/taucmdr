@@ -36,6 +36,6 @@ from tau.cli.commands.help import COMMAND as HELP_COMMAND
 
 class HelpTest(tests.TestCase):
     def test_help(self):
-        tests.reset_project_storage(project_name='proj1')
+        self.reset_project_storage(project_name='proj1')
         argv = ['build']
         self.assertCommandReturnValue(0, HELP_COMMAND, argv)

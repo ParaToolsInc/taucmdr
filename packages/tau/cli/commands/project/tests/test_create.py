@@ -38,13 +38,13 @@ class CreateTest(tests.TestCase):
     """Tests for :any:`project.create`."""
 
     def test_create(self):
-        tests.reset_project_storage(project_name='proj1')
+        self.reset_project_storage(project_name='proj1')
         stdout, stderr = self.assertCommandReturnValue(0, create_cmd, ['test01'])
         self.assertIn('Created a new project named \'test01\'', stdout)
         self.assertFalse(stderr)
 
     def test_duplicatename(self):
-        tests.reset_project_storage(project_name='proj1')
+        self.reset_project_storage(project_name='proj1')
         _, _, stderr = self.exec_command(create_cmd, ['proj1'])
         self.assertIn('project create <project_name> [targets] [applications] [measurements] [arguments]', stderr)
         self.assertIn('project create: error: A project named', stderr)

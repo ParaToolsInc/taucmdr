@@ -38,7 +38,7 @@ class EditTest(tests.TestCase):
     """Tests for :any:`application.edit`."""
 
     def test_edit(self):
-        tests.reset_project_storage(project_name='proj1')
+        self.reset_project_storage(project_name='proj1')
         argv = ['app1', '--new-name', 'app2']
         stdout, stderr = self.assertCommandReturnValue(0, edit.COMMAND, argv)
         self.assertIn('Updated application', stdout)
@@ -47,14 +47,14 @@ class EditTest(tests.TestCase):
         self.assertFalse(stderr)
 
     def test_wrongname(self):
-        tests.reset_project_storage(project_name='proj1')
+        self.reset_project_storage(project_name='proj1')
         argv = ['app2', '--new-name', 'app3']
         _, _, stderr = self.exec_command(edit.COMMAND, argv)
         self.assertIn('application edit <application_name> [arguments]', stderr)
         self.assertIn('application edit: error: No project-level application with name', stderr)
         
     def test_wrongarg(self):
-        tests.reset_project_storage(project_name='proj1')
+        self.reset_project_storage(project_name='proj1')
         argv = ['app1', '--mpi', 'T']
         _, _, stderr = self.exec_command(edit.COMMAND, argv)
         self.assertIn('application edit <application_name> [arguments]', stderr)

@@ -37,7 +37,7 @@ import warnings
 import tau
 from tau import logger, EXIT_SUCCESS, EXIT_FAILURE
 from tau.cli.commands import initialize
-from tau.storage.levels import PROJECT_STORAGE
+from tau.storage.levels import PROJECT_STORAGE, SYSTEM_STORAGE
 
 _DIR_STACK = []
 _CWD_STACK = []
@@ -119,26 +119,6 @@ def not_implemented(cls):
     return unittest.skip(msg)(cls)
 
 
-def reset_project_storage(project_name='proj1', target_name='targ1', app_name='app1', bare=False):
-    """Delete and recreate project storage.
-    
-    Effectively the same as::
-    
-        > rm -rf .tau
-        > tau init --project-name=proj1 --target-name=targ1
-    
-    Args:
-        project_name (str): New project's name.
-        target_name (str): New target's name.
-        app_name (str): New application's name.
-        bare (bool): If true, initialize project storage but don't create default objects.
-    """
-    PROJECT_STORAGE.destroy(ignore_errors=True)
-    argv = ['--project-name', project_name, '--target-name', target_name, '--application-name', app_name]
-    if bare:
-        argv.append('--bare')
-    initialize.COMMAND.main(argv)
-
 class TestCase(unittest.TestCase):
     """Base class for unit tests.
     
@@ -163,6 +143,48 @@ class TestCase(unittest.TestCase):
         # pylint: disable=protected-access
         logger._STDOUT_HANDLER.stream = cls._orig_stream
         pop_test_workdir()
+        
+    def run(self, result=None):
+        # Nasty hack to give us access to what sys.stderr becomes when unittest.TestRunner.buffered == True
+        # pylint: disable=attribute-defined-outside-init
+        assert result is not None
+        self._result_stream = result.stream
+        return super(TestCase, self).run(result)
+
+    def reset_project_storage(self, project_name='proj1', target_name='targ1', app_name='app1', bare=False):
+        """Delete and recreate project storage.
+        
+        Effectively the same as::
+        
+            > rm -rf .tau
+            > tau init --project-name=proj1 --target-name=targ1
+        
+        Args:
+            project_name (str): New project's name.
+            target_name (str): New target's name.
+            app_name (str): New application's name.
+            bare (bool): If true, initialize project storage but don't create default objects.
+        """
+        PROJECT_STORAGE.destroy(ignore_errors=True)
+        argv = ['--project-name', project_name, '--target-name', target_name, '--application-name', app_name]
+        if bare:
+            argv.append('--bare')
+    
+        if os.path.exists(os.path.join(SYSTEM_STORAGE.prefix, 'TAU')):
+            initialize.COMMAND.main(argv)
+        else:
+            # If this is the first time setting up TAU and dependencies then we need to emit output so
+            # CI drivers like Travis don't think our unit tests have stalled.
+            import time
+            import threading
+            def worker():
+                initialize.COMMAND.main(argv)
+            thread = threading.Thread(target=worker)
+            thread.start()
+            while thread.is_alive():
+                self._result_stream.writeln('Initializing TAU and dependencies may take several minutes...')
+                time.sleep(60)
+            self._result_stream.writeln('Finished')
 
     def exec_command(self, cmd, argv):
         """Execute a command's main() routine and return the exit code, stdout, and stderr data.

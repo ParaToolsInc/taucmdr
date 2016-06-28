@@ -37,6 +37,6 @@ from tau.cli.commands import select
 class SelectTest(tests.TestCase):
     
     def test_select(self):
-        tests.reset_project_storage(app_name='testing_app')
+        self.reset_project_storage(app_name='testing_app')
         argv = ['testing_app', 'profile']
         self.assertCommandReturnValue(0, select.COMMAND, argv)
