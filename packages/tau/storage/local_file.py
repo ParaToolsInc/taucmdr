@@ -102,10 +102,9 @@ class LocalFileStorage(AbstractStorage):
 
     def __getitem__(self, key):
         record = self.get({'key': key})
-        try:
+        if record is not None:
             return record['value']
-        except TypeError:
-            raise KeyError
+        raise KeyError
     
     def __setitem__(self, key, value):
         if self.contains({'key': key}):
@@ -150,8 +149,9 @@ class LocalFileStorage(AbstractStorage):
 
     def disconnect_database(self, *args, **kwargs):
         """Close the database for reading and writing."""
-        self._database.close()
-        self._database = None
+        if self._database:
+            self._database.close()
+            self._database = None
 
     @property
     def prefix(self):

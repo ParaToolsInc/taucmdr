@@ -31,9 +31,21 @@ Functions used for unit tests of create.py.
 """
 
 
-import unittest
-#from tau.cli.commands.project import create
+from tau import tests
+from tau.cli.commands.project.create import COMMAND as create_cmd
 
-class CreateTest(unittest.TestCase):
+class CreateTest(tests.TestCase):
+    """Tests for :any:`project.create`."""
+
     def test_create(self):
-        self.assertEqual(1, 1) 
+        tests.reset_project_storage(project_name='proj1')
+        stdout, stderr = self.assertCommandReturnValue(0, create_cmd, ['test01'])
+        self.assertIn('Created a new project named \'test01\'', stdout)
+        self.assertFalse(stderr)
+
+    def test_duplicatename(self):
+        tests.reset_project_storage(project_name='proj1')
+        _, _, stderr = self.exec_command(create_cmd, ['proj1'])
+        self.assertIn('project create <project_name> [targets] [applications] [measurements] [arguments]', stderr)
+        self.assertIn('project create: error: A project named', stderr)
+        self.assertIn('already exists', stderr)

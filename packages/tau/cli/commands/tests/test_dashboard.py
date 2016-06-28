@@ -31,9 +31,10 @@ Functions used for unit tests of dashboard.py.
 """
 
 
-import unittest
-#from tau.cli.commands import dashboard
+from tau import tests
+from tau.cli.commands import dashboard
 
-class DashboardTest(unittest.TestCase):
+class DashboardTest(tests.TestCase):
     def test_dashboard(self):
-        self.assertEqual(1, 1) 
+        tests.reset_project_storage(project_name='proj1')
+        self.assertCommandReturnValue(0, dashboard.COMMAND, [])

@@ -112,13 +112,19 @@ class ProjectListCommand(ListCommand):
             for cmd, prop in ((target_list_cmd, 'targets'),
                               (application_list_cmd, 'applications'),
                               (measurement_list_cmd, 'measurements')):
-                records = proj.populate(prop)
+                try:
+                    records = proj.populate(prop)
+                except:     # pylint: disable=bare-except
+                    return retval
                 if records:
                     cmd.main([record['name'] for record in records])
                 else:
                     label = util.color_text('%s: No %s' % (proj['name'], prop), color='red', attrs=['bold'])
                     print "%s.  Use `%s` to view available %s.\n" % (label, cmd, prop)
             self._print_experiments(proj)
+            if proj.get('force_tau_options', False):
+                self.logger.warning("Project '%s' will add '%s' to TAU_OPTIONS without error checking.", 
+                                    proj['name'], ' '.join(proj['force_tau_options']))
         return retval
 
 COMMAND = ProjectListCommand()

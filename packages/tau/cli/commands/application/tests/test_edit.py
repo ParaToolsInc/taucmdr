@@ -31,9 +31,31 @@ Functions used for unit tests of edit.py.
 """
 
 
-import unittest
-#from tau.cli.commands.application import edit
+from tau import tests
+from tau.cli.commands.application import edit
 
-class EditTest(unittest.TestCase):
+class EditTest(tests.TestCase):
+    """Tests for :any:`application.edit`."""
+
     def test_edit(self):
-        self.assertEqual(1, 1) 
+        tests.reset_project_storage(project_name='proj1')
+        argv = ['app1', '--new-name', 'app2']
+        stdout, stderr = self.assertCommandReturnValue(0, edit.COMMAND, argv)
+        self.assertIn('Updated application', stdout)
+        argv = ['app2', '--new-name', 'app1']
+        self.exec_command(edit.COMMAND, argv)
+        self.assertFalse(stderr)
+
+    def test_wrongname(self):
+        tests.reset_project_storage(project_name='proj1')
+        argv = ['app2', '--new-name', 'app3']
+        _, _, stderr = self.exec_command(edit.COMMAND, argv)
+        self.assertIn('application edit <application_name> [arguments]', stderr)
+        self.assertIn('application edit: error: No project-level application with name', stderr)
+        
+    def test_wrongarg(self):
+        tests.reset_project_storage(project_name='proj1')
+        argv = ['app1', '--mpi', 'T']
+        _, _, stderr = self.exec_command(edit.COMMAND, argv)
+        self.assertIn('application edit <application_name> [arguments]', stderr)
+        self.assertIn('application edit: error: unrecognized arguments', stderr)

@@ -31,9 +31,9 @@ Functions used for unit tests of arguments.py.
 """
 
 
-import unittest
+from tau import tests
 #from tau.cli import arguments
 
-class ArgumentsTest(unittest.TestCase):
+class ArgumentsTest(tests.TestCase):
     def test_arguments(self):
         self.assertEqual(1, 1) 

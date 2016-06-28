@@ -31,9 +31,18 @@ Functions used for unit tests of show.py.
 """
 
 
-import unittest
-#from tau.cli.commands.trial import show
+import shutil
+from tau import tests, TAU_HOME
+from tau.cli.commands import build
+from tau.cli.commands.trial import show, create
 
-class ShowTest(unittest.TestCase):
+class ShowTest(tests.TestCase):
+    
     def test_show(self):
-        self.assertEqual(1, 1) 
+        tests.reset_project_storage(project_name='proj1')
+        shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests.get_test_workdir()+'/hello.c')
+        argv = ['gcc', 'hello.c']
+        self.exec_command(build.COMMAND, argv)
+        self.exec_command(create.COMMAND, ['./a.out'])
+        argv = ['0', '--profile-tool', 'pprof']
+        self.assertCommandReturnValue(None, show.COMMAND, argv)

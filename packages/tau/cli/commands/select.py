@@ -176,11 +176,11 @@ class SelectCommand(AbstractCommand):
         args = self.parser.parse_args(args=argv)
         self.logger.debug('Arguments: %s', args)
         
-        projects, targets, applications, measurements = self._parse_implicit(args)
-        proj = self._parse_explicit_project(args, projects)
-        targ = self._parse_explicit(args, Target, targets, proj, 'targets')
-        app = self._parse_explicit(args, Application, applications, proj, 'applications')
-        meas = self._parse_explicit(args, Measurement, measurements, proj, 'measurements')
+        proj, targ, app, meas = self._parse_implicit(args)
+        proj = self._parse_explicit_project(args, proj)
+        targ = self._parse_explicit(args, Target, targ, proj, 'targets')
+        app = self._parse_explicit(args, Application, app, proj, 'applications')
+        meas = self._parse_explicit(args, Measurement, meas, proj, 'measurements')
 
         proj_ctrl = Project.controller()
         rebuild_required = False

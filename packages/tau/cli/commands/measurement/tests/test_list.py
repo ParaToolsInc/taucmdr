@@ -31,9 +31,23 @@ Functions used for unit tests of list.py.
 """
 
 
-import unittest
-#from tau.cli.commands.measurement import list
+from tau import tests
+from tau.cli.commands.measurement.create import COMMAND as CREATE_COMMAND
+from tau.cli.commands.measurement.list import COMMAND as LIST_COMMAND
 
-class ListTest(unittest.TestCase):
+class ListTest(tests.TestCase):
+    """Tests for :any:`measurement.list`."""
+
     def test_list(self):
-        self.assertEqual(1, 1) 
+        tests.reset_project_storage(bare=True)
+        name = 'meas01'
+        self.assertCommandReturnValue(0, CREATE_COMMAND, [name])
+        stdout, stderr = self.assertCommandReturnValue(0, LIST_COMMAND, [])
+        self.assertIn('meas01', stdout)
+        self.assertFalse(stderr)
+
+    def test_wrongname(self):
+        tests.reset_project_storage()
+        _, stdout, _ = self.exec_command(LIST_COMMAND, ['INVALID_NAME'])
+        self.assertIn('No measurements', stdout)
+

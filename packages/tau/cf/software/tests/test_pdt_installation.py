@@ -30,23 +30,8 @@
 Functions used for unit tests of pdt_installation.py.
 """
 
+from tau.tests import TestCase, not_implemented
 
-import unittest
-import os
-import time
-import shutil
-#from tau.cf.software import pdt_installation
-
-class PdtInstallationTest(unittest.TestCase):
-    current_time = time.strftime("%Y%m%d_%H%M%S")
-    @classmethod
-    def setUpClass(cls):
-        os.makedirs(cls.current_time)
-        os.chdir(cls.current_time)
-    def test_pdt_installation(self):
-#        pdt_installation.PdtInstallation().__init__(self, )
-        self.assertEqual(1, 1)
-    @classmethod
-    def tearDownClass(cls):
-        os.chdir('..')
-        shutil.rmtree(cls.current_time)
+@not_implemented
+class PdtInstallationTest(TestCase):
+    pass

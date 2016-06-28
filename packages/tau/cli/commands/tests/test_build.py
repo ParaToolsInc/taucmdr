@@ -31,9 +31,14 @@ Functions used for unit tests of build.py.
 """
 
 
-import unittest
-#from tau.cli.commands import build
+import shutil
+from tau import tests, TAU_HOME
+from tau.cli.commands import build
 
-class BuildTest(unittest.TestCase):
+class BuildTest(tests.TestCase):
     def test_build(self):
-        self.assertEqual(1, 1) 
+        tests.reset_project_storage(project_name='proj1')
+        shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests.get_test_workdir()+'/hello.c')
+        # Need to change gcc to system compiler
+        argv = ['gcc', 'hello.c']
+        self.assertCommandReturnValue(0, build.COMMAND, argv)

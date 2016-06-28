@@ -31,9 +31,9 @@ Functions used for unit tests of mpi.py.
 """
 
 
-import unittest
-#from tau.cf.compiler import mpi
+from tau import tests
 
-class MpiTest(unittest.TestCase):
-    def test_mpi(self):
-        self.assertEqual(1, 1)
+@tests.not_implemented
+class MpiTest(tests.TestCase):
+    pass
+
