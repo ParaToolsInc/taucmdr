@@ -38,13 +38,13 @@ class DeleteTest(tests.TestCase):
     """Tests for :any:`measurement.delete`."""
 
     def test_delete(self):
-        tests.reset_project_storage(project_name='proj1')
+        tests.reset_project_storage()
         argv = ['sample']
+        self.assertCommandReturnValue(0, create.COMMAND, argv)
         stdout, stderr = self.assertCommandReturnValue(0, delete.COMMAND, argv)
-        self.assertIn('Deleted measurement \'sample\'', stdout)
+        self.assertIn("Deleted measurement 'sample'", stdout)
         self.assertFalse(stderr)
-        self.exec_command(create.COMMAND, argv)
-        
+
     def test_wrongname(self):
         tests.reset_project_storage(project_name='proj1')
         _, _, stderr = self.exec_command(delete.COMMAND, ['meas1'])
