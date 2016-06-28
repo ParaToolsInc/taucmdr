@@ -40,7 +40,7 @@ class CreateTest(tests.TestCase):
     def test_create(self):
         shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests._DIR_STACK[0]+'/hello.c')
         argv = ['gcc', 'hello.c']
-        tests.exec_command(self, build.COMMAND, argv)
+        self.exec_command(build.COMMAND, argv)
         argv = ['./a.out']
-        retval, stdout, stderr = tests.exec_command(self, create.COMMAND, argv)
+        retval, stdout, stderr = self.exec_command(create.COMMAND, argv)
         self.assertEqual(retval, 0)

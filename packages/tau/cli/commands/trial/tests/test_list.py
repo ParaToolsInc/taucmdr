@@ -40,8 +40,8 @@ class ListTest(tests.TestCase):
     def test_list(self):
         shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests._DIR_STACK[0]+'/hello.c')
         argv = ['gcc', 'hello.c']
-        tests.exec_command(self, build.COMMAND, argv)
+        self.exec_command(build.COMMAND, argv)
         argv = ['./a.out']
-        tests.exec_command(self, create.COMMAND, argv)
-        retval, stdout, stderr = tests.exec_command(self, list.COMMAND, [])
+        self.exec_command(create.COMMAND, argv)
+        retval, stdout, stderr = self.exec_command(list.COMMAND, [])
         self.assertEqual(retval, 0)

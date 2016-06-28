@@ -38,5 +38,5 @@ from tau.storage.levels import PROJECT_STORAGE
 class HelpTest(tests.TestCase):
     def test_help(self):
         argv = ['build']
-        retval, stdout, stderr = tests.exec_command(self, help.COMMAND, argv)
+        retval, stdout, stderr = self.exec_command(help.COMMAND, argv)
         self.assertEqual(retval, 0) 

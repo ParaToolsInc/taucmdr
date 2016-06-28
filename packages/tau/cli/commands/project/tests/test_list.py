@@ -36,5 +36,5 @@ from tau.cli.commands.project import list
 
 class ListTest(tests.TestCase):
     def test_list(self):
-        retval, stdout, stderr = tests.exec_command(self, list.COMMAND, [])
+        retval, stdout, stderr = self.exec_command(list.COMMAND, [])
         self.assertEqual(retval, 0) 

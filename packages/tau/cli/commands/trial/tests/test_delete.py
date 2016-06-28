@@ -40,9 +40,9 @@ class DeleteTest(tests.TestCase):
     def test_delete(self):
         shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests._DIR_STACK[0]+'/hello.c')
         argv = ['gcc', 'hello.c']
-        tests.exec_command(self, build.COMMAND, argv)
+        self.exec_command(build.COMMAND, argv)
         argv = ['./a.out']
-        tests.exec_command(self, create.COMMAND, argv)
+        self.exec_command(create.COMMAND, argv)
         argv = ['0']
-        retval, stdout, stderr = tests.exec_command(self, delete.COMMAND, argv)
+        retval, stdout, stderr = self.exec_command(delete.COMMAND, argv)
         self.assertEqual(retval, 0) 

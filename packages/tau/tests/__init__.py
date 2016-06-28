@@ -70,25 +70,6 @@ def get_stderr():
     # pylint: disable=no-member
     return sys.stderr.getvalue()
 
-def exec_command(testcase, cmd, argv):
-    """Execute a command's main() routine and return the exit code, stdout, and stderr data.
-    
-    Args:
-        testcase (unittest.TestCase): TestCase instance executing the command.
-        cmd (type): A command instance that has a `main` callable attribute.
-        argv (list): Arguments to pass to cmd.main()
-        
-    Returns:
-        tuple: (retval, stdout, stderr) results of running the command.
-    """
-    if not hasattr(sys.stdout, "getvalue"):
-        testcase.fail("Test must be run in buffered mode")
-    try:
-        retval = cmd.main(argv)
-    except SystemExit as err:
-        retval = err.code
-    return retval, get_stdout(), get_stderr()
-
 def push_test_workdir():
     """Create a new working directory for a unit test.
     
@@ -116,7 +97,7 @@ def pop_test_workdir():
     tempfile.tempdir = _TEMPDIR_STACK.pop()
     os.chdir(_CWD_STACK.pop())
     shutil.rmtree(_DIR_STACK.pop(), ignore_errors=False, onerror=onerror)
-    
+
 def cleanup():
     """Finish 
     
@@ -165,7 +146,6 @@ class TestCase(unittest.TestCase):
         # pylint: disable=protected-access
         cls._orig_stream = logger._STDOUT_HANDLER.stream
         logger._STDOUT_HANDLER.stream = sys.stdout
-        reset_project_storage()
 
     @classmethod
     def tearDownClass(cls):
@@ -175,10 +155,35 @@ class TestCase(unittest.TestCase):
         logger._STDOUT_HANDLER.stream = cls._orig_stream
         pop_test_workdir()
 
+    def exec_command(self, cmd, argv):
+        """Execute a command's main() routine and return the exit code, stdout, and stderr data.
+        
+        Args:
+            cmd (type): A command instance that has a `main` callable attribute.
+            argv (list): Arguments to pass to cmd.main()
+            
+        Returns:
+            tuple: (retval, stdout, stderr) results of running the command.
+        """
+        if not hasattr(sys.stdout, "getvalue"):
+            self.fail("Test must be run in buffered mode")
+        try:
+            retval = cmd.main(argv)
+        except SystemExit as err:
+            retval = err.code
+        return retval, get_stdout(), get_stderr()
+
+    # Follow the :any:`unittest` code style.
+    # pylint: disable=invalid-name
+    def assertCommandReturnValue(self, return_value, cmd, argv):
+        retval, stdout, stderr = self.exec_command(cmd, argv)
+        self.assertEqual(retval, return_value)
+        return stdout, stderr
+
 
 class TestRunner(unittest.TextTestRunner):
     """Test suite runner."""
-    
+
     def run(self, test):
         result = super(TestRunner, self).run(test)
         for item in _NOT_IMPLEMENTED:

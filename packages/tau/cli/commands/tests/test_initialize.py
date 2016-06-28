@@ -25,13 +25,14 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
+
 """Test functions.
 
 Functions used for unit tests of initialize.py.
 """
 
-
 from tau import tests
+from tau.storage.levels import PROJECT_STORAGE
 from tau.cli.commands.initialize import COMMAND as initialize_cmd
 
 
@@ -39,9 +40,8 @@ class InitializeTest(tests.TestCase):
     """Unit tests for `tau initialize`"""
 
     def test_bare(self):
-        tests.fresh_tau()
-        retval, stdout, stderr = tests.exec_command(self, initialize_cmd, ['--bare'])
-        self.assertEqual(0, retval)
+        PROJECT_STORAGE.destroy()
+        stdout, stderr = self.assertCommandReturnValue(0, initialize_cmd, ['--bare'])
         self.assertIn('Created a new project named', stdout)
         self.assertIn('Project Configuration', stdout)
         self.assertIn('No targets', stdout)
@@ -51,6 +51,4 @@ class InitializeTest(tests.TestCase):
         self.assertFalse(stderr)
 
     def test_initialize(self):
-        argv = ['--storage-level', 'project']
-        retval, stdout, stderr = tests.exec_command(self, initialize_cmd, argv)
-        self.assertEqual(retval, 0)
+        self.assertCommandReturnValue(0, initialize_cmd, ['--storage-level', 'project'])

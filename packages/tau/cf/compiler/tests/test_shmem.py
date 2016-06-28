@@ -31,9 +31,8 @@ Functions used for unit tests of shmem.py.
 """
 
 
-import unittest
-#from tau.cf.compiler import shmem
+from tau import tests
 
-class ShmemTest(unittest.TestCase):
-    def test_shmem(self):
-        self.assertEqual(1, 1)
+@tests.not_implemented
+class ShmemTest(tests.TestCase):
+    pass

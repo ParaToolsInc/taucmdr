@@ -38,7 +38,7 @@ class CreateTest(tests.TestCase):
 
     def test_create(self):
         argv = ['targ02']
-        retval, stdout, stderr = tests.exec_command(self, create_cmd, argv)
+        retval, _, _ = self.exec_command(create_cmd, argv)
         self.assertEqual(retval, 0) 
 
     def test_no_project(self):
@@ -47,20 +47,20 @@ class CreateTest(tests.TestCase):
         self.assertRaises(ProjectStorageError, create_cmd.main, argv)
 
     def test_no_args(self):
-        retval, stdout, stderr = tests.exec_command(self, create_cmd, [])
+        retval, stdout, stderr = self.exec_command(create_cmd, [])
         self.assertNotEqual(0, retval)
         self.assertFalse(stdout)
         self.assertIn('error: too few arguments', stderr)
 
     def test_h_arg(self):
-        retval, stdout, stderr = tests.exec_command(self, create_cmd, ['-h'])
+        retval, stdout, stderr = self.exec_command(create_cmd, ['-h'])
         self.assertEqual(0, retval)
         self.assertIn('Create target configurations.', stdout)
         self.assertIn('show this help message and exit', stdout)
         self.assertFalse(stderr)
 
     def test_help_arg(self):
-        retval, stdout, stderr = tests.exec_command(self, create_cmd, ['--help'])
+        retval, stdout, stderr = self.exec_command(create_cmd, ['--help'])
         self.assertEqual(0, retval)
         self.assertIn('Create target configurations.', stdout)
         self.assertIn('show this help message and exit', stdout)
