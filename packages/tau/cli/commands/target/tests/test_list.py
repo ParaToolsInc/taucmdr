@@ -36,5 +36,15 @@ from tau import tests
 from tau.cli.commands.target import list
 
 class ListTest(tests.TestCase):
+    """Tests for :any:`target.list`."""
+
     def test_list(self):
-        self.assertCommandReturnValue(0, list.COMMAND, [])
+        tests.reset_project_storage(project_name='proj1')
+        stdout, stderr = self.assertCommandReturnValue(0, list.COMMAND, [])
+        self.assertIn('targ1', stdout)
+        self.assertFalse(stderr)
+
+    def test_wrongname(self):
+        tests.reset_project_storage(project_name='proj1')
+        _, stdout, _ = self.exec_command(list.COMMAND, ['targ2'])
+        self.assertIn('No targets', stdout)

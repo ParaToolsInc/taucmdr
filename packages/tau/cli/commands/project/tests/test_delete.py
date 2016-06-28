@@ -41,4 +41,12 @@ class DeleteTest(tests.TestCase):
     def test_delete(self):
         tests.reset_project_storage(project_name='proj1')
         self.exec_command(create_cmd, ['proj2'])
-        self.assertCommandReturnValue(0, delete_cmd, ['proj2'])
+        stdout, stderr = self.assertCommandReturnValue(0, delete_cmd, ['proj2'])
+        self.assertIn('Deleted project', stdout)
+        self.assertFalse(stderr)
+        
+    def test_wrongname(self):
+        tests.reset_project_storage(project_name='proj1')
+        _, _, stderr = self.exec_command(delete_cmd, ['proj2'])
+        self.assertIn('project delete <project_name> [arguments]', stderr)
+        self.assertIn('project delete: error: No project-level project with name', stderr)

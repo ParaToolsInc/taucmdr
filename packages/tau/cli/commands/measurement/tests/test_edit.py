@@ -35,9 +35,27 @@ from tau import tests
 from tau.cli.commands.measurement import edit
 
 class EditTest(tests.TestCase):
+    """Tests for :any:`measurement.edit`."""
+
     def test_edit(self):
         tests.reset_project_storage(project_name='proj1')
         argv = ['sample', '--new-name', 'sample01']
-        self.assertCommandReturnValue(0, edit.COMMAND, argv)
+        stdout, stderr = self.assertCommandReturnValue(0, edit.COMMAND, argv)
+        self.assertIn('Updated measurement \'sample\'', stdout)
+        self.assertFalse(stderr)
         argv = ['sample01', '--new-name', 'sample1']
         self.exec_command(edit.COMMAND, argv)
+        
+    def test_wrongname(self):
+        tests.reset_project_storage(project_name='proj1')
+        argv = ['meas1', '--new-name', 'meas2']
+        _, _, stderr = self.exec_command(edit.COMMAND, argv)
+        self.assertIn('measurement edit <measurement_name> [arguments]', stderr)
+        self.assertIn('measurement edit: error: No project-level measurement with name', stderr)
+        
+    def test_wrongarg(self):
+        tests.reset_project_storage(project_name='proj1')
+        argv = ['sample', '--use-mpi', 'T']
+        _, _, stderr = self.exec_command(edit.COMMAND, argv)
+        self.assertIn('measurement edit <measurement_name> [arguments]', stderr)
+        self.assertIn('measurement edit: error: unrecognized arguments', stderr)

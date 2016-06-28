@@ -38,6 +38,8 @@ from tau.cli.commands import build
 from tau.cli.commands.trial import list, create
 
 class ListTest(tests.TestCase):
+    """Tests for :any:`trial.list`."""
+    
     def test_list(self):
         tests.reset_project_storage(project_name='proj1')
         # pylint: disable=protected-access
@@ -45,4 +47,12 @@ class ListTest(tests.TestCase):
         argv = ['gcc', 'hello.c']
         self.exec_command(build.COMMAND, argv)
         self.exec_command(create.COMMAND, ['./a.out'])
-        self.assertCommandReturnValue(0, list.COMMAND, [])
+        stdout, stderr = self.assertCommandReturnValue(0, list.COMMAND, [])
+        self.assertIn('./a.out', stdout)
+        self.assertIn('0', stdout)
+        self.assertFalse(stderr)
+        
+    def test_wrongnumber(self):
+        tests.reset_project_storage(project_name='proj1')
+        _, stdout, _ = self.exec_command(list.COMMAND, ['0'])
+        self.assertIn('No trials', stdout)

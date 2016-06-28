@@ -35,6 +35,17 @@ from tau import tests
 from tau.cli.commands.measurement import create
 
 class CreateTest(tests.TestCase):
+    """Tests for :any:`measurement.create`."""
+
     def test_create(self):
         tests.reset_project_storage(project_name='proj1')
-        self.assertCommandReturnValue(0, create.COMMAND, ['meas01'])
+        stdout, stderr = self.assertCommandReturnValue(0, create.COMMAND, ['meas01'])
+        self.assertIn('Added measurement \'meas01\' to project configuration', stdout)
+        self.assertFalse(stderr)
+        
+    def test_duplicatename(self):
+        tests.reset_project_storage(project_name='proj1')
+        _, _, stderr = self.exec_command(create.COMMAND, ['sample'])
+        self.assertIn('measurement create <measurement_name> [arguments]', stderr)
+        self.assertIn('measurement create: error: A measurement with name', stderr)
+        self.assertIn('already exists', stderr)

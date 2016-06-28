@@ -34,12 +34,14 @@ from tau import tests
 from tau.cli.commands.target.create import COMMAND as create_cmd
 
 class CreateTest(tests.TestCase):
-    """Unit tests for `tau target create`"""
+    """Tests for :any:`target.create`."""
 
     def test_create(self):
         tests.reset_project_storage(project_name='proj1')
         argv = ['targ02']
-        self.assertCommandReturnValue(0, create_cmd, argv)
+        stdout, stderr = self.assertCommandReturnValue(0, create_cmd, argv)
+        self.assertIn('Added target \'targ02\' to project configuration \'proj1\'', stdout)
+        self.assertFalse(stderr)
 
     #def test_no_project(self):
     #    tests.reset_project_storage(project_name='proj1')
@@ -63,3 +65,10 @@ class CreateTest(tests.TestCase):
         stdout, _ = self.assertCommandReturnValue(0, create_cmd, ['--help'])
         self.assertIn('Create target configurations.', stdout)
         self.assertIn('show this help message and exit', stdout)
+
+    def test_duplicatename(self):
+        tests.reset_project_storage(project_name='proj1')
+        _, _, stderr = self.exec_command(create_cmd, ['targ1'])
+        self.assertIn('target create <target_name> [arguments]', stderr)
+        self.assertIn('target create: error: A target with name', stderr)
+        self.assertIn('already exists', stderr)

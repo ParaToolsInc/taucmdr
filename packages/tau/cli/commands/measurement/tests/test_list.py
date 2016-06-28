@@ -36,7 +36,17 @@ from tau import tests
 from tau.cli.commands.measurement import list
 
 class ListTest(tests.TestCase):
+    """Tests for :any:`measurement.list`."""
+
     def test_list(self):
         tests.reset_project_storage(project_name='proj1')
-        retval = list.COMMAND.main([])
-        self.assertEqual(retval, 0) 
+        stdout, stderr = self.assertCommandReturnValue(0, list.COMMAND, [])
+        self.assertIn('sample', stdout)
+        self.assertIn('instrument', stdout)
+        self.assertIn('trace', stdout)
+        self.assertFalse(stderr)
+
+    def test_wrongname(self):
+        tests.reset_project_storage(project_name='proj1')
+        _, stdout, _ = self.exec_command(list.COMMAND, ['meas1'])
+        self.assertIn('No measurements', stdout)

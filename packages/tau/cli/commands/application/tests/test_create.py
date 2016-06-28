@@ -35,6 +35,17 @@ from tau import tests
 from tau.cli.commands.application.create import COMMAND as create_cmd
 
 class CreateTest(tests.TestCase):
+    """Tests for :any:`application.create`."""
+
     def test_create(self):
         tests.reset_project_storage(project_name='proj1')
-        self.assertCommandReturnValue(0, create_cmd, ['test01'])
+        stdout, stderr = self.assertCommandReturnValue(0, create_cmd, ['test01'])
+        self.assertIn('Added application \'test01\' to project configuration', stdout)
+        self.assertFalse(stderr)
+        
+    def test_duplicatename(self):
+        tests.reset_project_storage(project_name='proj1')
+        _, _, stderr = self.exec_command(create_cmd, ['app1'])
+        self.assertIn('application create <application_name> [arguments]', stderr)
+        self.assertIn('application create: error: A application with name', stderr)
+        self.assertIn('already exists', stderr)
