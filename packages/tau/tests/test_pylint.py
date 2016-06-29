@@ -51,7 +51,7 @@ class PylintTest(tests.TestCase):
         self.assertFalse(stderr)
         version_parts = stdout.split(',')[0].split('pylint ')[1].split('.')
         version = tuple(int(x) for x in version_parts)
-        self.assertGreaterEqual(version, (1, 5, 2), "Pylint version %s is too old!" % '.'.join(version))
+        self.assertGreaterEqual(version, (1, 5, 2), "Pylint version %s is too old!" % str(version))
     
     def test_pylint(self):
         stdout, stderr = self.run_pylint(os.path.join(TAU_HOME, "packages", "tau"))
