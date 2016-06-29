@@ -37,11 +37,9 @@ install:
   - python --version
   - ./bin/tau --version
 
-script: # Currently pylint is bombing with negative scores. This might be due to a bad python environment and/or updates needed in pylintrc
-  - coverage run runtests
+script:
+  - coverage run runtests -vv
   - make -C docs
-#  - [[ -n ${TAU_PY_CHANGED_FILES} ]] && pylint --rcfile=pylintrc $TAU_PY_CHANGED_FILES # pylint changed files only... WIP
-#  - pylint --rcfile=pylintrc packages/tau # Ensure global pylint compliance eventually... WIP
 
 after_success:
   - codecov --env PYENV_VERSION OS
