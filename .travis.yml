@@ -38,7 +38,7 @@ install:
   - ./bin/tau --version
 
 script:
-  - coverage run runtests -vv
+  - coverage run runtests -v
   - make -C docs
 
 after_success:
