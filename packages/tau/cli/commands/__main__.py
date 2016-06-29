@@ -34,6 +34,7 @@ Instead, process arguments in the appropriate subcommand.
 import os
 import sys
 from tau import TAUCMDR_URL, TAU_SCRIPT
+from tau import __version__ as TAU_VERSION
 from tau import cli, logger
 from tau.cli import UnknownCommandError, arguments
 from tau.cli.command import AbstractCommand
@@ -86,13 +87,40 @@ class MainCommand(AbstractCommand):
                             metavar='[options]',
                             nargs=arguments.REMAINDER)
         parser.add_argument('-v', '--verbose',
-                            help="Set stdout logging level to DEBUG",
+                            help="set stdout logging level to DEBUG",
                             metavar='',
                             const='DEBUG',
                             default='INFO',
                             action='store_const')
+        parser.add_argument('-V', '--version', action='version', version=self._version())
         return parser
-
+    
+    def _version(self):
+        import platform
+        import socket
+        from datetime import datetime
+        fmt = ("Version        : %(version)s\n"
+               "Timestamp      : %(timestamp)s\n"
+               "Hostname       : %(hostname)s\n"
+               "Platform       : %(platform)s\n"
+               "Working Dir.   : %(cwd)s\n"
+               "Terminal Size  : %(termsize)s\n"
+               "Frozen         : %(frozen)s\n"
+               "Python Version : %(pyversion)s\n"
+               "Python Impl.   : %(pyimpl)s\n"
+               "PYTHONPATH     : %(pythonpath)s\n")
+        data = {"version": TAU_VERSION,
+                "timestamp": str(datetime.now()),
+                "hostname": socket.gethostname(),
+                "platform": platform.platform(),
+                "cwd": os.getcwd(),
+                "termsize": 'x'.join([str(dim) for dim in logger.TERM_SIZE]),
+                "frozen": getattr(sys, 'frozen', False),
+                "pyversion": platform.python_version(),
+                "pyimpl": platform.python_implementation(),
+                "pythonpath": os.pathsep.join(sys.path)}
+        return fmt % data
+        
     def main(self, argv):
         """Program entry point.
 
@@ -103,6 +131,7 @@ class MainCommand(AbstractCommand):
             int: Process return code: non-zero if a problem occurred, 0 otherwise
         """
         args = self.parser.parse_args(args=argv)
+
         cmd = args.command
         cmd_args = args.options
 

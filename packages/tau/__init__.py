@@ -35,6 +35,8 @@ and checks the Python version.  It must be kept as short and simple as possible.
 import os
 import sys
 
+__version__ = "0.1"
+"""str: TAU Commander Version"""
 
 EXIT_FAILURE = -100
 """int: Process exit code indicating unrecoverable failure."""
