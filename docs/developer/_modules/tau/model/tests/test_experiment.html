@@ -77,12 +77,12 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 
-<span class="kn">import</span> <span class="nn">unittest</span>
-<span class="c1">#from tau.model import experiment </span>
+<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">tests</span>
+<span class="kn">from</span> <span class="nn">tau.model</span> <span class="kn">import</span> <span class="n">experiment</span> 
 
-<div class="viewcode-block" id="ExperimentTest"><a class="viewcode-back" href="../../../../tau.model.tests.html#tau.model.tests.test_experiment.ExperimentTest">[docs]</a><span class="k">class</span> <span class="nc">ExperimentTest</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
-<div class="viewcode-block" id="ExperimentTest.test_experiment"><a class="viewcode-back" href="../../../../tau.model.tests.html#tau.model.tests.test_experiment.ExperimentTest.test_experiment">[docs]</a>    <span class="k">def</span> <span class="nf">test_experiment</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> </div></div>
+<div class="viewcode-block" id="ExperimentTest"><a class="viewcode-back" href="../../../../tau.model.tests.html#tau.model.tests.test_experiment.ExperimentTest">[docs]</a><span class="k">class</span> <span class="nc">ExperimentTest</span><span class="p">(</span><span class="n">tests</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+<div class="viewcode-block" id="ExperimentTest.test_attribute_not_emty"><a class="viewcode-back" href="../../../../tau.model.tests.html#tau.model.tests.test_experiment.ExperimentTest.test_attribute_not_emty">[docs]</a>    <span class="k">def</span> <span class="nf">test_attribute_not_emty</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">any</span><span class="p">(</span><span class="n">experiment</span><span class="o">.</span><span class="n">attributes</span><span class="p">()),</span> <span class="mi">1</span><span class="p">)</span> </div></div>
 </pre></div>
 
       </div>

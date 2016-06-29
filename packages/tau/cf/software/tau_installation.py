@@ -623,6 +623,10 @@ class TauInstallation(Installation):
             tau_opts.add('-optTauSelectFile=%s' % select_file)
         if self.io_inst:
             tau_opts.add('-optTrackIO')
+        try:
+            tau_opts.update(self.force_tau_options)
+        except AttributeError:
+            pass
         if self.sample or self.compiler_inst != 'never':
             opts.append('-g')
         env['TAU_MAKEFILE'] = self.get_makefile()

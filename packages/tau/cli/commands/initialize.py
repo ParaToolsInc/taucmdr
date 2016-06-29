@@ -177,10 +177,10 @@ class InitializeCommand(AbstractCommand):
             measurement_names.extend(['sample'])
         if args.profile:
             _safe_execute(measurement_create_cmd, 
-                          ['instrument', '--profile=True', '--trace=False', '--sample=False',
+                          ['profile', '--profile=True', '--trace=False', '--sample=False',
                            '--source-inst=automatic', '--compiler-inst=%s' % comp_inst, 
                            '--link-only=False'] + measurement_args)
-            measurement_names.append('instrument')
+            measurement_names.append('profile')
         if args.trace:
             _safe_execute(measurement_create_cmd, 
                           ['trace', '--profile=False', '--trace=True', '--sample=False', 

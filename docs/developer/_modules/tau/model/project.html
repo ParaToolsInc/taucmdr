@@ -134,6 +134,15 @@
                          <span class="s1">&#39;choices&#39;</span> <span class="p">:</span> <span class="n">STORAGE_LEVELS</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span>
                          <span class="s1">&#39;metavar&#39;</span> <span class="p">:</span> <span class="s1">&#39;&lt;level&gt;&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;action&#39;</span> <span class="p">:</span> <span class="s1">&#39;store&#39;</span><span class="p">}</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;force_tau_options&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;array&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s2">&quot;forcibly add options to TAU_OPTIONS environment variable (not recommended)&quot;</span><span class="p">,</span>
+            <span class="s1">&#39;application_rebuild&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--force-tau-options&#39;</span><span class="p">,),</span>
+                         <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;option&gt;&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;+&#39;</span><span class="p">},</span>
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="bp">True</span><span class="p">:</span> <span class="n">Project</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;force_tau_options&#39;</span><span class="p">)}</span>
         <span class="p">}</span>
     <span class="p">}</span></div>
 

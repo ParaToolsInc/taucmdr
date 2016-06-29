@@ -48,24 +48,67 @@ class Controller(object):
         self.storage = storage
 
     def one(self, key):
+        """Get a record.
+        
+        Args:
+            key: See :any:`AbstractStorage.get`.
+            
+        Returns:
+            Model: The model for the matching record or None if no such record exists.
+        """
         record = self.storage.get(key, table_name=self.model.name)
         return self.model(record) if record else None
 
     def all(self):
+        """Get all records.
+        
+        Returns:
+            list: Models for all records or an empty lists if no records exist.
+        """
         return [self.model(record) for record in self.storage.search(table_name=self.model.name)]
     
     def count(self):
+        """Return the number of records.
+        
+        Returns:
+            int: Effectively ``len(self.all())``
+        """
         return self.storage.count(table_name=self.model.name)
     
     def search(self, keys=None):
-        return [self.model(record) if record else None 
-                for record in self.storage.search(keys=keys, table_name=self.model.name)]
+        """Return records that have all given keys.
+        
+        Args:
+            keys: See :any:`AbstractStorage.search`.
+            
+        Returns:
+            list: Models for records with the given keys or an empty lists if no records have all keys.
+        """
+        return [self.model(record) for record in self.storage.search(keys=keys, table_name=self.model.name)]
 
     def match(self, field, regex=None, test=None):
-        return [self.model(record) if record else None 
+        """Return records that have a field matching a regular expression or test function.
+        
+        Args:
+            field: See :any:`AbstractStorage.match`.
+            regex: See :any:`AbstractStorage.match`.
+            test: See :any:`AbstractStorage.match`.
+            
+        Returns:
+            list: Models for records that have a matching field.
+        """
+        return [self.model(record) 
                 for record in self.storage.match(field, table_name=self.model.name, regex=regex, test=test)]
 
     def exists(self, keys):
+        """Check if a record exists.
+        
+        Args:
+            keys: See :any:`AbstractStorage.exists`.
+            
+        Returns:
+            bool: True if a record matching `keys` exists, False otherwise.
+        """
         return self.storage.contains(keys, table_name=self.model.name)
 
     def populate(self, model, attribute=None):

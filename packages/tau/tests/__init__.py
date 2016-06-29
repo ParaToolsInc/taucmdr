@@ -34,7 +34,10 @@ import atexit
 import tempfile
 import unittest
 import warnings
-from tau import logger
+import tau
+from tau import logger, EXIT_SUCCESS, EXIT_FAILURE
+from tau.cli.commands import initialize
+from tau.storage.levels import PROJECT_STORAGE, SYSTEM_STORAGE
 
 _DIR_STACK = []
 _CWD_STACK = []
@@ -67,25 +70,6 @@ def get_stderr():
     # pylint: disable=no-member
     return sys.stderr.getvalue()
 
-def exec_command(testcase, cmd, argv):
-    """Execute a command's main() routine and return the exit code, stdout, and stderr data.
-    
-    Args:
-        testcase (unittest.TestCase): TestCase instance executing the command.
-        cmd (type): A command instance that has a `main` callable attribute.
-        argv (list): Arguments to pass to cmd.main()
-        
-    Returns:
-        tuple: (retval, stdout, stderr) results of running the command.
-    """
-    if not hasattr(sys.stdout, "getvalue"):
-        testcase.fail("Test must be run in buffered mode")
-    try:
-        retval = cmd.main(argv)
-    except SystemExit as err:
-        retval = err.code
-    return retval, get_stdout(), get_stderr()
-
 def push_test_workdir():
     """Create a new working directory for a unit test.
     
@@ -114,6 +98,10 @@ def pop_test_workdir():
     os.chdir(_CWD_STACK.pop())
     shutil.rmtree(_DIR_STACK.pop(), ignore_errors=False, onerror=onerror)
     
+def get_test_workdir():
+    """Return the current unit test's working directory."""
+    return _DIR_STACK[0]
+
 def cleanup():
     """Finish 
     
@@ -130,36 +118,107 @@ def not_implemented(cls):
     _NOT_IMPLEMENTED.append(msg)
     return unittest.skip(msg)(cls)
 
+
 class TestCase(unittest.TestCase):
     """Base class for unit tests.
     
     Performs tests in a temporary directory and reconfigures :any:`tau.logger` to work with :any:`unittest`.
     """
     
+    _SYSTEM_DIR = tempfile.mkdtemp()
+    
     @classmethod
     def setUpClass(cls):
+        tau.SYSTEM_PREFIX = TestCase._SYSTEM_DIR
         push_test_workdir()
         # Reset stdout logger handler to use buffered unittest stdout
         # pylint: disable=protected-access
         cls._orig_stream = logger._STDOUT_HANDLER.stream
         logger._STDOUT_HANDLER.stream = sys.stdout
-        
+
     @classmethod
     def tearDownClass(cls):
-        # Restore original stream to stdout logger handler
+        PROJECT_STORAGE.destroy()
+        # Reset stdout logger handler to use original stdout
         # pylint: disable=protected-access
         logger._STDOUT_HANDLER.stream = cls._orig_stream
         pop_test_workdir()
+        
+    def run(self, result=None):
+        # Nasty hack to give us access to what sys.stderr becomes when unittest.TestRunner.buffered == True
+        # pylint: disable=attribute-defined-outside-init
+        assert result is not None
+        self._result_stream = result.stream
+        return super(TestCase, self).run(result)
+
+    def reset_project_storage(self, project_name='proj1', target_name='targ1', app_name='app1', bare=False):
+        """Delete and recreate project storage.
+        
+        Effectively the same as::
+        
+            > rm -rf .tau
+            > tau init --project-name=proj1 --target-name=targ1
+        
+        Args:
+            project_name (str): New project's name.
+            target_name (str): New target's name.
+            app_name (str): New application's name.
+            bare (bool): If true, initialize project storage but don't create default objects.
+        """
+        PROJECT_STORAGE.destroy(ignore_errors=True)
+        argv = ['--project-name', project_name, '--target-name', target_name, '--application-name', app_name]
+        if bare:
+            argv.append('--bare')
+    
+        if os.path.exists(os.path.join(SYSTEM_STORAGE.prefix, 'TAU')):
+            initialize.COMMAND.main(argv)
+        else:
+            # If this is the first time setting up TAU and dependencies then we need to emit output so
+            # CI drivers like Travis don't think our unit tests have stalled.
+            import time
+            import threading
+            def worker():
+                initialize.COMMAND.main(argv)
+            thread = threading.Thread(target=worker)
+            thread.start()
+            while thread.is_alive():
+                self._result_stream.writeln('Initializing TAU and dependencies may take several minutes...')
+                time.sleep(60)
+            self._result_stream.writeln('Finished')
+
+    def exec_command(self, cmd, argv):
+        """Execute a command's main() routine and return the exit code, stdout, and stderr data.
+        
+        Args:
+            cmd (type): A command instance that has a `main` callable attribute.
+            argv (list): Arguments to pass to cmd.main()
+            
+        Returns:
+            tuple: (retval, stdout, stderr) results of running the command.
+        """
+        if not hasattr(sys.stdout, "getvalue"):
+            self.fail("Test must be run in buffered mode")
+        try:
+            retval = cmd.main(argv)
+        except SystemExit as err:
+            retval = err.code
+        return retval, get_stdout(), get_stderr()
+
+    # Follow the :any:`unittest` code style.
+    # pylint: disable=invalid-name
+    def assertCommandReturnValue(self, return_value, cmd, argv):
+        retval, stdout, stderr = self.exec_command(cmd, argv)
+        self.assertEqual(retval, return_value)
+        return stdout, stderr
 
 
 class TestRunner(unittest.TextTestRunner):
     """Test suite runner."""
-    
-    
+
     def run(self, test):
-        retval = super(TestRunner, self).run(test)
+        result = super(TestRunner, self).run(test)
         for item in _NOT_IMPLEMENTED:
             print "WARNING: %s" % item
-        return retval
-    
-    
+        if result.wasSuccessful():
+            return EXIT_SUCCESS
+        return EXIT_FAILURE

@@ -31,9 +31,8 @@ Functions used for unit tests of papi_installation.py.
 """
 
 
-import unittest
-#from tau.cf.software import papi_installation
+from tau.tests import TestCase, not_implemented
 
-class PapiInstallationTest(unittest.TestCase):
-    def test_papi_installation(self):
-        self.assertEqual(1, 1)
+@not_implemented
+class PapiInstallationTest(TestCase):
+    pass

@@ -77,12 +77,30 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 
-<span class="kn">import</span> <span class="nn">unittest</span>
-<span class="c1">#from tau.cli.commands.trial import list</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">tests</span><span class="p">,</span> <span class="n">TAU_HOME</span>
+<span class="kn">from</span> <span class="nn">tau.cli.commands</span> <span class="kn">import</span> <span class="n">build</span>
+<span class="kn">from</span> <span class="nn">tau.cli.commands.trial.list</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">LIST_COMMAND</span>
+<span class="kn">from</span> <span class="nn">tau.cli.commands.trial.create</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">CREATE_COMMAND</span>
 
-<div class="viewcode-block" id="ListTest"><a class="viewcode-back" href="../../../../../../tau.cli.commands.trial.tests.html#tau.cli.commands.trial.tests.test_list.ListTest">[docs]</a><span class="k">class</span> <span class="nc">ListTest</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+<div class="viewcode-block" id="ListTest"><a class="viewcode-back" href="../../../../../../tau.cli.commands.trial.tests.html#tau.cli.commands.trial.tests.test_list.ListTest">[docs]</a><span class="k">class</span> <span class="nc">ListTest</span><span class="p">(</span><span class="n">tests</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Tests for :any:`trial.list`.&quot;&quot;&quot;</span>
+    
 <div class="viewcode-block" id="ListTest.test_list"><a class="viewcode-back" href="../../../../../../tau.cli.commands.trial.tests.html#tau.cli.commands.trial.tests.test_list.ListTest.test_list">[docs]</a>    <span class="k">def</span> <span class="nf">test_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> </div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">(</span><span class="n">project_name</span><span class="o">=</span><span class="s1">&#39;proj1&#39;</span><span class="p">)</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">copyfile</span><span class="p">(</span><span class="n">TAU_HOME</span><span class="o">+</span><span class="s1">&#39;/.testfiles/hello.c&#39;</span><span class="p">,</span> <span class="n">tests</span><span class="o">.</span><span class="n">get_test_workdir</span><span class="p">()</span><span class="o">+</span><span class="s1">&#39;/hello.c&#39;</span><span class="p">)</span>
+        <span class="n">argv</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;gcc&#39;</span><span class="p">,</span> <span class="s1">&#39;hello.c&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exec_command</span><span class="p">(</span><span class="n">build</span><span class="o">.</span><span class="n">COMMAND</span><span class="p">,</span> <span class="n">argv</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exec_command</span><span class="p">(</span><span class="n">CREATE_COMMAND</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;./a.out&#39;</span><span class="p">])</span>
+        <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">LIST_COMMAND</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;./a.out&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;0&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">stderr</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ListTest.test_wrongnumber"><a class="viewcode-back" href="../../../../../../tau.cli.commands.trial.tests.html#tau.cli.commands.trial.tests.test_list.ListTest.test_wrongnumber">[docs]</a>    <span class="k">def</span> <span class="nf">test_wrongnumber</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">(</span><span class="n">project_name</span><span class="o">=</span><span class="s1">&#39;proj1&#39;</span><span class="p">)</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exec_command</span><span class="p">(</span><span class="n">LIST_COMMAND</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;0&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;No trials&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span></div></div>
 </pre></div>
 
       </div>

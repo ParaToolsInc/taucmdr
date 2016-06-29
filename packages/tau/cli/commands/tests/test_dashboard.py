@@ -27,16 +27,14 @@
 #
 """Test functions.
 
-Functions used for unit tests of select.py.
+Functions used for unit tests of dashboard.py.
 """
 
 
 from tau import tests
-from tau.cli.commands import select
+from tau.cli.commands import dashboard
 
-class SelectTest(tests.TestCase):
-    
-    def test_select(self):
-        self.reset_project_storage(app_name='testing_app')
-        argv = ['testing_app', 'profile']
-        self.assertCommandReturnValue(0, select.COMMAND, argv)
+class DashboardTest(tests.TestCase):
+    def test_dashboard(self):
+        self.reset_project_storage(project_name='proj1')
+        self.assertCommandReturnValue(0, dashboard.COMMAND, [])

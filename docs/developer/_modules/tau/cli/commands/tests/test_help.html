@@ -77,12 +77,14 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 
-<span class="kn">import</span> <span class="nn">unittest</span>
-<span class="c1">#from tau.cli.commands import help</span>
+<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">tests</span>
+<span class="kn">from</span> <span class="nn">tau.cli.commands.help</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">HELP_COMMAND</span>
 
-<div class="viewcode-block" id="HelpTest"><a class="viewcode-back" href="../../../../../tau.cli.commands.tests.html#tau.cli.commands.tests.test_help.HelpTest">[docs]</a><span class="k">class</span> <span class="nc">HelpTest</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+<div class="viewcode-block" id="HelpTest"><a class="viewcode-back" href="../../../../../tau.cli.commands.tests.html#tau.cli.commands.tests.test_help.HelpTest">[docs]</a><span class="k">class</span> <span class="nc">HelpTest</span><span class="p">(</span><span class="n">tests</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
 <div class="viewcode-block" id="HelpTest.test_help"><a class="viewcode-back" href="../../../../../tau.cli.commands.tests.html#tau.cli.commands.tests.test_help.HelpTest.test_help">[docs]</a>    <span class="k">def</span> <span class="nf">test_help</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> </div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">(</span><span class="n">project_name</span><span class="o">=</span><span class="s1">&#39;proj1&#39;</span><span class="p">)</span>
+        <span class="n">argv</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;build&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">HELP_COMMAND</span><span class="p">,</span> <span class="n">argv</span><span class="p">)</span></div></div>
 </pre></div>
 
       </div>

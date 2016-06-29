@@ -76,26 +76,11 @@
 <span class="sd">Functions used for unit tests of pdt_installation.py.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
+<span class="kn">from</span> <span class="nn">tau.tests</span> <span class="kn">import</span> <span class="n">TestCase</span><span class="p">,</span> <span class="n">not_implemented</span>
 
-<span class="kn">import</span> <span class="nn">unittest</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">import</span> <span class="nn">shutil</span>
-<span class="c1">#from tau.cf.software import pdt_installation</span>
-
-<div class="viewcode-block" id="PdtInstallationTest"><a class="viewcode-back" href="../../../../../tau.cf.software.tests.html#tau.cf.software.tests.test_pdt_installation.PdtInstallationTest">[docs]</a><span class="k">class</span> <span class="nc">PdtInstallationTest</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
-    <span class="n">current_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">_%H%M%S&quot;</span><span class="p">)</span>
-    <span class="nd">@classmethod</span>
-<div class="viewcode-block" id="PdtInstallationTest.setUpClass"><a class="viewcode-back" href="../../../../../tau.cf.software.tests.html#tau.cf.software.tests.test_pdt_installation.PdtInstallationTest.setUpClass">[docs]</a>    <span class="k">def</span> <span class="nf">setUpClass</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">current_time</span><span class="p">)</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">current_time</span><span class="p">)</span></div>
-<div class="viewcode-block" id="PdtInstallationTest.test_pdt_installation"><a class="viewcode-back" href="../../../../../tau.cf.software.tests.html#tau.cf.software.tests.test_pdt_installation.PdtInstallationTest.test_pdt_installation">[docs]</a>    <span class="k">def</span> <span class="nf">test_pdt_installation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="c1">#        pdt_installation.PdtInstallation().__init__(self, )</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span></div>
-    <span class="nd">@classmethod</span>
-<div class="viewcode-block" id="PdtInstallationTest.tearDownClass"><a class="viewcode-back" href="../../../../../tau.cf.software.tests.html#tau.cf.software.tests.test_pdt_installation.PdtInstallationTest.tearDownClass">[docs]</a>    <span class="k">def</span> <span class="nf">tearDownClass</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="s1">&#39;..&#39;</span><span class="p">)</span>
-        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">current_time</span><span class="p">)</span></div></div>
+<span class="nd">@not_implemented</span>
+<div class="viewcode-block" id="PdtInstallationTest"><a class="viewcode-back" href="../../../../../tau.cf.software.tests.html#tau.cf.software.tests.test_pdt_installation.PdtInstallationTest">[docs]</a><span class="k">class</span> <span class="nc">PdtInstallationTest</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="k">pass</span></div>
 </pre></div>
 
       </div>

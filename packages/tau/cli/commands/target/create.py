@@ -121,6 +121,8 @@ class TargetCreateCommand(CreateCommand):
         return compilers
     
     def _parse_tau_makefile(self, args):
+        # Parsing a TAU Makefile is a really hairy operation, so let's lift the limit on statements
+        # pylint: disable=too-many-statements
         makefile = args.tau_makefile
         if not util.file_accessible(makefile):
             self.parser.error("Invalid TAU makefile: %s" % makefile)
@@ -188,7 +190,7 @@ class TargetCreateCommand(CreateCommand):
     def construct_parser(self):
         parser = super(TargetCreateCommand, self).construct_parser()
         group = parser.add_argument_group('host arguments')
-        group.add_argument('--host-compilers',
+        group.add_argument('--compilers',
                            help="select all host compilers automatically from the given family",
                            metavar='<family>',
                            dest='host_family',

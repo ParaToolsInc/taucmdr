@@ -31,9 +31,33 @@ Functions used for unit tests of edit.py.
 """
 
 
-import unittest
-#from tau.cli.commands.measurement import edit
+from tau import tests
+from tau.cli.commands.measurement.create import COMMAND as CREATE_COMMAND
+from tau.cli.commands.measurement.edit import COMMAND as EDIT_COMMAND
 
-class EditTest(unittest.TestCase):
+class EditTest(tests.TestCase):
+    """Tests for :any:`measurement.edit`."""
+
     def test_edit(self):
-        self.assertEqual(1, 1) 
+        self.reset_project_storage(project_name='proj1')
+        old_name = 'meas01'
+        new_name = 'meas02'
+        self.assertCommandReturnValue(0, CREATE_COMMAND, [old_name])
+        stdout, stderr = self.assertCommandReturnValue(0, EDIT_COMMAND, [old_name, '--new-name', new_name])
+        self.assertIn("Updated measurement '%s'" % old_name, stdout)
+        self.assertFalse(stderr)       
+
+    def test_wrongname(self):
+        self.reset_project_storage(project_name='proj1')
+        argv = ['meas1', '--new-name', 'meas2']
+        _, _, stderr = self.exec_command(EDIT_COMMAND, argv)
+        self.assertIn('measurement edit <measurement_name> [arguments]', stderr)
+        self.assertIn('measurement edit: error: No project-level measurement with name', stderr)
+        
+    def test_wrongarg(self):
+        self.reset_project_storage(project_name='proj1')
+        name = 'meas01'
+        self.assertCommandReturnValue(0, CREATE_COMMAND, [name])
+        _, _, stderr = self.exec_command(EDIT_COMMAND, ['meas01', '--use-mpi', 'T'])
+        self.assertIn('measurement edit <measurement_name> [arguments]', stderr)
+        self.assertIn('measurement edit: error: unrecognized arguments', stderr)

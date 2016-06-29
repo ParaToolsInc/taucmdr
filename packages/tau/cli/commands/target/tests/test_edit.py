@@ -31,9 +31,36 @@ Functions used for unit tests of edit.py.
 """
 
 
-import unittest
-#from tau.cli.commands.target import edit
+from tau import tests
+from tau.cli.commands.target import edit
 
-class EditTest(unittest.TestCase):
+class EditTest(tests.TestCase):
+    """Tests for :any:`target.delete`."""
+
     def test_edit(self):
-        self.assertEqual(1, 1) 
+        self.reset_project_storage(project_name='proj1')
+        argv = ['targ1', '--new-name', 'targ2']
+        stdout, stderr = self.assertCommandReturnValue(0, edit.COMMAND, argv)
+        self.assertIn('Updated target \'targ1\'', stdout)
+        self.assertFalse(stderr)
+
+    def test_wrongname(self):
+        self.reset_project_storage(project_name='proj1')
+        argv = ['targ2', '--new-name', 'targ3']
+        _, _, stderr = self.exec_command(edit.COMMAND, argv)
+        self.assertIn('target edit <target_name> [arguments]', stderr)
+        self.assertIn('target edit: error: No project-level target with name', stderr)
+
+    def test_wrongarg(self):
+        self.reset_project_storage(project_name='proj1')
+        argv = ['app1', '--arg', 'T']
+        _, _, stderr = self.exec_command(edit.COMMAND, argv)
+        self.assertIn('target edit <target_name> [arguments]', stderr)
+        self.assertIn('target edit: error: unrecognized arguments: --arg', stderr)
+        
+    def test_ambiguousarg(self):
+        self.reset_project_storage(project_name='proj1')
+        argv = ['targ1', '--mpi', 'T']
+        _, _, stderr = self.exec_command(edit.COMMAND, argv)
+        self.assertIn('target edit <target_name> [arguments]', stderr)
+        self.assertIn('target edit: error: ambiguous option: --mpi could match --mpi-', stderr)

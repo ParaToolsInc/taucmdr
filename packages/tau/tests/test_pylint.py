@@ -27,16 +27,35 @@
 #
 """Test functions.
 
-Functions used for unit tests of select.py.
+Functions used for unit tests of error.py.
 """
 
-
+import os
+from pylint import epylint
+from tau import TAU_HOME
 from tau import tests
-from tau.cli.commands import select
 
-class SelectTest(tests.TestCase):
+
+class PylintTest(tests.TestCase):
+    """Runs Pylint to make sure the code scores at least 9.0"""
+       
+    def run_pylint(self, *args):
+        pylint_args = '--rcfile=' + os.path.join(TAU_HOME, "pylintrc") + ' ' + ' '.join(args) 
+        fstdout, fstderr = epylint.py_run(pylint_args, return_std=True, script='pylint')
+        stdout = ''.join(line for line in fstdout)
+        stderr = ''.join(line for line in fstderr)
+        return stdout, stderr
     
-    def test_select(self):
-        self.reset_project_storage(app_name='testing_app')
-        argv = ['testing_app', 'profile']
-        self.assertCommandReturnValue(0, select.COMMAND, argv)
+    def test_pylint_version(self):
+        stdout, stderr = self.run_pylint('--version')
+        self.assertFalse(stderr)
+        version_parts = stdout.split(',')[0].split('pylint ')[1].split('.')
+        version = tuple(int(x) for x in version_parts)
+        self.assertGreaterEqual(version, (1, 5, 2), "Pylint version %s is too old!" % str(version))
+    
+    def test_pylint(self):
+        stdout, stderr = self.run_pylint(os.path.join(TAU_HOME, "packages", "tau"))
+        self.assertFalse(stderr)
+        self.assertIn('Your code has been rated at', stdout)
+        score = float(stdout.split('Your code has been rated at')[1].split('/10')[0])
+        self.assertGreaterEqual(score, 9.0, "Pylint score %s/10 is too low!" % score)

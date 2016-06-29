@@ -25,6 +25,14 @@ tau.tests.test_logger module
     :undoc-members:
     :show-inheritance:
 
+tau.tests.test_pylint module
+----------------------------
+
+.. automodule:: tau.tests.test_pylint
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 tau.tests.test_util module
 --------------------------
 

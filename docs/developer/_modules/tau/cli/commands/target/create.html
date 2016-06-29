@@ -167,6 +167,8 @@
         <span class="k">return</span> <span class="n">compilers</span></div>
     
     <span class="k">def</span> <span class="nf">_parse_tau_makefile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
+        <span class="c1"># Parsing a TAU Makefile is a really hairy operation, so let&#39;s lift the limit on statements</span>
+        <span class="c1"># pylint: disable=too-many-statements</span>
         <span class="n">makefile</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">tau_makefile</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">util</span><span class="o">.</span><span class="n">file_accessible</span><span class="p">(</span><span class="n">makefile</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Invalid TAU makefile: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">makefile</span><span class="p">)</span>
@@ -234,7 +236,7 @@
 <div class="viewcode-block" id="TargetCreateCommand.construct_parser"><a class="viewcode-back" href="../../../../../tau.cli.commands.target.html#tau.cli.commands.target.create.TargetCreateCommand.construct_parser">[docs]</a>    <span class="k">def</span> <span class="nf">construct_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">parser</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">TargetCreateCommand</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">construct_parser</span><span class="p">()</span>
         <span class="n">group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s1">&#39;host arguments&#39;</span><span class="p">)</span>
-        <span class="n">group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--host-compilers&#39;</span><span class="p">,</span>
+        <span class="n">group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--compilers&#39;</span><span class="p">,</span>
                            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;select all host compilers automatically from the given family&quot;</span><span class="p">,</span>
                            <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;&lt;family&gt;&#39;</span><span class="p">,</span>
                            <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;host_family&#39;</span><span class="p">,</span>

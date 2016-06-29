@@ -76,13 +76,38 @@
 <span class="sd">Functions used for unit tests of host.py.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
+<span class="kn">from</span> <span class="nn">tau.tests</span> <span class="kn">import</span> <span class="n">TestCase</span>
 
-<span class="kn">import</span> <span class="nn">unittest</span>
-<span class="c1">#from tau.cf.target import host</span>
+<span class="kn">from</span> <span class="nn">tau.cf.compiler</span> <span class="kn">import</span> <span class="n">CC_ROLE</span>
+<span class="kn">from</span> <span class="nn">tau.cf.target</span> <span class="kn">import</span> <span class="n">host</span>
 
-<div class="viewcode-block" id="HostTest"><a class="viewcode-back" href="../../../../../tau.cf.target.tests.html#tau.cf.target.tests.test_host.HostTest">[docs]</a><span class="k">class</span> <span class="nc">HostTest</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
-<div class="viewcode-block" id="HostTest.test_host"><a class="viewcode-back" href="../../../../../tau.cf.target.tests.html#tau.cf.target.tests.test_host.HostTest.test_host">[docs]</a>    <span class="k">def</span> <span class="nf">test_host</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span></div></div>
+<div class="viewcode-block" id="HostTest"><a class="viewcode-back" href="../../../../../tau.cf.target.tests.html#tau.cf.target.tests.test_host.HostTest">[docs]</a><span class="k">class</span> <span class="nc">HostTest</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Unit tests for tau.cf.target.host&quot;&quot;&quot;</span>
+    <span class="c1"># pylint: disable=invalid-name</span>
+    
+<div class="viewcode-block" id="HostTest.test_architecture_not_empty"><a class="viewcode-back" href="../../../../../tau.cf.target.tests.html#tau.cf.target.tests.test_host.HostTest.test_architecture_not_empty">[docs]</a>    <span class="k">def</span> <span class="nf">test_architecture_not_empty</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertNotEqual</span><span class="p">(</span><span class="n">host</span><span class="o">.</span><span class="n">architecture</span><span class="p">(),</span> <span class="s1">&#39;&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="HostTest.test_os_not_empty"><a class="viewcode-back" href="../../../../../tau.cf.target.tests.html#tau.cf.target.tests.test_host.HostTest.test_os_not_empty">[docs]</a>    <span class="k">def</span> <span class="nf">test_os_not_empty</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertNotEqual</span><span class="p">(</span><span class="n">host</span><span class="o">.</span><span class="n">operating_system</span><span class="p">(),</span> <span class="s1">&#39;&#39;</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="HostTest.test_tau_arch_not_empty"><a class="viewcode-back" href="../../../../../tau.cf.target.tests.html#tau.cf.target.tests.test_host.HostTest.test_tau_arch_not_empty">[docs]</a>    <span class="k">def</span> <span class="nf">test_tau_arch_not_empty</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertNotEqual</span><span class="p">(</span><span class="n">host</span><span class="o">.</span><span class="n">tau_arch</span><span class="p">(),</span> <span class="s1">&#39;&#39;</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="HostTest.test_preferred_compilers_not_empty"><a class="viewcode-back" href="../../../../../tau.cf.target.tests.html#tau.cf.target.tests.test_host.HostTest.test_preferred_compilers_not_empty">[docs]</a>    <span class="k">def</span> <span class="nf">test_preferred_compilers_not_empty</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertNotEqual</span><span class="p">(</span><span class="n">host</span><span class="o">.</span><span class="n">preferred_compilers</span><span class="p">(),</span> <span class="s1">&#39;&#39;</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="HostTest.test_preffered_mpi_compilers_not_empty"><a class="viewcode-back" href="../../../../../tau.cf.target.tests.html#tau.cf.target.tests.test_host.HostTest.test_preffered_mpi_compilers_not_empty">[docs]</a>    <span class="k">def</span> <span class="nf">test_preffered_mpi_compilers_not_empty</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertNotEqual</span><span class="p">(</span><span class="n">host</span><span class="o">.</span><span class="n">preferred_mpi_compilers</span><span class="p">(),</span> <span class="s1">&#39;&#39;</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="HostTest.test_default_compilers_not_empty"><a class="viewcode-back" href="../../../../../tau.cf.target.tests.html#tau.cf.target.tests.test_host.HostTest.test_default_compilers_not_empty">[docs]</a>    <span class="k">def</span> <span class="nf">test_default_compilers_not_empty</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertNotEqual</span><span class="p">(</span><span class="n">host</span><span class="o">.</span><span class="n">default_compilers</span><span class="p">(),</span> <span class="s1">&#39;&#39;</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="HostTest.test_default_mpi_compilers_not_empty"><a class="viewcode-back" href="../../../../../tau.cf.target.tests.html#tau.cf.target.tests.test_host.HostTest.test_default_mpi_compilers_not_empty">[docs]</a>    <span class="k">def</span> <span class="nf">test_default_mpi_compilers_not_empty</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertNotEqual</span><span class="p">(</span><span class="n">host</span><span class="o">.</span><span class="n">default_mpi_compilers</span><span class="p">(),</span> <span class="s1">&#39;&#39;</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="HostTest.test_default_compiler_not_empty"><a class="viewcode-back" href="../../../../../tau.cf.target.tests.html#tau.cf.target.tests.test_host.HostTest.test_default_compiler_not_empty">[docs]</a>    <span class="k">def</span> <span class="nf">test_default_compiler_not_empty</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertNotEqual</span><span class="p">(</span><span class="n">host</span><span class="o">.</span><span class="n">default_compiler</span><span class="p">(</span><span class="n">CC_ROLE</span><span class="p">),</span> <span class="s1">&#39;&#39;</span><span class="p">)</span></div></div>
 </pre></div>
 
       </div>

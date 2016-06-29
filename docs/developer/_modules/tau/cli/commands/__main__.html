@@ -80,6 +80,7 @@
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">TAUCMDR_URL</span><span class="p">,</span> <span class="n">TAU_SCRIPT</span>
+<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">__version__</span> <span class="k">as</span> <span class="n">TAU_VERSION</span>
 <span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">cli</span><span class="p">,</span> <span class="n">logger</span>
 <span class="kn">from</span> <span class="nn">tau.cli</span> <span class="kn">import</span> <span class="n">UnknownCommandError</span><span class="p">,</span> <span class="n">arguments</span>
 <span class="kn">from</span> <span class="nn">tau.cli.command</span> <span class="kn">import</span> <span class="n">AbstractCommand</span>
@@ -132,13 +133,40 @@
                             <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;[options]&#39;</span><span class="p">,</span>
                             <span class="n">nargs</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">REMAINDER</span><span class="p">)</span>
         <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-v&#39;</span><span class="p">,</span> <span class="s1">&#39;--verbose&#39;</span><span class="p">,</span>
-                            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Set stdout logging level to DEBUG&quot;</span><span class="p">,</span>
+                            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;set stdout logging level to DEBUG&quot;</span><span class="p">,</span>
                             <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
                             <span class="n">const</span><span class="o">=</span><span class="s1">&#39;DEBUG&#39;</span><span class="p">,</span>
                             <span class="n">default</span><span class="o">=</span><span class="s1">&#39;INFO&#39;</span><span class="p">,</span>
                             <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_const&#39;</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-V&#39;</span><span class="p">,</span> <span class="s1">&#39;--version&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;version&#39;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_version</span><span class="p">())</span>
         <span class="k">return</span> <span class="n">parser</span></div>
-
+    
+    <span class="k">def</span> <span class="nf">_version</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">import</span> <span class="nn">platform</span>
+        <span class="kn">import</span> <span class="nn">socket</span>
+        <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+        <span class="n">fmt</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Version        : </span><span class="si">%(version)s</span><span class="se">\n</span><span class="s2">&quot;</span>
+               <span class="s2">&quot;Timestamp      : </span><span class="si">%(timestamp)s</span><span class="se">\n</span><span class="s2">&quot;</span>
+               <span class="s2">&quot;Hostname       : </span><span class="si">%(hostname)s</span><span class="se">\n</span><span class="s2">&quot;</span>
+               <span class="s2">&quot;Platform       : </span><span class="si">%(platform)s</span><span class="se">\n</span><span class="s2">&quot;</span>
+               <span class="s2">&quot;Working Dir.   : </span><span class="si">%(cwd)s</span><span class="se">\n</span><span class="s2">&quot;</span>
+               <span class="s2">&quot;Terminal Size  : </span><span class="si">%(termsize)s</span><span class="se">\n</span><span class="s2">&quot;</span>
+               <span class="s2">&quot;Frozen         : </span><span class="si">%(frozen)s</span><span class="se">\n</span><span class="s2">&quot;</span>
+               <span class="s2">&quot;Python Version : </span><span class="si">%(pyversion)s</span><span class="se">\n</span><span class="s2">&quot;</span>
+               <span class="s2">&quot;Python Impl.   : </span><span class="si">%(pyimpl)s</span><span class="se">\n</span><span class="s2">&quot;</span>
+               <span class="s2">&quot;PYTHONPATH     : </span><span class="si">%(pythonpath)s</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="n">TAU_VERSION</span><span class="p">,</span>
+                <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()),</span>
+                <span class="s2">&quot;hostname&quot;</span><span class="p">:</span> <span class="n">socket</span><span class="o">.</span><span class="n">gethostname</span><span class="p">(),</span>
+                <span class="s2">&quot;platform&quot;</span><span class="p">:</span> <span class="n">platform</span><span class="o">.</span><span class="n">platform</span><span class="p">(),</span>
+                <span class="s2">&quot;cwd&quot;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span>
+                <span class="s2">&quot;termsize&quot;</span><span class="p">:</span> <span class="s1">&#39;x&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">dim</span><span class="p">)</span> <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="n">logger</span><span class="o">.</span><span class="n">TERM_SIZE</span><span class="p">]),</span>
+                <span class="s2">&quot;frozen&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">sys</span><span class="p">,</span> <span class="s1">&#39;frozen&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">),</span>
+                <span class="s2">&quot;pyversion&quot;</span><span class="p">:</span> <span class="n">platform</span><span class="o">.</span><span class="n">python_version</span><span class="p">(),</span>
+                <span class="s2">&quot;pyimpl&quot;</span><span class="p">:</span> <span class="n">platform</span><span class="o">.</span><span class="n">python_implementation</span><span class="p">(),</span>
+                <span class="s2">&quot;pythonpath&quot;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">)}</span>
+        <span class="k">return</span> <span class="n">fmt</span> <span class="o">%</span> <span class="n">data</span>
+        
 <div class="viewcode-block" id="MainCommand.main"><a class="viewcode-back" href="../../../../tau.cli.commands.html#tau.cli.commands.__main__.MainCommand.main">[docs]</a>    <span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">argv</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Program entry point.</span>
 
@@ -149,6 +177,7 @@
 <span class="sd">            int: Process return code: non-zero if a problem occurred, 0 otherwise</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">argv</span><span class="p">)</span>
+
         <span class="n">cmd</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">command</span>
         <span class="n">cmd_args</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">options</span>
 

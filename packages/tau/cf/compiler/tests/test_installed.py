@@ -31,9 +31,8 @@ Functions used for unit tests of installed.py.
 """
 
 
-import unittest
-#from tau.cf.compiler import installed
+from tau import tests
 
-class InstalledTest(unittest.TestCase):
-    def test_installed(self):
-        self.assertEqual(1, 1)
+@tests.not_implemented
+class InstalledTest(tests.TestCase):
+    pass

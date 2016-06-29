@@ -34,7 +34,7 @@ import os
 import re
 from tau.data.error import DataFormatError
 
-
+# FIXME: Class only partially implemented
 class TauProfile(object):
     """TODO: Docs"""
 

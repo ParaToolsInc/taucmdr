@@ -77,12 +77,26 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 
-<span class="kn">import</span> <span class="nn">unittest</span>
-<span class="c1">#from tau.cli.commands.measurement import list</span>
+<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">tests</span>
+<span class="kn">from</span> <span class="nn">tau.cli.commands.measurement.create</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">CREATE_COMMAND</span>
+<span class="kn">from</span> <span class="nn">tau.cli.commands.measurement.list</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">LIST_COMMAND</span>
 
-<div class="viewcode-block" id="ListTest"><a class="viewcode-back" href="../../../../../../tau.cli.commands.measurement.tests.html#tau.cli.commands.measurement.tests.test_list.ListTest">[docs]</a><span class="k">class</span> <span class="nc">ListTest</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+<div class="viewcode-block" id="ListTest"><a class="viewcode-back" href="../../../../../../tau.cli.commands.measurement.tests.html#tau.cli.commands.measurement.tests.test_list.ListTest">[docs]</a><span class="k">class</span> <span class="nc">ListTest</span><span class="p">(</span><span class="n">tests</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Tests for :any:`measurement.list`.&quot;&quot;&quot;</span>
+
 <div class="viewcode-block" id="ListTest.test_list"><a class="viewcode-back" href="../../../../../../tau.cli.commands.measurement.tests.html#tau.cli.commands.measurement.tests.test_list.ListTest.test_list">[docs]</a>    <span class="k">def</span> <span class="nf">test_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> </div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">(</span><span class="n">bare</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;meas01&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">CREATE_COMMAND</span><span class="p">,</span> <span class="p">[</span><span class="n">name</span><span class="p">])</span>
+        <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">LIST_COMMAND</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;meas01&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">stderr</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ListTest.test_wrongname"><a class="viewcode-back" href="../../../../../../tau.cli.commands.measurement.tests.html#tau.cli.commands.measurement.tests.test_list.ListTest.test_wrongname">[docs]</a>    <span class="k">def</span> <span class="nf">test_wrongname</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">()</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exec_command</span><span class="p">(</span><span class="n">LIST_COMMAND</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;INVALID_NAME&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;No measurements&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span></div></div>
+
 </pre></div>
 
       </div>

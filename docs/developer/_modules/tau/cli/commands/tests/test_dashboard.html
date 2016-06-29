@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>tau.cf.target.tests.test_device &mdash; TAU Commander Developer Documentation</title>
+    <title>tau.cli.commands.tests.test_dashboard &mdash; TAU Commander Developer Documentation</title>
     
     <link rel="stylesheet" href="../../../../../_static/haiku.css" type="text/css" />
     <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
@@ -26,12 +26,12 @@
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../../../../_static/favicon.ico"/>
     <link rel="top" title="TAU Commander Developer Documentation" href="../../../../../index.html" />
-    <link rel="up" title="tau.cf.target" href="../../target.html" /> 
+    <link rel="up" title="tau.cli" href="../../../cli.html" /> 
   </head>
   <body role="document">
       <div class="header" role="banner"><img class="rightlogo" src="../../../../../_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="../../../../../index.html">
           <span>TAU Commander Developer Documentation</span></a></h1>
-        <h2 class="heading"><span>tau.cf.target.tests.test_device</span></h2>
+        <h2 class="heading"><span>tau.cli.commands.tests.test_dashboard</span></h2>
       </div>
       <div class="topnav" role="navigation" aria-label="top navigation">
       
@@ -43,7 +43,7 @@
       <div class="content">
         
         
-  <h1>Source code for tau.cf.target.tests.test_device</h1><div class="highlight"><pre>
+  <h1>Source code for tau.cli.commands.tests.test_dashboard</h1><div class="highlight"><pre>
 <span></span><span class="c1"># -*- coding: utf-8 -*-</span>
 <span class="c1">#</span>
 <span class="c1"># Copyright (c) 2016, ParaTools, Inc.</span>
@@ -73,15 +73,17 @@
 <span class="c1">#</span>
 <span class="sd">&quot;&quot;&quot;Test functions.</span>
 
-<span class="sd">Functions used for unit tests of device.py.</span>
+<span class="sd">Functions used for unit tests of dashboard.py.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 
-<span class="kn">from</span> <span class="nn">tau.tests</span> <span class="kn">import</span> <span class="n">TestCase</span><span class="p">,</span> <span class="n">not_implemented</span>
+<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">tests</span>
+<span class="kn">from</span> <span class="nn">tau.cli.commands</span> <span class="kn">import</span> <span class="n">dashboard</span>
 
-<span class="nd">@not_implemented</span>
-<div class="viewcode-block" id="DeviceTest"><a class="viewcode-back" href="../../../../../tau.cf.target.tests.html#tau.cf.target.tests.test_device.DeviceTest">[docs]</a><span class="k">class</span> <span class="nc">DeviceTest</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
-    <span class="k">pass</span></div>
+<div class="viewcode-block" id="DashboardTest"><a class="viewcode-back" href="../../../../../tau.cli.commands.tests.html#tau.cli.commands.tests.test_dashboard.DashboardTest">[docs]</a><span class="k">class</span> <span class="nc">DashboardTest</span><span class="p">(</span><span class="n">tests</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+<div class="viewcode-block" id="DashboardTest.test_dashboard"><a class="viewcode-back" href="../../../../../tau.cli.commands.tests.html#tau.cli.commands.tests.test_dashboard.DashboardTest.test_dashboard">[docs]</a>    <span class="k">def</span> <span class="nf">test_dashboard</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">(</span><span class="n">project_name</span><span class="o">=</span><span class="s1">&#39;proj1&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dashboard</span><span class="o">.</span><span class="n">COMMAND</span><span class="p">,</span> <span class="p">[])</span></div></div>
 </pre></div>
 
       </div>

@@ -669,6 +669,10 @@
             <span class="n">tau_opts</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;-optTauSelectFile=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">select_file</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">io_inst</span><span class="p">:</span>
             <span class="n">tau_opts</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;-optTrackIO&#39;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">tau_opts</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">force_tau_options</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">pass</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">compiler_inst</span> <span class="o">!=</span> <span class="s1">&#39;never&#39;</span><span class="p">:</span>
             <span class="n">opts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;-g&#39;</span><span class="p">)</span>
         <span class="n">env</span><span class="p">[</span><span class="s1">&#39;TAU_MAKEFILE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_makefile</span><span class="p">()</span>

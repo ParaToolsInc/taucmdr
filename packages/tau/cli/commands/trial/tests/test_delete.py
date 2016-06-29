@@ -31,9 +31,26 @@ Functions used for unit tests of delete.py.
 """
 
 
-import unittest
-#from tau.cli.commands.trial import delete
+import shutil
+from tau import tests, TAU_HOME
+from tau.cli.commands import build
+from tau.cli.commands.trial import delete, create
 
-class DeleteTest(unittest.TestCase):
+class DeleteTest(tests.TestCase):
+    """Tests for :any:`trial.delete`."""
+
     def test_delete(self):
-        self.assertEqual(1, 1) 
+        self.reset_project_storage(project_name='proj1')
+        shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests.get_test_workdir()+'/hello.c')
+        argv = ['gcc', 'hello.c']
+        self.exec_command(build.COMMAND, argv)
+        self.exec_command(create.COMMAND, ['./a.out'])
+        stdout, stderr = self.assertCommandReturnValue(0, delete.COMMAND, ['0'])
+        self.assertIn('Deleted trial 0', stdout)
+        self.assertFalse(stderr)
+        
+    def test_wrongnumber(self):
+        self.reset_project_storage(project_name='proj1')
+        _, _, stderr = self.exec_command(delete.COMMAND, ['-1'])
+        self.assertIn('trial delete <trial_number> [arguments]', stderr)
+        self.assertIn('trial delete: error: No trial number -1 in the current experiment.', stderr)

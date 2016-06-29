@@ -131,7 +131,7 @@
  
     <span class="n">knc_intel_only</span> <span class="o">=</span> <span class="n">require_compiler_family</span><span class="p">(</span><span class="n">INTEL_COMPILERS</span><span class="p">,</span> 
                                              <span class="s2">&quot;You must use Intel compilers to target the Xeon Phi&quot;</span><span class="p">,</span>
-                                             <span class="s2">&quot;Try adding `--host-compilers=Intel` to the command line&quot;</span><span class="p">)</span>
+                                             <span class="s2">&quot;Try adding `--compilers=Intel` to the command line&quot;</span><span class="p">)</span>
     <span class="n">knc_intel_mpi_only</span> <span class="o">=</span> <span class="n">require_compiler_family</span><span class="p">(</span><span class="n">INTEL_MPI_COMPILERS</span><span class="p">,</span>
                                                  <span class="s2">&quot;You must use Intel MPI compilers to target the Xeon Phi&quot;</span><span class="p">,</span>
                                                  <span class="s2">&quot;Try adding `--mpi-compilers=Intel` to the command line&quot;</span><span class="p">)</span>
@@ -156,7 +156,7 @@
             <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;host operating system&#39;</span><span class="p">,</span>
             <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="n">host_os</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--host-os&#39;</span><span class="p">,),</span>
+            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--os&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;host&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;os&gt;&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;choices&#39;</span><span class="p">:</span> <span class="n">OperatingSystem</span><span class="o">.</span><span class="n">keys</span><span class="p">()}</span>
@@ -166,7 +166,7 @@
             <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;host architecture&#39;</span><span class="p">,</span>
             <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="n">host</span><span class="o">.</span><span class="n">architecture</span><span class="p">()</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--host-arch&#39;</span><span class="p">,),</span>
+            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--arch&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;host&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;arch&gt;&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;choices&#39;</span><span class="p">:</span> <span class="n">Architecture</span><span class="o">.</span><span class="n">keys</span><span class="p">()},</span>
@@ -382,6 +382,7 @@
         <span class="s1">&#39;scorep_source&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;path or URL to a Score-P installation or archive file&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="s1">&#39;download&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--score-p&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;software package&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;(&lt;path&gt;|&lt;url&gt;|download|None)&#39;</span><span class="p">,</span>

@@ -30,10 +30,8 @@
 Functions used for unit tests of binutils_installation.py
 """
 
+from tau.tests import TestCase, not_implemented
 
-import unittest
-#from tau.cf.software import binutils_installation
-
-class BinutilsInstallationTest(unittest.TestCase):
-    def test_binutils_installation(self):
-        self.assertEqual(1, 1)
+@not_implemented
+class BinutilsInstallationTest(TestCase):
+    pass

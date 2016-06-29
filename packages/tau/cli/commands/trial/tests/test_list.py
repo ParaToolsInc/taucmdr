@@ -31,9 +31,27 @@ Functions used for unit tests of list.py.
 """
 
 
-import unittest
-#from tau.cli.commands.trial import list
+import shutil
+from tau import tests, TAU_HOME
+from tau.cli.commands import build
+from tau.cli.commands.trial.list import COMMAND as LIST_COMMAND
+from tau.cli.commands.trial.create import COMMAND as CREATE_COMMAND
 
-class ListTest(unittest.TestCase):
+class ListTest(tests.TestCase):
+    """Tests for :any:`trial.list`."""
+    
     def test_list(self):
-        self.assertEqual(1, 1) 
+        self.reset_project_storage(project_name='proj1')
+        shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests.get_test_workdir()+'/hello.c')
+        argv = ['gcc', 'hello.c']
+        self.exec_command(build.COMMAND, argv)
+        self.exec_command(CREATE_COMMAND, ['./a.out'])
+        stdout, stderr = self.assertCommandReturnValue(0, LIST_COMMAND, [])
+        self.assertIn('./a.out', stdout)
+        self.assertIn('0', stdout)
+        self.assertFalse(stderr)
+
+    def test_wrongnumber(self):
+        self.reset_project_storage(project_name='proj1')
+        _, stdout, _ = self.exec_command(LIST_COMMAND, ['0'])
+        self.assertIn('No trials', stdout)

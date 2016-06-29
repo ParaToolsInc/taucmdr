@@ -131,7 +131,7 @@ The key/value store is accessed via the <cite>[]</cite> operator, i.e. treat the
 <dl class="method">
 <dt id="tau.storage.AbstractStorage.connect_filesystem">
 <code class="descname">connect_filesystem</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.connect_filesystem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.connect_filesystem" title="Permalink to this definition">¶</a></dt>
-<dd><p>Prepares the store filesystem fore reading and writing.</p>
+<dd><p>Prepares the store filesystem for reading and writing.</p>
 </dd></dl>
 
 <dl class="method">
@@ -200,7 +200,7 @@ Invalid value for <cite>keys</cite>.</p>
 <dl class="method">
 <dt id="tau.storage.AbstractStorage.disconnect_filesystem">
 <code class="descname">disconnect_filesystem</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.disconnect_filesystem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.disconnect_filesystem" title="Permalink to this definition">¶</a></dt>
-<dd><p>Prepares the store filesystem fore reading and writing.</p>
+<dd><p>Makes the store filesystem unreadable and unwritable.</p>
 </dd></dl>
 
 <dl class="method">
@@ -611,7 +611,7 @@ want to install software packages at the project level to avoid quotas or in sit
 where <a class="reference internal" href="tau.html#tau.USER_PREFIX" title="tau.USER_PREFIX"><code class="xref any py py-data docutils literal"><span class="pre">USER_PREFIX</span></code></a> is not accessible from cluster compute nodes.</p>
 <dl class="data">
 <dt id="tau.storage.levels.ORDERED_LEVELS">
-<code class="descclassname">tau.storage.levels.</code><code class="descname">ORDERED_LEVELS</code><em class="property"> = (&lt;tau.storage.project.ProjectStorage object at 0x2b7d084efa90&gt;, &lt;tau.storage.local_file.LocalFileStorage object at 0x2b7d084efa50&gt;, &lt;tau.storage.local_file.LocalFileStorage object at 0x2b7d084efa10&gt;)</em><a class="headerlink" href="#tau.storage.levels.ORDERED_LEVELS" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.storage.levels.</code><code class="descname">ORDERED_LEVELS</code><em class="property"> = (&lt;tau.storage.project.ProjectStorage object at 0x2ae6c6671190&gt;, &lt;tau.storage.local_file.LocalFileStorage object at 0x2ae6c6671310&gt;, &lt;tau.storage.local_file.LocalFileStorage object at 0x2ae6c6671350&gt;)</em><a class="headerlink" href="#tau.storage.levels.ORDERED_LEVELS" title="Permalink to this definition">¶</a></dt>
 <dd><p>All storage levels in their preferred order.</p>
 </dd></dl>
 
@@ -623,7 +623,7 @@ where <a class="reference internal" href="tau.html#tau.USER_PREFIX" title="tau.U
 
 <dl class="data">
 <dt id="tau.storage.levels.STORAGE_LEVELS">
-<code class="descclassname">tau.storage.levels.</code><code class="descname">STORAGE_LEVELS</code><em class="property"> = {'project': &lt;tau.storage.project.ProjectStorage object at 0x2b7d084efa90&gt;, 'user': &lt;tau.storage.local_file.LocalFileStorage object at 0x2b7d084efa50&gt;, 'system': &lt;tau.storage.local_file.LocalFileStorage object at 0x2b7d084efa10&gt;}</em><a class="headerlink" href="#tau.storage.levels.STORAGE_LEVELS" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.storage.levels.</code><code class="descname">STORAGE_LEVELS</code><em class="property"> = {'project': &lt;tau.storage.project.ProjectStorage object at 0x2ae6c6671190&gt;, 'user': &lt;tau.storage.local_file.LocalFileStorage object at 0x2ae6c6671310&gt;, 'system': &lt;tau.storage.local_file.LocalFileStorage object at 0x2ae6c6671350&gt;}</em><a class="headerlink" href="#tau.storage.levels.STORAGE_LEVELS" title="Permalink to this definition">¶</a></dt>
 <dd><p>All storage levels indexed by their names.</p>
 </dd></dl>
 
@@ -1072,6 +1072,24 @@ where <a class="reference internal" href="tau.html#tau.USER_PREFIX" title="tau.U
 <dt id="tau.storage.project.ProjectStorage.connect_filesystem">
 <code class="descname">connect_filesystem</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage/project.html#ProjectStorage.connect_filesystem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.project.ProjectStorage.connect_filesystem" title="Permalink to this definition">¶</a></dt>
 <dd><p>Prepares the store filesystem for reading and writing.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.project.ProjectStorage.destroy">
+<code class="descname">destroy</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage/project.html#ProjectStorage.destroy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.project.ProjectStorage.destroy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Disconnects the database and filesystem and recursively deletes the filesystem.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>*args</strong> &#8211; Passed through to <a class="reference internal" href="#tau.storage.local_file.LocalFileStorage.disconnect_filesystem" title="tau.storage.local_file.LocalFileStorage.disconnect_filesystem"><code class="xref any py py-meth docutils literal"><span class="pre">disconnect_filesystem</span></code></a>.</li>
+<li><strong>**kwargs</strong> &#8211; Keyword arguments for <a class="reference internal" href="#tau.storage.local_file.LocalFileStorage.disconnect_filesystem" title="tau.storage.local_file.LocalFileStorage.disconnect_filesystem"><code class="xref any py py-meth docutils literal"><span class="pre">disconnect_filesystem</span></code></a> or <a class="reference external" href="https://docs.python.org/library/shutil.html#shutil.rmtree" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">shutil.rmtree</span></code></a>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">

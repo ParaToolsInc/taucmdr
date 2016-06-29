@@ -31,22 +31,8 @@ Functions used for unit tests of installation.py.
 """
 
 
-import unittest
-import os
-import time
-import shutil
-#from tau.cf.software import installation
+from tau.tests import TestCase, not_implemented
 
-class InstallationTest(unittest.TestCase):
-    current_time = time.strftime("%Y%m%d_%H%M%S")
-    @classmethod
-    def setUpClass(cls):
-        os.makedirs(cls.current_time)
-        os.chdir(cls.current_time)
-    def test_installation(self):
-#        installation.Installation
-        self.assertEqual(1, 1)
-    @classmethod
-    def tearDownClass(cls):
-        os.chdir('..')
-        shutil.rmtree(cls.current_time)
+@not_implemented
+class InstallationTest(TestCase):
+    pass

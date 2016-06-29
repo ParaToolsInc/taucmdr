@@ -77,12 +77,13 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 
-<span class="kn">import</span> <span class="nn">unittest</span>
-<span class="c1">#from tau.model import trial</span>
+<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">tests</span>
+<span class="kn">from</span> <span class="nn">tau.model</span> <span class="kn">import</span> <span class="n">trial</span>
 
-<div class="viewcode-block" id="TrialTest"><a class="viewcode-back" href="../../../../tau.model.tests.html#tau.model.tests.test_trial.TrialTest">[docs]</a><span class="k">class</span> <span class="nc">TrialTest</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+<div class="viewcode-block" id="TrialTest"><a class="viewcode-back" href="../../../../tau.model.tests.html#tau.model.tests.test_trial.TrialTest">[docs]</a><span class="k">class</span> <span class="nc">TrialTest</span><span class="p">(</span><span class="n">tests</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
 <div class="viewcode-block" id="TrialTest.test_trial"><a class="viewcode-back" href="../../../../tau.model.tests.html#tau.model.tests.test_trial.TrialTest.test_trial">[docs]</a>    <span class="k">def</span> <span class="nf">test_trial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> </div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">(</span><span class="n">project_name</span><span class="o">=</span><span class="s1">&#39;proj1&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">any</span><span class="p">(</span><span class="n">trial</span><span class="o">.</span><span class="n">attributes</span><span class="p">()),</span> <span class="mi">1</span><span class="p">)</span> </div></div>
 </pre></div>
 
       </div>

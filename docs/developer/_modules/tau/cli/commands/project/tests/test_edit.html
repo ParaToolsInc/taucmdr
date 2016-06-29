@@ -77,12 +77,51 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 
-<span class="kn">import</span> <span class="nn">unittest</span>
-<span class="c1">#from tau.cli.commands.project import edit</span>
+<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">tests</span>
+<span class="kn">from</span> <span class="nn">tau.cli.commands.project</span> <span class="kn">import</span> <span class="n">edit</span>
+<span class="kn">from</span> <span class="nn">tau.model.project</span> <span class="kn">import</span> <span class="n">Project</span>
 
-<div class="viewcode-block" id="EditTest"><a class="viewcode-back" href="../../../../../../tau.cli.commands.project.tests.html#tau.cli.commands.project.tests.test_edit.EditTest">[docs]</a><span class="k">class</span> <span class="nc">EditTest</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
-<div class="viewcode-block" id="EditTest.test_edit"><a class="viewcode-back" href="../../../../../../tau.cli.commands.project.tests.html#tau.cli.commands.project.tests.test_edit.EditTest.test_edit">[docs]</a>    <span class="k">def</span> <span class="nf">test_edit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> </div></div>
+<div class="viewcode-block" id="EditTest"><a class="viewcode-back" href="../../../../../../tau.cli.commands.project.tests.html#tau.cli.commands.project.tests.test_edit.EditTest">[docs]</a><span class="k">class</span> <span class="nc">EditTest</span><span class="p">(</span><span class="n">tests</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Tests for :any:`project.edit`.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="EditTest.test_rename"><a class="viewcode-back" href="../../../../../../tau.cli.commands.project.tests.html#tau.cli.commands.project.tests.test_edit.EditTest.test_rename">[docs]</a>    <span class="k">def</span> <span class="nf">test_rename</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">(</span><span class="n">project_name</span><span class="o">=</span><span class="s1">&#39;proj1&#39;</span><span class="p">)</span>
+        <span class="n">argv</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;proj1&#39;</span><span class="p">,</span> <span class="s1">&#39;--new-name&#39;</span><span class="p">,</span> <span class="s1">&#39;proj2&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">edit</span><span class="o">.</span><span class="n">COMMAND</span><span class="p">,</span> <span class="n">argv</span><span class="p">)</span>
+        <span class="n">proj_ctrl</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">controller</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNone</span><span class="p">(</span><span class="n">proj_ctrl</span><span class="o">.</span><span class="n">one</span><span class="p">({</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;proj1&#39;</span><span class="p">}))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">proj_ctrl</span><span class="o">.</span><span class="n">one</span><span class="p">({</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;proj2&#39;</span><span class="p">}))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exec_command</span><span class="p">(</span><span class="n">edit</span><span class="o">.</span><span class="n">COMMAND</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;proj2&#39;</span><span class="p">,</span> <span class="s1">&#39;--new-name&#39;</span><span class="p">,</span> <span class="s1">&#39;proj1&#39;</span><span class="p">])</span></div>
+    
+<div class="viewcode-block" id="EditTest.test_set_tau_force_options"><a class="viewcode-back" href="../../../../../../tau.cli.commands.project.tests.html#tau.cli.commands.project.tests.test_edit.EditTest.test_set_tau_force_options">[docs]</a>    <span class="k">def</span> <span class="nf">test_set_tau_force_options</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">(</span><span class="n">project_name</span><span class="o">=</span><span class="s1">&#39;proj1&#39;</span><span class="p">)</span>
+        <span class="n">proj_ctrl</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">controller</span><span class="p">()</span>
+        <span class="c1"># Check that &#39;force-tau-options&#39; is unset in the new project configuration</span>
+        <span class="n">proj1</span> <span class="o">=</span> <span class="n">proj_ctrl</span><span class="o">.</span><span class="n">one</span><span class="p">({</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;proj1&#39;</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="s1">&#39;force-tau-options&#39;</span> <span class="ow">in</span> <span class="n">proj1</span><span class="p">)</span></div>
+        <span class="c1"># Test --force-tau-options</span>
+        <span class="c1">#tau_options = [&#39;-optVerbose&#39;, &#39;-optNoCompInst&#39;]</span>
+        <span class="c1">#argv = [&#39;proj1&#39;, &#39;--force-tau-options&#39;] + tau_options</span>
+        <span class="c1">#self.assertCommandReturnValue(0, edit.COMMAND, argv)</span>
+        <span class="c1"># Check that &#39;force-tau-options&#39; is now a list containing the expected options in the project record</span>
+        <span class="c1">#proj1 = proj_ctrl.one({&#39;name&#39;: &#39;proj1&#39;})</span>
+        <span class="c1">#self.assertIsNotNone(proj1)</span>
+        <span class="c1">#self.assertListEqual(proj1[&#39;force-tau-options&#39;], tau_options)</span>
+        
+<div class="viewcode-block" id="EditTest.test_wrongname"><a class="viewcode-back" href="../../../../../../tau.cli.commands.project.tests.html#tau.cli.commands.project.tests.test_edit.EditTest.test_wrongname">[docs]</a>    <span class="k">def</span> <span class="nf">test_wrongname</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">(</span><span class="n">project_name</span><span class="o">=</span><span class="s1">&#39;proj1&#39;</span><span class="p">)</span>
+        <span class="n">argv</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;proj2&#39;</span><span class="p">,</span> <span class="s1">&#39;--new-name&#39;</span><span class="p">,</span> <span class="s1">&#39;proj3&#39;</span><span class="p">]</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exec_command</span><span class="p">(</span><span class="n">edit</span><span class="o">.</span><span class="n">COMMAND</span><span class="p">,</span> <span class="n">argv</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;project edit &lt;project_name&gt; [arguments]&#39;</span><span class="p">,</span> <span class="n">stderr</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;project edit: error&#39;</span><span class="p">,</span> <span class="n">stderr</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;is not a project name.&#39;</span><span class="p">,</span> <span class="n">stderr</span><span class="p">)</span></div>
+        
+<div class="viewcode-block" id="EditTest.test_wrongarg"><a class="viewcode-back" href="../../../../../../tau.cli.commands.project.tests.html#tau.cli.commands.project.tests.test_edit.EditTest.test_wrongarg">[docs]</a>    <span class="k">def</span> <span class="nf">test_wrongarg</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">(</span><span class="n">project_name</span><span class="o">=</span><span class="s1">&#39;proj1&#39;</span><span class="p">)</span>
+        <span class="n">argv</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;app1&#39;</span><span class="p">,</span> <span class="s1">&#39;--arg&#39;</span><span class="p">,</span> <span class="s1">&#39;arg1&#39;</span><span class="p">]</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exec_command</span><span class="p">(</span><span class="n">edit</span><span class="o">.</span><span class="n">COMMAND</span><span class="p">,</span> <span class="n">argv</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;project edit &lt;project_name&gt; [arguments]&#39;</span><span class="p">,</span> <span class="n">stderr</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;project edit: error: unrecognized arguments: --arg arg1&#39;</span><span class="p">,</span> <span class="n">stderr</span><span class="p">)</span></div></div>
 </pre></div>
 
       </div>

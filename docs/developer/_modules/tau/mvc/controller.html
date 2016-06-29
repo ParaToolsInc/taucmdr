@@ -94,24 +94,67 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">storage</span> <span class="o">=</span> <span class="n">storage</span>
 
 <div class="viewcode-block" id="Controller.one"><a class="viewcode-back" href="../../../tau.mvc.html#tau.mvc.controller.Controller.one">[docs]</a>    <span class="k">def</span> <span class="nf">one</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a record.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            key: See :any:`AbstractStorage.get`.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Model: The model for the matching record or None if no such record exists.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">record</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">record</span><span class="p">)</span> <span class="k">if</span> <span class="n">record</span> <span class="k">else</span> <span class="bp">None</span></div>
 
 <div class="viewcode-block" id="Controller.all"><a class="viewcode-back" href="../../../tau.mvc.html#tau.mvc.controller.Controller.all">[docs]</a>    <span class="k">def</span> <span class="nf">all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get all records.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            list: Models for all records or an empty lists if no records exist.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">record</span><span class="p">)</span> <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">table_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">)]</span></div>
     
 <div class="viewcode-block" id="Controller.count"><a class="viewcode-back" href="../../../tau.mvc.html#tau.mvc.controller.Controller.count">[docs]</a>    <span class="k">def</span> <span class="nf">count</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the number of records.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            int: Effectively ``len(self.all())``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">table_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
     
 <div class="viewcode-block" id="Controller.search"><a class="viewcode-back" href="../../../tau.mvc.html#tau.mvc.controller.Controller.search">[docs]</a>    <span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">record</span><span class="p">)</span> <span class="k">if</span> <span class="n">record</span> <span class="k">else</span> <span class="bp">None</span> 
-                <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">)]</span></div>
+        <span class="sd">&quot;&quot;&quot;Return records that have all given keys.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            keys: See :any:`AbstractStorage.search`.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            list: Models for records with the given keys or an empty lists if no records have all keys.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">record</span><span class="p">)</span> <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">)]</span></div>
 
 <div class="viewcode-block" id="Controller.match"><a class="viewcode-back" href="../../../tau.mvc.html#tau.mvc.controller.Controller.match">[docs]</a>    <span class="k">def</span> <span class="nf">match</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">test</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">record</span><span class="p">)</span> <span class="k">if</span> <span class="n">record</span> <span class="k">else</span> <span class="bp">None</span> 
+        <span class="sd">&quot;&quot;&quot;Return records that have a field matching a regular expression or test function.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            field: See :any:`AbstractStorage.match`.</span>
+<span class="sd">            regex: See :any:`AbstractStorage.match`.</span>
+<span class="sd">            test: See :any:`AbstractStorage.match`.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            list: Models for records that have a matching field.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">record</span><span class="p">)</span> 
                 <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="n">regex</span><span class="p">,</span> <span class="n">test</span><span class="o">=</span><span class="n">test</span><span class="p">)]</span></div>
 
 <div class="viewcode-block" id="Controller.exists"><a class="viewcode-back" href="../../../tau.mvc.html#tau.mvc.controller.Controller.exists">[docs]</a>    <span class="k">def</span> <span class="nf">exists</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check if a record exists.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            keys: See :any:`AbstractStorage.exists`.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if a record matching `keys` exists, False otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Controller.populate"><a class="viewcode-back" href="../../../tau.mvc.html#tau.mvc.controller.Controller.populate">[docs]</a>    <span class="k">def</span> <span class="nf">populate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">attribute</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>

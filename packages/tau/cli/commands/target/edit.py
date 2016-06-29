@@ -104,7 +104,7 @@ class TargetEditCommand(EditCommand):
     def construct_parser(self):
         parser = super(TargetEditCommand, self).construct_parser()
         group = parser.add_argument_group('host arguments')
-        group.add_argument('--host-compilers',
+        group.add_argument('--compilers',
                            help="select all host compilers automatically from the given family",
                            metavar='<family>',
                            dest='host_family',
