@@ -35,6 +35,7 @@ matrix:
 install:
   - source .travis/install.sh
   - python --version
+  - ./bin/tau --version
 
 script: # Currently pylint is bombing with negative scores. This might be due to a bad python environment and/or updates needed in pylintrc
   - coverage run runtests
