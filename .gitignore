@@ -78,3 +78,8 @@ benchmarks
 
 # Python coverage data
 .coverage
+
+# Python packaging files
+build/
+dist/
+*.egg-info

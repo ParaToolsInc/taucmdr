@@ -44,6 +44,16 @@ _CWD_STACK = []
 _TEMPDIR_STACK = []
 _NOT_IMPLEMENTED = []
 
+def run_tests():
+    """Run all unit tests and exit.
+    
+    Uses :any:`unittest.TestLoader.discover` to find all unit tests, then uses :any:`tau.tests.TestRunner`
+    to execute the tests.
+    """
+    here = os.path.realpath(os.path.dirname(__file__))
+    suite = unittest.TestLoader().discover(os.path.join(here, '..'))
+    sys.exit(TestRunner(verbosity=1, buffer=True).run(suite))
+
 def get_stdout():
     """Get data written to unit test stdout.
     
@@ -106,8 +116,9 @@ def cleanup():
     """Finish 
     
     Checks that any files or directories created during testing have been removed."""
-    for path in _DIR_STACK:
-        sys.stderr.write("\nERROR: Test directory '%s' was not cleaned up\n" % path)
+    if _DIR_STACK:
+        for path in _DIR_STACK:
+            sys.stderr.write("\nERROR: Test directory '%s' was not cleaned up\n" % path)
 
 atexit.register(cleanup)
 

@@ -71,8 +71,7 @@ Please update Python or contact %s for support.
     sys.exit(EXIT_FAILURE)
 
 TAU_HOME = os.path.realpath(os.path.abspath(os.environ.get('__TAU_HOME__', 
-                                                           os.path.join(os.path.dirname(__file__), 
-                                                                        '..', '..'))))
+                                                           os.path.join(os.path.dirname(__file__), '..', '..'))))
 """str: Absolute path to the top-level TAU Commander directory.
 
 This directory contains at least `bin`, `docs`, and `packages` directories and is the root
