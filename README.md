@@ -1,9 +1,10 @@
 TAU Commander
 =============
 
+[![GitHub license][License img]](./LICENSE)
 [![Build Status][Build img]](https://travis-ci.org/ParaToolsInc/taucmdr)
 [![Coverage Status][Coverage img]](https://codecov.io/github/ParaToolsInc/taucmdr?branch=master)
-[![GitHub license][License img]](./LICENSE)
+[![Chat][Gitter img]](https://gitter.im/ParaToolsInc/taucmdr?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ![The TAU Commander performance engineering solution consists of an 
 intuitive, client-side application and cloud-hosted data analysis, 
@@ -52,8 +53,7 @@ DoE SBIR grant DE-SC0009593.
 
 ---------------------------------------------------------------------------
 
-[![Join the chat at https://gitter.im/jlinford/taucmdr](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/jlinford/taucmdr?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
 [Build img]: https://travis-ci.org/ParaToolsInc/taucmdr.svg?branch=master "Travis-CI build status image"
 [Coverage img]: https://codecov.io/github/ParaToolsInc/taucmdr/coverage.svg?branch=master "Unit test code coverage image"
 [License img]: https://img.shields.io/badge/license-BSD--3-blue.svg "View BSD-3 License"
+[Gitter img]: https://badges.gitter.im/Join%20Chat.svg "Gitter chat image"
