@@ -28,16 +28,24 @@
 ###############################################################################
 
 ###############################################################################
-# 1. Configure installation
+# 1. Configuration
+#
+#
+# TAU Commander version
+VERSION = $(shell cat VERSION)
+#
+#
+# Installation location
+DESTDIR = $(HOME)/taucmdr-$(VERSION)
 #
 #
 # Location for package sources and build files.
-BUILD_PREFIX = build
+BUILDDIR = build
 #
 #
 # If set to "true" then missing packages will be downloaded automatically.
-# Otherwise, the packages must be present in BUILD_PREFIX
-ALLOW_DOWNLOAD = true
+# Otherwise, the packages must be present in BUILDDIR
+DOWNLOAD = true
 #
 #
 # If set to "true" then show commands as they are executed.
@@ -54,13 +62,24 @@ VERBOSE = true
 #
 # Shell utilities
 RM = rm -f
+MV = mv -f
+CP = cp -f
 MKDIR = mkdir -p
 #
 #
+# TAU
+TAU_VERSION = 2.25.1
+TAU_REPO = https://www.cs.uoregon.edu/research/tau/tau_releases
+#
+#
+# PDT
+PDT_VERSION = 3.22
+PDT_REPO = https://www.cs.uoregon.edu/research/tau/pdt_releases
+#
+#
 # Miniconda
-MINICONDA_VERSION = Miniconda2-4.0.5
+MINICONDA_VERSION = 4.0.5
 MINICONDA_REPO = https://repo.continuum.io/miniconda
-MINICONDA_PREFIX = miniconda
 #
 #
 # END Advanced configuration
@@ -74,6 +93,17 @@ MINICONDA_PREFIX = miniconda
 # Get target OS and architecture
 OS = $(shell uname -s)
 ARCH = $(shell uname -m)
+HOSTNAME = $(shell hostname | cut -d. -f1)
+
+ifeq ($(VERBOSE),false)
+  ECHO=@
+  CURL_FLAGS=-s
+  WGET_FLAGS=--quiet
+else
+  ECHO=
+  CURL_FLAGS=
+  WGET_FLAGS=
+endif
 
 # 32-bit OS X isn't supported
 ifeq ($(OS),Darwin)
@@ -84,20 +114,20 @@ endif
 
 # Build download macro
 # Usage: $(call download,source,dest)
-ifeq ($(ALLOW_DOWNLOAD),true)
+ifeq ($(DOWNLOAD),true)
   CURL = $(shell which curl)
   WGET = $(shell which wget)
   ifneq ($(WGET),)
-    download = wget -O "$(2)" "$(1)"
+    download = wget $(WGET_FLAGS) -O "$(2)" "$(1)"
   else
     ifneq ($(CURL),)
-      download = curl -L "$(1)" > "$(2)"
+      download = curl $(CURL_FLAGS) -L "$(1)" > "$(2)"
     else
       $(error Either curl or wget must be in PATH to download packages)
     endif
   endif
 else
-  download = $(error: Download disabled: $(1) $(2))
+  download = @echo "ERROR: $(2) is missing and download is disabled" && false
 endif
 
 # Configure packages to match target OS
@@ -122,37 +152,91 @@ else
   endif
 endif
 
-ifeq ($(VERBOSE),false)
-  VERBOSE=@
-else
-  VERBOSE=
-endif
+SYSTEM_SRC = $(DESTDIR)/.system/src
 
-MINICONDA_PKG = $(MINICONDA_VERSION)-$(MINICONDA_OS)-$(MINICONDA_ARCH).sh
+TAUCMDR_PKG = taucmdr-$(VERSION).tar.gz
+TAUCMDR_SRC = $(BUILDDIR)/$(TAUCMDR_PKG)
+TAUCMDR_DEST = $(DESTDIR)
+
+TAU_PKG = tau-$(TAU_VERSION).tar.gz
+TAU_URL = $(TAU_REPO)/$(TAU_PKG)
+TAU_SRC = $(BUILDDIR)/$(TAU_PKG)
+TAU_DEST = $(SYSTEM_SRC)
+TAU_SYSTEM_SRC = $(TAU_DEST)/$(TAU_PKG)
+
+PDT_PKG = pdt-$(PDT_VERSION).tar.gz
+PDT_URL = $(PDT_REPO)/$(PDT_PKG)
+PDT_SRC = $(BUILDDIR)/$(PDT_PKG)
+PDT_DEST = $(SYSTEM_SRC)
+PDT_SYSTEM_SRC = $(PDT_DEST)/$(PDT_PKG)
+
+MINICONDA_PKG = Miniconda2-$(MINICONDA_VERSION)-$(MINICONDA_OS)-$(MINICONDA_ARCH).sh
 MINICONDA_URL = $(MINICONDA_REPO)/$(MINICONDA_PKG)
-MINICONDA_PYTHON = $(MINICONDA_PREFIX)/bin/python
+MINICONDA_SRC = $(BUILDDIR)/$(MINICONDA_PKG)
+MINICONDA_DEST = $(DESTDIR)/miniconda
 
-#.PHONY: all clean miniconda
+TAU = $(TAUCMDR_DEST)/bin/tau
+PYTHON = $(MINICONDA_DEST)/bin/python
 
-all:
+.PHONY: all install clean
 
-$(BUILD_PREFIX):
-	$(VERBOSE)$(MKDIR) $(BUILD_PREFIX)
+.DEFAULT: all
 
-miniconda: $(MINICONDA_PYTHON)
-	ls -l $(MINICONDA_PYTHON)
+all: $(MINICONDA_SRC) $(TAU_SRC) $(PDT_SRC)
+	@touch $(BUILDDIR)/*
+	@echo "Type \`make install\` to install TAU Commander."
 
-$(MINICONDA_PYTHON): $(BUILD_PREFIX)/$(MINICONDA_PKG)
-	$(VERBOSE)bash $< -b -p $(MINICONDA_PREFIX)
+install: system_target
+	$(ECHO)$(TAU) --version
+	@echo "TAU Commander installed at $(DESTDIR)"
+	@echo "Rememember to add $(DESTDIR)/bin to your PATH"
 
-$(BUILD_PREFIX)/$(MINICONDA_PKG): $(BUILD_PREFIX)
-	@echo "Downloading $(MINICONDA_URL) to $@"
+system_target: $(TAU) $(TAU_SYSTEM_SRC) $(PDT_SYSTEM_SRC)
+	$(ECHO)$(TAU) target create $(HOSTNAME) -@ system --tau=$(TAU_SYSTEM_SRC) --pdt=$(PDT_SYSTEM_SRC)
+
+$(TAU): $(TAUCMDR_SRC)
+	$(ECHO)tar xvzf $(TAUCMDR_SRC) -C "$(DESTDIR)" --strip-components=1
+	@echo "Compiling python files..."
+	$(ECHO)$(PYTHON) -m compileall $(DESTDIR) || true
+
+$(TAUCMDR_SRC): $(PYTHON)
+	$(ECHO)$(PYTHON) setup.py sdist -d $(BUILDDIR)
+	@touch $(BUILDDIR)/*
+
+$(PYTHON): $(MINICONDA_SRC)
+	$(ECHO)bash $< -b -p $(MINICONDA_DEST)
+# Update timestamps on miniconda python files or Make will think miniconda
+# is always out of date since the source file will have a newer timestamp
+	@echo "Updating miniconda time stamps..."
+	$(ECHO)find $(MINICONDA_DEST) -name python -exec touch {} \;
+
+$(TAU_SYSTEM_SRC): $(TAU_SRC) $(TAU_DEST) 
+	$(ECHO)$(CP) $(TAU_SRC) $@
+
+$(PDT_SYSTEM_SRC): $(PDT_SRC) $(PDT_DEST)
+	$(ECHO)$(CP) $(PDT_SRC) $@
+
+$(TAU_SRC): $(BUILDDIR)
+	$(call download,$(TAU_URL),$@)
+
+$(PDT_SRC): $(BUILDDIR)
+	$(call download,$(PDT_URL),$@)
+
+$(MINICONDA_SRC): $(BUILDDIR)
 	$(call download,$(MINICONDA_URL),$@)
-	$(VERBOSE)touch $@
 
-clean:
-	$(RM) $(MINICONDA_PKG)
+$(SYSTEM_SRC):
+	$(ECHO)$(MKDIR) $(SYSTEM_SRC)
 
-realclean: clean
-	$(RM) -r $(BUILD_PREFIX) $(MINICONDA_PREFIX)
+$(BUILDDIR):
+	$(ECHO)$(MKDIR) $(BUILDDIR)
+
+clean: 
+ifeq ($(DOWNLOAD),true)
+	$(ECHO)$(RM) -r $(BUILDDIR)
+else
+	@echo "Refusing to make clean since DOWNLOAD=$(DOWNLOAD) so we might not be able to recover."
+	@echo "If you still want to make clean execute:"
+	@echo "  $(RM) -r $(BUILDDIR)"
+endif
 
