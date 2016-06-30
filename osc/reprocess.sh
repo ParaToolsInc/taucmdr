@@ -1,9 +1,12 @@
 #!/bin/bash
 here="`cd ${0%/*} && pwd -P`"
 
+PROJECT_ROOT="$here/.."
+PACKAGE_ROOT="$here"
+
 PROJECT="home:jlinford"
 PACKAGE="taucmdr"
-VERSION=0.1
+VERSION=`cat $PROJECT_ROOT/VERSION`
 
 function abort()
 {

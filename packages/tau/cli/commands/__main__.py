@@ -106,6 +106,7 @@ class MainCommand(AbstractCommand):
                "Working Dir.   : %(cwd)s\n"
                "Terminal Size  : %(termsize)s\n"
                "Frozen         : %(frozen)s\n"
+               "Python         : %(python)s\n"
                "Python Version : %(pyversion)s\n"
                "Python Impl.   : %(pyimpl)s\n"
                "PYTHONPATH     : %(pythonpath)s\n")
@@ -116,6 +117,7 @@ class MainCommand(AbstractCommand):
                 "cwd": os.getcwd(),
                 "termsize": 'x'.join([str(dim) for dim in logger.TERM_SIZE]),
                 "frozen": getattr(sys, 'frozen', False),
+                "python": sys.executable,
                 "pyversion": platform.python_version(),
                 "pyimpl": platform.python_implementation(),
                 "pythonpath": os.pathsep.join(sys.path)}

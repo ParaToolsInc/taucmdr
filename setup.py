@@ -1,12 +1,29 @@
+import os
+import sys
+import fileinput
 from setuptools import setup, find_packages
 
-long_description="""
+TAU_HOME = os.path.realpath(os.path.abspath(os.path.dirname(__file__)))
+
+LONG_DESCRIPTION="""
 TAU Commander from ParaTools, Inc. is a production-grade performance engineering solution that makes The TAU Performance System users more productive. It presents a simple, intuitive, and systemized interface that guides users through performance engineering workflows and offers constructive feedback in case of error. TAU Commander also enhances the performance engineer's ability to mine actionable information from the application performance data by connecting to a suite of cloud-based data analysis, storage, visualization, and reporting services.
 """
 
+# Get version number from VERSION file
+with open(os.path.join(TAU_HOME, "VERSION")) as fin:
+    VERSION = fin.readline().strip()
+
+# Set tau.__version__ to match VERSION file
+for line in fileinput.input(os.path.join(TAU_HOME, "packages", "tau", "__init__.py"), inplace=1):
+    # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
+    if line.startswith("__version__"):
+        sys.stdout.write('__version__ = "%s"\n' % VERSION)
+    else:
+        sys.stdout.write(line)
+
 setup(
     name="taucmdr",
-    version="0.1",
+    version=VERSION,
     packages=find_packages("packages"),
     package_dir={"": "packages"},
     scripts=['bin/tau'],
@@ -20,7 +37,7 @@ setup(
     author="ParaTools, Inc.",
     author_email="info@paratools.com",
     description="An intuitive interface for the TAU Performance System",
-    long_description=long_description,
+    long_description=LONG_DESCRIPTION,
     license="BSD",
     keywords="TAU performance analysis profile profiling trace tracing",
     url="http://www.taucommander.com/",
