@@ -1,5 +1,9 @@
 from setuptools import setup, find_packages
 
+long_description="""
+TAU Commander from ParaTools, Inc. is a production-grade performance engineering solution that makes The TAU Performance System users more productive. It presents a simple, intuitive, and systemized interface that guides users through performance engineering workflows and offers constructive feedback in case of error. TAU Commander also enhances the performance engineer's ability to mine actionable information from the application performance data by connecting to a suite of cloud-based data analysis, storage, visualization, and reporting services.
+"""
+
 setup(
     name="taucmdr",
     version="0.1",
@@ -16,6 +20,7 @@ setup(
     author="ParaTools, Inc.",
     author_email="info@paratools.com",
     description="An intuitive interface for the TAU Performance System",
+    long_description=long_description,
     license="BSD",
     keywords="TAU performance analysis profile profiling trace tracing",
     url="http://www.taucommander.com/",
@@ -30,7 +35,7 @@ setup(
 
         # Indicate who your project is intended for
         'Intended Audience :: Developers',
-        'Topic :: Software Development :: Profilers',
+        'Topic :: Software Development :: User Interfaces',
 
         # Pick your license as you wish (should match "license" above)
         'License :: OSI Approved :: BSD License',
