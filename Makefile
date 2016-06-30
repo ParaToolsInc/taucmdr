@@ -78,8 +78,8 @@ PDT_REPO = https://www.cs.uoregon.edu/research/tau/pdt_releases
 #
 #
 # Miniconda
-MINICONDA_VERSION = 4.0.5
-MINICONDA_REPO = https://repo.continuum.io/miniconda
+CONDA_VERSION = 4.0.5
+CONDA_REPO = https://repo.continuum.io/miniconda
 #
 #
 # END Advanced configuration
@@ -132,10 +132,10 @@ endif
 
 # Configure packages to match target OS
 ifeq ($(OS),Darwin)
-  MINICONDA_OS = MacOSX
+  CONDA_OS = MacOSX
 else 
   ifeq ($(OS),Linux)
-    MINICONDA_OS = Linux  
+    CONDA_OS = Linux  
   else
     $(error OS not supported: $(OS))
   endif
@@ -143,10 +143,10 @@ endif
 
 # Configure packages to match target architecture
 ifeq ($(ARCH),x86_64)
-  MINICONDA_ARCH = x86_64
+  CONDA_ARCH = x86_64
 else 
   ifeq ($(ARCH),i386)
-    MINICONDA_ARCH = x86
+    CONDA_ARCH = x86
   else
     $(error Architecture not supported: $(ARCH))
   endif
@@ -156,80 +156,71 @@ SYSTEM_SRC = $(DESTDIR)/.system/src
 
 TAUCMDR_PKG = taucmdr-$(VERSION).tar.gz
 TAUCMDR_SRC = $(BUILDDIR)/$(TAUCMDR_PKG)
-TAUCMDR_DEST = $(DESTDIR)
 
 TAU_PKG = tau-$(TAU_VERSION).tar.gz
 TAU_URL = $(TAU_REPO)/$(TAU_PKG)
 TAU_SRC = $(BUILDDIR)/$(TAU_PKG)
-TAU_DEST = $(SYSTEM_SRC)
-TAU_SYSTEM_SRC = $(TAU_DEST)/$(TAU_PKG)
+TAU_SYSTEM_SRC = $(SYSTEM_SRC)/$(TAU_PKG)
 
 PDT_PKG = pdt-$(PDT_VERSION).tar.gz
 PDT_URL = $(PDT_REPO)/$(PDT_PKG)
 PDT_SRC = $(BUILDDIR)/$(PDT_PKG)
-PDT_DEST = $(SYSTEM_SRC)
-PDT_SYSTEM_SRC = $(PDT_DEST)/$(PDT_PKG)
+PDT_SYSTEM_SRC = $(SYSTEM_SRC)/$(PDT_PKG)
 
-MINICONDA_PKG = Miniconda2-$(MINICONDA_VERSION)-$(MINICONDA_OS)-$(MINICONDA_ARCH).sh
-MINICONDA_URL = $(MINICONDA_REPO)/$(MINICONDA_PKG)
-MINICONDA_SRC = $(BUILDDIR)/$(MINICONDA_PKG)
-MINICONDA_DEST = $(DESTDIR)/miniconda
+CONDA_PKG = Miniconda2-$(CONDA_VERSION)-$(CONDA_OS)-$(CONDA_ARCH).sh
+CONDA_URL = $(CONDA_REPO)/$(CONDA_PKG)
+CONDA_SRC = $(BUILDDIR)/$(CONDA_PKG)
+CONDA_DEST = $(DESTDIR)/conda
 
-TAU = $(TAUCMDR_DEST)/bin/tau
-PYTHON = $(MINICONDA_DEST)/bin/python
+TAUCMDR = $(DESTDIR)/bin/tau
+PYTHON = $(CONDA_DEST)/bin/python
 
 .PHONY: all install clean
 
 .DEFAULT: all
 
-all: $(MINICONDA_SRC) $(TAU_SRC) $(PDT_SRC)
-	@touch $(BUILDDIR)/*
-	@echo "Type \`make install\` to install TAU Commander."
+all: $(CONDA_SRC) $(TAU_SRC) $(PDT_SRC)
 
-install: system_target
-	$(ECHO)$(TAU) --version
+install: all $(TAUCMDR)
+	$(ECHO)$(TAUCMDR) --version
+	@echo "-------------------------------------------------------------------------------"
 	@echo "TAU Commander installed at $(DESTDIR)"
 	@echo "Rememember to add $(DESTDIR)/bin to your PATH"
+	@echo "-------------------------------------------------------------------------------"
 
-system_target: $(TAU) $(TAU_SYSTEM_SRC) $(PDT_SYSTEM_SRC)
-	$(ECHO)$(TAU) target create $(HOSTNAME) -@ system --tau=$(TAU_SYSTEM_SRC) --pdt=$(PDT_SYSTEM_SRC)
-
-$(TAU): $(TAUCMDR_SRC)
+$(TAUCMDR): $(TAUCMDR_SRC) $(TAU_SYSTEM_SRC) $(PDT_SYSTEM_SRC)
 	$(ECHO)tar xvzf $(TAUCMDR_SRC) -C "$(DESTDIR)" --strip-components=1
 	@echo "Compiling python files..."
 	$(ECHO)$(PYTHON) -m compileall $(DESTDIR) || true
+	$(ECHO)$(TAUCMDR) target create $(HOSTNAME) -@ system --tau=$(TAU_SYSTEM_SRC) --pdt=$(PDT_SYSTEM_SRC)
+	$(ECHO)touch $(TAUCMDR)
 
 $(TAUCMDR_SRC): $(PYTHON)
 	$(ECHO)$(PYTHON) setup.py sdist -d $(BUILDDIR)
-	@touch $(BUILDDIR)/*
 
-$(PYTHON): $(MINICONDA_SRC)
-	$(ECHO)bash $< -b -p $(MINICONDA_DEST)
-# Update timestamps on miniconda python files or Make will think miniconda
-# is always out of date since the source file will have a newer timestamp
-	@echo "Updating miniconda time stamps..."
-	$(ECHO)find $(MINICONDA_DEST) -name python -exec touch {} \;
+$(PYTHON): $(CONDA_SRC)
+	$(ECHO)bash $< -b -p $(CONDA_DEST)
+	$(ECHO)touch $(PYTHON)
 
-$(TAU_SYSTEM_SRC): $(TAU_SRC) $(TAU_DEST) 
-	$(ECHO)$(CP) $(TAU_SRC) $@
+$(TAU_SYSTEM_SRC): $(TAU_SRC)
+	$(ECHO)$(MKDIR) $(dir $(TAU_SYSTEM_SRC))
+	$(ECHO)$(CP) $(TAU_SRC) $(TAU_SYSTEM_SRC)
 
-$(PDT_SYSTEM_SRC): $(PDT_SRC) $(PDT_DEST)
-	$(ECHO)$(CP) $(PDT_SRC) $@
+$(PDT_SYSTEM_SRC): $(PDT_SRC)
+	$(ECHO)$(MKDIR) $(dir $(PDT_SYSTEM_SRC))
+	$(ECHO)$(CP) $(PDT_SRC) $(PDT_SYSTEM_SRC)
 
-$(TAU_SRC): $(BUILDDIR)
-	$(call download,$(TAU_URL),$@)
+$(TAU_SRC):
+	$(ECHO)$(MKDIR) $(dir $(TAU_SRC))
+	$(call download,$(TAU_URL),$(TAU_SRC))
 
-$(PDT_SRC): $(BUILDDIR)
-	$(call download,$(PDT_URL),$@)
+$(PDT_SRC):
+	$(ECHO)$(MKDIR) $(dir $(PDT_SRC))
+	$(call download,$(PDT_URL),$(PDT_SRC))
 
-$(MINICONDA_SRC): $(BUILDDIR)
-	$(call download,$(MINICONDA_URL),$@)
-
-$(SYSTEM_SRC):
-	$(ECHO)$(MKDIR) $(SYSTEM_SRC)
-
-$(BUILDDIR):
-	$(ECHO)$(MKDIR) $(BUILDDIR)
+$(CONDA_SRC):
+	$(ECHO)$(MKDIR) $(dir $(CONDA_SRC))
+	$(call download,$(CONDA_URL),$(CONDA_SRC))
 
 clean: 
 ifeq ($(DOWNLOAD),true)

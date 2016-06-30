@@ -26,7 +26,7 @@ setup(
     version=VERSION,
     packages=find_packages("packages"),
     package_dir={"": "packages"},
-    scripts=['bin/tau'],
+    scripts=['bin/tau', 'bin/.tau.py'],
     zip_safe=False,
 
     # Testing
