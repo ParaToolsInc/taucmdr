@@ -39,7 +39,6 @@ install:
 
 script:
   - coverage run setup.py test
-  - make -C docs
 
 after_success:
   - codecov --env PYENV_VERSION OS
