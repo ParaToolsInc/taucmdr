@@ -38,7 +38,7 @@ install:
   - ./bin/tau --version
 
 script:
-  - coverage run python setup.py test
+  - coverage run setup.py test
   - make -C docs
 
 after_success:

@@ -24,6 +24,7 @@ a.out
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
+.eggs/
 
 # Eclipse project files
 .project

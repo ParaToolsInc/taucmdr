@@ -156,16 +156,17 @@ SYSTEM_SRC = $(DESTDIR)/.system/src
 
 TAUCMDR_PKG = taucmdr-$(VERSION).tar.gz
 TAUCMDR_SRC = $(BUILDDIR)/$(TAUCMDR_PKG)
+TAUCMDR_JUNK = MANIFEST.in PKG-INFO pylintrc setup.cfg setup.py
 
 TAU_PKG = tau-$(TAU_VERSION).tar.gz
 TAU_URL = $(TAU_REPO)/$(TAU_PKG)
 TAU_SRC = $(BUILDDIR)/$(TAU_PKG)
-TAU_SYSTEM_SRC = $(SYSTEM_SRC)/$(TAU_PKG)
+TAU_SYSTEM_SRC = $(SYSTEM_SRC)/tau.tgz
 
 PDT_PKG = pdt-$(PDT_VERSION).tar.gz
 PDT_URL = $(PDT_REPO)/$(PDT_PKG)
 PDT_SRC = $(BUILDDIR)/$(PDT_PKG)
-PDT_SYSTEM_SRC = $(SYSTEM_SRC)/$(PDT_PKG)
+PDT_SYSTEM_SRC = $(SYSTEM_SRC)/pdt.tgz
 
 CONDA_PKG = Miniconda2-$(CONDA_VERSION)-$(CONDA_OS)-$(CONDA_ARCH).sh
 CONDA_URL = $(CONDA_REPO)/$(CONDA_PKG)
@@ -175,11 +176,13 @@ CONDA_DEST = $(DESTDIR)/conda
 TAUCMDR = $(DESTDIR)/bin/tau
 PYTHON = $(CONDA_DEST)/bin/python
 
+
+
 .PHONY: all install clean
 
 .DEFAULT: all
 
-all: $(CONDA_SRC) $(TAU_SRC) $(PDT_SRC)
+all: $(CONDA_SRC)
 
 install: all $(TAUCMDR)
 	$(ECHO)$(TAUCMDR) --version
@@ -188,11 +191,11 @@ install: all $(TAUCMDR)
 	@echo "Rememember to add $(DESTDIR)/bin to your PATH"
 	@echo "-------------------------------------------------------------------------------"
 
-$(TAUCMDR): $(TAUCMDR_SRC) $(TAU_SYSTEM_SRC) $(PDT_SYSTEM_SRC)
+$(TAUCMDR): $(TAUCMDR_SRC)
 	$(ECHO)tar xvzf $(TAUCMDR_SRC) -C "$(DESTDIR)" --strip-components=1
+	$(ECHO)$(RM) $(addprefix $(DESTDIR)/,$(TAUCMDR_JUNK))
 	@echo "Compiling python files..."
 	$(ECHO)$(PYTHON) -m compileall $(DESTDIR) || true
-	$(ECHO)$(TAUCMDR) target create $(HOSTNAME) -@ system --tau=$(TAU_SYSTEM_SRC) --pdt=$(PDT_SYSTEM_SRC)
 	$(ECHO)touch $(TAUCMDR)
 
 $(TAUCMDR_SRC): $(PYTHON)
