@@ -193,7 +193,7 @@ class TestCase(unittest.TestCase):
             thread = threading.Thread(target=worker)
             tstart = time.time()
             thread.start()
-            self._result_stream.writeln('\nInitializing TAU and dependencies')
+            self._result_stream.write('\nInitializing TAU and dependencies')
             while thread.is_alive():
                 time.sleep(30)
                 self._result_stream.write('.')
