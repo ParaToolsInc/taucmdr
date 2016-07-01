@@ -70,9 +70,6 @@ KEYWORDS = ["TAU", "performance analysis", "profile", "profiling", "trace", "tra
 # Package homepage
 HOMEPAGE = "http://www.taucommander.com/"
 
-# URL to clone the package repo
-GIT_ORIGIN_URL = "https://github.com/ParaToolsInc/taucmdr.git"
-
 # PyPI classifiers
 CLASSIFIERS = [
     # How mature is this project? Common values are
@@ -120,6 +117,7 @@ if HAVE_SPHINX:
         """
         
         _custom_user_options = [('update-gh-pages', None, 'Commit documentation to gh-pages branch and push.'),
+                                ('gh-origin-url=', None, 'Git repo origin URL'),
                                 ('gh-user-name=', None, 'user.name in git config'),
                                 ('gh-user-email=', None, 'user.email in git config'),
                                 ('gh-commit-msg=', None, 'Commit message for gh-pages log')]
@@ -128,6 +126,7 @@ if HAVE_SPHINX:
         def initialize_options(self):
             BuildDoc.initialize_options(self)
             self.update_gh_pages = False
+            self.gh_origin_url = "git@github.com:ParaToolsInc/taucmdr.git"
             self.gh_user_name = None # Use github global conf
             self.gh_user_email = None # Use github global conf
             self.gh_commit_msg = "Updated documentation via build_sphinx"
@@ -141,7 +140,7 @@ if HAVE_SPHINX:
     
         def _clone_gh_pages(self):
             shutil.rmtree(self.builder_target_dir, ignore_errors=True)
-            cmd = ['git', 'clone', GIT_ORIGIN_URL, '-b', 'gh-pages', '--single-branch', self.builder_target_dir]
+            cmd = ['git', 'clone', self.gh_origin_url, '-q', '-b', 'gh-pages', '--single-branch', self.builder_target_dir]
             self._shell(cmd, cwd=self.build_dir)
             if self.gh_user_name:
                 self._shell(['git', 'config', 'user.name', self.gh_user_name])
@@ -150,8 +149,8 @@ if HAVE_SPHINX:
         
         def _push_gh_pages(self):
             self._shell(['git', 'add', '-A', '.'])
-            self._shell(['git', 'commit', '-m', self.gh_commit_msg])
-            self._shell(['git', 'push'])
+            self._shell(['git', 'commit', '-q', '-m', self.gh_commit_msg])
+            self._shell(['git', 'push', '-q'])
             
         def _copy_docs_source(self):
             copy_source_dir = os.path.join(self.build_dir, os.path.basename(self.source_dir))
