@@ -7,19 +7,35 @@
 #set -o nounset
 set -o verbose
 
-git config user.name "Travis-CI-bot"
-git config user.email "info@paratools.com"
+function dieInFlames {
+  echo "ERROR: $1"
+  exit 255
+}
 
-git remote -v
-git remote rm origin
-git remote add origin https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git
-git remote -v | sed 's#\(https://\)\(.*\)\(@github\.com/[^ ]*\)#\1SECRET\3#g'
+function configRepo {
+  git config user.name "Travis-CI-bot"
+  git config user.email "info@paratools.com"
 
-git fetch origin gh-pages > /dev/null 2>&1 && echo success || echo failure
-git branch -a -vvv || echo "git branch fails if on detatched head"
+  git remote -v
+  git remote rm origin
+  git remote add origin https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git
+  git remote -v | sed 's#\(https://\)\(.*\)\(@github\.com/[^ ]*\)#\1SECRET\3#g'
 
-export PUSH_FLAGS='--quiet --force'
-export CHECKOUT_FLAGS='--force'
-export HIDE_TOKEN='> /dev/null 2>&1'
-export COMMIT_MSG="Updated documentation on Travis-CI job $TRAVIS_JOB_NUMBER at commit $TRAVIS_COMMIT"
-make -C docs update-github-pages
+  git fetch origin gh-pages > /dev/null 2>&1 || dieInFlames "git fetch origin gh-pages"
+  git branch -a -vvv || echo "git branch fails if on detatched head"
+}
+
+function buildDocs {
+  python setup.py build_sphinx
+}
+
+function updateDocs {
+  git checkout --force gh-pages
+  tar -C build/sphinx/html -cf - . | tar xf -
+  git add -A .
+  git commit -m "Updated documentation on Travis-CI job $TRAVIS_JOB_NUMBER at commit $TRAVIS_COMMIT"
+  git push --quiet --force origin gh-pages > /dev/null 2>&1
+}
+
+configRepo && buildDocs && updateDocs
+

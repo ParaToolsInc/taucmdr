@@ -79,7 +79,12 @@ def update_version():
 
 
 class BuildSphinx(BuildDoc):
-
+    """Customize the build_sphinx command.
+    
+    Copy source files into the build directory to prevent generated files from mixing
+    with content files, run sphinx-apidoc to auto-document the "tau" package, then
+    proceed with normal build_sphinx behavior.
+    """
     def run(self):
         copy_source_dir = os.path.join(self.build_dir, os.path.basename(self.source_dir))
         if os.path.exists(copy_source_dir):
@@ -94,6 +99,7 @@ class BuildSphinx(BuildDoc):
                             '-o', self.source_dir,
                             package_source_dir])
         BuildDoc.run(self)
+
 
 setuptools.setup(
     name="taucmdr",
@@ -137,7 +143,7 @@ setuptools.setup(
         'Programming Language :: Python :: 2.7',
     ],
                  
-    # Commands
+    # Custom commands
     cmdclass={
         'build_sphinx': BuildSphinx,
     },
