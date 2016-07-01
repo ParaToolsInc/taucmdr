@@ -60,19 +60,23 @@ def get_terminal_size():
     Returns:
         tuple: (width, height) tuple giving the dimensions of the user's terminal window in characters.
     """
-    tuple_xy = _get_term_size_env()
-    if not tuple_xy:
+    default_width = 80
+    default_height = 25
+    dims = _get_term_size_env()
+    if not dims:
         current_os = platform.system()
         if current_os == 'Windows':
-            tuple_xy = _get_term_size_windows()
-            if not tuple_xy:
+            dims = _get_term_size_windows()
+            if not dims:
                 # for window's python in cygwin's xterm
-                tuple_xy = _get_term_size_tput()
+                dims = _get_term_size_tput()
         if current_os == 'Linux' or current_os == 'Darwin' or current_os.startswith('CYGWIN'):
-            tuple_xy = _get_term_size_posix()
-        if not tuple_xy:
-            tuple_xy = (80, 25)
-    return tuple_xy
+            dims = _get_term_size_posix()
+        if not dims:
+            dims = (default_width, default_height)
+    width = dims[0] if dims[0] >= 10 else default_width
+    height = dims[1] if dims[1] >= 1 else default_height
+    return width, height
 
 
 def _get_term_size_windows():
