@@ -1,0 +1,25 @@
+tau.cf.target package
+=====================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    tau.cf.target.tests
+
+Submodules
+----------
+
+.. toctree::
+
+   tau.cf.target.device
+   tau.cf.target.host
+
+Module contents
+---------------
+
+.. automodule:: tau.cf.target
+    :members:
+    :undoc-members:
+    :show-inheritance:

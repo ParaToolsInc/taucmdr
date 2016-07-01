@@ -1,0 +1,7 @@
+tau.model.measurement module
+============================
+
+.. automodule:: tau.model.measurement
+    :members:
+    :undoc-members:
+    :show-inheritance:

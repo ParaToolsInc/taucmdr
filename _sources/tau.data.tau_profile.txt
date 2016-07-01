@@ -1,0 +1,7 @@
+tau.data.tau_profile module
+===========================
+
+.. automodule:: tau.data.tau_profile
+    :members:
+    :undoc-members:
+    :show-inheritance:

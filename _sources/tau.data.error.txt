@@ -1,0 +1,7 @@
+tau.data.error module
+=====================
+
+.. automodule:: tau.data.error
+    :members:
+    :undoc-members:
+    :show-inheritance:

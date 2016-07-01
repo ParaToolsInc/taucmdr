@@ -1,0 +1,7 @@
+tau.model.trial module
+======================
+
+.. automodule:: tau.model.trial
+    :members:
+    :undoc-members:
+    :show-inheritance:

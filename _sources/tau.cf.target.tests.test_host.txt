@@ -1,0 +1,7 @@
+tau.cf.target.tests.test_host module
+====================================
+
+.. automodule:: tau.cf.target.tests.test_host
+    :members:
+    :undoc-members:
+    :show-inheritance:

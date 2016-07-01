@@ -1,0 +1,23 @@
+tau.model.tests package
+=======================
+
+Submodules
+----------
+
+.. toctree::
+
+   tau.model.tests.test_application
+   tau.model.tests.test_compiler
+   tau.model.tests.test_experiment
+   tau.model.tests.test_measurement
+   tau.model.tests.test_project
+   tau.model.tests.test_target
+   tau.model.tests.test_trial
+
+Module contents
+---------------
+
+.. automodule:: tau.model.tests
+    :members:
+    :undoc-members:
+    :show-inheritance:

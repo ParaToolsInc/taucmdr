@@ -1,0 +1,7 @@
+tau.cli.cli_view module
+=======================
+
+.. automodule:: tau.cli.cli_view
+    :members:
+    :undoc-members:
+    :show-inheritance:

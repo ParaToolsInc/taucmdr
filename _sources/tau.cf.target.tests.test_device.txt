@@ -1,0 +1,7 @@
+tau.cf.target.tests.test_device module
+======================================
+
+.. automodule:: tau.cf.target.tests.test_device
+    :members:
+    :undoc-members:
+    :show-inheritance:

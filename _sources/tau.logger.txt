@@ -1,0 +1,7 @@
+tau.logger module
+=================
+
+.. automodule:: tau.logger
+    :members:
+    :undoc-members:
+    :show-inheritance:

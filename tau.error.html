@@ -1,0 +1,191 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tau.error module &mdash; TAU Commander Developer Documentation</title>
+    
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1
+',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
+    <link rel="up" title="tau package" href="tau.html" />
+    <link rel="next" title="tau.logger module" href="tau.logger.html" />
+    <link rel="prev" title="tau.tests.test_util module" href="tau.tests.test_util.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="index.html">
+          <span>TAU Commander Developer Documentation</span></a></h1>
+        <h2 class="heading"><span>tau.error module</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="tau.tests.test_util.html">tau.tests.test_util module</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="tau.logger.html">tau.logger module</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="module-tau.error">
+<span id="tau-error-module"></span><h1>tau.error module<a class="headerlink" href="#module-tau.error" title="Permalink to this headline">¶</a></h1>
+<p>TAU Commander error handling.</p>
+<p>Only error base classes should be defined here.
+Error classes should be defined in their appropriate modules.</p>
+<dl class="exception">
+<dt id="tau.error.ConfigurationError">
+<em class="property">exception </em><code class="descclassname">tau.error.</code><code class="descname">ConfigurationError</code><span class="sig-paren">(</span><em>value</em>, <em>*hints</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/error.html#ConfigurationError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.error.ConfigurationError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tau.error.Error" title="tau.error.Error"><code class="xref py py-class docutils literal"><span class="pre">tau.error.Error</span></code></a></p>
+<p>Indicates that TAU Commander cannot succeed with the given parameters.</p>
+<p>This is most commonly caused by user error, e.g the user specifies measurement
+settings that are incompatible with the application.</p>
+<dl class="attribute">
+<dt id="tau.error.ConfigurationError.message_fmt">
+<code class="descname">message_fmt</code><em class="property"> = '%(value)s\n\n%(hints)s\nTAU cannot proceed with the given inputs.\nPlease check the selected configuration for errors or contact %(contact)s for assistance.'</em><a class="headerlink" href="#tau.error.ConfigurationError.message_fmt" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="tau.error.Error">
+<em class="property">exception </em><code class="descclassname">tau.error.</code><code class="descname">Error</code><span class="sig-paren">(</span><em>value</em>, <em>*hints</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/error.html#Error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.error.Error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/exceptions.html#exceptions.Exception" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">exceptions.Exception</span></code></a></p>
+<p>Base class for all errors in TAU Commander.</p>
+<dl class="attribute">
+<dt id="tau.error.Error.value">
+<code class="descname">value</code><a class="headerlink" href="#tau.error.Error.value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Some value attached to the error, typically a string but could be anything with a __str__ method.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.error.Error.hints">
+<code class="descname">hints</code><a class="headerlink" href="#tau.error.Error.hints" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>list</em> &#8211; String hints for the user to help resolve the error.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.error.Error.show_backtrace">
+<code class="descname">show_backtrace</code><a class="headerlink" href="#tau.error.Error.show_backtrace" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>bool</em> &#8211; Set to True to include a backtrace in the error message.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.error.Error.message_fmt">
+<code class="descname">message_fmt</code><a class="headerlink" href="#tau.error.Error.message_fmt" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em> &#8211; Format string for the error message.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.error.Error.handle">
+<code class="descname">handle</code><span class="sig-paren">(</span><em>etype</em>, <em>value</em>, <em>tb</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/error.html#Error.handle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.error.Error.handle" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.error.Error.message">
+<code class="descname">message</code><a class="headerlink" href="#tau.error.Error.message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">message_fmt</code><em class="property"> = &quot;An unexpected %(typename)s exception was raised:\n\n%(value)s\n\n%(backtrace)sThis is a bug in TAU Commander.\nPlease send '%(logfile)s' to %(contact)s for assistance.&quot;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">show_backtrace</code><em class="property"> = False</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="tau.error.InternalError">
+<em class="property">exception </em><code class="descclassname">tau.error.</code><code class="descname">InternalError</code><span class="sig-paren">(</span><em>value</em>, <em>*hints</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/error.html#InternalError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.error.InternalError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tau.error.Error" title="tau.error.Error"><code class="xref py py-class docutils literal"><span class="pre">tau.error.Error</span></code></a></p>
+<p>Indicates that an internal error has occurred, i.e. a bug in TAU.</p>
+<p>These are bad and really shouldn&#8217;t happen.</p>
+<dl class="attribute">
+<dt id="tau.error.InternalError.show_backtrace">
+<code class="descname">show_backtrace</code><em class="property"> = True</em><a class="headerlink" href="#tau.error.InternalError.show_backtrace" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="tau.error.ModelError">
+<em class="property">exception </em><code class="descclassname">tau.error.</code><code class="descname">ModelError</code><span class="sig-paren">(</span><em>model</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/error.html#ModelError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.error.ModelError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tau.error.InternalError" title="tau.error.InternalError"><code class="xref py py-class docutils literal"><span class="pre">tau.error.InternalError</span></code></a></p>
+<p>Indicates an error in model data or the model itself.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="tau.error.UniqueAttributeError">
+<em class="property">exception </em><code class="descclassname">tau.error.</code><code class="descname">UniqueAttributeError</code><span class="sig-paren">(</span><em>model</em>, <em>unique</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/error.html#UniqueAttributeError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.error.UniqueAttributeError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tau.error.ModelError" title="tau.error.ModelError"><code class="xref py py-class docutils literal"><span class="pre">tau.error.ModelError</span></code></a></p>
+<p>Indicates that duplicate values were given for a unique attribute.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.error.excepthook">
+<code class="descclassname">tau.error.</code><code class="descname">excepthook</code><span class="sig-paren">(</span><em>etype</em>, <em>value</em>, <em>tb</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/error.html#excepthook"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.error.excepthook" title="Permalink to this definition">¶</a></dt>
+<dd><p>Exception handler for any uncaught exception (except SystemExit).</p>
+<p>Replaces <a class="reference external" href="https://docs.python.org/library/sys.html#sys.excepthook" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">sys.excepthook</span></code></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>etype</strong> &#8211; Exception class.</li>
+<li><strong>value</strong> &#8211; Exception instance.</li>
+<li><strong>tb</strong> &#8211; Traceback object.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="tau.tests.test_util.html">tau.tests.test_util module</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="tau.logger.html">tau.logger module</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015 ParaTools, Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+    </div>
+  </body>
+</html>

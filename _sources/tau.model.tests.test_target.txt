@@ -1,0 +1,7 @@
+tau.model.tests.test_target module
+==================================
+
+.. automodule:: tau.model.tests.test_target
+    :members:
+    :undoc-members:
+    :show-inheritance:

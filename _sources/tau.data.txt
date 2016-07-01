@@ -1,0 +1,18 @@
+tau.data package
+================
+
+Submodules
+----------
+
+.. toctree::
+
+   tau.data.error
+   tau.data.tau_profile
+
+Module contents
+---------------
+
+.. automodule:: tau.data
+    :members:
+    :undoc-members:
+    :show-inheritance:

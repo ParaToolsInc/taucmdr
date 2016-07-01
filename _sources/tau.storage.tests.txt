@@ -1,0 +1,19 @@
+tau.storage.tests package
+=========================
+
+Submodules
+----------
+
+.. toctree::
+
+   tau.storage.tests.test_levels
+   tau.storage.tests.test_local_file
+   tau.storage.tests.test_project
+
+Module contents
+---------------
+
+.. automodule:: tau.storage.tests
+    :members:
+    :undoc-members:
+    :show-inheritance:

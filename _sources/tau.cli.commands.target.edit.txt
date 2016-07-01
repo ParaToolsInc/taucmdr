@@ -1,0 +1,7 @@
+tau.cli.commands.target.edit module
+===================================
+
+.. automodule:: tau.cli.commands.target.edit
+    :members:
+    :undoc-members:
+    :show-inheritance:

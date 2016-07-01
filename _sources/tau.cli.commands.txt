@@ -1,0 +1,34 @@
+tau.cli.commands package
+========================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    tau.cli.commands.application
+    tau.cli.commands.measurement
+    tau.cli.commands.project
+    tau.cli.commands.target
+    tau.cli.commands.tests
+    tau.cli.commands.trial
+
+Submodules
+----------
+
+.. toctree::
+
+   tau.cli.commands.__main__
+   tau.cli.commands.build
+   tau.cli.commands.dashboard
+   tau.cli.commands.help
+   tau.cli.commands.initialize
+   tau.cli.commands.select
+
+Module contents
+---------------
+
+.. automodule:: tau.cli.commands
+    :members:
+    :undoc-members:
+    :show-inheritance:

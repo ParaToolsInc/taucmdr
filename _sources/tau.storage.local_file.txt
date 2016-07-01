@@ -1,0 +1,7 @@
+tau.storage.local_file module
+=============================
+
+.. automodule:: tau.storage.local_file
+    :members:
+    :undoc-members:
+    :show-inheritance:

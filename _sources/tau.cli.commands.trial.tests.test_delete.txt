@@ -1,0 +1,7 @@
+tau.cli.commands.trial.tests.test_delete module
+===============================================
+
+.. automodule:: tau.cli.commands.trial.tests.test_delete
+    :members:
+    :undoc-members:
+    :show-inheritance:

@@ -1,0 +1,7 @@
+tau.model.target module
+=======================
+
+.. automodule:: tau.model.target
+    :members:
+    :undoc-members:
+    :show-inheritance:

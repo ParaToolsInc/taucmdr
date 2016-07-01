@@ -1,0 +1,142 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tau.cli.commands.project.tests.test_edit &mdash; TAU Commander Developer Documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../../_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../../',
+        VERSION:     '0.1
+',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../../../../_static/favicon.ico"/>
+    <link rel="top" title="TAU Commander Developer Documentation" href="../../../../../../index.html" />
+    <link rel="up" title="tau.cli" href="../../../../cli.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><img class="rightlogo" src="../../../../../../_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="../../../../../../index.html">
+          <span>TAU Commander Developer Documentation</span></a></h1>
+        <h2 class="heading"><span>tau.cli.commands.project.tests.test_edit</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        <a class="uplink" href="../../../../../../index.html">Contents</a>
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <h1>Source code for tau.cli.commands.project.tests.test_edit</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (c) 2016, ParaTools, Inc.</span>
+<span class="c1"># All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Redistribution and use in source and binary forms, with or without</span>
+<span class="c1"># modification, are permitted provided that the following conditions are met:</span>
+<span class="c1"># (1) Redistributions of source code must retain the above copyright notice,</span>
+<span class="c1">#     this list of conditions and the following disclaimer.</span>
+<span class="c1"># (2) Redistributions in binary form must reproduce the above copyright notice,</span>
+<span class="c1">#     this list of conditions and the following disclaimer in the documentation</span>
+<span class="c1">#     and/or other materials provided with the distribution.</span>
+<span class="c1"># (3) Neither the name of ParaTools, Inc. nor the names of its contributors may</span>
+<span class="c1">#     be used to endorse or promote products derived from this software without</span>
+<span class="c1">#     specific prior written permission.</span>
+<span class="c1">#</span>
+<span class="c1"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
+<span class="c1"># AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</span>
+<span class="c1"># IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE</span>
+<span class="c1"># DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE</span>
+<span class="c1"># FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL</span>
+<span class="c1"># DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR</span>
+<span class="c1"># SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER</span>
+<span class="c1"># CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,</span>
+<span class="c1"># OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE</span>
+<span class="c1"># OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</span>
+<span class="c1">#</span>
+<span class="sd">&quot;&quot;&quot;Test functions.</span>
+
+<span class="sd">Functions used for unit tests of edit.py.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">tests</span>
+<span class="kn">from</span> <span class="nn">tau.cli.commands.project</span> <span class="kn">import</span> <span class="n">edit</span>
+<span class="kn">from</span> <span class="nn">tau.model.project</span> <span class="kn">import</span> <span class="n">Project</span>
+
+<div class="viewcode-block" id="EditTest"><a class="viewcode-back" href="../../../../../../tau.cli.commands.project.tests.test_edit.html#tau.cli.commands.project.tests.test_edit.EditTest">[docs]</a><span class="k">class</span> <span class="nc">EditTest</span><span class="p">(</span><span class="n">tests</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Tests for :any:`project.edit`.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="EditTest.test_rename"><a class="viewcode-back" href="../../../../../../tau.cli.commands.project.tests.test_edit.html#tau.cli.commands.project.tests.test_edit.EditTest.test_rename">[docs]</a>    <span class="k">def</span> <span class="nf">test_rename</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">(</span><span class="n">project_name</span><span class="o">=</span><span class="s1">&#39;proj1&#39;</span><span class="p">)</span>
+        <span class="n">argv</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;proj1&#39;</span><span class="p">,</span> <span class="s1">&#39;--new-name&#39;</span><span class="p">,</span> <span class="s1">&#39;proj2&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">edit</span><span class="o">.</span><span class="n">COMMAND</span><span class="p">,</span> <span class="n">argv</span><span class="p">)</span>
+        <span class="n">proj_ctrl</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">controller</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNone</span><span class="p">(</span><span class="n">proj_ctrl</span><span class="o">.</span><span class="n">one</span><span class="p">({</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;proj1&#39;</span><span class="p">}))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">proj_ctrl</span><span class="o">.</span><span class="n">one</span><span class="p">({</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;proj2&#39;</span><span class="p">}))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exec_command</span><span class="p">(</span><span class="n">edit</span><span class="o">.</span><span class="n">COMMAND</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;proj2&#39;</span><span class="p">,</span> <span class="s1">&#39;--new-name&#39;</span><span class="p">,</span> <span class="s1">&#39;proj1&#39;</span><span class="p">])</span></div>
+    
+<div class="viewcode-block" id="EditTest.test_set_tau_force_options"><a class="viewcode-back" href="../../../../../../tau.cli.commands.project.tests.test_edit.html#tau.cli.commands.project.tests.test_edit.EditTest.test_set_tau_force_options">[docs]</a>    <span class="k">def</span> <span class="nf">test_set_tau_force_options</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">(</span><span class="n">project_name</span><span class="o">=</span><span class="s1">&#39;proj1&#39;</span><span class="p">)</span>
+        <span class="n">proj_ctrl</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">controller</span><span class="p">()</span>
+        <span class="c1"># Check that &#39;force-tau-options&#39; is unset in the new project configuration</span>
+        <span class="n">proj1</span> <span class="o">=</span> <span class="n">proj_ctrl</span><span class="o">.</span><span class="n">one</span><span class="p">({</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;proj1&#39;</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="s1">&#39;force-tau-options&#39;</span> <span class="ow">in</span> <span class="n">proj1</span><span class="p">)</span></div>
+        <span class="c1"># Test --force-tau-options</span>
+        <span class="c1">#tau_options = [&#39;-optVerbose&#39;, &#39;-optNoCompInst&#39;]</span>
+        <span class="c1">#argv = [&#39;proj1&#39;, &#39;--force-tau-options&#39;] + tau_options</span>
+        <span class="c1">#self.assertCommandReturnValue(0, edit.COMMAND, argv)</span>
+        <span class="c1"># Check that &#39;force-tau-options&#39; is now a list containing the expected options in the project record</span>
+        <span class="c1">#proj1 = proj_ctrl.one({&#39;name&#39;: &#39;proj1&#39;})</span>
+        <span class="c1">#self.assertIsNotNone(proj1)</span>
+        <span class="c1">#self.assertListEqual(proj1[&#39;force-tau-options&#39;], tau_options)</span>
+        
+<div class="viewcode-block" id="EditTest.test_wrongname"><a class="viewcode-back" href="../../../../../../tau.cli.commands.project.tests.test_edit.html#tau.cli.commands.project.tests.test_edit.EditTest.test_wrongname">[docs]</a>    <span class="k">def</span> <span class="nf">test_wrongname</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">(</span><span class="n">project_name</span><span class="o">=</span><span class="s1">&#39;proj1&#39;</span><span class="p">)</span>
+        <span class="n">argv</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;proj2&#39;</span><span class="p">,</span> <span class="s1">&#39;--new-name&#39;</span><span class="p">,</span> <span class="s1">&#39;proj3&#39;</span><span class="p">]</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exec_command</span><span class="p">(</span><span class="n">edit</span><span class="o">.</span><span class="n">COMMAND</span><span class="p">,</span> <span class="n">argv</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;project edit &lt;project_name&gt; [arguments]&#39;</span><span class="p">,</span> <span class="n">stderr</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;project edit: error&#39;</span><span class="p">,</span> <span class="n">stderr</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;is not a project name.&#39;</span><span class="p">,</span> <span class="n">stderr</span><span class="p">)</span></div>
+        
+<div class="viewcode-block" id="EditTest.test_wrongarg"><a class="viewcode-back" href="../../../../../../tau.cli.commands.project.tests.test_edit.html#tau.cli.commands.project.tests.test_edit.EditTest.test_wrongarg">[docs]</a>    <span class="k">def</span> <span class="nf">test_wrongarg</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">(</span><span class="n">project_name</span><span class="o">=</span><span class="s1">&#39;proj1&#39;</span><span class="p">)</span>
+        <span class="n">argv</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;app1&#39;</span><span class="p">,</span> <span class="s1">&#39;--arg&#39;</span><span class="p">,</span> <span class="s1">&#39;arg1&#39;</span><span class="p">]</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exec_command</span><span class="p">(</span><span class="n">edit</span><span class="o">.</span><span class="n">COMMAND</span><span class="p">,</span> <span class="n">argv</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;project edit &lt;project_name&gt; [arguments]&#39;</span><span class="p">,</span> <span class="n">stderr</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;project edit: error: unrecognized arguments: --arg arg1&#39;</span><span class="p">,</span> <span class="n">stderr</span><span class="p">)</span></div></div>
+</pre></div>
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        <a class="uplink" href="../../../../../../index.html">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015 ParaTools, Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+    </div>
+  </body>
+</html>

@@ -1,11 +1,102 @@
-.system
+# Only on gh-pages branch
 packages
 commander
 examples
-docs/source
-docs/Makefile
+docs
 *~Stashed*
 
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+a.out
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+.eggs/
+
+# Eclipse project files
 .project
-.pydevproject
-.settings
+.cproject
+*.pydevproject
+.metadata
+.gradle
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.settings/
+.loadpath
+.buildpath
+.externalToolBuilders/
+*.launch
+.target
+.texlipse
+.ptp-sync
+.ptp-sync-folder
+
+# TAU Commander registry files
+registry
+installed
+.system
+.tau
+
+# TAU intermediate compilation files
+*.inst.*
+*.pdb
+
+# TAU profiles / traces
+profile.*
+tauprofile.xml
+*.slog2
+*.trc
+*.edf
+*.ppk
+*.zip
+*.tar.*
+*.tgz
+
+# Misc
+*~
+.DS_Store
+benchmarks
+*.cobaltlog
+*.output
+*.error
+*.
+
+# Python coverage data
+.coverage
+
+# Python packaging files
+# general things to ignore
+build/
+dist/
+*.egg-info/
+*.egg
+*.py[cod]
+__pycache__/
+*.so
+*~
+.tox
+.cache
+

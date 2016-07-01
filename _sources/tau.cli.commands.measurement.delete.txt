@@ -1,0 +1,7 @@
+tau.cli.commands.measurement.delete module
+==========================================
+
+.. automodule:: tau.cli.commands.measurement.delete
+    :members:
+    :undoc-members:
+    :show-inheritance:

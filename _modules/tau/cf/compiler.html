@@ -1,0 +1,376 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tau.cf.compiler &mdash; TAU Commander Developer Documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1
+',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+    <link rel="top" title="TAU Commander Developer Documentation" href="../../../index.html" />
+    <link rel="up" title="tau.cf" href="../cf.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><img class="rightlogo" src="../../../_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="../../../index.html">
+          <span>TAU Commander Developer Documentation</span></a></h1>
+        <h2 class="heading"><span>tau.cf.compiler</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        <a class="uplink" href="../../../index.html">Contents</a>
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <h1>Source code for tau.cf.compiler</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (c) 2015, ParaTools, Inc.</span>
+<span class="c1"># All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Redistribution and use in source and binary forms, with or without</span>
+<span class="c1"># modification, are permitted provided that the following conditions are met:</span>
+<span class="c1"># (1) Redistributions of source code must retain the above copyright notice,</span>
+<span class="c1">#     this list of conditions and the following disclaimer.</span>
+<span class="c1"># (2) Redistributions in binary form must reproduce the above copyright notice,</span>
+<span class="c1">#     this list of conditions and the following disclaimer in the documentation</span>
+<span class="c1">#     and/or other materials provided with the distribution.</span>
+<span class="c1"># (3) Neither the name of ParaTools, Inc. nor the names of its contributors may</span>
+<span class="c1">#     be used to endorse or promote products derived from this software without</span>
+<span class="c1">#     specific prior written permission.</span>
+<span class="c1">#</span>
+<span class="c1"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
+<span class="c1"># AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</span>
+<span class="c1"># IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE</span>
+<span class="c1"># DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE</span>
+<span class="c1"># FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL</span>
+<span class="c1"># DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR</span>
+<span class="c1"># SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER</span>
+<span class="c1"># CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,</span>
+<span class="c1"># OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE</span>
+<span class="c1"># OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</span>
+<span class="c1">#</span>
+<span class="sd">&quot;&quot;&quot;TAU compiler knowledgebase.</span>
+
+<span class="sd">TAU Commander uses this knowledgebase to try to work out what kind of compiler</span>
+<span class="sd">the user is using to build their code.  We can get away with this because TAU </span>
+<span class="sd">itself will take care of most of the version-specific details if only we get </span>
+<span class="sd">the configuration line correct.</span>
+
+<span class="sd">TAU depends very strongly on compiler characteristics. Each TAU configuration</span>
+<span class="sd">is only valid for a single compiler, TAU&#39;s feature set changes depending on compiler</span>
+<span class="sd">family and version, TAU&#39;s configure script is easily confused by compilers with</span>
+<span class="sd">strange names or unusual installation paths, etc.  In most cases, TAU doesn&#39;t even </span>
+<span class="sd">try to detect the compiler and trusts the user to specify the right &quot;magic words&quot; </span>
+<span class="sd">at configuration. Worse, TAU sometimes does probe the compiler to discover things</span>
+<span class="sd">like MPI headers, except it does such a poor job that many time we get the wrong</span>
+<span class="sd">answer or simply cause the configure script to fail entirely. This has been a major</span>
+<span class="sd">painpoints for TAU users.</span>
+
+<span class="sd">Unfortunately, compiler detection is very hard.  Projects like `SciPy`_ that depend </span>
+<span class="sd">on a compiler&#39;s stdout stream for compiler detection have more or less failed in this</span>
+<span class="sd">since compiler messages are exceptionally difficult to parse.  `CMake`_ does a good</span>
+<span class="sd">job by invoking the compiler command and parsing strings out of a compiled object to</span>
+<span class="sd">detect compiler characteristcs, but that approach is complex and still breaks easily.</span>
+
+<span class="sd">The TAU Commander compiler knowledgebase associates a compiler command (`icc`)</span>
+<span class="sd">with characteristics like family (`Intel`) and role (`CC`).  Any compiler commands</span>
+<span class="sd">intercepted by TAU Commander are matched against the database to discover their</span>
+<span class="sd">characteristics, hence we do not need to invoke the compiler to identify it.</span>
+
+<span class="sd">.. _SciPy: http://www.scipy.org/</span>
+<span class="sd">.. _CMake: http://www.cmake.org/</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">tau.cf</span> <span class="kn">import</span> <span class="n">TrackedInstance</span><span class="p">,</span> <span class="n">KeyedRecord</span>
+<span class="kn">from</span> <span class="nn">tau.error</span> <span class="kn">import</span> <span class="n">InternalError</span> 
+
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="CompilerRole"><a class="viewcode-back" href="../../../tau.cf.compiler.html#tau.cf.compiler.CompilerRole">[docs]</a><span class="k">class</span> <span class="nc">CompilerRole</span><span class="p">(</span><span class="n">KeyedRecord</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Information about a compiler&#39;s role.</span>
+<span class="sd">    </span>
+<span class="sd">    A compiler role identifies how the compiler is used in the build process. All compilers</span>
+<span class="sd">    play at least one *role* in their compiler family.  Many compilers can play multiple </span>
+<span class="sd">    roles, e.g. icpc can be a C++ compiler in the CXX role, a C compiler in the CC role, </span>
+<span class="sd">    or even a linker.  TAU Commander must identify a compiler&#39;s role so it can configure TAU.</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes:</span>
+<span class="sd">        keyword (str): Name of the compiler&#39;s role, e.g. &#39;CXX&#39;.</span>
+<span class="sd">        language (str): Name of the programming language corresponding to the compiler role, e.g. &#39;C++&#39;.</span>
+<span class="sd">        required (bool): True if this role must be filled to compile TAU, False otherwise.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">__key__</span> <span class="o">=</span> <span class="s1">&#39;keyword&#39;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keyword</span><span class="p">,</span> <span class="n">language</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">keyword</span> <span class="o">=</span> <span class="n">keyword</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">language</span> <span class="o">=</span> <span class="n">language</span>
+        <span class="c1"># FIXME: Required should move to software.tau_installation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">required</span> <span class="o">=</span> <span class="n">required</span>
+
+    <span class="c1"># FIXME: Required should move to software.tau_installation</span>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="CompilerRole.tau_required"><a class="viewcode-back" href="../../../tau.cf.compiler.html#tau.cf.compiler.CompilerRole.tau_required">[docs]</a>    <span class="k">def</span> <span class="nf">tau_required</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate over roles that must be filled to get TAU to compile.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">role</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">role</span><span class="o">.</span><span class="n">required</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">role</span></div></div>
+
+
+<div class="viewcode-block" id="CompilerInfo"><a class="viewcode-back" href="../../../tau.cf.compiler.html#tau.cf.compiler.CompilerInfo">[docs]</a><span class="k">class</span> <span class="nc">CompilerInfo</span><span class="p">(</span><span class="n">TrackedInstance</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Information about a compiler.</span>
+<span class="sd">    </span>
+<span class="sd">    A compiler&#39;s basic information includes it&#39;s family (e.g. `Intel`) and role (e.g. CXX).</span>
+<span class="sd">    The compiler might not be installed.  </span>
+<span class="sd">    </span>
+<span class="sd">    Attributes:</span>
+<span class="sd">        command (str): Command without path or arguments, e.g. &#39;icpc&#39;</span>
+<span class="sd">        family (CompilerFamily): The family this compiler belongs to.</span>
+<span class="sd">        role (CompilerRole): This compiler&#39;s *primary* role in the family.</span>
+<span class="sd">        short_descr (str): A short description for command line help.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="n">family</span><span class="p">,</span> <span class="n">role</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">command</span> <span class="o">=</span> <span class="n">command</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">family</span> <span class="o">=</span> <span class="n">family</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">role</span> <span class="o">=</span> <span class="n">role</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">short_descr</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> compiler&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">family</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">role</span><span class="o">.</span><span class="n">language</span><span class="p">)</span>
+        
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="CompilerInfo.find"><a class="viewcode-back" href="../../../tau.cf.compiler.html#tau.cf.compiler.CompilerInfo.find">[docs]</a>    <span class="k">def</span> <span class="nf">find</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">family</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Find CompilerInfo instances that matches the given command and/or family and/or role.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            command (str): A compiler command without path.</span>
+<span class="sd">            family (CompilerFamily): Compiler family to search for.</span>
+<span class="sd">            role (CompilerRole): Compiler role to search for.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: CompilerInfo instances matching given compiler information.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># pylint: disable=too-many-return-statements</span>
+        <span class="k">assert</span> <span class="n">command</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">family</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">family</span><span class="p">,</span> <span class="n">CompilerFamily</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">role</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">role</span><span class="p">,</span> <span class="n">CompilerRole</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">command</span> <span class="ow">and</span> <span class="n">family</span> <span class="ow">and</span> <span class="n">role</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">info</span> <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">family</span><span class="o">.</span><span class="n">members</span><span class="p">[</span><span class="n">role</span><span class="p">]</span> <span class="k">if</span> <span class="n">info</span><span class="o">.</span><span class="n">command</span> <span class="o">==</span> <span class="n">command</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">command</span> <span class="ow">and</span> <span class="n">family</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">info</span> <span class="k">for</span> <span class="n">info_list</span> <span class="ow">in</span> <span class="n">family</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">itervalues</span><span class="p">()</span> <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">info_list</span> <span class="k">if</span> <span class="n">info</span><span class="o">.</span><span class="n">command</span> <span class="o">==</span> <span class="n">command</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">command</span> <span class="ow">and</span> <span class="n">role</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">info</span> <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="k">if</span> <span class="n">info</span><span class="o">.</span><span class="n">role</span> <span class="ow">is</span> <span class="n">role</span> <span class="ow">and</span> <span class="n">info</span><span class="o">.</span><span class="n">command</span> <span class="o">==</span> <span class="n">command</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">family</span> <span class="ow">and</span> <span class="n">role</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">family</span><span class="o">.</span><span class="n">members</span><span class="p">[</span><span class="n">role</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">command</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">info</span> <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="k">if</span> <span class="n">info</span><span class="o">.</span><span class="n">command</span> <span class="o">==</span> <span class="n">command</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">family</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">info</span> <span class="k">for</span> <span class="n">info_list</span> <span class="ow">in</span> <span class="n">family</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">itervalues</span><span class="p">()</span> <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">info_list</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">role</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">info</span> <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="k">if</span> <span class="n">info</span><span class="o">.</span><span class="n">role</span> <span class="ow">is</span> <span class="n">role</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span></div></div>
+    
+
+<div class="viewcode-block" id="CompilerFamily"><a class="viewcode-back" href="../../../tau.cf.compiler.html#tau.cf.compiler.CompilerFamily">[docs]</a><span class="k">class</span> <span class="nc">CompilerFamily</span><span class="p">(</span><span class="n">KeyedRecord</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Information about a compiler family.</span>
+<span class="sd">    </span>
+<span class="sd">    A compiler&#39;s family creates associations between different compiler commands</span>
+<span class="sd">    and assigns compilers to roles.  All compiler commands within a family accept</span>
+<span class="sd">    similar arguments, and produce compatible object files.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        name (str): Family name, e.g. &quot;Intel&quot;.</span>
+<span class="sd">        family_regex (str): Regular expression identifying compiler family in compiler version string.</span>
+<span class="sd">        version_flags (list): Command line flags that show the compiler version, e.g. &#39;--version&#39;.</span>
+<span class="sd">        include_path_flags (list): Command line flags that add a directory to the compiler&#39;s include path, e.g. &#39;-I&#39;. </span>
+<span class="sd">        library_path_flags (list): Command line flags that add a directory to the compiler&#39;s library path, e.g. &#39;-L&#39;.</span>
+<span class="sd">        link_library_flags (list): Command line flags that link a library, e.g. &#39;-l&#39;.</span>
+<span class="sd">        show_wrapper_flags (list): Command line flags that show the wrapped compiler&#39;s command line, e.g. &#39;-show&#39;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">__key__</span> <span class="o">=</span> <span class="s1">&#39;name&#39;</span>
+    
+    <span class="n">_probe_cache</span> <span class="o">=</span> <span class="p">{}</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span>
+                 <span class="n">version_flags</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">include_path_flags</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> 
+                 <span class="n">library_path_flags</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> 
+                 <span class="n">link_library_flags</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">show_wrapper_flags</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">family_regex</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">family_regex</span> <span class="o">=</span> <span class="n">family_regex</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">version_flags</span> <span class="o">=</span> <span class="n">version_flags</span> <span class="ow">or</span> <span class="p">[</span><span class="s1">&#39;--version&#39;</span><span class="p">,</span> <span class="s1">&#39;-E&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">include_path_flags</span> <span class="o">=</span> <span class="n">include_path_flags</span> <span class="ow">or</span> <span class="p">[</span><span class="s1">&#39;-I&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">library_path_flags</span> <span class="o">=</span> <span class="n">library_path_flags</span> <span class="ow">or</span> <span class="p">[</span><span class="s1">&#39;-L&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">link_library_flags</span> <span class="o">=</span> <span class="n">link_library_flags</span> <span class="ow">or</span> <span class="p">[</span><span class="s1">&#39;-l&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">show_wrapper_flags</span> <span class="o">=</span> <span class="n">show_wrapper_flags</span> <span class="ow">or</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">members</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="CompilerFamily.all"><a class="viewcode-back" href="../../../tau.cf.compiler.html#tau.cf.compiler.CompilerFamily.all">[docs]</a>    <span class="k">def</span> <span class="nf">all</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate over all compiler families.</span>
+<span class="sd">        </span>
+<span class="sd">        First value yielded is the host&#39;s preferred compiler family.</span>
+<span class="sd">        Subsequent values can be in any order.</span>
+<span class="sd">        </span>
+<span class="sd">        Yields:</span>
+<span class="sd">           A CompilerFamily object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">tau.cf.target</span> <span class="kn">import</span> <span class="n">host</span>
+        <span class="n">preferred</span> <span class="o">=</span> <span class="n">host</span><span class="o">.</span><span class="n">preferred_compilers</span><span class="p">()</span>
+        <span class="k">yield</span> <span class="n">preferred</span>
+        <span class="c1"># Settle down pylint... the __instances__ member is created by the metaclass</span>
+        <span class="c1"># pylint: disable=no-member</span>
+        <span class="k">for</span> <span class="n">instance</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">__instances__</span><span class="o">.</span><span class="n">itervalues</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">instance</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">preferred</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">instance</span></div>
+                
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="CompilerFamily.family_names"><a class="viewcode-back" href="../../../tau.cf.compiler.html#tau.cf.compiler.CompilerFamily.family_names">[docs]</a>    <span class="k">def</span> <span class="nf">family_names</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return an alphabetical list of all known compiler family names.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">sorted</span><span class="p">([</span><span class="n">inst</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">inst</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">all</span><span class="p">()])</span></div>
+    
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="CompilerFamily.probe"><a class="viewcode-back" href="../../../tau.cf.compiler.html#tau.cf.compiler.CompilerFamily.probe">[docs]</a>    <span class="k">def</span> <span class="nf">probe</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">absolute_path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        TODO: Docs</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">_probe_cache</span><span class="p">[</span><span class="n">absolute_path</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="n">last_version_flags</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">for</span> <span class="n">family</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">family</span><span class="o">.</span><span class="n">family_regex</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">family</span><span class="o">.</span><span class="n">version_flags</span> <span class="o">!=</span> <span class="n">last_version_flags</span><span class="p">:</span>
+                    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Probing compiler &#39;</span><span class="si">%s</span><span class="s2">&#39; to discover compiler family&quot;</span><span class="p">,</span> <span class="n">absolute_path</span><span class="p">)</span>
+                    <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">absolute_path</span><span class="p">]</span> <span class="o">+</span> <span class="n">family</span><span class="o">.</span><span class="n">version_flags</span>
+                    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Creating subprocess: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">stdout</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">STDOUT</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">CalledProcessError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> failed with return code </span><span class="si">%d</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">err</span><span class="o">.</span><span class="n">returncode</span><span class="p">,</span> <span class="n">err</span><span class="o">.</span><span class="n">output</span><span class="p">)</span>
+                        <span class="k">continue</span>
+                    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">stdout</span><span class="p">)</span>
+                    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> returned 0&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)</span>
+                    <span class="n">last_version_flags</span> <span class="o">=</span> <span class="n">family</span><span class="o">.</span><span class="n">version_flags</span>
+                <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">family</span><span class="o">.</span><span class="n">family_regex</span><span class="p">,</span> <span class="n">stdout</span><span class="p">):</span>
+                    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;&#39;</span><span class="si">%s</span><span class="s2">&#39; is a </span><span class="si">%s</span><span class="s2"> compiler&quot;</span><span class="p">,</span> <span class="n">absolute_path</span><span class="p">,</span> <span class="n">family</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                    <span class="n">cls</span><span class="o">.</span><span class="n">_probe_cache</span><span class="p">[</span><span class="n">absolute_path</span><span class="p">]</span> <span class="o">=</span> <span class="n">family</span>
+                    <span class="k">return</span> <span class="n">family</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;&#39;</span><span class="si">%s</span><span class="s2">&#39; is not a </span><span class="si">%s</span><span class="s2"> compiler&quot;</span><span class="p">,</span> <span class="n">absolute_path</span><span class="p">,</span> <span class="n">family</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">_probe_cache</span><span class="p">[</span><span class="n">absolute_path</span><span class="p">]</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">return</span> <span class="bp">None</span></div>
+
+<div class="viewcode-block" id="CompilerFamily.add"><a class="viewcode-back" href="../../../tau.cf.compiler.html#tau.cf.compiler.CompilerFamily.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">role</span><span class="p">,</span> <span class="o">*</span><span class="n">commands</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Register compiler commands in the given role.</span>
+<span class="sd">        </span>
+<span class="sd">        Commands should be ordered by preference.  For example, if we prefer to build</span>
+<span class="sd">        C++ codes with &quot;c++&quot; instead of &quot;CC&quot; so that case-insensitive file systems</span>
+<span class="sd">        (looking at you OS X) don&#39;t try to use a C compiler for C++ codes::</span>
+<span class="sd">        </span>
+<span class="sd">            family.add(CXX_ROLE, &#39;c++&#39;, &#39;CC&#39;)</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            role (CompilerRole) Role these commands fill in the family.</span>
+<span class="sd">            *commands: Command strings without arguments.</span>
+<span class="sd">        &quot;&quot;&quot;</span> 
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">role</span><span class="p">,</span> <span class="n">CompilerRole</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">command</span> <span class="ow">in</span> <span class="n">commands</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">)</span>
+            <span class="n">info</span> <span class="o">=</span> <span class="n">CompilerInfo</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">role</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">role</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">info</span><span class="p">)</span></div></div>
+
+
+<span class="n">CC_ROLE</span> <span class="o">=</span> <span class="n">CompilerRole</span><span class="p">(</span><span class="s1">&#39;CC&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+<span class="n">CXX_ROLE</span> <span class="o">=</span> <span class="n">CompilerRole</span><span class="p">(</span><span class="s1">&#39;CXX&#39;</span><span class="p">,</span> <span class="s1">&#39;C++&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+<span class="n">FC_ROLE</span> <span class="o">=</span> <span class="n">CompilerRole</span><span class="p">(</span><span class="s1">&#39;FC&#39;</span><span class="p">,</span> <span class="s1">&#39;Fortran&#39;</span><span class="p">)</span>
+<span class="n">UPC_ROLE</span> <span class="o">=</span> <span class="n">CompilerRole</span><span class="p">(</span><span class="s1">&#39;UPC&#39;</span><span class="p">,</span> <span class="s1">&#39;Universal Parallel C&#39;</span><span class="p">)</span>
+
+<span class="n">SYSTEM_COMPILERS</span> <span class="o">=</span> <span class="n">CompilerFamily</span><span class="p">(</span><span class="s1">&#39;System&#39;</span><span class="p">)</span>
+<span class="n">SYSTEM_COMPILERS</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">CC_ROLE</span><span class="p">,</span> <span class="s1">&#39;cc&#39;</span><span class="p">)</span>
+<span class="n">SYSTEM_COMPILERS</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">CXX_ROLE</span><span class="p">,</span> <span class="s1">&#39;c++&#39;</span><span class="p">,</span> <span class="s1">&#39;cxx&#39;</span><span class="p">,</span> <span class="s1">&#39;CC&#39;</span><span class="p">)</span>
+<span class="n">SYSTEM_COMPILERS</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">FC_ROLE</span><span class="p">,</span> <span class="s1">&#39;ftn&#39;</span><span class="p">,</span> <span class="s1">&#39;f90&#39;</span><span class="p">,</span> <span class="s1">&#39;f77&#39;</span><span class="p">)</span>
+<span class="n">SYSTEM_COMPILERS</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">UPC_ROLE</span><span class="p">,</span> <span class="s1">&#39;upc&#39;</span><span class="p">)</span>
+
+<span class="n">GNU_COMPILERS</span> <span class="o">=</span> <span class="n">CompilerFamily</span><span class="p">(</span><span class="s1">&#39;GNU&#39;</span><span class="p">,</span> <span class="n">family_regex</span><span class="o">=</span><span class="s1">r&#39;Free Software Foundation, Inc&#39;</span><span class="p">)</span>
+<span class="n">GNU_COMPILERS</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">CC_ROLE</span><span class="p">,</span> <span class="s1">&#39;gcc&#39;</span><span class="p">)</span>
+<span class="n">GNU_COMPILERS</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">CXX_ROLE</span><span class="p">,</span> <span class="s1">&#39;g++&#39;</span><span class="p">)</span>
+<span class="n">GNU_COMPILERS</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">FC_ROLE</span><span class="p">,</span> <span class="s1">&#39;gfortran&#39;</span><span class="p">)</span>
+<span class="n">GNU_COMPILERS</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">UPC_ROLE</span><span class="p">,</span> <span class="s1">&#39;gupc&#39;</span><span class="p">)</span>
+
+<span class="n">INTEL_COMPILERS</span> <span class="o">=</span> <span class="n">CompilerFamily</span><span class="p">(</span><span class="s1">&#39;Intel&#39;</span><span class="p">,</span> <span class="n">family_regex</span><span class="o">=</span><span class="s1">r&#39;Intel Corporation&#39;</span><span class="p">)</span>
+<span class="n">INTEL_COMPILERS</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">CC_ROLE</span><span class="p">,</span> <span class="s1">&#39;icc&#39;</span><span class="p">)</span>
+<span class="n">INTEL_COMPILERS</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">CXX_ROLE</span><span class="p">,</span> <span class="s1">&#39;icpc&#39;</span><span class="p">)</span>
+<span class="n">INTEL_COMPILERS</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">FC_ROLE</span><span class="p">,</span> <span class="s1">&#39;ifort&#39;</span><span class="p">)</span>
+
+<span class="n">PGI_COMPILERS</span> <span class="o">=</span> <span class="n">CompilerFamily</span><span class="p">(</span><span class="s1">&#39;PGI&#39;</span><span class="p">,</span> <span class="n">family_regex</span><span class="o">=</span><span class="s1">r&#39;The Portland Group&#39;</span><span class="p">)</span>
+<span class="n">PGI_COMPILERS</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">CC_ROLE</span><span class="p">,</span> <span class="s1">&#39;pgcc&#39;</span><span class="p">)</span>
+<span class="n">PGI_COMPILERS</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">CXX_ROLE</span><span class="p">,</span> <span class="s1">&#39;pgc++&#39;</span><span class="p">,</span> <span class="s1">&#39;pgcxx&#39;</span><span class="p">,</span> <span class="s1">&#39;pgCC&#39;</span><span class="p">)</span>
+<span class="n">PGI_COMPILERS</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">FC_ROLE</span><span class="p">,</span> <span class="s1">&#39;pgf90&#39;</span><span class="p">,</span> <span class="s1">&#39;pgf77&#39;</span><span class="p">)</span>
+
+<span class="n">IBM_COMPILERS</span> <span class="o">=</span> <span class="n">CompilerFamily</span><span class="p">(</span><span class="s1">&#39;IBM&#39;</span><span class="p">)</span>
+<span class="n">IBM_COMPILERS</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">CC_ROLE</span><span class="p">,</span> <span class="s1">&#39;xlc&#39;</span><span class="p">)</span>
+<span class="n">IBM_COMPILERS</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">CXX_ROLE</span><span class="p">,</span> <span class="s1">&#39;xlc++&#39;</span><span class="p">,</span> <span class="s1">&#39;xlC&#39;</span><span class="p">)</span>
+<span class="n">IBM_COMPILERS</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">FC_ROLE</span><span class="p">,</span> <span class="s1">&#39;xlf&#39;</span><span class="p">)</span>
+
+<span class="n">IBM_BG_COMPILERS</span> <span class="o">=</span> <span class="n">CompilerFamily</span><span class="p">(</span><span class="s1">&#39;BlueGene&#39;</span><span class="p">)</span>
+<span class="n">IBM_BG_COMPILERS</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">CC_ROLE</span><span class="p">,</span> <span class="s1">&#39;bgxlc&#39;</span><span class="p">,</span> <span class="s1">&#39;bgxlc_r&#39;</span><span class="p">,</span> <span class="s1">&#39;bgcc&#39;</span><span class="p">,</span> <span class="s1">&#39;bgcc_r&#39;</span><span class="p">,</span> <span class="s1">&#39;bgc89&#39;</span><span class="p">,</span> <span class="s1">&#39;bgc89_r&#39;</span><span class="p">,</span> <span class="s1">&#39;bgc99&#39;</span><span class="p">,</span> <span class="s1">&#39;bgc99_r&#39;</span><span class="p">)</span>
+<span class="n">IBM_BG_COMPILERS</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">CXX_ROLE</span><span class="p">,</span> <span class="s1">&#39;bgxlc++&#39;</span><span class="p">,</span> <span class="s1">&#39;bgxlc++_r&#39;</span><span class="p">,</span> <span class="s1">&#39;bgxlC&#39;</span><span class="p">,</span> <span class="s1">&#39;bgxlC_r&#39;</span><span class="p">)</span>
+<span class="n">IBM_BG_COMPILERS</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">FC_ROLE</span><span class="p">,</span> <span class="s1">&#39;bgxlf&#39;</span><span class="p">,</span> <span class="s1">&#39;bgxlf_r&#39;</span><span class="p">,</span> <span class="s1">&#39;bgf77&#39;</span><span class="p">,</span> <span class="s1">&#39;bgfort77&#39;</span><span class="p">,</span> <span class="s1">&#39;bgxlf90&#39;</span><span class="p">,</span> <span class="s1">&#39;bgxlf90_r&#39;</span><span class="p">,</span> <span class="s1">&#39;bgf90&#39;</span><span class="p">,</span> 
+                     <span class="s1">&#39;bgxlf95&#39;</span><span class="p">,</span> <span class="s1">&#39;bgxlf95_r&#39;</span><span class="p">,</span> <span class="s1">&#39;bgf95&#39;</span><span class="p">,</span> <span class="s1">&#39;bgxlf2003&#39;</span><span class="p">,</span> <span class="s1">&#39;bgxlf2003_r&#39;</span><span class="p">,</span> <span class="s1">&#39;bgf2003&#39;</span><span class="p">,</span> <span class="s1">&#39;bgxlf2008&#39;</span><span class="p">,</span> 
+                     <span class="s1">&#39;bgxlf2008_r&#39;</span><span class="p">,</span> <span class="s1">&#39;bgf2008&#39;</span><span class="p">)</span>
+
+<span class="n">CRAY_COMPILERS</span> <span class="o">=</span> <span class="n">CompilerFamily</span><span class="p">(</span><span class="s1">&#39;Cray&#39;</span><span class="p">,</span> <span class="n">show_wrapper_flags</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;-craype-verbose&#39;</span><span class="p">,</span> <span class="s1">&#39;--version&#39;</span><span class="p">,</span> <span class="s1">&#39;-E&#39;</span><span class="p">])</span>
+<span class="n">CRAY_COMPILERS</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">CC_ROLE</span><span class="p">,</span> <span class="s1">&#39;cc&#39;</span><span class="p">)</span>
+<span class="n">CRAY_COMPILERS</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">CXX_ROLE</span><span class="p">,</span> <span class="s1">&#39;CC&#39;</span><span class="p">)</span>
+<span class="n">CRAY_COMPILERS</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">FC_ROLE</span><span class="p">,</span> <span class="s1">&#39;ftn&#39;</span><span class="p">)</span>
+<span class="n">CRAY_COMPILERS</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">UPC_ROLE</span><span class="p">,</span> <span class="s1">&#39;upc&#39;</span><span class="p">)</span>
+
+</pre></div>
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        <a class="uplink" href="../../../index.html">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015 ParaTools, Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+    </div>
+  </body>
+</html>

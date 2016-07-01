@@ -1,0 +1,7 @@
+tau.mvc.model module
+====================
+
+.. automodule:: tau.mvc.model
+    :members:
+    :undoc-members:
+    :show-inheritance:

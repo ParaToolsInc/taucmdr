@@ -1,0 +1,20 @@
+tau.cli.commands.measurement.tests package
+==========================================
+
+Submodules
+----------
+
+.. toctree::
+
+   tau.cli.commands.measurement.tests.test_create
+   tau.cli.commands.measurement.tests.test_delete
+   tau.cli.commands.measurement.tests.test_edit
+   tau.cli.commands.measurement.tests.test_list
+
+Module contents
+---------------
+
+.. automodule:: tau.cli.commands.measurement.tests
+    :members:
+    :undoc-members:
+    :show-inheritance:

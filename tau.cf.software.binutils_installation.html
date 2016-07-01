@@ -1,0 +1,147 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tau.cf.software.binutils_installation module &mdash; TAU Commander Developer Documentation</title>
+    
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1
+',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
+    <link rel="up" title="tau.cf.software package" href="tau.cf.software.html" />
+    <link rel="next" title="tau.cf.software.installation module" href="tau.cf.software.installation.html" />
+    <link rel="prev" title="tau.cf.software.tests.test_tau_installation module" href="tau.cf.software.tests.test_tau_installation.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="index.html">
+          <span>TAU Commander Developer Documentation</span></a></h1>
+        <h2 class="heading"><span>tau.cf.software.binutils_installation module</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="tau.cf.software.tests.test_tau_installation.html">tau.cf.software.tests.test_tau_installation module</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="tau.cf.software.installation.html">tau.cf.software.installation module</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="module-tau.cf.software.binutils_installation">
+<span id="tau-cf-software-binutils-installation-module"></span><h1>tau.cf.software.binutils_installation module<a class="headerlink" href="#module-tau.cf.software.binutils_installation" title="Permalink to this headline">¶</a></h1>
+<p>Binutils software installation management.</p>
+<p>GNU binutils provildes BFD, which TAU uses for symbol resolution during
+sampling, compiler-based instrumentation, and other measurement approaches.</p>
+<dl class="class">
+<dt id="tau.cf.software.binutils_installation.BinutilsInstallation">
+<em class="property">class </em><code class="descclassname">tau.cf.software.binutils_installation.</code><code class="descname">BinutilsInstallation</code><span class="sig-paren">(</span><em>prefix</em>, <em>src</em>, <em>target_arch</em>, <em>target_os</em>, <em>compilers</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/binutils_installation.html#BinutilsInstallation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.binutils_installation.BinutilsInstallation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="tau.cf.software.installation.html#tau.cf.software.installation.AutotoolsInstallation" title="tau.cf.software.installation.AutotoolsInstallation"><code class="xref py py-class docutils literal"><span class="pre">tau.cf.software.installation.AutotoolsInstallation</span></code></a></p>
+<p>Encapsulates a GNU binutils installation.</p>
+<dl class="method">
+<dt id="tau.cf.software.binutils_installation.BinutilsInstallation.compiletime_config">
+<code class="descname">compiletime_config</code><span class="sig-paren">(</span><em>opts=None</em>, <em>env=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/binutils_installation.html#BinutilsInstallation.compiletime_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.binutils_installation.BinutilsInstallation.compiletime_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Configure compilation environment to use this software package.</p>
+<p>Don&#8217;t put <cite>self.bin_path</cite> in PATH since this offends <code class="docutils literal"><span class="pre">ld</span></code> on some systems.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>opts</strong> (<a class="reference internal" href="tau.cli.commands.target.list.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Optional list of command line options.</li>
+<li><strong>env</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Optional dictionary of environment variables.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">opts, env updated for the new environment.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#tuple" title="(in Python v2.7)">tuple</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.cf.software.binutils_installation.BinutilsInstallation.configure">
+<code class="descname">configure</code><span class="sig-paren">(</span><em>flags</em>, <em>env</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/binutils_installation.html#BinutilsInstallation.configure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.binutils_installation.BinutilsInstallation.configure" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.cf.software.binutils_installation.BinutilsInstallation.make_install">
+<code class="descname">make_install</code><span class="sig-paren">(</span><em>flags</em>, <em>env</em>, <em>parallel=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/binutils_installation.html#BinutilsInstallation.make_install"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.binutils_installation.BinutilsInstallation.make_install" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.cf.software.binutils_installation.BinutilsInstallation.runtime_config">
+<code class="descname">runtime_config</code><span class="sig-paren">(</span><em>opts=None</em>, <em>env=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/binutils_installation.html#BinutilsInstallation.runtime_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.binutils_installation.BinutilsInstallation.runtime_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Configure runtime environment to use this software package.</p>
+<p>Don&#8217;t put <cite>self.bin_path</cite> in PATH since this offends <code class="docutils literal"><span class="pre">ld</span></code> on some systems
+but do put <cite>self.lib_path</cite> in LD_LIBRARY_PATH.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>opts</strong> (<a class="reference internal" href="tau.cli.commands.target.list.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Optional list of command line options.</li>
+<li><strong>env</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Optional dictionary of environment variables.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">opts, env updated for the new environment.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#tuple" title="(in Python v2.7)">tuple</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="tau.cf.software.tests.test_tau_installation.html">tau.cf.software.tests.test_tau_installation module</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="tau.cf.software.installation.html">tau.cf.software.installation module</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015 ParaTools, Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+    </div>
+  </body>
+</html>

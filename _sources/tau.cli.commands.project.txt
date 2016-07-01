@@ -1,0 +1,28 @@
+tau.cli.commands.project package
+================================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    tau.cli.commands.project.tests
+
+Submodules
+----------
+
+.. toctree::
+
+   tau.cli.commands.project.create
+   tau.cli.commands.project.delete
+   tau.cli.commands.project.edit
+   tau.cli.commands.project.export
+   tau.cli.commands.project.list
+
+Module contents
+---------------
+
+.. automodule:: tau.cli.commands.project
+    :members:
+    :undoc-members:
+    :show-inheritance:

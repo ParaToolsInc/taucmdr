@@ -1,0 +1,203 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tau.model.project module &mdash; TAU Commander Developer Documentation</title>
+    
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1
+',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
+    <link rel="up" title="tau.model package" href="tau.model.html" />
+    <link rel="next" title="tau.model.target module" href="tau.model.target.html" />
+    <link rel="prev" title="tau.model.measurement module" href="tau.model.measurement.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="index.html">
+          <span>TAU Commander Developer Documentation</span></a></h1>
+        <h2 class="heading"><span>tau.model.project module</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="tau.model.measurement.html">tau.model.measurement module</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="tau.model.target.html">tau.model.target module</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="module-tau.model.project">
+<span id="tau-model-project-module"></span><h1>tau.model.project module<a class="headerlink" href="#module-tau.model.project" title="Permalink to this headline">¶</a></h1>
+<p>Project data model.</p>
+<p>A project collects multiple <a class="reference internal" href="tau.model.target.html#tau.model.target.Target" title="tau.model.target.Target"><code class="xref any py py-class docutils literal"><span class="pre">Target</span></code></a>, <a class="reference internal" href="tau.model.application.html#tau.model.application.Application" title="tau.model.application.Application"><code class="xref any py py-class docutils literal"><span class="pre">Application</span></code></a>, and <a class="reference internal" href="tau.model.measurement.html#tau.model.measurement.Measurement" title="tau.model.measurement.Measurement"><code class="xref any py py-class docutils literal"><span class="pre">Measurement</span></code></a>
+configurations in a single container.  Selecting one of each forms a new <a class="reference internal" href="tau.model.experiment.html#tau.model.experiment.Experiment" title="tau.model.experiment.Experiment"><code class="xref any py py-class docutils literal"><span class="pre">Experiment</span></code></a>.
+Each application of the <a class="reference internal" href="tau.model.experiment.html#tau.model.experiment.Experiment" title="tau.model.experiment.Experiment"><code class="xref any py py-class docutils literal"><span class="pre">Experiment</span></code></a> generates a new <a class="reference internal" href="tau.model.trial.html#tau.model.trial.Trial" title="tau.model.trial.Trial"><code class="xref any py py-class docutils literal"><span class="pre">Trial</span></code></a> record along with
+some performance data (profiles, traces, etc.).</p>
+<dl class="exception">
+<dt id="tau.model.project.ExperimentSelectionError">
+<em class="property">exception </em><code class="descclassname">tau.model.project.</code><code class="descname">ExperimentSelectionError</code><span class="sig-paren">(</span><em>value</em>, <em>*hints</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/project.html#ExperimentSelectionError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.project.ExperimentSelectionError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="tau.error.html#tau.error.ConfigurationError" title="tau.error.ConfigurationError"><code class="xref py py-class docutils literal"><span class="pre">tau.error.ConfigurationError</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="tau.model.project.Project">
+<em class="property">class </em><code class="descclassname">tau.model.project.</code><code class="descname">Project</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/project.html#Project"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.project.Project" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="tau.mvc.model.html#tau.mvc.model.Model" title="tau.mvc.model.Model"><code class="xref py py-class docutils literal"><span class="pre">tau.mvc.model.Model</span></code></a></p>
+<p>Project data controller.</p>
+<dl class="attribute">
+<dt id="tau.model.project.Project.associations">
+<code class="descname">associations</code><em class="property"> = {'applications': (&lt;class 'tau.model.application.Application'&gt;, 'projects'), 'experiments': (&lt;class 'tau.model.experiment.Experiment'&gt;, 'project'), 'targets': (&lt;class 'tau.model.target.Target'&gt;, 'projects'), 'measurements': (&lt;class 'tau.model.measurement.Measurement'&gt;, 'projects')}</em><a class="headerlink" href="#tau.model.project.Project.associations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.project.Project.attributes">
+<code class="descname">attributes</code><em class="property"> = {'force_tau_options': {'compat': {True: &lt;function condition at 0x106a9ac08&gt;}, 'argparse': {'nargs': '+', 'flags': ('--force-tau-options',), 'metavar': '&lt;option&gt;'}, 'type': 'array', 'description': 'forcibly add options to TAU_OPTIONS environment variable (not recommended)', 'application_rebuild': True}, 'applications': {'via': 'projects', 'description': 'applications used by this project', 'collection': &lt;class 'tau.model.application.Application'&gt;}, 'experiments': {'via': 'project', 'description': 'experiments formed from this project', 'collection': &lt;class 'tau.model.experiment.Experiment'&gt;}, 'name': {'argparse': {'metavar': '&lt;project_name&gt;'}, 'unique': True, 'type': 'string', 'primary_key': True, 'description': 'project name'}, 'experiment': {'model': &lt;class 'tau.model.experiment.Experiment'&gt;, 'description': 'the current experiment'}, 'measurements': {'via': 'projects', 'description': 'measurements used by this project', 'collection': &lt;class 'tau.model.measurement.Measurement'&gt;}, 'targets': {'via': 'projects', 'description': 'targets used by this project', 'collection': &lt;class 'tau.model.target.Target'&gt;}, 'storage_level': {'argparse': {'action': 'store', 'flags': ('--storage-level',), 'metavar': '&lt;level&gt;', 'choices': ['project', 'user', 'system']}, 'type': 'string', 'description': 'location of installation directory'}}</em><a class="headerlink" href="#tau.model.project.Project.attributes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="tau.model.project.Project.controller">
+<em class="property">classmethod </em><code class="descname">controller</code><span class="sig-paren">(</span><em>storage=&lt;tau.storage.project.ProjectStorage object&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/project.html#Project.controller"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.project.Project.controller" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.model.project.Project.experiment">
+<code class="descname">experiment</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/project.html#Project.experiment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.project.Project.experiment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the currently selected experiment configuration.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The current experiment</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="tau.model.experiment.html#tau.model.experiment.Experiment" title="tau.model.experiment.Experiment">Experiment</a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#tau.model.project.ExperimentSelectionError" title="tau.model.project.ExperimentSelectionError"><code class="xref py py-exc docutils literal"><span class="pre">ExperimentSelectionError</span></code></a> &#8211; No experiment currently selected.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.project.Project.key_attribute">
+<code class="descname">key_attribute</code><em class="property"> = 'name'</em><a class="headerlink" href="#tau.model.project.Project.key_attribute" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.project.Project.name">
+<code class="descname">name</code><em class="property"> = 'Project'</em><a class="headerlink" href="#tau.model.project.Project.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.project.Project.prefix">
+<code class="descname">prefix</code><a class="headerlink" href="#tau.model.project.Project.prefix" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.project.Project.references">
+<code class="descname">references</code><em class="property"> = set([(&lt;class 'tau.model.experiment.Experiment'&gt;, 'project')])</em><a class="headerlink" href="#tau.model.project.Project.references" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tau.model.project.ProjectController">
+<em class="property">class </em><code class="descclassname">tau.model.project.</code><code class="descname">ProjectController</code><span class="sig-paren">(</span><em>model_cls</em>, <em>storage</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/project.html#ProjectController"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.project.ProjectController" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="tau.mvc.controller.html#tau.mvc.controller.Controller" title="tau.mvc.controller.Controller"><code class="xref py py-class docutils literal"><span class="pre">tau.mvc.controller.Controller</span></code></a></p>
+<p>Project data controller.</p>
+<dl class="method">
+<dt id="tau.model.project.ProjectController.create">
+<code class="descname">create</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/project.html#ProjectController.create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.project.ProjectController.create" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.model.project.ProjectController.delete">
+<code class="descname">delete</code><span class="sig-paren">(</span><em>keys</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/project.html#ProjectController.delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.project.ProjectController.delete" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.model.project.ProjectController.select">
+<code class="descname">select</code><span class="sig-paren">(</span><em>project</em>, <em>experiment=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/project.html#ProjectController.select"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.project.ProjectController.select" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.model.project.ProjectController.selected">
+<code class="descname">selected</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/project.html#ProjectController.selected"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.project.ProjectController.selected" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the currently selected project&#8217;s configuration data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The current project.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#tau.model.project.Project" title="tau.model.project.Project">Project</a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#tau.model.project.ProjectSelectionError" title="tau.model.project.ProjectSelectionError"><code class="xref py py-exc docutils literal"><span class="pre">ProjectSelectionError</span></code></a> &#8211; No project currently selected.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.model.project.ProjectController.unselect">
+<code class="descname">unselect</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/project.html#ProjectController.unselect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.project.ProjectController.unselect" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="tau.model.project.ProjectSelectionError">
+<em class="property">exception </em><code class="descclassname">tau.model.project.</code><code class="descname">ProjectSelectionError</code><span class="sig-paren">(</span><em>value</em>, <em>*hints</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/project.html#ProjectSelectionError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.project.ProjectSelectionError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="tau.error.html#tau.error.ConfigurationError" title="tau.error.ConfigurationError"><code class="xref py py-class docutils literal"><span class="pre">tau.error.ConfigurationError</span></code></a></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.model.project.attributes">
+<code class="descclassname">tau.model.project.</code><code class="descname">attributes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/project.html#attributes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.project.attributes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="tau.model.measurement.html">tau.model.measurement module</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="tau.model.target.html">tau.model.target module</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015 ParaTools, Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+    </div>
+  </body>
+</html>

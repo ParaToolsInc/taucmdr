@@ -1,0 +1,10 @@
+tau.gui package
+===============
+
+Module contents
+---------------
+
+.. automodule:: tau.gui
+    :members:
+    :undoc-members:
+    :show-inheritance:

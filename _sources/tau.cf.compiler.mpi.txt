@@ -1,0 +1,7 @@
+tau.cf.compiler.mpi module
+==========================
+
+.. automodule:: tau.cf.compiler.mpi
+    :members:
+    :undoc-members:
+    :show-inheritance:

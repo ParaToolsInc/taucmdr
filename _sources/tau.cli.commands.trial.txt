@@ -1,0 +1,28 @@
+tau.cli.commands.trial package
+==============================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    tau.cli.commands.trial.tests
+
+Submodules
+----------
+
+.. toctree::
+
+   tau.cli.commands.trial.create
+   tau.cli.commands.trial.delete
+   tau.cli.commands.trial.export
+   tau.cli.commands.trial.list
+   tau.cli.commands.trial.show
+
+Module contents
+---------------
+
+.. automodule:: tau.cli.commands.trial
+    :members:
+    :undoc-members:
+    :show-inheritance:

@@ -1,0 +1,116 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tau.storage.levels module &mdash; TAU Commander Developer Documentation</title>
+    
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1
+',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
+    <link rel="up" title="tau.storage package" href="tau.storage.html" />
+    <link rel="next" title="tau.storage.local_file module" href="tau.storage.local_file.html" />
+    <link rel="prev" title="tau.storage.tests.test_project module" href="tau.storage.tests.test_project.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="index.html">
+          <span>TAU Commander Developer Documentation</span></a></h1>
+        <h2 class="heading"><span>tau.storage.levels module</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="tau.storage.tests.test_project.html">tau.storage.tests.test_project module</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="tau.storage.local_file.html">tau.storage.local_file module</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="module-tau.storage.levels">
+<span id="tau-storage-levels-module"></span><h1>tau.storage.levels module<a class="headerlink" href="#module-tau.storage.levels" title="Permalink to this headline">¶</a></h1>
+<p>TAU Commander hierarchical file and record storage system.</p>
+<p>System-level records are globally readable and writable, depending on the user&#8217;s
+system access level.  System-level is a good place for software package installations
+and some system-specific configurations, e.g. target or compiler configurations.</p>
+<p>User-level records are readable and writable by (at least) the user.  User-level is also
+where software is installed when the user doesn&#8217;t have write access to <a class="reference internal" href="tau.html#tau.SYSTEM_PREFIX" title="tau.SYSTEM_PREFIX"><code class="xref any py py-data docutils literal"><span class="pre">SYSTEM_PREFIX</span></code></a>.
+It&#8217;s a good place for user-specific records, i.e. preferences or encrypted login credentials.</p>
+<p>Project-level records define the project and its member components.  The user may also
+want to install software packages at the project level to avoid quotas or in situations
+where <a class="reference internal" href="tau.html#tau.USER_PREFIX" title="tau.USER_PREFIX"><code class="xref any py py-data docutils literal"><span class="pre">USER_PREFIX</span></code></a> is not accessible from cluster compute nodes.</p>
+<dl class="data">
+<dt id="tau.storage.levels.ORDERED_LEVELS">
+<code class="descclassname">tau.storage.levels.</code><code class="descname">ORDERED_LEVELS</code><em class="property"> = (&lt;tau.storage.project.ProjectStorage object at 0x106c1fb50&gt;, &lt;tau.storage.local_file.LocalFileStorage object at 0x106c1fb10&gt;, &lt;tau.storage.local_file.LocalFileStorage object at 0x106c1fad0&gt;)</em><a class="headerlink" href="#tau.storage.levels.ORDERED_LEVELS" title="Permalink to this definition">¶</a></dt>
+<dd><p>All storage levels in their preferred order.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="tau.storage.levels.PROJECT_STORAGE">
+<code class="descclassname">tau.storage.levels.</code><code class="descname">PROJECT_STORAGE</code><em class="property"> = &lt;tau.storage.project.ProjectStorage object&gt;</em><a class="headerlink" href="#tau.storage.levels.PROJECT_STORAGE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Project-level data storage.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="tau.storage.levels.STORAGE_LEVELS">
+<code class="descclassname">tau.storage.levels.</code><code class="descname">STORAGE_LEVELS</code><em class="property"> = {'project': &lt;tau.storage.project.ProjectStorage object at 0x106c1fb50&gt;, 'user': &lt;tau.storage.local_file.LocalFileStorage object at 0x106c1fb10&gt;, 'system': &lt;tau.storage.local_file.LocalFileStorage object at 0x106c1fad0&gt;}</em><a class="headerlink" href="#tau.storage.levels.STORAGE_LEVELS" title="Permalink to this definition">¶</a></dt>
+<dd><p>All storage levels indexed by their names.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="tau.storage.levels.SYSTEM_STORAGE">
+<code class="descclassname">tau.storage.levels.</code><code class="descname">SYSTEM_STORAGE</code><em class="property"> = &lt;tau.storage.local_file.LocalFileStorage object&gt;</em><a class="headerlink" href="#tau.storage.levels.SYSTEM_STORAGE" title="Permalink to this definition">¶</a></dt>
+<dd><p>System-level data storage.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="tau.storage.levels.USER_STORAGE">
+<code class="descclassname">tau.storage.levels.</code><code class="descname">USER_STORAGE</code><em class="property"> = &lt;tau.storage.local_file.LocalFileStorage object&gt;</em><a class="headerlink" href="#tau.storage.levels.USER_STORAGE" title="Permalink to this definition">¶</a></dt>
+<dd><p>User-level data storage.</p>
+</dd></dl>
+
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="tau.storage.tests.test_project.html">tau.storage.tests.test_project module</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="tau.storage.local_file.html">tau.storage.local_file module</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015 ParaTools, Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+    </div>
+  </body>
+</html>

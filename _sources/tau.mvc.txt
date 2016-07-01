@@ -1,0 +1,25 @@
+tau.mvc package
+===============
+
+Subpackages
+-----------
+
+.. toctree::
+
+    tau.mvc.tests
+
+Submodules
+----------
+
+.. toctree::
+
+   tau.mvc.controller
+   tau.mvc.model
+
+Module contents
+---------------
+
+.. automodule:: tau.mvc
+    :members:
+    :undoc-members:
+    :show-inheritance:

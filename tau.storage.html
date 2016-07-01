@@ -1,0 +1,624 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tau.storage package &mdash; TAU Commander Developer Documentation</title>
+    
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1
+',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
+    <link rel="up" title="tau package" href="tau.html" />
+    <link rel="next" title="tau.storage.tests package" href="tau.storage.tests.html" />
+    <link rel="prev" title="tau.mvc.model module" href="tau.mvc.model.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="index.html">
+          <span>TAU Commander Developer Documentation</span></a></h1>
+        <h2 class="heading"><span>tau.storage package</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="tau.mvc.model.html">tau.mvc.model module</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="tau.storage.tests.html">tau.storage.tests package</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="tau-storage-package">
+<h1>tau.storage package<a class="headerlink" href="#tau-storage-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tau.storage.tests.html">tau.storage.tests package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tau.storage.tests.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tau.storage.tests.test_levels.html">tau.storage.tests.test_levels module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tau.storage.tests.test_local_file.html">tau.storage.tests.test_local_file module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tau.storage.tests.test_project.html">tau.storage.tests.test_project module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tau.storage.tests.html#module-tau.storage.tests">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tau.storage.levels.html">tau.storage.levels module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tau.storage.local_file.html">tau.storage.local_file module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tau.storage.project.html">tau.storage.project module</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="module-tau.storage">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-tau.storage" title="Permalink to this headline">¶</a></h2>
+<p>TAU Storage Containers.</p>
+<p>A storage container provides a record database, a persistent filesystem, and a key/value store.
+The database is accessed via member methods like <a class="reference internal" href="#tau.storage.AbstractStorage.insert" title="tau.storage.AbstractStorage.insert"><code class="xref any py py-meth docutils literal"><span class="pre">insert</span></code></a>, <a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a>, etc.
+The filesystem is accessed via its filesystem prefix (e.g. <code class="docutils literal"><span class="pre">/usr/local/packages</span></code>) via <a class="reference internal" href="#tau.storage.AbstractStorage.prefix" title="tau.storage.AbstractStorage.prefix"><code class="xref any py py-attr docutils literal"><span class="pre">prefix</span></code></a>.
+The key/value store is accessed via the <cite>[]</cite> operator, i.e. treat the storage object like a dictionary.</p>
+<dl class="class">
+<dt id="tau.storage.AbstractStorage">
+<em class="property">class </em><code class="descclassname">tau.storage.</code><code class="descname">AbstractStorage</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Abstract base class for storage containers.</p>
+<p>A storage container provides a record database, a persistent filesystem, and a key/value store.
+The database is accessed via member methods like <a class="reference internal" href="#tau.storage.AbstractStorage.insert" title="tau.storage.AbstractStorage.insert"><code class="xref any py py-meth docutils literal"><span class="pre">insert</span></code></a>, <a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a>, etc.
+The filesystem is accessed via its filesystem prefix (e.g. <code class="docutils literal"><span class="pre">/usr/local/packages</span></code>) via <a class="reference internal" href="#tau.storage.AbstractStorage.prefix" title="tau.storage.AbstractStorage.prefix"><code class="xref any py py-attr docutils literal"><span class="pre">prefix</span></code></a>.
+The key/value store is accessed via the <cite>[]</cite> operator, i.e. treat the storage object like a dictionary.</p>
+<dl class="attribute">
+<dt id="tau.storage.AbstractStorage.name">
+<code class="descname">name</code><a class="headerlink" href="#tau.storage.AbstractStorage.name" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em> &#8211; The storage container&#8217;s name, e.g. &#8220;system&#8221; or &#8220;user&#8221;.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.storage.AbstractStorage.prefix">
+<code class="descname">prefix</code><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.prefix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.prefix" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em> &#8211; Absolute path to the top-level directory of the container&#8217;s filesystem.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.storage.AbstractStorage.database">
+<code class="descname">database</code><a class="headerlink" href="#tau.storage.AbstractStorage.database" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em> &#8211; Database object implementing <code class="xref any docutils literal"><span class="pre">AbstractDatabase</span></code>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.storage.AbstractStorage.Record">
+<code class="descname">Record</code><a class="headerlink" href="#tau.storage.AbstractStorage.Record" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#tau.storage.StorageRecord" title="tau.storage.StorageRecord"><code class="xref py py-class docutils literal"><span class="pre">StorageRecord</span></code></a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.AbstractStorage.__delitem__">
+<code class="descname">__delitem__</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.__delitem__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.__delitem__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove a value from the key/value store.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.AbstractStorage.__enter__">
+<code class="descname">__enter__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.__enter__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.__enter__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initiates the database transaction.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.AbstractStorage.__exit__">
+<code class="descname">__exit__</code><span class="sig-paren">(</span><em>ex_type</em>, <em>value</em>, <em>traceback</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.__exit__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.__exit__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finalizes the database transaction.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.AbstractStorage.__getitem__">
+<code class="descname">__getitem__</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.__getitem__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.__getitem__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve a value from the key/value store.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.AbstractStorage.__setitem__">
+<code class="descname">__setitem__</code><span class="sig-paren">(</span><em>key</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.__setitem__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.__setitem__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store a value in the key/value store.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.AbstractStorage.connect_database">
+<code class="descname">connect_database</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.connect_database"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.connect_database" title="Permalink to this definition">¶</a></dt>
+<dd><p>Open the database for reading and writing.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.AbstractStorage.connect_filesystem">
+<code class="descname">connect_filesystem</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.connect_filesystem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.connect_filesystem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prepares the store filesystem for reading and writing.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.AbstractStorage.contains">
+<code class="descname">contains</code><span class="sig-paren">(</span><em>keys</em>, <em>table_name=None</em>, <em>match_any=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.contains"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.contains" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the specified table contains at least one matching record.</p>
+<dl class="docutils">
+<dt>The behavior depends on the type of <cite>keys</cite>:</dt>
+<dd><ul class="first last simple">
+<li>self.Record.eid_type: check for the record with that element identifier.</li>
+<li>dict: check for the record with attributes matching <cite>keys</cite>.</li>
+<li>list or tuple: return the equivilent of <code class="docutils literal"><span class="pre">map(contains,</span> <span class="pre">keys)</span></code>.</li>
+</ul>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>keys</strong> &#8211; Fields or element identifiers to match.</li>
+<li><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the table to operate on.  See <a class="reference internal" href="#tau.storage.AbstractStorage.table" title="tau.storage.AbstractStorage.table"><code class="xref any py py-meth docutils literal"><span class="pre">AbstractStorage.table</span></code></a>.</li>
+<li><strong>match_any</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; Only applies if <cite>keys</cite> is a dictionary.  If True then any key
+in <cite>keys</cite> may match or if False then all keys in <cite>keys</cite> must match.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">True if the table contains at least one matching record, False otherwise.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)">bool</a></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; Invalid value for <cite>keys</cite>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.AbstractStorage.count">
+<code class="descname">count</code><span class="sig-paren">(</span><em>table_name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.count"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Count the records in the database.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the table to operate on.  See <a class="reference internal" href="#tau.storage.AbstractStorage.table" title="tau.storage.AbstractStorage.table"><code class="xref any py py-meth docutils literal"><span class="pre">AbstractStorage.table</span></code></a>.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Number of records in the table.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.AbstractStorage.disconnect_database">
+<code class="descname">disconnect_database</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.disconnect_database"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.disconnect_database" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close the database for reading and writing.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.AbstractStorage.disconnect_filesystem">
+<code class="descname">disconnect_filesystem</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.disconnect_filesystem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.disconnect_filesystem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes the store filesystem unreadable and unwritable.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.AbstractStorage.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>keys</em>, <em>table_name=None</em>, <em>match_any=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find a single record.</p>
+<dl class="docutils">
+<dt>The behavior depends on the type of <cite>keys</cite>:</dt>
+<dd><ul class="first last simple">
+<li>self.Record.eid_type: return the record with that element identifier.</li>
+<li>dict: return the record with attributes matching <cite>keys</cite>.</li>
+<li>list or tuple: return a list of records matching the elements of <cite>keys</cite></li>
+<li>None: return None.</li>
+</ul>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>keys</strong> &#8211; Fields or element identifiers to match.</li>
+<li><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the table to operate on.  See <a class="reference internal" href="#tau.storage.AbstractStorage.table" title="tau.storage.AbstractStorage.table"><code class="xref any py py-meth docutils literal"><span class="pre">AbstractStorage.table</span></code></a>.</li>
+<li><strong>match_any</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; Only applies if <cite>keys</cite> is a dictionary.  If True then any key
+in <cite>keys</cite> may match or if False then all keys in <cite>keys</cite> must match.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The matching data record if <cite>keys</cite> was a self.Record.eid_type or dict.
+list: All matching data records if <cite>keys</cite> was a list or tuple.
+None: No record found or <code class="docutils literal"><span class="pre">bool(keys)</span> <span class="pre">==</span> <span class="pre">False</span></code>.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="#tau.storage.AbstractStorage.Record" title="tau.storage.AbstractStorage.Record">Record</a></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; Invalid value for <cite>keys</cite>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.AbstractStorage.insert">
+<code class="descname">insert</code><span class="sig-paren">(</span><em>data</em>, <em>table_name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.insert"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.insert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new record.</p>
+<p>If the table doesn&#8217;t exist it will be created.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>data</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Data to insert in table.</li>
+<li><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the table to operate on.  See <a class="reference internal" href="#tau.storage.AbstractStorage.table" title="tau.storage.AbstractStorage.table"><code class="xref any py py-meth docutils literal"><span class="pre">AbstractStorage.table</span></code></a>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The new record.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#tau.storage.AbstractStorage.Record" title="tau.storage.AbstractStorage.Record">Record</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.AbstractStorage.match">
+<code class="descname">match</code><span class="sig-paren">(</span><em>field</em>, <em>table_name=None</em>, <em>regex=None</em>, <em>test=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.match"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.match" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find records where <cite>field</cite> matches <cite>regex</cite> or <cite>test</cite>.</p>
+<p>Either <cite>regex</cite> or <cite>test</cite> may be specified, not both.
+If <cite>regex</cite> is given, then all records with <cite>field</cite> matching the regular expression are returned.
+If test is given then all records with <cite>field</cite> set to a value that caues <cite>test</cite> to return True are returned.
+If neither is given, return all records where <cite>field</cite> is set to any value.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the table to operate on.  See <a class="reference internal" href="#tau.storage.AbstractStorage.table" title="tau.storage.AbstractStorage.table"><code class="xref any py py-meth docutils literal"><span class="pre">AbstractStorage.table</span></code></a>.</li>
+<li><strong>field</strong> (<a class="reference external" href="https://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Name of the data field to match.</li>
+<li><strong>regex</strong> (<a class="reference external" href="https://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Regular expression string.</li>
+<li><strong>test</strong> &#8211; Callable returning a boolean value.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Matching data records.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="tau.cli.commands.target.list.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list">list</a></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; Invalid value for <cite>keys</cite>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">prefix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.prefix"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Get the filesystem prefix for file storage.</p>
+<p>The filesystem must be persistent and provide the usual POSIX filesystem calls.
+In particular, GNU software packages should be installable in the filesystem.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Absolute path in the filesystem.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)">str</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.AbstractStorage.purge">
+<code class="descname">purge</code><span class="sig-paren">(</span><em>table_name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.purge"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.purge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete all records.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the table to operate on.  See <a class="reference internal" href="#tau.storage.AbstractStorage.table" title="tau.storage.AbstractStorage.table"><code class="xref any py py-meth docutils literal"><span class="pre">AbstractStorage.table</span></code></a>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.AbstractStorage.remove">
+<code class="descname">remove</code><span class="sig-paren">(</span><em>keys</em>, <em>table_name=None</em>, <em>match_any=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.remove"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.remove" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete records.</p>
+<dl class="docutils">
+<dt>The behavior depends on the type of <cite>keys</cite>:</dt>
+<dd><ul class="first last simple">
+<li>self.Record.eid_type: delete the record with that element identifier.</li>
+<li>dict: delete all records with attributes matching <cite>keys</cite>.</li>
+<li>list or tuple: delete all records matching the elements of <cite>keys</cite>.</li>
+</ul>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>keys</strong> &#8211; Fields or element identifiers to match.</li>
+<li><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the table to operate on.  See <a class="reference internal" href="#tau.storage.AbstractStorage.table" title="tau.storage.AbstractStorage.table"><code class="xref any py py-meth docutils literal"><span class="pre">AbstractStorage.table</span></code></a>.</li>
+<li><strong>match_any</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; Only applies if <cite>keys</cite> is a dictionary.  If True then any key
+in <cite>keys</cite> may match or if False then all keys in <cite>keys</cite> must match.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; <code class="docutils literal"><span class="pre">bool(keys)</span> <span class="pre">==</span> <span class="pre">False</span></code> or invaild value for <cite>keys</cite>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.AbstractStorage.search">
+<code class="descname">search</code><span class="sig-paren">(</span><em>keys=None</em>, <em>table_name=None</em>, <em>match_any=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.search" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find multiple records.</p>
+<dl class="docutils">
+<dt>The behavior depends on the type of <cite>keys</cite>:</dt>
+<dd><ul class="first last simple">
+<li>Record.eid_type: return the record with that element identifier.</li>
+<li>dict: return all records with attributes matching <cite>keys</cite>.</li>
+<li>list or tuple: return a list of records matching the elements of <cite>keys</cite></li>
+<li>None: return all records.</li>
+</ul>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>keys</strong> &#8211; Fields or element identifiers to match.</li>
+<li><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the table to operate on.  See <a class="reference internal" href="#tau.storage.AbstractStorage.table" title="tau.storage.AbstractStorage.table"><code class="xref any py py-meth docutils literal"><span class="pre">AbstractStorage.table</span></code></a>.</li>
+<li><strong>match_any</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; Only applies if <cite>keys</cite> is a dictionary.  If True then any key
+in <cite>keys</cite> may match or if False then all keys in <cite>keys</cite> must match.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Matching data records.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="tau.cli.commands.target.list.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list">list</a></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; Invalid value for <cite>keys</cite>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.AbstractStorage.table">
+<code class="descname">table</code><span class="sig-paren">(</span><em>table_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a handle to a table.</p>
+<p>Return a handle to the named table or, if <cite>table_name</cite> is None, return the default table.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the table or None.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A database table object.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)">object</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.AbstractStorage.unset">
+<code class="descname">unset</code><span class="sig-paren">(</span><em>fields</em>, <em>keys</em>, <em>table_name=None</em>, <em>match_any=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.unset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.unset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update records by unsetting fields.</p>
+<p>Update only allows you to update a record by adding new fields or overwriting existing fields.
+Use this method to remove a field from the record.</p>
+<dl class="docutils">
+<dt>The behavior depends on the type of <cite>keys</cite>:</dt>
+<dd><ul class="first last simple">
+<li>self.Record.eid_type: update the record with that element identifier.</li>
+<li>dict: update all records with attributes matching <cite>keys</cite>.</li>
+<li>list or tuple: apply update to all records matching the elements of <cite>keys</cite>.</li>
+</ul>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>fields</strong> (<a class="reference internal" href="tau.cli.commands.target.list.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Names of fields to remove from matching records.</li>
+<li><strong>keys</strong> &#8211; Fields or element identifiers to match.</li>
+<li><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the table to operate on.  See <a class="reference internal" href="#tau.storage.AbstractStorage.table" title="tau.storage.AbstractStorage.table"><code class="xref any py py-meth docutils literal"><span class="pre">AbstractStorage.table</span></code></a>.</li>
+<li><strong>match_any</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; Only applies if <cite>keys</cite> is a dictionary.  If True then any key
+in <cite>keys</cite> may match or if False then all keys in <cite>keys</cite> must match.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; <code class="docutils literal"><span class="pre">bool(keys)</span> <span class="pre">==</span> <span class="pre">False</span></code> or invaild value for <cite>keys</cite>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.AbstractStorage.update">
+<code class="descname">update</code><span class="sig-paren">(</span><em>fields</em>, <em>keys</em>, <em>table_name=None</em>, <em>match_any=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update records.</p>
+<dl class="docutils">
+<dt>The behavior depends on the type of <cite>keys</cite>:</dt>
+<dd><ul class="first last simple">
+<li>self.Record.eid_type: update the record with that element identifier.</li>
+<li>dict: update all records with attributes matching <cite>keys</cite>.</li>
+<li>list or tuple: apply update to all records matching the elements of <cite>keys</cite>.</li>
+</ul>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>fields</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Data to record.</li>
+<li><strong>keys</strong> &#8211; Fields or element identifiers to match.</li>
+<li><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the table to operate on.  See <a class="reference internal" href="#tau.storage.AbstractStorage.table" title="tau.storage.AbstractStorage.table"><code class="xref any py py-meth docutils literal"><span class="pre">AbstractStorage.table</span></code></a>.</li>
+<li><strong>match_any</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; Only applies if <cite>keys</cite> is a dictionary.  If True then any key
+in <cite>keys</cite> may match or if False then all keys in <cite>keys</cite> must match.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; <code class="docutils literal"><span class="pre">bool(keys)</span> <span class="pre">==</span> <span class="pre">False</span></code> or invaild value for <cite>keys</cite>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="tau.storage.StorageError">
+<em class="property">exception </em><code class="descclassname">tau.storage.</code><code class="descname">StorageError</code><span class="sig-paren">(</span><em>value</em>, <em>*hints</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#StorageError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.StorageError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="tau.error.html#tau.error.Error" title="tau.error.Error"><code class="xref py py-class docutils literal"><span class="pre">tau.error.Error</span></code></a></p>
+<p>Indicates a failure in the storage system.</p>
+<dl class="attribute">
+<dt id="tau.storage.StorageError.message_fmt">
+<code class="descname">message_fmt</code><em class="property"> = '%(value)s\n%(hints)s\n'</em><a class="headerlink" href="#tau.storage.StorageError.message_fmt" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tau.storage.StorageRecord">
+<em class="property">class </em><code class="descclassname">tau.storage.</code><code class="descname">StorageRecord</code><span class="sig-paren">(</span><em>storage</em>, <em>eid</em>, <em>element</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#StorageRecord"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.StorageRecord" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>A record in the storage container&#8217;s database.</p>
+<dl class="attribute">
+<dt id="tau.storage.StorageRecord.eid_type">
+<code class="descname">eid_type</code><a class="headerlink" href="#tau.storage.StorageRecord.eid_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Element identifier type.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.storage.StorageRecord.storage">
+<code class="descname">storage</code><a class="headerlink" href="#tau.storage.StorageRecord.storage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Storage container whos database contains this record.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.storage.StorageRecord.eid">
+<code class="descname">eid</code><a class="headerlink" href="#tau.storage.StorageRecord.eid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Element identifier value.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.storage.StorageRecord.element">
+<code class="descname">element</code><a class="headerlink" href="#tau.storage.StorageRecord.element" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>dict</em> &#8211; The database element as a dictionary.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">eid_type</code></dt>
+<dd><p>alias of <a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">str</span></code></a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.StorageRecord.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>key</em>, <em>default=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#StorageRecord.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.StorageRecord.get" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.StorageRecord.items">
+<code class="descname">items</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#StorageRecord.items"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.StorageRecord.items" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.StorageRecord.iteritems">
+<code class="descname">iteritems</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#StorageRecord.iteritems"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.StorageRecord.iteritems" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.StorageRecord.iterkeys">
+<code class="descname">iterkeys</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#StorageRecord.iterkeys"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.StorageRecord.iterkeys" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.StorageRecord.itervalues">
+<code class="descname">itervalues</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#StorageRecord.itervalues"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.StorageRecord.itervalues" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.StorageRecord.keys">
+<code class="descname">keys</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#StorageRecord.keys"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.StorageRecord.keys" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="tau.mvc.model.html">tau.mvc.model module</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="tau.storage.tests.html">tau.storage.tests package</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015 ParaTools, Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+    </div>
+  </body>
+</html>

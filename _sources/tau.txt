@@ -1,0 +1,33 @@
+tau package
+===========
+
+Subpackages
+-----------
+
+.. toctree::
+
+    tau.cf
+    tau.cli
+    tau.data
+    tau.gui
+    tau.model
+    tau.mvc
+    tau.storage
+    tau.tests
+
+Submodules
+----------
+
+.. toctree::
+
+   tau.error
+   tau.logger
+   tau.util
+
+Module contents
+---------------
+
+.. automodule:: tau
+    :members:
+    :undoc-members:
+    :show-inheritance:

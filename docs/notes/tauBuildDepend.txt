@@ -1,9 +1,0 @@
-
-
-1) Tau <compiler> 
-
-   -- boostrap with information froexperment
-   -- experiment will orchastrate software installtion so that what ever is neede is built so command
-     line works.
-
-

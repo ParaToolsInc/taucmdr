@@ -1,0 +1,27 @@
+tau.cli package
+===============
+
+Subpackages
+-----------
+
+.. toctree::
+
+    tau.cli.commands
+    tau.cli.tests
+
+Submodules
+----------
+
+.. toctree::
+
+   tau.cli.arguments
+   tau.cli.cli_view
+   tau.cli.command
+
+Module contents
+---------------
+
+.. automodule:: tau.cli
+    :members:
+    :undoc-members:
+    :show-inheritance:

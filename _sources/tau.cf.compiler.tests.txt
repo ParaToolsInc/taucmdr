@@ -1,0 +1,19 @@
+tau.cf.compiler.tests package
+=============================
+
+Submodules
+----------
+
+.. toctree::
+
+   tau.cf.compiler.tests.test_installed
+   tau.cf.compiler.tests.test_mpi
+   tau.cf.compiler.tests.test_shmem
+
+Module contents
+---------------
+
+.. automodule:: tau.cf.compiler.tests
+    :members:
+    :undoc-members:
+    :show-inheritance:

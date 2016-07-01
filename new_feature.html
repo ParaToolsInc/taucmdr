@@ -1,0 +1,100 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>How to Add Support for New TAU Features &mdash; TAU Commander Developer Documentation</title>
+    
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1
+',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
+    <link rel="next" title="How to Add Support for a New Compiler" href="new_compiler.html" />
+    <link rel="prev" title="TAU Commander Code Documentation" href="documentation.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="index.html">
+          <span>TAU Commander Developer Documentation</span></a></h1>
+        <h2 class="heading"><span>How to Add Support for New TAU Features</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="documentation.html">TAU Commander Code Documentation</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="new_compiler.html">How to Add Support for a New Compiler</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="how-to-add-support-for-new-tau-features">
+<h1>How to Add Support for New TAU Features<a class="headerlink" href="#how-to-add-support-for-new-tau-features" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="step-1-update-the-target-model">
+<h2>Step 1: Update the <a class="reference internal" href="tau.model.target.html#tau.model.target.Target" title="tau.model.target.Target"><code class="xref any py py-class docutils literal"><span class="pre">Target</span></code></a> model<a class="headerlink" href="#step-1-update-the-target-model" title="Permalink to this headline">¶</a></h2>
+<p>If the new feature requres any external software pacakges make sure the
+<a class="reference internal" href="tau.model.target.html#tau.model.target.Target" title="tau.model.target.Target"><code class="xref any py py-class docutils literal"><span class="pre">Target</span></code></a> model has at least one attribute for those packages.</p>
+</div>
+<div class="section" id="step-2-update-the-application-model">
+<h2>Step 2: Update the <a class="reference internal" href="tau.model.application.html#tau.model.application.Application" title="tau.model.application.Application"><code class="xref any py py-class docutils literal"><span class="pre">Application</span></code></a> model<a class="headerlink" href="#step-2-update-the-application-model" title="Permalink to this headline">¶</a></h2>
+<p>If the new feature requres application-side support (e.g. OpenCL support
+in TAU should correspond to OpenCL being used in the application) then
+make sure <a class="reference internal" href="tau.model.application.html#tau.model.application.Application" title="tau.model.application.Application"><code class="xref any py py-class docutils literal"><span class="pre">Application</span></code></a> has at least one attribute for the feature.</p>
+</div>
+<div class="section" id="step-3-update-the-measurement-model">
+<h2>Step 3: Update the <a class="reference internal" href="tau.model.measurement.html#tau.model.measurement.Measurement" title="tau.model.measurement.Measurement"><code class="xref any py py-class docutils literal"><span class="pre">Measurement</span></code></a> model<a class="headerlink" href="#step-3-update-the-measurement-model" title="Permalink to this headline">¶</a></h2>
+<p>If the new feature alters the application profile (likely since why else
+would you have it?) then add a new attribute to <a class="reference internal" href="tau.model.measurement.html#tau.model.measurement.Measurement" title="tau.model.measurement.Measurement"><code class="xref any py py-class docutils literal"><span class="pre">Measurement</span></code></a> to
+control if the new feature should be enabled or not.</p>
+</div>
+<div class="section" id="step-4-update-the-common-framework">
+<h2>Step 4: Update the Common Framework<a class="headerlink" href="#step-4-update-the-common-framework" title="Permalink to this headline">¶</a></h2>
+<p>With the new feature described in the model, update the Common Framework
+modules in <a class="reference internal" href="tau.cf.html"><span class="doc">tau.cf package</span></a> to react to the new model attributes.  For
+example, you may need to add new parameters to
+<code class="xref any docutils literal"><span class="pre">TauInstallation.__init__</span></code> so the installation object can configure
+TAU appropriatly and enable support for the new feature.</p>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="documentation.html">TAU Commander Code Documentation</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="new_compiler.html">How to Add Support for a New Compiler</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015 ParaTools, Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+    </div>
+  </body>
+</html>

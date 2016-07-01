@@ -1,0 +1,7 @@
+tau.cli.commands.trial.list module
+==================================
+
+.. automodule:: tau.cli.commands.trial.list
+    :members:
+    :undoc-members:
+    :show-inheritance:

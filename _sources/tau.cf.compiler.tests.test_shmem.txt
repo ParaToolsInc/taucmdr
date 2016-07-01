@@ -1,0 +1,7 @@
+tau.cf.compiler.tests.test_shmem module
+=======================================
+
+.. automodule:: tau.cf.compiler.tests.test_shmem
+    :members:
+    :undoc-members:
+    :show-inheritance:

@@ -1,0 +1,19 @@
+tau.cf package
+==============
+
+Subpackages
+-----------
+
+.. toctree::
+
+    tau.cf.compiler
+    tau.cf.software
+    tau.cf.target
+
+Module contents
+---------------
+
+.. automodule:: tau.cf
+    :members:
+    :undoc-members:
+    :show-inheritance:

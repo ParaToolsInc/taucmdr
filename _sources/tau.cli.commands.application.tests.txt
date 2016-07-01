@@ -1,0 +1,20 @@
+tau.cli.commands.application.tests package
+==========================================
+
+Submodules
+----------
+
+.. toctree::
+
+   tau.cli.commands.application.tests.test_create
+   tau.cli.commands.application.tests.test_delete
+   tau.cli.commands.application.tests.test_edit
+   tau.cli.commands.application.tests.test_list
+
+Module contents
+---------------
+
+.. automodule:: tau.cli.commands.application.tests
+    :members:
+    :undoc-members:
+    :show-inheritance:

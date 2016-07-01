@@ -1,0 +1,119 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tau.model.application module &mdash; TAU Commander Developer Documentation</title>
+    
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1
+',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
+    <link rel="up" title="tau.model package" href="tau.model.html" />
+    <link rel="next" title="tau.model.compiler module" href="tau.model.compiler.html" />
+    <link rel="prev" title="tau.model.tests.test_trial module" href="tau.model.tests.test_trial.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="index.html">
+          <span>TAU Commander Developer Documentation</span></a></h1>
+        <h2 class="heading"><span>tau.model.application module</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="tau.model.tests.test_trial.html">tau.model.tests.test_trial module</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="tau.model.compiler.html">tau.model.compiler module</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="module-tau.model.application">
+<span id="tau-model-application-module"></span><h1>tau.model.application module<a class="headerlink" href="#module-tau.model.application" title="Permalink to this headline">¶</a></h1>
+<p>Application data model.</p>
+<p><a class="reference internal" href="#tau.model.application.Application" title="tau.model.application.Application"><code class="xref any py py-class docutils literal"><span class="pre">Application</span></code></a> fully describes the application configuration to be profiled,
+including the features the application uses, e.g. OpenMP, MPI, CUDA, etc.
+Each specific application <strong>configuration</strong> has its own application record.
+For example, if an application can operate with or without OpenMP then there
+are potentially two application records for the same application code: one
+specifying OpenMP is used and the other specifying OpenMP is not used.</p>
+<dl class="class">
+<dt id="tau.model.application.Application">
+<em class="property">class </em><code class="descclassname">tau.model.application.</code><code class="descname">Application</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/application.html#Application"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.application.Application" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="tau.mvc.model.html#tau.mvc.model.Model" title="tau.mvc.model.Model"><code class="xref py py-class docutils literal"><span class="pre">tau.mvc.model.Model</span></code></a></p>
+<dl class="attribute">
+<dt id="tau.model.application.Application.associations">
+<code class="descname">associations</code><em class="property"> = {'projects': (&lt;class 'tau.model.project.Project'&gt;, 'applications')}</em><a class="headerlink" href="#tau.model.application.Application.associations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.application.Application.attributes">
+<code class="descname">attributes</code><em class="property"> = {'opencl': {'default': False, 'argparse': {'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'nargs': '?', 'flags': ('--use-opencl',), 'metavar': 'T/F', 'const': True}, 'compat': {True: (&lt;function condition at 0x106a9af50&gt;, &lt;function condition at 0x106a780c8&gt;)}, 'type': 'boolean', 'description': 'application uses OpenCL'}, 'cuda': {'default': False, 'argparse': {'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'nargs': '?', 'flags': ('--use-cuda',), 'metavar': 'T/F', 'const': True}, 'compat': {True: &lt;function condition at 0x106a9ae60&gt;}, 'type': 'boolean', 'description': 'application uses NVIDIA CUDA'}, 'mpc': {'default': False, 'argparse': {'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'nargs': '?', 'flags': ('--use-mpc',), 'metavar': 'T/F', 'const': True}, 'type': 'boolean', 'description': 'application uses MPC'}, 'name': {'argparse': {'metavar': '&lt;application_name&gt;'}, 'unique': True, 'type': 'string', 'primary_key': True, 'description': 'application configuration name'}, 'openmp': {'default': False, 'argparse': {'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'nargs': '?', 'flags': ('--use-openmp',), 'metavar': 'T/F', 'const': True}, 'type': 'boolean', 'description': 'application uses OpenMP'}, 'pthreads': {'default': False, 'argparse': {'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'nargs': '?', 'flags': ('--use-pthreads',), 'metavar': 'T/F', 'const': True}, 'type': 'boolean', 'description': 'application uses pthreads'}, 'shmem': {'default': False, 'argparse': {'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'nargs': '?', 'flags': ('--use-shmem',), 'metavar': 'T/F', 'const': True}, 'type': 'boolean', 'description': 'application uses SHMEM'}, 'projects': {'via': 'applications', 'description': 'projects using this application', 'collection': &lt;class 'tau.model.project.Project'&gt;}, 'mpi': {'default': False, 'argparse': {'action': &lt;class 'tau.cli.arguments.ParseBooleanAction'&gt;, 'nargs': '?', 'flags': ('--use-mpi',), 'metavar': 'T/F', 'const': True}, 'compat': {True: &lt;function condition at 0x106a9acf8&gt;}, 'type': 'boolean', 'description': 'application uses MPI'}}</em><a class="headerlink" href="#tau.model.application.Application.attributes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.application.Application.key_attribute">
+<code class="descname">key_attribute</code><em class="property"> = 'name'</em><a class="headerlink" href="#tau.model.application.Application.key_attribute" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.application.Application.name">
+<code class="descname">name</code><em class="property"> = 'Application'</em><a class="headerlink" href="#tau.model.application.Application.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.application.Application.references">
+<code class="descname">references</code><em class="property"> = set([(&lt;class 'tau.model.experiment.Experiment'&gt;, 'application')])</em><a class="headerlink" href="#tau.model.application.Application.references" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.model.application.attributes">
+<code class="descclassname">tau.model.application.</code><code class="descname">attributes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/application.html#attributes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.application.attributes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="tau.model.tests.test_trial.html">tau.model.tests.test_trial module</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="tau.model.compiler.html">tau.model.compiler module</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015 ParaTools, Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+    </div>
+  </body>
+</html>

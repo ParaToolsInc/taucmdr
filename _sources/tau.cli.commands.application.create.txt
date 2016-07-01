@@ -1,0 +1,7 @@
+tau.cli.commands.application.create module
+==========================================
+
+.. automodule:: tau.cli.commands.application.create
+    :members:
+    :undoc-members:
+    :show-inheritance:

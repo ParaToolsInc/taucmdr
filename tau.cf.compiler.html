@@ -1,0 +1,326 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tau.cf.compiler package &mdash; TAU Commander Developer Documentation</title>
+    
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1
+',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
+    <link rel="up" title="tau.cf package" href="tau.cf.html" />
+    <link rel="next" title="tau.cf.compiler.tests package" href="tau.cf.compiler.tests.html" />
+    <link rel="prev" title="tau.cf package" href="tau.cf.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="index.html">
+          <span>TAU Commander Developer Documentation</span></a></h1>
+        <h2 class="heading"><span>tau.cf.compiler package</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="tau.cf.html">tau.cf package</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="tau.cf.compiler.tests.html">tau.cf.compiler.tests package</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="tau-cf-compiler-package">
+<h1>tau.cf.compiler package<a class="headerlink" href="#tau-cf-compiler-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tau.cf.compiler.tests.html">tau.cf.compiler.tests package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tau.cf.compiler.tests.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tau.cf.compiler.tests.test_installed.html">tau.cf.compiler.tests.test_installed module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tau.cf.compiler.tests.test_mpi.html">tau.cf.compiler.tests.test_mpi module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tau.cf.compiler.tests.test_shmem.html">tau.cf.compiler.tests.test_shmem module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tau.cf.compiler.tests.html#module-tau.cf.compiler.tests">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tau.cf.compiler.installed.html">tau.cf.compiler.installed module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tau.cf.compiler.mpi.html">tau.cf.compiler.mpi module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tau.cf.compiler.shmem.html">tau.cf.compiler.shmem module</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="module-tau.cf.compiler">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-tau.cf.compiler" title="Permalink to this headline">¶</a></h2>
+<p>TAU compiler knowledgebase.</p>
+<p>TAU Commander uses this knowledgebase to try to work out what kind of compiler
+the user is using to build their code.  We can get away with this because TAU
+itself will take care of most of the version-specific details if only we get
+the configuration line correct.</p>
+<p>TAU depends very strongly on compiler characteristics. Each TAU configuration
+is only valid for a single compiler, TAU&#8217;s feature set changes depending on compiler
+family and version, TAU&#8217;s configure script is easily confused by compilers with
+strange names or unusual installation paths, etc.  In most cases, TAU doesn&#8217;t even
+try to detect the compiler and trusts the user to specify the right &#8220;magic words&#8221;
+at configuration. Worse, TAU sometimes does probe the compiler to discover things
+like MPI headers, except it does such a poor job that many time we get the wrong
+answer or simply cause the configure script to fail entirely. This has been a major
+painpoints for TAU users.</p>
+<p>Unfortunately, compiler detection is very hard.  Projects like <a class="reference external" href="http://www.scipy.org/">SciPy</a> that depend
+on a compiler&#8217;s stdout stream for compiler detection have more or less failed in this
+since compiler messages are exceptionally difficult to parse.  <a class="reference external" href="http://www.cmake.org/">CMake</a> does a good
+job by invoking the compiler command and parsing strings out of a compiled object to
+detect compiler characteristcs, but that approach is complex and still breaks easily.</p>
+<p>The TAU Commander compiler knowledgebase associates a compiler command (<cite>icc</cite>)
+with characteristics like family (<cite>Intel</cite>) and role (<cite>CC</cite>).  Any compiler commands
+intercepted by TAU Commander are matched against the database to discover their
+characteristics, hence we do not need to invoke the compiler to identify it.</p>
+<dl class="class">
+<dt id="tau.cf.compiler.CompilerFamily">
+<em class="property">class </em><code class="descclassname">tau.cf.compiler.</code><code class="descname">CompilerFamily</code><span class="sig-paren">(</span><em>name</em>, <em>version_flags=None</em>, <em>include_path_flags=None</em>, <em>library_path_flags=None</em>, <em>link_library_flags=None</em>, <em>show_wrapper_flags=None</em>, <em>family_regex=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/compiler.html#CompilerFamily"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.compiler.CompilerFamily" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="tau.cf.html#tau.cf.KeyedRecord" title="tau.cf.KeyedRecord"><code class="xref py py-class docutils literal"><span class="pre">tau.cf.KeyedRecord</span></code></a></p>
+<p>Information about a compiler family.</p>
+<p>A compiler&#8217;s family creates associations between different compiler commands
+and assigns compilers to roles.  All compiler commands within a family accept
+similar arguments, and produce compatible object files.</p>
+<dl class="attribute">
+<dt id="tau.cf.compiler.CompilerFamily.name">
+<code class="descname">name</code><a class="headerlink" href="#tau.cf.compiler.CompilerFamily.name" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em> &#8211; Family name, e.g. &#8220;Intel&#8221;.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.cf.compiler.CompilerFamily.family_regex">
+<code class="descname">family_regex</code><a class="headerlink" href="#tau.cf.compiler.CompilerFamily.family_regex" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em> &#8211; Regular expression identifying compiler family in compiler version string.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.cf.compiler.CompilerFamily.version_flags">
+<code class="descname">version_flags</code><a class="headerlink" href="#tau.cf.compiler.CompilerFamily.version_flags" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>list</em> &#8211; Command line flags that show the compiler version, e.g. &#8216;&#8211;version&#8217;.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.cf.compiler.CompilerFamily.include_path_flags">
+<code class="descname">include_path_flags</code><a class="headerlink" href="#tau.cf.compiler.CompilerFamily.include_path_flags" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>list</em> &#8211; Command line flags that add a directory to the compiler&#8217;s include path, e.g. &#8216;-I&#8217;.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.cf.compiler.CompilerFamily.library_path_flags">
+<code class="descname">library_path_flags</code><a class="headerlink" href="#tau.cf.compiler.CompilerFamily.library_path_flags" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>list</em> &#8211; Command line flags that add a directory to the compiler&#8217;s library path, e.g. &#8216;-L&#8217;.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.cf.compiler.CompilerFamily.link_library_flags">
+<code class="descname">link_library_flags</code><a class="headerlink" href="#tau.cf.compiler.CompilerFamily.link_library_flags" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>list</em> &#8211; Command line flags that link a library, e.g. &#8216;-l&#8217;.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.cf.compiler.CompilerFamily.show_wrapper_flags">
+<code class="descname">show_wrapper_flags</code><a class="headerlink" href="#tau.cf.compiler.CompilerFamily.show_wrapper_flags" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>list</em> &#8211; Command line flags that show the wrapped compiler&#8217;s command line, e.g. &#8216;-show&#8217;.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.cf.compiler.CompilerFamily.add">
+<code class="descname">add</code><span class="sig-paren">(</span><em>role</em>, <em>*commands</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/compiler.html#CompilerFamily.add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.compiler.CompilerFamily.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register compiler commands in the given role.</p>
+<p>Commands should be ordered by preference.  For example, if we prefer to build
+C++ codes with &#8220;c++&#8221; instead of &#8220;CC&#8221; so that case-insensitive file systems
+(looking at you OS X) don&#8217;t try to use a C compiler for C++ codes:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">family</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">CXX_ROLE</span><span class="p">,</span> <span class="s1">&#39;c++&#39;</span><span class="p">,</span> <span class="s1">&#39;CC&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>role</strong> (<a class="reference internal" href="#tau.cf.compiler.CompilerRole" title="tau.cf.compiler.CompilerRole"><em>CompilerRole</em></a>) &#8211; </li>
+<li><strong>*commands</strong> &#8211; Command strings without arguments.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="tau.cf.compiler.CompilerFamily.all">
+<em class="property">classmethod </em><code class="descname">all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/compiler.html#CompilerFamily.all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.compiler.CompilerFamily.all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over all compiler families.</p>
+<p>First value yielded is the host&#8217;s preferred compiler family.
+Subsequent values can be in any order.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Yields:</th><td class="field-body">A CompilerFamily object.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="tau.cf.compiler.CompilerFamily.family_names">
+<em class="property">classmethod </em><code class="descname">family_names</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/compiler.html#CompilerFamily.family_names"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.compiler.CompilerFamily.family_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an alphabetical list of all known compiler family names.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="tau.cf.compiler.CompilerFamily.probe">
+<em class="property">classmethod </em><code class="descname">probe</code><span class="sig-paren">(</span><em>absolute_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/compiler.html#CompilerFamily.probe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.compiler.CompilerFamily.probe" title="Permalink to this definition">¶</a></dt>
+<dd><p>TODO: Docs</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tau.cf.compiler.CompilerInfo">
+<em class="property">class </em><code class="descclassname">tau.cf.compiler.</code><code class="descname">CompilerInfo</code><span class="sig-paren">(</span><em>command</em>, <em>family</em>, <em>role</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/compiler.html#CompilerInfo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.compiler.CompilerInfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="tau.cf.html#tau.cf.TrackedInstance" title="tau.cf.TrackedInstance"><code class="xref py py-class docutils literal"><span class="pre">tau.cf.TrackedInstance</span></code></a></p>
+<p>Information about a compiler.</p>
+<p>A compiler&#8217;s basic information includes it&#8217;s family (e.g. <cite>Intel</cite>) and role (e.g. CXX).
+The compiler might not be installed.</p>
+<dl class="attribute">
+<dt id="tau.cf.compiler.CompilerInfo.command">
+<code class="descname">command</code><a class="headerlink" href="#tau.cf.compiler.CompilerInfo.command" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em> &#8211; Command without path or arguments, e.g. &#8216;icpc&#8217;</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.cf.compiler.CompilerInfo.family">
+<code class="descname">family</code><a class="headerlink" href="#tau.cf.compiler.CompilerInfo.family" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>CompilerFamily</em> &#8211; The family this compiler belongs to.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.cf.compiler.CompilerInfo.role">
+<code class="descname">role</code><a class="headerlink" href="#tau.cf.compiler.CompilerInfo.role" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>CompilerRole</em> &#8211; This compiler&#8217;s <em>primary</em> role in the family.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.cf.compiler.CompilerInfo.short_descr">
+<code class="descname">short_descr</code><a class="headerlink" href="#tau.cf.compiler.CompilerInfo.short_descr" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em> &#8211; A short description for command line help.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="tau.cf.compiler.CompilerInfo.find">
+<em class="property">classmethod </em><code class="descname">find</code><span class="sig-paren">(</span><em>command=None</em>, <em>family=None</em>, <em>role=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/compiler.html#CompilerInfo.find"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.compiler.CompilerInfo.find" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find CompilerInfo instances that matches the given command and/or family and/or role.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>command</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; A compiler command without path.</li>
+<li><strong>family</strong> (<a class="reference internal" href="#tau.cf.compiler.CompilerFamily" title="tau.cf.compiler.CompilerFamily"><em>CompilerFamily</em></a>) &#8211; Compiler family to search for.</li>
+<li><strong>role</strong> (<a class="reference internal" href="#tau.cf.compiler.CompilerRole" title="tau.cf.compiler.CompilerRole"><em>CompilerRole</em></a>) &#8211; Compiler role to search for.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">CompilerInfo instances matching given compiler information.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="tau.cli.commands.target.list.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list">list</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tau.cf.compiler.CompilerRole">
+<em class="property">class </em><code class="descclassname">tau.cf.compiler.</code><code class="descname">CompilerRole</code><span class="sig-paren">(</span><em>keyword</em>, <em>language</em>, <em>required=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/compiler.html#CompilerRole"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.compiler.CompilerRole" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="tau.cf.html#tau.cf.KeyedRecord" title="tau.cf.KeyedRecord"><code class="xref py py-class docutils literal"><span class="pre">tau.cf.KeyedRecord</span></code></a></p>
+<p>Information about a compiler&#8217;s role.</p>
+<p>A compiler role identifies how the compiler is used in the build process. All compilers
+play at least one <em>role</em> in their compiler family.  Many compilers can play multiple
+roles, e.g. icpc can be a C++ compiler in the CXX role, a C compiler in the CC role,
+or even a linker.  TAU Commander must identify a compiler&#8217;s role so it can configure TAU.</p>
+<dl class="attribute">
+<dt id="tau.cf.compiler.CompilerRole.keyword">
+<code class="descname">keyword</code><a class="headerlink" href="#tau.cf.compiler.CompilerRole.keyword" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em> &#8211; Name of the compiler&#8217;s role, e.g. &#8216;CXX&#8217;.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.cf.compiler.CompilerRole.language">
+<code class="descname">language</code><a class="headerlink" href="#tau.cf.compiler.CompilerRole.language" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em> &#8211; Name of the programming language corresponding to the compiler role, e.g. &#8216;C++&#8217;.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.cf.compiler.CompilerRole.required">
+<code class="descname">required</code><a class="headerlink" href="#tau.cf.compiler.CompilerRole.required" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>bool</em> &#8211; True if this role must be filled to compile TAU, False otherwise.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="tau.cf.compiler.CompilerRole.tau_required">
+<em class="property">classmethod </em><code class="descname">tau_required</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/compiler.html#CompilerRole.tau_required"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.compiler.CompilerRole.tau_required" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over roles that must be filled to get TAU to compile.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="tau.cf.html">tau.cf package</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="tau.cf.compiler.tests.html">tau.cf.compiler.tests package</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015 ParaTools, Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+    </div>
+  </body>
+</html>
