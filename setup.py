@@ -38,6 +38,69 @@ import fileinput
 import setuptools
 import subprocess
 
+#######################################################################################################################
+# PACKAGE CONFIGURATION
+#######################################################################################################################
+
+# Package name
+NAME = "taucmdr"
+
+# Package author information
+AUTHOR = "ParaTools, Inc."
+AUTHOR_EMAIL = "info@paratools.com"
+
+# Package short description
+DESCRIPTION = "An intuitive interface for the TAU Performance System"
+
+# Package long description
+LONG_DESCRIPTION = \
+"""TAU Commander from ParaTools, Inc. is a production-grade performance engineering solution that makes
+The TAU Performance System users more productive. It presents a simple, intuitive, and systematic 
+interface that guides users through performance engineering workflows and offers constructive 
+feedback in case of error. TAU Commander also enhances the performance engineer's ability to mine
+actionable information from the application performance data by connecting to a suite of cloud-based 
+data analysis, storage, visualization, and reporting services."""
+
+# Package software license
+LICENSE = "BSD"
+
+# Package keywords
+KEYWORDS = ["TAU", "performance analysis", "profile", "profiling", "trace", "tracing"]
+
+# Package homepage
+HOMEPAGE = "http://www.taucommander.com/"
+
+# URL to clone the package repo
+GIT_ORIGIN_URL = "git@github.com:ParaToolsInc/taucmdr.git"
+
+# PyPI classifiers
+CLASSIFIERS = [
+    # How mature is this project? Common values are
+    #   3 - Alpha
+    #   4 - Beta
+    #   5 - Production/Stable
+    'Development Status :: 3 - Alpha',
+
+    # Indicate who your project is intended for
+    'Intended Audience :: Developers',
+    'Topic :: Software Development :: User Interfaces',
+
+    # Pick your license as you wish (should match "license" above)
+    'License :: OSI Approved :: BSD License',
+
+    # Specify the Python versions you support here. In particular, ensure
+    # that you indicate whether you support Python 2, Python 3 or both.
+    'Programming Language :: Python :: 2',
+    'Programming Language :: Python :: 2.7',
+]
+
+#######################################################################################################################
+# END PACKAGE CONFIGURATION (probably shouldn't change anything after this line)
+#######################################################################################################################
+
+# Package top-level directory 
+TAU_HOME = os.path.realpath(os.path.abspath(os.path.dirname(__file__)))
+
 # Check if sphinx is installed
 try:
     from sphinx import apidoc as sphinx_apidoc
@@ -46,49 +109,6 @@ except ImportError:
     HAVE_SPHINX = False
 else:
     HAVE_SPHINX = True 
-
-
-GITHUB_ORIGIN_URL = "git@github.com:ParaToolsInc/taucmdr.git"
-
-LONG_DESCRIPTION="""
-TAU Commander from ParaTools, Inc. is a production-grade performance engineering solution that makes
-The TAU Performance System users more productive. It presents a simple, intuitive, and systematic interface that guides
-users through performance engineering workflows and offers constructive feedback in case of error. TAU Commander also
-enhances the performance engineer's ability to mine actionable information from the application performance data by
-connecting to a suite of cloud-based data analysis, storage, visualization, and reporting services.
-"""
-
-TAU_HOME = os.path.realpath(os.path.abspath(os.path.dirname(__file__)))
-
-
-def update_version():
-    """Rewrite packages/tau/__init__.py to update __version__.
-
-    Reads the version number from a file named VERSION in the top-level directory,
-    then uses :any:`fileinput` to update __version__ in packages/tau/__init__.py.
-
-    Returns:
-        str: The version string to be passed to :any:`setuptools.setup`.
-    """
-    # Get version number from VERSION file
-    try:
-        fin = open(os.path.join(TAU_HOME, "VERSION"))
-    except IOError:
-        sys.stderr.writeln("ERROR: VERSION file is missing!")
-        sys.exit(256)
-    else:
-        version = fin.readline().strip()
-    finally:
-        fin.close()
-    # Set tau.__version__ to match VERSION file
-    for line in fileinput.input(os.path.join(TAU_HOME, "packages", "tau", "__init__.py"), inplace=1):
-        # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
-        if line.startswith("__version__"):
-            sys.stdout.write('__version__ = "%s"\n' % version)
-        else:
-            sys.stdout.write(line)
-    return version
-
 
 if HAVE_SPHINX:
     class BuildSphinx(BuildDoc):
@@ -121,7 +141,7 @@ if HAVE_SPHINX:
     
         def _clone_gh_pages(self):
             shutil.rmtree(self.builder_target_dir, ignore_errors=True)
-            cmd = ['git', 'clone', GITHUB_ORIGIN_URL, '-b', 'gh-pages', '--single-branch', self.builder_target_dir]
+            cmd = ['git', 'clone', GIT_ORIGIN_URL, '-b', 'gh-pages', '--single-branch', self.builder_target_dir]
             self._shell(cmd, cwd=self.build_dir)
             if self.gh_user_name:
                 self._shell(['git', 'config', 'user.name', self.gh_user_name])
@@ -157,6 +177,35 @@ if HAVE_SPHINX:
                 self._push_gh_pages()
 
 
+def update_version():
+    """Rewrite packages/tau/__init__.py to update __version__.
+
+    Reads the version number from a file named VERSION in the top-level directory,
+    then uses :any:`fileinput` to update __version__ in packages/tau/__init__.py.
+
+    Returns:
+        str: The version string to be passed to :any:`setuptools.setup`.
+    """
+    # Get version number from VERSION file
+    try:
+        fin = open(os.path.join(TAU_HOME, "VERSION"))
+    except IOError:
+        sys.stderr.writeln("ERROR: VERSION file is missing!")
+        sys.exit(256)
+    else:
+        version = fin.readline().strip()
+    finally:
+        fin.close()
+    # Set tau.__version__ to match VERSION file
+    for line in fileinput.input(os.path.join(TAU_HOME, "packages", "tau", "__init__.py"), inplace=1):
+        # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
+        if line.startswith("__version__"):
+            sys.stdout.write('__version__ = "%s"\n' % version)
+        else:
+            sys.stdout.write(line)
+    return version
+
+
 def get_commands():
     cmdclass = {}
     if HAVE_SPHINX:
@@ -165,7 +214,8 @@ def get_commands():
 
 
 setuptools.setup(
-    name="taucmdr",
+    # Package configuration
+    name=NAME,
     version=update_version(),
     packages=setuptools.find_packages("packages"),
     package_dir={"": "packages"},
@@ -177,36 +227,15 @@ setuptools.setup(
     tests_require=['pylint'], # Because we run pylint as a unit test
 
     # Metadata for upload to PyPI
-    author="ParaTools, Inc.",
-    author_email="info@paratools.com",
-    description="An intuitive interface for the TAU Performance System",
+    author=AUTHOR,
+    author_email=AUTHOR_EMAIL,
+    description=DESCRIPTION,
     long_description=LONG_DESCRIPTION,
-    license="BSD",
-    keywords="TAU performance analysis profile profiling trace tracing",
-    url="http://www.taucommander.com/",
-
-    # PyPI classifiers
-    classifiers=[
-        # How mature is this project? Common values are
-        #   3 - Alpha
-        #   4 - Beta
-        #   5 - Production/Stable
-        'Development Status :: 3 - Alpha',
-
-        # Indicate who your project is intended for
-        'Intended Audience :: Developers',
-        'Topic :: Software Development :: User Interfaces',
-
-        # Pick your license as you wish (should match "license" above)
-        'License :: OSI Approved :: BSD License',
-
-        # Specify the Python versions you support here. In particular, ensure
-        # that you indicate whether you support Python 2, Python 3 or both.
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
-    ],
-                 
+    license=LICENSE,
+    keywords=KEYWORDS,
+    url=HOMEPAGE,
+    classifiers=CLASSIFIERS,
+    
     # Custom commands
     cmdclass=get_commands(),
-
 )
