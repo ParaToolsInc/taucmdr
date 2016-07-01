@@ -71,7 +71,7 @@
 <em class="property">class </em><code class="descclassname">tau.tests.</code><code class="descname">TestCase</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/tests.html#TestCase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.tests.TestCase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></code></p>
 <p>Base class for unit tests.</p>
-<p>Performs tests in a temporary directory and reconfigures <a class="reference internal" href="tau.logger.html"><span class="doc">tau.logger module</span></a> to work with <a class="reference external" href="https://docs.python.org/library/unittest.html#module-unittest" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">unittest</span></code></a>.</p>
+<p>Performs tests in a temporary directory and reconfigures <a class="reference internal" href="tau.logger.html"><em>tau.logger module</em></a> to work with <a class="reference external" href="https://docs.python.org/library/unittest.html#module-unittest" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">unittest</span></code></a>.</p>
 <dl class="method">
 <dt id="tau.tests.TestCase.assertCommandReturnValue">
 <code class="descname">assertCommandReturnValue</code><span class="sig-paren">(</span><em>return_value</em>, <em>cmd</em>, <em>argv</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/tests.html#TestCase.assertCommandReturnValue"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.tests.TestCase.assertCommandReturnValue" title="Permalink to this definition">¶</a></dt>
@@ -106,8 +106,8 @@
 <code class="descname">reset_project_storage</code><span class="sig-paren">(</span><em>project_name='proj1'</em>, <em>target_name='targ1'</em>, <em>app_name='app1'</em>, <em>bare=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/tests.html#TestCase.reset_project_storage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.tests.TestCase.reset_project_storage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Delete and recreate project storage.</p>
 <p>Effectively the same as:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">rm</span> <span class="o">-</span><span class="n">rf</span> <span class="o">.</span><span class="n">tau</span>
-<span class="o">&gt;</span> <span class="n">tau</span> <span class="n">init</span> <span class="o">--</span><span class="n">project</span><span class="o">-</span><span class="n">name</span><span class="o">=</span><span class="n">proj1</span> <span class="o">--</span><span class="n">target</span><span class="o">-</span><span class="n">name</span><span class="o">=</span><span class="n">targ1</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span>&gt; rm -rf .tau
+&gt; tau init --project-name=proj1 --target-name=targ1
 </pre></div>
 </div>
 <table class="docutils field-list" frame="void" rules="none">
@@ -252,7 +252,7 @@ to execute the tests.</p>
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
 </html>

@@ -115,43 +115,50 @@ similar arguments, and produce compatible object files.</p>
 <dl class="attribute">
 <dt id="tau.cf.compiler.CompilerFamily.name">
 <code class="descname">name</code><a class="headerlink" href="#tau.cf.compiler.CompilerFamily.name" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>str</em> &#8211; Family name, e.g. &#8220;Intel&#8221;.</p>
+<dd><p><em>str</em></p>
+<p>Family name, e.g. &#8220;Intel&#8221;.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="tau.cf.compiler.CompilerFamily.family_regex">
 <code class="descname">family_regex</code><a class="headerlink" href="#tau.cf.compiler.CompilerFamily.family_regex" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>str</em> &#8211; Regular expression identifying compiler family in compiler version string.</p>
+<dd><p><em>str</em></p>
+<p>Regular expression identifying compiler family in compiler version string.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="tau.cf.compiler.CompilerFamily.version_flags">
 <code class="descname">version_flags</code><a class="headerlink" href="#tau.cf.compiler.CompilerFamily.version_flags" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>list</em> &#8211; Command line flags that show the compiler version, e.g. &#8216;&#8211;version&#8217;.</p>
+<dd><p><em>list</em></p>
+<p>Command line flags that show the compiler version, e.g. &#8216;&#8211;version&#8217;.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="tau.cf.compiler.CompilerFamily.include_path_flags">
 <code class="descname">include_path_flags</code><a class="headerlink" href="#tau.cf.compiler.CompilerFamily.include_path_flags" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>list</em> &#8211; Command line flags that add a directory to the compiler&#8217;s include path, e.g. &#8216;-I&#8217;.</p>
+<dd><p><em>list</em></p>
+<p>Command line flags that add a directory to the compiler&#8217;s include path, e.g. &#8216;-I&#8217;.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="tau.cf.compiler.CompilerFamily.library_path_flags">
 <code class="descname">library_path_flags</code><a class="headerlink" href="#tau.cf.compiler.CompilerFamily.library_path_flags" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>list</em> &#8211; Command line flags that add a directory to the compiler&#8217;s library path, e.g. &#8216;-L&#8217;.</p>
+<dd><p><em>list</em></p>
+<p>Command line flags that add a directory to the compiler&#8217;s library path, e.g. &#8216;-L&#8217;.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="tau.cf.compiler.CompilerFamily.link_library_flags">
 <code class="descname">link_library_flags</code><a class="headerlink" href="#tau.cf.compiler.CompilerFamily.link_library_flags" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>list</em> &#8211; Command line flags that link a library, e.g. &#8216;-l&#8217;.</p>
+<dd><p><em>list</em></p>
+<p>Command line flags that link a library, e.g. &#8216;-l&#8217;.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="tau.cf.compiler.CompilerFamily.show_wrapper_flags">
 <code class="descname">show_wrapper_flags</code><a class="headerlink" href="#tau.cf.compiler.CompilerFamily.show_wrapper_flags" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>list</em> &#8211; Command line flags that show the wrapped compiler&#8217;s command line, e.g. &#8216;-show&#8217;.</p>
+<dd><p><em>list</em></p>
+<p>Command line flags that show the wrapped compiler&#8217;s command line, e.g. &#8216;-show&#8217;.</p>
 </dd></dl>
 
 <dl class="method">
@@ -161,7 +168,7 @@ similar arguments, and produce compatible object files.</p>
 <p>Commands should be ordered by preference.  For example, if we prefer to build
 C++ codes with &#8220;c++&#8221; instead of &#8220;CC&#8221; so that case-insensitive file systems
 (looking at you OS X) don&#8217;t try to use a C compiler for C++ codes:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">family</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">CXX_ROLE</span><span class="p">,</span> <span class="s1">&#39;c++&#39;</span><span class="p">,</span> <span class="s1">&#39;CC&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">family</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">CXX_ROLE</span><span class="p">,</span> <span class="s1">&#39;c++&#39;</span><span class="p">,</span> <span class="s1">&#39;CC&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <table class="docutils field-list" frame="void" rules="none">
@@ -218,25 +225,29 @@ The compiler might not be installed.</p>
 <dl class="attribute">
 <dt id="tau.cf.compiler.CompilerInfo.command">
 <code class="descname">command</code><a class="headerlink" href="#tau.cf.compiler.CompilerInfo.command" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>str</em> &#8211; Command without path or arguments, e.g. &#8216;icpc&#8217;</p>
+<dd><p><em>str</em></p>
+<p>Command without path or arguments, e.g. &#8216;icpc&#8217;</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="tau.cf.compiler.CompilerInfo.family">
 <code class="descname">family</code><a class="headerlink" href="#tau.cf.compiler.CompilerInfo.family" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>CompilerFamily</em> &#8211; The family this compiler belongs to.</p>
+<dd><p><em>CompilerFamily</em></p>
+<p>The family this compiler belongs to.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="tau.cf.compiler.CompilerInfo.role">
 <code class="descname">role</code><a class="headerlink" href="#tau.cf.compiler.CompilerInfo.role" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>CompilerRole</em> &#8211; This compiler&#8217;s <em>primary</em> role in the family.</p>
+<dd><p><em>CompilerRole</em></p>
+<p>This compiler&#8217;s <em>primary</em> role in the family.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="tau.cf.compiler.CompilerInfo.short_descr">
 <code class="descname">short_descr</code><a class="headerlink" href="#tau.cf.compiler.CompilerInfo.short_descr" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>str</em> &#8211; A short description for command line help.</p>
+<dd><p><em>str</em></p>
+<p>A short description for command line help.</p>
 </dd></dl>
 
 <dl class="classmethod">
@@ -278,19 +289,22 @@ or even a linker.  TAU Commander must identify a compiler&#8217;s role so it can
 <dl class="attribute">
 <dt id="tau.cf.compiler.CompilerRole.keyword">
 <code class="descname">keyword</code><a class="headerlink" href="#tau.cf.compiler.CompilerRole.keyword" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>str</em> &#8211; Name of the compiler&#8217;s role, e.g. &#8216;CXX&#8217;.</p>
+<dd><p><em>str</em></p>
+<p>Name of the compiler&#8217;s role, e.g. &#8216;CXX&#8217;.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="tau.cf.compiler.CompilerRole.language">
 <code class="descname">language</code><a class="headerlink" href="#tau.cf.compiler.CompilerRole.language" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>str</em> &#8211; Name of the programming language corresponding to the compiler role, e.g. &#8216;C++&#8217;.</p>
+<dd><p><em>str</em></p>
+<p>Name of the programming language corresponding to the compiler role, e.g. &#8216;C++&#8217;.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="tau.cf.compiler.CompilerRole.required">
 <code class="descname">required</code><a class="headerlink" href="#tau.cf.compiler.CompilerRole.required" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>bool</em> &#8211; True if this role must be filled to compile TAU, False otherwise.</p>
+<dd><p><em>bool</em></p>
+<p>True if this role must be filled to compile TAU, False otherwise.</p>
 </dd></dl>
 
 <dl class="classmethod">
@@ -320,7 +334,7 @@ or even a linker.  TAU Commander must identify a compiler&#8217;s role so it can
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
 </html>

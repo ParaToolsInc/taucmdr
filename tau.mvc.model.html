@@ -62,31 +62,36 @@
 <dl class="attribute">
 <dt id="tau.mvc.model.Model.name">
 <code class="descname">name</code><a class="headerlink" href="#tau.mvc.model.Model.name" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>str</em> &#8211; Name of the model.</p>
+<dd><p><em>str</em></p>
+<p>Name of the model.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="tau.mvc.model.Model.associations">
 <code class="descname">associations</code><a class="headerlink" href="#tau.mvc.model.Model.associations" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>dict</em> &#8211; (Controller, str) tuples keyed by attribute name defining attribute associations.</p>
+<dd><p><em>dict</em></p>
+<p>(Controller, str) tuples keyed by attribute name defining attribute associations.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="tau.mvc.model.Model.references">
 <code class="descname">references</code><a class="headerlink" href="#tau.mvc.model.Model.references" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>set</em> &#8211; (Controller, str) tuples listing foreign models referencing this model.</p>
+<dd><p><em>set</em></p>
+<p>(Controller, str) tuples listing foreign models referencing this model.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="tau.mvc.model.Model.attributes">
 <code class="descname">attributes</code><a class="headerlink" href="#tau.mvc.model.Model.attributes" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>dict</em> &#8211; Model attributes.</p>
+<dd><p><em>dict</em></p>
+<p>Model attributes.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="tau.mvc.model.Model.key_attribute">
 <code class="descname">key_attribute</code><a class="headerlink" href="#tau.mvc.model.Model.key_attribute" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>str</em> &#8211; Name of an attribute that serves as a unique identifier.</p>
+<dd><p><em>str</em></p>
+<p>Name of an attribute that serves as a unique identifier.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -103,10 +108,10 @@ compatible.  This routine checks the &#8216;compat&#8217; property of each attri
 compatibility.  &#8216;compat&#8217; is a dictionary where the keys are values or callables and the
 values are tuples of compatibility conditions.  If the attribute with the &#8216;compat&#8217; property
 is one of the key values then the conditions are checked.  The general form of &#8216;compat&#8217; is:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="p">(</span><span class="n">value</span><span class="o">|</span><span class="n">callable</span><span class="p">):</span> <span class="p">(</span><span class="n">condition</span><span class="p">,</span> <span class="p">[</span><span class="n">condition</span><span class="p">,</span> <span class="o">...</span><span class="p">]),</span>
-<span class="p">[(</span><span class="n">value</span><span class="o">|</span><span class="n">callable</span><span class="p">):</span> <span class="p">(</span><span class="n">condition</span><span class="p">,</span> <span class="p">[</span><span class="n">condition</span><span class="p">,</span> <span class="o">...</span><span class="p">]),</span> <span class="o">...</span><span class="p">]</span>
-<span class="p">}</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span>{
+(value|callable): (condition, [condition, ...]),
+[(value|callable): (condition, [condition, ...]), ...]
+}
 </pre></div>
 </div>
 <p>Use tuples to join multiple conditions.  If only one condition is needed then you do
@@ -122,36 +127,37 @@ then the listed conditions are checked when the attribute&#8217;s value matches 
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>rhs</strong> (<a class="reference internal" href="#tau.mvc.model.Model" title="tau.mvc.model.Model"><em>Model</em></a>) &#8211; Check compatibility with this data record.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211; The two records are not compatible.</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211;
+The two records are not compatible.</td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">Examples</p>
 <p>Suppose we have this data:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Programmer</span><span class="o">.</span><span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;hungry&#39;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="kc">True</span><span class="p">:</span> <span class="p">(</span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
-                          <span class="n">CheeseShop</span><span class="o">.</span><span class="n">encourage</span><span class="p">(</span><span class="s1">&#39;chedder&#39;</span><span class="p">,</span> <span class="s1">&#39;Wisconsin&#39;</span><span class="p">),</span>
-                          <span class="n">ProgramManager</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;holding_long_meeting&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
-                          <span class="n">Roommate</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;steals_food&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)}</span>
-    <span class="p">}</span>
-<span class="p">}</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span>Programmer.attributes = {
+    &#39;hungry&#39;: {
+        &#39;type&#39;: &#39;boolean&#39;,
+        &#39;compat&#39;: {True: (CheeseShop.require(&#39;have_cheese&#39;, True),
+                          CheeseShop.encourage(&#39;chedder&#39;, &#39;Wisconsin&#39;),
+                          ProgramManager.discourage(&#39;holding_long_meeting&#39;, True),
+                          Roommate.exclude(&#39;steals_food&#39;, True)}
+    }
+}
 
-<span class="n">bob</span> <span class="o">=</span> <span class="n">Programmer</span><span class="p">({</span><span class="s1">&#39;hungry&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
-<span class="n">world_o_cheese</span> <span class="o">=</span> <span class="n">CheeseShop</span><span class="p">({</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;chedder&#39;</span><span class="p">:</span> <span class="s1">&#39;Wisconsin&#39;</span><span class="p">})</span>
-<span class="n">cheese_wizzard</span> <span class="o">=</span> <span class="n">CheeseShop</span><span class="p">({</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;chedder&#39;</span><span class="p">:</span> <span class="s1">&#39;California&#39;</span><span class="p">})</span>
-<span class="n">louis</span> <span class="o">=</span> <span class="n">ProgramManager</span><span class="p">({</span><span class="s1">&#39;holding_long_meeting&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
-<span class="n">keith</span> <span class="o">=</span> <span class="n">Roommate</span><span class="p">({</span><span class="s1">&#39;steals_food&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
+bob = Programmer({&#39;hungry&#39;: True})
+world_o_cheese = CheeseShop({&#39;have_cheese&#39;: False, &#39;chedder&#39;: &#39;Wisconsin&#39;})
+cheese_wizzard = CheeseShop({&#39;have_cheese&#39;: True, &#39;chedder&#39;: &#39;California&#39;})
+louis = ProgramManager({&#39;holding_long_meeting&#39;: True})
+keith = Roommate({&#39;steals_food&#39;: True})
 </pre></div>
 </div>
 <p>These expressions raise <a class="reference internal" href="tau.error.html#tau.error.ConfigurationError" title="tau.error.ConfigurationError"><code class="xref any py py-exc docutils literal"><span class="pre">ConfigurationError</span></code></a>:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">bob</span><span class="o">.</span><span class="n">check_compatibility</span><span class="p">(</span><span class="n">world_o_cheese</span><span class="p">)</span>   <span class="c1"># Because have_cheese == False</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">bob</span><span class="o">.</span><span class="n">check_compatibility</span><span class="p">(</span><span class="n">world_o_cheese</span><span class="p">)</span>   <span class="c1"># Because have_cheese == False</span>
 <span class="n">bob</span><span class="o">.</span><span class="n">check_compatibility</span><span class="p">(</span><span class="n">keith</span><span class="p">)</span>            <span class="c1"># Because steals_food == True</span>
 </pre></div>
 </div>
 <p>These expressions generate warning messages:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">bob</span><span class="o">.</span><span class="n">check_compatibility</span><span class="p">(</span><span class="n">cheese_wizzard</span><span class="p">)</span>   <span class="c1"># Because chedder != Wisconsin</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">bob</span><span class="o">.</span><span class="n">check_compatibility</span><span class="p">(</span><span class="n">cheese_wizzard</span><span class="p">)</span>   <span class="c1"># Because chedder != Wisconsin</span>
 <span class="n">bob</span><span class="o">.</span><span class="n">check_compatibility</span><span class="p">(</span><span class="n">louis</span><span class="p">)</span>            <span class="c1"># Because holding_long_meeting == True</span>
 </pre></div>
 </div>
@@ -238,15 +244,15 @@ defined or equal to the specified value (if given).</p>
 </table>
 <p class="rubric">Examples</p>
 <p>&#8216;have_cheese&#8217; should not be True:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>&#8216;have_cheese&#8217; should not be set to any value:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The value of &#8216;have_cheese&#8217; will be checked for correctness by &#8216;cheese_callback&#8217;:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="n">cheese_callback</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="n">cheese_callback</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -269,15 +275,15 @@ undefined or not equal to the specified value (if given).</p>
 </table>
 <p class="rubric">Examples</p>
 <p>&#8216;have_cheese&#8217; should be True:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">encourage</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">encourage</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>&#8216;have_cheese&#8217; should be set to any value:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">encourage</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">encourage</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The value of &#8216;have_cheese&#8217; will be checked for correctness by &#8216;cheese_callback&#8217;:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">encourage</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="n">cheese_callback</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">encourage</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="n">cheese_callback</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -300,15 +306,15 @@ defined or equal to the specified value (if given).</p>
 </table>
 <p class="rubric">Examples</p>
 <p>&#8216;yellow_cheese&#8217; must not be &#8216;American&#8217;:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;yellow_cheese&#39;</span><span class="p">,</span> <span class="s1">&#39;American&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;yellow_cheese&#39;</span><span class="p">,</span> <span class="s1">&#39;American&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>&#8216;blue_cheese&#8217; must not be set to any value:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;blue_cheese&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;blue_cheese&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The value of &#8216;have_cheese&#8217; will be checked for correctness by &#8216;cheese_callback&#8217;:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="n">cheese_callback</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="n">cheese_callback</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -364,15 +370,15 @@ undefined or not equal to the specified value (if given).</p>
 </table>
 <p class="rubric">Examples</p>
 <p>&#8216;have_cheese&#8217; must be True:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>&#8216;have_cheese&#8217; must be set to any value:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The value of &#8216;have_cheese&#8217; will be checked for correctness by &#8216;cheese_callback&#8217;:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="n">cheese_callback</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="n">cheese_callback</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -391,7 +397,8 @@ undefined or not equal to the specified value (if given).</p>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)">dict</a></td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ModelError</span></code> &#8211; The given data doesn&#8217;t fit the model.</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ModelError</span></code> &#8211;
+The given data doesn&#8217;t fit the model.</td>
 </tr>
 </tbody>
 </table>
@@ -434,7 +441,7 @@ undefined or not equal to the specified value (if given).</p>
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
 </html>

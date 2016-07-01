@@ -310,12 +310,12 @@ command module.  Other strings map to subcommands of the command.</p>
 </tbody>
 </table>
 <p>Example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">_get_commands</span><span class="p">(</span><span class="s1">&#39;tau.cli.commands.target&#39;</span><span class="p">)</span> <span class="o">==&gt;</span>
-    <span class="p">{</span><span class="s1">&#39;__module__&#39;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">module</span> <span class="s1">&#39;tau.cli.commands.target&#39;</span> <span class="kn">from</span> <span class="s1">&#39;/home/jlinford/workspace/taucmdr/packages/tau/cli/commands/target/__init__.pyc&#39;</span><span class="o">&gt;</span><span class="p">,</span>
-     <span class="s1">&#39;create&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;__module__&#39;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">module</span> <span class="s1">&#39;tau.cli.commands.target.create&#39;</span> <span class="kn">from</span> <span class="s1">&#39;/home/jlinford/workspace/taucmdr/packages/tau/cli/commands/target/create.pyc&#39;</span><span class="o">&gt;</span><span class="p">},</span>
-     <span class="s1">&#39;delete&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;__module__&#39;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">module</span> <span class="s1">&#39;tau.cli.commands.target.delete&#39;</span> <span class="kn">from</span> <span class="s1">&#39;/home/jlinford/workspace/taucmdr/packages/tau/cli/commands/target/delete.pyc&#39;</span><span class="o">&gt;</span><span class="p">},</span>
-     <span class="s1">&#39;edit&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;__module__&#39;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">module</span> <span class="s1">&#39;tau.cli.commands.target.edit&#39;</span> <span class="kn">from</span> <span class="s1">&#39;/home/jlinford/workspace/taucmdr/packages/tau/cli/commands/target/edit.pyc&#39;</span><span class="o">&gt;</span><span class="p">},</span>
-     <span class="s1">&#39;list&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;__module__&#39;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">module</span> <span class="s1">&#39;tau.cli.commands.target.list&#39;</span> <span class="kn">from</span> <span class="s1">&#39;/home/jlinford/workspace/taucmdr/packages/tau/cli/commands/target/list.pyc&#39;</span><span class="o">&gt;</span><span class="p">}}</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span>_get_commands(&#39;tau.cli.commands.target&#39;) ==&gt;
+    {&#39;__module__&#39;: &lt;module &#39;tau.cli.commands.target&#39; from &#39;/home/jlinford/workspace/taucmdr/packages/tau/cli/commands/target/__init__.pyc&#39;&gt;,
+     &#39;create&#39;: {&#39;__module__&#39;: &lt;module &#39;tau.cli.commands.target.create&#39; from &#39;/home/jlinford/workspace/taucmdr/packages/tau/cli/commands/target/create.pyc&#39;&gt;},
+     &#39;delete&#39;: {&#39;__module__&#39;: &lt;module &#39;tau.cli.commands.target.delete&#39; from &#39;/home/jlinford/workspace/taucmdr/packages/tau/cli/commands/target/delete.pyc&#39;&gt;},
+     &#39;edit&#39;: {&#39;__module__&#39;: &lt;module &#39;tau.cli.commands.target.edit&#39; from &#39;/home/jlinford/workspace/taucmdr/packages/tau/cli/commands/target/edit.pyc&#39;&gt;},
+     &#39;list&#39;: {&#39;__module__&#39;: &lt;module &#39;tau.cli.commands.target.list&#39; from &#39;/home/jlinford/workspace/taucmdr/packages/tau/cli/commands/target/list.pyc&#39;&gt;}}
 </pre></div>
 </div>
 </dd></dl>
@@ -377,8 +377,10 @@ command (if any) will be invoked with the <code class="docutils literal"><span c
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first simple">
-<li><a class="reference internal" href="#tau.cli.UnknownCommandError" title="tau.cli.UnknownCommandError"><code class="xref py py-exc docutils literal"><span class="pre">UnknownCommandError</span></code></a> &#8211; <cite>cmd</cite> is invalid.</li>
-<li><a class="reference internal" href="#tau.cli.AmbiguousCommandError" title="tau.cli.AmbiguousCommandError"><code class="xref py py-exc docutils literal"><span class="pre">AmbiguousCommandError</span></code></a> &#8211; <cite>cmd</cite> is ambiguous.</li>
+<li><a class="reference internal" href="#tau.cli.UnknownCommandError" title="tau.cli.UnknownCommandError"><code class="xref py py-exc docutils literal"><span class="pre">UnknownCommandError</span></code></a> &#8211;
+<cite>cmd</cite> is invalid.</li>
+<li><a class="reference internal" href="#tau.cli.AmbiguousCommandError" title="tau.cli.AmbiguousCommandError"><code class="xref py py-exc docutils literal"><span class="pre">AmbiguousCommandError</span></code></a> &#8211;
+<cite>cmd</cite> is ambiguous.</li>
 </ul>
 </td>
 </tr>
@@ -404,8 +406,10 @@ command (if any) will be invoked with the <code class="docutils literal"><span c
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first simple">
-<li><a class="reference internal" href="#tau.cli.UnknownCommandError" title="tau.cli.UnknownCommandError"><code class="xref py py-exc docutils literal"><span class="pre">UnknownCommandError</span></code></a> &#8211; <cite>cmd</cite> is invalid.</li>
-<li><a class="reference internal" href="#tau.cli.AmbiguousCommandError" title="tau.cli.AmbiguousCommandError"><code class="xref py py-exc docutils literal"><span class="pre">AmbiguousCommandError</span></code></a> &#8211; <cite>cmd</cite> is ambiguous.</li>
+<li><a class="reference internal" href="#tau.cli.UnknownCommandError" title="tau.cli.UnknownCommandError"><code class="xref py py-exc docutils literal"><span class="pre">UnknownCommandError</span></code></a> &#8211;
+<cite>cmd</cite> is invalid.</li>
+<li><a class="reference internal" href="#tau.cli.AmbiguousCommandError" title="tau.cli.AmbiguousCommandError"><code class="xref py py-exc docutils literal"><span class="pre">AmbiguousCommandError</span></code></a> &#8211;
+<cite>cmd</cite> is ambiguous.</li>
 </ul>
 </td>
 </tr>
@@ -438,7 +442,7 @@ command (if any) will be invoked with the <code class="docutils literal"><span c
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
 </html>

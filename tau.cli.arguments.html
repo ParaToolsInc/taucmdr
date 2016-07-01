@@ -56,7 +56,7 @@
 <p>Extensions to <a class="reference external" href="https://docs.python.org/library/argparse.html#module-argparse" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">argparse</span></code></a> to support the TAU Commander command line interface.</p>
 <dl class="class">
 <dt id="tau.cli.arguments.ArgparseHelpFormatter">
-<em class="property">class </em><code class="descclassname">tau.cli.arguments.</code><code class="descname">ArgparseHelpFormatter</code><span class="sig-paren">(</span><em>prog</em>, <em>indent_increment=2</em>, <em>max_help_position=30</em>, <em>width=84</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/arguments.html#ArgparseHelpFormatter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.arguments.ArgparseHelpFormatter" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.cli.arguments.</code><code class="descname">ArgparseHelpFormatter</code><span class="sig-paren">(</span><em>prog</em>, <em>indent_increment=2</em>, <em>max_help_position=30</em>, <em>width=74</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/arguments.html#ArgparseHelpFormatter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.arguments.ArgparseHelpFormatter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/argparse.html#argparse.RawDescriptionHelpFormatter" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">argparse.RawDescriptionHelpFormatter</span></code></a></p>
 <p>Custom help string formatter for argument parser.</p>
 <p>Provide proper help message alignment, line width, and formatting.
@@ -266,16 +266,16 @@ attribute properties, where the arguments to <a class="reference external" href=
 are specified as keyword arguments.</p>
 <p class="rubric">Examples</p>
 <p>Given this model attribute:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="s1">&#39;openmp&#39;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;application uses OpenMP&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--openmp&#39;</span><span class="p">,),</span>
-                 <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;T/F&#39;</span><span class="p">,</span>
-                 <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;?&#39;</span><span class="p">,</span>
-                 <span class="s1">&#39;const&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-                 <span class="s1">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParseBooleanAction</span><span class="p">},</span>
-<span class="p">}</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span>&#39;openmp&#39;: {
+    &#39;type&#39;: &#39;boolean&#39;,
+    &#39;description&#39;: &#39;application uses OpenMP&#39;,
+    &#39;default&#39;: False,
+    &#39;argparse&#39;: {&#39;flags&#39;: (&#39;--openmp&#39;,),
+                 &#39;metavar&#39;: &#39;T/F&#39;,
+                 &#39;nargs&#39;: &#39;?&#39;,
+                 &#39;const&#39;: True,
+                 &#39;action&#39;: ParseBooleanAction},
+}
 </pre></div>
 </div>
 <p>The returned parser will accept the <code class="docutils literal"><span class="pre">--openmp</span></code> flag accepting zero or one arguments
@@ -327,7 +327,7 @@ as the argument&#8217;s value if argument is not specified.</li>
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
 </html>

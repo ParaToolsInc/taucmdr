@@ -54,7 +54,7 @@
 <div class="section" id="short-answer">
 <h2>Short Answer<a class="headerlink" href="#short-answer" title="Permalink to this headline">¶</a></h2>
 <ol class="arabic simple">
-<li>Check existing family definitions in <a class="reference internal" href="tau.cf.compiler.html"><span class="doc">tau.cf.compiler package</span></a>.  If the missing compiler&#8217;s family is already
+<li>Check existing family definitions in <a class="reference internal" href="tau.cf.compiler.html"><em>tau.cf.compiler package</em></a>.  If the missing compiler&#8217;s family is already
 defined then just update the existing definition.  Otherwise declare a new family using the existing declarations
 as an example.</li>
 <li>Update <a class="reference internal" href="tau.cf.software.tau_installation.html#tau.cf.software.tau_installation.TauInstallation" title="tau.cf.software.tau_installation.TauInstallation"><code class="xref any py py-class docutils literal"><span class="pre">TauInstallation</span></code></a> with any special cases or goofy flags TAU might need to work with the new compiler,
@@ -78,9 +78,9 @@ TAU Commander uses the knowlegebase to discover missing information (e.g. family
 <p>Each individual compiler has a <em>Role</em> that is represented by an instance of the <a class="reference internal" href="tau.cf.compiler.html#tau.cf.compiler.CompilerRole" title="tau.cf.compiler.CompilerRole"><code class="xref any py py-class docutils literal"><span class="pre">CompilerRole</span></code></a> class.  A
 compiler&#8217;s role maps a compiler to it&#8217;s primary language via a keyword.  For example, the <cite>g++</cite> compiler primarily
 functions as a C++ compiler.  It&#8217;s role keyword is &#8220;CXX&#8221; and it&#8217;s language is &#8220;C++&#8221;.  Roles are declared in
-<a class="reference internal" href="tau.cf.compiler.html"><span class="doc">tau.cf.compiler package</span></a>, e.g.:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">CC_ROLE</span> <span class="o">=</span> <span class="n">CompilerRole</span><span class="p">(</span><span class="s1">&#39;CC&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
-<span class="n">CXX_ROLE</span> <span class="o">=</span> <span class="n">CompilerRole</span><span class="p">(</span><span class="s1">&#39;CXX&#39;</span><span class="p">,</span> <span class="s1">&#39;C++&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+<a class="reference internal" href="tau.cf.compiler.html"><em>tau.cf.compiler package</em></a>, e.g.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">CC_ROLE</span> <span class="o">=</span> <span class="n">CompilerRole</span><span class="p">(</span><span class="s1">&#39;CC&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+<span class="n">CXX_ROLE</span> <span class="o">=</span> <span class="n">CompilerRole</span><span class="p">(</span><span class="s1">&#39;CXX&#39;</span><span class="p">,</span> <span class="s1">&#39;C++&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
 <span class="n">FC_ROLE</span> <span class="o">=</span> <span class="n">CompilerRole</span><span class="p">(</span><span class="s1">&#39;FC&#39;</span><span class="p">,</span> <span class="s1">&#39;Fortran&#39;</span><span class="p">)</span>
 <span class="n">UPC_ROLE</span> <span class="o">=</span> <span class="n">CompilerRole</span><span class="p">(</span><span class="s1">&#39;UPC&#39;</span><span class="p">,</span> <span class="s1">&#39;Universal Parallel C&#39;</span><span class="p">)</span>
 </pre></div>
@@ -90,8 +90,8 @@ functions as a C++ compiler.  It&#8217;s role keyword is &#8220;CXX&#8221; and i
 <h2>Compiler Families (<a class="reference internal" href="tau.cf.compiler.html#tau.cf.compiler.CompilerFamily" title="tau.cf.compiler.CompilerFamily"><code class="xref any py py-class docutils literal"><span class="pre">CompilerFamily</span></code></a>)<a class="headerlink" href="#compiler-families-compilerfamily" title="Permalink to this headline">¶</a></h2>
 <p>The compiler&#8217;s family assigns roles to compiler commands and tracks the various command line options used by that
 compiler family.  The family name (<a class="reference internal" href="tau.cf.compiler.html#tau.cf.compiler.CompilerFamily.name" title="tau.cf.compiler.CompilerFamily.name"><code class="xref any py py-attr docutils literal"><span class="pre">CompilerFamily.name</span></code></a>) provides a convinent way to operate on many different
-compiler commands at once.  Families are declared in <a class="reference internal" href="tau.cf.compiler.html"><span class="doc">tau.cf.compiler package</span></a>, e.g:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">INTEL_COMPILERS</span> <span class="o">=</span> <span class="n">CompilerFamily</span><span class="p">(</span><span class="s1">&#39;Intel&#39;</span><span class="p">,</span> <span class="n">family_regex</span><span class="o">=</span><span class="s1">r&#39;Intel Corporation&#39;</span><span class="p">)</span>
+compiler commands at once.  Families are declared in <a class="reference internal" href="tau.cf.compiler.html"><em>tau.cf.compiler package</em></a>, e.g:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">INTEL_COMPILERS</span> <span class="o">=</span> <span class="n">CompilerFamily</span><span class="p">(</span><span class="s1">&#39;Intel&#39;</span><span class="p">,</span> <span class="n">family_regex</span><span class="o">=</span><span class="s1">r&#39;Intel Corporation&#39;</span><span class="p">)</span>
 <span class="n">INTEL_COMPILERS</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">CC_ROLE</span><span class="p">,</span> <span class="s1">&#39;icc&#39;</span><span class="p">)</span>
 <span class="n">INTEL_COMPILERS</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">CXX_ROLE</span><span class="p">,</span> <span class="s1">&#39;icpc&#39;</span><span class="p">)</span>
 <span class="n">INTEL_COMPILERS</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">FC_ROLE</span><span class="p">,</span> <span class="s1">&#39;ifort&#39;</span><span class="p">)</span>
@@ -102,7 +102,7 @@ Forran compiler named &#8220;ifort&#8221;.  If TAU Commander ever needs to disco
 match the regular expression &#8220;Intel Corporation&#8221; in the output produced by running the compiler with the version
 flags specified by the family (<a class="reference internal" href="tau.cf.compiler.html#tau.cf.compiler.CompilerFamily.version_flags" title="tau.cf.compiler.CompilerFamily.version_flags"><code class="xref any py py-attr docutils literal"><span class="pre">CompilerFamily.version_flags</span></code></a>).</p>
 <p>Multiple compilers can be specified for each role.  The IBM BlueGene/Q Fortran compilers are a bit crazy:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">IBM_BGQ_COMPILERS</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">FC_ROLE</span><span class="p">,</span> <span class="s1">&#39;bgxlf&#39;</span><span class="p">,</span> <span class="s1">&#39;bgxlf_r&#39;</span><span class="p">,</span> <span class="s1">&#39;bgf77&#39;</span><span class="p">,</span> <span class="s1">&#39;bgfort77&#39;</span><span class="p">,</span> <span class="s1">&#39;bgxlf90&#39;</span><span class="p">,</span> <span class="s1">&#39;bgxlf90_r&#39;</span><span class="p">,</span> <span class="s1">&#39;bgf90&#39;</span><span class="p">,</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">IBM_BGQ_COMPILERS</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">FC_ROLE</span><span class="p">,</span> <span class="s1">&#39;bgxlf&#39;</span><span class="p">,</span> <span class="s1">&#39;bgxlf_r&#39;</span><span class="p">,</span> <span class="s1">&#39;bgf77&#39;</span><span class="p">,</span> <span class="s1">&#39;bgfort77&#39;</span><span class="p">,</span> <span class="s1">&#39;bgxlf90&#39;</span><span class="p">,</span> <span class="s1">&#39;bgxlf90_r&#39;</span><span class="p">,</span> <span class="s1">&#39;bgf90&#39;</span><span class="p">,</span>
                    <span class="s1">&#39;bgxlf95&#39;</span><span class="p">,</span> <span class="s1">&#39;bgxlf95_r&#39;</span><span class="p">,</span> <span class="s1">&#39;bgf95&#39;</span><span class="p">,</span> <span class="s1">&#39;bgxlf2003&#39;</span><span class="p">,</span> <span class="s1">&#39;bgxlf2003_r&#39;</span><span class="p">,</span> <span class="s1">&#39;bgf2003&#39;</span><span class="p">,</span> <span class="s1">&#39;bgxlf2008&#39;</span><span class="p">,</span>
                    <span class="s1">&#39;bgxlf2008_r&#39;</span><span class="p">,</span> <span class="s1">&#39;bgf2008&#39;</span><span class="p">)</span>
 </pre></div>
@@ -141,17 +141,17 @@ can wrap wrappers as deep as you like, as long as they don&#8217;t recurse.</p>
 <p>The assocations defined in the compiler knowlegebase are very powerful.  TAU Commander can draw conclusions about which
 compilers should be used, and which compiler flags should be used, at any point in the workflow given a relatively small
 ammount of information.  Consider this target creation command:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">tau</span> <span class="n">target</span> <span class="n">create</span> <span class="o">--</span><span class="n">host</span><span class="o">-</span><span class="n">compilers</span><span class="o">=</span><span class="n">Intel</span> <span class="o">--</span><span class="n">mpi</span><span class="o">-</span><span class="n">compilers</span><span class="o">=</span><span class="n">System</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span>tau target create --host-compilers=Intel --mpi-compilers=System
 </pre></div>
 </div>
 <p>Because the knowledgebase specifies the individual compiler commands for each role in the Intel compiler family, that
 command is automatically expanded to:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">tau</span> <span class="n">target</span> <span class="n">create</span> <span class="o">--</span><span class="n">cc</span><span class="o">=</span><span class="n">icc</span> <span class="o">--</span><span class="n">cxx</span><span class="o">=</span><span class="n">icpc</span> <span class="o">--</span><span class="n">fc</span><span class="o">=</span><span class="n">ifort</span> <span class="o">--</span><span class="n">mpi</span><span class="o">-</span><span class="n">cc</span><span class="o">=</span><span class="n">mpicc</span> <span class="o">--</span><span class="n">mpi</span><span class="o">-</span><span class="n">cxx</span><span class="o">=</span><span class="n">mpicxx</span> <span class="o">--</span><span class="n">mpi</span><span class="o">-</span><span class="n">fc</span><span class="o">=</span><span class="n">mpif90</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span>tau target create --cc=icc --cxx=icpc --fc=ifort --mpi-cc=mpicc --mpi-cxx=mpicxx --mpi-fc=mpif90
 </pre></div>
 </div>
 <p>Furthermore, TAU Commander will record in this configuration that <code class="docutils literal"><span class="pre">mpicc</span></code> is a compiler wrapper for the <code class="docutils literal"><span class="pre">icc</span></code>
 command. Now suppose the user invokes a compilation command:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">tau</span> <span class="n">mpicc</span> <span class="n">foo</span><span class="o">.</span><span class="n">c</span> <span class="o">-</span><span class="n">o</span> <span class="n">foo</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span>tau mpicc foo.c -o foo
 </pre></div>
 </div>
 <p>TAU Commander will probe <code class="docutils literal"><span class="pre">mpicc</span></code> using <a class="reference internal" href="tau.cf.compiler.html#tau.cf.compiler.CompilerFamily.version_flags" title="tau.cf.compiler.CompilerFamily.version_flags"><code class="xref any py py-attr docutils literal"><span class="pre">CompilerFamily.version_flags</span></code></a> to determine if <code class="docutils literal"><span class="pre">mpicc</span></code> is currently
@@ -161,9 +161,9 @@ was configured with compatible Intel compilers.  If no such configuration exists
 It will use <a class="reference internal" href="tau.cf.compiler.html#tau.cf.compiler.CompilerFamily.show_wrapper_flags" title="tau.cf.compiler.CompilerFamily.show_wrapper_flags"><code class="xref any py py-attr docutils literal"><span class="pre">CompilerFamily.show_wrapper_flags</span></code></a> to discover how <code class="docutils literal"><span class="pre">mpicc</span></code> alters the <code class="docutils literal"><span class="pre">icc</span></code> command line, and
 combine this information with information from the compiler role and family to generate the correct TAU configration
 command line, e.g.:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">configure</span> <span class="o">-</span><span class="n">cc</span><span class="o">=</span><span class="n">icc</span> <span class="o">-</span><span class="n">c</span><span class="o">++=</span><span class="n">icpc</span> <span class="o">-</span><span class="n">fortran</span><span class="o">=</span><span class="n">intel</span> \
-            <span class="o">-</span><span class="n">mpi</span> <span class="o">-</span><span class="n">mpiinc</span><span class="o">=/</span><span class="n">include</span><span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">a</span><span class="c1">#/include/path/b -mpilib=/lib/path/a#/lib/path/b -mpilibrary=&quot;-la -lb&quot;</span>
-            <span class="o">....</span> <span class="n">additional</span> <span class="n">options</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span>./configure -cc=icc -c++=icpc -fortran=intel \
+            -mpi -mpiinc=/include/path/a#/include/path/b -mpilib=/lib/path/a#/lib/path/b -mpilibrary=&quot;-la -lb&quot;
+            .... additional options
 </pre></div>
 </div>
 <p>Note that <code class="docutils literal"><span class="pre">-fortran=intel</span></code> is specified on the TAU command line, even though the original command <code class="docutils literal"><span class="pre">tau</span> <span class="pre">mpicc</span></code>
@@ -171,7 +171,7 @@ had nothing to do with Fortran.  Even more interesting, &#8220;intel&#8221; isn&
 Commander knows that TAU needs this magic word to be correctly configured for Intel compilers.</p>
 <p>Now consider a different case where an incompatible compiler is used.  For example, the currently selected experiment
 is configured with GNU compilers but the user issues the command:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">tau</span> <span class="n">ifort</span> <span class="n">foo</span><span class="o">.</span><span class="n">f90</span> <span class="o">-</span><span class="n">o</span> <span class="n">foo</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span>tau ifort foo.f90 -o foo
 </pre></div>
 </div>
 <p>Because TAU Commander knows that &#8220;ifort&#8221; is an Intel Fortran compiler command it will abort the compilation and tell
@@ -197,7 +197,7 @@ compiler can cause all sorts of problems.</p>
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
 </html>

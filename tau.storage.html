@@ -83,7 +83,7 @@
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-tau.storage" title="Permalink to this headline">¶</a></h2>
 <p>TAU Storage Containers.</p>
 <p>A storage container provides a record database, a persistent filesystem, and a key/value store.
-The database is accessed via member methods like <a class="reference internal" href="#tau.storage.AbstractStorage.insert" title="tau.storage.AbstractStorage.insert"><code class="xref any py py-meth docutils literal"><span class="pre">insert</span></code></a>, <a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a>, etc.
+The database is accessed via member methods like <a class="reference internal" href="#tau.storage.AbstractStorage.insert" title="tau.storage.AbstractStorage.insert"><code class="xref any py py-meth docutils literal"><span class="pre">insert</span></code></a>, <a class="reference internal" href="search.html"><span>Search Page</span></a>, etc.
 The filesystem is accessed via its filesystem prefix (e.g. <code class="docutils literal"><span class="pre">/usr/local/packages</span></code>) via <a class="reference internal" href="#tau.storage.AbstractStorage.prefix" title="tau.storage.AbstractStorage.prefix"><code class="xref any py py-attr docutils literal"><span class="pre">prefix</span></code></a>.
 The key/value store is accessed via the <cite>[]</cite> operator, i.e. treat the storage object like a dictionary.</p>
 <dl class="class">
@@ -92,25 +92,28 @@ The key/value store is accessed via the <cite>[]</cite> operator, i.e. treat the
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
 <p>Abstract base class for storage containers.</p>
 <p>A storage container provides a record database, a persistent filesystem, and a key/value store.
-The database is accessed via member methods like <a class="reference internal" href="#tau.storage.AbstractStorage.insert" title="tau.storage.AbstractStorage.insert"><code class="xref any py py-meth docutils literal"><span class="pre">insert</span></code></a>, <a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a>, etc.
+The database is accessed via member methods like <a class="reference internal" href="#tau.storage.AbstractStorage.insert" title="tau.storage.AbstractStorage.insert"><code class="xref any py py-meth docutils literal"><span class="pre">insert</span></code></a>, <a class="reference internal" href="search.html"><span>Search Page</span></a>, etc.
 The filesystem is accessed via its filesystem prefix (e.g. <code class="docutils literal"><span class="pre">/usr/local/packages</span></code>) via <a class="reference internal" href="#tau.storage.AbstractStorage.prefix" title="tau.storage.AbstractStorage.prefix"><code class="xref any py py-attr docutils literal"><span class="pre">prefix</span></code></a>.
 The key/value store is accessed via the <cite>[]</cite> operator, i.e. treat the storage object like a dictionary.</p>
 <dl class="attribute">
 <dt id="tau.storage.AbstractStorage.name">
 <code class="descname">name</code><a class="headerlink" href="#tau.storage.AbstractStorage.name" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>str</em> &#8211; The storage container&#8217;s name, e.g. &#8220;system&#8221; or &#8220;user&#8221;.</p>
+<dd><p><em>str</em></p>
+<p>The storage container&#8217;s name, e.g. &#8220;system&#8221; or &#8220;user&#8221;.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="tau.storage.AbstractStorage.prefix">
 <code class="descname">prefix</code><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.prefix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.prefix" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>str</em> &#8211; Absolute path to the top-level directory of the container&#8217;s filesystem.</p>
+<dd><p><em>str</em></p>
+<p>Absolute path to the top-level directory of the container&#8217;s filesystem.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="tau.storage.AbstractStorage.database">
 <code class="descname">database</code><a class="headerlink" href="#tau.storage.AbstractStorage.database" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>str</em> &#8211; Database object implementing <code class="xref any docutils literal"><span class="pre">AbstractDatabase</span></code>.</p>
+<dd><p><em>str</em></p>
+<p>Database object implementing <code class="xref any docutils literal"><span class="pre">AbstractDatabase</span></code>.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -192,7 +195,8 @@ in <cite>keys</cite> may match or if False then all keys in <cite>keys</cite> mu
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)">bool</a></p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; Invalid value for <cite>keys</cite>.</p>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211;
+Invalid value for <cite>keys</cite>.</p>
 </td>
 </tr>
 </tbody>
@@ -263,7 +267,8 @@ None: No record found or <code class="docutils literal"><span class="pre">bool(k
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="#tau.storage.AbstractStorage.Record" title="tau.storage.AbstractStorage.Record">Record</a></p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; Invalid value for <cite>keys</cite>.</p>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211;
+Invalid value for <cite>keys</cite>.</p>
 </td>
 </tr>
 </tbody>
@@ -321,7 +326,8 @@ If neither is given, return all records where <cite>field</cite> is set to any v
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="tau.cli.commands.target.list.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list">list</a></p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; Invalid value for <cite>keys</cite>.</p>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211;
+Invalid value for <cite>keys</cite>.</p>
 </td>
 </tr>
 </tbody>
@@ -385,7 +391,8 @@ in <cite>keys</cite> may match or if False then all keys in <cite>keys</cite> mu
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; <code class="docutils literal"><span class="pre">bool(keys)</span> <span class="pre">==</span> <span class="pre">False</span></code> or invaild value for <cite>keys</cite>.</p>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211;
+<code class="docutils literal"><span class="pre">bool(keys)</span> <span class="pre">==</span> <span class="pre">False</span></code> or invaild value for <cite>keys</cite>.</p>
 </td>
 </tr>
 </tbody>
@@ -424,7 +431,8 @@ in <cite>keys</cite> may match or if False then all keys in <cite>keys</cite> mu
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="tau.cli.commands.target.list.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list">list</a></p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; Invalid value for <cite>keys</cite>.</p>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211;
+Invalid value for <cite>keys</cite>.</p>
 </td>
 </tr>
 </tbody>
@@ -478,7 +486,8 @@ in <cite>keys</cite> may match or if False then all keys in <cite>keys</cite> mu
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; <code class="docutils literal"><span class="pre">bool(keys)</span> <span class="pre">==</span> <span class="pre">False</span></code> or invaild value for <cite>keys</cite>.</p>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211;
+<code class="docutils literal"><span class="pre">bool(keys)</span> <span class="pre">==</span> <span class="pre">False</span></code> or invaild value for <cite>keys</cite>.</p>
 </td>
 </tr>
 </tbody>
@@ -511,7 +520,8 @@ in <cite>keys</cite> may match or if False then all keys in <cite>keys</cite> mu
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; <code class="docutils literal"><span class="pre">bool(keys)</span> <span class="pre">==</span> <span class="pre">False</span></code> or invaild value for <cite>keys</cite>.</p>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211;
+<code class="docutils literal"><span class="pre">bool(keys)</span> <span class="pre">==</span> <span class="pre">False</span></code> or invaild value for <cite>keys</cite>.</p>
 </td>
 </tr>
 </tbody>
@@ -558,7 +568,8 @@ in <cite>keys</cite> may match or if False then all keys in <cite>keys</cite> mu
 <dl class="attribute">
 <dt id="tau.storage.StorageRecord.element">
 <code class="descname">element</code><a class="headerlink" href="#tau.storage.StorageRecord.element" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>dict</em> &#8211; The database element as a dictionary.</p>
+<dd><p><em>dict</em></p>
+<p>The database element as a dictionary.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -618,7 +629,7 @@ in <cite>keys</cite> may match or if False then all keys in <cite>keys</cite> mu
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
 </html>

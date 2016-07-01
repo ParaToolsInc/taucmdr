@@ -85,7 +85,8 @@ executes the compiler command.</p>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211; Compilation failed.</p>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211;
+Compilation failed.</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Compiler return value (always 0 if no exception raised).</p>
@@ -133,7 +134,8 @@ for the TAU compiler wrapper scripts.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">SoftwareConfigurationError</span></code> &#8211; TAU&#8217;s configure script failed.</td>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">SoftwareConfigurationError</span></code> &#8211;
+TAU&#8217;s configure script failed.</td>
 </tr>
 </tbody>
 </table>
@@ -154,11 +156,8 @@ application_cmd (list): Application command with command line arguments, e.g. [&
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="docutils">
-<dt>(cmd, env) where <cite>cmd</cite> is the new command line and <cite>env</cite> is a dictionary of environment</dt>
-<dd>variables to set before running the application command.</dd>
-</dl>
-</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(cmd, env) where <cite>cmd</cite> is the new command line and <cite>env</cite> is a dictionary of environment
+variables to set before running the application command.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#tuple" title="(in Python v2.7)">tuple</a></td>
 </tr>
@@ -194,11 +193,8 @@ and application support features specified in the constructor.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="docutils">
-<dt>A file path that could be used to set the TAU_MAKEFILE environment</dt>
-<dd>variable, or None if a suitable makefile couldn&#8217;t be found.</dd>
-</dl>
-</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A file path that could be used to set the TAU_MAKEFILE environment
+variable, or None if a suitable makefile couldn&#8217;t be found.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)">str</a></td>
 </tr>
@@ -236,7 +232,8 @@ function will likely not match the order they appear in the makefile name or tau
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>force_reinstall</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; Set to True to force reinstall even if TAU is already installed and working.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">SoftwarePackageError</span></code> &#8211; TAU failed installation or did not pass verification after it was installed.</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">SoftwarePackageError</span></code> &#8211;
+TAU failed installation or did not pass verification after it was installed.</td>
 </tr>
 </tbody>
 </table>
@@ -251,7 +248,8 @@ function will likely not match the order they appear in the makefile name or tau
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">SoftwarePackageError</span></code> &#8211; &#8216;make install&#8217; failed.</td>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">SoftwarePackageError</span></code> &#8211;
+&#8216;make install&#8217; failed.</td>
 </tr>
 </tbody>
 </table>
@@ -271,7 +269,8 @@ function will likely not match the order they appear in the makefile name or tau
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211; paraprof failed to pack the profiles.</p>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211;
+paraprof failed to pack the profiles.</p>
 </td>
 </tr>
 </tbody>
@@ -368,7 +367,8 @@ libraries and commands.</p>
 </tr>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/constants.html#True" title="(in Python v2.7)">True</a></td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">SoftwarePackageError</span></code> &#8211; Describes why the installation is invalid.</td>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">SoftwarePackageError</span></code> &#8211;
+Describes why the installation is invalid.</td>
 </tr>
 </tbody>
 </table>
@@ -394,7 +394,7 @@ libraries and commands.</p>
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
 </html>

@@ -80,7 +80,8 @@ Changes to <cite>flags</cite> are not propogated to subsequent steps.</p>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">SoftwarePackageError</span></code> &#8211; Configuration failed.</p>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">SoftwarePackageError</span></code> &#8211;
+Configuration failed.</p>
 </td>
 </tr>
 </tbody>
@@ -102,7 +103,8 @@ Changes to <cite>flags</cite> are not propogated to subsequent steps.</p>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)">bool</a></td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">SoftwarePackageError</span></code> &#8211; Installation failed.</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">SoftwarePackageError</span></code> &#8211;
+Installation failed.</td>
 </tr>
 </tbody>
 </table>
@@ -125,7 +127,8 @@ Changes to <cite>flags</cite> are not propogated to subsequent steps.</p>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">SoftwarePackageError</span></code> &#8211; Compilation failed.</p>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">SoftwarePackageError</span></code> &#8211;
+Compilation failed.</p>
 </td>
 </tr>
 </tbody>
@@ -150,7 +153,8 @@ Changes to <cite>flags</cite> are not propogated to subsequent steps.</p>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">SoftwarePackageError</span></code> &#8211; Configuration failed.</p>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">SoftwarePackageError</span></code> &#8211;
+Configuration failed.</p>
 </td>
 </tr>
 </tbody>
@@ -167,20 +171,23 @@ Changes to <cite>flags</cite> are not propogated to subsequent steps.</p>
 <dl class="attribute">
 <dt id="tau.cf.software.installation.Installation.name">
 <code class="descname">name</code><a class="headerlink" href="#tau.cf.software.installation.Installation.name" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>str</em> &#8211; Human readable name of the software package, e.g. &#8216;TAU&#8217;.</p>
+<dd><p><em>str</em></p>
+<p>Human readable name of the software package, e.g. &#8216;TAU&#8217;.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="tau.cf.software.installation.Installation.prefix">
 <code class="descname">prefix</code><a class="headerlink" href="#tau.cf.software.installation.Installation.prefix" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>str</em> &#8211; Path to a directory to contain subdirectories for
+<dd><p><em>str</em></p>
+<p>Path to a directory to contain subdirectories for
 installation files, source file, and compilation files.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="tau.cf.software.installation.Installation.src">
 <code class="descname">src</code><a class="headerlink" href="#tau.cf.software.installation.Installation.src" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>str</em> &#8211; Path to a directory where the software has already been
+<dd><p><em>str</em></p>
+<p>Path to a directory where the software has already been
 installed, or a path to a source archive file, or the special
 keyword &#8216;download&#8217;.</p>
 </dd></dl>
@@ -188,55 +195,64 @@ keyword &#8216;download&#8217;.</p>
 <dl class="attribute">
 <dt id="tau.cf.software.installation.Installation.target_arch">
 <code class="descname">target_arch</code><a class="headerlink" href="#tau.cf.software.installation.Installation.target_arch" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>str</em> &#8211; Target architecture name.</p>
+<dd><p><em>str</em></p>
+<p>Target architecture name.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="tau.cf.software.installation.Installation.target_os">
 <code class="descname">target_os</code><a class="headerlink" href="#tau.cf.software.installation.Installation.target_os" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>str</em> &#8211; Target operating system name.</p>
+<dd><p><em>str</em></p>
+<p>Target operating system name.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="tau.cf.software.installation.Installation.compilers">
 <code class="descname">compilers</code><a class="headerlink" href="#tau.cf.software.installation.Installation.compilers" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>InstalledCompilerSet</em> &#8211; Compilers to use if software must be compiled.</p>
+<dd><p><em>InstalledCompilerSet</em></p>
+<p>Compilers to use if software must be compiled.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="tau.cf.software.installation.Installation.archive_prefix">
 <code class="descname">archive_prefix</code><a class="headerlink" href="#tau.cf.software.installation.Installation.archive_prefix" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>str</em> &#8211; Directory containing package source code archive file.</p>
+<dd><p><em>str</em></p>
+<p>Directory containing package source code archive file.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="tau.cf.software.installation.Installation.src_prefix">
 <code class="descname">src_prefix</code><a class="headerlink" href="#tau.cf.software.installation.Installation.src_prefix" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>str</em> &#8211; Directory containing package source code.</p>
+<dd><p><em>str</em></p>
+<p>Directory containing package source code.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="tau.cf.software.installation.Installation.install_prefix">
 <code class="descname">install_prefix</code><a class="headerlink" href="#tau.cf.software.installation.Installation.install_prefix" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>str</em> &#8211; Directory containing installed package files.</p>
+<dd><p><em>str</em></p>
+<p>Directory containing installed package files.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="tau.cf.software.installation.Installation.include_path">
 <code class="descname">include_path</code><a class="headerlink" href="#tau.cf.software.installation.Installation.include_path" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>str</em> &#8211; Convinence variable, usually <code class="docutils literal"><span class="pre">install_prefix</span> <span class="pre">+</span> <span class="pre">&quot;/include&quot;</span></code>.</p>
+<dd><p><em>str</em></p>
+<p>Convinence variable, usually <code class="docutils literal"><span class="pre">install_prefix</span> <span class="pre">+</span> <span class="pre">&quot;/include&quot;</span></code>.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="tau.cf.software.installation.Installation.bin_path">
 <code class="descname">bin_path</code><a class="headerlink" href="#tau.cf.software.installation.Installation.bin_path" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>str</em> &#8211; Convinence variable, usually <code class="docutils literal"><span class="pre">install_prefix</span> <span class="pre">+</span> <span class="pre">&quot;/bin&quot;</span></code>.</p>
+<dd><p><em>str</em></p>
+<p>Convinence variable, usually <code class="docutils literal"><span class="pre">install_prefix</span> <span class="pre">+</span> <span class="pre">&quot;/bin&quot;</span></code>.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="tau.cf.software.installation.Installation.lib_path">
 <code class="descname">lib_path</code><a class="headerlink" href="#tau.cf.software.installation.Installation.lib_path" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>str</em> &#8211; Convinence variable, usually <code class="docutils literal"><span class="pre">install_prefix</span> <span class="pre">+</span> <span class="pre">&quot;/lib&quot;</span></code>.</p>
+<dd><p><em>str</em></p>
+<p>Convinence variable, usually <code class="docutils literal"><span class="pre">install_prefix</span> <span class="pre">+</span> <span class="pre">&quot;/lib&quot;</span></code>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -264,7 +280,8 @@ Sets <cite>self.src_prefix</cite> to the directory containing the package source
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>reuse</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True, attempt to reuse old archives and source files.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211; The source code couldn&#8217;t be copied or downloaded.</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211;
+The source code couldn&#8217;t be copied or downloaded.</td>
 </tr>
 </tbody>
 </table>
@@ -306,7 +323,8 @@ prepend <code class="docutils literal"><span class="pre">self.bin_path</span></c
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">NotImplementedError</span></code> &#8211; This method must be overridden by a subclass.</td>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">NotImplementedError</span></code> &#8211;
+This method must be overridden by a subclass.</td>
 </tr>
 </tbody>
 </table>
@@ -355,7 +373,8 @@ Subclasses may wish to perform additional checks.</p>
 </tr>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/constants.html#True" title="(in Python v2.7)">True</a></td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">SoftwarePackageError</span></code> &#8211; Describs why the installation is invalid.</td>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">SoftwarePackageError</span></code> &#8211;
+Describs why the installation is invalid.</td>
 </tr>
 </tbody>
 </table>
@@ -400,7 +419,7 @@ Default is one less than the number of CPU cores.</td>
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
 </html>
