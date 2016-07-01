@@ -71,7 +71,7 @@ KEYWORDS = ["TAU", "performance analysis", "profile", "profiling", "trace", "tra
 HOMEPAGE = "http://www.taucommander.com/"
 
 # URL to clone the package repo
-GIT_ORIGIN_URL = "git@github.com:ParaToolsInc/taucmdr.git"
+GIT_ORIGIN_URL = "https://github.com/ParaToolsInc/taucmdr.git"
 
 # PyPI classifiers
 CLASSIFIERS = [
