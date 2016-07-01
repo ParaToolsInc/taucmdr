@@ -37,8 +37,16 @@ import shutil
 import fileinput
 import setuptools
 import subprocess
-from sphinx import apidoc as sphinx_apidoc
-from sphinx.setup_command import BuildDoc 
+
+# Check if sphinx is installed
+try:
+    from sphinx import apidoc as sphinx_apidoc
+    from sphinx.setup_command import BuildDoc
+except ImportError:
+    HAVE_SPHINX = False
+else:
+    HAVE_SPHINX = True 
+
 
 GITHUB_ORIGIN_URL = "git@github.com:ParaToolsInc/taucmdr.git"
 
@@ -82,79 +90,86 @@ def update_version():
     return version
 
 
-class BuildSphinx(BuildDoc):
-    """Customize the build_sphinx command.
-    
-    Copy source files into the build directory to prevent generated files from mixing
-    with content files, run sphinx-apidoc to auto-document the "tau" package, then
-    proceed with normal build_sphinx behavior.
-    """
-    
-    _custom_user_options = [('update-gh-pages', None, 'Commit documentation to gh-pages branch and push.'),
-                            ('gh-user-name=', None, 'user.name in git config'),
-                            ('gh-user-email=', None, 'user.email in git config'),
-                            ('gh-commit-msg=', None, 'Commit message for gh-pages log')]
-    user_options = BuildDoc.user_options + _custom_user_options
-    
-    def initialize_options(self):
-        BuildDoc.initialize_options(self)
-        self.update_gh_pages = False
-        self.gh_user_name = None # Use github global conf
-        self.gh_user_email = None # Use github global conf
-        self.gh_commit_msg = "Updated documentation via build_sphinx"
-
-    def _shell(self, cmd, cwd=None):
-        try:
-            subprocess.check_call(cmd, cwd=cwd or self.builder_target_dir)
-        except subprocess.CalledProcessError as err:
-            sys.stderr.write('%s\nFAILURE: Return code %s' % (' '.join(cmd), err.returncode))
-            sys.exit(err.returncode)
-
-    def _clone_gh_pages(self):
-        shutil.rmtree(self.builder_target_dir, ignore_errors=True)
-        cmd = ['git', 'clone', GITHUB_ORIGIN_URL, '-b', 'gh-pages', '--single-branch', self.builder_target_dir]
-        self._shell(cmd, cwd=self.build_dir)
-        if self.gh_user_name:
-            self._shell(['git', 'config', 'user.name', self.gh_user_name])
-        if self.gh_user_email:
-            self._shell(['git', 'config', 'user.email', self.gh_user_email])
-    
-    def _push_gh_pages(self):
-        self._shell(['git', 'add', '-A', '.'])
-        self._shell(['git', 'commit', '-m', self.gh_commit_msg])
-        self._shell(['git', 'push'])
+if HAVE_SPHINX:
+    class BuildSphinx(BuildDoc):
+        """Customize the build_sphinx command.
         
-    def _copy_docs_source(self):
-        copy_source_dir = os.path.join(self.build_dir, os.path.basename(self.source_dir))
-        shutil.rmtree(copy_source_dir, ignore_errors=True)
-        shutil.copytree(self.source_dir, copy_source_dir)
-        self.source_dir = copy_source_dir
-
-    def _generate_api_docs(self):
-        package_source_dir = os.path.join(TAU_HOME,  self.distribution.package_dir[''], 'tau')
-        sphinx_apidoc.main(['-M', # Put module documentation before submodule documentation
-                            '-P', # Include "_private" modules
-                            '-f', # Overwrite existing files
-                            '-e', # Put documentation for each module on its own page
-                            '-o', self.source_dir,
-                            package_source_dir])
-
-    def run(self):
-        if self.update_gh_pages:
-            self._clone_gh_pages()
-        self._copy_docs_source()
-        self._generate_api_docs()
-        BuildDoc.run(self)
-        if self.update_gh_pages:
-            self._push_gh_pages()
+        Copy source files into the build directory to prevent generated files from mixing
+        with content files, run sphinx-apidoc to auto-document the "tau" package, then
+        proceed with normal build_sphinx behavior.
+        """
+        
+        _custom_user_options = [('update-gh-pages', None, 'Commit documentation to gh-pages branch and push.'),
+                                ('gh-user-name=', None, 'user.name in git config'),
+                                ('gh-user-email=', None, 'user.email in git config'),
+                                ('gh-commit-msg=', None, 'Commit message for gh-pages log')]
+        user_options = BuildDoc.user_options + _custom_user_options
+        
+        def initialize_options(self):
+            BuildDoc.initialize_options(self)
+            self.update_gh_pages = False
+            self.gh_user_name = None # Use github global conf
+            self.gh_user_email = None # Use github global conf
+            self.gh_commit_msg = "Updated documentation via build_sphinx"
+    
+        def _shell(self, cmd, cwd=None):
+            try:
+                subprocess.check_call(cmd, cwd=cwd or self.builder_target_dir)
+            except subprocess.CalledProcessError as err:
+                sys.stderr.write('%s\nFAILURE: Return code %s' % (' '.join(cmd), err.returncode))
+                sys.exit(err.returncode)
+    
+        def _clone_gh_pages(self):
+            shutil.rmtree(self.builder_target_dir, ignore_errors=True)
+            cmd = ['git', 'clone', GITHUB_ORIGIN_URL, '-b', 'gh-pages', '--single-branch', self.builder_target_dir]
+            self._shell(cmd, cwd=self.build_dir)
+            if self.gh_user_name:
+                self._shell(['git', 'config', 'user.name', self.gh_user_name])
+            if self.gh_user_email:
+                self._shell(['git', 'config', 'user.email', self.gh_user_email])
+        
+        def _push_gh_pages(self):
+            self._shell(['git', 'add', '-A', '.'])
+            self._shell(['git', 'commit', '-m', self.gh_commit_msg])
+            self._shell(['git', 'push'])
             
+        def _copy_docs_source(self):
+            copy_source_dir = os.path.join(self.build_dir, os.path.basename(self.source_dir))
+            shutil.rmtree(copy_source_dir, ignore_errors=True)
+            shutil.copytree(self.source_dir, copy_source_dir)
+            self.source_dir = copy_source_dir
+    
+        def _generate_api_docs(self):
+            package_source_dir = os.path.join(TAU_HOME,  self.distribution.package_dir[''], 'tau')
+            sphinx_apidoc.main(['-M', # Put module documentation before submodule documentation
+                                '-P', # Include "_private" modules
+                                '-f', # Overwrite existing files
+                                '-e', # Put documentation for each module on its own page
+                                '-o', self.source_dir, package_source_dir])
+    
+        def run(self):
+            if self.update_gh_pages:
+                self._clone_gh_pages()
+            self._copy_docs_source()
+            self._generate_api_docs()
+            BuildDoc.run(self)
+            if self.update_gh_pages:
+                self._push_gh_pages()
+
+
+def get_commands():
+    cmdclass = {}
+    if HAVE_SPHINX:
+        cmdclass['build_sphinx'] = BuildSphinx
+    return cmdclass                
+
 
 setuptools.setup(
     name="taucmdr",
     version=update_version(),
     packages=setuptools.find_packages("packages"),
     package_dir={"": "packages"},
-    scripts=['bin/tau', 'bin/.tau.py'],
+    scripts=['bin/tau'],
     zip_safe=False,
 
     # Testing
@@ -192,8 +207,6 @@ setuptools.setup(
     ],
                  
     # Custom commands
-    cmdclass={
-        'build_sphinx': BuildSphinx
-    },
+    cmdclass=get_commands(),
 
 )

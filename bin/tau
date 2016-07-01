@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -25,23 +26,24 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-TAU_HOME="$( cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd )"
-cd "$TAU_HOME"
+"""TAU Commander command line program entry point.
 
-# Best case: we're using TAU Commander's internal Python installation
-if [ -x "$TAU_HOME/conda/bin/python" ] ; then
-  export PATH="$TAU_HOME/conda/bin:$PATH"
-  unset PYTHONPATH
-# Otherwise try to use the system python, but complain
-elif which python >/dev/null 2>&1 ; then
-  echo "WARNING: Using untested python found at `which python`"
-# No python?  We're dead
-else
-  echo "ERROR: python not found in PATH"
-  exit 256
-fi
+Just patches through to tau.cli.commands.__main__
+"""
 
-# Invoke TAU Commander
-export __TAU_SCRIPT__=`basename $0`
-$TAU_HOME/bin/.tau.py "$@"
+if __name__ == '__main__':
+    import os
+    import sys
+
+    if getattr(sys, 'frozen', False):
+        __file__ = sys.executable
+
+    here = os.path.realpath(os.path.dirname(__file__))
+    #os.environ['__TAU_HOME__'] = os.path.join(here, '..')
+    #os.environ['__TAU_SCRIPT__'] = os.path.basename(__file__)
+    packages = os.path.join(here, '..', 'packages')
+    sys.path.insert(0, packages)
+
+    from tau.cli.commands.__main__ import COMMAND as cli_main_cmd
+    sys.exit(cli_main_cmd.main(sys.argv[1:]))
 

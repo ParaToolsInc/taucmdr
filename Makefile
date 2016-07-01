@@ -156,7 +156,6 @@ SYSTEM_SRC = $(DESTDIR)/.system/src
 
 TAUCMDR_PKG = taucmdr-$(VERSION).tar.gz
 TAUCMDR_SRC = $(BUILDDIR)/$(TAUCMDR_PKG)
-TAUCMDR_JUNK = MANIFEST.in PKG-INFO pylintrc setup.cfg setup.py
 
 TAU_PKG = tau-$(TAU_VERSION).tar.gz
 TAU_URL = $(TAU_REPO)/$(TAU_PKG)
@@ -186,20 +185,17 @@ all: $(CONDA_SRC)
 
 install: all $(TAUCMDR)
 	$(ECHO)$(TAUCMDR) --version
+	@echo 
 	@echo "-------------------------------------------------------------------------------"
-	@echo "TAU Commander installed at $(DESTDIR)"
-	@echo "Rememember to add $(DESTDIR)/bin to your PATH"
+	@echo "TAU Commander is installed at \"$(DESTDIR)\""
+	@echo "Rememember to add \"$(DESTDIR)/bin\" to your PATH"
 	@echo "-------------------------------------------------------------------------------"
+	@echo 
 
-$(TAUCMDR): $(TAUCMDR_SRC)
-	$(ECHO)tar xvzf $(TAUCMDR_SRC) -C "$(DESTDIR)" --strip-components=1
-	$(ECHO)$(RM) $(addprefix $(DESTDIR)/,$(TAUCMDR_JUNK))
-	@echo "Compiling python files..."
-	$(ECHO)$(PYTHON) -m compileall $(DESTDIR) || true
-	$(ECHO)touch $(TAUCMDR)
-
-$(TAUCMDR_SRC): $(PYTHON)
-	$(ECHO)$(PYTHON) setup.py sdist -d $(BUILDDIR)
+$(TAUCMDR): $(PYTHON)
+	$(ECHO)$(PYTHON) setup.py install --install-scripts $(DESTDIR)/bin
+	$(ECHO)$(CP) LICENSE README.md VERSION $(DESTDIR)
+	$(ECHO)$(CP) -r examples $(DESTDIR)
 
 $(PYTHON): $(CONDA_SRC)
 	$(ECHO)bash $< -b -p $(CONDA_DEST)
@@ -226,6 +222,7 @@ $(CONDA_SRC):
 	$(call download,$(CONDA_URL),$(CONDA_SRC))
 
 clean: 
+	$(ECHO)$(RM) -r dist
 ifeq ($(DOWNLOAD),true)
 	$(ECHO)$(RM) -r $(BUILDDIR)
 else
