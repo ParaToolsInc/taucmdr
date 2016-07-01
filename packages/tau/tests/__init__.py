@@ -191,11 +191,14 @@ class TestCase(unittest.TestCase):
             def worker():
                 initialize.COMMAND.main(argv)
             thread = threading.Thread(target=worker)
+            tstart = time.time()
             thread.start()
+            self._result_stream.writeln('\nInitializing TAU and dependencies')
             while thread.is_alive():
-                self._result_stream.writeln('Initializing TAU and dependencies may take several minutes...')
-                time.sleep(60)
-            self._result_stream.writeln('Finished')
+                time.sleep(30)
+                self._result_stream.write('.')
+            elapsed = time.time() - tstart
+            self._result_stream.writeln('\nTAU initialized in %s seconds' % elapsed)
 
     def exec_command(self, cmd, argv):
         """Execute a command's main() routine and return the exit code, stdout, and stderr data.
