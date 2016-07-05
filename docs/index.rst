@@ -31,7 +31,7 @@ the master branch.
 The TAU Commandments
 ====================
 
-1. Thou shalt use `pylint`_ 1.4 or later as part of your development cycle.
+1. Thou shalt use `pylint`_ 1.5 or later as part of your development cycle.
 2. Thou shalt follow the :doc:`design` for it is sacred.
 3. Thou shalt style thine code according to the :doc:`style`.
 4. Thou shalt document your code according to the :doc:`documentation`.

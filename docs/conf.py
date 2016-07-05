@@ -19,7 +19,7 @@ import tempfile
 
 # Since this file is execfile()d with the current directory set to its
 # containing dir, we can safely calculate the TAU_HOME.
-TAU_HOME = os.path.realpath(os.path.abspath(os.path.join('..', '..')))
+TAU_HOME = os.path.realpath(os.path.abspath('..'))
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the

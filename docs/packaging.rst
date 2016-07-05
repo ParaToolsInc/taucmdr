@@ -22,7 +22,7 @@ There are two parts to getting the TAU Commander tool into a user's hands:
    Collecting all the TAU Commander Python files into a single archive file called a **distribution**.  Distributions
    are built via the setup.py script as described below and, like most Python packages, they do not include 
    dependencies. TAU, PDT, and Python are *not* included in a TAU Commander distribution.  TAU Commander distributions 
-   are not fit for user consumption.[1]_
+   are not fit for user consumption. [1]_
 
 :Releasing:
    Bundling a TAU Commander distribution with supporting files and scripts to form a complete software **release**
@@ -56,7 +56,7 @@ TAU Commander.  The important ones are:
    its own, private, un-shared Python installation to avoid environment contamination when profiling a user's code.  
    For example, if the user's Python has a package named "tau" installed in it then both TAU Commander and the user's 
    code will break.  The top-level Makefile will call ``python setup.py install`` with appropriate options after 
-   installing a pristine Python just for TAU Commander.[2]_ Should always be used with ``--prefix`` and 
+   installing a pristine Python just for TAU Commander. [2]_ Should always be used with ``--prefix`` and 
    ``--install-scripts`` options.
    
 :build_release:
