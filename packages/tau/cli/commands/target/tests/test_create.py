@@ -30,6 +30,7 @@
 Functions used for unit tests of create.py.
 """
 
+import os
 import unittest
 from tau import tests, util
 from tau.cli.commands.target.create import COMMAND as create_cmd
@@ -79,9 +80,10 @@ class CreateTest(tests.TestCase):
         from tau.storage.levels import PROJECT_STORAGE
         from tau.model.target import Target
         ctrl = Target.controller(PROJECT_STORAGE)
-        test_targ = ctrl.one({'name': 'test_targ'}).populate()
-        self.assertTrue(test_targ['CC']['path'].endswith('icc'))
-        self.assertTrue(test_targ['CXX']['path'].endswith('icpc'))
-        self.assertTrue(test_targ['FC']['path'].endswith('ifort'))
+        test_targ = ctrl.one({'name': 'test_targ'})
+        for role, expected in ('CC', 'icc'), ('CXX', 'icpc'), ('FC', 'ifort'):
+            path = test_targ.populate(role)['path']
+            self.assertEqual(os.path.basename(path), expected, 
+                             "Target[%s] is '%s', not '%s'" % (role, path, expected))
 
 
