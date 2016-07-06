@@ -269,7 +269,8 @@ class InstalledCompiler(object):
         
         Args:
             command (str): Absolute or relative path to an installed compiler command.
-            family (CompilerFamilY): 
+            family (CompilerFamily): Installed compiler's family if known, None otherwise.
+            role (CompilerRole): Installed compiler's role if known, None otherwise.
         """
         absolute_path = util.which(command)
         command = os.path.basename(absolute_path)

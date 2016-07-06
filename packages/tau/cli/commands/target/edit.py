@@ -54,10 +54,6 @@ class TargetEditCommand(EditCommand):
         Raises:
             ConfigurationError: Invalid command line arguments specified
         """
-        compiler_keys = set(CompilerRole.keys())
-        all_keys = set(args.__dict__.keys())
-        given_keys = compiler_keys & all_keys
-        self.logger.debug("Given compilers: %s", given_keys)
         compilers = {}
 
         for family_attr, family_cls in [('host_family', CompilerFamily), ('mpi_family', MpiCompilerFamily)]:
@@ -76,14 +72,22 @@ class TargetEditCommand(EditCommand):
             for comp in family_comps:
                 self.logger.debug("args.%s=%r", comp.info.role.keyword, comp.absolute_path)
                 setattr(args, comp.info.role.keyword, comp.absolute_path)
+                compilers[comp.info.role] = comp
 
-        for key in given_keys:
+        compiler_keys = set(CompilerRole.keys())
+        all_keys = set(args.__dict__.keys())
+        given_keys = compiler_keys & all_keys
+        family_keys = set(role.keyword for role in compilers)
+        self.logger.debug("Given compilers: %s", given_keys)
+        self.logger.debug("Family compilers: %s", family_keys)
+
+        for key in given_keys - family_keys:
             absolute_path = util.which(getattr(args, key))
             if not absolute_path:
                 self.parser.error("Invalid compiler command: %s")
             role = CompilerRole.find(key)
             compilers[role] = InstalledCompiler.probe(absolute_path, role=role)
-        
+
         # Probe MPI compilers to discover wrapper flags
         mpi_keys = set([getattr(role, 'keyword') for role in MPI_CC_ROLE, MPI_CXX_ROLE, MPI_FC_ROLE])
         for key in mpi_keys & given_keys:
