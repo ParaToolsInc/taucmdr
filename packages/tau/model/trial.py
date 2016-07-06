@@ -139,9 +139,11 @@ class TrialController(Controller):
         except:
             self.delete(trial.eid)
             raise
-        finally:
+        else:
             end_time = str(datetime.utcnow())
             self.update({'end_time': end_time, 'return_code': retval}, trial.eid)
+        finally:
+            end_time = str(datetime.utcnow())
             banner('END', expr.name, end_time)
         if retval != 0:
             raise TrialError("Program died without producing performance data.",
