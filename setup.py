@@ -37,6 +37,7 @@ import shutil
 import fileinput
 import setuptools
 import subprocess
+from setuptools.command.test import test as TestCommand
 
 #######################################################################################################################
 # PACKAGE CONFIGURATION
@@ -177,6 +178,15 @@ if HAVE_SPHINX:
                 self._push_gh_pages()
 
 
+class Test(TestCommand):
+    """Customize the test command to always run in buffered mode."""
+    
+    def _test_args(self):
+        args = ['--buffer']
+        args.extend(TestCommand._test_args(self))
+        return args
+
+
 def update_version():
     """Rewrite packages/tau/__init__.py to update __version__.
 
@@ -208,6 +218,7 @@ def update_version():
 
 def get_commands():
     cmdclass = {}
+    cmdclass['test'] = Test
     if HAVE_SPHINX:
         cmdclass['build_sphinx'] = BuildSphinx
     return cmdclass                
@@ -223,7 +234,7 @@ setuptools.setup(
     zip_safe=False,
 
     # Testing
-    test_suite='tau.tests.run_tests',
+    test_suite='tau',
     tests_require=['pylint'], # Because we run pylint as a unit test
 
     # Metadata for upload to PyPI
