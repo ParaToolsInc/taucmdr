@@ -180,11 +180,11 @@ if HAVE_SPHINX:
 
 class Test(TestCommand):
     """Customize the test command to always run in buffered mode."""
-    
-    def _test_args(self):
+
+    def run_tests(self):
         args = ['--buffer']
-        args.extend(TestCommand._test_args(self))
-        return args
+        self.test_args = args + self.test_args
+        return TestCommand.run_tests(self)
 
 
 def update_version():
