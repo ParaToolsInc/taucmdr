@@ -31,14 +31,6 @@ Program entry point for all activities related to packaging.  Distributions,
 documentation, and unit testing are all handled from this script. 
 """
 
-import os
-import sys
-import shutil
-import fileinput
-import setuptools
-import subprocess
-from setuptools.command.test import test as TestCommand
-
 #######################################################################################################################
 # PACKAGE CONFIGURATION
 #######################################################################################################################
@@ -98,6 +90,15 @@ CLASSIFIERS = [
 #######################################################################################################################
 # END PACKAGE CONFIGURATION (probably shouldn't change anything after this line)
 #######################################################################################################################
+
+import os
+import sys
+import shutil
+import fileinput
+import setuptools
+import subprocess
+from setuptools.command.test import test as TestCommand
+from setuptools.command.install import install as InstallCommand
 
 # Package top-level directory 
 TAU_HOME = os.path.realpath(os.path.abspath(os.path.dirname(__file__)))
@@ -187,6 +188,15 @@ class Test(TestCommand):
         return TestCommand.run_tests(self)
 
 
+class Install(InstallCommand):
+    
+    def run(self):
+        if not self.force:
+            print "DON'T INSTALL TAU COMMANDER THIS WAY!  See the installation documentation."
+        else:
+            return InstallCommand.run(self)
+
+
 def update_version():
     """Rewrite packages/tau/__init__.py to update __version__.
 
@@ -219,6 +229,7 @@ def update_version():
 def get_commands():
     cmdclass = {}
     cmdclass['test'] = Test
+    cmdclass['install'] = Install
     if HAVE_SPHINX:
         cmdclass['build_sphinx'] = BuildSphinx
     return cmdclass                
