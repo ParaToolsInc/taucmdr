@@ -1,8 +1,8 @@
 How to Add Support for a New Compiler
 =====================================
 
-Short Answer
-------------
+TL;DR
+-----
 
 1. Check existing family definitions in :any:`tau.cf.compiler`.  If the missing compiler's family is already 
    defined then just update the existing definition.  Otherwise declare a new family using the existing declarations
@@ -10,8 +10,7 @@ Short Answer
 2. Update :any:`TauInstallation` with any special cases or goofy flags TAU might need to work with the new compiler,
    e.g. ``fc_magic_map`` in :any:`TauInstallation.configure`
 
-Long Answer
------------
+-------------------------------------------------------------------------------
 
 The TAU Performance System is extremely sensitive to changes in compilers, so it's important that TAU Commander know
 which compilers were used to build both TAU and the user's application.  To help with this, TAU Commander maintains a 

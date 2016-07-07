@@ -44,15 +44,6 @@ _CWD_STACK = []
 _TEMPDIR_STACK = []
 _NOT_IMPLEMENTED = []
 
-def run_tests():
-    """Run all unit tests and exit.
-    
-    Uses :any:`unittest.TestLoader.discover` to find all unit tests, then uses :any:`tau.tests.TestRunner`
-    to execute the tests.
-    """
-    here = os.path.realpath(os.path.dirname(__file__))
-    suite = unittest.TestLoader().discover(os.path.join(here, '..'))
-    sys.exit(TestRunner(verbosity=1, buffer=True).run(suite))
 
 def get_stdout():
     """Get data written to unit test stdout.
@@ -228,6 +219,10 @@ class TestCase(unittest.TestCase):
 
 class TestRunner(unittest.TextTestRunner):
     """Test suite runner."""
+    
+    def __init__(self, *args, **kwargs):
+        super(TestRunner, self).__init__(*args, **kwargs)
+        self.buffer = True
 
     def run(self, test):
         result = super(TestRunner, self).run(test)

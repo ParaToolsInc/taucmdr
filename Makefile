@@ -193,7 +193,7 @@ install: all $(TAUCMDR)
 	@echo 
 
 $(TAUCMDR): $(PYTHON)
-	$(ECHO)$(PYTHON) setup.py install --install-scripts $(DESTDIR)/bin
+	$(ECHO)$(PYTHON) setup.py install --force --install-scripts $(DESTDIR)/bin
 	$(ECHO)$(CP) LICENSE README.md VERSION $(DESTDIR)
 	$(ECHO)$(CP) -r examples $(DESTDIR)
 

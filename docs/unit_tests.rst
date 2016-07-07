@@ -20,7 +20,7 @@ file in the directory.
 
 Step 3: Contents of ``test_function_name.py``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Each ``test_function_name.py`` file should import the unittest package. A
+Each ``test_function_name.py`` file should import the :any:`tau.tests` package. A
 separate class should be created for each function that is tested and multiple
 test functions may be created in each class in order to run multiple tests on a
 single function. Each function should use an ``assert*`` command that checks if
@@ -38,8 +38,6 @@ to camel case.
             self.assertEqual(util.camelcase("abc_def_ghi"), "AbcDefGhi")
 
 
-
-
 Further information on the unit test package
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The `page <https://docs.python.org/2/library/unittest.html>`_ has more
@@ -48,9 +46,7 @@ information on writing a unit test function.
 Running unit tests
 ------------------
 
-Run the runtests script to execute all unit tests:
+Run the setup.py script to execute all unit tests::
 
-::
-
-$ ./runtests
+   python setup.py test
 

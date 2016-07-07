@@ -30,7 +30,9 @@
 Functions used for unit tests of create.py.
 """
 
-from tau import tests
+import os
+import unittest
+from tau import tests, util
 from tau.cli.commands.target.create import COMMAND as create_cmd
 
 class CreateTest(tests.TestCase):
@@ -42,12 +44,6 @@ class CreateTest(tests.TestCase):
         stdout, stderr = self.assertCommandReturnValue(0, create_cmd, argv)
         self.assertIn('Added target \'targ02\' to project configuration \'proj1\'', stdout)
         self.assertFalse(stderr)
-
-    #def test_no_project(self):
-    #    self.reset_project_storage(project_name='proj1')
-    #    from tau.storage.project import ProjectStorageError
-    #    argv = ['test_no_project']
-    #    self.assertRaises(ProjectStorageError, create_cmd.main, argv)
 
     def test_no_args(self):
         self.reset_project_storage(project_name='proj1')
@@ -72,3 +68,22 @@ class CreateTest(tests.TestCase):
         self.assertIn('target create <target_name> [arguments]', stderr)
         self.assertIn('target create: error: A target with name', stderr)
         self.assertIn('already exists', stderr)
+
+    @unittest.skipUnless(util.which('icc'), "Intel compilers required for this test")
+    def test_host_family(self):
+        self.reset_project_storage()
+        stdout, stderr = self.assertCommandReturnValue(0, create_cmd, ['test_targ', '--compilers', 'Intel'])
+        self.assertIn("Added target", stdout)
+        self.assertIn("test_targ", stdout)
+        self.assertFalse(stderr)
+
+        from tau.storage.levels import PROJECT_STORAGE
+        from tau.model.target import Target
+        ctrl = Target.controller(PROJECT_STORAGE)
+        test_targ = ctrl.one({'name': 'test_targ'})
+        for role, expected in ('CC', 'icc'), ('CXX', 'icpc'), ('FC', 'ifort'):
+            path = test_targ.populate(role)['path']
+            self.assertEqual(os.path.basename(path), expected, 
+                             "Target[%s] is '%s', not '%s'" % (role, path, expected))
+
+
