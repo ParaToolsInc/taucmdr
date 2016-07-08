@@ -8,7 +8,7 @@ TAU Commander
 
 ![The TAU Commander performance engineering solution consists of an 
 intuitive, client-side application and cloud-hosted data analysis, 
-storage, and visualization services.](docs/source/_static/taucmdr.png)
+storage, and visualization services.](docs/_static/taucmdr.png)
 
 TAU Commander from [ParaTools, Inc.](http://www.paratools.com/) is a 
 production-grade performance engineering solution that makes 
