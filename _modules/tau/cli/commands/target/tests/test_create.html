@@ -77,7 +77,9 @@
 <span class="sd">Functions used for unit tests of create.py.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">tests</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">unittest</span>
+<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">tests</span><span class="p">,</span> <span class="n">util</span>
 <span class="kn">from</span> <span class="nn">tau.cli.commands.target.create</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">create_cmd</span>
 
 <div class="viewcode-block" id="CreateTest"><a class="viewcode-back" href="../../../../../../tau.cli.commands.target.tests.test_create.html#tau.cli.commands.target.tests.test_create.CreateTest">[docs]</a><span class="k">class</span> <span class="nc">CreateTest</span><span class="p">(</span><span class="n">tests</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
@@ -89,12 +91,6 @@
         <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">create_cmd</span><span class="p">,</span> <span class="n">argv</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;Added target </span><span class="se">\&#39;</span><span class="s1">targ02</span><span class="se">\&#39;</span><span class="s1"> to project configuration </span><span class="se">\&#39;</span><span class="s1">proj1</span><span class="se">\&#39;</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">stderr</span><span class="p">)</span></div>
-
-    <span class="c1">#def test_no_project(self):</span>
-    <span class="c1">#    self.reset_project_storage(project_name=&#39;proj1&#39;)</span>
-    <span class="c1">#    from tau.storage.project import ProjectStorageError</span>
-    <span class="c1">#    argv = [&#39;test_no_project&#39;]</span>
-    <span class="c1">#    self.assertRaises(ProjectStorageError, create_cmd.main, argv)</span>
 
 <div class="viewcode-block" id="CreateTest.test_no_args"><a class="viewcode-back" href="../../../../../../tau.cli.commands.target.tests.test_create.html#tau.cli.commands.target.tests.test_create.CreateTest.test_no_args">[docs]</a>    <span class="k">def</span> <span class="nf">test_no_args</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">(</span><span class="n">project_name</span><span class="o">=</span><span class="s1">&#39;proj1&#39;</span><span class="p">)</span>
@@ -118,7 +114,26 @@
         <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exec_command</span><span class="p">(</span><span class="n">create_cmd</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;targ1&#39;</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;target create &lt;target_name&gt; [arguments]&#39;</span><span class="p">,</span> <span class="n">stderr</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;target create: error: A target with name&#39;</span><span class="p">,</span> <span class="n">stderr</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;already exists&#39;</span><span class="p">,</span> <span class="n">stderr</span><span class="p">)</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;already exists&#39;</span><span class="p">,</span> <span class="n">stderr</span><span class="p">)</span></div>
+
+    <span class="nd">@unittest.skipUnless</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;icc&#39;</span><span class="p">),</span> <span class="s2">&quot;Intel compilers required for this test&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="CreateTest.test_host_family"><a class="viewcode-back" href="../../../../../../tau.cli.commands.target.tests.test_create.html#tau.cli.commands.target.tests.test_create.CreateTest.test_host_family">[docs]</a>    <span class="k">def</span> <span class="nf">test_host_family</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">()</span>
+        <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">create_cmd</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;test_targ&#39;</span><span class="p">,</span> <span class="s1">&#39;--compilers&#39;</span><span class="p">,</span> <span class="s1">&#39;Intel&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s2">&quot;Added target&quot;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s2">&quot;test_targ&quot;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">stderr</span><span class="p">)</span>
+
+        <span class="kn">from</span> <span class="nn">tau.storage.levels</span> <span class="kn">import</span> <span class="n">PROJECT_STORAGE</span>
+        <span class="kn">from</span> <span class="nn">tau.model.target</span> <span class="kn">import</span> <span class="n">Target</span>
+        <span class="n">ctrl</span> <span class="o">=</span> <span class="n">Target</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="n">PROJECT_STORAGE</span><span class="p">)</span>
+        <span class="n">test_targ</span> <span class="o">=</span> <span class="n">ctrl</span><span class="o">.</span><span class="n">one</span><span class="p">({</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;test_targ&#39;</span><span class="p">})</span>
+        <span class="k">for</span> <span class="n">role</span><span class="p">,</span> <span class="n">expected</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;CC&#39;</span><span class="p">,</span> <span class="s1">&#39;icc&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;CXX&#39;</span><span class="p">,</span> <span class="s1">&#39;icpc&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;FC&#39;</span><span class="p">,</span> <span class="s1">&#39;ifort&#39;</span><span class="p">):</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">test_targ</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="n">role</span><span class="p">)[</span><span class="s1">&#39;path&#39;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="n">expected</span><span class="p">,</span> 
+                             <span class="s2">&quot;Target[</span><span class="si">%s</span><span class="s2">] is &#39;</span><span class="si">%s</span><span class="s2">&#39;, not &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">role</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">expected</span><span class="p">))</span></div></div>
+
+
 </pre></div>
 
       </div>

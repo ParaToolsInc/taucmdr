@@ -87,12 +87,11 @@ as input.  Since we use <a class="reference external" href="http://sphinx-doc.or
 <div class="section" id="updating-the-developer-documentation">
 <h2><a class="toc-backref" href="#id3">Updating the Developer Documentation</a><a class="headerlink" href="#updating-the-developer-documentation" title="Permalink to this headline">¶</a></h2>
 <p>The TAU Commander developer documentation is hosted on the project&#8217;s
-<a class="reference external" href="http://github.com/ParaToolsInc/taucmdr">github page</a>.  Use the documentation
-makefile to update these pages from the master branch.</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>$ cd docs
-$ make
+<a class="reference external" href="http://github.com/ParaToolsInc/taucmdr">github page</a>.  Use the setup.py script
+to update these pages from the master branch.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>$ python setup.py build_sphinx
 # Check for errors
-$ make update-github-pages
+$ python setup.py build_sphinx --update-gh-pages
 </pre></div>
 </div>
 <p>You&#8217;ll see the new documentation at <a class="reference external" href="http://paratoolsinc.github.io/taucmdr">http://paratoolsinc.github.io/taucmdr</a>.</p>
@@ -116,9 +115,9 @@ meaningless concept.</li>
 </div></blockquote>
 <p>For the same reasons, do not be tempted to set any of the additional
 metadata module members that some Python parsers recognize, e.g.
-<code class="docutils literal"><span class="pre">__author__</span></code> and <code class="docutils literal"><span class="pre">__copyright__</span></code>.  Just don&#8217;t do it. In fact, if
-you&#8217;re setting a global variable of the form <code class="docutils literal"><span class="pre">__some_name__</span></code> you&#8217;re
-probably doing something wrong.</p>
+<code class="docutils literal"><span class="pre">__author__</span></code> and <code class="docutils literal"><span class="pre">__copyright__</span></code>.  Just don&#8217;t do it. In fact, any
+time you set a global variable of the form <code class="docutils literal"><span class="pre">__some_name__</span></code> be extra
+certain that you&#8217;re not doing something wrong.</p>
 <p><strong>Example of a Correct File Header</strong></p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># -*- coding: utf-8 -*-</span>
 <span class="c1">#</span>
@@ -175,16 +174,14 @@ guidelines for doc strings below.</p>
 </div>
 <div class="section" id="modules">
 <h3><a class="toc-backref" href="#id7">Modules</a><a class="headerlink" href="#modules" title="Permalink to this headline">¶</a></h3>
-<p>Every file should contain license boilerplate. Choose the appropriate
-boilerplate for the license used by the project (for example, Apache
-2.0, BSD, LGPL, GPL)</p>
+<p>Every file should contain BSD license boilerplate as seen in the above example.</p>
 </div>
 <div class="section" id="functions-and-methods">
 <h3><a class="toc-backref" href="#id8">Functions and Methods</a><a class="headerlink" href="#functions-and-methods" title="Permalink to this headline">¶</a></h3>
 <p>As used in this section &#8220;function&#8221; applies to methods, function, and
 generators.</p>
 <p>A function must have a docstring, unless it meets all of the following
-criteria:</p>
+criteria (pylint will enforce this):</p>
 <ul class="simple">
 <li>not externally visible</li>
 <li>very short</li>

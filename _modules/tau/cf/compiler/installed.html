@@ -316,7 +316,8 @@
 <span class="sd">        </span>
 <span class="sd">        Args:</span>
 <span class="sd">            command (str): Absolute or relative path to an installed compiler command.</span>
-<span class="sd">            family (CompilerFamilY): </span>
+<span class="sd">            family (CompilerFamily): Installed compiler&#39;s family if known, None otherwise.</span>
+<span class="sd">            role (CompilerRole): Installed compiler&#39;s role if known, None otherwise.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">absolute_path</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
         <span class="n">command</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">absolute_path</span><span class="p">)</span>

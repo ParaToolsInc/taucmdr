@@ -186,9 +186,11 @@
         <span class="k">except</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">trial</span><span class="o">.</span><span class="n">eid</span><span class="p">)</span>
             <span class="k">raise</span>
-        <span class="k">finally</span><span class="p">:</span>
+        <span class="k">else</span><span class="p">:</span>
             <span class="n">end_time</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">())</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;end_time&#39;</span><span class="p">:</span> <span class="n">end_time</span><span class="p">,</span> <span class="s1">&#39;return_code&#39;</span><span class="p">:</span> <span class="n">retval</span><span class="p">},</span> <span class="n">trial</span><span class="o">.</span><span class="n">eid</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">end_time</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">())</span>
             <span class="n">banner</span><span class="p">(</span><span class="s1">&#39;END&#39;</span><span class="p">,</span> <span class="n">expr</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">end_time</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">retval</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">TrialError</span><span class="p">(</span><span class="s2">&quot;Program died without producing performance data.&quot;</span><span class="p">,</span>

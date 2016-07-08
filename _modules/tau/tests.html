@@ -91,15 +91,6 @@
 <span class="n">_TEMPDIR_STACK</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="n">_NOT_IMPLEMENTED</span> <span class="o">=</span> <span class="p">[]</span>
 
-<div class="viewcode-block" id="run_tests"><a class="viewcode-back" href="../../tau.tests.html#tau.tests.run_tests">[docs]</a><span class="k">def</span> <span class="nf">run_tests</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;Run all unit tests and exit.</span>
-<span class="sd">    </span>
-<span class="sd">    Uses :any:`unittest.TestLoader.discover` to find all unit tests, then uses :any:`tau.tests.TestRunner`</span>
-<span class="sd">    to execute the tests.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">here</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">__file__</span><span class="p">))</span>
-    <span class="n">suite</span> <span class="o">=</span> <span class="n">unittest</span><span class="o">.</span><span class="n">TestLoader</span><span class="p">()</span><span class="o">.</span><span class="n">discover</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">here</span><span class="p">,</span> <span class="s1">&#39;..&#39;</span><span class="p">))</span>
-    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">TestRunner</span><span class="p">(</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="nb">buffer</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">suite</span><span class="p">))</span></div>
 
 <div class="viewcode-block" id="get_stdout"><a class="viewcode-back" href="../../tau.tests.html#tau.tests.get_stdout">[docs]</a><span class="k">def</span> <span class="nf">get_stdout</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Get data written to unit test stdout.</span>
@@ -275,6 +266,10 @@
 
 <div class="viewcode-block" id="TestRunner"><a class="viewcode-back" href="../../tau.tests.html#tau.tests.TestRunner">[docs]</a><span class="k">class</span> <span class="nc">TestRunner</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TextTestRunner</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Test suite runner.&quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TestRunner</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span> <span class="o">=</span> <span class="bp">True</span>
 
 <div class="viewcode-block" id="TestRunner.run"><a class="viewcode-back" href="../../tau.tests.html#tau.tests.TestRunner.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test</span><span class="p">):</span>
         <span class="n">result</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">TestRunner</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">test</span><span class="p">)</span>

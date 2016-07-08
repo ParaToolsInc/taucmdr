@@ -145,7 +145,7 @@
 
 <dl class="class">
 <dt id="tau.tests.TestRunner">
-<em class="property">class </em><code class="descclassname">tau.tests.</code><code class="descname">TestRunner</code><span class="sig-paren">(</span><em>stream=&lt;open file '&lt;stderr&gt;'</em>, <em>mode 'w'&gt;</em>, <em>descriptions=True</em>, <em>verbosity=1</em>, <em>failfast=False</em>, <em>buffer=False</em>, <em>resultclass=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/tests.html#TestRunner"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.tests.TestRunner" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.tests.</code><code class="descname">TestRunner</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/tests.html#TestRunner"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.tests.TestRunner" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">unittest.runner.TextTestRunner</span></code></p>
 <p>Test suite runner.</p>
 <dl class="method">
@@ -223,14 +223,6 @@
 <p>Sets the current working directory and <a class="reference external" href="https://docs.python.org/library/tempfile.html#tempfile.tempdir" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">tempfile.tempdir</span></code></a> to the newly created test directory.</p>
 <p>Directories created via this method are tracked.  If any of them exist when the program exits then
 an error message is shown for each.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="tau.tests.run_tests">
-<code class="descclassname">tau.tests.</code><code class="descname">run_tests</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/tests.html#run_tests"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.tests.run_tests" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run all unit tests and exit.</p>
-<p>Uses <a class="reference external" href="https://docs.python.org/library/unittest.html#unittest.TestLoader.discover" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">unittest.TestLoader.discover</span></code></a> to find all unit tests, then uses <a class="reference internal" href="#tau.tests.TestRunner" title="tau.tests.TestRunner"><code class="xref any py py-class docutils literal"><span class="pre">tau.tests.TestRunner</span></code></a>
-to execute the tests.</p>
 </dd></dl>
 
 </div>

@@ -51,8 +51,8 @@
         
   <div class="section" id="how-to-add-support-for-a-new-compiler">
 <h1>How to Add Support for a New Compiler<a class="headerlink" href="#how-to-add-support-for-a-new-compiler" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="short-answer">
-<h2>Short Answer<a class="headerlink" href="#short-answer" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="tl-dr">
+<h2>TL;DR<a class="headerlink" href="#tl-dr" title="Permalink to this headline">¶</a></h2>
 <ol class="arabic simple">
 <li>Check existing family definitions in <a class="reference internal" href="tau.cf.compiler.html"><em>tau.cf.compiler package</em></a>.  If the missing compiler&#8217;s family is already
 defined then just update the existing definition.  Otherwise declare a new family using the existing declarations
@@ -60,9 +60,7 @@ as an example.</li>
 <li>Update <a class="reference internal" href="tau.cf.software.tau_installation.html#tau.cf.software.tau_installation.TauInstallation" title="tau.cf.software.tau_installation.TauInstallation"><code class="xref any py py-class docutils literal"><span class="pre">TauInstallation</span></code></a> with any special cases or goofy flags TAU might need to work with the new compiler,
 e.g. <code class="docutils literal"><span class="pre">fc_magic_map</span></code> in <a class="reference internal" href="tau.cf.software.tau_installation.html#tau.cf.software.tau_installation.TauInstallation.configure" title="tau.cf.software.tau_installation.TauInstallation.configure"><code class="xref any py py-meth docutils literal"><span class="pre">TauInstallation.configure</span></code></a></li>
 </ol>
-</div>
-<div class="section" id="long-answer">
-<h2>Long Answer<a class="headerlink" href="#long-answer" title="Permalink to this headline">¶</a></h2>
+<hr class="docutils" />
 <p>The TAU Performance System is extremely sensitive to changes in compilers, so it&#8217;s important that TAU Commander know
 which compilers were used to build both TAU and the user&#8217;s application.  To help with this, TAU Commander maintains a
 <em>compiler information knowledgebase</em> that declares relationships between various compilers, the commands used to invoke

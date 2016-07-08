@@ -27,7 +27,7 @@
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="_static/favicon.ico"/>
     <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
-    <link rel="next" title="tau" href="modules.html" />
+    <link rel="next" title="Packaging and Releasing TAU Commander" href="packaging.html" />
     <link rel="prev" title="How to Add Support for a New Compiler" href="new_compiler.html" /> 
   </head>
   <body role="document">
@@ -42,7 +42,7 @@
         &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
         &#160;&#160;::&#160;&#160;
-        <a href="modules.html">tau</a>&#160;&#160;»
+        <a href="packaging.html">Packaging and Releasing TAU Commander</a>&#160;&#160;»
         </p>
 
       </div>
@@ -68,7 +68,7 @@ file in the directory.</p>
 </div>
 <div class="section" id="step-3-contents-of-test-function-name-py">
 <h3>Step 3: Contents of <code class="docutils literal"><span class="pre">test_function_name.py</span></code><a class="headerlink" href="#step-3-contents-of-test-function-name-py" title="Permalink to this headline">¶</a></h3>
-<p>Each <code class="docutils literal"><span class="pre">test_function_name.py</span></code> file should import the unittest package. A
+<p>Each <code class="docutils literal"><span class="pre">test_function_name.py</span></code> file should import the <a class="reference internal" href="tau.tests.html"><em>tau.tests package</em></a> package. A
 separate class should be created for each function that is tested and multiple
 test functions may be created in each class in order to run multiple tests on a
 single function. Each function should use an <code class="docutils literal"><span class="pre">assert*</span></code> command that checks if
@@ -92,8 +92,8 @@ information on writing a unit test function.</p>
 </div>
 <div class="section" id="running-unit-tests">
 <h2>Running unit tests<a class="headerlink" href="#running-unit-tests" title="Permalink to this headline">¶</a></h2>
-<p>Run the runtests script to execute all unit tests:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>$ ./runtests
+<p>Run the setup.py script to execute all unit tests:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>python setup.py test
 </pre></div>
 </div>
 </div>
@@ -108,7 +108,7 @@ information on writing a unit test function.</p>
         &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
         &#160;&#160;::&#160;&#160;
-        <a href="modules.html">tau</a>&#160;&#160;»
+        <a href="packaging.html">Packaging and Releasing TAU Commander</a>&#160;&#160;»
         </p>
 
       </div>

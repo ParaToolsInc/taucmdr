@@ -24,15 +24,14 @@ Updating the Developer Documentation
 ------------------------------------
 
 The TAU Commander developer documentation is hosted on the project's
-`github page <http://github.com/ParaToolsInc/taucmdr>`_.  Use the documentation
-makefile to update these pages from the master branch.
+`github page <http://github.com/ParaToolsInc/taucmdr>`_.  Use the setup.py script 
+to update these pages from the master branch.
 
 ::
 
-  $ cd docs
-  $ make
+  $ python setup.py build_sphinx
   # Check for errors
-  $ make update-github-pages
+  $ python setup.py build_sphinx --update-gh-pages
 
 You'll see the new documentation at http://paratoolsinc.github.io/taucmdr.
 
@@ -55,9 +54,9 @@ license boilerplate text, followed by the module's docstring.
 
 For the same reasons, do not be tempted to set any of the additional 
 metadata module members that some Python parsers recognize, e.g. 
-``__author__`` and ``__copyright__``.  Just don't do it. In fact, if 
-you're setting a global variable of the form ``__some_name__`` you're 
-probably doing something wrong.
+``__author__`` and ``__copyright__``.  Just don't do it. In fact, any
+time you set a global variable of the form ``__some_name__`` be extra  
+certain that you're not doing something wrong.
 
 **Example of a Correct File Header**
 
@@ -121,9 +120,7 @@ guidelines for doc strings below.
 Modules
 ~~~~~~~
 
-Every file should contain license boilerplate. Choose the appropriate
-boilerplate for the license used by the project (for example, Apache
-2.0, BSD, LGPL, GPL)
+Every file should contain BSD license boilerplate as seen in the above example.
 
 Functions and Methods
 ~~~~~~~~~~~~~~~~~~~~~
@@ -132,7 +129,7 @@ As used in this section "function" applies to methods, function, and
 generators.
 
 A function must have a docstring, unless it meets all of the following
-criteria:
+criteria (pylint will enforce this):
 
 -  not externally visible
 -  very short
