@@ -135,7 +135,7 @@ ifeq ($(OS),Darwin)
   CONDA_OS = MacOSX
 else 
   ifeq ($(OS),Linux)
-    CONDA_OS = Linux  
+    CONDA_OS = Linux
   else
     $(error OS not supported: $(OS))
   endif
