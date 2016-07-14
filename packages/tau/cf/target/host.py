@@ -197,6 +197,31 @@ def preferred_mpi_compilers():
     return inst
 
 
+def preferred_shmem_compilers():
+    """Get the preferred SHMEM compiler family for the host architecture.
+    
+    May probe environment variables and file systems in cases where the arch 
+    isn't immediately known to Python.  These tests may be expensive so the 
+    detected value is cached to improve performance.
+
+    Returns:
+        ShmemCompilerFamily: The host's preferred compiler family.
+    """
+    try:
+        inst = preferred_shmem_compilers.inst
+    except AttributeError:
+        from tau.cf.compiler import shmem
+        host_tau_arch = tau_arch()
+        if host_tau_arch is TAU_ARCH_CRAYCNL:
+            LOGGER.debug("Preferring Cray SHMEM compilers")
+            inst = shmem.CRAY_SHMEM_COMPILERS
+        else:
+            LOGGER.debug("No preferred MPI compilers for '%s': defaulting to OpenSHMEM", host_tau_arch)
+            inst = shmem.OPENSHMEM_SHEM_COMPILERS
+        preferred_shmem_compilers.inst = inst
+    return inst
+
+
 def default_compilers():
     """Get the default installed compilers for the host.
     

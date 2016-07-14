@@ -35,7 +35,8 @@ from tau.cli.cli_view import EditCommand
 from tau.model.target import Target
 from tau.model.compiler import Compiler
 from tau.cf.compiler import CompilerFamily, CompilerRole
-from tau.cf.compiler.mpi import MpiCompilerFamily, MPI_CXX_ROLE, MPI_CC_ROLE, MPI_FC_ROLE
+from tau.cf.compiler.mpi import MpiCompilerFamily
+from tau.cf.compiler.shmem import ShmemCompilerFamily
 from tau.cf.compiler.installed import InstalledCompiler, InstalledCompilerFamily
 
 
@@ -56,7 +57,9 @@ class TargetEditCommand(EditCommand):
         """
         compilers = {}
 
-        for family_attr, family_cls in [('host_family', CompilerFamily), ('mpi_family', MpiCompilerFamily)]:
+        for family_attr, family_cls in [('host_family', CompilerFamily), 
+                                        ('mpi_family', MpiCompilerFamily),
+                                        ('shmem_family', ShmemCompilerFamily)]:
             try:
                 family_arg = getattr(args, family_attr)
             except AttributeError as err:
@@ -87,22 +90,6 @@ class TargetEditCommand(EditCommand):
                 self.parser.error("Invalid compiler command: %s")
             role = CompilerRole.find(key)
             compilers[role] = InstalledCompiler.probe(absolute_path, role=role)
-
-        # Probe MPI compilers to discover wrapper flags
-        mpi_keys = set([getattr(role, 'keyword') for role in MPI_CC_ROLE, MPI_CXX_ROLE, MPI_FC_ROLE])
-        for key in mpi_keys & given_keys:
-            for args_attr, wrapped_attr in [('mpi_include_path', 'include_path'), 
-                                            ('mpi_library_path', 'library_path'),
-                                            ('mpi_libraries', 'libraries')]:
-                if not hasattr(args, args_attr):
-                    probed = set()
-                    try:
-                        comp = compilers[key]
-                    except KeyError:
-                        self.logger.debug("Not probing %s", key)
-                    else:
-                        probed.update(getattr(comp.wrapped, wrapped_attr))
-                    setattr(args, args_attr, list(probed))
         return compilers
 
     def construct_parser(self):
@@ -121,6 +108,13 @@ class TargetEditCommand(EditCommand):
                            dest='mpi_family',
                            default=arguments.SUPPRESS,
                            choices=MpiCompilerFamily.family_names())
+        group = parser.add_argument_group('Symmetric Hierarchical Memory (SHMEM) arguments')
+        group.add_argument('--shmem-compilers', 
+                           help="select all SHMEM compilers automatically from the given family",
+                           metavar='<family>',
+                           dest='shmem_family',
+                           default=arguments.SUPPRESS,
+                           choices=ShmemCompilerFamily.family_names())
         return parser
     
     def main(self, argv):

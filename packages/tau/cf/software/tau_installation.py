@@ -41,6 +41,7 @@ from tau.cf.compiler import IBM_COMPILERS, IBM_BG_COMPILERS
 from tau.cf.compiler import CC_ROLE, CXX_ROLE, FC_ROLE, UPC_ROLE
 from tau.cf.compiler.mpi import SYSTEM_MPI_COMPILERS, INTEL_MPI_COMPILERS, IBM_MPI_COMPILERS
 from tau.cf.compiler.mpi import MPI_CC_ROLE, MPI_CXX_ROLE, MPI_FC_ROLE
+from tau.cf.compiler.shmem import SHMEM_CC_ROLE, SHMEM_CXX_ROLE, SHMEM_FC_ROLE
 from tau.cf.target import TauArch, CRAY_CNL_OS
 
 
@@ -140,6 +141,9 @@ class TauInstallation(Installation):
                  opencl_support,
                  opencl_prefix,
                  shmem_support,
+                 shmem_include_path,
+                 shmem_library_path,
+                 shmem_libraries,
                  mpc_support,
                  # Instrumentation methods and options
                  source_inst,
@@ -187,7 +191,11 @@ class TauInstallation(Installation):
             mpi_library_path (list): Paths to search for MPI library files.
             mpi_libraries (list): MPI libraries to include when linking with TAU.
             cuda_support (bool): Enable or disable CUDA support in TAU.
+            opencl_support (bool): Enable or disable OpenCL support in TAU.
             shmem_support (bool): Enable or disable SHMEM support in TAU.
+            shmem_include_path (list):  Paths to search for SHMEM header files. 
+            shmem_library_path (list): Paths to search for SHMEM library files.
+            shmem_libraries (list): SHMEM libraries to include when linking with TAU.
             mpc_support (bool): Enable or disable MPC support in TAU.
             source_inst (bool): Enable or disable source-based instrumentation in TAU.
             compiler_inst (bool): Enable or disable compiler-based instrumentation in TAU. 
@@ -235,6 +243,9 @@ class TauInstallation(Installation):
         self.cuda_support = cuda_support
         self.cuda_prefix = cuda_prefix
         self.shmem_support = shmem_support
+        self.shmem_include_path = shmem_include_path
+        self.shmem_library_path = shmem_library_path
+        self.shmem_libraries = shmem_libraries
         self.mpc_support = mpc_support
         self.source_inst = source_inst
         self.compiler_inst = compiler_inst
@@ -304,6 +315,42 @@ class TauInstallation(Installation):
         LOGGER.debug("TAU installation at '%s' is valid", self.install_prefix)
         return True
     
+    def _select_flags(self, supported, header, libglob, user_inc, user_lib, user_libraries, 
+                      wrap_cc, wrap_cxx, wrap_fc):
+        selected_inc, selected_lib, selected_library = None, None, None
+        if supported:
+            # Prefer user-specified paths over autodetected paths
+            include_path = user_inc + wrap_cc.include_path + wrap_cxx.include_path + wrap_fc.include_path
+            if include_path:
+                # Unfortunately, TAU's configure script can only accept one path on -mpiinc
+                # and it expects the compiler's include path argument (e.g. "-I") to be omitted
+                for path in include_path:
+                    if os.path.exists(os.path.join(path, header)):
+                        selected_inc = path
+                        break
+                else:
+                    raise ConfigurationError("%s not found on include path: %s" % 
+                                             (header, os.pathsep.join(include_path)))
+            library_path = user_lib + wrap_cc.library_path + wrap_cxx.library_path + wrap_fc.library_path
+            if library_path:
+                # Unfortunately, TAU's configure script can only accept one path on -mpilib
+                # and it expects the compiler's include path argument (e.g. "-L") to be omitted
+                for path in library_path:
+                    if glob.glob(os.path.join(path, libglob)):
+                        selected_lib = path
+                        break
+                else:
+                    raise ConfigurationError("No files matched '%s' on library path: %s" % 
+                                             (libglob, os.pathsep.join(library_path)))
+            # Don't add autodetected Fortran or C++ libraries; C is probably OK
+            libraries = user_libraries + wrap_cc.libraries
+            if libraries:
+                # TAU's configure script accepts multiple libraries but only if they're separated by a '#' symbol
+                # and the compiler's library linking flag (e.g. '-l') must be included
+                link_library_flag = wrap_cc.info.family.link_library_flags[0]
+                selected_library = '#'.join([link_library_flag+lib for lib in libraries])
+        return selected_inc, selected_lib, selected_library
+    
     def configure(self):
         """Configures TAU
         
@@ -312,38 +359,12 @@ class TauInstallation(Installation):
         Raises:
             SoftwareConfigurationError: TAU's configure script failed.
         """
-        # TAU's configure script does a really bad job of detecting MPI settings
-        # so set up mpiinc, mpilib, mpilibrary when we have that information
-        mpiinc = None
-        mpilib = None
-        mpilibrary = None
         if self.mpi_support: 
-            # TAU's configure script does a really bad job detecting the wrapped compiler command
+            # TAU's configure script does a really bad job detecting MPI wrapped compiler commands
             # so don't even bother trying.  Pass as much of this as we can and hope for the best.
             cc_command = self.compilers[MPI_CC_ROLE].wrapped.info.command
             cxx_command = self.compilers[MPI_CXX_ROLE].wrapped.info.command
             fc_comp = self.compilers[MPI_FC_ROLE].wrapped if FC_ROLE in self.compilers else None
-            if self.mpi_include_path:
-                # Unfortunately, TAU's configure script can only accept one path on -mpiinc
-                # and it expects the compiler's include path argument (e.g. "-I") to be omitted
-                for path in self.mpi_include_path:
-                    if os.path.exists(os.path.join(path, 'mpi.h')):
-                        mpiinc = path
-                        break
-                if not mpiinc:
-                    raise ConfigurationError("mpi.h not found on MPI include path: %s" % self.mpi_include_path)
-            if self.mpi_library_path:
-                # Unfortunately, TAU's configure script can only accept one path on -mpilib
-                # and it expects the compiler's include path argument (e.g. "-L") to be omitted
-                for path in self.mpi_library_path:
-                    if glob.glob(os.path.join(path, 'libmpi*')):
-                        mpilib = path
-                        break
-            if self.mpi_libraries:
-                # Multiple MPI libraries can be given but only if they're separated by a '#' symbol
-                # and the compiler's library linking flag (e.g. '-l') must be included
-                link_library_flag = self.compilers[CC_ROLE].info.family.link_library_flags[0]
-                mpilibrary = '#'.join(["%s%s" % (link_library_flag, library) for library in self.mpi_libraries])
         else:
             # TAU's configure script can't cope with compiler absolute paths or compiler names that
             # don't exactly match what it expects.  Use `info.command` instead of `command` to work
@@ -353,7 +374,7 @@ class TauInstallation(Installation):
             fc_comp = self.compilers[FC_ROLE].info.family if FC_ROLE in self.compilers else None
 
         # TAU's configure script can't detect Fortran compiler from the compiler
-        # command so translate Fortran compiler command into TAU's funkey magic words
+        # command so translate Fortran compiler command into TAU's magic words
         fortran_magic = None
         if fc_comp:
             fc_family = fc_comp.info.family
@@ -372,6 +393,19 @@ class TauInstallation(Installation):
                 LOGGER.warning("Can't determine TAU magic word for %s %s", fc_comp.info.short_descr, fc_comp)
                 raise InternalError("Unknown compiler family for Fortran: '%s'" % fc_family)
 
+        # Set up MPI paths and libraries
+        mpiinc, mpilib, mpilibrary = \
+            self._select_flags(self.mpi_support, 'mpi.h', 'libmpi*',
+                               self.mpi_include_path, self.mpi_library_path, self.mpi_libraries,
+                               self.compilers[MPI_CC_ROLE], self.compilers[MPI_CXX_ROLE], self.compilers[MPI_FC_ROLE])
+        
+        # Set up SHMEM paths and libraries
+        shmeminc, shmemlib, shmemlibrary = \
+            self._select_flags(self.shmem_support, 'shmem.h', 'lib*shmem*',
+                               self.shmem_include_path, self.shmem_library_path, self.shmem_libraries,
+                               self.compilers[SHMEM_CC_ROLE], self.compilers[SHMEM_CXX_ROLE], 
+                               self.compilers[SHMEM_FC_ROLE])
+        
         flags = [flag for flag in  
                  ['-prefix=%s' % self.install_prefix,
                   '-arch=%s' % self.arch,
@@ -387,7 +421,11 @@ class TauInstallation(Installation):
                   '-mpilib=%s' % mpilib if mpilib else '',
                   '-mpilibrary=%s' % mpilibrary if mpilibrary else '',
                   '-cuda=%s' % self.cuda_prefix if self.cuda_prefix else '',
-                  '-opencl=%s' % self.opencl_prefix if self.opencl_prefix else ''
+                  '-opencl=%s' % self.opencl_prefix if self.opencl_prefix else '',
+                  '-shmem' if self.shmem_support else '',
+                  '-shmeminc=%s' % shmeminc if shmeminc else '',
+                  '-shmemlib=%s' % shmemlib if shmemlib else '',
+                  '-shmemlibrary=%s' % shmemlibrary if shmemlibrary else '',
                  ] if flag]
         if self.pdt:
             flags.append('-pdt=%s' % self.pdt.install_prefix)

@@ -39,6 +39,7 @@ from tau.mvc.model import Model
 from tau.mvc.controller import Controller
 from tau.cf.compiler import CompilerFamily, CompilerRole, CompilerInfo
 from tau.cf.compiler.mpi import MpiCompilerFamily
+from tau.cf.compiler.shmem import ShmemCompilerFamily
 from tau.cf.compiler.installed import InstalledCompiler
 
 LOGGER = logger.get_logger(__name__)
@@ -206,8 +207,11 @@ class Compiler(Model):
         """
         command = os.path.basename(self['path'])
         role = CompilerRole.find(self['role'])
+        # FIXME: Compiler family classes are fragmented and weird.
         if role.keyword.startswith('MPI_'):
             family = MpiCompilerFamily.find(self['family'])
+        elif role.keyword.startswith('SHMEM_'):
+            family = ShmemCompilerFamily.find(self['family'])
         else:
             family = CompilerFamily.find(self['family'])
         info_list = CompilerInfo.find(command, family, role)

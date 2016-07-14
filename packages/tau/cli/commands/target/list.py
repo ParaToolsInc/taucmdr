@@ -29,6 +29,7 @@
 
 from tau.cf.compiler import CC_ROLE
 from tau.cf.compiler.mpi import MPI_CC_ROLE
+from tau.cf.compiler.shmem import SHMEM_CC_ROLE
 from tau.cli.cli_view import ListCommand
 from tau.model.target import Target
 
@@ -39,6 +40,8 @@ DASHBOARD_COLUMNS = [{'header': 'Name', 'value': 'name', 'align': 'r'},
                      {'header': 'Host Compilers', 'function': 
                       lambda data: data[CC_ROLE.keyword]['family']},
                      {'header': 'MPI Compilers', 'function': 
-                      lambda data: data.get(MPI_CC_ROLE.keyword, {'family': 'None'})['family']}]
+                      lambda data: data.get(MPI_CC_ROLE.keyword, {'family': 'None'})['family']},
+                     {'header': 'SHMEM Compilers', 'function': 
+                      lambda data: data.get(SHMEM_CC_ROLE.keyword, {'family': 'None'})['family']}]
 
 COMMAND = ListCommand(Target, __name__, dashboard_columns=DASHBOARD_COLUMNS)

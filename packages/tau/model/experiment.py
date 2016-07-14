@@ -199,6 +199,9 @@ class Experiment(Model):
                           opencl_support=application['opencl'],
                           opencl_prefix=target.get('opencl', None),
                           shmem_support=application['shmem'],
+                          shmem_include_path=target.get('shmem_include_path', []),
+                          shmem_library_path=target.get('shmem_library_path', []),
+                          shmem_libraries=target.get('shmem_libraries', []),
                           mpc_support=application['mpc'],
                           # Instrumentation methods and options            
                           source_inst=measurement['source_inst'],
