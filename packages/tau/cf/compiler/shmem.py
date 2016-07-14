@@ -27,7 +27,7 @@
 #
 """SHMEM compiler detection.
 
-We keep a separate knowledge base for SHMEM compilers to simplify compiler
+Keep a separate knowledge base for SHMEM compilers to simplify compiler
 identification and because TAU doesn't require SHMEM for all configurations.
 """
 
@@ -49,7 +49,7 @@ class ShmemCompilerFamily(CompilerFamily):
     def preferred(cls):
         """Return the host's preferred SHMEM compiler family."""
         from tau.cf.target import host
-        return host.preferred_compilers()
+        return host.preferred_shmem_compilers()
 
 
 SHMEM_CC_ROLE = CompilerRole('SHMEM_CC', 'C with calls to a SHMEM library')
@@ -58,7 +58,7 @@ SHMEM_FC_ROLE = CompilerRole('SHMEM_FC', 'Fortran with calls to a SHMEM library'
 
 OPENSHMEM_SHEM_COMPILERS = ShmemCompilerFamily('OpenSHMEM')
 OPENSHMEM_SHEM_COMPILERS.add(SHMEM_CC_ROLE, 'oshcc')
-OPENSHMEM_SHEM_COMPILERS.add(SHMEM_CXX_ROLE, 'oshcxx', 'oshCC')
+OPENSHMEM_SHEM_COMPILERS.add(SHMEM_CXX_ROLE, 'oshcxx', 'oshc++')
 OPENSHMEM_SHEM_COMPILERS.add(SHMEM_FC_ROLE, 'oshfort')
 
 CRAY_SHMEM_COMPILERS = ShmemCompilerFamily('Cray', show_wrapper_flags=['-craype-verbose'])
