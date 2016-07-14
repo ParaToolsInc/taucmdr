@@ -190,6 +190,19 @@ class CompilerFamily(KeyedRecord):
         self.members = {}
 
     @classmethod
+    def preferred(cls):
+        """Get the host's preferred compiler family.
+        
+        For example, Cray machines prefer Cray compilers, Linux hosts prefer GNU compilers, etc.
+        See :any:`tau.cf.target.host` for more info.
+        
+        Returns:
+            CompilerFamily: The host's preferred compiler family.
+        """
+        from tau.cf.target import host
+        return host.preferred_compilers()
+    
+    @classmethod
     def all(cls):
         """Iterate over all compiler families.
         
@@ -199,8 +212,7 @@ class CompilerFamily(KeyedRecord):
         Yields:
            A CompilerFamily object.
         """
-        from tau.cf.target import host
-        preferred = host.preferred_compilers()
+        preferred = cls.preferred()
         yield preferred
         # Settle down pylint... the __instances__ member is created by the metaclass
         # pylint: disable=no-member
