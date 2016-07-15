@@ -109,7 +109,10 @@ TAU_COMPILER_WRAPPERS = {CC_ROLE: 'tau_cc.sh',
                          UPC_ROLE: 'tau_upc.sh',
                          MPI_CC_ROLE: 'tau_cc.sh',
                          MPI_CXX_ROLE: 'tau_cxx.sh',
-                         MPI_FC_ROLE: 'tau_f90.sh'}
+                         MPI_FC_ROLE: 'tau_f90.sh',
+                         SHMEM_CC_ROLE: 'tau_cc.sh',
+                         SHMEM_CXX_ROLE: 'tau_cxx.sh',
+                         SHMEM_FC_ROLE: 'tau_f90.sh'}
 
 
 class TauInstallation(Installation):
