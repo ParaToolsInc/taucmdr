@@ -318,40 +318,39 @@ class TauInstallation(Installation):
         LOGGER.debug("TAU installation at '%s' is valid", self.install_prefix)
         return True
     
-    def _select_flags(self, supported, header, libglob, user_inc, user_lib, user_libraries, 
+    def _select_flags(self, header, libglob, user_inc, user_lib, user_libraries, 
                       wrap_cc, wrap_cxx, wrap_fc):
         selected_inc, selected_lib, selected_library = None, None, None
-        if supported:
-            # Prefer user-specified paths over autodetected paths
-            include_path = user_inc + wrap_cc.include_path + wrap_cxx.include_path + wrap_fc.include_path
-            if include_path:
-                # Unfortunately, TAU's configure script can only accept one path on -mpiinc
-                # and it expects the compiler's include path argument (e.g. "-I") to be omitted
-                for path in include_path:
-                    if os.path.exists(os.path.join(path, header)):
-                        selected_inc = path
-                        break
-                else:
-                    raise ConfigurationError("%s not found on include path: %s" % 
-                                             (header, os.pathsep.join(include_path)))
-            library_path = user_lib + wrap_cc.library_path + wrap_cxx.library_path + wrap_fc.library_path
-            if library_path:
-                # Unfortunately, TAU's configure script can only accept one path on -mpilib
-                # and it expects the compiler's include path argument (e.g. "-L") to be omitted
-                for path in library_path:
-                    if glob.glob(os.path.join(path, libglob)):
-                        selected_lib = path
-                        break
-                else:
-                    raise ConfigurationError("No files matched '%s' on library path: %s" % 
-                                             (libglob, os.pathsep.join(library_path)))
-            # Don't add autodetected Fortran or C++ libraries; C is probably OK
-            libraries = user_libraries + wrap_cc.libraries
-            if libraries:
-                # TAU's configure script accepts multiple libraries but only if they're separated by a '#' symbol
-                # and the compiler's library linking flag (e.g. '-l') must be included
-                link_library_flag = wrap_cc.info.family.link_library_flags[0]
-                selected_library = '#'.join([link_library_flag+lib for lib in libraries])
+        # Prefer user-specified paths over autodetected paths
+        include_path = user_inc + wrap_cc.include_path + wrap_cxx.include_path + wrap_fc.include_path
+        if include_path:
+            # Unfortunately, TAU's configure script can only accept one path on -mpiinc
+            # and it expects the compiler's include path argument (e.g. "-I") to be omitted
+            for path in include_path:
+                if os.path.exists(os.path.join(path, header)):
+                    selected_inc = path
+                    break
+            else:
+                raise ConfigurationError("%s not found on include path: %s" % 
+                                         (header, os.pathsep.join(include_path)))
+        library_path = user_lib + wrap_cc.library_path + wrap_cxx.library_path + wrap_fc.library_path
+        if library_path:
+            # Unfortunately, TAU's configure script can only accept one path on -mpilib
+            # and it expects the compiler's include path argument (e.g. "-L") to be omitted
+            for path in library_path:
+                if glob.glob(os.path.join(path, libglob)):
+                    selected_lib = path
+                    break
+            else:
+                raise ConfigurationError("No files matched '%s' on library path: %s" % 
+                                         (libglob, os.pathsep.join(library_path)))
+        # Don't add autodetected Fortran or C++ libraries; C is probably OK
+        libraries = user_libraries + wrap_cc.libraries
+        if libraries:
+            # TAU's configure script accepts multiple libraries but only if they're separated by a '#' symbol
+            # and the compiler's library linking flag (e.g. '-l') must be included
+            link_library_flag = wrap_cc.info.family.link_library_flags[0]
+            selected_library = '#'.join([link_library_flag+lib for lib in libraries])
         return selected_inc, selected_lib, selected_library
     
     def configure(self):
@@ -397,17 +396,28 @@ class TauInstallation(Installation):
                 raise InternalError("Unknown compiler family for Fortran: '%s'" % fc_family)
 
         # Set up MPI paths and libraries
-        mpiinc, mpilib, mpilibrary = \
-            self._select_flags(self.mpi_support, 'mpi.h', 'libmpi*',
-                               self.mpi_include_path, self.mpi_library_path, self.mpi_libraries,
-                               self.compilers[MPI_CC_ROLE], self.compilers[MPI_CXX_ROLE], self.compilers[MPI_FC_ROLE])
+        mpiinc, mpilib, mpilibrary = None, None, None
+        if self.mpi_support:
+            mpiinc, mpilib, mpilibrary = \
+                self._select_flags('mpi.h', 'libmpi*', 
+                                   self.mpi_include_path, 
+                                   self.mpi_library_path, 
+                                   self.mpi_libraries,
+                                   self.compilers[MPI_CC_ROLE], 
+                                   self.compilers[MPI_CXX_ROLE], 
+                                   self.compilers[MPI_FC_ROLE])
         
         # Set up SHMEM paths and libraries
-        shmeminc, shmemlib, shmemlibrary = \
-            self._select_flags(self.shmem_support, 'shmem.h', 'lib*shmem*',
-                               self.shmem_include_path, self.shmem_library_path, self.shmem_libraries,
-                               self.compilers[SHMEM_CC_ROLE], self.compilers[SHMEM_CXX_ROLE], 
-                               self.compilers[SHMEM_FC_ROLE])
+        shmeminc, shmemlib, shmemlibrary = None, None, None
+        if self.shmem_support:
+            shmeminc, shmemlib, shmemlibrary = \
+                self._select_flags('shmem.h', 'lib*shmem*',
+                                   self.shmem_include_path, 
+                                   self.shmem_library_path, 
+                                   self.shmem_libraries,
+                                   self.compilers[SHMEM_CC_ROLE], 
+                                   self.compilers[SHMEM_CXX_ROLE], 
+                                   self.compilers[SHMEM_FC_ROLE])
         
         flags = [flag for flag in  
                  ['-prefix=%s' % self.install_prefix,
