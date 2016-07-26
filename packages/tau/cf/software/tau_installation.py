@@ -320,9 +320,13 @@ class TauInstallation(Installation):
     
     def _select_flags(self, header, libglob, user_inc, user_lib, user_libraries, 
                       wrap_cc, wrap_cxx, wrap_fc):
+        def unique(seq):
+            seen = set()
+            return [x for x in seq if not (x in seen or seen.add(x))]
+        
         selected_inc, selected_lib, selected_library = None, None, None
         # Prefer user-specified paths over autodetected paths
-        include_path = user_inc + wrap_cc.include_path + wrap_cxx.include_path + wrap_fc.include_path
+        include_path = unique(user_inc + wrap_cc.include_path + wrap_cxx.include_path + wrap_fc.include_path)
         if include_path:
             # Unfortunately, TAU's configure script can only accept one path on -mpiinc
             # and it expects the compiler's include path argument (e.g. "-I") to be omitted
@@ -333,7 +337,7 @@ class TauInstallation(Installation):
             else:
                 raise ConfigurationError("%s not found on include path: %s" % 
                                          (header, os.pathsep.join(include_path)))
-        library_path = user_lib + wrap_cc.library_path + wrap_cxx.library_path + wrap_fc.library_path
+        library_path = unique(user_lib + wrap_cc.library_path + wrap_cxx.library_path + wrap_fc.library_path)
         if library_path:
             # Unfortunately, TAU's configure script can only accept one path on -mpilib
             # and it expects the compiler's include path argument (e.g. "-L") to be omitted
@@ -345,12 +349,21 @@ class TauInstallation(Installation):
                 raise ConfigurationError("No files matched '%s' on library path: %s" % 
                                          (libglob, os.pathsep.join(library_path)))
         # Don't add autodetected Fortran or C++ libraries; C is probably OK
-        libraries = user_libraries + wrap_cc.libraries
+        libraries = unique(user_libraries + wrap_cc.libraries + wrap_cxx.libraries + wrap_fc.libraries)
         if libraries:
             # TAU's configure script accepts multiple libraries but only if they're separated by a '#' symbol
             # and the compiler's library linking flag (e.g. '-l') must be included
             link_library_flag = wrap_cc.info.family.link_library_flags[0]
-            selected_library = '#'.join([link_library_flag+lib for lib in libraries])
+            parts = [link_library_flag+lib for lib in libraries]
+            print parts
+            # Also jam missing library path's onto this option
+            library_path_flag = wrap_cc.info.family.library_path_flags[0]
+            print library_path_flag
+            print library_path
+            print selected_lib
+            parts = [library_path_flag+path for path in library_path if path != selected_lib] + parts
+            print parts
+            selected_library = '#'.join(parts)
         return selected_inc, selected_lib, selected_library
     
     def configure(self):
