@@ -302,7 +302,7 @@ INTEL_COMPILERS.add(FC_ROLE, 'ifort')
 PGI_COMPILERS = CompilerFamily('PGI', family_regex=r'The Portland Group')
 PGI_COMPILERS.add(CC_ROLE, 'pgcc')
 PGI_COMPILERS.add(CXX_ROLE, 'pgc++', 'pgcxx', 'pgCC')
-PGI_COMPILERS.add(FC_ROLE, 'pgf90', 'pgf77')
+PGI_COMPILERS.add(FC_ROLE, 'pgfortran', 'pgf90', 'pgf77')
 
 IBM_COMPILERS = CompilerFamily('IBM')
 IBM_COMPILERS.add(CC_ROLE, 'xlc')
