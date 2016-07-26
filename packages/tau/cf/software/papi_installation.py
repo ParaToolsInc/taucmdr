@@ -37,7 +37,7 @@ from tau.cf.compiler import CC_ROLE
 
 LOGGER = logger.get_logger(__name__)
 
-SOURCES = {None: 'http://icl.cs.utk.edu/projects/papi/downloads/papi-5.4.1.tar.gz'}
+SOURCES = {None: 'http://icl.cs.utk.edu/projects/papi/downloads/papi-5.4.3.tar.gz'}
 
 LIBRARIES = {None: ['libpapi.a']}
 
