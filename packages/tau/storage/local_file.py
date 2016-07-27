@@ -113,7 +113,12 @@ class LocalFileStorage(AbstractStorage):
             self.insert({'key': key, 'value': value})
         
     def __delitem__(self, key):
+        if not self.contains({'key': key}):
+            raise KeyError
         self.remove({'key': key})
+    
+    def __contains__(self, key):
+        return self.contains({'key': key})
 
     def is_writable(self):
         """Check if the storage filesystem is writable."""

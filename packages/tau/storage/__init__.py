@@ -131,6 +131,10 @@ class AbstractStorage(object):
     @abstractmethod
     def __delitem__(self, key):
         """Remove a value from the key/value store."""
+        
+    @abstractmethod
+    def __contains__(self, key):
+        """Returns True if ``key`` maps to a value is in the key/value store."""
     
     @abstractmethod
     def connect_filesystem(self, *args, **kwargs):
