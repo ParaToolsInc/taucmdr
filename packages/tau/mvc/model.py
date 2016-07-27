@@ -27,7 +27,7 @@
 #
 """TODO: FIXME: Docs"""
 
-from tau import logger
+from tau import logger, configuration
 from tau.error import ConfigurationError, ModelError, InternalError
 from tau.storage import StorageRecord
 from tau.mvc.controller import Controller
@@ -66,6 +66,7 @@ class ModelMeta(type):
             return cls._attributes
         except AttributeError:
             cls._attributes = cls.__attributes__()
+            cls._configure_defaults()
             cls._construct_relationships()
             return cls._attributes
         
@@ -140,11 +141,23 @@ class Model(StorageRecord):
         return cls.__controller__(cls, storage)
     
     @classmethod
+    def _configure_defaults(cls):
+        for attr in cls.attributes:
+            default_key = '.'.join([cls.name, attr, 'default'])
+            try:
+                default_val = configuration.get(default_key)
+            except KeyError:
+                continue
+            else:
+                cls.attributes[attr]['default'] = default_val
+                break
+
+    @classmethod
     def _construct_relationships(cls):
         primary_key = None
         for attr, props in cls.attributes.iteritems():
             model_attr_name = cls.name + "." + attr
-            if 'collection' in props and not 'via' in props:
+            if 'collection' in props and 'via' not in props:
                 raise ModelError(cls, "%s: collection does not define 'via'" % model_attr_name)
             if 'via' in props and not ('collection' in props or 'model' in props):
                 raise ModelError(cls, "%s: defines 'via' property but not 'model' or 'collection'" % model_attr_name)
@@ -212,7 +225,7 @@ class Model(StorageRecord):
         if data is None:
             return None
         for key in data:
-            if not key in cls.attributes:
+            if key not in cls.attributes:
                 raise ModelError(cls, "no attribute named '%s'" % key)
         validated = {}
         for attr, props in cls.attributes.iteritems():
