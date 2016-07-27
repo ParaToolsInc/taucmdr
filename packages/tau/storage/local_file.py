@@ -99,6 +99,9 @@ class LocalFileStorage(AbstractStorage):
         self._db_copy = None
         self._database = None
         self._prefix = prefix
+        
+    def __len__(self):
+        return self.count()
 
     def __getitem__(self, key):
         record = self.get({'key': key})
@@ -119,7 +122,23 @@ class LocalFileStorage(AbstractStorage):
     
     def __contains__(self, key):
         return self.contains({'key': key})
+    
+    def __iter__(self):
+        for item in self.search():
+            yield item['key']
 
+    def iterkeys(self):
+        for item in self.search():
+            yield item['key']
+
+    def itervalues(self):
+        for item in self.search():
+            yield item['value']
+
+    def iteritems(self):
+        for item in self.search():
+            yield item['key'], item['value']
+    
     def is_writable(self):
         """Check if the storage filesystem is writable."""
         self.connect_filesystem()

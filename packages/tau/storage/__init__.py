@@ -120,6 +120,10 @@ class AbstractStorage(object):
     def __str__(self):
         return self.name
 
+    @abstractmethod
+    def __len__(self):
+        """Return the number of items in the key/value store."""
+    
     @abstractmethod    
     def __getitem__(self, key):
         """Retrieve a value from the key/value store."""
@@ -135,6 +139,22 @@ class AbstractStorage(object):
     @abstractmethod
     def __contains__(self, key):
         """Returns True if ``key`` maps to a value is in the key/value store."""
+        
+    @abstractmethod
+    def __iter__(self):
+        """Iterate over keys in the key/value store."""
+    
+    @abstractmethod
+    def iterkeys(self):
+        """Iterate over keys in the key/value store."""
+
+    @abstractmethod
+    def itervalues(self):
+        """Iterate over values in the key/value store."""
+
+    @abstractmethod
+    def iteritems(self):
+        """Iterate over items in the key/value store."""
     
     @abstractmethod
     def connect_filesystem(self, *args, **kwargs):

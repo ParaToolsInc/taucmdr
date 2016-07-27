@@ -30,42 +30,49 @@
 TODO: Docs
 """
 
-from tau import logger
 from tau.storage import AbstractStorage
 from tau.storage.levels import ORDERED_LEVELS
 from tau.storage.project import ProjectStorageError
 
-LOGGER = logger.get_logger(__name__)
 
 
-def get(key, storage=None):
-    """Returns the value of a configuration item.
+def get(key=None, storage=None):
+    """Returns a dictionary of all configuration items or the value of one configuration item.
     
-    If a storage object is given then returns the value held in that storage.
+    If a storage object is given then returns the value(s) held in that storage.
     Otherwise, searches :any:`ORDERED_LEVELS` for the first storage containing ``key``.
     
     Args:
-        key (str): Key string.
+        key (str): Optional key string.
         storage (AbstractStorage): Optional storage container.
     
     Returns:
-        str: The value mapped to ``key``.
+        dict: If ``key == None``, a dictionary of configuration items.
+        str: If ``key != None``, the value mapped to ``key``.
         
     Raises:
         KeyError: no storage contains ``key`` or ``storage != None`` and ``key not in storage``.
     """
     if storage:
         assert isinstance(storage, AbstractStorage)
-        return storage[key]
+        if key:
+            return storage[key]
+        else:
+            return dict(storage.iteritems())
     else:
-        for storage in ORDERED_LEVELS:
-            try:
-                return storage[key]
-            except (ProjectStorageError, KeyError):
-                # Project storage hasn't been initialized yet, or default isn't set
-                continue
-        raise KeyError
-    
+        if key:
+            for storage in ORDERED_LEVELS:
+                try:
+                    return storage[key]
+                except (ProjectStorageError, KeyError):
+                    # Project storage hasn't been initialized yet, or default isn't set
+                    continue
+            raise KeyError
+        else:
+            items = {}
+            for storage in reversed(ORDERED_LEVELS):
+                items.update(storage.iteritems())
+            return items    
 
 def put(key, value, storage=None):
     """Sets the value of a configuration item.
