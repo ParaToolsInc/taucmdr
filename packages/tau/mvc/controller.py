@@ -111,7 +111,7 @@ class Controller(object):
         """
         return self.storage.contains(keys, table_name=self.model.name)
 
-    def populate(self, model, attribute=None):
+    def populate(self, model, attribute=None, defaults=False):
         """Merges associated data into the model record.
         
         Example:
@@ -129,6 +129,7 @@ class Controller(object):
                              
         Args:
             attribute (Optional[str]): If given, return only the populated attribute.
+            defaults (Optional[bool]): If given, set undefined attributes to their default values.
         
         Returns:
             If attribute is None, a dictionary of controlled data merged with associated records.
@@ -139,17 +140,20 @@ class Controller(object):
         """
         if attribute:
             LOGGER.debug("Populating %s(%s)[%s]", model.name, model.eid, attribute)
-            return self._populate_attribute(model, attribute)
+            return self._populate_attribute(model, attribute, defaults)
         else:
             LOGGER.debug("Populating %s(%s)", model.name, model.eid)
-            return {attr: self._populate_attribute(model, attr) for attr in model}
+            return {attr: self._populate_attribute(model, attr, defaults) for attr in model}
 
-    def _populate_attribute(self, model, attr):
+    def _populate_attribute(self, model, attr, defaults):
         try:
             props = model.attributes[attr]
         except KeyError:
             raise ModelError(model, "no attribute '%s'" % attr)
-        value = model[attr]
+        if not defaults or 'default' not in props:
+            value = model[attr]
+        else:
+            value = model.get(attr, props['default'])
         try:
             foreign = props['model']
         except KeyError:

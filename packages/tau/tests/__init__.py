@@ -165,7 +165,7 @@ class TestCase(unittest.TestCase):
             self._result_stream.write("    @SYSTEM='%s'\n" % SYSTEM_STORAGE.prefix)
             self._result_stream.write("    @USER='%s'\n" % USER_STORAGE.prefix)
             while thread.is_alive():
-                time.sleep(30)
+                time.sleep(5)
                 self._result_stream.write('.')
             elapsed = time.time() - tstart
             self._result_stream.writeln('\nTAU initialized in %s seconds' % elapsed)

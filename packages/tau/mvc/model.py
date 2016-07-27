@@ -133,8 +133,8 @@ class Model(StorageRecord):
         """Callback to be invoked when a data record is deleted."""
         pass
     
-    def populate(self, attribute=None):
-        return self.controller(self.storage).populate(self, attribute)
+    def populate(self, attribute=None, defaults=False):
+        return self.controller(self.storage).populate(self, attribute, defaults)
 
     @classmethod
     def controller(cls, storage):

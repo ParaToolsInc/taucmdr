@@ -172,7 +172,7 @@ class Experiment(Model):
         Returns:
             TauInstallation: Object handle for the TAU installation.
         """
-        populated = self.populate()
+        populated = self.populate(defaults=True)
         target = populated['target']
         application = populated['application']
         measurement = populated['measurement']
