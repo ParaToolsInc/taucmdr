@@ -201,7 +201,7 @@ class Test(TestCommand):
         if not self.no_user_sandbox:
             tmp_user_prefix = tempfile.mkdtemp()
             os.environ['__TAU_USER_PREFIX__'] = tmp_user_prefix
-            print "Sandboxing user storage: %s" % tmp_system_prefix
+            print "Sandboxing user storage: %s" % tmp_user_prefix
         args = ['--buffer']
         self.test_args = args + self.test_args
         try:
