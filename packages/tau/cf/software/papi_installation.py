@@ -31,6 +31,8 @@ PAPI is used to measure hardware performance counters.
 """
 
 import os
+import sys
+import fileinput
 from tau import logger
 from tau.cf.software.installation import AutotoolsInstallation
 from tau.cf.compiler import CC_ROLE
@@ -53,3 +55,12 @@ class PapiInstallation(AutotoolsInstallation):
     def _prepare_src(self, reuse=True):
         super(PapiInstallation, self)._prepare_src(reuse)
         self.src_prefix = os.path.join(self.src_prefix, 'src')
+
+    def make(self, flags, env, parallel=True):
+        # PAPI's tests often fail to compile, so disable them.
+        for line in fileinput.input(os.path.join(self.src_prefix, 'Makefile'), inplace=1):
+            # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
+            sys.stdout.write(line.replace('TESTS =', '#TESTS ='))
+        super(PapiInstallation, self).make(flags, env, parallel)
+
+
