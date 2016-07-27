@@ -70,7 +70,7 @@ class CreateTest(tests.TestCase):
         self.assertIn('already exists', stderr)
 
     @unittest.skipUnless(util.which('icc'), "Intel compilers required for this test")
-    def test_host_family(self):
+    def test_host_family_intel(self):
         self.reset_project_storage()
         stdout, stderr = self.assertCommandReturnValue(0, create_cmd, ['test_targ', '--compilers', 'Intel'])
         self.assertIn("Added target", stdout)
@@ -86,4 +86,22 @@ class CreateTest(tests.TestCase):
             self.assertEqual(os.path.basename(path), expected, 
                              "Target[%s] is '%s', not '%s'" % (role, path, expected))
 
+
+    @unittest.skipUnless(util.which('pgcc'), "PGI compilers required for this test")
+    def test_host_family_pgi(self):
+        self.reset_project_storage()
+        stdout, stderr = self.assertCommandReturnValue(0, create_cmd, ['test_targ', '--compilers', 'PGI'])
+        self.assertIn("Added target", stdout)
+        self.assertIn("test_targ", stdout)
+        self.assertFalse(stderr)
+
+        from tau.storage.levels import PROJECT_STORAGE
+        from tau.model.target import Target
+        ctrl = Target.controller(PROJECT_STORAGE)
+        test_targ = ctrl.one({'name': 'test_targ'})
+        role='CC'
+        expected='pgcc'
+        path = test_targ.populate('CC')['path']
+        self.assertEqual(os.path.basename(path), expected, 
+                             "Target[%s] is '%s', not '%s'" % ('CC', path, 'pgcc'))
 
