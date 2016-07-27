@@ -204,13 +204,13 @@ class TestCase(unittest.TestCase):
                 retval = err.code
             stdout_value = stdout.getvalue()
             stderr_value = stderr.getvalue()
+            orig_stdout.write(stdout_value)
+            orig_stderr.write(stderr_value)
             return retval, stdout_value, stderr_value
         finally:
             sys.stdout = orig_stdout
             sys.stderr = orig_stderr
             logger._STDOUT_HANDLER.stream = orig_stdout
-            sys.stdout.write(stdout_value)
-            sys.stderr.write(stderr_value)
 
     def assertCommandReturnValue(self, return_value, cmd, argv):
         retval, stdout, stderr = self.exec_command(cmd, argv)
