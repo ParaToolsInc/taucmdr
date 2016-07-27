@@ -91,6 +91,7 @@ CLASSIFIERS = [
 import os
 import sys
 import shutil
+import tempfile
 import fileinput
 import setuptools
 import subprocess
@@ -142,7 +143,8 @@ if HAVE_SPHINX:
     
         def _clone_gh_pages(self):
             shutil.rmtree(self.builder_target_dir, ignore_errors=True)
-            cmd = ['git', 'clone', self.gh_origin_url, '-q', '-b', 'gh-pages', '--single-branch', self.builder_target_dir]
+            cmd = ['git', 'clone', self.gh_origin_url, 
+                   '-q', '-b', 'gh-pages', '--single-branch', self.builder_target_dir]
             self._shell(cmd, cwd=self.build_dir)
             if self.gh_user_name:
                 self._shell(['git', 'config', 'user.name', self.gh_user_name])
@@ -182,9 +184,17 @@ class Test(TestCommand):
     """Customize the test command to always run in buffered mode."""
 
     def run_tests(self):
+        tmp_system_prefix = tempfile.mkdtemp()
+        tmp_user_prefix = tempfile.mkdtemp()
+        os.environ['__TAU_SYSTEM_PREFIX__'] = tmp_system_prefix 
+        os.environ['__TAU_USER_PREFIX__'] = tmp_user_prefix
         args = ['--buffer']
         self.test_args = args + self.test_args
-        return TestCommand.run_tests(self)
+        try:
+            return TestCommand.run_tests(self)
+        finally:
+            shutil.rmtree(tmp_system_prefix, ignore_errors=True)
+            shutil.rmtree(tmp_user_prefix, ignore_errors=True)
 
 
 class Install(InstallCommand):
