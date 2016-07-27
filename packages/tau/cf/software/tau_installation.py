@@ -170,6 +170,7 @@ class TauInstallation(Installation):
                  measure_mpc,
                  measure_heap_usage,
                  measure_memory_alloc,
+                 measure_comm_matrix,
                  callpath_depth):
         """Initialize the TAU installation wrapper class.
         
@@ -218,7 +219,8 @@ class TauInstallation(Installation):
             measure_shmem (bool): If True then measure time spent in SHMEM calls.
             measure_mpc (bool): If True then measure time spent in MPC calls.
             measure_heap_usage (bool): If True then measure memory usage.
-            measure_memory_alloc (bool): If True then record memory allocation **and deallocation** events.
+            measure_memory_alloc (bool): If True then record memory allocation and deallocation events.
+            measure_comm_matrix (bool): If True then record the point-to-point communication matrix.
             callpath_depth (int): Depth of callpath measurement.  0 to disable.
         """
         super(TauInstallation, self).__init__('TAU', prefix, src, "", target_arch, target_os, compilers, 
@@ -270,6 +272,7 @@ class TauInstallation(Installation):
         self.measure_mpc = measure_mpc
         self.measure_heap_usage = measure_heap_usage
         self.measure_memory_alloc = measure_memory_alloc
+        self.measure_comm_matrix = measure_comm_matrix
         self.callpath_depth = callpath_depth
         
     def verify(self):
@@ -718,6 +721,7 @@ class TauInstallation(Installation):
         env['TAU_TRACE'] = str(int(self.trace))
         env['TAU_SAMPLE'] = str(int(self.sample))
         env['TAU_TRACK_HEAP'] = str(int(self.measure_heap_usage))
+        env['TAU_COMM_MATRIX'] = str(int(self.measure_comm_matrix))
         env['TAU_METRICS'] = os.pathsep.join(self.metrics)
         if self.callpath_depth > 0:
             env['TAU_CALLPATH'] = '1'

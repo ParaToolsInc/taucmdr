@@ -179,7 +179,6 @@ def attributes():
             'default': False,
             'description': 'use MPI library wrapper to measure time spent in MPI methods',
             'argparse': {'flags': ('--mpi',),
-                         'group': 'library',
                          'metavar': 'T/F',
                          'nargs': '?',
                          'const': True,
@@ -195,7 +194,6 @@ def attributes():
             'default': 'none',
             'description': 'use specified library to measure time spent in OpenMP directives',
             'argparse': {'flags': ('--openmp',),
-                         'group': 'library',
                          'metavar': 'library',
                          'choices': ('none', 'opari', 'ompt', 'gomp')},
             'application_rebuild': True,
@@ -217,7 +215,6 @@ def attributes():
             'default': False,
             'description': 'measure cuda events via the CUPTI interface',
             'argparse': {'flags': ('--cuda',),
-                         'group': 'library',
                          'metavar': 'T/F',
                          'nargs': '?',
                          'const': True,
@@ -230,7 +227,6 @@ def attributes():
             'default': False,
             'description': 'measure OpenCL events',
             'argparse': {'flags': ('--opencl',),
-                         'group': 'library',
                          'metavar': 'T/F',
                          'nargs': '?',
                          'const': True,
@@ -257,7 +253,6 @@ def attributes():
             'description': 'measure time spent in POSIX I/O calls',
             'application_rebuild': True,
             'argparse': {'flags': ('--io',),
-                         'group': 'library',
                          'metavar': 'T/F',
                          'nargs': '?',
                          'const': True,
@@ -325,6 +320,17 @@ def attributes():
                          'const': True,
                          'action': ParseBooleanAction},
             'compat': {True: Measurement.exclude('source_inst', 'never')}
+        },
+        'comm_matrix': {
+            'type': 'boolean',
+            'default': False,
+            'description': 'record the point-to-point communication matrix',
+            'application_rebuild': False,
+            'argparse': {'flags': ('--comm-matrix',),
+                         'metavar': 'T/F',
+                         'nargs': '?',
+                         'const': True,
+                         'action': ParseBooleanAction}
         }
     }
 

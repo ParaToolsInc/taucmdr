@@ -225,6 +225,7 @@ class Experiment(Model):
                           measure_mpc=None,  # TODO
                           measure_heap_usage=measurement['heap_usage'],
                           measure_memory_alloc=measurement['memory_alloc'],
+                          measure_comm_matrix=measurement['comm_matrix'],
                           callpath_depth=measurement['callpath'])
 
         for storage in reversed(ORDERED_LEVELS):
