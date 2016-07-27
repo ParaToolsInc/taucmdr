@@ -95,6 +95,7 @@ import tempfile
 import fileinput
 import setuptools
 import subprocess
+from setuptools import Command
 from setuptools.command.test import test as TestCommand
 from setuptools.command.install import install as InstallCommand
 
@@ -205,6 +206,22 @@ class Install(InstallCommand):
         else:
             return InstallCommand.run(self)
 
+class BuildRelease(Command):
+    
+    description = "Build a new release, see http://paratoolsinc.github.io/taucmdr/packaging.html"
+    
+    user_options = [('include-dependencies', None, 'Include dependencies in release.')]
+    
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        pass
+            
+        
 
 def update_version():
     """Rewrite packages/tau/__init__.py to update __version__.
@@ -239,6 +256,7 @@ def get_commands():
     cmdclass = {}
     cmdclass['test'] = Test
     cmdclass['install'] = Install
+    cmdclass['build_release'] = BuildRelease
     if HAVE_SPHINX:
         cmdclass['build_sphinx'] = BuildSphinx
     return cmdclass                
