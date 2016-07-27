@@ -84,10 +84,12 @@ TAU_SCRIPT = os.environ.get('__TAU_SCRIPT__', 'tau')
 Mainly used for help messages. **Do not** change it once it is set.
 """
 
-SYSTEM_PREFIX = os.path.join(TAU_HOME, '.system')
+SYSTEM_PREFIX = os.path.realpath(os.path.abspath(os.environ.get('__TAU_SYSTEM_PREFIX__', 
+                                                                os.path.join(TAU_HOME, '.system'))))
 """str: System-level TAU Commander files."""
 
-USER_PREFIX = os.path.join(os.path.expanduser('~'), '.tau')
+USER_PREFIX = os.path.realpath(os.path.abspath(os.environ.get('__TAU_USER_PREFIX__', 
+                                                              os.path.join(os.path.expanduser('~'), '.tau'))))
 """str: User-level TAU Commander files."""
 
 PROJECT_DIR = '.tau'
