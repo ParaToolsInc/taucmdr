@@ -189,6 +189,7 @@ class TestCase(unittest.TestCase):
         Returns:
             tuple: (retval, stdout, stderr) results of running the command.
         """
+        # pylint: disable=protected-access
         stdout = StringIO()
         stderr = StringIO()
         orig_stdout = sys.stdout
@@ -196,14 +197,20 @@ class TestCase(unittest.TestCase):
         try:
             sys.stdout = stdout
             sys.stderr = stderr
+            logger._STDOUT_HANDLER.stream = stdout
             try:
                 retval = cmd.main(argv)
             except SystemExit as err:
-                retval = err.code            
-            return retval, stdout.getvalue(), stderr.getvalue()
+                retval = err.code
+            stdout_value = stdout.getvalue()
+            stderr_value = stderr.getvalue()
+            return retval, stdout_value, stderr_value
         finally:
             sys.stdout = orig_stdout
             sys.stderr = orig_stderr
+            logger._STDOUT_HANDLER.stream = orig_stdout
+            sys.stdout.write(stdout_value)
+            sys.stderr.write(stderr_value)
 
     def assertCommandReturnValue(self, return_value, cmd, argv):
         retval, stdout, stderr = self.exec_command(cmd, argv)
