@@ -31,6 +31,7 @@ Functions used for unit tests of error.py.
 """
 
 import os
+import sys
 from pylint import epylint
 from tau import TAU_HOME
 from tau import tests
@@ -48,6 +49,8 @@ class PylintTest(tests.TestCase):
     
     def test_pylint_version(self):
         stdout, stderr = self.run_pylint('--version')
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
         self.assertFalse(stderr)
         version_parts = stdout.split(',')[0].split('pylint ')[1].split('.')
         version = tuple(int(x) for x in version_parts)
@@ -55,7 +58,10 @@ class PylintTest(tests.TestCase):
     
     def test_pylint(self):
         stdout, stderr = self.run_pylint(os.path.join(TAU_HOME, "packages", "tau"))
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
         self.assertFalse(stderr)
         self.assertIn('Your code has been rated at', stdout)
         score = float(stdout.split('Your code has been rated at')[1].split('/10')[0])
         self.assertGreaterEqual(score, 9.0, "Pylint score %s/10 is too low!" % score)
+

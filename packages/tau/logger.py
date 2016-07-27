@@ -136,6 +136,8 @@ def _get_term_size_posix():
     """
     # This function follows a POSIX naming scheme, not Python's.
     # pylint: disable=invalid-name
+    # Sometimes Pylint thinks termios doesn't exist or doesn't have certain members even when it does.
+    # pylint: disable=no-member
     def ioctl_GWINSZ(fd):
         try:
             import fcntl
