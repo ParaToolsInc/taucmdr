@@ -121,6 +121,21 @@ class Model(StorageRecord):
     def __delitem__(self, key):
         raise InternalError("Use controller(storage).update() to alter records")
 
+    def get_or_default(self, key):
+        """Returns the attribute's value or default value.
+        
+        Args:
+            key (str): Attribute name.
+        
+        Returns:
+            If the attribute is set then the attribute's value is returned.
+            If the attribute is not set then the attribute's default value is returned.
+
+        Raises:
+            If the attribute is not set and has no default value then a KeyError is raised.
+        """            
+        return self.element.get(key, self.attributes[key]['default'])
+
     def on_create(self):
         """Callback to be invoked when a new data record is created.""" 
         self.check_compatibility(self)
