@@ -184,18 +184,33 @@ if HAVE_SPHINX:
 class Test(TestCommand):
     """Customize the test command to always run in buffered mode."""
 
+    _custom_user_options = [('no-system-sandbox', 'S', "Don't sandbox system storage when testing"),
+                            ('no-user-sandbox', 'U', "Don't sandbox user storage when testing")]
+    user_options = TestCommand.user_options + _custom_user_options
+    
+    def initialize_options(self):
+        TestCommand.initialize_options(self)
+        self.no_system_sandbox = False
+        self.no_user_sandbox = False
+    
     def run_tests(self):
-        tmp_system_prefix = tempfile.mkdtemp()
-        tmp_user_prefix = tempfile.mkdtemp()
-        os.environ['__TAU_SYSTEM_PREFIX__'] = tmp_system_prefix 
-        os.environ['__TAU_USER_PREFIX__'] = tmp_user_prefix
+        if not self.no_system_sandbox:
+            tmp_system_prefix = tempfile.mkdtemp()
+            os.environ['__TAU_SYSTEM_PREFIX__'] = tmp_system_prefix
+            print "Sandboxing system storage: %s" % tmp_system_prefix
+        if not self.no_user_sandbox:
+            tmp_user_prefix = tempfile.mkdtemp()
+            os.environ['__TAU_USER_PREFIX__'] = tmp_user_prefix
+            print "Sandboxing user storage: %s" % tmp_system_prefix
         args = ['--buffer']
         self.test_args = args + self.test_args
         try:
             return TestCommand.run_tests(self)
         finally:
-            shutil.rmtree(tmp_system_prefix, ignore_errors=True)
-            shutil.rmtree(tmp_user_prefix, ignore_errors=True)
+            if not self.no_system_sandbox:
+                shutil.rmtree(tmp_system_prefix, ignore_errors=True)
+            if not self.no_user_sandbox:
+                shutil.rmtree(tmp_user_prefix, ignore_errors=True)
 
 
 class Install(InstallCommand):
@@ -205,6 +220,7 @@ class Install(InstallCommand):
             print "DON'T INSTALL TAU COMMANDER THIS WAY!  See the installation documentation."
         else:
             return InstallCommand.run(self)
+
 
 class BuildRelease(Command):
     
@@ -220,7 +236,6 @@ class BuildRelease(Command):
 
     def run(self):
         pass
-            
         
 
 def update_version():
