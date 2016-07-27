@@ -34,42 +34,19 @@ import atexit
 import tempfile
 import unittest
 import warnings
-import tau
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from StringIO import StringIO
 from tau import logger, EXIT_SUCCESS, EXIT_FAILURE
-from tau.cli.commands import initialize
-from tau.storage.levels import PROJECT_STORAGE, SYSTEM_STORAGE
+from tau.storage.levels import PROJECT_STORAGE, USER_STORAGE, SYSTEM_STORAGE
+
 
 _DIR_STACK = []
 _CWD_STACK = []
 _TEMPDIR_STACK = []
 _NOT_IMPLEMENTED = []
 
-
-def get_stdout():
-    """Get data written to unit test stdout.
-    
-    :any:`unittest` replaces sys.stdout with a StringIO instance when running in buffered mode.
-    
-    Returns:
-        str: Data written to sys.stdout while the test was running.
-    """
-    # unittest replaces sys.stdout and sys.stderr with StringIO instances when
-    # running in buffered mode, but pylint doesn't know that.  
-    # pylint: disable=no-member
-    return sys.stdout.getvalue()
-
-def get_stderr():
-    """Get data written to unit test stderr.
-    
-    :any:`unittest` replaces sys.stderr with a StringIO instance when running in buffered mode.
-    
-    Returns:
-        str: Data written to sys.stderr while the test was running.
-    """
-    # unittest replaces sys.stdout and sys.stderr with StringIO instances when
-    # running in buffered mode, but pylint doesn't know that.  
-    # pylint: disable=no-member
-    return sys.stderr.getvalue()
 
 def push_test_workdir():
     """Create a new working directory for a unit test.
@@ -126,12 +103,11 @@ class TestCase(unittest.TestCase):
     
     Performs tests in a temporary directory and reconfigures :any:`tau.logger` to work with :any:`unittest`.
     """
-    
-    _SYSTEM_DIR = tempfile.mkdtemp()
-    
+    # Follow the :any:`unittest` code style.
+    # pylint: disable=invalid-name
+
     @classmethod
     def setUpClass(cls):
-        tau.SYSTEM_PREFIX = TestCase._SYSTEM_DIR
         push_test_workdir()
         # Reset stdout logger handler to use buffered unittest stdout
         # pylint: disable=protected-access
@@ -140,7 +116,7 @@ class TestCase(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        PROJECT_STORAGE.destroy()
+        PROJECT_STORAGE.destroy(ignore_errors=True)
         # Reset stdout logger handler to use original stdout
         # pylint: disable=protected-access
         logger._STDOUT_HANDLER.stream = cls._orig_stream
@@ -167,29 +143,41 @@ class TestCase(unittest.TestCase):
             app_name (str): New application's name.
             bare (bool): If true, initialize project storage but don't create default objects.
         """
+        from tau.cli.commands.initialize import COMMAND as initialize_cmd
         PROJECT_STORAGE.destroy(ignore_errors=True)
         argv = ['--project-name', project_name, '--target-name', target_name, '--application-name', app_name]
         if bare:
             argv.append('--bare')
     
-        if os.path.exists(os.path.join(SYSTEM_STORAGE.prefix, 'TAU')):
-            initialize.COMMAND.main(argv)
+        if bare or os.path.exists(os.path.join(SYSTEM_STORAGE.prefix, 'TAU')):
+            initialize_cmd.main(argv)
         else:
             # If this is the first time setting up TAU and dependencies then we need to emit output so
             # CI drivers like Travis don't think our unit tests have stalled.
             import time
             import threading
             def worker():
-                initialize.COMMAND.main(argv)
+                initialize_cmd.main(argv)
             thread = threading.Thread(target=worker)
             tstart = time.time()
             thread.start()
-            self._result_stream.write('\nInitializing TAU and dependencies')
+            self._result_stream.write("\nInitializing TAU and dependencies:\n")
+            self._result_stream.write("    @SYSTEM='%s'\n" % SYSTEM_STORAGE.prefix)
+            self._result_stream.write("    @USER='%s'\n" % USER_STORAGE.prefix)
             while thread.is_alive():
                 time.sleep(30)
                 self._result_stream.write('.')
             elapsed = time.time() - tstart
             self._result_stream.writeln('\nTAU initialized in %s seconds' % elapsed)
+
+    def destroy_project_storage(self):
+        """Delete project storage.
+        
+        Effectively the same as::
+        
+            > rm -rf .tau
+        """
+        PROJECT_STORAGE.destroy(ignore_errors=True)
 
     def exec_command(self, cmd, argv):
         """Execute a command's main() routine and return the exit code, stdout, and stderr data.
@@ -201,21 +189,32 @@ class TestCase(unittest.TestCase):
         Returns:
             tuple: (retval, stdout, stderr) results of running the command.
         """
-        if not hasattr(sys.stdout, "getvalue"):
-            self.fail("Test must be run in buffered mode")
+        stdout = StringIO()
+        stderr = StringIO()
+        orig_stdout = sys.stdout
+        orig_stderr = sys.stderr
         try:
-            retval = cmd.main(argv)
-        except SystemExit as err:
-            retval = err.code
-        return retval, get_stdout(), get_stderr()
+            sys.stdout = stdout
+            sys.stderr = stderr
+            try:
+                retval = cmd.main(argv)
+            except SystemExit as err:
+                retval = err.code            
+            return retval, stdout.getvalue(), stderr.getvalue()
+        finally:
+            sys.stdout = orig_stdout
+            sys.stderr = orig_stderr
 
-    # Follow the :any:`unittest` code style.
-    # pylint: disable=invalid-name
     def assertCommandReturnValue(self, return_value, cmd, argv):
         retval, stdout, stderr = self.exec_command(cmd, argv)
         self.assertEqual(retval, return_value)
         return stdout, stderr
 
+    def assertNotCommandReturnValue(self, return_value, cmd, argv):
+        retval, stdout, stderr = self.exec_command(cmd, argv)
+        self.assertNotEqual(retval, return_value)
+        return stdout, stderr
+    
 
 class TestRunner(unittest.TextTestRunner):
     """Test suite runner."""
