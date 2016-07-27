@@ -56,10 +56,8 @@ class ProjectStorageError(StorageError):
         Args:
             search_root (str): Directory in which the search for a project directory was initiated.
         """
-        from tau.cli.commands.initialize import COMMAND as init_cmd
         value = "Project not found in '%s' or any of its parent directories." % search_root
-        hints = ['Use `%s` to create a new project.' % init_cmd]
-        super(ProjectStorageError, self).__init__(value, *hints)
+        super(ProjectStorageError, self).__init__(value)
         self.search_root = search_root
         
 
