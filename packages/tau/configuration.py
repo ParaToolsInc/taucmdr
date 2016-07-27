@@ -53,7 +53,7 @@ def get(key=None, storage=None):
     Raises:
         KeyError: no storage contains ``key`` or ``storage != None`` and ``key not in storage``.
     """
-    if storage:
+    if storage is not None:
         assert isinstance(storage, AbstractStorage)
         if key:
             return storage[key]
@@ -87,7 +87,7 @@ def put(key, value, storage=None):
         value (str): Value string.
         storage (AbstractStorage): Optional storage container.
     """
-    if storage:
+    if storage is not None:
         assert isinstance(storage, AbstractStorage)
         storage[key] = value
     else:
@@ -113,7 +113,7 @@ def delete(key, storage=None):
     Raises:
         KeyError: no storage contains ``key`` or ``storage != None`` and ``key not in storage``.
     """
-    if storage:
+    if storage is not None:
         assert isinstance(storage, AbstractStorage)
         del storage[key]
     else:
