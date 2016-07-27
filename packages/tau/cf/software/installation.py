@@ -352,12 +352,13 @@ class AutotoolsInstallation(Installation):
         assert self.src_prefix
         LOGGER.debug("Making %s at '%s'", self.name, self.src_prefix)
         flags = list(flags)
-        if parallel:
-            flags += parallel_make_flags()
-        cmd = ['make'] + flags
+        par_flags = parallel_make_flags() if parallel else []
+        cmd = ['make'] + par_flags + flags
         LOGGER.info("Compiling %s...", self.name)
         if util.create_subprocess(cmd, cwd=self.src_prefix, env=env, stdout=False):
-            raise SoftwarePackageError('%s compilation failed' % self.name)
+            cmd = ['make'] + flags
+            if util.create_subprocess(cmd, cwd=self.src_prefix, env=env, stdout=False):
+                raise SoftwarePackageError('%s compilation failed' % self.name)
 
     def make_install(self, flags, env, parallel=False):
         """Invoke `make install`.
