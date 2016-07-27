@@ -136,12 +136,12 @@ class ProjectController(Controller):
     def delete(self, keys):
         super(ProjectController, self).delete(keys)
         try:
-            selected_eid = PROJECT_STORAGE['selected_project']
-        except KeyError:
+            selected = self.selected()
+        except ProjectSelectionError:
             pass
         else:
-            if self.one(selected_eid) is None:
-                del PROJECT_STORAGE['selected_project']
+            if selected is None:
+                self.unselect()
 
     def select(self, project, experiment=None):
         self.storage['selected_project'] = project.eid
@@ -154,6 +154,12 @@ class ProjectController(Controller):
     
     def unselect(self):
         del self.storage['selected_project']
+        
+    def _selected_eid(self):
+        try:
+            return self.storage['selected_project']
+        except KeyError:
+            raise ProjectSelectionError("No project selected")
 
     def selected(self):
         """Gets the currently selected project's configuration data.
@@ -164,12 +170,7 @@ class ProjectController(Controller):
         Raises:
             ProjectSelectionError: No project currently selected.
         """
-        try:
-            selected_eid = PROJECT_STORAGE['selected_project']
-        except KeyError:
-            raise ProjectSelectionError("No project configuration selected")
-        else:
-            return self.one(selected_eid)
+        return self.one(self._selected_eid())
 
 
 class Project(Model):

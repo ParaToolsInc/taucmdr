@@ -192,17 +192,17 @@ class SelectCommand(AbstractCommand):
             new_attrs = set(meas.keys())
             old_attrs = set(meas_old.keys())
             parts = ["Application rebuild required:"]
-            for attr in (new_attrs - old_attrs):
+            for attr in new_attrs - old_attrs:
                 if Measurement.attributes[attr]['application_rebuild']:
                     parts.append("%s in measurement is now '%s'." % (attr, meas[attr]))
                     rebuild_required = True
                     break
-            for attr in (old_attrs - new_attrs):
+            for attr in old_attrs - new_attrs:
                 if Measurement.attributes[attr]['application_rebuild']:
                     parts.append("%s in measurement is now unset." % attr)
                     rebuild_required = True
                     break
-            for attr in (new_attrs & old_attrs):
+            for attr in new_attrs & old_attrs:
                 if meas[attr] != meas_old[attr] and Measurement.attributes[attr]['application_rebuild']:
                     parts.append("%s in measurement changed from '%s' to '%s'." % (attr, meas_old[attr], meas[attr]))
                     rebuild_required = True
