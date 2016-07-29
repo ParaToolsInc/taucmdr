@@ -29,7 +29,7 @@
 
 from tau import logger, configuration
 from tau.error import ConfigurationError, ModelError, InternalError
-from tau.storage import StorageRecord
+from tau.storage import StorageRecord, StorageError
 from tau.mvc.controller import Controller
 
 LOGGER = logger.get_logger(__name__)
@@ -161,7 +161,7 @@ class Model(StorageRecord):
             default_key = '.'.join([cls.name, attr, 'default'])
             try:
                 default_val = configuration.get(default_key)
-            except KeyError:
+            except (KeyError, StorageError):
                 continue
             else:
                 cls.attributes[attr]['default'] = default_val
