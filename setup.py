@@ -184,21 +184,21 @@ if HAVE_SPHINX:
 class Test(TestCommand):
     """Customize the test command to always run in buffered mode."""
 
-    _custom_user_options = [('no-system-sandbox', 'S', "Don't sandbox system storage when testing"),
-                            ('no-user-sandbox', 'U', "Don't sandbox user storage when testing")]
+    _custom_user_options = [('system-sandbox', 'S', "Sandbox system storage when testing"),
+                            ('user-sandbox', 'U', "Sandbox user storage when testing")]
     user_options = TestCommand.user_options + _custom_user_options
     
     def initialize_options(self):
         TestCommand.initialize_options(self)
-        self.no_system_sandbox = False
-        self.no_user_sandbox = False
+        self.system_sandbox = False
+        self.user_sandbox = False
     
     def run_tests(self):
-        if not self.no_system_sandbox:
+        if self.system_sandbox:
             tmp_system_prefix = tempfile.mkdtemp()
             os.environ['__TAU_SYSTEM_PREFIX__'] = tmp_system_prefix
             print "Sandboxing system storage: %s" % tmp_system_prefix
-        if not self.no_user_sandbox:
+        if self.user_sandbox:
             tmp_user_prefix = tempfile.mkdtemp()
             os.environ['__TAU_USER_PREFIX__'] = tmp_user_prefix
             print "Sandboxing user storage: %s" % tmp_user_prefix
@@ -207,9 +207,9 @@ class Test(TestCommand):
         try:
             return TestCommand.run_tests(self)
         finally:
-            if not self.no_system_sandbox:
+            if self.system_sandbox:
                 shutil.rmtree(tmp_system_prefix, ignore_errors=True)
-            if not self.no_user_sandbox:
+            if self.user_sandbox:
                 shutil.rmtree(tmp_user_prefix, ignore_errors=True)
 
 
