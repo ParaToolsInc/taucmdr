@@ -362,7 +362,7 @@ if not len(_ROOT_LOGGER.handlers):
             pass
         else:
             raise
-    _FILE_HANDLER = handlers.RotatingFileHandler(LOG_FILE, maxBytes=(4*1024*1024), backupCount=5)
+    _FILE_HANDLER = handlers.TimedRotatingFileHandler(LOG_FILE, when='D', interval=1, backupCount=3)
     _FILE_HANDLER.setFormatter(LogFormatter(line_width=120, line_marker=LINE_MARKER, allow_colors=False))
     _FILE_HANDLER.setLevel(logging.DEBUG)
 
