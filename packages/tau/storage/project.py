@@ -56,7 +56,7 @@ class ProjectStorageError(StorageError):
         Args:
             search_root (str): Directory in which the search for a project directory was initiated.
         """
-        value = "Project not found in '%s' or any of its parent directories." % search_root
+        value = "Project directory not found in '%s' or any of its parent directories." % search_root
         super(ProjectStorageError, self).__init__(value)
         self.search_root = search_root
         

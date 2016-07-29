@@ -285,23 +285,13 @@ class Experiment(Model):
             TauInstallation: Object handle for the TAU installation. 
         """
         LOGGER.debug("Configuring experiment %s", self.title())
-        project_data = self.populate('project')
-        try:
-            storage = STORAGE_LEVELS[project_data['storage_level']]
-        except KeyError:
-            # Install at highest writable storage level
-            for storage in reversed(ORDERED_LEVELS):
-                if storage.is_writable():
-                    prefix = storage.prefix
-                    break
-            else:
-                raise SoftwarePackageError("%s storage is not writable" % project_data['storage_level'])
-        else:
-            if not storage.is_writable():
-                raise SoftwarePackageError("%s storage is not writable" % project_data['storage_level'])
-            else:
+        # Install at highest writable storage level
+        for storage in reversed(ORDERED_LEVELS):
+            if storage.is_writable():
                 prefix = storage.prefix
-
+                break
+        else:
+            raise SoftwarePackageError("No writable storage levels")
         if self.uses_tau():
             dependencies = {}
             for name in 'pdt', 'binutils', 'libunwind', 'papi':

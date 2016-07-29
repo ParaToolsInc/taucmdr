@@ -124,11 +124,14 @@ class InitializeCommand(AbstractCommand):
 
     def _create_project(self, args):
         project_name = args.project_name
-        if hasattr(args, 'storage_level'):
-            project_create_cmd.main([project_name, '--storage-level', args.storage_level])
-        else:
+        try:
             project_create_cmd.main([project_name])
-        select_cmd.main(['--project', project_name])
+        except ConfigurationError:
+            PROJECT_STORAGE.disconnect_filesystem()
+            util.rmtree(PROJECT_STORAGE.prefix, ignore_errors=True)
+            raise
+        else:
+            select_cmd.main(['--project', project_name])
         
     def _populate_project(self, argv, args):
         def _safe_execute(cmd, argv):
@@ -203,12 +206,7 @@ class InitializeCommand(AbstractCommand):
         except ProjectStorageError:
             self.logger.debug("No project found, initializing a new project.")
             PROJECT_STORAGE.connect_filesystem()
-            try:
-                self._create_project(args)
-            except ConfigurationError:
-                PROJECT_STORAGE.disconnect_filesystem()
-                util.rmtree(proj_ctrl.storage.prefix, ignore_errors=True)
-                raise
+            self._create_project(args)
             if not args.bare:
                 self._populate_project(argv, args)
             return dashboard_cmd.main([])

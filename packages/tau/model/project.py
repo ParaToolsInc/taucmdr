@@ -81,14 +81,6 @@ def attributes():
             'model': Experiment,
             'description': 'the current experiment'
         },
-        'storage_level': {
-            'type': 'string',
-            'description': 'location of installation directory',
-            'argparse': {'flags' : ('--storage-level',),
-                         'choices' : STORAGE_LEVELS.keys(),
-                         'metavar' : '<level>',
-                         'action' : 'store'}
-        },
         'force_tau_options': {
             'type': 'array',
             'description': "forcibly add options to TAU_OPTIONS environment variable (not recommended)",
