@@ -37,6 +37,7 @@ import subprocess
 import errno
 import shutil
 import urllib
+import logging
 import pkgutil
 import tarfile
 import urlparse
@@ -214,13 +215,14 @@ def progress_bar(count, block_size, total_size):
         block_size (int): Size of a work block.
         total_size (int): Total amount of work to be completed.
     """
-    if total_size > 0:
-        width = max(1, logger.LINE_WIDTH - 10)
-        percent = min(100, float(count*block_size) / total_size)
-        sys.stdout.write('[' + '>'*int(percent*width) + '-'*int((1-percent)*width) + '] %3s%%\r' % int(100*percent))
-    else:
-        sys.stdout.write('[%s] UNKNOWN\r' % _spinner.next())
-    sys.stdout.flush()
+    if getattr(logging, logger.LOG_LEVEL) < logging.ERROR: 
+        if total_size > 0:
+            width = max(1, logger.LINE_WIDTH - 10)
+            percent = min(100, float(count*block_size) / total_size)
+            sys.stdout.write('[' + '>'*int(percent*width) + '-'*int((1-percent)*width) + '] %3s%%\r' % int(100*percent))
+        else:
+            sys.stdout.write('[%s] UNKNOWN\r' % _spinner.next())
+        sys.stdout.flush()
 
 def archive_toplevel(archive):
     """Returns the name of the top-level directory in an archive.

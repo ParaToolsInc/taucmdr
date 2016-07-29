@@ -86,13 +86,18 @@ class MainCommand(AbstractCommand):
                             help="Options to be passed to <subcommand>",
                             metavar='[options]',
                             nargs=arguments.REMAINDER)
-        parser.add_argument('-v', '--verbose',
-                            help="set stdout logging level to DEBUG",
-                            metavar='',
-                            const='DEBUG',
-                            default='INFO',
-                            action='store_const')
         parser.add_argument('-V', '--version', action='version', version=self._version())
+        group = parser.add_mutually_exclusive_group()
+        group.add_argument('-v', '--verbose',
+                           help="show debugging messages",
+                           const='DEBUG',
+                           default=arguments.SUPPRESS,
+                           action='store_const')
+        group.add_argument('-q', '--quiet',
+                           help="suppress all output except error messages",
+                           const='ERROR',
+                           default=arguments.SUPPRESS,
+                           action='store_const')        
         return parser
     
     def _version(self):
@@ -137,7 +142,8 @@ class MainCommand(AbstractCommand):
         cmd = args.command
         cmd_args = args.options
 
-        logger.set_log_level(args.verbose)
+        log_level = getattr(args, 'verbose', getattr(args, 'quiet', logger.LOG_LEVEL))
+        logger.set_log_level(log_level)
         LOGGER.debug('Arguments: %s', args)
         LOGGER.debug('Verbosity level: %s', logger.LOG_LEVEL)
 
