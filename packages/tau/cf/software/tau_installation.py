@@ -781,7 +781,8 @@ class TauInstallation(Installation):
         retval = util.create_subprocess(cmd, env=env, stdout=True)
         if retval != 0:
             raise ConfigurationError("TAU was unable to build the application.",
-                                     "See detailed output at the end of in '%s'" % logger.LOG_FILE)
+                                     "Check that the application builds with its normal compilers, i.e. without TAU."
+                                     "Use tau --log and see detailed output at the end of '%s'" % logger.LOG_FILE)
         return retval
 
     def get_application_command(self, launcher_cmd, application_cmd):

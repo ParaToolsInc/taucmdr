@@ -58,7 +58,7 @@ class Error(Exception):
                    "\n"
                    "%(backtrace)s"
                    "This is a bug in TAU Commander.\n"
-                   "Please send '%(logfile)s' to %(contact)s for assistance.")
+                   "Please use --log to enable debug logging and send '%(logfile)s' to %(contact)s for assistance.")
     
     def __init__(self, value, *hints):
         """Initialize the Error instance.

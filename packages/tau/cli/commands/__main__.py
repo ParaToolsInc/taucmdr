@@ -87,6 +87,11 @@ class MainCommand(AbstractCommand):
                             metavar='[options]',
                             nargs=arguments.REMAINDER)
         parser.add_argument('-V', '--version', action='version', version=self._version())
+        parser.add_argument('-l', '--log',
+                            help="record all actions to '%s'" % logger.LOG_FILE,
+                            const=True,
+                            default=False,
+                            action='store_const')
         group = parser.add_mutually_exclusive_group()
         group.add_argument('-v', '--verbose',
                            help="show debugging messages",
@@ -141,6 +146,9 @@ class MainCommand(AbstractCommand):
 
         cmd = args.command
         cmd_args = args.options
+        
+        if args.log:
+            logger.activate_debug_log()
 
         log_level = getattr(args, 'verbose', getattr(args, 'quiet', logger.LOG_LEVEL))
         logger.set_log_level(log_level)

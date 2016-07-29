@@ -329,6 +329,33 @@ def set_log_level(level):
     global LOG_LEVEL
     LOG_LEVEL = level.upper()
     _STDOUT_HANDLER.setLevel(LOG_LEVEL)
+    
+
+def activate_debug_log():
+    """Adds an addtional logging handler to record all messages to :any:`LOG_FILE`."""
+    _ROOT_LOGGER.addHandler(_FILE_HANDLER)
+    # pylint: disable=logging-not-lazy
+    _ROOT_LOGGER.debug("""
+%(bar)s
+TAU COMMANDER LOGGING INITIALIZED
+
+Timestamp         : %(timestamp)s
+Hostname          : %(hostname)s
+Platform          : %(platform)s
+Python Version    : %(pyversion)s
+Working Directory : %(cwd)s
+Terminal Size     : %(termsize)s
+Frozen            : %(frozen)s
+%(bar)s
+""" % {'bar': '#' * LINE_WIDTH,
+       'timestamp': str(datetime.now()),
+       'hostname': socket.gethostname(),
+       'platform': platform.platform(),
+       'pyversion': platform.python_version(),
+       'cwd': os.getcwd(),
+       'termsize': 'x'.join([str(_) for _ in TERM_SIZE]),
+       'frozen': getattr(sys, 'frozen', False)})
+
 
 LOG_LEVEL = 'INFO'
 """str: The global logging level for stdout loggers and software packages.
@@ -354,6 +381,7 @@ width cannot be determined, the default is 80.
 
 _ROOT_LOGGER = logging.getLogger()
 if not len(_ROOT_LOGGER.handlers):
+    _ROOT_LOGGER.setLevel(logging.DEBUG)
     _LOG_FILE_PREFIX = os.path.dirname(LOG_FILE)
     try:
         os.makedirs(_LOG_FILE_PREFIX)
@@ -365,33 +393,8 @@ if not len(_ROOT_LOGGER.handlers):
     _FILE_HANDLER = handlers.TimedRotatingFileHandler(LOG_FILE, when='D', interval=1, backupCount=3)
     _FILE_HANDLER.setFormatter(LogFormatter(line_width=120, line_marker=LINE_MARKER, allow_colors=False))
     _FILE_HANDLER.setLevel(logging.DEBUG)
-
+    
     _STDOUT_HANDLER = logging.StreamHandler(sys.stdout)
     _STDOUT_HANDLER.setFormatter(LogFormatter(line_width=LINE_WIDTH, line_marker=LINE_MARKER, printable_only=True))
     _STDOUT_HANDLER.setLevel(LOG_LEVEL)
-
-    _ROOT_LOGGER.addHandler(_FILE_HANDLER)
     _ROOT_LOGGER.addHandler(_STDOUT_HANDLER)
-    _ROOT_LOGGER.setLevel(logging.DEBUG)
-
-# pylint: disable=logging-not-lazy
-    _ROOT_LOGGER.debug("""
-%(bar)s
-TAU COMMANDER LOGGING INITIALIZED
-
-Timestamp         : %(timestamp)s
-Hostname          : %(hostname)s
-Platform          : %(platform)s
-Python Version    : %(pyversion)s
-Working Directory : %(cwd)s
-Terminal Size     : %(termsize)s
-Frozen            : %(frozen)s
-%(bar)s
-""" % {'bar': '#' * LINE_WIDTH,
-       'timestamp': str(datetime.now()),
-       'hostname': socket.gethostname(),
-       'platform': platform.platform(),
-       'pyversion': platform.python_version(),
-       'cwd': os.getcwd(),
-       'termsize': 'x'.join([str(_) for _ in TERM_SIZE]),
-       'frozen': getattr(sys, 'frozen', False)})
