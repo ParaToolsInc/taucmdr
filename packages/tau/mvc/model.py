@@ -27,9 +27,9 @@
 #
 """TODO: FIXME: Docs"""
 
-from tau import logger, configuration
+from tau import logger
 from tau.error import ConfigurationError, ModelError, InternalError
-from tau.storage import StorageRecord, StorageError
+from tau.storage import StorageRecord
 from tau.mvc.controller import Controller
 
 LOGGER = logger.get_logger(__name__)
@@ -66,7 +66,6 @@ class ModelMeta(type):
             return cls._attributes
         except AttributeError:
             cls._attributes = cls.__attributes__()
-            cls._configure_defaults()
             cls._construct_relationships()
             return cls._attributes
         
@@ -155,18 +154,6 @@ class Model(StorageRecord):
     def controller(cls, storage):
         return cls.__controller__(cls, storage)
     
-    @classmethod
-    def _configure_defaults(cls):
-        for attr in cls.attributes:
-            default_key = '.'.join([cls.name, attr, 'default'])
-            try:
-                default_val = configuration.get(default_key)
-            except (KeyError, StorageError):
-                continue
-            else:
-                cls.attributes[attr]['default'] = default_val
-                break
-
     @classmethod
     def _construct_relationships(cls):
         primary_key = None
