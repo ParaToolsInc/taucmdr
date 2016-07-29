@@ -40,10 +40,10 @@ class ListTest(tests.TestCase):
 
     def test_list(self):
         self.reset_project_storage(bare=True)
-        name = 'meas01'
+        name = 'm01'
         self.assertCommandReturnValue(0, CREATE_COMMAND, [name])
         stdout, stderr = self.assertCommandReturnValue(0, LIST_COMMAND, [])
-        self.assertIn('meas01', stdout)
+        self.assertIn('m01', stdout)
         self.assertFalse(stderr)
 
     def test_wrongname(self):

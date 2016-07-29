@@ -32,7 +32,6 @@ Functions used for unit tests of initialize.py.
 """
 
 from tau import tests
-from tau.storage.levels import PROJECT_STORAGE
 from tau.cli.commands.initialize import COMMAND as initialize_cmd
 
 
@@ -40,7 +39,7 @@ class InitializeTest(tests.TestCase):
     """Unit tests for `tau initialize`"""
 
     def test_bare(self):
-        PROJECT_STORAGE.destroy()
+        self.destroy_project_storage()
         stdout, stderr = self.assertCommandReturnValue(0, initialize_cmd, ['--bare'])
         self.assertIn('Created a new project named', stdout)
         self.assertIn('Project Configuration', stdout)
@@ -51,5 +50,5 @@ class InitializeTest(tests.TestCase):
         self.assertFalse(stderr)
 
     def test_initialize(self):
-        PROJECT_STORAGE.destroy()
+        self.destroy_project_storage()
         self.assertCommandReturnValue(0, initialize_cmd, ['--storage-level', 'project'])
