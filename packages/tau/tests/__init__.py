@@ -48,6 +48,10 @@ _TEMPDIR_STACK = []
 _NOT_IMPLEMENTED = []
 
 
+def _destroy_test_workdir(path):
+    onerror = lambda f, p, e: sys.stderr.write("\nERROR: Failed to clean up testing directory %s\n" % p)
+    shutil.rmtree(path, ignore_errors=False, onerror=onerror)
+    
 def push_test_workdir():
     """Create a new working directory for a unit test.
     
@@ -69,24 +73,21 @@ def pop_test_workdir():
     Restores the current working directory and :any:`tempfile.tempdir` to their values before
     :any:`push_test_workdir` was called.
     """ 
-    def onerror(function, path, excinfo):
-        # pylint: disable=unused-argument
-        sys.stderr.write("\nERROR: Failed to clean up testing directory %s\n" % path)
     tempfile.tempdir = _TEMPDIR_STACK.pop()
     os.chdir(_CWD_STACK.pop())
-    shutil.rmtree(_DIR_STACK.pop(), ignore_errors=False, onerror=onerror)
+    _destroy_test_workdir(_DIR_STACK.pop())
     
 def get_test_workdir():
     """Return the current unit test's working directory."""
     return _DIR_STACK[0]
 
 def cleanup():
-    """Finish 
-    
-    Checks that any files or directories created during testing have been removed."""
+    """Checks that any files or directories created during testing have been removed."""
     if _DIR_STACK:
         for path in _DIR_STACK:
-            sys.stderr.write("\nERROR: Test directory '%s' was not cleaned up\n" % path)
+            sys.stderr.write("\nWARNING: Test directory '%s' still exists, attempting to clean now...\n" % path)
+            _destroy_test_workdir(path)
+                       
 
 atexit.register(cleanup)
 
