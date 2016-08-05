@@ -226,7 +226,10 @@ class Experiment(Model):
                           measure_heap_usage=measurement.get_or_default('heap_usage'),
                           measure_memory_alloc=measurement.get_or_default('memory_alloc'),
                           measure_comm_matrix=measurement.get_or_default('comm_matrix'),
-                          callpath_depth=measurement.get_or_default('callpath'))
+                          callpath_depth=measurement.get_or_default('callpath'),
+                          throttle=measurement.get_or_default('throttle'),
+                          throttle_per_call=measurement.get_or_default('throttle_per_call'),
+                          throttle_num_calls=measurement.get_or_default('throttle_num_calls'))
 
         for storage in reversed(ORDERED_LEVELS):
             tau = TauInstallation(storage.prefix, *tau_args, **tau_kwargs)

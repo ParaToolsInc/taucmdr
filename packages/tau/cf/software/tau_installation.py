@@ -171,7 +171,10 @@ class TauInstallation(Installation):
                  measure_heap_usage,
                  measure_memory_alloc,
                  measure_comm_matrix,
-                 callpath_depth):
+                 callpath_depth,
+                 throttle,
+                 throttle_per_call,
+                 throttle_num_calls):
         """Initialize the TAU installation wrapper class.
         
         Args:
@@ -222,6 +225,9 @@ class TauInstallation(Installation):
             measure_memory_alloc (bool): If True then record memory allocation and deallocation events.
             measure_comm_matrix (bool): If True then record the point-to-point communication matrix.
             callpath_depth (int): Depth of callpath measurement.  0 to disable.
+            throttle (bool): If True then throttle lightweight events.
+            throttle_per_call (int): Maximum microseconds per call of a lightweight event.
+            throttle_num_calls (int): Minimum number of calls for a lightweight event.
         """
         super(TauInstallation, self).__init__('TAU', prefix, src, "", target_arch, target_os, compilers, 
                                               SOURCES, COMMANDS, None)
@@ -274,6 +280,9 @@ class TauInstallation(Installation):
         self.measure_memory_alloc = measure_memory_alloc
         self.measure_comm_matrix = measure_comm_matrix
         self.callpath_depth = callpath_depth
+        self.throttle = throttle
+        self.throttle_per_call = throttle_per_call
+        self.throttle_num_calls = throttle_num_calls
         
     def verify(self):
         """Returns true if the installation is valid.
@@ -723,6 +732,10 @@ class TauInstallation(Installation):
         env['TAU_TRACK_HEAP'] = str(int(self.measure_heap_usage))
         env['TAU_COMM_MATRIX'] = str(int(self.measure_comm_matrix))
         env['TAU_METRICS'] = os.pathsep.join(self.metrics)
+        env['TAU_THROTTLE'] = str(int(self.throttle))
+        if self.throttle:
+            env['TAU_THROTTLE_PERCALL'] = str(int(self.throttle_per_call))
+            env['TAU_THROTTLE_NUMCALLS'] = str(int(self.throttle_num_calls))
         if self.callpath_depth > 0:
             env['TAU_CALLPATH'] = '1'
             env['TAU_CALLPATH_DEPTH'] = str(self.callpath_depth)

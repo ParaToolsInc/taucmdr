@@ -237,14 +237,14 @@ def attributes():
         },
         'callpath': {
             'type': 'integer',
-            'default': 2,
+            'default': 100,
             'description': 'maximum depth for callpath recording',
             'application_rebuild': False,
             'argparse': {'flags': ('--callpath',),
                          'group': 'data',
                          'metavar': 'depth',
                          'nargs': '?',
-                         'const': 2,
+                         'const': 100,
                          'type': int},
         },
         'io': {
@@ -331,6 +331,39 @@ def attributes():
                          'nargs': '?',
                          'const': True,
                          'action': ParseBooleanAction}
+        },
+        'throttle': {
+            'type': 'boolean',
+            'default': True,
+            'description': 'throttle lightweight events to reduce overhead',
+            'application_rebuild': False,
+            'argparse': {'flags': ('--throttle',),
+                         'metavar': 'T/F',
+                         'nargs': '?',
+                         'const': True,
+                         'action': ParseBooleanAction},
+        },
+        'throttle_per_call': {
+            'type': 'integer',
+            'default': 10,
+            'description': 'lightweight event duration threshold in microseconds',
+            'application_rebuild': False,
+            'argparse': {'flags': ('--throttle-per-call',),
+                         'metavar': 'us',
+                         'nargs': '?',
+                         'const': 10,
+                         'type': int},
+        },
+        'throttle_num_calls': {
+            'type': 'integer',
+            'default': 100000,
+            'description': 'lightweight event call count threshold',
+            'application_rebuild': False,
+            'argparse': {'flags': ('--throttle-num-calls',),
+                         'metavar': 'count',
+                         'nargs': '?',
+                         'const': 100000,
+                         'type': int},
         }
     }
 
