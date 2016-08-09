@@ -32,16 +32,22 @@ Functions used for unit tests of show.py.
 
 
 import shutil
+import unittest
 from tau import tests, TAU_HOME
 from tau.cli.commands import build
 from tau.cli.commands.trial import show, create
+from tau.cf.compiler import CC_ROLE
+from tau.cf.target import IBM_BGP_ARCH, IBM_BGQ_ARCH
+from tau.cf.target import host
 
 class ShowTest(tests.TestCase):
     
+    @unittest.skipIf(host.architecture() in (IBM_BGP_ARCH, IBM_BGQ_ARCH), "Test skipped on BlueGene")
     def test_show(self):
         self.reset_project_storage(project_name='proj1')
         shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests.get_test_workdir()+'/hello.c')
-        argv = ['gcc', 'hello.c']
+        cc = self.get_compiler(CC_ROLE)
+        argv = [cc, 'hello.c']
         self.exec_command(build.COMMAND, argv)
         self.exec_command(create.COMMAND, ['./a.out'])
         argv = ['0', '--profile-tool', 'pprof']

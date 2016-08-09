@@ -213,6 +213,12 @@ class TestCase(unittest.TestCase):
             sys.stderr = orig_stderr
             logger._STDOUT_HANDLER.stream = orig_stdout
 
+    def get_compiler(self, role, target_name='targ1'):
+        from tau.model.target import Target
+        targ_ctrl = Target.controller(PROJECT_STORAGE)
+        targ = targ_ctrl.one({'name': target_name})
+        return targ.populate(role.keyword)['path']
+
     def assertCommandReturnValue(self, return_value, cmd, argv):
         retval, stdout, stderr = self.exec_command(cmd, argv)
         self.assertEqual(retval, return_value)

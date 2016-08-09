@@ -34,11 +34,13 @@ Functions used for unit tests of build.py.
 import shutil
 from tau import tests, TAU_HOME
 from tau.cli.commands import build
+from tau.cf.compiler import CC_ROLE
 
 class BuildTest(tests.TestCase):
+
     def test_build(self):
         self.reset_project_storage(project_name='proj1')
         shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests.get_test_workdir()+'/hello.c')
-        # Need to change gcc to system compiler
-        argv = ['gcc', 'hello.c']
+        cc = self.get_compiler(CC_ROLE)
+        argv = [cc, 'hello.c']
         self.assertCommandReturnValue(0, build.COMMAND, argv)

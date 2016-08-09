@@ -44,7 +44,6 @@ class EditTest(tests.TestCase):
         self.assertIn('Updated application', stdout)
         argv = ['app2', '--new-name', 'app1']
         self.exec_command(edit.COMMAND, argv)
-        self.assertFalse(stderr)
 
     def test_wrongname(self):
         self.reset_project_storage(project_name='proj1')
@@ -59,3 +58,4 @@ class EditTest(tests.TestCase):
         _, _, stderr = self.exec_command(edit.COMMAND, argv)
         self.assertIn('application edit <application_name> [arguments]', stderr)
         self.assertIn('application edit: error: unrecognized arguments', stderr)
+

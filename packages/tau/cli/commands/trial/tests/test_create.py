@@ -32,17 +32,23 @@ Functions used for unit tests of create.py.
 
 
 import shutil
+import unittest
 from tau import tests, TAU_HOME
 from tau.cli.commands.build import COMMAND as build_cmd
 from tau.cli.commands.trial.create import COMMAND as create_cmd
+from tau.cf.compiler import CC_ROLE
+from tau.cf.target import IBM_BGP_ARCH, IBM_BGQ_ARCH
+from tau.cf.target import host
 
 class CreateTest(tests.TestCase):
     """Tests for :any:`trial.create`."""
 
+    @unittest.skipIf(host.architecture() in (IBM_BGP_ARCH, IBM_BGQ_ARCH), "Test skipped on BlueGene")
     def test_create(self):
         self.reset_project_storage()
         shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests.get_test_workdir()+'/hello.c')
-        self.assertCommandReturnValue(0, build_cmd, ['gcc', 'hello.c'])
+        cc = self.get_compiler(CC_ROLE)
+        self.assertCommandReturnValue(0, build_cmd, [cc, 'hello.c'])
         stdout, stderr = self.assertCommandReturnValue(0, create_cmd, ['./a.out'])
         self.assertIn('BEGIN', stdout)
         self.assertIn('END Experiment', stdout)
