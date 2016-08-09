@@ -84,7 +84,7 @@
 <p>TAU Storage Containers.</p>
 <p>A storage container provides a record database, a persistent filesystem, and a key/value store.
 The database is accessed via member methods like <a class="reference internal" href="#tau.storage.AbstractStorage.insert" title="tau.storage.AbstractStorage.insert"><code class="xref any py py-meth docutils literal"><span class="pre">insert</span></code></a>, <a class="reference internal" href="search.html"><span>Search Page</span></a>, etc.
-The filesystem is accessed via its filesystem prefix (e.g. <code class="docutils literal"><span class="pre">/usr/local/packages</span></code>) via <a class="reference internal" href="#tau.storage.AbstractStorage.prefix" title="tau.storage.AbstractStorage.prefix"><code class="xref any py py-attr docutils literal"><span class="pre">prefix</span></code></a>.
+The filesystem is accessed via its filesystem prefix (e.g. <code class="docutils literal"><span class="pre">/usr/local/packages</span></code>) via <a class="reference internal" href="tau.model.trial.html#tau.model.trial.Trial.prefix" title="tau.model.trial.Trial.prefix"><code class="xref any py py-attr docutils literal"><span class="pre">prefix</span></code></a>.
 The key/value store is accessed via the <cite>[]</cite> operator, i.e. treat the storage object like a dictionary.</p>
 <dl class="class">
 <dt id="tau.storage.AbstractStorage">
@@ -123,6 +123,12 @@ The key/value store is accessed via the <cite>[]</cite> operator, i.e. treat the
 </dd></dl>
 
 <dl class="method">
+<dt id="tau.storage.AbstractStorage.__contains__">
+<code class="descname">__contains__</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.__contains__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.__contains__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if <code class="docutils literal"><span class="pre">key</span></code> maps to a value is in the key/value store.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="tau.storage.AbstractStorage.__delitem__">
 <code class="descname">__delitem__</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.__delitem__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.__delitem__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove a value from the key/value store.</p>
@@ -144,6 +150,18 @@ The key/value store is accessed via the <cite>[]</cite> operator, i.e. treat the
 <dt id="tau.storage.AbstractStorage.__getitem__">
 <code class="descname">__getitem__</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.__getitem__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.__getitem__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Retrieve a value from the key/value store.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.AbstractStorage.__iter__">
+<code class="descname">__iter__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.__iter__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.__iter__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over keys in the key/value store.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.AbstractStorage.__len__">
+<code class="descname">__len__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.__len__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.__len__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of items in the key/value store.</p>
 </dd></dl>
 
 <dl class="method">
@@ -264,7 +282,7 @@ list: All matching data records if <cite>keys</cite> was a list or tuple.
 None: No record found or <code class="docutils literal"><span class="pre">bool(keys)</span> <span class="pre">==</span> <span class="pre">False</span></code>.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="#tau.storage.AbstractStorage.Record" title="tau.storage.AbstractStorage.Record">Record</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="tau.storage.local_file.html#tau.storage.local_file.LocalFileStorage.Record" title="tau.storage.local_file.LocalFileStorage.Record">Record</a></p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211;
@@ -293,11 +311,29 @@ Invalid value for <cite>keys</cite>.</p>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The new record.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#tau.storage.AbstractStorage.Record" title="tau.storage.AbstractStorage.Record">Record</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="tau.storage.local_file.html#tau.storage.local_file.LocalFileStorage.Record" title="tau.storage.local_file.LocalFileStorage.Record">Record</a></p>
 </td>
 </tr>
 </tbody>
 </table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.AbstractStorage.iteritems">
+<code class="descname">iteritems</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.iteritems"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.iteritems" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over items in the key/value store.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.AbstractStorage.iterkeys">
+<code class="descname">iterkeys</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.iterkeys"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.iterkeys" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over keys in the key/value store.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.storage.AbstractStorage.itervalues">
+<code class="descname">itervalues</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/storage.html#AbstractStorage.itervalues"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.storage.AbstractStorage.itervalues" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over values in the key/value store.</p>
 </dd></dl>
 
 <dl class="method">

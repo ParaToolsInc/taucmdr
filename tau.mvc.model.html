@@ -319,6 +319,25 @@ defined or equal to the specified value (if given).</p>
 </div>
 </dd></dl>
 
+<dl class="method">
+<dt id="tau.mvc.model.Model.get_or_default">
+<code class="descname">get_or_default</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/model.html#Model.get_or_default"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.model.Model.get_or_default" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the attribute&#8217;s value or default value.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>key</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Attribute name.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">If the attribute is set then the attribute&#8217;s value is returned.
+If the attribute is not set then the attribute&#8217;s default value is returned.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body">If the attribute is not set and has no default value then a KeyError is raised.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="attribute">
 <dt>
 <code class="descname">name</code><em class="property"> = None</em></dt>
@@ -344,7 +363,7 @@ defined or equal to the specified value (if given).</p>
 
 <dl class="method">
 <dt id="tau.mvc.model.Model.populate">
-<code class="descname">populate</code><span class="sig-paren">(</span><em>attribute=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/model.html#Model.populate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.model.Model.populate" title="Permalink to this definition">¶</a></dt>
+<code class="descname">populate</code><span class="sig-paren">(</span><em>attribute=None</em>, <em>defaults=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/model.html#Model.populate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.model.Model.populate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">

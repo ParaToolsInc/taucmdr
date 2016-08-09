@@ -86,6 +86,7 @@
 <span class="kn">from</span> <span class="nn">tau.mvc.controller</span> <span class="kn">import</span> <span class="n">Controller</span>
 <span class="kn">from</span> <span class="nn">tau.cf.compiler</span> <span class="kn">import</span> <span class="n">CompilerFamily</span><span class="p">,</span> <span class="n">CompilerRole</span><span class="p">,</span> <span class="n">CompilerInfo</span>
 <span class="kn">from</span> <span class="nn">tau.cf.compiler.mpi</span> <span class="kn">import</span> <span class="n">MpiCompilerFamily</span>
+<span class="kn">from</span> <span class="nn">tau.cf.compiler.shmem</span> <span class="kn">import</span> <span class="n">ShmemCompilerFamily</span>
 <span class="kn">from</span> <span class="nn">tau.cf.compiler.installed</span> <span class="kn">import</span> <span class="n">InstalledCompiler</span>
 
 <span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
@@ -253,8 +254,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">command</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">])</span>
         <span class="n">role</span> <span class="o">=</span> <span class="n">CompilerRole</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;role&#39;</span><span class="p">])</span>
+        <span class="c1"># FIXME: Compiler family classes are fragmented and weird.</span>
         <span class="k">if</span> <span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;MPI_&#39;</span><span class="p">):</span>
             <span class="n">family</span> <span class="o">=</span> <span class="n">MpiCompilerFamily</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;family&#39;</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;SHMEM_&#39;</span><span class="p">):</span>
+            <span class="n">family</span> <span class="o">=</span> <span class="n">ShmemCompilerFamily</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;family&#39;</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">family</span> <span class="o">=</span> <span class="n">CompilerFamily</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;family&#39;</span><span class="p">])</span>
         <span class="n">info_list</span> <span class="o">=</span> <span class="n">CompilerInfo</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">family</span><span class="p">,</span> <span class="n">role</span><span class="p">)</span>

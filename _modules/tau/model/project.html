@@ -128,14 +128,6 @@
             <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="n">Experiment</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;the current experiment&#39;</span>
         <span class="p">},</span>
-        <span class="s1">&#39;storage_level&#39;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;location of installation directory&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span> <span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--storage-level&#39;</span><span class="p">,),</span>
-                         <span class="s1">&#39;choices&#39;</span> <span class="p">:</span> <span class="n">STORAGE_LEVELS</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span>
-                         <span class="s1">&#39;metavar&#39;</span> <span class="p">:</span> <span class="s1">&#39;&lt;level&gt;&#39;</span><span class="p">,</span>
-                         <span class="s1">&#39;action&#39;</span> <span class="p">:</span> <span class="s1">&#39;store&#39;</span><span class="p">}</span>
-        <span class="p">},</span>
         <span class="s1">&#39;force_tau_options&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;array&#39;</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s2">&quot;forcibly add options to TAU_OPTIONS environment variable (not recommended)&quot;</span><span class="p">,</span>
@@ -183,12 +175,12 @@
 <div class="viewcode-block" id="ProjectController.delete"><a class="viewcode-back" href="../../../tau.model.project.html#tau.model.project.ProjectController.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">ProjectController</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">selected_eid</span> <span class="o">=</span> <span class="n">PROJECT_STORAGE</span><span class="p">[</span><span class="s1">&#39;selected_project&#39;</span><span class="p">]</span>
-        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">selected</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">selected</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">ProjectSelectionError</span><span class="p">:</span>
             <span class="k">pass</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">one</span><span class="p">(</span><span class="n">selected_eid</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-                <span class="k">del</span> <span class="n">PROJECT_STORAGE</span><span class="p">[</span><span class="s1">&#39;selected_project&#39;</span><span class="p">]</span></div>
+            <span class="k">if</span> <span class="n">selected</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">unselect</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="ProjectController.select"><a class="viewcode-back" href="../../../tau.model.project.html#tau.model.project.ProjectController.select">[docs]</a>    <span class="k">def</span> <span class="nf">select</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project</span><span class="p">,</span> <span class="n">experiment</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="p">[</span><span class="s1">&#39;selected_project&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">eid</span>
@@ -201,6 +193,12 @@
     
 <div class="viewcode-block" id="ProjectController.unselect"><a class="viewcode-back" href="../../../tau.model.project.html#tau.model.project.ProjectController.unselect">[docs]</a>    <span class="k">def</span> <span class="nf">unselect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="p">[</span><span class="s1">&#39;selected_project&#39;</span><span class="p">]</span></div>
+        
+    <span class="k">def</span> <span class="nf">_selected_eid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="p">[</span><span class="s1">&#39;selected_project&#39;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ProjectSelectionError</span><span class="p">(</span><span class="s2">&quot;No project selected&quot;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="ProjectController.selected"><a class="viewcode-back" href="../../../tau.model.project.html#tau.model.project.ProjectController.selected">[docs]</a>    <span class="k">def</span> <span class="nf">selected</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Gets the currently selected project&#39;s configuration data.</span>
@@ -211,12 +209,7 @@
 <span class="sd">        Raises:</span>
 <span class="sd">            ProjectSelectionError: No project currently selected.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">selected_eid</span> <span class="o">=</span> <span class="n">PROJECT_STORAGE</span><span class="p">[</span><span class="s1">&#39;selected_project&#39;</span><span class="p">]</span>
-        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">ProjectSelectionError</span><span class="p">(</span><span class="s2">&quot;No project configuration selected&quot;</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">one</span><span class="p">(</span><span class="n">selected_eid</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">one</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_selected_eid</span><span class="p">())</span></div></div>
 
 
 <div class="viewcode-block" id="Project"><a class="viewcode-back" href="../../../tau.model.project.html#tau.model.project.Project">[docs]</a><span class="k">class</span> <span class="nc">Project</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>

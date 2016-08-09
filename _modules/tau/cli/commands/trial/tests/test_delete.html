@@ -79,17 +79,23 @@
 
 
 <span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">unittest</span>
 <span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">tests</span><span class="p">,</span> <span class="n">TAU_HOME</span>
 <span class="kn">from</span> <span class="nn">tau.cli.commands</span> <span class="kn">import</span> <span class="n">build</span>
 <span class="kn">from</span> <span class="nn">tau.cli.commands.trial</span> <span class="kn">import</span> <span class="n">delete</span><span class="p">,</span> <span class="n">create</span>
+<span class="kn">from</span> <span class="nn">tau.cf.compiler</span> <span class="kn">import</span> <span class="n">CC_ROLE</span>
+<span class="kn">from</span> <span class="nn">tau.cf.target</span> <span class="kn">import</span> <span class="n">IBM_BGP_ARCH</span><span class="p">,</span> <span class="n">IBM_BGQ_ARCH</span>
+<span class="kn">from</span> <span class="nn">tau.cf.target</span> <span class="kn">import</span> <span class="n">host</span>
 
 <div class="viewcode-block" id="DeleteTest"><a class="viewcode-back" href="../../../../../../tau.cli.commands.trial.tests.test_delete.html#tau.cli.commands.trial.tests.test_delete.DeleteTest">[docs]</a><span class="k">class</span> <span class="nc">DeleteTest</span><span class="p">(</span><span class="n">tests</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Tests for :any:`trial.delete`.&quot;&quot;&quot;</span>
 
+    <span class="nd">@unittest.skipIf</span><span class="p">(</span><span class="n">host</span><span class="o">.</span><span class="n">architecture</span><span class="p">()</span> <span class="ow">in</span> <span class="p">(</span><span class="n">IBM_BGP_ARCH</span><span class="p">,</span> <span class="n">IBM_BGQ_ARCH</span><span class="p">),</span> <span class="s2">&quot;Test skipped on BlueGene&quot;</span><span class="p">)</span>
 <div class="viewcode-block" id="DeleteTest.test_delete"><a class="viewcode-back" href="../../../../../../tau.cli.commands.trial.tests.test_delete.html#tau.cli.commands.trial.tests.test_delete.DeleteTest.test_delete">[docs]</a>    <span class="k">def</span> <span class="nf">test_delete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">(</span><span class="n">project_name</span><span class="o">=</span><span class="s1">&#39;proj1&#39;</span><span class="p">)</span>
         <span class="n">shutil</span><span class="o">.</span><span class="n">copyfile</span><span class="p">(</span><span class="n">TAU_HOME</span><span class="o">+</span><span class="s1">&#39;/.testfiles/hello.c&#39;</span><span class="p">,</span> <span class="n">tests</span><span class="o">.</span><span class="n">get_test_workdir</span><span class="p">()</span><span class="o">+</span><span class="s1">&#39;/hello.c&#39;</span><span class="p">)</span>
-        <span class="n">argv</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;gcc&#39;</span><span class="p">,</span> <span class="s1">&#39;hello.c&#39;</span><span class="p">]</span>
+        <span class="n">cc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_compiler</span><span class="p">(</span><span class="n">CC_ROLE</span><span class="p">)</span>
+        <span class="n">argv</span> <span class="o">=</span> <span class="p">[</span><span class="n">cc</span><span class="p">,</span> <span class="s1">&#39;hello.c&#39;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">exec_command</span><span class="p">(</span><span class="n">build</span><span class="o">.</span><span class="n">COMMAND</span><span class="p">,</span> <span class="n">argv</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">exec_command</span><span class="p">(</span><span class="n">create</span><span class="o">.</span><span class="n">COMMAND</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;./a.out&#39;</span><span class="p">])</span>
         <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">delete</span><span class="o">.</span><span class="n">COMMAND</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;0&#39;</span><span class="p">])</span>

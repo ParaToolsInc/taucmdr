@@ -133,13 +133,23 @@
                             <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Options to be passed to &lt;subcommand&gt;&quot;</span><span class="p">,</span>
                             <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;[options]&#39;</span><span class="p">,</span>
                             <span class="n">nargs</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">REMAINDER</span><span class="p">)</span>
-        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-v&#39;</span><span class="p">,</span> <span class="s1">&#39;--verbose&#39;</span><span class="p">,</span>
-                            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;set stdout logging level to DEBUG&quot;</span><span class="p">,</span>
-                            <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
-                            <span class="n">const</span><span class="o">=</span><span class="s1">&#39;DEBUG&#39;</span><span class="p">,</span>
-                            <span class="n">default</span><span class="o">=</span><span class="s1">&#39;INFO&#39;</span><span class="p">,</span>
-                            <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_const&#39;</span><span class="p">)</span>
         <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-V&#39;</span><span class="p">,</span> <span class="s1">&#39;--version&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;version&#39;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_version</span><span class="p">())</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-l&#39;</span><span class="p">,</span> <span class="s1">&#39;--log&#39;</span><span class="p">,</span>
+                            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;record all actions to &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">logger</span><span class="o">.</span><span class="n">LOG_FILE</span><span class="p">,</span>
+                            <span class="n">const</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                            <span class="n">default</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                            <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_const&#39;</span><span class="p">)</span>
+        <span class="n">group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_mutually_exclusive_group</span><span class="p">()</span>
+        <span class="n">group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-v&#39;</span><span class="p">,</span> <span class="s1">&#39;--verbose&#39;</span><span class="p">,</span>
+                           <span class="n">help</span><span class="o">=</span><span class="s2">&quot;show debugging messages&quot;</span><span class="p">,</span>
+                           <span class="n">const</span><span class="o">=</span><span class="s1">&#39;DEBUG&#39;</span><span class="p">,</span>
+                           <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">,</span>
+                           <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_const&#39;</span><span class="p">)</span>
+        <span class="n">group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-q&#39;</span><span class="p">,</span> <span class="s1">&#39;--quiet&#39;</span><span class="p">,</span>
+                           <span class="n">help</span><span class="o">=</span><span class="s2">&quot;suppress all output except error messages&quot;</span><span class="p">,</span>
+                           <span class="n">const</span><span class="o">=</span><span class="s1">&#39;ERROR&#39;</span><span class="p">,</span>
+                           <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">,</span>
+                           <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_const&#39;</span><span class="p">)</span>        
         <span class="k">return</span> <span class="n">parser</span></div>
     
     <span class="k">def</span> <span class="nf">_version</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -183,8 +193,12 @@
 
         <span class="n">cmd</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">command</span>
         <span class="n">cmd_args</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">options</span>
+        
+        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">activate_debug_log</span><span class="p">()</span>
 
-        <span class="n">logger</span><span class="o">.</span><span class="n">set_log_level</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
+        <span class="n">log_level</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s1">&#39;verbose&#39;</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s1">&#39;quiet&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="o">.</span><span class="n">LOG_LEVEL</span><span class="p">))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">set_log_level</span><span class="p">(</span><span class="n">log_level</span><span class="p">)</span>
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Arguments: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Verbosity level: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="o">.</span><span class="n">LOG_LEVEL</span><span class="p">)</span>
 

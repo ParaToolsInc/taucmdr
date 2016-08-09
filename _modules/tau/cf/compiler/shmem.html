@@ -74,7 +74,7 @@
 <span class="c1">#</span>
 <span class="sd">&quot;&quot;&quot;SHMEM compiler detection.</span>
 
-<span class="sd">We keep a separate knowledge base for SHMEM compilers to simplify compiler</span>
+<span class="sd">Keep a separate knowledge base for SHMEM compilers to simplify compiler</span>
 <span class="sd">identification and because TAU doesn&#39;t require SHMEM for all configurations.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
@@ -96,7 +96,7 @@
 <div class="viewcode-block" id="ShmemCompilerFamily.preferred"><a class="viewcode-back" href="../../../../tau.cf.compiler.shmem.html#tau.cf.compiler.shmem.ShmemCompilerFamily.preferred">[docs]</a>    <span class="k">def</span> <span class="nf">preferred</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return the host&#39;s preferred SHMEM compiler family.&quot;&quot;&quot;</span>
         <span class="kn">from</span> <span class="nn">tau.cf.target</span> <span class="kn">import</span> <span class="n">host</span>
-        <span class="k">return</span> <span class="n">host</span><span class="o">.</span><span class="n">preferred_compilers</span><span class="p">()</span></div></div>
+        <span class="k">return</span> <span class="n">host</span><span class="o">.</span><span class="n">preferred_shmem_compilers</span><span class="p">()</span></div></div>
 
 
 <span class="n">SHMEM_CC_ROLE</span> <span class="o">=</span> <span class="n">CompilerRole</span><span class="p">(</span><span class="s1">&#39;SHMEM_CC&#39;</span><span class="p">,</span> <span class="s1">&#39;C with calls to a SHMEM library&#39;</span><span class="p">)</span>
@@ -105,7 +105,7 @@
 
 <span class="n">OPENSHMEM_SHEM_COMPILERS</span> <span class="o">=</span> <span class="n">ShmemCompilerFamily</span><span class="p">(</span><span class="s1">&#39;OpenSHMEM&#39;</span><span class="p">)</span>
 <span class="n">OPENSHMEM_SHEM_COMPILERS</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">SHMEM_CC_ROLE</span><span class="p">,</span> <span class="s1">&#39;oshcc&#39;</span><span class="p">)</span>
-<span class="n">OPENSHMEM_SHEM_COMPILERS</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">SHMEM_CXX_ROLE</span><span class="p">,</span> <span class="s1">&#39;oshcxx&#39;</span><span class="p">,</span> <span class="s1">&#39;oshCC&#39;</span><span class="p">)</span>
+<span class="n">OPENSHMEM_SHEM_COMPILERS</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">SHMEM_CXX_ROLE</span><span class="p">,</span> <span class="s1">&#39;oshcxx&#39;</span><span class="p">,</span> <span class="s1">&#39;oshc++&#39;</span><span class="p">)</span>
 <span class="n">OPENSHMEM_SHEM_COMPILERS</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">SHMEM_FC_ROLE</span><span class="p">,</span> <span class="s1">&#39;oshfort&#39;</span><span class="p">)</span>
 
 <span class="n">CRAY_SHMEM_COMPILERS</span> <span class="o">=</span> <span class="n">ShmemCompilerFamily</span><span class="p">(</span><span class="s1">&#39;Cray&#39;</span><span class="p">,</span> <span class="n">show_wrapper_flags</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;-craype-verbose&#39;</span><span class="p">])</span>

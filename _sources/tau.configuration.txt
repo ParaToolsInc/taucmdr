@@ -1,0 +1,7 @@
+tau.configuration module
+========================
+
+.. automodule:: tau.configuration
+    :members:
+    :undoc-members:
+    :show-inheritance:

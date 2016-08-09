@@ -209,6 +209,25 @@ detected value is cached to improve performance.</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="tau.cf.target.host.preferred_shmem_compilers">
+<code class="descclassname">tau.cf.target.host.</code><code class="descname">preferred_shmem_compilers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/target/host.html#preferred_shmem_compilers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.target.host.preferred_shmem_compilers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the preferred SHMEM compiler family for the host architecture.</p>
+<p>May probe environment variables and file systems in cases where the arch
+isn&#8217;t immediately known to Python.  These tests may be expensive so the
+detected value is cached to improve performance.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The host&#8217;s preferred compiler family.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="tau.cf.compiler.shmem.html#tau.cf.compiler.shmem.ShmemCompilerFamily" title="tau.cf.compiler.shmem.ShmemCompilerFamily">ShmemCompilerFamily</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="tau.cf.target.host.tau_arch">
 <code class="descclassname">tau.cf.target.host.</code><code class="descname">tau_arch</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/target/host.html#tau_arch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.target.host.tau_arch" title="Permalink to this definition">¶</a></dt>
 <dd><p>Detect the TAU architecture &#8220;magic keyword&#8221; that matches the host.</p>

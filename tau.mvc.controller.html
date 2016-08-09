@@ -81,7 +81,7 @@
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>record</strong> (<a class="reference internal" href="tau.storage.html#tau.storage.AbstractStorage.Record" title="tau.storage.AbstractStorage.Record"><em>Record</em></a>) &#8211; Record to associate.</li>
+<li><strong>record</strong> (<a class="reference internal" href="tau.storage.local_file.html#tau.storage.local_file.LocalFileStorage.Record" title="tau.storage.local_file.LocalFileStorage.Record"><em>Record</em></a>) &#8211; Record to associate.</li>
 <li><strong>foreign_model</strong> (<a class="reference internal" href="tau.mvc.model.html#tau.mvc.model.Model" title="tau.mvc.model.Model"><em>Model</em></a>) &#8211; Foreign record&#8217;s data model.</li>
 <li><strong>affected</strong> (<a class="reference internal" href="tau.cli.commands.target.list.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Identifiers for the records that will be updated to associate with <cite>record</cite>.</li>
 <li><strong>via</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The name of the associated foreign attribute.</li>
@@ -101,7 +101,7 @@
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>record</strong> (<a class="reference internal" href="tau.storage.html#tau.storage.AbstractStorage.Record" title="tau.storage.AbstractStorage.Record"><em>Record</em></a>) &#8211; Record to disassociate.</li>
+<li><strong>record</strong> (<a class="reference internal" href="tau.storage.local_file.html#tau.storage.local_file.LocalFileStorage.Record" title="tau.storage.local_file.LocalFileStorage.Record"><em>Record</em></a>) &#8211; Record to disassociate.</li>
 <li><strong>foreign_model</strong> (<a class="reference internal" href="tau.mvc.model.html#tau.mvc.model.Model" title="tau.mvc.model.Model"><em>Model</em></a>) &#8211; Foreign record&#8217;s data model.</li>
 <li><strong>affected</strong> (<a class="reference internal" href="tau.cli.commands.target.list.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Identifiers for the records that will be updated to disassociate from <cite>record</cite>.</li>
 <li><strong>via</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The name of the associated foreign attribute.</li>
@@ -307,7 +307,7 @@ and may contain eids of undefined records.</p>
 
 <dl class="method">
 <dt id="tau.mvc.controller.Controller.populate">
-<code class="descname">populate</code><span class="sig-paren">(</span><em>model</em>, <em>attribute=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/controller.html#Controller.populate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.controller.Controller.populate" title="Permalink to this definition">¶</a></dt>
+<code class="descname">populate</code><span class="sig-paren">(</span><em>model</em>, <em>attribute=None</em>, <em>defaults=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/controller.html#Controller.populate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.controller.Controller.populate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Merges associated data into the model record.</p>
 <p class="rubric">Example</p>
 <p>Suppose we have the following Person records:</p>
@@ -326,13 +326,19 @@ and may contain eids of undefined records.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>attribute</strong> (<em>Optional[str]</em>) &#8211; If given, return only the populated attribute.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>attribute</strong> (<em>Optional[str]</em>) &#8211; If given, return only the populated attribute.</li>
+<li><strong>defaults</strong> (<em>Optional[bool]</em>) &#8211; If given, set undefined attributes to their default values.</li>
+</ul>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">If attribute is None, a dictionary of controlled data merged with associated records.
-If attribute is not None, the value of the populated attribute.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">If attribute is None, a dictionary of controlled data merged with associated records.
+If attribute is not None, the value of the populated attribute.</p>
+</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">KeyError</span></code> &#8211;
-<cite>attribute</cite> is undefined in the record.</td>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">KeyError</span></code> &#8211;
+<cite>attribute</cite> is undefined in the record.</p>
+</td>
 </tr>
 </tbody>
 </table>

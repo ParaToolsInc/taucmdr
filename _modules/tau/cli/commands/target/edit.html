@@ -82,7 +82,8 @@
 <span class="kn">from</span> <span class="nn">tau.model.target</span> <span class="kn">import</span> <span class="n">Target</span>
 <span class="kn">from</span> <span class="nn">tau.model.compiler</span> <span class="kn">import</span> <span class="n">Compiler</span>
 <span class="kn">from</span> <span class="nn">tau.cf.compiler</span> <span class="kn">import</span> <span class="n">CompilerFamily</span><span class="p">,</span> <span class="n">CompilerRole</span>
-<span class="kn">from</span> <span class="nn">tau.cf.compiler.mpi</span> <span class="kn">import</span> <span class="n">MpiCompilerFamily</span><span class="p">,</span> <span class="n">MPI_CXX_ROLE</span><span class="p">,</span> <span class="n">MPI_CC_ROLE</span><span class="p">,</span> <span class="n">MPI_FC_ROLE</span>
+<span class="kn">from</span> <span class="nn">tau.cf.compiler.mpi</span> <span class="kn">import</span> <span class="n">MpiCompilerFamily</span>
+<span class="kn">from</span> <span class="nn">tau.cf.compiler.shmem</span> <span class="kn">import</span> <span class="n">ShmemCompilerFamily</span>
 <span class="kn">from</span> <span class="nn">tau.cf.compiler.installed</span> <span class="kn">import</span> <span class="n">InstalledCompiler</span><span class="p">,</span> <span class="n">InstalledCompilerFamily</span>
 
 
@@ -103,7 +104,9 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">compilers</span> <span class="o">=</span> <span class="p">{}</span>
 
-        <span class="k">for</span> <span class="n">family_attr</span><span class="p">,</span> <span class="n">family_cls</span> <span class="ow">in</span> <span class="p">[(</span><span class="s1">&#39;host_family&#39;</span><span class="p">,</span> <span class="n">CompilerFamily</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;mpi_family&#39;</span><span class="p">,</span> <span class="n">MpiCompilerFamily</span><span class="p">)]:</span>
+        <span class="k">for</span> <span class="n">family_attr</span><span class="p">,</span> <span class="n">family_cls</span> <span class="ow">in</span> <span class="p">[(</span><span class="s1">&#39;host_family&#39;</span><span class="p">,</span> <span class="n">CompilerFamily</span><span class="p">),</span> 
+                                        <span class="p">(</span><span class="s1">&#39;mpi_family&#39;</span><span class="p">,</span> <span class="n">MpiCompilerFamily</span><span class="p">),</span>
+                                        <span class="p">(</span><span class="s1">&#39;shmem_family&#39;</span><span class="p">,</span> <span class="n">ShmemCompilerFamily</span><span class="p">)]:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">family_arg</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">family_attr</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">AttributeError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
@@ -134,22 +137,6 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Invalid compiler command: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">role</span> <span class="o">=</span> <span class="n">CompilerRole</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
             <span class="n">compilers</span><span class="p">[</span><span class="n">role</span><span class="p">]</span> <span class="o">=</span> <span class="n">InstalledCompiler</span><span class="o">.</span><span class="n">probe</span><span class="p">(</span><span class="n">absolute_path</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="n">role</span><span class="p">)</span>
-
-        <span class="c1"># Probe MPI compilers to discover wrapper flags</span>
-        <span class="n">mpi_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="nb">getattr</span><span class="p">(</span><span class="n">role</span><span class="p">,</span> <span class="s1">&#39;keyword&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">role</span> <span class="ow">in</span> <span class="n">MPI_CC_ROLE</span><span class="p">,</span> <span class="n">MPI_CXX_ROLE</span><span class="p">,</span> <span class="n">MPI_FC_ROLE</span><span class="p">])</span>
-        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">mpi_keys</span> <span class="o">&amp;</span> <span class="n">given_keys</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">args_attr</span><span class="p">,</span> <span class="n">wrapped_attr</span> <span class="ow">in</span> <span class="p">[(</span><span class="s1">&#39;mpi_include_path&#39;</span><span class="p">,</span> <span class="s1">&#39;include_path&#39;</span><span class="p">),</span> 
-                                            <span class="p">(</span><span class="s1">&#39;mpi_library_path&#39;</span><span class="p">,</span> <span class="s1">&#39;library_path&#39;</span><span class="p">),</span>
-                                            <span class="p">(</span><span class="s1">&#39;mpi_libraries&#39;</span><span class="p">,</span> <span class="s1">&#39;libraries&#39;</span><span class="p">)]:</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">args_attr</span><span class="p">):</span>
-                    <span class="n">probed</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-                    <span class="k">try</span><span class="p">:</span>
-                        <span class="n">comp</span> <span class="o">=</span> <span class="n">compilers</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-                    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Not probing </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="n">probed</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">comp</span><span class="o">.</span><span class="n">wrapped</span><span class="p">,</span> <span class="n">wrapped_attr</span><span class="p">))</span>
-                    <span class="nb">setattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">args_attr</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">probed</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">compilers</span></div>
 
 <div class="viewcode-block" id="TargetEditCommand.construct_parser"><a class="viewcode-back" href="../../../../../tau.cli.commands.target.edit.html#tau.cli.commands.target.edit.TargetEditCommand.construct_parser">[docs]</a>    <span class="k">def</span> <span class="nf">construct_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -168,6 +155,13 @@
                            <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;mpi_family&#39;</span><span class="p">,</span>
                            <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">,</span>
                            <span class="n">choices</span><span class="o">=</span><span class="n">MpiCompilerFamily</span><span class="o">.</span><span class="n">family_names</span><span class="p">())</span>
+        <span class="n">group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s1">&#39;Symmetric Hierarchical Memory (SHMEM) arguments&#39;</span><span class="p">)</span>
+        <span class="n">group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--shmem-compilers&#39;</span><span class="p">,</span> 
+                           <span class="n">help</span><span class="o">=</span><span class="s2">&quot;select all SHMEM compilers automatically from the given family&quot;</span><span class="p">,</span>
+                           <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;&lt;family&gt;&#39;</span><span class="p">,</span>
+                           <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;shmem_family&#39;</span><span class="p">,</span>
+                           <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">,</span>
+                           <span class="n">choices</span><span class="o">=</span><span class="n">ShmemCompilerFamily</span><span class="o">.</span><span class="n">family_names</span><span class="p">())</span>
         <span class="k">return</span> <span class="n">parser</span></div>
     
 <div class="viewcode-block" id="TargetEditCommand.main"><a class="viewcode-back" href="../../../../../tau.cli.commands.target.edit.html#tau.cli.commands.target.edit.TargetEditCommand.main">[docs]</a>    <span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">argv</span><span class="p">):</span>

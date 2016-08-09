@@ -226,7 +226,6 @@
             <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;use MPI library wrapper to measure time spent in MPI methods&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--mpi&#39;</span><span class="p">,),</span>
-                         <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;library&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;T/F&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;?&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;const&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
@@ -242,7 +241,6 @@
             <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="s1">&#39;none&#39;</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;use specified library to measure time spent in OpenMP directives&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--openmp&#39;</span><span class="p">,),</span>
-                         <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;library&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;library&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;choices&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="s1">&#39;opari&#39;</span><span class="p">,</span> <span class="s1">&#39;ompt&#39;</span><span class="p">,</span> <span class="s1">&#39;gomp&#39;</span><span class="p">)},</span>
             <span class="s1">&#39;application_rebuild&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
@@ -264,7 +262,6 @@
             <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;measure cuda events via the CUPTI interface&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--cuda&#39;</span><span class="p">,),</span>
-                         <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;library&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;T/F&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;?&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;const&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
@@ -277,7 +274,6 @@
             <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;measure OpenCL events&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--opencl&#39;</span><span class="p">,),</span>
-                         <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;library&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;T/F&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;?&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;const&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
@@ -288,14 +284,14 @@
         <span class="p">},</span>
         <span class="s1">&#39;callpath&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;integer&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;maximum depth for callpath recording&#39;</span><span class="p">,</span>
             <span class="s1">&#39;application_rebuild&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--callpath&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;depth&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;?&#39;</span><span class="p">,</span>
-                         <span class="s1">&#39;const&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+                         <span class="s1">&#39;const&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
                          <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">},</span>
         <span class="p">},</span>
         <span class="s1">&#39;io&#39;</span><span class="p">:</span> <span class="p">{</span>
@@ -304,7 +300,6 @@
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;measure time spent in POSIX I/O calls&#39;</span><span class="p">,</span>
             <span class="s1">&#39;application_rebuild&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--io&#39;</span><span class="p">,),</span>
-                         <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;library&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;T/F&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;?&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;const&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
@@ -372,6 +367,50 @@
                          <span class="s1">&#39;const&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
                          <span class="s1">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParseBooleanAction</span><span class="p">},</span>
             <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="bp">True</span><span class="p">:</span> <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;source_inst&#39;</span><span class="p">,</span> <span class="s1">&#39;never&#39;</span><span class="p">)}</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;comm_matrix&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;record the point-to-point communication matrix&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;application_rebuild&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--comm-matrix&#39;</span><span class="p">,),</span>
+                         <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;T/F&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;?&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;const&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+                         <span class="s1">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParseBooleanAction</span><span class="p">}</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;throttle&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;throttle lightweight events to reduce overhead&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;application_rebuild&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--throttle&#39;</span><span class="p">,),</span>
+                         <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;T/F&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;?&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;const&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+                         <span class="s1">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParseBooleanAction</span><span class="p">},</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;throttle_per_call&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;integer&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;lightweight event duration threshold in microseconds&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;application_rebuild&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--throttle-per-call&#39;</span><span class="p">,),</span>
+                         <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;us&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;?&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;const&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+                         <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">},</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;throttle_num_calls&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;integer&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="mi">100000</span><span class="p">,</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;lightweight event call count threshold&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;application_rebuild&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--throttle-num-calls&#39;</span><span class="p">,),</span>
+                         <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;count&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;?&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;const&#39;</span><span class="p">:</span> <span class="mi">100000</span><span class="p">,</span>
+                         <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">},</span>
         <span class="p">}</span>
     <span class="p">}</span></div>
 

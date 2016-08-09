@@ -146,6 +146,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_db_copy</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_database</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_prefix</span> <span class="o">=</span> <span class="n">prefix</span>
+        
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
         <span class="n">record</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">({</span><span class="s1">&#39;key&#39;</span><span class="p">:</span> <span class="n">key</span><span class="p">})</span>
@@ -160,8 +163,29 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">insert</span><span class="p">({</span><span class="s1">&#39;key&#39;</span><span class="p">:</span> <span class="n">key</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">value</span><span class="p">})</span>
         
     <span class="k">def</span> <span class="nf">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">contains</span><span class="p">({</span><span class="s1">&#39;key&#39;</span><span class="p">:</span> <span class="n">key</span><span class="p">}):</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">remove</span><span class="p">({</span><span class="s1">&#39;key&#39;</span><span class="p">:</span> <span class="n">key</span><span class="p">})</span>
+    
+    <span class="k">def</span> <span class="nf">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">contains</span><span class="p">({</span><span class="s1">&#39;key&#39;</span><span class="p">:</span> <span class="n">key</span><span class="p">})</span>
+    
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">search</span><span class="p">():</span>
+            <span class="k">yield</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;key&#39;</span><span class="p">]</span>
 
+<div class="viewcode-block" id="LocalFileStorage.iterkeys"><a class="viewcode-back" href="../../../tau.storage.local_file.html#tau.storage.levels.LocalFileStorage.iterkeys">[docs]</a>    <span class="k">def</span> <span class="nf">iterkeys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">search</span><span class="p">():</span>
+            <span class="k">yield</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;key&#39;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="LocalFileStorage.itervalues"><a class="viewcode-back" href="../../../tau.storage.local_file.html#tau.storage.levels.LocalFileStorage.itervalues">[docs]</a>    <span class="k">def</span> <span class="nf">itervalues</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">search</span><span class="p">():</span>
+            <span class="k">yield</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="LocalFileStorage.iteritems"><a class="viewcode-back" href="../../../tau.storage.local_file.html#tau.storage.levels.LocalFileStorage.iteritems">[docs]</a>    <span class="k">def</span> <span class="nf">iteritems</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">search</span><span class="p">():</span>
+            <span class="k">yield</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;key&#39;</span><span class="p">],</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">]</span></div>
+    
 <div class="viewcode-block" id="LocalFileStorage.is_writable"><a class="viewcode-back" href="../../../tau.storage.local_file.html#tau.storage.levels.LocalFileStorage.is_writable">[docs]</a>    <span class="k">def</span> <span class="nf">is_writable</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Check if the storage filesystem is writable.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">connect_filesystem</span><span class="p">()</span>

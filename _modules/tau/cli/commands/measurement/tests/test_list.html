@@ -87,10 +87,10 @@
 
 <div class="viewcode-block" id="ListTest.test_list"><a class="viewcode-back" href="../../../../../../tau.cli.commands.measurement.tests.test_list.html#tau.cli.commands.measurement.tests.test_list.ListTest.test_list">[docs]</a>    <span class="k">def</span> <span class="nf">test_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">(</span><span class="n">bare</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;meas01&#39;</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;m01&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">CREATE_COMMAND</span><span class="p">,</span> <span class="p">[</span><span class="n">name</span><span class="p">])</span>
         <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">LIST_COMMAND</span><span class="p">,</span> <span class="p">[])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;meas01&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;m01&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">stderr</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ListTest.test_wrongname"><a class="viewcode-back" href="../../../../../../tau.cli.commands.measurement.tests.test_list.html#tau.cli.commands.measurement.tests.test_list.ListTest.test_wrongname">[docs]</a>    <span class="k">def</span> <span class="nf">test_wrongname</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>

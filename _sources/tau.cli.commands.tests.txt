@@ -7,6 +7,7 @@ Submodules
 .. toctree::
 
    tau.cli.commands.tests.test_build
+   tau.cli.commands.tests.test_configure
    tau.cli.commands.tests.test_dashboard
    tau.cli.commands.tests.test_help
    tau.cli.commands.tests.test_initialize

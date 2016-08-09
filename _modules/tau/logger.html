@@ -183,6 +183,8 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># This function follows a POSIX naming scheme, not Python&#39;s.</span>
     <span class="c1"># pylint: disable=invalid-name</span>
+    <span class="c1"># Sometimes Pylint thinks termios doesn&#39;t exist or doesn&#39;t have certain members even when it does.</span>
+    <span class="c1"># pylint: disable=no-member</span>
     <span class="k">def</span> <span class="nf">ioctl_GWINSZ</span><span class="p">(</span><span class="n">fd</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="kn">import</span> <span class="nn">fcntl</span>
@@ -374,6 +376,33 @@
     <span class="k">global</span> <span class="n">LOG_LEVEL</span>
     <span class="n">LOG_LEVEL</span> <span class="o">=</span> <span class="n">level</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
     <span class="n">_STDOUT_HANDLER</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">LOG_LEVEL</span><span class="p">)</span></div>
+    
+
+<div class="viewcode-block" id="activate_debug_log"><a class="viewcode-back" href="../../tau.logger.html#tau.logger.activate_debug_log">[docs]</a><span class="k">def</span> <span class="nf">activate_debug_log</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Adds an addtional logging handler to record all messages to :any:`LOG_FILE`.&quot;&quot;&quot;</span>
+    <span class="n">_ROOT_LOGGER</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">_FILE_HANDLER</span><span class="p">)</span>
+    <span class="c1"># pylint: disable=logging-not-lazy</span>
+    <span class="n">_ROOT_LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="si">%(bar)s</span><span class="s2"></span>
+<span class="s2">TAU COMMANDER LOGGING INITIALIZED</span>
+
+<span class="s2">Timestamp         : </span><span class="si">%(timestamp)s</span><span class="s2"></span>
+<span class="s2">Hostname          : </span><span class="si">%(hostname)s</span><span class="s2"></span>
+<span class="s2">Platform          : </span><span class="si">%(platform)s</span><span class="s2"></span>
+<span class="s2">Python Version    : </span><span class="si">%(pyversion)s</span><span class="s2"></span>
+<span class="s2">Working Directory : </span><span class="si">%(cwd)s</span><span class="s2"></span>
+<span class="s2">Terminal Size     : </span><span class="si">%(termsize)s</span><span class="s2"></span>
+<span class="s2">Frozen            : </span><span class="si">%(frozen)s</span><span class="s2"></span>
+<span class="si">%(bar)s</span><span class="s2"></span>
+<span class="s2">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">{</span><span class="s1">&#39;bar&#39;</span><span class="p">:</span> <span class="s1">&#39;#&#39;</span> <span class="o">*</span> <span class="n">LINE_WIDTH</span><span class="p">,</span>
+       <span class="s1">&#39;timestamp&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()),</span>
+       <span class="s1">&#39;hostname&#39;</span><span class="p">:</span> <span class="n">socket</span><span class="o">.</span><span class="n">gethostname</span><span class="p">(),</span>
+       <span class="s1">&#39;platform&#39;</span><span class="p">:</span> <span class="n">platform</span><span class="o">.</span><span class="n">platform</span><span class="p">(),</span>
+       <span class="s1">&#39;pyversion&#39;</span><span class="p">:</span> <span class="n">platform</span><span class="o">.</span><span class="n">python_version</span><span class="p">(),</span>
+       <span class="s1">&#39;cwd&#39;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span>
+       <span class="s1">&#39;termsize&#39;</span><span class="p">:</span> <span class="s1">&#39;x&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">TERM_SIZE</span><span class="p">]),</span>
+       <span class="s1">&#39;frozen&#39;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">sys</span><span class="p">,</span> <span class="s1">&#39;frozen&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)})</span></div>
+
 
 <span class="n">LOG_LEVEL</span> <span class="o">=</span> <span class="s1">&#39;INFO&#39;</span>
 <span class="sd">&quot;&quot;&quot;str: The global logging level for stdout loggers and software packages.</span>
@@ -399,6 +428,7 @@
 
 <span class="n">_ROOT_LOGGER</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
 <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">_ROOT_LOGGER</span><span class="o">.</span><span class="n">handlers</span><span class="p">):</span>
+    <span class="n">_ROOT_LOGGER</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
     <span class="n">_LOG_FILE_PREFIX</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">LOG_FILE</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">_LOG_FILE_PREFIX</span><span class="p">)</span>
@@ -410,36 +440,11 @@
     <span class="n">_FILE_HANDLER</span> <span class="o">=</span> <span class="n">handlers</span><span class="o">.</span><span class="n">TimedRotatingFileHandler</span><span class="p">(</span><span class="n">LOG_FILE</span><span class="p">,</span> <span class="n">when</span><span class="o">=</span><span class="s1">&#39;D&#39;</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">backupCount</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
     <span class="n">_FILE_HANDLER</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">LogFormatter</span><span class="p">(</span><span class="n">line_width</span><span class="o">=</span><span class="mi">120</span><span class="p">,</span> <span class="n">line_marker</span><span class="o">=</span><span class="n">LINE_MARKER</span><span class="p">,</span> <span class="n">allow_colors</span><span class="o">=</span><span class="bp">False</span><span class="p">))</span>
     <span class="n">_FILE_HANDLER</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
-
+    
     <span class="n">_STDOUT_HANDLER</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
     <span class="n">_STDOUT_HANDLER</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">LogFormatter</span><span class="p">(</span><span class="n">line_width</span><span class="o">=</span><span class="n">LINE_WIDTH</span><span class="p">,</span> <span class="n">line_marker</span><span class="o">=</span><span class="n">LINE_MARKER</span><span class="p">,</span> <span class="n">printable_only</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
     <span class="n">_STDOUT_HANDLER</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">LOG_LEVEL</span><span class="p">)</span>
-
-    <span class="n">_ROOT_LOGGER</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">_FILE_HANDLER</span><span class="p">)</span>
     <span class="n">_ROOT_LOGGER</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">_STDOUT_HANDLER</span><span class="p">)</span>
-    <span class="n">_ROOT_LOGGER</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
-
-<span class="c1"># pylint: disable=logging-not-lazy</span>
-    <span class="n">_ROOT_LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
-<span class="si">%(bar)s</span><span class="s2"></span>
-<span class="s2">TAU COMMANDER LOGGING INITIALIZED</span>
-
-<span class="s2">Timestamp         : </span><span class="si">%(timestamp)s</span><span class="s2"></span>
-<span class="s2">Hostname          : </span><span class="si">%(hostname)s</span><span class="s2"></span>
-<span class="s2">Platform          : </span><span class="si">%(platform)s</span><span class="s2"></span>
-<span class="s2">Python Version    : </span><span class="si">%(pyversion)s</span><span class="s2"></span>
-<span class="s2">Working Directory : </span><span class="si">%(cwd)s</span><span class="s2"></span>
-<span class="s2">Terminal Size     : </span><span class="si">%(termsize)s</span><span class="s2"></span>
-<span class="s2">Frozen            : </span><span class="si">%(frozen)s</span><span class="s2"></span>
-<span class="si">%(bar)s</span><span class="s2"></span>
-<span class="s2">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">{</span><span class="s1">&#39;bar&#39;</span><span class="p">:</span> <span class="s1">&#39;#&#39;</span> <span class="o">*</span> <span class="n">LINE_WIDTH</span><span class="p">,</span>
-       <span class="s1">&#39;timestamp&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()),</span>
-       <span class="s1">&#39;hostname&#39;</span><span class="p">:</span> <span class="n">socket</span><span class="o">.</span><span class="n">gethostname</span><span class="p">(),</span>
-       <span class="s1">&#39;platform&#39;</span><span class="p">:</span> <span class="n">platform</span><span class="o">.</span><span class="n">platform</span><span class="p">(),</span>
-       <span class="s1">&#39;pyversion&#39;</span><span class="p">:</span> <span class="n">platform</span><span class="o">.</span><span class="n">python_version</span><span class="p">(),</span>
-       <span class="s1">&#39;cwd&#39;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span>
-       <span class="s1">&#39;termsize&#39;</span><span class="p">:</span> <span class="s1">&#39;x&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">TERM_SIZE</span><span class="p">]),</span>
-       <span class="s1">&#39;frozen&#39;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">sys</span><span class="p">,</span> <span class="s1">&#39;frozen&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)})</span>
 </pre></div>
 
       </div>

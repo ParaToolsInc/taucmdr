@@ -167,6 +167,10 @@
     <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
 
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="AbstractStorage.__len__"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.__len__">[docs]</a>    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the number of items in the key/value store.&quot;&quot;&quot;</span></div>
+    
     <span class="nd">@abstractmethod</span>    
 <div class="viewcode-block" id="AbstractStorage.__getitem__"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.__getitem__">[docs]</a>    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Retrieve a value from the key/value store.&quot;&quot;&quot;</span></div>
@@ -178,6 +182,26 @@
     <span class="nd">@abstractmethod</span>
 <div class="viewcode-block" id="AbstractStorage.__delitem__"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.__delitem__">[docs]</a>    <span class="k">def</span> <span class="nf">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Remove a value from the key/value store.&quot;&quot;&quot;</span></div>
+        
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="AbstractStorage.__contains__"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.__contains__">[docs]</a>    <span class="k">def</span> <span class="nf">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns True if ``key`` maps to a value is in the key/value store.&quot;&quot;&quot;</span></div>
+        
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="AbstractStorage.__iter__"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.__iter__">[docs]</a>    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate over keys in the key/value store.&quot;&quot;&quot;</span></div>
+    
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="AbstractStorage.iterkeys"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.iterkeys">[docs]</a>    <span class="k">def</span> <span class="nf">iterkeys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate over keys in the key/value store.&quot;&quot;&quot;</span></div>
+
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="AbstractStorage.itervalues"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.itervalues">[docs]</a>    <span class="k">def</span> <span class="nf">itervalues</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate over values in the key/value store.&quot;&quot;&quot;</span></div>
+
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="AbstractStorage.iteritems"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.iteritems">[docs]</a>    <span class="k">def</span> <span class="nf">iteritems</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterate over items in the key/value store.&quot;&quot;&quot;</span></div>
     
     <span class="nd">@abstractmethod</span>
 <div class="viewcode-block" id="AbstractStorage.connect_filesystem"><a class="viewcode-back" href="../../tau.storage.html#tau.storage.AbstractStorage.connect_filesystem">[docs]</a>    <span class="k">def</span> <span class="nf">connect_filesystem</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>

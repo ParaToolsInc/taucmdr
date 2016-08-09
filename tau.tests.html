@@ -28,7 +28,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
     <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
     <link rel="up" title="tau package" href="tau.html" />
-    <link rel="next" title="tau.tests.test_error module" href="tau.tests.test_error.html" />
+    <link rel="next" title="tau.tests.test_configuration module" href="tau.tests.test_configuration.html" />
     <link rel="prev" title="tau.storage.project module" href="tau.storage.project.html" /> 
   </head>
   <body role="document">
@@ -43,7 +43,7 @@
         &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
         &#160;&#160;::&#160;&#160;
-        <a href="tau.tests.test_error.html">tau.tests.test_error module</a>&#160;&#160;»
+        <a href="tau.tests.test_configuration.html">tau.tests.test_configuration module</a>&#160;&#160;»
         </p>
 
       </div>
@@ -56,6 +56,7 @@
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="tau.tests.test_configuration.html">tau.tests.test_configuration module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tau.tests.test_error.html">tau.tests.test_error module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tau.tests.test_logger.html">tau.tests.test_logger module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tau.tests.test_pylint.html">tau.tests.test_pylint module</a></li>
@@ -76,6 +77,21 @@
 <dt id="tau.tests.TestCase.assertCommandReturnValue">
 <code class="descname">assertCommandReturnValue</code><span class="sig-paren">(</span><em>return_value</em>, <em>cmd</em>, <em>argv</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/tests.html#TestCase.assertCommandReturnValue"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.tests.TestCase.assertCommandReturnValue" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.tests.TestCase.assertNotCommandReturnValue">
+<code class="descname">assertNotCommandReturnValue</code><span class="sig-paren">(</span><em>return_value</em>, <em>cmd</em>, <em>argv</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/tests.html#TestCase.assertNotCommandReturnValue"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.tests.TestCase.assertNotCommandReturnValue" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.tests.TestCase.destroy_project_storage">
+<code class="descname">destroy_project_storage</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/tests.html#TestCase.destroy_project_storage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.tests.TestCase.destroy_project_storage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete project storage.</p>
+<p>Effectively the same as:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>&gt; rm -rf .tau
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="method">
 <dt id="tau.tests.TestCase.exec_command">
@@ -100,6 +116,11 @@
 </tbody>
 </table>
 </dd></dl>
+
+<dl class="method">
+<dt id="tau.tests.TestCase.get_compiler">
+<code class="descname">get_compiler</code><span class="sig-paren">(</span><em>role</em>, <em>target_name='targ1'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/tests.html#TestCase.get_compiler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.tests.TestCase.get_compiler" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="method">
 <dt id="tau.tests.TestCase.reset_project_storage">
@@ -158,42 +179,7 @@
 <dl class="function">
 <dt id="tau.tests.cleanup">
 <code class="descclassname">tau.tests.</code><code class="descname">cleanup</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/tests.html#cleanup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.tests.cleanup" title="Permalink to this definition">¶</a></dt>
-<dd><p>Finish</p>
-<p>Checks that any files or directories created during testing have been removed.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="tau.tests.get_stderr">
-<code class="descclassname">tau.tests.</code><code class="descname">get_stderr</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/tests.html#get_stderr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.tests.get_stderr" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get data written to unit test stderr.</p>
-<p><a class="reference external" href="https://docs.python.org/library/unittest.html#module-unittest" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">unittest</span></code></a> replaces sys.stderr with a StringIO instance when running in buffered mode.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Data written to sys.stderr while the test was running.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)">str</a></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="tau.tests.get_stdout">
-<code class="descclassname">tau.tests.</code><code class="descname">get_stdout</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/tests.html#get_stdout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.tests.get_stdout" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get data written to unit test stdout.</p>
-<p><a class="reference external" href="https://docs.python.org/library/unittest.html#module-unittest" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">unittest</span></code></a> replaces sys.stdout with a StringIO instance when running in buffered mode.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Data written to sys.stdout while the test was running.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)">str</a></td>
-</tr>
-</tbody>
-</table>
+<dd><p>Checks that any files or directories created during testing have been removed.</p>
 </dd></dl>
 
 <dl class="function">
@@ -237,7 +223,7 @@ an error message is shown for each.</p>
         &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
         &#160;&#160;::&#160;&#160;
-        <a href="tau.tests.test_error.html">tau.tests.test_error module</a>&#160;&#160;»
+        <a href="tau.tests.test_configuration.html">tau.tests.test_configuration module</a>&#160;&#160;»
         </p>
 
       </div>

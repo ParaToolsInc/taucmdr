@@ -81,10 +81,13 @@
 <span class="kn">import</span> <span class="nn">tempfile</span>
 <span class="kn">import</span> <span class="nn">unittest</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">import</span> <span class="nn">tau</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">cStringIO</span> <span class="kn">import</span> <span class="n">StringIO</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">StringIO</span> <span class="kn">import</span> <span class="n">StringIO</span>
 <span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">EXIT_SUCCESS</span><span class="p">,</span> <span class="n">EXIT_FAILURE</span>
-<span class="kn">from</span> <span class="nn">tau.cli.commands</span> <span class="kn">import</span> <span class="n">initialize</span>
-<span class="kn">from</span> <span class="nn">tau.storage.levels</span> <span class="kn">import</span> <span class="n">PROJECT_STORAGE</span><span class="p">,</span> <span class="n">SYSTEM_STORAGE</span>
+<span class="kn">from</span> <span class="nn">tau.storage.levels</span> <span class="kn">import</span> <span class="n">PROJECT_STORAGE</span><span class="p">,</span> <span class="n">USER_STORAGE</span><span class="p">,</span> <span class="n">SYSTEM_STORAGE</span>
+
 
 <span class="n">_DIR_STACK</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="n">_CWD_STACK</span> <span class="o">=</span> <span class="p">[]</span>
@@ -92,32 +95,10 @@
 <span class="n">_NOT_IMPLEMENTED</span> <span class="o">=</span> <span class="p">[]</span>
 
 
-<div class="viewcode-block" id="get_stdout"><a class="viewcode-back" href="../../tau.tests.html#tau.tests.get_stdout">[docs]</a><span class="k">def</span> <span class="nf">get_stdout</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;Get data written to unit test stdout.</span>
-<span class="sd">    </span>
-<span class="sd">    :any:`unittest` replaces sys.stdout with a StringIO instance when running in buffered mode.</span>
-<span class="sd">    </span>
-<span class="sd">    Returns:</span>
-<span class="sd">        str: Data written to sys.stdout while the test was running.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># unittest replaces sys.stdout and sys.stderr with StringIO instances when</span>
-    <span class="c1"># running in buffered mode, but pylint doesn&#39;t know that.  </span>
-    <span class="c1"># pylint: disable=no-member</span>
-    <span class="k">return</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span></div>
-
-<div class="viewcode-block" id="get_stderr"><a class="viewcode-back" href="../../tau.tests.html#tau.tests.get_stderr">[docs]</a><span class="k">def</span> <span class="nf">get_stderr</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;Get data written to unit test stderr.</span>
-<span class="sd">    </span>
-<span class="sd">    :any:`unittest` replaces sys.stderr with a StringIO instance when running in buffered mode.</span>
-<span class="sd">    </span>
-<span class="sd">    Returns:</span>
-<span class="sd">        str: Data written to sys.stderr while the test was running.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># unittest replaces sys.stdout and sys.stderr with StringIO instances when</span>
-    <span class="c1"># running in buffered mode, but pylint doesn&#39;t know that.  </span>
-    <span class="c1"># pylint: disable=no-member</span>
-    <span class="k">return</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span></div>
-
+<span class="k">def</span> <span class="nf">_destroy_test_workdir</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="n">onerror</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">f</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">ERROR: Failed to clean up testing directory </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">p</span><span class="p">)</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">onerror</span><span class="o">=</span><span class="n">onerror</span><span class="p">)</span>
+    
 <div class="viewcode-block" id="push_test_workdir"><a class="viewcode-back" href="../../tau.tests.html#tau.tests.push_test_workdir">[docs]</a><span class="k">def</span> <span class="nf">push_test_workdir</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Create a new working directory for a unit test.</span>
 <span class="sd">    </span>
@@ -139,24 +120,21 @@
 <span class="sd">    Restores the current working directory and :any:`tempfile.tempdir` to their values before</span>
 <span class="sd">    :any:`push_test_workdir` was called.</span>
 <span class="sd">    &quot;&quot;&quot;</span> 
-    <span class="k">def</span> <span class="nf">onerror</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">excinfo</span><span class="p">):</span>
-        <span class="c1"># pylint: disable=unused-argument</span>
-        <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">ERROR: Failed to clean up testing directory </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span>
     <span class="n">tempfile</span><span class="o">.</span><span class="n">tempdir</span> <span class="o">=</span> <span class="n">_TEMPDIR_STACK</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
     <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">_CWD_STACK</span><span class="o">.</span><span class="n">pop</span><span class="p">())</span>
-    <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">_DIR_STACK</span><span class="o">.</span><span class="n">pop</span><span class="p">(),</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">onerror</span><span class="o">=</span><span class="n">onerror</span><span class="p">)</span></div>
+    <span class="n">_destroy_test_workdir</span><span class="p">(</span><span class="n">_DIR_STACK</span><span class="o">.</span><span class="n">pop</span><span class="p">())</span></div>
     
 <div class="viewcode-block" id="get_test_workdir"><a class="viewcode-back" href="../../tau.tests.html#tau.tests.get_test_workdir">[docs]</a><span class="k">def</span> <span class="nf">get_test_workdir</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Return the current unit test&#39;s working directory.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_DIR_STACK</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
 
 <div class="viewcode-block" id="cleanup"><a class="viewcode-back" href="../../tau.tests.html#tau.tests.cleanup">[docs]</a><span class="k">def</span> <span class="nf">cleanup</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;Finish </span>
-<span class="sd">    </span>
-<span class="sd">    Checks that any files or directories created during testing have been removed.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Checks that any files or directories created during testing have been removed.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">_DIR_STACK</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">_DIR_STACK</span><span class="p">:</span>
-            <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">ERROR: Test directory &#39;</span><span class="si">%s</span><span class="s2">&#39; was not cleaned up</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span></div>
+            <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">WARNING: Test directory &#39;</span><span class="si">%s</span><span class="s2">&#39; still exists, attempting to clean now...</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span>
+            <span class="n">_destroy_test_workdir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></div>
+                       
 
 <span class="n">atexit</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">cleanup</span><span class="p">)</span>
 
@@ -173,12 +151,11 @@
 <span class="sd">    </span>
 <span class="sd">    Performs tests in a temporary directory and reconfigures :any:`tau.logger` to work with :any:`unittest`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    
-    <span class="n">_SYSTEM_DIR</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">()</span>
-    
+    <span class="c1"># Follow the :any:`unittest` code style.</span>
+    <span class="c1"># pylint: disable=invalid-name</span>
+
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="TestCase.setUpClass"><a class="viewcode-back" href="../../tau.tests.html#tau.tests.TestCase.setUpClass">[docs]</a>    <span class="k">def</span> <span class="nf">setUpClass</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
-        <span class="n">tau</span><span class="o">.</span><span class="n">SYSTEM_PREFIX</span> <span class="o">=</span> <span class="n">TestCase</span><span class="o">.</span><span class="n">_SYSTEM_DIR</span>
         <span class="n">push_test_workdir</span><span class="p">()</span>
         <span class="c1"># Reset stdout logger handler to use buffered unittest stdout</span>
         <span class="c1"># pylint: disable=protected-access</span>
@@ -187,7 +164,7 @@
 
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="TestCase.tearDownClass"><a class="viewcode-back" href="../../tau.tests.html#tau.tests.TestCase.tearDownClass">[docs]</a>    <span class="k">def</span> <span class="nf">tearDownClass</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
-        <span class="n">PROJECT_STORAGE</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+        <span class="n">PROJECT_STORAGE</span><span class="o">.</span><span class="n">destroy</span><span class="p">(</span><span class="n">ignore_errors</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
         <span class="c1"># Reset stdout logger handler to use original stdout</span>
         <span class="c1"># pylint: disable=protected-access</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">_STDOUT_HANDLER</span><span class="o">.</span><span class="n">stream</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">_orig_stream</span>
@@ -214,29 +191,41 @@
 <span class="sd">            app_name (str): New application&#39;s name.</span>
 <span class="sd">            bare (bool): If true, initialize project storage but don&#39;t create default objects.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">tau.cli.commands.initialize</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">initialize_cmd</span>
         <span class="n">PROJECT_STORAGE</span><span class="o">.</span><span class="n">destroy</span><span class="p">(</span><span class="n">ignore_errors</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
         <span class="n">argv</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;--project-name&#39;</span><span class="p">,</span> <span class="n">project_name</span><span class="p">,</span> <span class="s1">&#39;--target-name&#39;</span><span class="p">,</span> <span class="n">target_name</span><span class="p">,</span> <span class="s1">&#39;--application-name&#39;</span><span class="p">,</span> <span class="n">app_name</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">bare</span><span class="p">:</span>
             <span class="n">argv</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;--bare&#39;</span><span class="p">)</span>
     
-        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SYSTEM_STORAGE</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;TAU&#39;</span><span class="p">)):</span>
-            <span class="n">initialize</span><span class="o">.</span><span class="n">COMMAND</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">bare</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SYSTEM_STORAGE</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;TAU&#39;</span><span class="p">)):</span>
+            <span class="n">initialize_cmd</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># If this is the first time setting up TAU and dependencies then we need to emit output so</span>
             <span class="c1"># CI drivers like Travis don&#39;t think our unit tests have stalled.</span>
             <span class="kn">import</span> <span class="nn">time</span>
             <span class="kn">import</span> <span class="nn">threading</span>
             <span class="k">def</span> <span class="nf">worker</span><span class="p">():</span>
-                <span class="n">initialize</span><span class="o">.</span><span class="n">COMMAND</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
+                <span class="n">initialize_cmd</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
             <span class="n">thread</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">worker</span><span class="p">)</span>
             <span class="n">tstart</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
             <span class="n">thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_result_stream</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Initializing TAU and dependencies&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_result_stream</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Initializing TAU and dependencies:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_result_stream</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;    @SYSTEM=&#39;</span><span class="si">%s</span><span class="s2">&#39;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">SYSTEM_STORAGE</span><span class="o">.</span><span class="n">prefix</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_result_stream</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;    @USER=&#39;</span><span class="si">%s</span><span class="s2">&#39;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">USER_STORAGE</span><span class="o">.</span><span class="n">prefix</span><span class="p">)</span>
             <span class="k">while</span> <span class="n">thread</span><span class="o">.</span><span class="n">is_alive</span><span class="p">():</span>
-                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_result_stream</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
             <span class="n">elapsed</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">tstart</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_result_stream</span><span class="o">.</span><span class="n">writeln</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">TAU initialized in </span><span class="si">%s</span><span class="s1"> seconds&#39;</span> <span class="o">%</span> <span class="n">elapsed</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestCase.destroy_project_storage"><a class="viewcode-back" href="../../tau.tests.html#tau.tests.TestCase.destroy_project_storage">[docs]</a>    <span class="k">def</span> <span class="nf">destroy_project_storage</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Delete project storage.</span>
+<span class="sd">        </span>
+<span class="sd">        Effectively the same as::</span>
+<span class="sd">        </span>
+<span class="sd">            &gt; rm -rf .tau</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">PROJECT_STORAGE</span><span class="o">.</span><span class="n">destroy</span><span class="p">(</span><span class="n">ignore_errors</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="TestCase.exec_command"><a class="viewcode-back" href="../../tau.tests.html#tau.tests.TestCase.exec_command">[docs]</a>    <span class="k">def</span> <span class="nf">exec_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">argv</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Execute a command&#39;s main() routine and return the exit code, stdout, and stderr data.</span>
@@ -248,21 +237,45 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple: (retval, stdout, stderr) results of running the command.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="s2">&quot;getvalue&quot;</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="s2">&quot;Test must be run in buffered mode&quot;</span><span class="p">)</span>
+        <span class="c1"># pylint: disable=protected-access</span>
+        <span class="n">stdout</span> <span class="o">=</span> <span class="n">StringIO</span><span class="p">()</span>
+        <span class="n">stderr</span> <span class="o">=</span> <span class="n">StringIO</span><span class="p">()</span>
+        <span class="n">orig_stdout</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span>
+        <span class="n">orig_stderr</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">retval</span> <span class="o">=</span> <span class="n">cmd</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">SystemExit</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
-            <span class="n">retval</span> <span class="o">=</span> <span class="n">err</span><span class="o">.</span><span class="n">code</span>
-        <span class="k">return</span> <span class="n">retval</span><span class="p">,</span> <span class="n">get_stdout</span><span class="p">(),</span> <span class="n">get_stderr</span><span class="p">()</span></div>
+            <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="n">stdout</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span> <span class="o">=</span> <span class="n">stderr</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">_STDOUT_HANDLER</span><span class="o">.</span><span class="n">stream</span> <span class="o">=</span> <span class="n">stdout</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">retval</span> <span class="o">=</span> <span class="n">cmd</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">SystemExit</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                <span class="n">retval</span> <span class="o">=</span> <span class="n">err</span><span class="o">.</span><span class="n">code</span>
+            <span class="n">stdout_value</span> <span class="o">=</span> <span class="n">stdout</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
+            <span class="n">stderr_value</span> <span class="o">=</span> <span class="n">stderr</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
+            <span class="n">orig_stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">stdout_value</span><span class="p">)</span>
+            <span class="n">orig_stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">stderr_value</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">retval</span><span class="p">,</span> <span class="n">stdout_value</span><span class="p">,</span> <span class="n">stderr_value</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="n">orig_stdout</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span> <span class="o">=</span> <span class="n">orig_stderr</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">_STDOUT_HANDLER</span><span class="o">.</span><span class="n">stream</span> <span class="o">=</span> <span class="n">orig_stdout</span></div>
 
-    <span class="c1"># Follow the :any:`unittest` code style.</span>
-    <span class="c1"># pylint: disable=invalid-name</span>
+<div class="viewcode-block" id="TestCase.get_compiler"><a class="viewcode-back" href="../../tau.tests.html#tau.tests.TestCase.get_compiler">[docs]</a>    <span class="k">def</span> <span class="nf">get_compiler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">role</span><span class="p">,</span> <span class="n">target_name</span><span class="o">=</span><span class="s1">&#39;targ1&#39;</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">tau.model.target</span> <span class="kn">import</span> <span class="n">Target</span>
+        <span class="n">targ_ctrl</span> <span class="o">=</span> <span class="n">Target</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="n">PROJECT_STORAGE</span><span class="p">)</span>
+        <span class="n">targ</span> <span class="o">=</span> <span class="n">targ_ctrl</span><span class="o">.</span><span class="n">one</span><span class="p">({</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">target_name</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">targ</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="p">)[</span><span class="s1">&#39;path&#39;</span><span class="p">]</span></div>
+
 <div class="viewcode-block" id="TestCase.assertCommandReturnValue"><a class="viewcode-back" href="../../tau.tests.html#tau.tests.TestCase.assertCommandReturnValue">[docs]</a>    <span class="k">def</span> <span class="nf">assertCommandReturnValue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">return_value</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">argv</span><span class="p">):</span>
         <span class="n">retval</span><span class="p">,</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exec_command</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">argv</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">retval</span><span class="p">,</span> <span class="n">return_value</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span></div></div>
+        <span class="k">return</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span></div>
 
+<div class="viewcode-block" id="TestCase.assertNotCommandReturnValue"><a class="viewcode-back" href="../../tau.tests.html#tau.tests.TestCase.assertNotCommandReturnValue">[docs]</a>    <span class="k">def</span> <span class="nf">assertNotCommandReturnValue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">return_value</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">argv</span><span class="p">):</span>
+        <span class="n">retval</span><span class="p">,</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exec_command</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">argv</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertNotEqual</span><span class="p">(</span><span class="n">retval</span><span class="p">,</span> <span class="n">return_value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span></div></div>
+    
 
 <div class="viewcode-block" id="TestRunner"><a class="viewcode-back" href="../../tau.tests.html#tau.tests.TestRunner">[docs]</a><span class="k">class</span> <span class="nc">TestRunner</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TextTestRunner</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Test suite runner.&quot;&quot;&quot;</span>

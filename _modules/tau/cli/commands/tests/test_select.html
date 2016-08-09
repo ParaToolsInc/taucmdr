@@ -78,15 +78,28 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 
-<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">tests</span>
+<span class="kn">import</span> <span class="nn">unittest</span>
+<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">tests</span><span class="p">,</span><span class="n">util</span>
 <span class="kn">from</span> <span class="nn">tau.cli.commands</span> <span class="kn">import</span> <span class="n">select</span>
+<span class="kn">from</span> <span class="nn">tau.cli.commands.measurement</span> <span class="kn">import</span> <span class="n">create</span>
+<span class="kn">from</span> <span class="nn">tau.cli.commands.target</span> <span class="kn">import</span> <span class="n">create</span> <span class="k">as</span> <span class="n">create_target</span>
 
 <div class="viewcode-block" id="SelectTest"><a class="viewcode-back" href="../../../../../tau.cli.commands.tests.test_select.html#tau.cli.commands.tests.test_select.SelectTest">[docs]</a><span class="k">class</span> <span class="nc">SelectTest</span><span class="p">(</span><span class="n">tests</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
     
 <div class="viewcode-block" id="SelectTest.test_select"><a class="viewcode-back" href="../../../../../tau.cli.commands.tests.test_select.html#tau.cli.commands.tests.test_select.SelectTest.test_select">[docs]</a>    <span class="k">def</span> <span class="nf">test_select</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">(</span><span class="n">app_name</span><span class="o">=</span><span class="s1">&#39;testing_app&#39;</span><span class="p">)</span>
         <span class="n">argv</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;testing_app&#39;</span><span class="p">,</span> <span class="s1">&#39;profile&#39;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">select</span><span class="o">.</span><span class="n">COMMAND</span><span class="p">,</span> <span class="n">argv</span><span class="p">)</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">select</span><span class="o">.</span><span class="n">COMMAND</span><span class="p">,</span> <span class="n">argv</span><span class="p">)</span></div>
+
+    <span class="nd">@unittest.skipUnless</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;pgcc&#39;</span><span class="p">),</span> <span class="s2">&quot;PGI compilers required for this test&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="SelectTest.test_PGI"><a class="viewcode-back" href="../../../../../tau.cli.commands.tests.test_select.html#tau.cli.commands.tests.test_select.SelectTest.test_PGI">[docs]</a>    <span class="k">def</span> <span class="nf">test_PGI</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">()</span>
+        <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">create_target</span><span class="o">.</span><span class="n">COMMAND</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;test_targ&#39;</span><span class="p">,</span> <span class="s1">&#39;--compilers&#39;</span><span class="p">,</span> <span class="s1">&#39;PGI&#39;</span><span class="p">])</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exec_command</span><span class="p">(</span><span class="n">create</span><span class="o">.</span><span class="n">COMMAND</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;meas_PGI&#39;</span><span class="p">])</span>
+        <span class="n">argv</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;proj1&#39;</span><span class="p">,</span> <span class="s1">&#39;test_targ&#39;</span><span class="p">,</span> <span class="s1">&#39;meas_PGI&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">select</span><span class="o">.</span><span class="n">COMMAND</span><span class="p">,</span> <span class="n">argv</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;Added measurement </span><span class="se">\&#39;</span><span class="s1">meas_PGI</span><span class="se">\&#39;</span><span class="s1"> to project configuration&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">stderr</span><span class="p">)</span></div></div>
 </pre></div>
 
       </div>

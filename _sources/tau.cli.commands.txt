@@ -20,6 +20,7 @@ Submodules
 
    tau.cli.commands.__main__
    tau.cli.commands.build
+   tau.cli.commands.configure
    tau.cli.commands.dashboard
    tau.cli.commands.help
    tau.cli.commands.initialize

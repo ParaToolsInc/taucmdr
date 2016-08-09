@@ -158,7 +158,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Controller.populate"><a class="viewcode-back" href="../../../tau.mvc.controller.html#tau.mvc.controller.Controller.populate">[docs]</a>    <span class="k">def</span> <span class="nf">populate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">attribute</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Controller.populate"><a class="viewcode-back" href="../../../tau.mvc.controller.html#tau.mvc.controller.Controller.populate">[docs]</a>    <span class="k">def</span> <span class="nf">populate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">attribute</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">defaults</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Merges associated data into the model record.</span>
 <span class="sd">        </span>
 <span class="sd">        Example:</span>
@@ -176,6 +176,7 @@
 <span class="sd">                             </span>
 <span class="sd">        Args:</span>
 <span class="sd">            attribute (Optional[str]): If given, return only the populated attribute.</span>
+<span class="sd">            defaults (Optional[bool]): If given, set undefined attributes to their default values.</span>
 <span class="sd">        </span>
 <span class="sd">        Returns:</span>
 <span class="sd">            If attribute is None, a dictionary of controlled data merged with associated records.</span>
@@ -186,17 +187,20 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">attribute</span><span class="p">:</span>
             <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Populating </span><span class="si">%s</span><span class="s2">(</span><span class="si">%s</span><span class="s2">)[</span><span class="si">%s</span><span class="s2">]&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">eid</span><span class="p">,</span> <span class="n">attribute</span><span class="p">)</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_populate_attribute</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">attribute</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_populate_attribute</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">attribute</span><span class="p">,</span> <span class="n">defaults</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Populating </span><span class="si">%s</span><span class="s2">(</span><span class="si">%s</span><span class="s2">)&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">eid</span><span class="p">)</span>
-            <span class="k">return</span> <span class="p">{</span><span class="n">attr</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_populate_attribute</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span> <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">model</span><span class="p">}</span></div>
+            <span class="k">return</span> <span class="p">{</span><span class="n">attr</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_populate_attribute</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">defaults</span><span class="p">)</span> <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">model</span><span class="p">}</span></div>
 
-    <span class="k">def</span> <span class="nf">_populate_attribute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_populate_attribute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">defaults</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">props</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ModelError</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;no attribute &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">attr</span><span class="p">)</span>
-        <span class="n">value</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">defaults</span> <span class="ow">or</span> <span class="s1">&#39;default&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">props</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">props</span><span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">])</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">foreign</span> <span class="o">=</span> <span class="n">props</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>

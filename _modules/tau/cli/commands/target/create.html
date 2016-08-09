@@ -83,7 +83,8 @@
 <span class="kn">from</span> <span class="nn">tau.model.target</span> <span class="kn">import</span> <span class="n">Target</span>
 <span class="kn">from</span> <span class="nn">tau.model.compiler</span> <span class="kn">import</span> <span class="n">Compiler</span>
 <span class="kn">from</span> <span class="nn">tau.cf.compiler</span> <span class="kn">import</span> <span class="n">CompilerFamily</span><span class="p">,</span> <span class="n">CompilerRole</span><span class="p">,</span> <span class="n">CompilerInfo</span>
-<span class="kn">from</span> <span class="nn">tau.cf.compiler.mpi</span> <span class="kn">import</span> <span class="n">MpiCompilerFamily</span><span class="p">,</span> <span class="n">MPI_CXX_ROLE</span><span class="p">,</span> <span class="n">MPI_CC_ROLE</span><span class="p">,</span> <span class="n">MPI_FC_ROLE</span>
+<span class="kn">from</span> <span class="nn">tau.cf.compiler.mpi</span> <span class="kn">import</span> <span class="n">MpiCompilerFamily</span>
+<span class="kn">from</span> <span class="nn">tau.cf.compiler.shmem</span> <span class="kn">import</span> <span class="n">ShmemCompilerFamily</span>
 <span class="kn">from</span> <span class="nn">tau.cf.compiler.installed</span> <span class="kn">import</span> <span class="n">InstalledCompiler</span><span class="p">,</span> <span class="n">InstalledCompilerFamily</span>
 <span class="kn">from</span> <span class="nn">tau.cf.target</span> <span class="kn">import</span> <span class="n">host</span>
 <span class="kn">from</span> <span class="nn">tau.cf.target</span> <span class="kn">import</span> <span class="n">TauArch</span>
@@ -106,7 +107,9 @@
         <span class="n">compilers</span> <span class="o">=</span> <span class="p">{}</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s2">&quot;tau_makefile&quot;</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">family_attr</span><span class="p">,</span> <span class="n">family_cls</span> <span class="ow">in</span> <span class="p">[(</span><span class="s1">&#39;host_family&#39;</span><span class="p">,</span> <span class="n">CompilerFamily</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;mpi_family&#39;</span><span class="p">,</span> <span class="n">MpiCompilerFamily</span><span class="p">)]:</span>
+            <span class="k">for</span> <span class="n">family_attr</span><span class="p">,</span> <span class="n">family_cls</span> <span class="ow">in</span> <span class="p">[(</span><span class="s1">&#39;host_family&#39;</span><span class="p">,</span> <span class="n">CompilerFamily</span><span class="p">),</span> 
+                                            <span class="p">(</span><span class="s1">&#39;mpi_family&#39;</span><span class="p">,</span> <span class="n">MpiCompilerFamily</span><span class="p">),</span>
+                                            <span class="p">(</span><span class="s1">&#39;shmem_family&#39;</span><span class="p">,</span> <span class="n">ShmemCompilerFamily</span><span class="p">)]:</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">family_arg</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">family_attr</span><span class="p">)</span>
                 <span class="k">except</span> <span class="ne">AttributeError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
@@ -152,22 +155,6 @@
             <span class="k">if</span> <span class="n">role</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">compilers</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> compiler could not be found&quot;</span> <span class="o">%</span> <span class="n">role</span><span class="o">.</span><span class="n">language</span><span class="p">,</span>
                                          <span class="s2">&quot;See &#39;compiler arguments&#39; under `</span><span class="si">%s</span><span class="s2"> --help`&quot;</span> <span class="o">%</span> <span class="n">COMMAND</span><span class="p">)</span>
-                
-        <span class="c1"># Probe MPI compilers to discover wrapper flags</span>
-        <span class="k">for</span> <span class="n">args_attr</span><span class="p">,</span> <span class="n">wrapped_attr</span> <span class="ow">in</span> <span class="p">[(</span><span class="s1">&#39;mpi_include_path&#39;</span><span class="p">,</span> <span class="s1">&#39;include_path&#39;</span><span class="p">),</span> 
-                                        <span class="p">(</span><span class="s1">&#39;mpi_library_path&#39;</span><span class="p">,</span> <span class="s1">&#39;library_path&#39;</span><span class="p">),</span>
-                                        <span class="p">(</span><span class="s1">&#39;mpi_libraries&#39;</span><span class="p">,</span> <span class="s1">&#39;libraries&#39;</span><span class="p">)]:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">args_attr</span><span class="p">):</span>
-                <span class="n">probed</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-                <span class="k">for</span> <span class="n">role</span> <span class="ow">in</span> <span class="n">MPI_CC_ROLE</span><span class="p">,</span> <span class="n">MPI_CXX_ROLE</span><span class="p">,</span> <span class="n">MPI_FC_ROLE</span><span class="p">:</span>
-                    <span class="k">try</span><span class="p">:</span>
-                        <span class="n">comp</span> <span class="o">=</span> <span class="n">compilers</span><span class="p">[</span><span class="n">role</span><span class="p">]</span>
-                    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Not probing </span><span class="si">%s</span><span class="s2">: not found&quot;</span><span class="p">,</span> <span class="n">role</span><span class="p">)</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="c1">#self.logger.debug(&quot;%s: %s &#39;%s&#39;&quot;, role, comp.info.short_descr, comp.absolute_path)</span>
-                        <span class="n">probed</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">comp</span><span class="o">.</span><span class="n">wrapped</span><span class="p">,</span> <span class="n">wrapped_attr</span><span class="p">))</span>
-                <span class="nb">setattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">args_attr</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">probed</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">compilers</span></div>
     
     <span class="k">def</span> <span class="nf">_parse_tau_makefile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
@@ -253,6 +240,13 @@
                            <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;mpi_family&#39;</span><span class="p">,</span>
                            <span class="n">default</span><span class="o">=</span><span class="n">host</span><span class="o">.</span><span class="n">preferred_mpi_compilers</span><span class="p">()</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                            <span class="n">choices</span><span class="o">=</span><span class="n">MpiCompilerFamily</span><span class="o">.</span><span class="n">family_names</span><span class="p">())</span>
+        <span class="n">group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s1">&#39;Symmetric Hierarchical Memory (SHMEM) arguments&#39;</span><span class="p">)</span>
+        <span class="n">group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--shmem-compilers&#39;</span><span class="p">,</span> 
+                           <span class="n">help</span><span class="o">=</span><span class="s2">&quot;select all SHMEM compilers automatically from the given family&quot;</span><span class="p">,</span>
+                           <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;&lt;family&gt;&#39;</span><span class="p">,</span>
+                           <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;shmem_family&#39;</span><span class="p">,</span>
+                           <span class="n">default</span><span class="o">=</span><span class="n">host</span><span class="o">.</span><span class="n">preferred_shmem_compilers</span><span class="p">()</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                           <span class="n">choices</span><span class="o">=</span><span class="n">ShmemCompilerFamily</span><span class="o">.</span><span class="n">family_names</span><span class="p">())</span>
         <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--from-tau-makefile&#39;</span><span class="p">,</span>
                             <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Populate target configuration from a TAU Makefile&quot;</span><span class="p">,</span>
                             <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;&lt;path&gt;&#39;</span><span class="p">,</span>
