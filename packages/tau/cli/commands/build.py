@@ -27,6 +27,7 @@
 #
 """``tau build`` subcommand."""
 
+import os
 from tau.cli import arguments
 from tau.cli.command import AbstractCommand
 from tau.cf.compiler import CompilerInfo
@@ -46,7 +47,7 @@ class BuildCommand(AbstractCommand):
         Returns:
             bool: True if this subcommand is compatible with `cmd`.
         """
-        return cmd in [info.command for info in CompilerInfo.all()]
+        return os.path.basename(cmd) in [info.command for info in CompilerInfo.all()]
 
     def construct_parser(self):
         parts = ['  %s  %s' % ('{:<15}'.format(comp.command), comp.short_descr) for comp in CompilerInfo.all()]
