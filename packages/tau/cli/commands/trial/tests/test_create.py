@@ -47,8 +47,8 @@ class CreateTest(tests.TestCase):
     def test_create(self):
         self.reset_project_storage()
         shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests.get_test_workdir()+'/hello.c')
-        cc = self.get_compiler(CC_ROLE)
-        self.assertCommandReturnValue(0, build_cmd, [cc, 'hello.c'])
+        cc_cmd = self.get_compiler(CC_ROLE)
+        self.assertCommandReturnValue(0, build_cmd, [cc_cmd, 'hello.c'])
         stdout, stderr = self.assertCommandReturnValue(0, create_cmd, ['./a.out'])
         self.assertIn('BEGIN', stdout)
         self.assertIn('END Experiment', stdout)

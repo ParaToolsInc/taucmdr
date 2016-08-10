@@ -134,7 +134,7 @@ class TrialController(Controller):
         return retval
 
     def _perform_interactive(self, expr, trial, cmd, cwd, env):
-        def banner(self, mark, name, time):
+        def banner(mark, name, time):
             headline = '\n{:=<{}}\n'.format('== %s %s at %s ==' % (mark, name, time), logger.LINE_WIDTH)
             LOGGER.info(headline)
 
@@ -154,7 +154,7 @@ class TrialController(Controller):
         data_size = sum(os.path.getsize(os.path.join(trial.prefix, f)) for f in os.listdir(trial.prefix))
         self.update({'data_size': data_size}, trial.eid)
         if retval != 0:
-            if data_size != 0 :
+            if data_size != 0:
                 LOGGER.warning("Program exited with nonzero status code: %s", retval)
             else:
                 raise TrialError("Program died without producing performance data.",
@@ -174,7 +174,7 @@ class TrialController(Controller):
                                " This usually indicates that process-level parallelism was not initialized,"
                                " (e.g. MPI_Init() was not called) or there was a problem in instrumentation."
                                " Check the compilation output and verify that MPI_Init (or similar) was called.",
-                               trial_number)
+                               trial['number'])
                 for fname in negative_profiles:
                     new_name = fname.replace(".-1.", ".0.") 
                     if not os.path.exists(new_name):

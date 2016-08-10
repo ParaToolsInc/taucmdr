@@ -99,9 +99,6 @@ class CreateTest(tests.TestCase):
         from tau.model.target import Target
         ctrl = Target.controller(PROJECT_STORAGE)
         test_targ = ctrl.one({'name': 'test_targ'})
-        role='CC'
-        expected='pgcc'
         path = test_targ.populate('CC')['path']
-        self.assertEqual(os.path.basename(path), expected, 
-                             "Target[%s] is '%s', not '%s'" % ('CC', path, 'pgcc'))
+        self.assertEqual('pgcc', os.path.basename(path), "Target[CC] is '%s', not 'pgcc'" % path)
 

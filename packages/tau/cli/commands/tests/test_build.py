@@ -41,12 +41,12 @@ class BuildTest(tests.TestCase):
     def test_build(self):
         self.reset_project_storage()
         shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests.get_test_workdir()+'/hello.c')
-        cc = self.get_compiler(CC_ROLE)
-        argv = [cc, 'hello.c']
+        cc_cmd = self.get_compiler(CC_ROLE)
+        argv = [cc_cmd, 'hello.c']
         self.assertCommandReturnValue(0, build_command, argv)
 
     def test_abspath_compat(self):
         self.reset_project_storage()
-        cc = self.get_compiler(CC_ROLE)
-        self.assertTrue(build_command.is_compatible(cc))
+        cc_cmd = self.get_compiler(CC_ROLE)
+        self.assertTrue(build_command.is_compatible(cc_cmd))
 

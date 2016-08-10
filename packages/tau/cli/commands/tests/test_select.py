@@ -32,7 +32,7 @@ Functions used for unit tests of select.py.
 
 
 import unittest
-from tau import tests,util
+from tau import tests, util
 from tau.cli.commands import select
 from tau.cli.commands.measurement import create
 from tau.cli.commands.target import create as create_target
@@ -45,7 +45,7 @@ class SelectTest(tests.TestCase):
         self.assertCommandReturnValue(0, select.COMMAND, argv)
 
     @unittest.skipUnless(util.which('pgcc'), "PGI compilers required for this test")
-    def test_PGI(self):
+    def test_pgi(self):
         self.reset_project_storage()
         stdout, stderr = self.assertCommandReturnValue(0, create_target.COMMAND, ['test_targ', '--compilers', 'PGI'])
         _, _, stderr = self.exec_command(create.COMMAND, ['meas_PGI'])

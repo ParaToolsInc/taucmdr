@@ -46,8 +46,8 @@ class ShowTest(tests.TestCase):
     def test_show(self):
         self.reset_project_storage(project_name='proj1')
         shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests.get_test_workdir()+'/hello.c')
-        cc = self.get_compiler(CC_ROLE)
-        argv = [cc, 'hello.c']
+        cc_cmd = self.get_compiler(CC_ROLE)
+        argv = [cc_cmd, 'hello.c']
         self.exec_command(build.COMMAND, argv)
         self.exec_command(create.COMMAND, ['./a.out'])
         argv = ['0', '--profile-tool', 'pprof']

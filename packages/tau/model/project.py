@@ -38,7 +38,7 @@ from tau import logger
 from tau.error import InternalError, ConfigurationError
 from tau.mvc.model import Model
 from tau.mvc.controller import Controller
-from tau.storage.levels import PROJECT_STORAGE, STORAGE_LEVELS
+from tau.storage.levels import PROJECT_STORAGE
 
 
 LOGGER = logger.get_logger(__name__)
