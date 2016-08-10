@@ -37,6 +37,7 @@ import glob
 import errno
 from datetime import datetime
 from tau import logger, util
+from tau.cf.target import IBM_BGQ_ARCH, IBM_BGP_ARCH
 from tau.error import ConfigurationError
 from tau.mvc.controller import Controller
 from tau.mvc.model import Model
@@ -105,35 +106,39 @@ class TrialError(ConfigurationError):
 class TrialController(Controller):
     """Trial data controller."""
 
-    def perform(self, expr, cmd, cwd, env):
-        """Performs a trial of an experiment.
+    def _perform_bluegene(self, expr, trial, cmd, cwd, env):
+        if os.path.basename(cmd[0]) != 'qsub':
+            raise TrialError("At the moment, TAU Commander requires qsub to launch on BlueGene")
+        # Move TAU environment parameters to the command line
+        env_parts = {}
+        for key, val in env.iteritems():
+            if key not in os.environ:
+                env_parts[key] = val.replace(":", r"\:").replace("=", r"\=")
+        env_str = ':'.join(['%s=%s' % item for item in env_parts.iteritems()])
+        cmd = [cmd[0], '--env', '"%s"' % env_str] + cmd[1:]
+        env = dict(os.environ)
+        try:
+            retval = trial.execute_command(expr, cmd, cwd, env)
+        except:
+            self.delete(trial.eid)
+            raise
+        if retval != 0:
+            raise TrialError("Failed to add job to the queue.",
+                             "Verify that the right input parameters were specified.",
+                             "Check the program output for error messages.",
+                             "Does the selected application configuration correctly describe this program?",
+                             "Does the selected measurement configuration specifiy the right measurement methods?",
+                             "Does the selected target configuration match the runtime environment?")
+        else:
+            LOGGER.info("The job has been added to the queue.  Use `tau trial show` to view data when the job ends.")
+        return retval
 
-        Args:
-            expr (Experiment): Experiment data.
-            cmd (str): Command to profile, with command line arguments.
-            cwd (str): Working directory to perform trial in.
-            env (dict): Environment variables to set before performing the trial.
-        """
-        def banner(mark, name, time):
+    def _perform_interactive(self, expr, trial, cmd, cwd, env):
+        def banner(self, mark, name, time):
             headline = '\n{:=<{}}\n'.format('== %s %s at %s ==' % (mark, name, time), logger.LINE_WIDTH)
             LOGGER.info(headline)
 
-        begin_time = str(datetime.utcnow())
-        trial_number = expr.next_trial_number()
-        LOGGER.debug("New trial number is %d", trial_number)
-
-        banner('BEGIN', expr.title(), begin_time)
-        trial = self.create({'number': trial_number,
-                             'experiment': expr.eid,
-                             'command': ' '.join(cmd),
-                             'cwd': cwd,
-                             'environment': 'FIXME',
-                             'begin_time': begin_time})
-
-        # Tell TAU to send profiles and traces to the trial prefix
-        env['PROFILEDIR'] = trial.prefix
-        env['TRACEDIR'] = trial.prefix
-
+        banner('BEGIN', expr.name, trial['begin_time'])
         try:
             retval = trial.execute_command(expr, cmd, cwd, env)
         except:
@@ -145,20 +150,24 @@ class TrialController(Controller):
         finally:
             end_time = str(datetime.utcnow())
             banner('END', expr.name, end_time)
-        if retval != 0:
-            raise TrialError("Program died without producing performance data.",
-                             "Verify that the right input parameters were specified.",
-                             "Check the program output for error messages.",
-                             "Does the selected application configuration correctly describe this program?",
-                             "Does the selected measurement configuration specifiy the right measurement methods?",
-                             "Does the selected target configuration match the runtime environment?")
 
         data_size = sum(os.path.getsize(os.path.join(trial.prefix, f)) for f in os.listdir(trial.prefix))
         self.update({'data_size': data_size}, trial.eid)
+        if retval != 0:
+            if data_size != 0 :
+                LOGGER.warning("Program exited with nonzero status code: %s", retval)
+            else:
+                raise TrialError("Program died without producing performance data.",
+                                 "Verify that the right input parameters were specified.",
+                                 "Check the program output for error messages.",
+                                 "Does the selected application configuration correctly describe this program?",
+                                 "Does the selected measurement configuration specifiy the right measurement methods?",
+                                 "Does the selected target configuration match the runtime environment?")
+
         measurement = expr.populate('measurement')
         profiles = trial.profile_files()
         if profiles:
-            LOGGER.info("Trial produced %d profile files.", len(profiles))
+            LOGGER.info("Trial %s produced %s profile files.", trial['number'], len(profiles))
             negative_profiles = [prof for prof in profiles if 'profile.-1' in prof]
             if negative_profiles:
                 LOGGER.warning("Trial %s produced a profile with negative node number!"
@@ -176,15 +185,43 @@ class TrialController(Controller):
                                                  "Check that the application configuration is correct.",
                                                  "Check that the measurement configuration is correct.",
                                                  "Check for instrumentation failure in the compilation log.")
-                
         elif measurement['profile']:
-            raise TrialError("Application completed successfuly but did not produce any profiles.")
+            raise TrialError("Trial did not produce any profiles.")
         traces = trial.trace_files()
         if traces:
-            LOGGER.info("Trial produced %d trace files.", len(traces))
+            LOGGER.info("Trial %s produced %s trace files.", trial['number'], len(traces))
         elif measurement['trace']:
             raise TrialError("Application completed successfuly but did not produce any traces.")            
         return retval
+
+    def perform(self, expr, cmd, cwd, env):
+        """Performs a trial of an experiment.
+
+        Args:
+            expr (Experiment): Experiment data.
+            cmd (str): Command to profile, with command line arguments.
+            cwd (str): Working directory to perform trial in.
+            env (dict): Environment variables to set before performing the trial.
+        """
+        trial_number = expr.next_trial_number()
+        LOGGER.debug("New trial number is %d", trial_number)
+        trial = self.create({'number': trial_number,
+                             'experiment': expr.eid,
+                             'command': ' '.join(cmd),
+                             'cwd': cwd,
+                             'environment': 'FIXME',
+                             'begin_time': str(datetime.utcnow())})
+
+        # Tell TAU to send profiles and traces to the trial prefix
+        env['PROFILEDIR'] = trial.prefix
+        env['TRACEDIR'] = trial.prefix
+
+        targ = expr.populate('target')
+        is_bluegene = targ['host_arch'] in [str(x) for x in IBM_BGQ_ARCH, IBM_BGP_ARCH]
+        if is_bluegene:
+            return self._perform_bluegene(expr, trial, cmd, cwd, env)
+        else:
+            return self._perform_interactive(expr, trial, cmd, cwd, env)
 
 
 class Trial(Model):
