@@ -44,7 +44,7 @@ from tau.cli.commands.measurement.create import COMMAND as measurement_create_cm
 from tau.cli.commands.project.create import COMMAND as project_create_cmd
 from tau.cli.commands.select import COMMAND as select_cmd
 from tau.cli.commands.dashboard import COMMAND as dashboard_cmd
-from tau.cf.target import host, DARWIN_OS
+from tau.cf.target import host, DARWIN_OS, IBM_CNK_OS
 
 
 class InitializeCommand(AbstractCommand):
@@ -138,18 +138,21 @@ class InitializeCommand(AbstractCommand):
             retval = cmd.main(argv)
             if retval != EXIT_SUCCESS:
                 raise InternalError("return code %s: %s %s" % (retval, cmd, ' '.join(argv)))
-        if host.operating_system() is DARWIN_OS:
+        papi = True
+        binutils = True
+        sample = True
+        comp_inst = 'fallback'
+        host_os = host.operating_system()
+        if host_os is DARWIN_OS:
             self.logger.info("Darwin OS detected: disabling PAPI, binutils, "
                              "compiler-based instrumentation, and sampling.")
             papi = False
             binutils = False
             sample = False
             comp_inst = 'never'
-        else:
-            papi = True
-            binutils = True
-            sample = True
-            comp_inst = 'fallback'
+        elif host_os is IBM_CNK_OS: 
+            self.logger.info("IBM CNK OS detected: disabling sampling")
+            sample = False
         project_name = args.project_name
         target_name = args.target_name
         application_name = args.application_name
