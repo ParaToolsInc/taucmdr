@@ -52,7 +52,7 @@ class CreateTest(tests.TestCase):
         stdout, stderr = self.assertCommandReturnValue(0, create_cmd, ['./a.out'])
         self.assertIn('BEGIN', stdout)
         self.assertIn('END Experiment', stdout)
-        self.assertIn('Trial produced', stdout)
+        self.assertIn('Trial 0 produced', stdout)
         self.assertIn('profile files', stdout)
         self.assertFalse(stderr)
         
