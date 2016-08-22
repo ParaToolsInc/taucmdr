@@ -65,6 +65,7 @@ RM = rm -f
 MV = mv -f
 CP = cp -f
 MKDIR = mkdir -p
+CD = cd
 #
 #
 # TAU
@@ -196,6 +197,9 @@ $(TAUCMDR): $(PYTHON)
 	$(ECHO)$(PYTHON) setup.py install --force --install-scripts $(DESTDIR)/bin
 	$(ECHO)$(CP) LICENSE README.md VERSION $(DESTDIR)
 	$(ECHO)$(CP) -r examples $(DESTDIR)
+#	$(ECHO)$(MKDIR) TEMPPROJ
+#	$(ECHO)$(CD) TEMPPROJ && $(TAUCMDR) initialize --bare && $(TAUCMDR) configure --file ../config.inp && $(TAUCMDR) configure
+#	$(ECHO)$(RM) TEMPPROJ 
 
 $(PYTHON): $(CONDA_SRC)
 	$(ECHO)bash $< -b -p $(CONDA_DEST)

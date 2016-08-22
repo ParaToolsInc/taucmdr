@@ -32,7 +32,13 @@ from tau import configuration
 from tau.error import InternalError
 from tau.cli import arguments
 from tau.cli.command import AbstractCommand
-from tau.storage.levels import STORAGE_LEVELS
+from tau.storage.levels import STORAGE_LEVELS, PROJECT_STORAGE, ORDERED_LEVELS
+from tau.model.project import Project
+from tau.model.application import Application
+from tau.model.measurement import Measurement
+from tau.model.experiment import Experiment
+from tau.model.target import Target
+from tau.cf.software import SoftwarePackageError
 
 
 class ConfigureCommand(AbstractCommand):
@@ -62,17 +68,98 @@ class ConfigureCommand(AbstractCommand):
                             action='store_const',
                             const=True,
                             default=arguments.SUPPRESS)
+        parser.add_argument('--file',
+                            help="Configuration input file",
+                            metavar='/path/to/config.file',
+                            nargs='?',
+                            const=True)
+        parser.add_argument('-i', '--install',
+                            help="Install selected configurations",
+                            action='store_const',
+                            const=True,
+                            default=arguments.SUPPRESS)
         return parser
+
+    def get_target(self):
+        proj_ctrl = Project.controller()
+        try:
+            proj = proj_ctrl.selected()
+        except ProjectSelectionError:
+            self.parser.error("No project configuration selected.  Please use --project to specify one.")
+        return proj.populate('targets')
+        
+    def get_appl(self):
+        proj_ctrl = Project.controller()
+        try:
+            proj = proj_ctrl.selected()
+        except ProjectSelectionError:
+            self.parser.error("No project configuration selected.  Please use --project to specify one.")
+        return proj.populate('applications')
+        
+    def get_meas(self):
+        proj_ctrl = Project.controller()
+        try:
+            proj = proj_ctrl.selected()
+        except ProjectSelectionError:
+            self.parser.error("No project configuration selected.  Please use --project to specify one.")
+        return proj.populate('applications')
+        
+
+
+    def configure_tau_dependency(self, name, prefix, storage):
+        """Installs dependency packages for TAU, e.g. PDT.
+        
+        Args:
+            name (str): Name of the dependency to install.  
+                        Must have a matching tau.cf.software.<name>_installation module.
+            prefix (str): Installation prefix.
+        
+        Returns:
+            Installation: A new installation instance for the installed dependency.
+        """
+        targ = self.get_target()
+        target = targ.pop()
+        cls_name = name.title() + 'Installation'
+        pkg = __import__('tau.cf.software.%s_installation' % name.lower(), globals(), locals(), [cls_name], -1)
+        cls = getattr(pkg, cls_name)
+        opts = (target.get(name + '_source', None), target['host_arch'], target['host_os'], target.compilers())
+#        for storage in reversed(ORDERED_LEVELS):
+        inst = cls(storage.prefix, *opts)
+        try:
+            inst.verify()
+        except SoftwarePackageError:
+            pass
+        else:
+            return inst
+        inst = cls(prefix, *opts)
+        with inst:
+            inst.install()
+            return inst       
+
 
     def main(self, argv):
         args = self.parser.parse_args(args=argv)
         self.logger.debug('Arguments: %s', args)
         
         storage = STORAGE_LEVELS[getattr(args, '@')[0]]
-        
-        if not hasattr(args, 'key'):
+        if not hasattr(args, 'key') and args.file is None and not hasattr(args, 'install'):
             for key, val in configuration.get(storage=storage).iteritems():
                 print '%s : %s' % (key, val)       
+        elif not hasattr(args, 'key') and args.file is not None and not hasattr(args, 'install'):
+            input_file = open(args.file, 'r')
+            for line in input_file:
+                [key, value] =line.split()
+                configuration.put(key, value, storage)
+        elif not hasattr(args, 'key') and hasattr(args, 'install'):
+            all_dependencies = configuration.get('dependencies', storage=storage)
+            all_dependencies = all_dependencies.encode('ascii', 'replace')
+            all_dependencies = all_dependencies.split(',')
+            dependencies = {}
+            prefix = storage.prefix
+            for name in all_dependencies:
+                inst = self.configure_tau_dependency(name, prefix, storage)
+                dependencies[name] = inst
+
         elif not (hasattr(args, 'value') or hasattr(args, 'unset')):
             try:
                 print configuration.get(args.key, storage)
