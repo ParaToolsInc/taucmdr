@@ -34,7 +34,8 @@ instrumentation, and other measurement approaches.
 import os
 import sys
 import fileinput
-from tau import logger
+from tau import logger, util
+from tau.cf.software import SoftwarePackageError
 from tau.cf.software.installation import AutotoolsInstallation
 from tau.cf.compiler import CC_ROLE, CXX_ROLE
 from tau.cf.target import ARM64_ARCH, IBM_BGQ_ARCH, CRAY_CNL_OS
@@ -55,6 +56,14 @@ class LibunwindInstallation(AutotoolsInstallation):
         dst = os.path.join(target_arch, compilers[CC_ROLE].info.family.name)
         super(LibunwindInstallation, self).__init__('libunwind', prefix, src, dst, 
                                                     target_arch, target_os, compilers, SOURCES, None, LIBRARIES)
+        
+    def verify(self):
+        headers = ['libunwind.h', 'unwind.h']
+        for hfile in headers:
+            path = os.path.join(self.install_prefix, 'include', hfile)
+            if not util.file_accessible(path):
+                raise SoftwarePackageError("'%s' is not accessible" % path)
+        return super(LibunwindInstallation, self).verify()
 
     def configure(self, flags, env):
         flags.extend(['CC='+self.compilers[CC_ROLE].absolute_path, 
