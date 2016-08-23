@@ -91,7 +91,7 @@
 <span class="kn">from</span> <span class="nn">tau.cli.commands.project.create</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">project_create_cmd</span>
 <span class="kn">from</span> <span class="nn">tau.cli.commands.select</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">select_cmd</span>
 <span class="kn">from</span> <span class="nn">tau.cli.commands.dashboard</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">dashboard_cmd</span>
-<span class="kn">from</span> <span class="nn">tau.cf.target</span> <span class="kn">import</span> <span class="n">host</span><span class="p">,</span> <span class="n">DARWIN_OS</span>
+<span class="kn">from</span> <span class="nn">tau.cf.target</span> <span class="kn">import</span> <span class="n">host</span><span class="p">,</span> <span class="n">DARWIN_OS</span><span class="p">,</span> <span class="n">IBM_CNK_OS</span>
 
 
 <div class="viewcode-block" id="InitializeCommand"><a class="viewcode-back" href="../../../../tau.cli.commands.initialize.html#tau.cli.commands.initialize.InitializeCommand">[docs]</a><span class="k">class</span> <span class="nc">InitializeCommand</span><span class="p">(</span><span class="n">AbstractCommand</span><span class="p">):</span>
@@ -185,18 +185,21 @@
             <span class="n">retval</span> <span class="o">=</span> <span class="n">cmd</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">retval</span> <span class="o">!=</span> <span class="n">EXIT_SUCCESS</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">InternalError</span><span class="p">(</span><span class="s2">&quot;return code </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">retval</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">argv</span><span class="p">)))</span>
-        <span class="k">if</span> <span class="n">host</span><span class="o">.</span><span class="n">operating_system</span><span class="p">()</span> <span class="ow">is</span> <span class="n">DARWIN_OS</span><span class="p">:</span>
+        <span class="n">papi</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">binutils</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">sample</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">comp_inst</span> <span class="o">=</span> <span class="s1">&#39;fallback&#39;</span>
+        <span class="n">host_os</span> <span class="o">=</span> <span class="n">host</span><span class="o">.</span><span class="n">operating_system</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">host_os</span> <span class="ow">is</span> <span class="n">DARWIN_OS</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Darwin OS detected: disabling PAPI, binutils, &quot;</span>
                              <span class="s2">&quot;compiler-based instrumentation, and sampling.&quot;</span><span class="p">)</span>
             <span class="n">papi</span> <span class="o">=</span> <span class="bp">False</span>
             <span class="n">binutils</span> <span class="o">=</span> <span class="bp">False</span>
             <span class="n">sample</span> <span class="o">=</span> <span class="bp">False</span>
             <span class="n">comp_inst</span> <span class="o">=</span> <span class="s1">&#39;never&#39;</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">papi</span> <span class="o">=</span> <span class="bp">True</span>
-            <span class="n">binutils</span> <span class="o">=</span> <span class="bp">True</span>
-            <span class="n">sample</span> <span class="o">=</span> <span class="bp">True</span>
-            <span class="n">comp_inst</span> <span class="o">=</span> <span class="s1">&#39;fallback&#39;</span>
+        <span class="k">elif</span> <span class="n">host_os</span> <span class="ow">is</span> <span class="n">IBM_CNK_OS</span><span class="p">:</span> 
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;IBM CNK OS detected: disabling sampling&quot;</span><span class="p">)</span>
+            <span class="n">sample</span> <span class="o">=</span> <span class="bp">False</span>
         <span class="n">project_name</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">project_name</span>
         <span class="n">target_name</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">target_name</span>
         <span class="n">application_name</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">application_name</span>
