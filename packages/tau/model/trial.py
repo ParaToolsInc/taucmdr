@@ -185,12 +185,12 @@ class TrialController(Controller):
                                                  "Check that the application configuration is correct.",
                                                  "Check that the measurement configuration is correct.",
                                                  "Check for instrumentation failure in the compilation log.")
-        elif measurement['profile']:
+        elif measurement['profile'] != 'none':
             raise TrialError("Trial did not produce any profiles.")
         traces = trial.trace_files()
         if traces:
             LOGGER.info("Trial %s produced %s trace files.", trial['number'], len(traces))
-        elif measurement['trace']:
+        elif measurement['trace'] != 'none':
             raise TrialError("Application completed successfuly but did not produce any traces.")            
         return retval
 

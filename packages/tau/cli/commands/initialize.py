@@ -101,18 +101,19 @@ class InitializeCommand(AbstractCommand):
         measurement_group = parser.add_argument_group('measurement arguments')
         measurement_group.add_argument('--profile',
                                        help="Create measurement configurations for profiling",
-                                       metavar='T/F',
+                                       metavar='format',
                                        nargs='?',
                                        const=True,
-                                       default=True,
-                                       action=ParseBooleanAction)
+                                       choices=('tau', 'merged', 'cubex', 'none'),
+                                       default='tau')
+                                       #action=ParseBooleanAction)
         measurement_group.add_argument('--trace',
                                        help="Create measurement configurations for tracing",
-                                       metavar='T/F',
+                                       metavar='<format>',
                                        nargs='?',
                                        const=True,
-                                       default=True,
-                                       action=ParseBooleanAction)
+                                       default='otf2')
+                                       #action=ParseBooleanAction)
         measurement_group.add_argument('--sample',
                                        help="Create measurement configurations for event-based sampling",
                                        metavar='T/F',
@@ -177,19 +178,19 @@ class InitializeCommand(AbstractCommand):
 
         if args.sample and sample:
             _safe_execute(measurement_create_cmd, 
-                          ['sample', '--profile=True', '--trace=False', '--sample=True',
+                          ['sample', '--profile=tau', '--trace=none', '--sample=True',
                            '--source-inst=never', '--compiler-inst=never',
                            '--link-only=False'] + measurement_args)
             measurement_names.extend(['sample'])
         if args.profile:
             _safe_execute(measurement_create_cmd, 
-                          ['profile', '--profile=True', '--trace=False', '--sample=False',
+                          ['profile', '--profile=tau', '--trace=none', '--sample=False',
                            '--source-inst=automatic', '--compiler-inst=%s' % comp_inst, 
                            '--link-only=False'] + measurement_args)
             measurement_names.append('profile')
         if args.trace:
             _safe_execute(measurement_create_cmd, 
-                          ['trace', '--profile=False', '--trace=True', '--sample=False', 
+                          ['trace', '--profile=none', '--trace=otf2', '--sample=False', 
                            '--source-inst=automatic', '--compiler-inst=%s' % comp_inst, 
                            '--link-only=False'] + measurement_args)
             measurement_names.append('trace')

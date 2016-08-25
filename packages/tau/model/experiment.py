@@ -161,6 +161,21 @@ class Experiment(Model):
     def uses_papi(self):
         measurement = self.populate('measurement')
         return bool(len([met for met in measurement['metrics'] if 'PAPI' in met]))
+
+    def uses_scorep(self):
+        target = self.populate('target')
+        if target['scorep_source'] == 'none':
+            return False
+        else:
+            return True
+
+    def download_scorep(self):
+        target = self.populate('target')
+        if target['scorep_source'] == 'download':
+            return True
+        else:
+            return False
+        
     
     def configure_tau(self, prefix, dependencies):
         """Configures TAU for the current experiment, if necessary.
@@ -187,6 +202,7 @@ class Experiment(Model):
                           binutils=dependencies['binutils'],
                           libunwind=dependencies['libunwind'],
                           papi=dependencies['papi'],
+                          scorep=dependencies['scorep'],
                           # TAU feature suppport
                           openmp_support=application.get_or_default('openmp'),
                           pthreads_support=application.get_or_default('pthreads'),
@@ -203,6 +219,7 @@ class Experiment(Model):
                           shmem_library_path=target.get('shmem_library_path', []),
                           shmem_libraries=target.get('shmem_libraries', []),
                           mpc_support=application.get_or_default('mpc'),
+                          scorep_source=target.get('scorep_source', []),
                           # Instrumentation methods and options            
                           source_inst=measurement.get_or_default('source_inst'),
                           compiler_inst=measurement.get_or_default('compiler_inst'),
@@ -273,10 +290,17 @@ class Experiment(Model):
             else:
                 # Found installation
                 return inst
-        inst = cls(prefix, *opts)
-        with inst:
-            inst.install()
-            return inst       
+        if name != 'scorep':
+            inst = cls(prefix, *opts)
+            with inst:
+                inst.install()
+                return inst       
+        else:
+            inst = cls(prefix, *opts)
+            with inst:
+                if self.download_scorep():
+                    inst._dl_src()
+                return inst
 
     def configure(self):
         """Sets up the Experiment for a new trial.
@@ -297,7 +321,7 @@ class Experiment(Model):
             raise SoftwarePackageError("No writable storage levels")
         if self.uses_tau():
             dependencies = {}
-            for name in 'pdt', 'binutils', 'libunwind', 'papi':
+            for name in 'pdt', 'binutils', 'libunwind', 'papi', 'scorep':
                 uses_dependency = getattr(self, 'uses_' + name)
                 inst = self.configure_tau_dependency(name, prefix) if uses_dependency() else None
                 dependencies[name] = inst

@@ -132,6 +132,7 @@ class Installation(object):
         self.bin_path = os.path.join(self.install_prefix, 'bin')
         self.lib_path = os.path.join(self.install_prefix, 'lib')
         self._lockfile = LockFile(os.path.join(self.install_prefix, '.tau_lock'))
+        self.archive_path = self.archive_prefix
         LOGGER.debug("%s installation prefix is %s", self.name, self.install_prefix)
         
     def _lookup_target_os_list(self, dct):
@@ -160,6 +161,36 @@ class Installation(object):
             pass
         return False
 
+    def _dl_src(self, reuse=True):
+        """Downloads source code for installation.
+        
+        Acquires package source code archive file via download.
+        """
+
+        if not self.src:
+            raise ConfigurationError("No source code provided for %s" % self.name)
+        
+        downloaded = os.path.join(self.archive_prefix, os.path.basename(self.src))
+        if reuse and os.path.exists(downloaded):
+            LOGGER.info("Using %s source archive at '%s'", self.name, downloaded)
+        else:
+            try:
+                util.download(self.src, downloaded)
+            except IOError:
+                raise ConfigurationError("Cannot acquire source archive '%s'" % self.src,
+                                         "Check that the file or directory is accessable")
+        self.archive_path = downloaded
+        try:
+            topdir = util.archive_toplevel(downloaded)
+        except IOError as err:
+            LOGGER.info("Cannot read %s archive file '%s': %s", self.name, downloaded, err)
+            if reuse:
+                LOGGER.info("Downloading a fresh copy of '%s'", self.src)
+                self._dl_src(reuse=False)
+                return
+            else:
+                raise ConfigurationError("Cannot read %s archive file '%s': %s" % (self.name, downloaded, err))
+
     def _prepare_src(self, reuse=True):
         """Prepares source code for installation.
         
@@ -185,6 +216,7 @@ class Installation(object):
             except IOError:
                 raise ConfigurationError("Cannot acquire source archive '%s'" % self.src,
                                          "Check that the file or directory is accessable")
+        self.archive_path = downloaded
         try:
             topdir = util.archive_toplevel(downloaded)
         except IOError as err:

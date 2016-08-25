@@ -132,6 +132,7 @@ class TauInstallation(Installation):
                  binutils,
                  libunwind,
                  papi,
+                 scorep,
                  # Application support features
                  openmp_support,
                  pthreads_support, 
@@ -148,6 +149,7 @@ class TauInstallation(Installation):
                  shmem_library_path,
                  shmem_libraries,
                  mpc_support,
+                 scorep_source,
                  # Instrumentation methods and options
                  source_inst,
                  compiler_inst,
@@ -211,8 +213,8 @@ class TauInstallation(Installation):
             keep_inst_files (bool): If True then do not remove instrumented source files after compilation.
             reuse_inst_files (bool): If True then reuse instrumented source files for compilation when available.
             select_file (str): Path to selective instrumentation file.
-            profile (bool): Enable or disable profiling.
-            trace (bool): Enable or disable tracing.
+            profile (str): Enable or disable profiling.
+            trace (str): Enable or disable tracing.
             sample (bool): Enable or disable event-based sampling.
             metrics (list): Metrics to measure, e.g. ['TIME', 'PAPI_FP_INS']
             measure_mpi (bool): If True then measure time spent in MPI calls. 
@@ -258,6 +260,10 @@ class TauInstallation(Installation):
         self.shmem_library_path = shmem_library_path
         self.shmem_libraries = shmem_libraries
         self.mpc_support = mpc_support
+        self.scorep_source = scorep_source
+        if self.scorep_source != 'none':
+            self.scorep_support = True
+        self.scorep_dl_prefix = scorep.archive_prefix
         self.source_inst = source_inst
         self.compiler_inst = compiler_inst
         self.link_only = link_only
@@ -476,6 +482,11 @@ class TauInstallation(Installation):
                 flags.append('-opari')
         if self.io_inst:
             flags.append('-iowrapper')
+        if self.scorep_source:
+            if self.scorep_source == 'download':
+                flags.append('-scorep=%s' %self.scorep_dl_prefix)
+            else:
+                flags.append('-scorep=%s' %self.scorep_source)
         cmd = ['./configure'] + flags
         LOGGER.info("Configuring TAU...")
         if util.create_subprocess(cmd, cwd=self.src_prefix, stdout=False):
@@ -568,6 +579,8 @@ class TauInstallation(Installation):
             tags.append('shmem')
         if self.mpc_support:
             tags.append('mpc')
+        if self.scorep_support:
+            tags.append('scorep')
         LOGGER.debug("TAU tags: %s", tags)
         return set(tags)
     
@@ -726,8 +739,17 @@ class TauInstallation(Installation):
         opts, env = super(TauInstallation, self).runtime_config(opts, env)
         env = self._sanitize_environment(env)
         env['TAU_VERBOSE'] = str(int(self.verbose))
-        env['TAU_PROFILE'] = str(int(self.profile))
-        env['TAU_TRACE'] = str(int(self.trace))
+        if(self.profile == 'tau'):
+            env['TAU_PROFILE'] = '1'
+        elif(self.profile == 'merged'):
+            env['TAU_PROFILE'] = '1'
+            env['TAU_PROFILE_FORMAT'] = 'merged'
+        else:
+            env['TAU_PROFILE'] = '0'
+        if(self.trace == 'slog2' or self.trace == 'otf2'):
+            env['TAU_TRACE'] = '1'
+        else:
+            env['TAU_TRACE'] = '0'
         env['TAU_SAMPLE'] = str(int(self.sample))
         env['TAU_TRACK_HEAP'] = str(int(self.measure_heap_usage))
         env['TAU_COMM_MATRIX'] = str(int(self.measure_comm_matrix))
