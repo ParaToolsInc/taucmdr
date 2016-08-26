@@ -279,7 +279,6 @@ class Trial(Model):
         Returns:
             list: Paths to trace files.
         """
-        print self.prefix
         trc_files = glob.glob(os.path.join(self.prefix, '*.trc'))
         edf_files = glob.glob(os.path.join(self.prefix, '*.edf'))
         def_files = glob.glob(os.path.join(self.prefix, 'traces/*.def'))

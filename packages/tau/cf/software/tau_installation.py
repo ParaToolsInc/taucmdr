@@ -262,8 +262,6 @@ class TauInstallation(Installation):
         self.shmem_libraries = shmem_libraries
         self.mpc_support = mpc_support
         self.scorep_source = scorep_source
-        if self.scorep_source != 'none':
-            self.scorep_support = True
         self.scorep_dl_prefix = scorep.archive_prefix
         self.source_inst = source_inst
         self.compiler_inst = compiler_inst
@@ -290,6 +288,10 @@ class TauInstallation(Installation):
         self.throttle = throttle
         self.throttle_per_call = throttle_per_call
         self.throttle_num_calls = throttle_num_calls
+        if self.scorep_source != 'none' and self.trace != 'none':
+            self.scorep_support = True
+	else:
+	    self.scorep_support = False
         
     def verify(self):
         """Returns true if the installation is valid.
@@ -483,7 +485,7 @@ class TauInstallation(Installation):
                 flags.append('-opari')
         if self.io_inst:
             flags.append('-iowrapper')
-        if self.scorep_source:
+        if self.scorep_support:
             if self.scorep_source == 'download':
                 flags.append('-scorep=%s' %self.scorep_dl_prefix)
             else:
