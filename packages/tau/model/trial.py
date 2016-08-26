@@ -216,7 +216,7 @@ class TrialController(Controller):
         env['PROFILEDIR'] = trial.prefix
         env['TRACEDIR'] = trial.prefix
         measurement = expr.populate('measurement')
-        if measurement['trace'] == 'otf2':
+        if measurement['trace'] == 'otf2' or measurement['profile'] == 'cubex':
             env['SCOREP_EXPERIMENT_DIRECTORY'] = trial.prefix
 
         targ = expr.populate('target')
@@ -271,6 +271,8 @@ class Trial(Model):
             profiles.extend(list_profiles(multi_dir))
         profiles.extend(list_profiles(self.prefix))
         profiles.extend(glob.glob(os.path.join(self.prefix, 'tauprofile.xml')))
+        profiles.extend(glob.glob(os.path.join(self.prefix, '*.cubex')))
+        profiles.extend(glob.glob(os.path.join(self.prefix, '*.cfg')))
         return profiles
 
     def trace_files(self):

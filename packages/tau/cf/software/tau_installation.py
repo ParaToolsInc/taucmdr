@@ -288,7 +288,7 @@ class TauInstallation(Installation):
         self.throttle = throttle
         self.throttle_per_call = throttle_per_call
         self.throttle_num_calls = throttle_num_calls
-        if self.scorep_source != 'none' and self.trace != 'none':
+        if (self.scorep_source != 'none' and self.trace != 'none') or (self.scorep_source != 'none' and self.profile == 'cubex'):
             self.scorep_support = True
 	else:
 	    self.scorep_support = False
@@ -873,9 +873,13 @@ class TauInstallation(Installation):
         else:
             tools = ['paraprof', 'pprof']
         for tool in tools:
-            ppath = os.path.join(path, 'tauprofile.xml')
-            if(os.path.isfile(ppath) is False):
-                ppath = path
+            for pfile in ['tauprofile.xml', 'profile.cubex']:
+                ppath = os.path.join(path, pfile)
+                if(os.path.isfile(ppath) is True):
+                    break
+                else:
+                    ppath = path
+            print ppath
             if os.path.isfile(ppath):
                 cmd = [tool, ppath]
             else:
