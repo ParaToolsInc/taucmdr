@@ -430,9 +430,9 @@ class Experiment(Model):
         meas = self.populate('measurement')
         for trial in self._get_trials(trial_numbers):
             prefix = trial.prefix
-            if meas['profile']:
+            if meas['profile'] != 'none':
                 tau.show_profile(prefix, profile_tool)
-            if meas['trace']:
+            if meas['trace'] != 'none':
                 tau.show_trace(prefix, trace_tool)
                 
     def export(self, profile_format=PROFILE_EXPORT_FORMATS[0], trial_numbers=None, export_location=None):

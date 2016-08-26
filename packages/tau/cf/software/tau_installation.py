@@ -32,6 +32,7 @@ TAU is the core software package of TAU Commander.
 
 import os
 import glob
+import resource
 from tau import logger, util
 from tau.error import ConfigurationError, InternalError
 from tau.cf.software import SoftwarePackageError
@@ -750,6 +751,9 @@ class TauInstallation(Installation):
             env['TAU_TRACE'] = '1'
         else:
             env['TAU_TRACE'] = '0'
+        if(self.trace == 'otf2'):
+            env['SCOREP_ENABLE_TRACING'] = str(int(self.trace == 'otf2'))
+            env['SCOREP_ENABLE_PROFILING'] = str(int(self.profile == 'cubex'))
         env['TAU_SAMPLE'] = str(int(self.sample))
         env['TAU_TRACK_HEAP'] = str(int(self.measure_heap_usage))
         env['TAU_COMM_MATRIX'] = str(int(self.measure_comm_matrix))
@@ -896,30 +900,47 @@ class TauInstallation(Installation):
         """
         LOGGER.debug("Showing trace files at '%s'", path)
         _, env = self.runtime_config()
+        if self.trace == 'otf2' and tool_name is None:
+            tool_name = 'vampir'
+            LOGGER.info('otf2 requires vampir')
         if tool_name is None:
             tool_name = 'jumpshot'
-        elif tool_name != 'jumpshot':
-            raise InternalError("Only jumpshot supported at this time")
-        if not os.path.isdir(path):
-            raise InternalError("Individual trace files not yet supported.")
-        tau_slog2 = os.path.join(path, 'tau.slog2')
-        if not os.path.isfile(tau_slog2):
-            if not os.path.isfile(os.path.join(path, 'tau.trc')):
-                trc_files = glob.glob(os.path.join(path, '*.trc'))
-                edf_files = glob.glob(os.path.join(path, '*.edf'))
-                if not (trc_files and edf_files):
-                    raise ConfigurationError("No *.trc or *.edf files!")
-                cmd = ['tau_treemerge.pl']
+        if tool_name == 'jumpshot':
+            if not os.path.isdir(path):
+                raise InternalError("Individual trace files not yet supported.")
+            tau_slog2 = os.path.join(path, 'tau.slog2')
+            if not os.path.isfile(tau_slog2):
+                if not os.path.isfile(os.path.join(path, 'tau.trc')):
+                    trc_files = glob.glob(os.path.join(path, '*.trc'))
+                    edf_files = glob.glob(os.path.join(path, '*.edf'))
+                    if not (trc_files and edf_files):
+                        raise ConfigurationError("No *.trc or *.edf files!")
+                    cmd = ['tau_treemerge.pl']
+                    retval = util.create_subprocess(cmd, cwd=path, env=env, log=False)
+                    if retval != 0:
+                        raise InternalError("Nonzero return code from tau_treemerge.pl")
+                cmd = ['tau2slog2', 'tau.trc', 'tau.edf', '-o', 'tau.slog2']
                 retval = util.create_subprocess(cmd, cwd=path, env=env, log=False)
                 if retval != 0:
-                    raise InternalError("Nonzero return code from tau_treemerge.pl")
-            cmd = ['tau2slog2', 'tau.trc', 'tau.edf', '-o', 'tau.slog2']
+                    raise InternalError("Nonzero return code from %s" % ' '.join(cmd))
+            LOGGER.info("Opening %s in %s", tau_slog2, tool_name)
+            cmd = [tool_name, tau_slog2]
             retval = util.create_subprocess(cmd, cwd=path, env=env, log=False)
-            if retval != 0:
-                raise InternalError("Nonzero return code from %s" % ' '.join(cmd))
-        LOGGER.info("Opening %s in %s", tau_slog2, tool_name)
-        cmd = [tool_name, tau_slog2]
-        retval = util.create_subprocess(cmd, cwd=path, env=env, log=False)
+        elif tool_name == 'vampir':
+            tau_otf2 = os.path.join(path, 'traces.otf2')
+            if not os.path.isfile(tau_otf2):
+                raise ConfigurationError("otf2 trace files not found.")
+            evt_files = glob.glob(os.path.join(path, 'traces/*.evt'))
+            def_files = glob.glob(os.path.join(path, 'traces/*.def'))
+            if (len(evt_files) + len(def_files) > resource.getrlimit(resource.RLIMIT_NOFILE)[0]):
+                raise ConfigurationError("Too many trace files, use Vampir server to view.")
+            if util.which('vampir') == None:
+                raise ConfigurationError("Vampir not found in PATH. Contact ParaTools for more information on Vampir.")
+            LOGGER.info("Opening %s in %s", tau_otf2, tool_name)
+            cmd = [tool_name, tau_otf2]
+            retval = util.create_subprocess(cmd, cwd=path, env=env, log=False)
+        else:
+            raise InternalError("Only vampir and jumpshot supported at this time")
         if retval == 0:
             return
         else:

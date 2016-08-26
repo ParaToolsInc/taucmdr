@@ -215,6 +215,9 @@ class TrialController(Controller):
         # Tell TAU to send profiles and traces to the trial prefix
         env['PROFILEDIR'] = trial.prefix
         env['TRACEDIR'] = trial.prefix
+        measurement = expr.populate('measurement')
+        if measurement['trace'] == 'otf2':
+            env['SCOREP_EXPERIMENT_DIRECTORY'] = trial.prefix
 
         targ = expr.populate('target')
         is_bluegene = targ['host_arch'] in [str(x) for x in IBM_BGQ_ARCH, IBM_BGP_ARCH]
@@ -271,14 +274,17 @@ class Trial(Model):
     def trace_files(self):
         """Get this trial's trace files.
 
-        Returns paths to trace files: *.[trc,edf].
+        Returns paths to trace files: *.[trc,edf,def,evt].
 
         Returns:
             list: Paths to trace files.
         """
+        print self.prefix
         trc_files = glob.glob(os.path.join(self.prefix, '*.trc'))
         edf_files = glob.glob(os.path.join(self.prefix, '*.edf'))
-        return trc_files + edf_files
+        def_files = glob.glob(os.path.join(self.prefix, 'traces/*.def'))
+        evt_files = glob.glob(os.path.join(self.prefix, 'traces/*.evt'))
+        return trc_files + edf_files + def_files + evt_files
 
     def execute_command(self, expr, cmd, cwd, env):
         """Execute a command as part of an experiment trial.
