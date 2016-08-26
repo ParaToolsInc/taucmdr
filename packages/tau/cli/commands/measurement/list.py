@@ -31,8 +31,8 @@ from tau.cli.cli_view import ListCommand
 from tau.model.measurement import Measurement
 
 DASHBOARD_COLUMNS = [{'header': 'Name', 'value': 'name', 'align': 'r'},
-                     {'header': 'Profile', 'yesno': 'profile'},
-                     {'header': 'Trace', 'yesno': 'trace'},
+                     {'header': 'Profile', 'value': 'profile'},
+                     {'header': 'Trace', 'value': 'trace'},
                      {'header': 'Sample', 'yesno': 'sample'},
                      {'header': 'Source Inst.', 'value': 'source_inst'},
                      {'header': 'Compiler Inst.', 'value': 'compiler_inst'},

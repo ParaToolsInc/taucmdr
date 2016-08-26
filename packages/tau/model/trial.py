@@ -259,7 +259,8 @@ class Trial(Model):
 
         Returns paths to profile files (profile.X.Y.Z).  If the trial produced 
         MULTI__ directories then paths to every profile below every MULTI__ 
-        directory are returned. 
+        directory are returned. If the trial produced a merged file retun the
+        *.xml file.
 
         Returns:
             list: Paths to profile files.
@@ -269,6 +270,7 @@ class Trial(Model):
         for multi_dir in glob.iglob(os.path.join(self.prefix, 'MULTI__*')):
             profiles.extend(list_profiles(multi_dir))
         profiles.extend(list_profiles(self.prefix))
+        profiles.extend(glob.glob(os.path.join(self.prefix, 'tauprofile.xml')))
         return profiles
 
     def trace_files(self):

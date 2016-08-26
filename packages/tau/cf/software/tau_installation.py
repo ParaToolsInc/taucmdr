@@ -873,11 +873,14 @@ class TauInstallation(Installation):
         else:
             tools = ['paraprof', 'pprof']
         for tool in tools:
-            if os.path.isfile(path):
-                cmd = [tool, path]
+            ppath = os.path.join(path, 'tauprofile.xml')
+            if(os.path.isfile(ppath) is False):
+                ppath = path
+            if os.path.isfile(ppath):
+                cmd = [tool, ppath]
             else:
                 cmd = [tool]
-            LOGGER.info("Opening %s in %s", path, tool)
+            LOGGER.info("Opening %s in %s", ppath, tool)
             retval = util.create_subprocess(cmd, cwd=path, env=env, log=False)
             if retval == 0:
                 return
