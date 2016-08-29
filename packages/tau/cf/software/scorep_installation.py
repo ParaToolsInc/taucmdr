@@ -25,9 +25,10 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""Binutils software installation management.
+"""ScoreP software installation management.
 
-PAPI is used to measure hardware performance counters.
+ScoreP is a tool suite for profiling, event tracing, and online analysis of HPC
+applications.
 """
 
 import os
@@ -43,10 +44,11 @@ SOURCES = {None: 'http://www.cs.uoregon.edu/research/tau/scorep.tgz'}
 
 
 class ScorepInstallation(AutotoolsInstallation):
-    """Encapsulates a PAPI installation."""
+    """Downloads ScoreP."""
 
-    def __init__(self, prefix, src, target_arch, target_os, compilers):
+    def __init__(self, prefix, src, target_arch, target_os, compilers, URL):
         dst = os.path.join(target_arch, compilers[CC_ROLE].info.family.name)
+        SOURCES[None] = URL
         super(ScorepInstallation, self).__init__('SCOREP', prefix, src, dst, 
                                                target_arch, target_os, compilers, SOURCES, None, None)
 

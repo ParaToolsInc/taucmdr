@@ -171,7 +171,7 @@ class Experiment(Model):
 
     def download_scorep(self):
         target = self.populate('target')
-        if target['scorep_source'] == 'download':
+        if target['scorep_source'] == 'download' or util.is_url(target['scorep_source']):
             return True
         else:
             return False
@@ -280,6 +280,12 @@ class Experiment(Model):
         pkg = __import__('tau.cf.software.%s_installation' % name.lower(), globals(), locals(), [cls_name], -1)
         cls = getattr(pkg, cls_name)
         opts = (target.get(name + '_source', None), target['host_arch'], target['host_os'], target.compilers())
+        if name == 'scorep':
+            if util.is_url(target.get('scorep_source')):
+                URL = target.get('scorep_source')
+            else:
+                URL = None
+            opts = (target.get(name + '_source', None), target['host_arch'], target['host_os'], target.compilers(), URL)
         for storage in reversed(ORDERED_LEVELS):
             inst = cls(storage.prefix, *opts)
             try:

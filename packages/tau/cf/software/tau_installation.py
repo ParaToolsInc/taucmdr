@@ -486,7 +486,7 @@ class TauInstallation(Installation):
         if self.io_inst:
             flags.append('-iowrapper')
         if self.scorep_support:
-            if self.scorep_source == 'download':
+            if self.scorep_source == 'download' or util.is_url(self.scorep_source):
                 flags.append('-scorep=%s' %self.scorep_dl_prefix)
             else:
                 flags.append('-scorep=%s' %self.scorep_source)
