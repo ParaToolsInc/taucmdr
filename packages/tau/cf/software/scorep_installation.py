@@ -48,7 +48,8 @@ class ScorepInstallation(AutotoolsInstallation):
 
     def __init__(self, prefix, src, target_arch, target_os, compilers, URL):
         dst = os.path.join(target_arch, compilers[CC_ROLE].info.family.name)
-        SOURCES[None] = URL
+        if URL is not None:
+            SOURCES[None] = URL
         super(ScorepInstallation, self).__init__('SCOREP', prefix, src, dst, 
                                                target_arch, target_os, compilers, SOURCES, None, None)
 
