@@ -935,7 +935,7 @@ class TauInstallation(Installation):
             LOGGER.info("Opening %s in %s", tau_slog2, tool_name)
             cmd = [tool_name, tau_slog2]
             retval = util.create_subprocess(cmd, cwd=path, env=env, log=False)
-        elif tool_name == 'vampir':
+        elif tool_name == 'vampir' or tool_name == 'vampirserver':
             tau_otf2 = os.path.join(path, 'traces.otf2')
             if not os.path.isfile(tau_otf2):
                 raise ConfigurationError("otf2 trace files not found.")
