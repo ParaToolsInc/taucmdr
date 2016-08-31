@@ -326,10 +326,11 @@ class Experiment(Model):
         else:
             raise SoftwarePackageError("No writable storage levels")
         if self.uses_tau():
+            target = self.populate('target')
             dependencies = {}
             for name in 'pdt', 'binutils', 'libunwind', 'papi', 'scorep':
                 uses_dependency = getattr(self, 'uses_' + name)
-                inst = self.configure_tau_dependency(name, prefix) if uses_dependency() else None
+                inst = self.configure_tau_dependency(name, prefix) if (uses_dependency() and target.get(name + '_source', None) != 'None') else None
                 dependencies[name] = inst
             return self.configure_tau(prefix, dependencies)
 

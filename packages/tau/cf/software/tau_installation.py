@@ -262,7 +262,8 @@ class TauInstallation(Installation):
         self.shmem_libraries = shmem_libraries
         self.mpc_support = mpc_support
         self.scorep_source = scorep_source
-        self.scorep_dl_prefix = scorep.archive_prefix
+        if scorep:
+            self.scorep_dl_prefix = scorep.archive_prefix
         self.source_inst = source_inst
         self.compiler_inst = compiler_inst
         self.link_only = link_only
