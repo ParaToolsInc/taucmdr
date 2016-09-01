@@ -71,6 +71,10 @@ class InitializeCommand(AbstractCommand):
                             default=False,
                             metavar='T/F',
                             action=ParseBooleanAction)
+        parser.add_argument('--tau-options',
+                            help="forcibly add options to TAU_OPTIONS environment variable (not recommended)",
+                            nargs='+',
+                            metavar='<option>')
 
         default_project_name = os.path.basename(os.getcwd()) or 'default_project'
         project_group = parser.add_argument_group('project arguments')
@@ -125,8 +129,13 @@ class InitializeCommand(AbstractCommand):
 
     def _create_project(self, args):
         project_name = args.project_name
+        options = [project_name]
+        if args.tau_options:
+            options.append('--force-tau-options')
+            options.extend([i for i in args.tau_options])
+        print options
         try:
-            project_create_cmd.main([project_name])
+            project_create_cmd.main(options)
         except ConfigurationError:
             PROJECT_STORAGE.disconnect_filesystem()
             util.rmtree(PROJECT_STORAGE.prefix, ignore_errors=True)
