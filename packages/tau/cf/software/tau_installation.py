@@ -716,6 +716,8 @@ class TauInstallation(Installation):
             tau_opts.add('-optTauSelectFile=%s' % select_file)
         if self.io_inst:
             tau_opts.add('-optTrackIO')
+        if self.measure_memory_alloc:
+            tau_opts.add('-optMemDbg')
         try:
             tau_opts.update(self.force_tau_options)
         except AttributeError:
@@ -778,6 +780,8 @@ class TauInstallation(Installation):
             opts.append('-opencl')
         if self.io_inst:
             opts.append('-io')
+        if self.measure_memory_alloc:
+            env['TAU_SHOW_MEMORY_FUNCTIONS'] = '1'
         return list(set(opts)), env
 
     def get_compiler_command(self, compiler):
