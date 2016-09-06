@@ -11,6 +11,7 @@ Submodules
    tau.cf.software.tests.test_libunwind_installation
    tau.cf.software.tests.test_papi_installation
    tau.cf.software.tests.test_pdt_installation
+   tau.cf.software.tests.test_scorep_installation
    tau.cf.software.tests.test_tau_installation
 
 Module contents

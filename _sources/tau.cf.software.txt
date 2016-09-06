@@ -18,6 +18,7 @@ Submodules
    tau.cf.software.libunwind_installation
    tau.cf.software.papi_installation
    tau.cf.software.pdt_installation
+   tau.cf.software.scorep_installation
    tau.cf.software.tau_installation
 
 Module contents

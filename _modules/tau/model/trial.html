@@ -232,12 +232,12 @@
                                                  <span class="s2">&quot;Check that the application configuration is correct.&quot;</span><span class="p">,</span>
                                                  <span class="s2">&quot;Check that the measurement configuration is correct.&quot;</span><span class="p">,</span>
                                                  <span class="s2">&quot;Check for instrumentation failure in the compilation log.&quot;</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">measurement</span><span class="p">[</span><span class="s1">&#39;profile&#39;</span><span class="p">]:</span>
+        <span class="k">elif</span> <span class="n">measurement</span><span class="p">[</span><span class="s1">&#39;profile&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;none&#39;</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">TrialError</span><span class="p">(</span><span class="s2">&quot;Trial did not produce any profiles.&quot;</span><span class="p">)</span>
         <span class="n">traces</span> <span class="o">=</span> <span class="n">trial</span><span class="o">.</span><span class="n">trace_files</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">traces</span><span class="p">:</span>
             <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Trial </span><span class="si">%s</span><span class="s2"> produced </span><span class="si">%s</span><span class="s2"> trace files.&quot;</span><span class="p">,</span> <span class="n">trial</span><span class="p">[</span><span class="s1">&#39;number&#39;</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">traces</span><span class="p">))</span>
-        <span class="k">elif</span> <span class="n">measurement</span><span class="p">[</span><span class="s1">&#39;trace&#39;</span><span class="p">]:</span>
+        <span class="k">elif</span> <span class="n">measurement</span><span class="p">[</span><span class="s1">&#39;trace&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;none&#39;</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">TrialError</span><span class="p">(</span><span class="s2">&quot;Application completed successfuly but did not produce any traces.&quot;</span><span class="p">)</span>            
         <span class="k">return</span> <span class="n">retval</span>
 
@@ -262,6 +262,9 @@
         <span class="c1"># Tell TAU to send profiles and traces to the trial prefix</span>
         <span class="n">env</span><span class="p">[</span><span class="s1">&#39;PROFILEDIR&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">trial</span><span class="o">.</span><span class="n">prefix</span>
         <span class="n">env</span><span class="p">[</span><span class="s1">&#39;TRACEDIR&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">trial</span><span class="o">.</span><span class="n">prefix</span>
+        <span class="n">measurement</span> <span class="o">=</span> <span class="n">expr</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="s1">&#39;measurement&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">measurement</span><span class="p">[</span><span class="s1">&#39;trace&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;otf2&#39;</span> <span class="ow">or</span> <span class="n">measurement</span><span class="p">[</span><span class="s1">&#39;profile&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;cubex&#39;</span><span class="p">:</span>
+            <span class="n">env</span><span class="p">[</span><span class="s1">&#39;SCOREP_EXPERIMENT_DIRECTORY&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">trial</span><span class="o">.</span><span class="n">prefix</span>
 
         <span class="n">targ</span> <span class="o">=</span> <span class="n">expr</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="s1">&#39;target&#39;</span><span class="p">)</span>
         <span class="n">is_bluegene</span> <span class="o">=</span> <span class="n">targ</span><span class="p">[</span><span class="s1">&#39;host_arch&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">IBM_BGQ_ARCH</span><span class="p">,</span> <span class="n">IBM_BGP_ARCH</span><span class="p">]</span>
@@ -303,7 +306,8 @@
 
 <span class="sd">        Returns paths to profile files (profile.X.Y.Z).  If the trial produced </span>
 <span class="sd">        MULTI__ directories then paths to every profile below every MULTI__ </span>
-<span class="sd">        directory are returned. </span>
+<span class="sd">        directory are returned. If the trial produced a merged file retun the</span>
+<span class="sd">        *.xml file.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            list: Paths to profile files.</span>
@@ -313,19 +317,24 @@
         <span class="k">for</span> <span class="n">multi_dir</span> <span class="ow">in</span> <span class="n">glob</span><span class="o">.</span><span class="n">iglob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;MULTI__*&#39;</span><span class="p">)):</span>
             <span class="n">profiles</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">list_profiles</span><span class="p">(</span><span class="n">multi_dir</span><span class="p">))</span>
         <span class="n">profiles</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">list_profiles</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">))</span>
+        <span class="n">profiles</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;tauprofile.xml&#39;</span><span class="p">)))</span>
+        <span class="n">profiles</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;*.cubex&#39;</span><span class="p">)))</span>
+        <span class="n">profiles</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;*.cfg&#39;</span><span class="p">)))</span>
         <span class="k">return</span> <span class="n">profiles</span></div>
 
 <div class="viewcode-block" id="Trial.trace_files"><a class="viewcode-back" href="../../../tau.model.trial.html#tau.model.trial.Trial.trace_files">[docs]</a>    <span class="k">def</span> <span class="nf">trace_files</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get this trial&#39;s trace files.</span>
 
-<span class="sd">        Returns paths to trace files: *.[trc,edf].</span>
+<span class="sd">        Returns paths to trace files: *.[trc,edf,def,evt].</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            list: Paths to trace files.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">trc_files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;*.trc&#39;</span><span class="p">))</span>
         <span class="n">edf_files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;*.edf&#39;</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">trc_files</span> <span class="o">+</span> <span class="n">edf_files</span></div>
+        <span class="n">def_files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;traces/*.def&#39;</span><span class="p">))</span>
+        <span class="n">evt_files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;traces/*.evt&#39;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">trc_files</span> <span class="o">+</span> <span class="n">edf_files</span> <span class="o">+</span> <span class="n">def_files</span> <span class="o">+</span> <span class="n">evt_files</span></div>
 
 <div class="viewcode-block" id="Trial.execute_command"><a class="viewcode-back" href="../../../tau.model.trial.html#tau.model.trial.Trial.execute_command">[docs]</a>    <span class="k">def</span> <span class="nf">execute_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expr</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="p">,</span> <span class="n">env</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Execute a command as part of an experiment trial.</span>
