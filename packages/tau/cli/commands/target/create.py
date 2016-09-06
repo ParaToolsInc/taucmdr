@@ -79,6 +79,25 @@ class TargetCreateCommand(CreateCommand):
                     self.logger.debug("args.%s=%r", comp.info.role.keyword, comp.absolute_path)
                     setattr(args, comp.info.role.keyword, comp.absolute_path)
                     compilers[comp.info.role] = comp
+	else:
+            for family_attr, family_cls in [('mpi_family', MpiCompilerFamily),
+                                            ('shmem_family', ShmemCompilerFamily)]:
+                try:
+                    family_arg = getattr(args, family_attr)
+                except AttributeError as err:
+                    # User didn't specify that argument, but that's OK
+                    self.logger.debug(err)
+                    continue
+                else:
+                    delattr(args, family_attr)
+                try:
+                    family_comps = InstalledCompilerFamily(family_cls(family_arg))
+                except KeyError:
+                    self.parser.error("Invalid compiler family: %s" % family_arg)
+                for comp in family_comps:
+                    self.logger.debug("args.%s=%r", comp.info.role.keyword, comp.absolute_path)
+                    setattr(args, comp.info.role.keyword, comp.absolute_path)
+                    compilers[comp.info.role] = comp
 
         compiler_keys = set(CompilerRole.keys())
         all_keys = set(args.__dict__.keys())
