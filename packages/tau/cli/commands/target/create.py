@@ -79,7 +79,7 @@ class TargetCreateCommand(CreateCommand):
                     self.logger.debug("args.%s=%r", comp.info.role.keyword, comp.absolute_path)
                     setattr(args, comp.info.role.keyword, comp.absolute_path)
                     compilers[comp.info.role] = comp
-	else:
+        else:
             for family_attr, family_cls in [('mpi_family', MpiCompilerFamily),
                                             ('shmem_family', ShmemCompilerFamily)]:
                 try:

@@ -171,10 +171,7 @@ class Experiment(Model):
 
     def download_scorep(self):
         target = self.populate('target')
-        if target['scorep_source'] == 'download' or util.is_url(target['scorep_source']):
-            return True
-        else:
-            return False
+        return target['scorep_source'] == 'download' or util.is_url(target['scorep_source'])
         
     
     def configure_tau(self, prefix, dependencies):
@@ -282,10 +279,10 @@ class Experiment(Model):
         opts = (target.get(name + '_source', None), target['host_arch'], target['host_os'], target.compilers())
         if name == 'scorep':
             if util.is_url(target.get('scorep_source')):
-                URL = target.get('scorep_source')
+                url = target.get('scorep_source')
             else:
-                URL = None
-            opts = (target.get(name + '_source', None), target['host_arch'], target['host_os'], target.compilers(), URL)
+                url = None
+            opts = (target.get(name + '_source', None), target['host_arch'], target['host_os'], target.compilers(), url)
         for storage in reversed(ORDERED_LEVELS):
             inst = cls(storage.prefix, *opts)
             try:
@@ -305,7 +302,7 @@ class Experiment(Model):
             inst = cls(prefix, *opts)
             with inst:
                 if self.download_scorep():
-                    inst._dl_src()
+                    inst.dl_src()
                 return inst
 
     def configure(self):

@@ -161,7 +161,7 @@ class Installation(object):
             pass
         return False
 
-    def _dl_src(self, reuse=True):
+    def dl_src(self, reuse=True):
         """Downloads source code for installation.
         
         Acquires package source code archive file via download.
@@ -181,12 +181,12 @@ class Installation(object):
                                          "Check that the file or directory is accessable")
         self.archive_path = downloaded
         try:
-            topdir = util.archive_toplevel(downloaded)
+            util.archive_toplevel(downloaded)
         except IOError as err:
             LOGGER.info("Cannot read %s archive file '%s': %s", self.name, downloaded, err)
             if reuse:
                 LOGGER.info("Downloading a fresh copy of '%s'", self.src)
-                self._dl_src(reuse=False)
+                self.dl_src(reuse=False)
                 return
             else:
                 raise ConfigurationError("Cannot read %s archive file '%s': %s" % (self.name, downloaded, err))

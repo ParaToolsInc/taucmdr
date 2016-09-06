@@ -89,7 +89,6 @@ def attributes():
                          'nargs': '?',
                          'choices': ('tau', 'merged', 'cubex', 'none'),
                          'const': True},
-                         #'action': ParseBooleanAction},
             'compat': {'cubex': Target.exclude('scorep_source', None)},
         },
         'trace': {
@@ -101,9 +100,8 @@ def attributes():
                          'group': 'output format',
                          'metavar': '<format>',
                          'nargs': '?',
-                         'choices':('slog2','otf2','none'),
+                         'choices':('slog2', 'otf2', 'none'),
                          'const': True},
-                         #'action': ParseBooleanAction},
             'compat': {'otf2': Target.exclude('scorep_source', None)}
         },
         'sample': {

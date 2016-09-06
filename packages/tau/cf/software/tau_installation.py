@@ -289,10 +289,7 @@ class TauInstallation(Installation):
         self.throttle = throttle
         self.throttle_per_call = throttle_per_call
         self.throttle_num_calls = throttle_num_calls
-        if (self.scorep_source != 'none' and self.trace != 'none') or (self.scorep_source != 'none' and self.profile == 'cubex'):
-            self.scorep_support = True
-	else:
-	    self.scorep_support = False
+        self.scorep_support = (self.scorep_source != 'none' and self.trace != 'none') or (self.scorep_source != 'none' and self.profile == 'cubex')
         
     def verify(self):
         """Returns true if the installation is valid.
@@ -745,18 +742,18 @@ class TauInstallation(Installation):
         opts, env = super(TauInstallation, self).runtime_config(opts, env)
         env = self._sanitize_environment(env)
         env['TAU_VERBOSE'] = str(int(self.verbose))
-        if(self.profile == 'tau'):
+        if self.profile == 'tau':
             env['TAU_PROFILE'] = '1'
-        elif(self.profile == 'merged'):
+        elif self.profile == 'merged':
             env['TAU_PROFILE'] = '1'
             env['TAU_PROFILE_FORMAT'] = 'merged'
         else:
             env['TAU_PROFILE'] = '0'
-        if(self.trace == 'slog2' or self.trace == 'otf2'):
+        if self.trace == 'slog2' or self.trace == 'otf2':
             env['TAU_TRACE'] = '1'
         else:
             env['TAU_TRACE'] = '0'
-        if(self.trace == 'otf2'):
+        if self.trace == 'otf2':
             env['SCOREP_ENABLE_TRACING'] = str(int(self.trace == 'otf2'))
             env['SCOREP_ENABLE_PROFILING'] = str(int(self.profile == 'cubex'))
         env['TAU_SAMPLE'] = str(int(self.sample))
@@ -880,7 +877,7 @@ class TauInstallation(Installation):
         for tool in tools:
             for pfile in ['tauprofile.xml', 'profile.cubex']:
                 ppath = os.path.join(path, pfile)
-                if(os.path.isfile(ppath) is True):
+                if os.path.isfile(ppath):
                     break
                 else:
                     ppath = path
@@ -946,9 +943,9 @@ class TauInstallation(Installation):
                 raise ConfigurationError("otf2 trace files not found.")
             evt_files = glob.glob(os.path.join(path, 'traces/*.evt'))
             def_files = glob.glob(os.path.join(path, 'traces/*.def'))
-            if (len(evt_files) + len(def_files) > resource.getrlimit(resource.RLIMIT_NOFILE)[0]):
+            if len(evt_files) + len(def_files) > resource.getrlimit(resource.RLIMIT_NOFILE)[0]:
                 raise ConfigurationError("Too many trace files, use Vampir server to view.")
-            if util.which('vampir') == None:
+            if util.which('vampir') is None:
                 raise ConfigurationError("Vampir not found in PATH. Contact ParaTools for more information on Vampir.")
             LOGGER.info("Opening %s in %s", tau_otf2, tool_name)
             cmd = [tool_name, tau_otf2]

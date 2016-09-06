@@ -32,8 +32,6 @@ applications.
 """
 
 import os
-import sys
-import fileinput
 from tau import logger
 from tau.cf.software.installation import AutotoolsInstallation
 from tau.cf.compiler import CC_ROLE
@@ -51,12 +49,12 @@ class ScorepInstallation(AutotoolsInstallation):
         if URL is not None:
             SOURCES[None] = URL
         super(ScorepInstallation, self).__init__('SCOREP', prefix, src, dst, 
-                                               target_arch, target_os, compilers, SOURCES, None, None)
+                                                 target_arch, target_os, compilers, SOURCES, None, None)
 
-    def _dl_src(self, reuse=True):
+    def dl_src(self, reuse=True):
         """Downloads source code for installation.
         
         Acquires package source code archive file via download.
         """
 
-        super(ScorepInstallation, self)._dl_src(reuse)
+        super(ScorepInstallation, self).dl_src(reuse)
