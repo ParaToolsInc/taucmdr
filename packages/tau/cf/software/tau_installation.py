@@ -601,6 +601,8 @@ class TauInstallation(Installation):
             tags.append('opari')
         if not self.openmp_support:
             tags.append('openmp')
+        if not self.scorep_support:
+            tags.append('scorep')
         LOGGER.debug("Incompatible tags: %s", tags)
         return set(tags)
 
