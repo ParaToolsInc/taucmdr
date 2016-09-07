@@ -88,12 +88,12 @@ def attributes():
                          'metavar': '<format>',
                          'nargs': '?',
                          'choices': ('tau', 'merged', 'cubex', 'none'),
-                         'const': True},
+                         'const': 'tau'},
             'compat': {'cubex': Target.exclude('scorep_source', None)},
         },
         'trace': {
             'type': 'string',
-            'default': 'otf2',
+            'default': 'none',
             'description': "generate application traces",
             'application_rebuild': False,
             'argparse': {'flags': ('--trace',),
@@ -101,7 +101,7 @@ def attributes():
                          'metavar': '<format>',
                          'nargs': '?',
                          'choices':('slog2', 'otf2', 'none'),
-                         'const': True},
+                         'const': 'otf2'},
             'compat': {'otf2': Target.exclude('scorep_source', None)}
         },
         'sample': {

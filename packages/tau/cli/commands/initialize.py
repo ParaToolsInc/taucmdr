@@ -110,14 +110,12 @@ class InitializeCommand(AbstractCommand):
                                        const=True,
                                        choices=('tau', 'merged', 'cubex', 'none'),
                                        default='tau')
-                                       #action=ParseBooleanAction)
         measurement_group.add_argument('--trace',
                                        help="Create measurement configurations for tracing",
                                        metavar='<format>',
                                        nargs='?',
                                        const=True,
                                        default='otf2')
-                                       #action=ParseBooleanAction)
         measurement_group.add_argument('--sample',
                                        help="Create measurement configurations for event-based sampling",
                                        metavar='T/F',
