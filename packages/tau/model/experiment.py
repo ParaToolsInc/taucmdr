@@ -260,7 +260,7 @@ class Experiment(Model):
             tau.install()
             return tau
 
-    def configure_tau_dependency(self, name, prefix):
+    def configure_tau_dependency(self, name, prefix, dependencies):
         """Installs dependency packages for TAU, e.g. PDT.
         
         Args:
@@ -273,16 +273,17 @@ class Experiment(Model):
         """
         LOGGER.debug("Configuring TAU dependency '%s' at prefix '%s'", name, prefix)
         target = self.populate('target')
+        application = self.populate('application')
         cls_name = name.title() + 'Installation'
         pkg = __import__('tau.cf.software.%s_installation' % name.lower(), globals(), locals(), [cls_name], -1)
         cls = getattr(pkg, cls_name)
-        opts = (target.get(name + '_source', None), target['host_arch'], target['host_os'], target.compilers())
+        
+        url = None
         if name == 'scorep':
             if util.is_url(target.get('scorep_source')):
                 url = target.get('scorep_source')
-            else:
-                url = None
-            opts = (target.get(name + '_source', None), target['host_arch'], target['host_os'], target.compilers(), url)
+        opts = (target.get(name + '_source', None), target['host_arch'], target['host_os'],
+                target.compilers(), application['shmem'], dependencies, url)
         for storage in reversed(ORDERED_LEVELS):
             inst = cls(storage.prefix, *opts)
             try:
@@ -303,6 +304,7 @@ class Experiment(Model):
             with inst:
                 if self.download_scorep():
                     inst.dl_src()
+                inst.install()
                 return inst
 
     def configure(self):
@@ -327,7 +329,7 @@ class Experiment(Model):
             dependencies = {}
             for name in 'pdt', 'binutils', 'libunwind', 'papi', 'scorep':
                 uses_dependency = getattr(self, 'uses_' + name)
-                inst = self.configure_tau_dependency(name, prefix) if (uses_dependency() and target.get(name + '_source', None) != 'None') else None
+                inst = self.configure_tau_dependency(name, prefix, dependencies) if (uses_dependency() and target.get(name + '_source', None) != 'None') else None
                 dependencies[name] = inst
             return self.configure_tau(prefix, dependencies)
 

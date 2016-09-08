@@ -51,10 +51,11 @@ LIBRARIES = {None: ['libbfd.a']}
 class BinutilsInstallation(AutotoolsInstallation):
     """Encapsulates a GNU binutils installation."""
     
-    def __init__(self, prefix, src, target_arch, target_os, compilers):
+    def __init__(self, prefix, src, target_arch, target_os, compilers, shmem, dependencies, URL):
         dst = os.path.join(target_arch, compilers[CC_ROLE].info.family.name)
         super(BinutilsInstallation, self).__init__('binutils', prefix, src, dst, 
-                                                   target_arch, target_os, compilers, SOURCES, None, LIBRARIES)
+                                                   target_arch, target_os, compilers, shmem,
+                                                   dependencies, SOURCES, None, LIBRARIES)
 
     def _configure_default(self, flags, env):
         # pylint: disable=unused-argument

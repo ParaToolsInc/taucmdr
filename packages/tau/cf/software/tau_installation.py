@@ -233,7 +233,7 @@ class TauInstallation(Installation):
             throttle_num_calls (int): Minimum number of calls for a lightweight event.
         """
         super(TauInstallation, self).__init__('TAU', prefix, src, "", target_arch, target_os, compilers, 
-                                              SOURCES, COMMANDS, None)
+                                              None, None, SOURCES, COMMANDS, None)
         try:
             self.arch = TauArch.get(target_arch, target_os)
         except KeyError:
@@ -246,6 +246,7 @@ class TauInstallation(Installation):
         self.binutils = binutils
         self.libunwind = libunwind
         self.papi = papi
+        self.scorep = scorep
         self.openmp_support = openmp_support
         self.opencl_support = opencl_support
         self.opencl_prefix = opencl_prefix
@@ -262,8 +263,6 @@ class TauInstallation(Installation):
         self.shmem_libraries = shmem_libraries
         self.mpc_support = mpc_support
         self.scorep_source = scorep_source
-        if scorep:
-            self.scorep_dl_prefix = scorep.archive_prefix
         self.source_inst = source_inst
         self.compiler_inst = compiler_inst
         self.link_only = link_only
@@ -484,10 +483,7 @@ class TauInstallation(Installation):
         if self.io_inst:
             flags.append('-iowrapper')
         if self.scorep_support:
-            if self.scorep_source == 'download' or util.is_url(self.scorep_source):
-                flags.append('-scorep=%s' %self.scorep_dl_prefix)
-            else:
-                flags.append('-scorep=%s' %self.scorep_source)
+            flags.append('-scorep=%s' %self.scorep.install_prefix)
         cmd = ['./configure'] + flags
         LOGGER.info("Configuring TAU...")
         if util.create_subprocess(cmd, cwd=self.src_prefix, stdout=False):

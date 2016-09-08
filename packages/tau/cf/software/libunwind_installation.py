@@ -52,10 +52,11 @@ LIBRARIES = {None: ['libunwind.a']}
 class LibunwindInstallation(AutotoolsInstallation):
     """Encapsulates a libunwind installation."""
 
-    def __init__(self, prefix, src, target_arch, target_os, compilers):
+    def __init__(self, prefix, src, target_arch, target_os, compilers, shmem, dependencies, URL):
         dst = os.path.join(target_arch, compilers[CC_ROLE].info.family.name)
         super(LibunwindInstallation, self).__init__('libunwind', prefix, src, dst, 
-                                                    target_arch, target_os, compilers, SOURCES, None, LIBRARIES)
+                                                    target_arch, target_os, compilers, shmem,
+                                                    dependencies, SOURCES, None, LIBRARIES)
         
     def verify(self):
         headers = ['libunwind.h', 'unwind.h']

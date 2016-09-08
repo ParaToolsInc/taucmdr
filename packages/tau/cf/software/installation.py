@@ -81,7 +81,7 @@ class Installation(object):
     #pylint: disable=too-many-arguments
 
     def __init__(self, name, prefix, src, dst, target_arch, target_os, compilers, 
-                 sources, commands, libraries):
+                 shmem, dependencies, sources, commands, libraries):
         """Initializes the installation object.
         
         To set up a new installation, pass `src` as a URL, file path, or the special keyword 'download'.
@@ -133,6 +133,8 @@ class Installation(object):
         self.lib_path = os.path.join(self.install_prefix, 'lib')
         self._lockfile = LockFile(os.path.join(self.install_prefix, '.tau_lock'))
         self.archive_path = self.archive_prefix
+        self.shmem = shmem
+        self.dependencies = dependencies
         LOGGER.debug("%s installation prefix is %s", self.name, self.install_prefix)
         
     def _lookup_target_os_list(self, dct):

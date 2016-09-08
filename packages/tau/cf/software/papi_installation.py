@@ -47,10 +47,11 @@ LIBRARIES = {None: ['libpapi.a']}
 class PapiInstallation(AutotoolsInstallation):
     """Encapsulates a PAPI installation."""
 
-    def __init__(self, prefix, src, target_arch, target_os, compilers):
+    def __init__(self, prefix, src, target_arch, target_os, compilers, shmem, dependencies, URL):
         dst = os.path.join(target_arch, compilers[CC_ROLE].info.family.name)
         super(PapiInstallation, self).__init__('PAPI', prefix, src, dst, 
-                                               target_arch, target_os, compilers, SOURCES, None, LIBRARIES)
+                                               target_arch, target_os, compilers, shmem,
+                                               dependencies, SOURCES, None, LIBRARIES)
 
     def _prepare_src(self, reuse=True):
         super(PapiInstallation, self)._prepare_src(reuse)

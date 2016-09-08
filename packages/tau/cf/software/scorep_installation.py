@@ -35,21 +35,25 @@ import os
 from tau import logger
 from tau.cf.software.installation import AutotoolsInstallation
 from tau.cf.compiler import CC_ROLE
+from tau.cf.target import Architecture
 
 LOGGER = logger.get_logger(__name__)
 
 SOURCES = {None: 'http://www.cs.uoregon.edu/research/tau/scorep.tgz'}
 
+LIBRARIES = {None: ['libcube4.a']}
+
 
 class ScorepInstallation(AutotoolsInstallation):
     """Downloads ScoreP."""
 
-    def __init__(self, prefix, src, target_arch, target_os, compilers, URL):
+    def __init__(self, prefix, src, target_arch, target_os, compilers, shmem, dependencies, URL):
         dst = os.path.join(target_arch, compilers[CC_ROLE].info.family.name)
         if URL is not None:
             SOURCES[None] = URL
         super(ScorepInstallation, self).__init__('SCOREP', prefix, src, dst, 
-                                                 target_arch, target_os, compilers, SOURCES, None, None)
+                                                 target_arch, target_os, compilers, shmem, dependencies,
+                                                 SOURCES, None, LIBRARIES)
 
     def dl_src(self, reuse=True):
         """Downloads source code for installation.
@@ -58,3 +62,26 @@ class ScorepInstallation(AutotoolsInstallation):
         """
 
         super(ScorepInstallation, self).dl_src(reuse)
+
+    def configure(self, flags, env):
+        """Configure Score-P."""
+        flags.extend(['--enable-shared', '--without-otf2', '--without-opari2',
+                      '--without-cube', '--without-gui'])
+        if self.target_arch.name == 'x86_64' or self.target_arch.name == 'ibm64':
+            if self.compilers[CC_ROLE].info.family.name in ['Intel', 'IBM', 'PGI']:
+                flags.append('--with-nocross-compiler-suite=%s' %self.compilers[CC_ROLE].info.family.name.lower())
+            elif self.compilers[CC_ROLE].info.family.name == 'GNU':
+                flags.append('--with-nocross-compiler-suite=gcc')
+        if self.dependencies['papi']:
+            flags.append('--with-papi=%s' %self.dependencies['papi'].install_prefix)
+            flags.append('--with-papi-header=%s' %self.dependencies['papi'].include_path)
+            flags.append('--with-papi-lib=%s' %self.dependencies['papi'].lib_path)
+        if self.dependencies['pdt']:
+            flags.append('--with-pdt=%s' %self.dependencies['pdt'].bin_path)
+        if not self.shmem:
+            flags.append('--without-shmem')
+        if self.dependencies['binutils']:
+            flags.append('--with-libbfd=%s' %self.dependencies['binutils'].install_prefix)
+        if self.dependencies['libunwind']:
+             flags.append('--with-libunwind=%s' %self.dependencies['libunwind'].install_prefix)
+        return super(ScorepInstallation, self).configure(flags, env)

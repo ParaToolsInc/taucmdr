@@ -122,9 +122,10 @@ class PdtInstallation(AutotoolsInstallation):
     proceedure is the same otherwise, so we reuse what we can from AutotoolsInstallation.
     """
 
-    def __init__(self, prefix, src, target_arch, target_os, compilers):
+    def __init__(self, prefix, src, target_arch, target_os, compilers, shmem, dependencies, URL):
         super(PdtInstallation, self).__init__('PDT', prefix, src, compilers[CXX_ROLE].info.family.name, 
-                                              target_arch, target_os, compilers, SOURCES, COMMANDS, None)
+                                              target_arch, target_os, compilers, shmem,
+                                              dependencies, SOURCES, COMMANDS, None)
         self.arch = TauArch.get(target_arch, target_os)
         self.arch_path = os.path.join(self.install_prefix, self.arch.name)
         self.bin_path = os.path.join(self.arch_path, 'bin')
