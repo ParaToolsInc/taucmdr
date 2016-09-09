@@ -94,3 +94,36 @@ USER_PREFIX = os.path.realpath(os.path.abspath(os.environ.get('__TAU_USER_PREFIX
 
 PROJECT_DIR = '.tau'
 """str: Name of the project-level directory containing TAU Commander project files."""
+
+def version_banner():
+    """Return a human readable text banner describing the TAU Commander installation."""
+    import platform
+    import socket
+    from datetime import datetime
+    import tau.logger
+    fmt = ("TAU Commander [ %(url)s ]\n"
+           "\n"
+           "Version        : %(version)s\n"
+           "Timestamp      : %(timestamp)s\n"
+           "Hostname       : %(hostname)s\n"
+           "Platform       : %(platform)s\n"
+           "Working Dir.   : %(cwd)s\n"
+           "Terminal Size  : %(termsize)s\n"
+           "Frozen         : %(frozen)s\n"
+           "Python         : %(python)s\n"
+           "Python Version : %(pyversion)s\n"
+           "Python Impl.   : %(pyimpl)s\n"
+           "PYTHONPATH     : %(pythonpath)s\n")
+    data = {"url": TAUCMDR_URL,
+            "version": __version__,
+            "timestamp": str(datetime.now()),
+            "hostname": socket.gethostname(),
+            "platform": platform.platform(),
+            "cwd": os.getcwd(),
+            "termsize": 'x'.join([str(dim) for dim in tau.logger.TERM_SIZE]),
+            "frozen": getattr(sys, 'frozen', False),
+            "python": sys.executable,
+            "pyversion": platform.python_version(),
+            "pyimpl": platform.python_implementation(),
+            "pythonpath": os.pathsep.join(sys.path)}
+    return fmt % data
