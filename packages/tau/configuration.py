@@ -32,6 +32,7 @@ TODO: Docs
 
 import textwrap
 from configobj import ConfigObj
+from tau import util
 from tau.storage import AbstractStorage, StorageError
 from tau.storage.levels import ORDERED_LEVELS
 from tau.storage.project import ProjectStorageError
@@ -195,7 +196,12 @@ def import_from_file(filepath, storage):
     Args:
         filepath (str): Path to the configuration file.
         stoarge (AbstractStorage): Storage container.
-    """ 
+        
+    Raises:
+        IOError: ``filepath`` is not readable.
+    """
+    if not util.file_accessible(filepath):
+        raise IOError("%s is not accessible" % filepath)
     config = ConfigObj(filepath)
     for section in config.sections:
         for key, val in config[section].iteritems():
