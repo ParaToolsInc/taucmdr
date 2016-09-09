@@ -103,6 +103,7 @@ def version_banner():
     import tau.logger
     fmt = ("TAU Commander [ %(url)s ]\n"
            "\n"
+           "Prefix         : %(prefix)s\n"
            "Version        : %(version)s\n"
            "Timestamp      : %(timestamp)s\n"
            "Hostname       : %(hostname)s\n"
@@ -115,6 +116,7 @@ def version_banner():
            "Python Impl.   : %(pyimpl)s\n"
            "PYTHONPATH     : %(pythonpath)s\n")
     data = {"url": TAUCMDR_URL,
+            "prefix": TAU_HOME,
             "version": __version__,
             "timestamp": str(datetime.now()),
             "hostname": socket.gethostname(),
