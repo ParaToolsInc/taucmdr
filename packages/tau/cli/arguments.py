@@ -103,19 +103,36 @@ class MutableGroupArgumentParser(argparse.ArgumentParser):
             if group.title not in [positional_title, optional_title]:
                 yield group
                 
-    def merge(self, parser, group_title=None, include_positional=True, include_optional=True, include_storage=False):
+    def merge(self, parser, group_title=None, 
+              include_positional=True, include_optional=True, include_storage=False, exclude=None):
+        """Merge arguments from a parser into this parser.
+        
+        Modify this parser by adding additional arguments taken from the supplied parser.
+        
+        Args:
+            parser (ArgumentParser): Parser to pull arguments from.
+            group_title (str): Optional group title for merged arguments.
+            include_positional (bool): If True, include positional arguments.
+            include_optional (bool): If True, include optional arguments.
+            include_storage (bool): If True, include the storage level argument, see :any:`STORAGE_LEVEL_FLAG`.
+            exclude (list): Strings identifying arguments that should be excluded.
+        """
         group = self.add_argument_group(group_title) if group_title else self
         for action in parser._actions:
             optional = bool(action.option_strings)
             storage = '-'+STORAGE_LEVEL_FLAG in action.option_strings
+            excluded = exclude and bool([optstr for optstr in action.option_strings  
+                                         for substr in exclude if substr in optstr])
             # pylint: disable=too-many-boolean-expressions
-            if ((not include_storage and storage) or
+            if (excluded or
+                    (not include_storage and storage) or
                     (not include_optional and optional) or
                     (not include_positional and not optional)):
                 continue
             try:
                 group._add_action(action)
             except argparse.ArgumentError:
+                # Argument is already in this parser.
                 pass
 
 
