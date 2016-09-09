@@ -109,9 +109,10 @@ class TargetCreateCommand(CreateCommand):
         self.logger.debug("Family compilers: %s", family_keys)
 
         for key in given_keys - family_keys:
-            absolute_path = util.which(getattr(args, key))
+            cmd = getattr(args, key)
+            absolute_path = util.which(cmd)
             if not absolute_path:
-                self.parser.error("Invalid compiler command: %s")
+                self.parser.error("Invalid compiler command: %s" % cmd)
             role = CompilerRole.find(key)
             compilers[role] = InstalledCompiler.probe(absolute_path, role=role)
 

@@ -464,7 +464,6 @@ def hline(title, *args, **kwargs):
     Returns:
         str: The horizontal rule.
     """
-
     text = "{:=<{}}\n".format('== %s ==' % title, logger.LINE_WIDTH)
     return color_text(text, *args, **kwargs)
 
