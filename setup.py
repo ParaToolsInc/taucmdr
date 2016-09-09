@@ -216,10 +216,37 @@ class Test(TestCommand):
 class Install(InstallCommand):
     
     def _configure_new_installation(self):
-        from tau import configuration
-        from tau.storage.levels import SYSTEM_STORAGE 
-        configuration.import_from_file(os.path.join(PACKAGE_TOPDIR, 'taucmdr.cfg'), SYSTEM_STORAGE)
+        import tau
+        from tau import configuration, util
+        from tau.storage.levels import SYSTEM_STORAGE
+        from tau.cf.software import SoftwarePackageError
+        from tau.cli.commands.initialize import COMMAND as init_command
+        from tau.cli.commands.select import COMMAND as select_command
+        from tau.model.project import Project
+                
+        # Import default settings
+        SYSTEM_STORAGE.connect_filesystem()
+        configuration.import_from_file(os.path.join(PACKAGE_TOPDIR, 'defaults.cfg'), SYSTEM_STORAGE)
         
+        # Call `tau initialize` to configure system-level packages supporting default experiments
+        os.chdir(self.build_base)
+        util.rmtree('.tau', ignore_errors=True)
+        if not init_command.main([]):
+            raise SoftwarePackageError("`tau initialize` failed in the simplist case.",
+                                       "Check that the values specified in 'defaults.cfg' are valid.")
+        
+        # Iterate through default configurations and configure system-level packages for each
+        proj_ctrl = Project.controller()
+        proj = proj_ctrl.selected().populate()
+        for targ in proj['targets']:
+            for app in proj['applications']:
+                for meas in proj['measurements']:
+                    argv = ['--target', targ, '--application', app, '--measurement', meas]
+                    if not select_command.main(argv):
+                        raise SoftwarePackageError("`%s %s` failed." % (select_command, ' '.join(argv)),
+                                                   "Check that the values specified in 'defaults.cfg' are valid.")
+        # Indicate success
+        print tau.version_banner()
     
     def run(self):
         if not self.force:
@@ -239,6 +266,7 @@ class Install(InstallCommand):
                 # so SYSTEM_PREFIX etc. are set correctly. 
                 sys.path.insert(0, os.path.join(self.prefix, 'packages'))
                 self._configure_new_installation()
+                
             
 
 
