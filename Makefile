@@ -123,7 +123,6 @@ build: python_check
 
 install: build
 	$(ECHO)$(PYTHON) setup.py install --force
-	$(ECHO)$(INSTALLDIR)/bin/tau --version
 	@echo
 	@echo "-------------------------------------------------------------------------------"
 	@echo "TAU Commander is installed at \"$(INSTALLDIR)\""

@@ -37,7 +37,7 @@ HERE = os.path.realpath(os.path.dirname(__file__))
 
 SETUP_CFG_FILE = os.path.join(HERE, 'setup.cfg')
 
-TAUCMDR_CFG_FILE = os.path.join(HERE, 'taucmdr.cfg')
+DEFAULTS_CFG_FILE = os.path.join(HERE, 'defaults.cfg')
 
 PROG = sys.argv[0]
 
@@ -86,7 +86,7 @@ def build_parser():
                    "When TAU Commander is installed, the values passed to this script\n"
                    "will be saved at the system level as the defaults for all new\n"
                    "configuration objects.  These values can be changed in future via\n"
-                   "the `tau configure` command.") % (SETUP_CFG_FILE, TAUCMDR_CFG_FILE)
+                   "the `tau configure` command.") % (SETUP_CFG_FILE, DEFAULTS_CFG_FILE)
     parser = arguments.get_parser(prog=PROG, usage='%s [arguments]' % PROG, description=description)
     parser.add_argument('--prefix', metavar='<path>', help='installation prefix',
                         default='/opt/ParaTools/taucmdr-%s' % taucmdr_version)
@@ -109,9 +109,9 @@ def main():
     comment = configuration.config_file_comment
     setup_cfg = configuration.open_config_file('setup.cfg')
     setup_cfg.initial_comment = comment(tau.version_banner())
-    taucmdr_cfg = configuration.default_config()
-    taucmdr_cfg.initial_comment = comment("Initial default values for a new TAU Commander installation.  "
-                                          "These can be changed after installation via the `tau configure` command.")
+    defaults_cfg = configuration.default_config()
+    defaults_cfg.initial_comment = comment("Initial default values for a new TAU Commander installation.  "
+                                           "These can be changed after installation via the `tau configure` command.")
     
     # Add a section to control `python setup.py build`
     setup_cfg['build'] = {}
@@ -121,11 +121,11 @@ def main():
     setup_cfg.comments['install'] = comment("Arguments to `python setup.py install`.", box=True)
     
     # Merge new values into configuration.  Non-model values are added to the 'install' section.
-    for section in taucmdr_cfg.sections:
-        for key in taucmdr_cfg[section]:
+    for section in defaults_cfg.sections:
+        for key in defaults_cfg[section]:
             val = getattr(args, key, None)
             if val:
-                taucmdr_cfg[section][key] = val
+                defaults_cfg[section][key] = val
 
     # Configure installation parameters
     setup_cfg['install']['prefix'] = args.prefix
@@ -139,8 +139,8 @@ def main():
     # Write config files
     with open(SETUP_CFG_FILE, "w") as fout:
         setup_cfg.write(fout)
-    with open(TAUCMDR_CFG_FILE, "w") as fout:
-        taucmdr_cfg.write(fout)
+    with open(DEFAULTS_CFG_FILE, "w") as fout:
+        defaults_cfg.write(fout)
 
 if __name__ == '__main__':
     sys.exit(main())
