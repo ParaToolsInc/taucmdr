@@ -33,8 +33,7 @@ Instead, process arguments in the appropriate subcommand.
 
 import os
 import sys
-from tau import TAUCMDR_URL, TAU_SCRIPT
-from tau import __version__ as TAU_VERSION
+import tau
 from tau import cli, logger
 from tau.cli import UnknownCommandError, arguments
 from tau.cli.command import AbstractCommand
@@ -43,7 +42,7 @@ from tau.cli.commands.trial.create import COMMAND as trial_create_command
 
 LOGGER = logger.get_logger(__name__)
 
-SUMMARY_FMT = "TAU Commander [ %s ]" % TAUCMDR_URL
+SUMMARY_FMT = "TAU Commander [ %s ]" % tau.TAUCMDR_URL
 
 HELP_PAGE_FMT = """'%(command)s' page to be written.
 
@@ -59,7 +58,7 @@ class MainCommand(AbstractCommand):
 
     def __init__(self):
         super(MainCommand, self).__init__(__name__, summary_fmt=SUMMARY_FMT, help_page_fmt=HELP_PAGE_FMT)
-        self.command = os.path.basename(TAU_SCRIPT)
+        self.command = os.path.basename(tau.TAU_SCRIPT)
     
     def construct_parser(self):
         usage = "%s [arguments] <subcommand> [options]"  % self.command
@@ -86,7 +85,7 @@ class MainCommand(AbstractCommand):
                             help="Options to be passed to <subcommand>",
                             metavar='[options]',
                             nargs=arguments.REMAINDER)
-        parser.add_argument('-V', '--version', action='version', version=self._version())
+        parser.add_argument('-V', '--version', action='version', version=tau.version_banner())
         parser.add_argument('-l', '--log',
                             help="record all actions to '%s'" % logger.LOG_FILE,
                             const=True,
@@ -104,35 +103,7 @@ class MainCommand(AbstractCommand):
                            default=arguments.SUPPRESS,
                            action='store_const')        
         return parser
-    
-    def _version(self):
-        import platform
-        import socket
-        from datetime import datetime
-        fmt = ("Version        : %(version)s\n"
-               "Timestamp      : %(timestamp)s\n"
-               "Hostname       : %(hostname)s\n"
-               "Platform       : %(platform)s\n"
-               "Working Dir.   : %(cwd)s\n"
-               "Terminal Size  : %(termsize)s\n"
-               "Frozen         : %(frozen)s\n"
-               "Python         : %(python)s\n"
-               "Python Version : %(pyversion)s\n"
-               "Python Impl.   : %(pyimpl)s\n"
-               "PYTHONPATH     : %(pythonpath)s\n")
-        data = {"version": TAU_VERSION,
-                "timestamp": str(datetime.now()),
-                "hostname": socket.gethostname(),
-                "platform": platform.platform(),
-                "cwd": os.getcwd(),
-                "termsize": 'x'.join([str(dim) for dim in logger.TERM_SIZE]),
-                "frozen": getattr(sys, 'frozen', False),
-                "python": sys.executable,
-                "pyversion": platform.python_version(),
-                "pyimpl": platform.python_implementation(),
-                "pythonpath": os.pathsep.join(sys.path)}
-        return fmt % data
-        
+            
     def main(self, argv):
         """Program entry point.
 
