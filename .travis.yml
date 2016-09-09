@@ -38,10 +38,11 @@ install:
   - ./bin/tau --version
 
 script:
-  - coverage run setup.py test
+#  - coverage run setup.py test
+  - python setup.py test
 
-after_success:
-  - codecov --env PYENV_VERSION OS
+#after_success:
+#  - codecov --env PYENV_VERSION OS
 
 deploy:
   provider: script
