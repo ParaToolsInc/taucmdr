@@ -163,11 +163,8 @@ class Experiment(Model):
         return bool(len([met for met in measurement['metrics'] if 'PAPI' in met]))
 
     def uses_scorep(self):
-        target = self.populate('target')
-        if target['scorep_source'] == 'none':
-            return False
-        else:
-            return True
+        measurement = self.populate('measurement')
+        return (measurement['profile'] == 'cubex' or measurement['trace'] == 'otf2')
 
     def download_scorep(self):
         target = self.populate('target')
