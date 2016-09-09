@@ -35,7 +35,7 @@ from tau.model.project import Project
 from tau.model.target import Target
 from tau.model.application import Application
 from tau.model.measurement import Measurement
-from tau.storage.levels import PROJECT_STORAGE
+from tau.cf.storage.levels import PROJECT_STORAGE
 
 
 class ProjectCreateCommand(CreateCommand):

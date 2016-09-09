@@ -33,7 +33,7 @@ Functions used for unit tests of configure.py.
 
 from tau import tests
 from tau.cli.commands.configure import COMMAND as configure_cmd
-from tau.storage.project import ProjectStorageError
+from tau.cf.storage.project import ProjectStorageError
 
 
 class ConfigureTest(tests.TestCase):

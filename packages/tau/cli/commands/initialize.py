@@ -35,8 +35,8 @@ from tau.error import InternalError, ConfigurationError
 from tau.cli import arguments
 from tau.cli.command import AbstractCommand
 from tau.model.project import Project, ProjectSelectionError
-from tau.storage.project import ProjectStorageError
-from tau.storage.levels import PROJECT_STORAGE, STORAGE_LEVELS
+from tau.cf.storage.project import ProjectStorageError
+from tau.cf.storage.levels import PROJECT_STORAGE, STORAGE_LEVELS
 from tau.cli.arguments import ParseBooleanAction
 from tau.cli.commands.target.create import COMMAND as target_create_cmd
 from tau.cli.commands.application.create import COMMAND as application_create_cmd

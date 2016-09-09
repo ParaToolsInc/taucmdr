@@ -35,7 +35,7 @@ from tau.cli.commands.target.list import COMMAND as target_list_cmd
 from tau.cli.commands.application.list import COMMAND as application_list_cmd
 from tau.cli.commands.measurement.list import COMMAND as measurement_list_cmd
 from tau.cli.commands.select import COMMAND as select_cmd
-from tau.storage.levels import STORAGE_LEVELS
+from tau.cf.storage.levels import STORAGE_LEVELS
 from tau.model.project import Project, ExperimentSelectionError
 
 

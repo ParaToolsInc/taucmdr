@@ -39,7 +39,7 @@ try:
 except ImportError:
     from StringIO import StringIO
 from tau import logger, EXIT_SUCCESS, EXIT_FAILURE
-from tau.storage.levels import PROJECT_STORAGE, USER_STORAGE, SYSTEM_STORAGE
+from tau.cf.storage.levels import PROJECT_STORAGE, USER_STORAGE, SYSTEM_STORAGE
 
 
 _DIR_STACK = []

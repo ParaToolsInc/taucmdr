@@ -30,7 +30,7 @@
 import os
 from tau import util
 from tau.error import ConfigurationError
-from tau.storage.levels import STORAGE_LEVELS
+from tau.cf.storage.levels import STORAGE_LEVELS
 from tau.cli import arguments
 from tau.cli.cli_view import CreateCommand
 from tau.model.target import Target

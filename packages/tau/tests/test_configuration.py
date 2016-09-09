@@ -31,8 +31,8 @@ Functions used for unit tests of configuration.py.
 """
 
 from tau import tests, configuration
-from tau.storage.levels import PROJECT_STORAGE, ORDERED_LEVELS
-from tau.storage.project import ProjectStorageError
+from tau.cf.storage.levels import PROJECT_STORAGE, ORDERED_LEVELS
+from tau.cf.storage.project import ProjectStorageError
 
 class ConfigurationTest(tests.TestCase):
        

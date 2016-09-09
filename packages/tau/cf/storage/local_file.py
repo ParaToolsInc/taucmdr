@@ -38,7 +38,7 @@ import tinydb
 from tinydb import operations
 from tau import logger, util
 from tau.error import ConfigurationError
-from tau.storage import AbstractStorage, StorageRecord, StorageError
+from tau.cf.storage import AbstractStorage, StorageRecord, StorageError
 
 LOGGER = logger.get_logger(__name__)
 

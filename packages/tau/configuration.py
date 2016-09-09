@@ -33,9 +33,9 @@ TODO: Docs
 import textwrap
 from configobj import ConfigObj
 from tau import util
-from tau.storage import AbstractStorage, StorageError
-from tau.storage.levels import ORDERED_LEVELS
-from tau.storage.project import ProjectStorageError
+from tau.cf.storage import AbstractStorage, StorageError
+from tau.cf.storage.levels import ORDERED_LEVELS
+from tau.cf.storage.project import ProjectStorageError
 from tau.model.target import Target
 from tau.model.application import Application
 from tau.model.measurement import Measurement

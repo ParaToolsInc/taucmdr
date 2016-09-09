@@ -37,8 +37,8 @@ import os
 import shutil
 from tau import logger, util
 from tau import SYSTEM_PREFIX, USER_PREFIX, PROJECT_DIR
-from tau.storage import StorageError
-from tau.storage.local_file import LocalFileStorage
+from tau.cf.storage import StorageError
+from tau.cf.storage.local_file import LocalFileStorage
 
 LOGGER = logger.get_logger(__name__)
 

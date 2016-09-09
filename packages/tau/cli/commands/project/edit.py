@@ -28,7 +28,7 @@
 """``tau project edit`` subcommand."""
 
 from tau import EXIT_SUCCESS
-from tau.storage.levels import PROJECT_STORAGE
+from tau.cf.storage.levels import PROJECT_STORAGE
 from tau.cli import arguments
 from tau.cli.cli_view import EditCommand
 from tau.model.project import Project

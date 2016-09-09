@@ -29,7 +29,7 @@
 
 from tau import EXIT_SUCCESS
 from tau import util
-from tau.storage.levels import STORAGE_LEVELS
+from tau.cf.storage.levels import STORAGE_LEVELS
 from tau.cli import arguments
 from tau.cli.cli_view import EditCommand
 from tau.model.target import Target

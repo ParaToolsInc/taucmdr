@@ -41,8 +41,8 @@ where :any:`USER_PREFIX` is not accessible from cluster compute nodes.
 """
 
 from tau import SYSTEM_PREFIX, USER_PREFIX
-from tau.storage.local_file import LocalFileStorage
-from tau.storage.project import ProjectStorage
+from tau.cf.storage.local_file import LocalFileStorage
+from tau.cf.storage.project import ProjectStorage
 
 
 SYSTEM_STORAGE = LocalFileStorage('system', SYSTEM_PREFIX)

@@ -30,7 +30,7 @@
 from tau import EXIT_SUCCESS
 from tau.cli import arguments
 from tau.error import ConfigurationError, InternalError
-from tau.storage.levels import PROJECT_STORAGE
+from tau.cf.storage.levels import PROJECT_STORAGE
 from tau.model.project import Project, ProjectSelectionError, ExperimentSelectionError
 from tau.model.target import Target
 from tau.model.application import Application

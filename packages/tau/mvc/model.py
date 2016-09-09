@@ -29,7 +29,7 @@
 
 from tau import logger
 from tau.error import ConfigurationError, ModelError, InternalError
-from tau.storage import StorageRecord, StorageError
+from tau.cf.storage import StorageRecord, StorageError
 from tau.mvc.controller import Controller
 
 LOGGER = logger.get_logger(__name__)

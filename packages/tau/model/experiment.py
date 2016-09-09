@@ -38,7 +38,7 @@ from tau.error import ConfigurationError
 from tau.mvc.model import Model
 from tau.model.trial import Trial
 from tau.model.project import Project
-from tau.storage.levels import PROJECT_STORAGE, ORDERED_LEVELS
+from tau.cf.storage.levels import PROJECT_STORAGE, ORDERED_LEVELS
 from tau.cf.target import OperatingSystem, DARWIN_OS
 from tau.cf.software import SoftwarePackageError
 from tau.cf.software.tau_installation import TauInstallation

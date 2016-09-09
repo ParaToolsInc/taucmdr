@@ -37,8 +37,8 @@ from termcolor import termcolor
 from tau import EXIT_SUCCESS
 from tau import logger, util, cli
 from tau.error import UniqueAttributeError, InternalError
-from tau.storage import StorageError
-from tau.storage.levels import SYSTEM_STORAGE, USER_STORAGE, PROJECT_STORAGE, STORAGE_LEVELS
+from tau.cf.storage import StorageError
+from tau.cf.storage.levels import SYSTEM_STORAGE, USER_STORAGE, PROJECT_STORAGE, STORAGE_LEVELS
 from tau.model.project import Project, ProjectSelectionError
 from tau.cli import arguments
 from tau.cli.command import AbstractCommand

@@ -32,7 +32,7 @@ from tau import configuration
 from tau.error import InternalError
 from tau.cli import arguments
 from tau.cli.command import AbstractCommand
-from tau.storage.levels import STORAGE_LEVELS, PROJECT_STORAGE
+from tau.cf.storage.levels import STORAGE_LEVELS, PROJECT_STORAGE
 
 
 

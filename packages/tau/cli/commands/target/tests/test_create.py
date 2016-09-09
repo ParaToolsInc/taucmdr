@@ -77,7 +77,7 @@ class CreateTest(tests.TestCase):
         self.assertIn("test_targ", stdout)
         self.assertFalse(stderr)
 
-        from tau.storage.levels import PROJECT_STORAGE
+        from tau.cf.storage.levels import PROJECT_STORAGE
         from tau.model.target import Target
         ctrl = Target.controller(PROJECT_STORAGE)
         test_targ = ctrl.one({'name': 'test_targ'})
@@ -95,7 +95,7 @@ class CreateTest(tests.TestCase):
         self.assertIn("test_targ", stdout)
         self.assertFalse(stderr)
 
-        from tau.storage.levels import PROJECT_STORAGE
+        from tau.cf.storage.levels import PROJECT_STORAGE
         from tau.model.target import Target
         ctrl = Target.controller(PROJECT_STORAGE)
         test_targ = ctrl.one({'name': 'test_targ'})
