@@ -28,7 +28,7 @@
 """``tau configure`` subcommand."""
 
 from tau import EXIT_SUCCESS
-from tau import configuration, util
+from tau import configuration
 from tau.error import InternalError
 from tau.cli import arguments
 from tau.cli.command import AbstractCommand
@@ -68,11 +68,6 @@ class ConfigureCommand(AbstractCommand):
                             metavar='<path>',
                             dest='import_file',
                             default=arguments.SUPPRESS)
-        parser.add_argument('--export',
-                            help="export configuration file",
-                            metavar='<path>',
-                            dest='export_file',
-                            default=arguments.SUPPRESS)
         return parser
 
     def main(self, argv):
@@ -84,13 +79,10 @@ class ConfigureCommand(AbstractCommand):
             storage.connect_filesystem()
 
         if hasattr(args, 'import_file'):
-            if not util.file_accessible(args.import_file):
+            try:
+                configuration.import_from_file(args.import_file, storage=storage)
+            except IOError:
                 self.parser.error("Can't read configuration file '%s'" % args.import_file)
-            configuration.import_from_file(args.import_file, storage=storage)
-            return EXIT_SUCCESS
-        
-        if hasattr(args, 'export_file'):
-            configuration.export_to_file(args.export_file, storage=storage)
             return EXIT_SUCCESS
         
         if not hasattr(args, 'key'):
