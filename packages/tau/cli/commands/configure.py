@@ -28,11 +28,12 @@
 """``tau configure`` subcommand."""
 
 from tau import EXIT_SUCCESS
-from tau import configuration
+from tau import configuration, util
 from tau.error import InternalError
 from tau.cli import arguments
 from tau.cli.command import AbstractCommand
-from tau.storage.levels import STORAGE_LEVELS
+from tau.storage.levels import STORAGE_LEVELS, PROJECT_STORAGE
+
 
 
 class ConfigureCommand(AbstractCommand):
@@ -62,17 +63,39 @@ class ConfigureCommand(AbstractCommand):
                             action='store_const',
                             const=True,
                             default=arguments.SUPPRESS)
+        parser.add_argument('--import',
+                            help="import configuration file",
+                            metavar='<path>',
+                            dest='import_file',
+                            default=arguments.SUPPRESS)
+        parser.add_argument('--export',
+                            help="export configuration file",
+                            metavar='<path>',
+                            dest='export_file',
+                            default=arguments.SUPPRESS)
         return parser
 
     def main(self, argv):
         args = self.parser.parse_args(args=argv)
         self.logger.debug('Arguments: %s', args)
         
-        storage = STORAGE_LEVELS[getattr(args, '@')[0]]
+        storage = STORAGE_LEVELS[getattr(args, arguments.STORAGE_LEVEL_FLAG)[0]]
+        if storage is not PROJECT_STORAGE:
+            storage.connect_filesystem()
+
+        if hasattr(args, 'import_file'):
+            if not util.file_accessible(args.import_file):
+                self.parser.error("Can't read configuration file '%s'" % args.import_file)
+            configuration.import_from_file(args.import_file, storage=storage)
+            return EXIT_SUCCESS
+        
+        if hasattr(args, 'export_file'):
+            configuration.export_to_file(args.export_file, storage=storage)
+            return EXIT_SUCCESS
         
         if not hasattr(args, 'key'):
             for key, val in configuration.get(storage=storage).iteritems():
-                print '%s : %s' % (key, val)       
+                print '%s : %r' % (key, val)       
         elif not (hasattr(args, 'value') or hasattr(args, 'unset')):
             try:
                 print configuration.get(args.key, storage)

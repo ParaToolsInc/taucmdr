@@ -1,0 +1,143 @@
+#!/usr/bin/env python
+#
+# Copyright (c) 2015, ParaTools, Inc.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+# (1) Redistributions of source code must retain the above copyright notice,
+#     this list of conditions and the following disclaimer.
+# (2) Redistributions in binary form must reproduce the above copyright notice,
+#     this list of conditions and the following disclaimer in the documentation
+#     and/or other materials provided with the distribution.
+# (3) Neither the name of ParaTools, Inc. nor the names of its contributors may
+#     be used to endorse or promote products derived from this software without
+#     specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+"""TAU Commander installation configuration.
+
+Writes a configuration file used to initialize a new TAU Commander installation.
+"""
+
+import os
+import sys
+
+HERE = os.path.realpath(os.path.dirname(__file__))
+"""Absolute path to the directory containing this script."""
+
+CONF_FILE = os.path.join(HERE, 'setup.cfg')
+"""Default TAU Commander configuration file."""
+
+PROG = sys.argv[0]
+"""Executable name."""
+
+sys.path.insert(0, os.path.join(HERE, 'packages'))
+try:
+    import setuptools
+    import tau
+    from tau import __version__ as taucmdr_version
+    from tau import configuration
+    from tau.cli import arguments
+    from tau.cli.commands.target.create import COMMAND as target_create_cmd
+    from tau.cli.commands.application.create import COMMAND as application_create_cmd
+    from tau.cli.commands.measurement.create import COMMAND as measurement_create_cmd
+except ImportError as err:
+    sys.stderr.write("%(bar)s\n"
+                     "! ERROR: %(err)s\n"
+                     "!\n"
+                     "! Python 2.7 with setuptools is required.\n"
+                     "! Try `make python_check` to install Python then update your\n"
+                     "! PATH environment variable and try this command again.\n"
+                     "%(bar)s\n" % {'bar': '!'*78, 'err': str(err)})
+    sys.exit(-1)
+except:
+    sys.stderr.write("%(bar)s\n"
+                     "! ERROR INITIALIZING CONFIGURATION SCRIPT\n"
+                     "!\n"
+                     "! Python 2.7 with setuptools is required.\n"
+                     "! Try `make python_check` to install Python then update your\n"
+                     "! PATH environment variable and try this command again.\n"
+                     "%(bar)s\n" % {'bar': '!'*78})
+    sys.exit(-1)
+
+
+
+def build_parser():
+    """Builds the command line parser from tau subcommands.
+    
+    Merges arguments from `tau {target|application|measurement} create` into one parser.
+    
+    Returns:
+        MutuableArgumentParser: The new argument parser.
+    """
+    description = ("Write installation configuration file:\n"
+                   "'%s'\n"
+                   "When TAU Commander is installed, the values passed to this script\n"
+                   "will be saved at the system level as the defaults for all new\n"
+                   "configuration objects.  These values can be changed in future via\n"
+                   "the `tau configure` command.") % CONF_FILE
+    parser = arguments.get_parser(prog=PROG, usage='%s [arguments]' % PROG, description=description)
+    parser.add_argument('--prefix', metavar='<path>', help='installation prefix',
+                        default='/opt/ParaTools/taucmdr-%s' % taucmdr_version)
+    parser.add_argument('-c', '--compile', nargs='?', const=True, default=True, metavar='T/F', 
+                        action=arguments.ParseBooleanAction, help="Compile .py files to .pyc bytecode files")
+    parser.add_argument('-O', '--optimize', nargs='?', type=int, const=1, default=1, metavar='<level>',
+                        help="Also compile .py files to optimized .pyo bytecode files.")
+    parser.merge(target_create_cmd.parser, group_title='target arguments', include_positional=False,
+                 exclude=['from-tau-makefile'])
+    parser.merge(application_create_cmd.parser, group_title='application arguments', include_positional=False)
+    parser.merge(measurement_create_cmd.parser, group_title='measurement arguments', include_positional=False)
+    return parser
+
+
+def main():
+    parser = build_parser()
+    args = parser.parse_args()
+    compilers = target_create_cmd.parse_compiler_flags(args)
+
+    comment = configuration.config_file_comment
+    config = configuration.default_config()
+    config.initial_comment = comment(tau.version_banner())
+    
+    # Add a section to control `python setup.py build`
+    config['build'] = {}
+    config.comments['build'] = comment("Arguments to `python setup.py build`. "
+                                       "Leave these alone unless you know exactly what you're doing.", box=True)
+    config['build']['build-base'] = "build"
+    
+    config['install'] = {}
+    config.comments['install'] = comment("TAU Commander installation parameters from %s" % PROG, box=True)
+    
+    # Merge new values into configuration.  Non-model values are added to the 'install' section.
+    for arg in dir(args):
+        if not arg.startswith('_'):
+            for section in config.sections:
+                if arg in config[section]:
+                    config[section][arg] = getattr(args, arg)
+                    break
+            else:
+                config['install'][arg] = getattr(args, arg)
+                
+    # Make sure scripts and libs are installed in the right places
+    config['install']['install-scripts'] = os.path.join(args.prefix, 'bin')
+    config['install']['install-lib'] = os.path.join(args.prefix, 'packages')
+    config['install']['install-data'] = os.path.join(args.prefix)
+    config['install']['record'] = os.path.join(args.prefix, 'install.log')
+    
+    with open(CONF_FILE, "w") as fout:
+        config.write(fout)
+
+if __name__ == '__main__':
+    sys.exit(main())
+    

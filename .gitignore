@@ -92,3 +92,4 @@ __pycache__/
 *~
 .tox
 .cache
+setup.cfg

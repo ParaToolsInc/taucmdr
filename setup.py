@@ -88,6 +88,7 @@ CLASSIFIERS = [
 # END PACKAGE CONFIGURATION (probably shouldn't change anything after this line)
 #######################################################################################################################
 
+
 import os
 import sys
 import shutil
@@ -99,8 +100,10 @@ from setuptools import Command
 from setuptools.command.test import test as TestCommand
 from setuptools.command.install import install as InstallCommand
 
-# Package top-level directory 
 TAU_HOME = os.path.realpath(os.path.abspath(os.path.dirname(__file__)))
+sys.path.insert(0, os.path.join(TAU_HOME, 'packages'))
+
+from tau import configuration
 
 # Check if sphinx is installed
 try:
@@ -217,26 +220,15 @@ class Install(InstallCommand):
     
     def run(self):
         if not self.force:
-            print "DON'T INSTALL TAU COMMANDER THIS WAY!  See the installation documentation."
+            print ("Whoops, this script is used internally by the TAU Commander installer.\n"
+                   "Calling it directly can (probably will) break things.\n"
+                   "Try this instead:\n"
+                   "  ./configure\n"
+                   "  make\n"
+                   "  make install\n")
         else:
-            return InstallCommand.run(self)
+            InstallCommand.run(self)
 
-
-class BuildRelease(Command):
-    
-    description = "Build a new release, see http://paratoolsinc.github.io/taucmdr/packaging.html"
-    
-    user_options = [('include-dependencies', None, 'Include dependencies in release.')]
-    
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        pass
-        
 
 def update_version():
     """Rewrite packages/tau/__init__.py to update __version__.
@@ -269,12 +261,19 @@ def update_version():
 
 def get_commands():
     cmdclass = {}
-    cmdclass['test'] = Test
     cmdclass['install'] = Install
-    cmdclass['build_release'] = BuildRelease
+    cmdclass['test'] = Test
     if HAVE_SPHINX:
         cmdclass['build_sphinx'] = BuildSphinx
-    return cmdclass                
+    return cmdclass
+
+
+def get_data_files():
+    data_files = [("", ["LICENSE", "README.md", "VERSION"])]
+    for root, dirs, files in os.walk("examples"):
+        dst_src = (root, [os.path.join(root, i) for i in files])
+        data_files.append(dst_src)
+    return data_files
 
 
 setuptools.setup(
@@ -285,6 +284,7 @@ setuptools.setup(
     package_dir={"": "packages"},
     scripts=['bin/tau'],
     zip_safe=False,
+    data_files=get_data_files(),
 
     # Testing
     test_suite='tau',

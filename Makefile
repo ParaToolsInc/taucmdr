@@ -27,68 +27,19 @@
 #
 ###############################################################################
 
-###############################################################################
-# 1. Configuration
-#
-#
-# TAU Commander version
-VERSION = $(shell cat VERSION)
-#
-#
-# Installation location
-DESTDIR = $(HOME)/taucmdr-$(VERSION)
-#
-#
-# Location for package sources and build files.
-BUILDDIR = build
-#
-#
-# If set to "true" then missing packages will be downloaded automatically.
-# Otherwise, the packages must be present in BUILDDIR
-DOWNLOAD = true
-#
-#
 # If set to "true" then show commands as they are executed.
 # Otherwise only the command's output will be shown.
 VERBOSE = true
-#
-#
-# END Configure installation
-###############################################################################
 
-###############################################################################
-# 2. Advanced configuration (probably best left as is)
-#
-#
 # Shell utilities
 RM = rm -f
-MV = mv -f
-CP = cp -f
 MKDIR = mkdir -p
-#
-#
-# TAU
-TAU_VERSION = 2.25.1
-TAU_REPO = https://www.cs.uoregon.edu/research/tau/tau_releases
-#
-#
-# PDT
-PDT_VERSION = 3.22
-PDT_REPO = https://www.cs.uoregon.edu/research/tau/pdt_releases
-#
-#
-# Miniconda
-CONDA_VERSION = 4.0.5
-CONDA_REPO = https://repo.continuum.io/miniconda
-#
-#
-# END Advanced configuration
-###############################################################################
 
-
-###############################################################################
-# ---------------------------- END CONFIGURATION ---------------------------- #
-###############################################################################
+# Get build system locations from configuration file
+CONFIG_FILE = setup.cfg
+BUILDDIR = $(shell grep '^build-base =' $(CONFIG_FILE) | awk '{print $$3}')
+INSTALLDIR = $(shell grep '^prefix =' $(CONFIG_FILE) | awk '{print $$3}')
+TAU = $(INSTALLDIR)/bin/tau
 
 # Get target OS and architecture
 OS = $(shell uname -s)
@@ -105,129 +56,95 @@ else
   WGET_FLAGS=
 endif
 
-# 32-bit OS X isn't supported
-ifeq ($(OS),Darwin)
-ifeq ($(ARCH),i386)
-  $(error Target not supported: $(OS) $(ARCH))
-endif
-endif
-
 # Build download macro
 # Usage: $(call download,source,dest)
-ifeq ($(DOWNLOAD),true)
-  CURL = $(shell which curl)
-  WGET = $(shell which wget)
-  ifneq ($(WGET),)
-    download = wget $(WGET_FLAGS) -O "$(2)" "$(1)"
-  else
-    ifneq ($(CURL),)
-      download = curl $(CURL_FLAGS) -L "$(1)" > "$(2)"
-    else
-      $(error Either curl or wget must be in PATH to download packages)
-    endif
-  endif
+WGET = $(shell which wget)
+ifneq ($(WGET),)
+  download = $(WGET) $(WGET_FLAGS) -O "$(2)" "$(1)"
 else
-  download = @echo "ERROR: $(2) is missing and download is disabled" && false
+  CURL = $(shell which curl)
+  ifneq ($(CURL),)
+    download = $(CURL) $(CURL_FLAGS) -L "$(1)" > "$(2)"
+  else
+    $(warning Either curl or wget must be in PATH to download packages)
+  endif
 endif
 
-# Configure packages to match target OS
+# Miniconda configuration
+USE_MINICONDA = true
+ifeq ($(OS),Darwin)
+ifeq ($(ARCH),i386)
+  USE_MINICONDA = false
+endif
+endif
 ifeq ($(OS),Darwin)
   CONDA_OS = MacOSX
 else 
   ifeq ($(OS),Linux)
     CONDA_OS = Linux
   else
-    $(error OS not supported: $(OS))
+    USE_MINICONDA = false
   endif
 endif
-
-# Configure packages to match target architecture
 ifeq ($(ARCH),x86_64)
   CONDA_ARCH = x86_64
 else 
   ifeq ($(ARCH),i386)
     CONDA_ARCH = x86
   else
-    $(error Architecture not supported: $(ARCH))
+    USE_MINICONDA = false
   endif
 endif
-
-SYSTEM_SRC = $(DESTDIR)/.system/src
-
-TAUCMDR_PKG = taucmdr-$(VERSION).tar.gz
-TAUCMDR_SRC = $(BUILDDIR)/$(TAUCMDR_PKG)
-
-TAU_PKG = tau-$(TAU_VERSION).tar.gz
-TAU_URL = $(TAU_REPO)/$(TAU_PKG)
-TAU_SRC = $(BUILDDIR)/$(TAU_PKG)
-TAU_SYSTEM_SRC = $(SYSTEM_SRC)/tau.tgz
-
-PDT_PKG = pdt-$(PDT_VERSION).tar.gz
-PDT_URL = $(PDT_REPO)/$(PDT_PKG)
-PDT_SRC = $(BUILDDIR)/$(PDT_PKG)
-PDT_SYSTEM_SRC = $(SYSTEM_SRC)/pdt.tgz
-
+CONDA_VERSION = 4.0.5
+CONDA_REPO = https://repo.continuum.io/miniconda
 CONDA_PKG = Miniconda2-$(CONDA_VERSION)-$(CONDA_OS)-$(CONDA_ARCH).sh
 CONDA_URL = $(CONDA_REPO)/$(CONDA_PKG)
 CONDA_SRC = $(BUILDDIR)/$(CONDA_PKG)
-CONDA_DEST = $(DESTDIR)/conda
+CONDA_DEST = $(INSTALLDIR)/conda
+CONDA = $(CONDA_DEST)/bin/python
 
-TAUCMDR = $(DESTDIR)/bin/tau
-PYTHON = $(CONDA_DEST)/bin/python
+ifeq ($(USE_MINICONDA),true)
+  PYTHON = $(CONDA)
+else
+  $(warning WARNING: There are no miniconda packages for this system: $(OS), $(ARCH).)
+  PYTHON = $(shell which python)
+  ifeq ($(PYTHON),)
+    $(error python not found in PATH.)
+  else
+    $(warning WARNING: I'll try to use '$(PYTHON)' instead.)
+  endif
+endif
 
+.PHONY: build install clean python_check
 
+.DEFAULT: build
 
-.PHONY: all install clean
+build: python_check
+	$(ECHO)$(PYTHON) setup.py build
 
-.DEFAULT: all
-
-all: $(CONDA_SRC)
-
-install: all $(TAUCMDR)
-	$(ECHO)$(TAUCMDR) --version
-	@echo 
+install: build
+	$(ECHO)$(PYTHON) setup.py install --force
+	$(ECHO)$(TAU) configure -@ system --import $(CONFIG_FILE)
+	$(ECHO)cd $(BUILDDIR) && $(TAU) initialize
+	$(ECHO)$(INSTALLDIR)/bin/tau --version
+	@echo
 	@echo "-------------------------------------------------------------------------------"
-	@echo "TAU Commander is installed at \"$(DESTDIR)\""
-	@echo "Rememember to add \"$(DESTDIR)/bin\" to your PATH"
+	@echo "TAU Commander is installed at \"$(INSTALLDIR)\""
+	@echo "Rememember to add \"$(INSTALLDIR)/bin\" to your PATH"
 	@echo "-------------------------------------------------------------------------------"
-	@echo 
+	@echo
 
-$(TAUCMDR): $(PYTHON)
-	$(ECHO)$(PYTHON) setup.py install --force --install-scripts $(DESTDIR)/bin
-	$(ECHO)$(CP) LICENSE README.md VERSION $(DESTDIR)
-	$(ECHO)$(CP) -r examples $(DESTDIR)
+python_check: $(PYTHON)
+	@$(PYTHON) -c "import setuptools;" || (echo "ERROR: setuptools is required." && false)
+	@echo "Python installed at '$(PYTHON)' appears to work."
 
-$(PYTHON): $(CONDA_SRC)
+$(CONDA): $(CONDA_SRC)
 	$(ECHO)bash $< -b -p $(CONDA_DEST)
-	$(ECHO)touch $(PYTHON)
-
-$(TAU_SYSTEM_SRC): $(TAU_SRC)
-	$(ECHO)$(MKDIR) $(dir $(TAU_SYSTEM_SRC))
-	$(ECHO)$(CP) $(TAU_SRC) $(TAU_SYSTEM_SRC)
-
-$(PDT_SYSTEM_SRC): $(PDT_SRC)
-	$(ECHO)$(MKDIR) $(dir $(PDT_SYSTEM_SRC))
-	$(ECHO)$(CP) $(PDT_SRC) $(PDT_SYSTEM_SRC)
-
-$(TAU_SRC):
-	$(ECHO)$(MKDIR) $(dir $(TAU_SRC))
-	$(call download,$(TAU_URL),$(TAU_SRC))
-
-$(PDT_SRC):
-	$(ECHO)$(MKDIR) $(dir $(PDT_SRC))
-	$(call download,$(PDT_URL),$(PDT_SRC))
+	$(ECHO)touch $(CONDA_DEST)/bin/*
 
 $(CONDA_SRC):
-	$(ECHO)$(MKDIR) $(dir $(CONDA_SRC))
+	$(ECHO)$(MKDIR) $(BUILDDIR)
 	$(call download,$(CONDA_URL),$(CONDA_SRC))
 
 clean: 
-	$(ECHO)$(RM) -r dist
-ifeq ($(DOWNLOAD),true)
 	$(ECHO)$(RM) -r $(BUILDDIR)
-else
-	@echo "Refusing to make clean since DOWNLOAD=$(DOWNLOAD) so we might not be able to recover."
-	@echo "If you still want to make clean execute:"
-	@echo "  $(RM) -r $(BUILDDIR)"
-endif
-

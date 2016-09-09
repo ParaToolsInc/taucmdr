@@ -29,14 +29,13 @@
 
 from tau import logger
 from tau.error import ConfigurationError, ModelError, InternalError
-from tau.storage import StorageRecord
+from tau.storage import StorageRecord, StorageError
 from tau.mvc.controller import Controller
 
 LOGGER = logger.get_logger(__name__)
 
 
 class ModelMeta(type):
-    """Metaclass TODO: FIXME: Docs"""
 
     def __new__(mcs, name, bases, dct):
         if dct['__module__'] != __name__:
@@ -66,6 +65,7 @@ class ModelMeta(type):
             return cls._attributes
         except AttributeError:
             cls._attributes = cls.__attributes__()
+            cls._configure_defaults()
             cls._construct_relationships()
             return cls._attributes
         
@@ -88,7 +88,7 @@ class ModelMeta(type):
 class Model(StorageRecord):
     """The "M" in `MVC`_.
     
-    TODO: Docs    
+    TODO: Docs
 
     Attributes:
         name (str): Name of the model.
@@ -154,6 +154,14 @@ class Model(StorageRecord):
     def controller(cls, storage):
         return cls.__controller__(cls, storage)
     
+    @classmethod
+    def _configure_defaults(cls):
+        from tau import configuration
+        for key, val in configuration.get().iteritems():
+            if val and key.startswith(cls.name):
+                attr = key.split('.')[-1]
+                cls.attributes[attr]['default'] = val
+
     @classmethod
     def _construct_relationships(cls):
         primary_key = None
