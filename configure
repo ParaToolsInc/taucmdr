@@ -34,13 +34,12 @@ import os
 import sys
 
 HERE = os.path.realpath(os.path.dirname(__file__))
-"""Absolute path to the directory containing this script."""
 
-CONF_FILE = os.path.join(HERE, 'setup.cfg')
-"""Default TAU Commander configuration file."""
+SETUP_CFG_FILE = os.path.join(HERE, 'setup.cfg')
+
+TAUCMDR_CFG_FILE = os.path.join(HERE, 'taucmdr.cfg')
 
 PROG = sys.argv[0]
-"""Executable name."""
 
 sys.path.insert(0, os.path.join(HERE, 'packages'))
 try:
@@ -81,12 +80,13 @@ def build_parser():
     Returns:
         MutuableArgumentParser: The new argument parser.
     """
-    description = ("Write installation configuration file:\n"
+    description = ("Write installation configuration files:\n"
+                   "'%s'\n"
                    "'%s'\n"
                    "When TAU Commander is installed, the values passed to this script\n"
                    "will be saved at the system level as the defaults for all new\n"
                    "configuration objects.  These values can be changed in future via\n"
-                   "the `tau configure` command.") % CONF_FILE
+                   "the `tau configure` command.") % (SETUP_CFG_FILE, TAUCMDR_CFG_FILE)
     parser = arguments.get_parser(prog=PROG, usage='%s [arguments]' % PROG, description=description)
     parser.add_argument('--prefix', metavar='<path>', help='installation prefix',
                         default='/opt/ParaTools/taucmdr-%s' % taucmdr_version)
@@ -105,38 +105,42 @@ def main():
     parser = build_parser()
     args = parser.parse_args()
     compilers = target_create_cmd.parse_compiler_flags(args)
-
+    
     comment = configuration.config_file_comment
-    config = configuration.default_config()
-    config.initial_comment = comment(tau.version_banner())
+    setup_cfg = configuration.open_config_file('setup.cfg')
+    setup_cfg.initial_comment = comment(tau.version_banner())
+    taucmdr_cfg = configuration.default_config()
+    taucmdr_cfg.initial_comment = comment("Initial default values for a new TAU Commander installation.  "
+                                          "These can be changed after installation via the `tau configure` command.")
     
     # Add a section to control `python setup.py build`
-    config['build'] = {}
-    config.comments['build'] = comment("Arguments to `python setup.py build`. "
-                                       "Leave these alone unless you know exactly what you're doing.", box=True)
-    config['build']['build-base'] = "build"
-    
-    config['install'] = {}
-    config.comments['install'] = comment("TAU Commander installation parameters from %s" % PROG, box=True)
+    setup_cfg['build'] = {}
+    setup_cfg.comments['build'] = comment("Arguments to `python setup.py build`.", box=True)
+    setup_cfg['build']['build-base'] = "build"
+    setup_cfg['install'] = {}
+    setup_cfg.comments['install'] = comment("Arguments to `python setup.py install`.", box=True)
     
     # Merge new values into configuration.  Non-model values are added to the 'install' section.
-    for arg in dir(args):
-        if not arg.startswith('_'):
-            for section in config.sections:
-                if arg in config[section]:
-                    config[section][arg] = getattr(args, arg)
-                    break
-            else:
-                config['install'][arg] = getattr(args, arg)
-                
-    # Make sure scripts and libs are installed in the right places
-    config['install']['install-scripts'] = os.path.join(args.prefix, 'bin')
-    config['install']['install-lib'] = os.path.join(args.prefix, 'packages')
-    config['install']['install-data'] = os.path.join(args.prefix)
-    config['install']['record'] = os.path.join(args.prefix, 'install.log')
+    for section in taucmdr_cfg.sections:
+        for key in taucmdr_cfg[section]:
+            val = getattr(args, key, None)
+            if val:
+                taucmdr_cfg[section][key] = val
+
+    # Configure installation parameters
+    setup_cfg['install']['prefix'] = args.prefix
+    setup_cfg['install']['install-scripts'] = os.path.join(args.prefix, 'bin')
+    setup_cfg['install']['install-lib'] = os.path.join(args.prefix, 'packages')
+    setup_cfg['install']['install-data'] = os.path.join(args.prefix)
+    setup_cfg['install']['record'] = os.path.join(args.prefix, 'install.log')
+    setup_cfg['install']['compile'] = args.compile
+    setup_cfg['install']['optimize'] = args.optimize
     
-    with open(CONF_FILE, "w") as fout:
-        config.write(fout)
+    # Write config files
+    with open(SETUP_CFG_FILE, "w") as fout:
+        setup_cfg.write(fout)
+    with open(TAUCMDR_CFG_FILE, "w") as fout:
+        taucmdr_cfg.write(fout)
 
 if __name__ == '__main__':
     sys.exit(main())

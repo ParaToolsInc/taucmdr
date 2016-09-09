@@ -166,7 +166,7 @@ def config_file_comment(msg, box=False, width=78, line_comment='#', line_char='=
 
 
 def default_config():
-    """Build a :any:`ConfigObj` instance with default values from :any:`tau.model`.
+    """Build a configuration object with default values from :any:`tau.model`.
     
     Adds "Target", "Application", and "Measurement" sections defining default values for each model attribute.
     
@@ -217,4 +217,8 @@ def import_from_file(filepath, storage):
                             pass
             put('%s.%s' % (section, key), val, storage)
 
+
+def open_config_file(filepath):
+    """Return a configuration object initialized from values in `filepath` if it exists."""
+    return ConfigObj(filepath, write_empty_values=True)
 

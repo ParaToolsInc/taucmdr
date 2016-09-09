@@ -100,10 +100,7 @@ from setuptools import Command
 from setuptools.command.test import test as TestCommand
 from setuptools.command.install import install as InstallCommand
 
-TAU_HOME = os.path.realpath(os.path.abspath(os.path.dirname(__file__)))
-sys.path.insert(0, os.path.join(TAU_HOME, 'packages'))
-
-from tau import configuration
+PACKAGE_TOPDIR = os.path.realpath(os.path.abspath(os.path.dirname(__file__)))
 
 # Check if sphinx is installed
 try:
@@ -167,7 +164,7 @@ if HAVE_SPHINX:
             self.source_dir = copy_source_dir
     
         def _generate_api_docs(self):
-            package_source_dir = os.path.join(TAU_HOME,  self.distribution.package_dir[''], 'tau')
+            package_source_dir = os.path.join(PACKAGE_TOPDIR,  self.distribution.package_dir[''], 'tau')
             sphinx_apidoc.main(['-M', # Put module documentation before submodule documentation
                                 '-P', # Include "_private" modules
                                 '-f', # Overwrite existing files
@@ -218,6 +215,12 @@ class Test(TestCommand):
 
 class Install(InstallCommand):
     
+    def _configure_new_installation(self):
+        from tau import configuration
+        from tau.storage.levels import SYSTEM_STORAGE 
+        configuration.import_from_file(os.path.join(PACKAGE_TOPDIR, 'taucmdr.cfg'), SYSTEM_STORAGE)
+        
+    
     def run(self):
         if not self.force:
             print ("Whoops, this script is used internally by the TAU Commander installer.\n"
@@ -225,9 +228,18 @@ class Install(InstallCommand):
                    "Try this instead:\n"
                    "  ./configure\n"
                    "  make\n"
-                   "  make install\n")
+                   "  make install")
         else:
-            InstallCommand.run(self)
+            try:
+                retval = InstallCommand.run(self)
+            except:
+                retval = -1
+            if not retval:
+                # Update PYTHONPATH with the TAU packages that were *just installed* 
+                # so SYSTEM_PREFIX etc. are set correctly. 
+                sys.path.insert(0, os.path.join(self.prefix, 'packages'))
+                self._configure_new_installation()
+            
 
 
 def update_version():
@@ -241,7 +253,7 @@ def update_version():
     """
     # Get version number from VERSION file
     try:
-        fin = open(os.path.join(TAU_HOME, "VERSION"))
+        fin = open(os.path.join(PACKAGE_TOPDIR, "VERSION"))
     except IOError:
         sys.stderr.writeln("ERROR: VERSION file is missing!")
         sys.exit(256)
@@ -250,7 +262,7 @@ def update_version():
     finally:
         fin.close()
     # Set tau.__version__ to match VERSION file
-    for line in fileinput.input(os.path.join(TAU_HOME, "packages", "tau", "__init__.py"), inplace=1):
+    for line in fileinput.input(os.path.join(PACKAGE_TOPDIR, "packages", "tau", "__init__.py"), inplace=1):
         # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
         if line.startswith("__version__"):
             sys.stdout.write('__version__ = "%s"\n' % version)

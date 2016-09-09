@@ -36,9 +36,8 @@ RM = rm -f
 MKDIR = mkdir -p
 
 # Get build system locations from configuration file
-CONFIG_FILE = setup.cfg
-BUILDDIR = $(shell grep '^build-base =' $(CONFIG_FILE) | awk '{print $$3}')
-INSTALLDIR = $(shell grep '^prefix =' $(CONFIG_FILE) | awk '{print $$3}')
+BUILDDIR = $(shell grep '^build-base =' setup.cfg | sed 's/build-base = //')
+INSTALLDIR = $(shell grep '^prefix =' setup.cfg | sed 's/prefix = //')
 TAU = $(INSTALLDIR)/bin/tau
 
 # Get target OS and architecture
@@ -124,8 +123,6 @@ build: python_check
 
 install: build
 	$(ECHO)$(PYTHON) setup.py install --force
-	$(ECHO)$(TAU) configure -@ system --import $(CONFIG_FILE)
-	$(ECHO)cd $(BUILDDIR) && $(TAU) initialize
 	$(ECHO)$(INSTALLDIR)/bin/tau --version
 	@echo
 	@echo "-------------------------------------------------------------------------------"
