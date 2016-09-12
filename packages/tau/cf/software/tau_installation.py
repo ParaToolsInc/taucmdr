@@ -275,7 +275,8 @@ class TauInstallation(Installation):
             if uses_pkg():
                 self.add_dependency(pkg, sources)
         if self._uses_scorep():
-            self.add_dependency('scorep', sources, shmem_support)
+            self.add_dependency('scorep', sources, shmem_support, 
+                                self._uses_binutils(), self._uses_libunwind(), self._uses_papi(), self._uses_pdt())
 
     def _uses_pdt(self):
         return self.source_inst == 'automatic'
@@ -684,7 +685,7 @@ class TauInstallation(Installation):
         """
         opts, env = super(TauInstallation, self).compiletime_config(opts, env)
         env = self._sanitize_environment(env)
-        for pkg in self.dependencies.iteritems():
+        for pkg in self.dependencies.itervalues():
             opts, env = pkg.compiletime_config(opts, env)
         try:
             tau_opts = set(env['TAU_OPTIONS'].split(' '))

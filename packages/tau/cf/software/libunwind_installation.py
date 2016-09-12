@@ -94,11 +94,5 @@ class LibunwindInstallation(AutotoolsInstallation):
             super(LibunwindInstallation, self).make(flags, env, parallel)
         except Exception as err:
             LOGGER.debug("libunwind make failed, but continuing anyway: %s", err)
-            
-    def make_install(self, flags, env, parallel=False):
-        super(LibunwindInstallation, self).make_install(flags, env, parallel)
-        lib64_path = os.path.join(self.install_prefix, 'lib64')
-        lib_path = os.path.join(self.install_prefix, 'lib')
-        if os.path.isdir(lib64_path) and not os.path.isdir(lib_path): 
-            os.symlink(lib64_path, lib_path)
+
 

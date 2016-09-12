@@ -134,39 +134,6 @@ class Experiment(Model):
                 return i
         return len(trials)
     
-#     def configure_tau_dependency(self, name, prefix, dependencies):
-#         """Installs dependency packages for TAU, e.g. PDT.
-#         
-#         Args:
-#             name (str): Name of the dependency to install.  
-#                         Must have a matching tau.cf.software.<name>_installation module.
-#             prefix (str): Installation prefix.
-#         
-#         Returns:
-#             Installation: A new installation instance for the installed dependency.
-#         """
-#         LOGGER.debug("Configuring TAU dependency '%s' at prefix '%s'", name, prefix)
-#         target = self.populate('target')
-#         cls_name = name.title() + 'Installation'
-#         pkg = __import__('tau.cf.software.%s_installation' % name.lower(), globals(), locals(), [cls_name], -1)
-#         cls = getattr(pkg, cls_name)
-#         
-#         opts = (target.get(name + '_source', None), target['host_arch'], target['host_os'], target.compilers())
-#         for storage in reversed(ORDERED_LEVELS):
-#             inst = cls(storage.prefix, *opts)
-#             try:
-#                 inst.verify()
-#             except SoftwarePackageError:
-#                 # Not installed in this storage, but that's OK
-#                 continue
-#             else:
-#                 # Found installation
-#                 return inst
-#         inst = cls(prefix, *opts)
-#         with inst:
-#             inst.install()
-#             return inst       
-
     def configure(self):
         """Sets up the Experiment for a new trial.
         

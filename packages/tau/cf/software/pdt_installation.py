@@ -127,6 +127,7 @@ class PdtInstallation(AutotoolsInstallation):
                                               target_arch, target_os, compilers, REPOS, COMMANDS, None, None)
 
     def _change_install_prefix(self, value):
+        # PDT puts installation files (bin, lib, etc.) in a magically named subfolder
         super(PdtInstallation, self)._change_install_prefix(value)
         arch = TauArch.get(self.target_arch, self.target_os)
         self.arch_path = os.path.join(self.install_prefix, arch.name)

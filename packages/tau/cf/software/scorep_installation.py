@@ -25,14 +25,12 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""ScoreP software installation management.
+"""Score-P software installation management.
 
-ScoreP is a tool suite for profiling, event tracing, and online analysis of HPC
-applications.
+Score-P is a tool suite for profiling, event tracing, and online analysis of HPC applications.
 """
 
 import os
-import shutil
 from tau import logger
 from tau.cf.software.installation import AutotoolsInstallation
 from tau.cf.compiler import CC_ROLE, INTEL_COMPILERS, IBM_COMPILERS, PGI_COMPILERS, GNU_COMPILERS
@@ -49,13 +47,16 @@ LIBRARIES = {None: ['libcube4.a']}
 class ScorepInstallation(AutotoolsInstallation):
     """Downloads ScoreP."""
 
-    def __init__(self, sources, target_arch, target_os, compilers, use_binutils, use_libunwind, use_shmem):
+    def __init__(self, sources, target_arch, target_os, compilers, 
+                 use_shmem, use_binutils, use_libunwind, use_papi, use_pdt):
         prefix = os.path.join(str(target_arch), str(target_os), compilers[CC_ROLE].info.family.name)
         super(ScorepInstallation, self).__init__('scorep', 'Score-P', prefix, sources,
                                                  target_arch, target_os, compilers, REPOS, None, LIBRARIES, None)
         self.use_shmem = use_shmem
-        for pkg in 'binutils', 'libunwind', 'papi', 'pdt':
-            self.add_dependency(pkg, sources)
+        for pkg, used in (('binutils', use_binutils), ('libunwind', use_libunwind), 
+                          ('papi', use_papi), ('pdt', use_pdt)):
+            if used:
+                self.add_dependency(pkg, sources)
 
     def configure(self, flags, env):
         flags.extend(['--enable-shared', '--without-otf2', '--without-opari2', '--without-cube', '--without-gui'])
@@ -64,22 +65,18 @@ class ScorepInstallation(AutotoolsInstallation):
             flags.append('--with-nocross-compiler-suite=%s' % suite_flags[self.compilers[CC_ROLE].info.family])
         if not self.use_shmem:
             flags.append('--without-shmem')
-        binutils = self.dependencies['binutils']
-        libunwind = self.dependencies['libunwind']
-        papi = self.dependencies['papi']
-        pdt = self.dependencies['pdt']
-        flags.append('--with-libbfd=%s' % binutils.install_prefix)
-        flags.append('--with-libunwind=%s' % libunwind.install_prefix)       
-        flags.append('--with-papi=%s' % papi.install_prefix)
-        flags.append('--with-papi-header=%s' % papi.include_path)
-        flags.append('--with-papi-lib=%s' % papi.lib_path)
-        flags.append('--with-pdt=%s' % pdt.bin_path)
+        binutils = self.dependencies.get('binutils')
+        libunwind = self.dependencies.get('libunwind')
+        papi = self.dependencies.get('papi')
+        pdt = self.dependencies.get('pdt')
+        if binutils:
+            flags.append('--with-libbfd=%s' % binutils.install_prefix)
+        if libunwind:
+            flags.append('--with-libunwind=%s' % libunwind.install_prefix)
+        if papi:       
+            flags.append('--with-papi=%s' % papi.install_prefix)
+            flags.append('--with-papi-header=%s' % papi.include_path)
+            flags.append('--with-papi-lib=%s' % papi.lib_path)
+        if pdt:
+            flags.append('--with-pdt=%s' % pdt.bin_path)
         return super(ScorepInstallation, self).configure(flags, env)
-    
-    def make_install(self, flags, env, parallel=False):
-        super(ScorepInstallation, self).make_install(flags, env, parallel)
-        lib64_path = os.path.join(self.install_prefix, 'lib64')
-        lib_path = os.path.join(self.install_prefix, 'lib')
-        if os.path.isdir(lib64_path) and os.path.isdir(lib_path):
-            for path in os.listdir(lib_path):
-                shutil.move(os.path.join(lib_path, path), lib64_path)
