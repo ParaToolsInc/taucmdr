@@ -195,6 +195,8 @@ class InstalledCompiler(object):
         # Assume the longest line starting with an executable is the wrapped compiler followed by arguments.
         wrapped = None
         for line in sorted(stdout.split('\n'), key=len, reverse=True):
+            if not line:
+                continue
             parts = line.split()
             wrapped_command = parts[0]
             wrapped_args = parts[1:]
