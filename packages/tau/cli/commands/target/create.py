@@ -62,45 +62,26 @@ class TargetCreateCommand(CreateCommand):
         """
         compilers = {}
 
-        if not hasattr(args, "tau_makefile"):
-            for family_attr, family_cls in [('host_family', CompilerFamily), 
-                                            ('mpi_family', MpiCompilerFamily),
-                                            ('shmem_family', ShmemCompilerFamily)]:
-                try:
-                    family_arg = getattr(args, family_attr)
-                except AttributeError as err:
-                    # User didn't specify that argument, but that's OK
-                    self.logger.debug(err)
-                    continue
-                else:
-                    delattr(args, family_attr)
-                try:
-                    family_comps = InstalledCompilerFamily(family_cls(family_arg))
-                except KeyError:
-                    self.parser.error("Invalid compiler family: %s" % family_arg)
-                for comp in family_comps:
-                    self.logger.debug("args.%s=%r", comp.info.role.keyword, comp.absolute_path)
-                    setattr(args, comp.info.role.keyword, comp.absolute_path)
-                    compilers[comp.info.role] = comp
-        else:
-            for family_attr, family_cls in [('mpi_family', MpiCompilerFamily),
-                                            ('shmem_family', ShmemCompilerFamily)]:
-                try:
-                    family_arg = getattr(args, family_attr)
-                except AttributeError as err:
-                    # User didn't specify that argument, but that's OK
-                    self.logger.debug(err)
-                    continue
-                else:
-                    delattr(args, family_attr)
-                try:
-                    family_comps = InstalledCompilerFamily(family_cls(family_arg))
-                except KeyError:
-                    self.parser.error("Invalid compiler family: %s" % family_arg)
-                for comp in family_comps:
-                    self.logger.debug("args.%s=%r", comp.info.role.keyword, comp.absolute_path)
-                    setattr(args, comp.info.role.keyword, comp.absolute_path)
-                    compilers[comp.info.role] = comp
+        for family_attr, family_cls in [('host_family', CompilerFamily), 
+                                        ('mpi_family', MpiCompilerFamily),
+                                        ('shmem_family', ShmemCompilerFamily)]:
+            if hasattr(args, 'tau_makefile') and family_attr == 'host_family':
+                # TAU Makefile specifies host compilers, but not others.
+                continue
+            try:
+                family_arg = getattr(args, family_attr)
+            except AttributeError as err:
+                # User didn't specify that argument, but that's OK
+                self.logger.debug(err)
+                continue
+            try:
+                family_comps = InstalledCompilerFamily(family_cls(family_arg))
+            except KeyError:
+                self.parser.error("Invalid compiler family: %s" % family_arg)
+            for comp in family_comps:
+                self.logger.debug("args.%s=%r", comp.info.role.keyword, comp.absolute_path)
+                setattr(args, comp.info.role.keyword, comp.absolute_path)
+                compilers[comp.info.role] = comp
 
         compiler_keys = set(CompilerRole.keys())
         all_keys = set(args.__dict__.keys())
