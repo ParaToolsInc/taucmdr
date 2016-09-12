@@ -160,6 +160,7 @@ class LocalFileStorage(AbstractStorage):
     def connect_database(self, *args, **kwargs):
         """Open the database for reading and writing."""
         if self._database is None:
+            util.mkdirp(self.prefix)
             dbfile = os.path.join(self.prefix, self.name + '.json')
             try:
                 self._database = tinydb.TinyDB(dbfile, storage=_JsonFileStorage)

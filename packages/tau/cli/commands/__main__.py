@@ -34,7 +34,7 @@ Instead, process arguments in the appropriate subcommand.
 import os
 import sys
 import tau
-from tau import cli, logger
+from tau import cli, logger, configuration
 from tau.cli import UnknownCommandError, arguments
 from tau.cli.command import AbstractCommand
 from tau.cli.commands.build import COMMAND as build_command
@@ -61,6 +61,10 @@ class MainCommand(AbstractCommand):
         self.command = os.path.basename(tau.TAU_SCRIPT)
     
     def construct_parser(self):
+        try:
+            log_default = configuration.get('logging.debug_log')
+        except KeyError:
+            log_default = False
         usage = "%s [arguments] <subcommand> [options]"  % self.command
         epilog = ["", cli.commands_description(), "",
                   "shortcuts:",
@@ -89,7 +93,7 @@ class MainCommand(AbstractCommand):
         parser.add_argument('-l', '--log',
                             help="record all actions to '%s'" % logger.LOG_FILE,
                             const=True,
-                            default=True,
+                            default=log_default,
                             action='store_const')
         group = parser.add_mutually_exclusive_group()
         group.add_argument('-v', '--verbose',
