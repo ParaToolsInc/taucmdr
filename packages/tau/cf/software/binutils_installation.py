@@ -38,7 +38,7 @@ import shutil
 import fileinput
 from tau import logger, util
 from tau.cf.software.installation import AutotoolsInstallation
-from tau.cf.compiler import CC_ROLE
+from tau.cf.compiler import CC_ROLE, CXX_ROLE
 from tau.cf.target import IBM_BGP_ARCH, IBM_BGQ_ARCH, IBM64_ARCH, INTEL_KNC_ARCH, X86_64_ARCH, DARWIN_OS
 
 LOGGER = logger.get_logger(__name__)
@@ -95,6 +95,14 @@ class BinutilsInstallation(AutotoolsInstallation):
 
     def _configure_x86_64(self, flags, env):
         # pylint: disable=unused-argument
+        cc_comp = self.compilers[CC_ROLE]
+        while cc_comp.wrapped:
+            cc_comp = cc_comp.wrapped
+        cxx_comp = self.compilers[CXX_ROLE]
+        while cxx_comp.wrapped:
+            cxx_comp = cxx_comp.wrapped
+        flags.append("CC=%s" % cc_comp.absolute_path)
+        flags.append("CXX=%s" % cxx_comp.absolute_path)
         if self.target_os is DARWIN_OS:
             flags.extend(['CFLAGS=-Wno-error=unused-value -Wno-error=deprecated-declarations -fPIC', 
                           'CXXFLAGS=-Wno-error=unused-value -Wno-error=deprecated-declarations -fPIC',
