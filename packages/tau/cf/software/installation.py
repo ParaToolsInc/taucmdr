@@ -129,7 +129,6 @@ class Installation(object):
         if os.path.isdir(src):
             self.src = None
             self._change_install_prefix(src)
-            self.verify()
         else:
             self.src = src if src.lower() != 'download' else self._lookup_target_os_list(repos)
             md5sum = hashlib.md5()
@@ -468,24 +467,22 @@ class AutotoolsInstallation(Installation):
         for pkg in self.dependencies.itervalues():
             pkg.install(force_reinstall)
 
-        if not self.src:
-            try:
-                self.verify()
-            except SoftwarePackageError as err:
-                raise SoftwarePackageError("Invalid %s installation at '%s': %s" % 
-                                           (self.title, self.install_prefix, err),
-                                           "Specify source code path or URL to enable broken package reinstallation.")
-        elif not force_reinstall:
+        if not self.src or not force_reinstall:
             try:
                 return self.verify()
             except SoftwarePackageError as err:
-                LOGGER.debug(err)
+                if not self.src:
+                    raise SoftwarePackageError("%s source package is unavailable and the installation at '%s' "
+                                               "is invalid: %s" % (self.title, self.install_prefix, err),
+                                               "Specify source code path or URL to enable package reinstallation.")
+                elif not force_reinstall:
+                    LOGGER.debug(err)
 
         LOGGER.info("Installing %s at '%s' from '%s'", self.title, self.install_prefix, self.src)
         if os.path.isdir(self.install_prefix): 
             LOGGER.info("Cleaning %s installation prefix '%s'", self.title, self.install_prefix)
             util.rmtree(self.install_prefix, ignore_errors=True)
-        
+
         # Try to build in shared memory, if available
         try:
             build_prefix = util.mkdtemp(dir="/dev/shm")

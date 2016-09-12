@@ -172,7 +172,7 @@ class TargetCreateCommand(CreateCommand):
                     attr, operator = package_parts[key]
                     path = val.strip()
                     if not path:
-                        path = "None"
+                        path = None
                     else:
                         path = operator(path)
                         if not os.path.exists(path):
@@ -190,7 +190,7 @@ class TargetCreateCommand(CreateCommand):
                 # Environment variable not set
                 continue
             except ConfigurationError as err:
-                LOGGER.debug(err)
+                self.logger.debug(err)
                 continue
             else:
                 return comp.info.family.name
@@ -199,10 +199,10 @@ class TargetCreateCommand(CreateCommand):
     def construct_parser(self):
         host_var_roles = {'CC': CC_ROLE, 'CXX': CXX_ROLE, 'FC': FC_ROLE, 
                           'F77': FC_ROLE, 'F90': FC_ROLE}
-        mpi_var_roles = {'MPI_CC': CC_ROLE, 'MPI_CXX': CXX_ROLE, 'MPIFC': FC_ROLE, 
-                         'MPI_F77': FC_ROLE, 'MPI_F90': FC_ROLE}
-        shmem_var_roles = {'SHMEM_CC': CC_ROLE, 'SHMEM_CXX': CXX_ROLE, 'SHMEM_FC': FC_ROLE, 
-                           'SHMEM_F77': FC_ROLE, 'SHMEM_F90': FC_ROLE}
+        mpi_var_roles = {'MPI_CC': MPI_CC_ROLE, 'MPI_CXX': MPI_CXX_ROLE, 'MPIFC': MPI_FC_ROLE, 
+                         'MPI_F77': MPI_FC_ROLE, 'MPI_F90': MPI_FC_ROLE}
+        shmem_var_roles = {'SHMEM_CC': SHMEM_CC_ROLE, 'SHMEM_CXX': SHMEM_CXX_ROLE, 'SHMEM_FC': SHMEM_FC_ROLE, 
+                           'SHMEM_F77': SHMEM_FC_ROLE, 'SHMEM_F90': SHMEM_FC_ROLE}
         parser = super(TargetCreateCommand, self).construct_parser()
         group = parser.add_argument_group('host arguments')
         group.add_argument('--compilers',
