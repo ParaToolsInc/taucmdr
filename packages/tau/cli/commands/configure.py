@@ -70,63 +70,6 @@ class ConfigureCommand(AbstractCommand):
                             default=arguments.SUPPRESS)
         return parser
 
-    def get_target(self):
-        proj_ctrl = Project.controller()
-        try:
-            proj = proj_ctrl.selected()
-        except ProjectSelectionError:
-            self.parser.error("No project configuration selected.  Please use --project to specify one.")
-        return proj.populate('targets')
-        
-    def get_appl(self):
-        proj_ctrl = Project.controller()
-        try:
-            proj = proj_ctrl.selected()
-        except ProjectSelectionError:
-            self.parser.error("No project configuration selected.  Please use --project to specify one.")
-        return proj.populate('applications')
-        
-    def get_meas(self):
-        proj_ctrl = Project.controller()
-        try:
-            proj = proj_ctrl.selected()
-        except ProjectSelectionError:
-            self.parser.error("No project configuration selected.  Please use --project to specify one.")
-        return proj.populate('applications')
-        
-
-
-    def configure_tau_dependency(self, name, prefix, storage):
-        """Installs dependency packages for TAU, e.g. PDT.
-        
-        Args:
-            name (str): Name of the dependency to install.  
-                        Must have a matching tau.cf.software.<name>_installation module.
-            prefix (str): Installation prefix.
-        
-        Returns:
-            Installation: A new installation instance for the installed dependency.
-        """
-        targ = self.get_target()
-        target = targ.pop()
-        cls_name = name.title() + 'Installation'
-        pkg = __import__('tau.cf.software.%s_installation' % name.lower(), globals(), locals(), [cls_name], -1)
-        cls = getattr(pkg, cls_name)
-        opts = (target.get(name + '_source', None), target['host_arch'], target['host_os'], target.compilers())
-#        for storage in reversed(ORDERED_LEVELS):
-        inst = cls(storage.prefix, *opts)
-        try:
-            inst.verify()
-        except SoftwarePackageError:
-            pass
-        else:
-            return inst
-        inst = cls(prefix, *opts)
-        with inst:
-            inst.install()
-            return inst       
-
-
     def main(self, argv):
         args = self.parser.parse_args(args=argv)
         self.logger.debug('Arguments: %s', args)

@@ -1,3 +1,0 @@
-compilers gnu
-tags mpi,openmp
-dependencies pdt,binutils,libunwind,papi
