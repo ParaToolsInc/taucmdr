@@ -150,7 +150,7 @@ class TestCase(unittest.TestCase):
         if bare:
             argv.append('--bare')
     
-        if bare or os.path.exists(os.path.join(SYSTEM_STORAGE.prefix, 'TAU')):
+        if bare or os.path.exists(os.path.join(SYSTEM_STORAGE.prefix, 'tau')):
             initialize_cmd.main(argv)
         else:
             # If this is the first time setting up TAU and dependencies then we need to emit output so
