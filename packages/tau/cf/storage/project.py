@@ -34,7 +34,6 @@ where :any:`USER_PREFIX` is not accessible from cluster compute nodes.
 
 
 import os
-import shutil
 from tau import logger, util
 from tau import SYSTEM_PREFIX, USER_PREFIX, PROJECT_DIR
 from tau.cf.storage import StorageError
@@ -99,7 +98,7 @@ class ProjectStorage(LocalFileStorage):
         ignore_errors = kwargs.pop('ignore_errors', False)
         onerror = kwargs.pop('onerror', None)
         if self._prefix:
-            shutil.rmtree(self._prefix, ignore_errors=ignore_errors, onerror=onerror)
+            util.rmtree(self._prefix, ignore_errors=ignore_errors, onerror=onerror)
             self._prefix = None
 
     @property

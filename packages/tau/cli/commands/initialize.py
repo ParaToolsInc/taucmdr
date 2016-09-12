@@ -217,9 +217,13 @@ class InitializeCommand(AbstractCommand):
         except ProjectStorageError:
             self.logger.debug("No project found, initializing a new project.")
             PROJECT_STORAGE.connect_filesystem()
-            self._create_project(args)
-            if not args.bare:
-                self._populate_project(argv, args)
+            try:
+                self._create_project(args)
+                if not args.bare:
+                    self._populate_project(argv, args)
+            except:
+                PROJECT_STORAGE.destroy()
+                raise
             return dashboard_cmd.main([])
         except ProjectSelectionError as err:
             err.value = "The project has been initialized but no project configuration is selected."

@@ -43,8 +43,8 @@ from tau.cf.target import ARM64_ARCH, IBM_BGQ_ARCH, CRAY_CNL_OS
 
 LOGGER = logger.get_logger(__name__)
 
-SOURCES = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-1.1.tar.gz',
-           ARM64_ARCH: {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-arm64-1.1.tgz'}} # pylint: disable=line-too-long
+REPOS = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-1.1.tar.gz',
+         ARM64_ARCH: {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-arm64-1.1.tgz'}}
 
 LIBRARIES = {None: ['libunwind.a']}
 
@@ -52,11 +52,10 @@ LIBRARIES = {None: ['libunwind.a']}
 class LibunwindInstallation(AutotoolsInstallation):
     """Encapsulates a libunwind installation."""
 
-    def __init__(self, prefix, src, target_arch, target_os, compilers, shmem, dependencies, URL):
-        dst = os.path.join(target_arch, compilers[CC_ROLE].info.family.name)
-        super(LibunwindInstallation, self).__init__('libunwind', prefix, src, dst, 
-                                                    target_arch, target_os, compilers, shmem,
-                                                    dependencies, SOURCES, None, LIBRARIES)
+    def __init__(self, sources, target_arch, target_os, compilers):
+        prefix = os.path.join(str(target_arch), str(target_os), compilers[CC_ROLE].info.family.name)
+        super(LibunwindInstallation, self).__init__('libunwind', 'libunwind', prefix, sources, 
+                                                    target_arch, target_os, compilers, REPOS, None, LIBRARIES, None)
         
     def verify(self):
         headers = ['libunwind.h', 'unwind.h']
@@ -67,8 +66,7 @@ class LibunwindInstallation(AutotoolsInstallation):
         return super(LibunwindInstallation, self).verify()
 
     def configure(self, flags, env):
-        flags.extend(['CC='+self.compilers[CC_ROLE].absolute_path, 
-                      'CXX='+self.compilers[CXX_ROLE].absolute_path]) 
+        flags.extend(['CC='+self.compilers[CC_ROLE].absolute_path, 'CXX='+self.compilers[CXX_ROLE].absolute_path]) 
         if self.target_arch is IBM_BGQ_ARCH:
             flags.append('--disable-shared')
             for line in fileinput.input(os.path.join(self.src_prefix, 'src', 'unwind', 'Resume.c'), inplace=1):

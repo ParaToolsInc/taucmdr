@@ -43,7 +43,7 @@ from tau.cf.target import IBM_BGP_ARCH, IBM_BGQ_ARCH, IBM64_ARCH, INTEL_KNC_ARCH
 
 LOGGER = logger.get_logger(__name__)
  
-SOURCES = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/binutils-2.23.2.tar.gz'}
+REPOS = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/binutils-2.23.2.tar.gz'}
 
 LIBRARIES = {None: ['libbfd.a']}
 
@@ -51,11 +51,10 @@ LIBRARIES = {None: ['libbfd.a']}
 class BinutilsInstallation(AutotoolsInstallation):
     """Encapsulates a GNU binutils installation."""
     
-    def __init__(self, prefix, src, target_arch, target_os, compilers, shmem, dependencies, URL):
-        dst = os.path.join(target_arch, compilers[CC_ROLE].info.family.name)
-        super(BinutilsInstallation, self).__init__('binutils', prefix, src, dst, 
-                                                   target_arch, target_os, compilers, shmem,
-                                                   dependencies, SOURCES, None, LIBRARIES)
+    def __init__(self, sources, target_arch, target_os, compilers):
+        prefix = os.path.join(str(target_arch), str(target_os), compilers[CC_ROLE].info.family.name)
+        super(BinutilsInstallation, self).__init__('binutils', 'GNU Binutils', prefix, sources, 
+                                                   target_arch, target_os, compilers, REPOS, None, LIBRARIES, None)
 
     def _configure_default(self, flags, env):
         # pylint: disable=unused-argument

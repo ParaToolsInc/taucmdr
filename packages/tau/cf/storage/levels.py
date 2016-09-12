@@ -41,6 +41,7 @@ where :any:`USER_PREFIX` is not accessible from cluster compute nodes.
 """
 
 from tau import SYSTEM_PREFIX, USER_PREFIX
+from tau.cf.storage import StorageError
 from tau.cf.storage.local_file import LocalFileStorage
 from tau.cf.storage.project import ProjectStorage
 
@@ -59,3 +60,9 @@ ORDERED_LEVELS = (PROJECT_STORAGE, USER_STORAGE, SYSTEM_STORAGE)
 
 STORAGE_LEVELS = {level.name: level for level in ORDERED_LEVELS}
 """All storage levels indexed by their names."""
+
+def highest_writable_storage():
+    for storage in reversed(ORDERED_LEVELS):
+        if storage.is_writable():
+            return storage
+    raise StorageError("No writable storage levels")

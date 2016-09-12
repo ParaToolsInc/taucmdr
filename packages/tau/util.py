@@ -33,6 +33,7 @@ Handles system manipulation and status tasks, e.g. subprocess management or file
 import os
 import sys
 import time
+import atexit
 import subprocess
 import errno
 import shutil
@@ -40,6 +41,7 @@ import urllib
 import logging
 import pkgutil
 import tarfile
+import tempfile
 import urlparse
 import itertools
 from zipimport import zipimporter
@@ -51,6 +53,23 @@ from tau import logger
 LOGGER = logger.get_logger(__name__)
 
 _PY_SUFFEXES = ('.py', '.pyo', '.pyc')
+
+_DTEMP_STACK = []
+
+
+def _cleanup_dtemp():
+    if _DTEMP_STACK:
+        for path in _DTEMP_STACK:
+            rmtree(path, ignore_errors=True)
+
+atexit.register(_cleanup_dtemp)
+
+
+def mkdtemp(*args, **kwargs):
+    """Like tempfile.mkdtemp but directory will be recursively deleted when program exits."""
+    path = tempfile.mkdtemp(*args, **kwargs)
+    _DTEMP_STACK.append(path)
+    return path
 
 
 def mkdirp(*args):
@@ -68,6 +87,7 @@ def mkdirp(*args):
         except OSError as exc:
             if not (exc.errno == errno.EEXIST and os.path.isdir(path)):
                 raise
+
 
 def rmtree(path, ignore_errors=False, onerror=None, attempts=5):
     """Wrapper around shutil.rmtree to work around stale or slow NFS directories.
@@ -91,6 +111,7 @@ def rmtree(path, ignore_errors=False, onerror=None, attempts=5):
             LOGGER.warning("Unexpected error: %s", err)
             time.sleep(i+1)
     shutil.rmtree(path, ignore_errors, onerror)
+
 
 def _is_exec(fpath):
     return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
@@ -177,6 +198,7 @@ def download(src, dest):
             LOGGER.warning("urllib failed to download '%s': %s", src, err)
             raise IOError("Failed to download '%s'" % src)
 
+
 def _create_dl_subprocess(cmd, src):
     LOGGER.debug("Creating subprocess: cmd=%s\n", cmd)
     if cmd[0].endswith('curl'):
@@ -223,6 +245,7 @@ def progress_bar(count, block_size, total_size):
         else:
             sys.stdout.write('[%s] UNKNOWN\r' % _spinner.next())
         sys.stdout.flush()
+
 
 def archive_toplevel(archive):
     """Returns the name of the top-level directory in an archive.
@@ -284,6 +307,7 @@ def extract_archive(archive, dest):
     LOGGER.debug("Created '%s'", full_dest)
     return full_dest
 
+
 def create_archive(fmt, dest, items):
     """Creates a new archive file in the specified format.
     
@@ -302,6 +326,7 @@ def create_archive(fmt, dest, items):
         with tarfile.open(dest, mode_map[fmt]) as archive:
             for item in items:
                 archive.add(item)
+
 
 def file_accessible(filepath, mode='r'):
     """Check if a file is accessable.

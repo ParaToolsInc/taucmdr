@@ -89,7 +89,7 @@ class MainCommand(AbstractCommand):
         parser.add_argument('-l', '--log',
                             help="record all actions to '%s'" % logger.LOG_FILE,
                             const=True,
-                            default=False,
+                            default=True,
                             action='store_const')
         group = parser.add_mutually_exclusive_group()
         group.add_argument('-v', '--verbose',

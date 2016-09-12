@@ -40,9 +40,9 @@ from tau.cf.target import TAU_ARCH_APPLE, TAU_ARCH_BGQ, X86_64_ARCH, LINUX_OS, T
 
 LOGGER = logger.get_logger(__name__)
 
-SOURCES = {None: 'http://tau.uoregon.edu/pdt.tgz',
-           X86_64_ARCH: {None: 'http://tau.uoregon.edu/pdt.tgz',
-                         LINUX_OS:  'http://tau.uoregon.edu/pdt_lite.tgz'}}
+REPOS = {None: 'http://tau.uoregon.edu/pdt.tgz',
+         X86_64_ARCH: {None: 'http://tau.uoregon.edu/pdt.tgz', 
+                       LINUX_OS:  'http://tau.uoregon.edu/pdt_lite.tgz'}}
 
 COMMANDS = {None:
             ['cparse',
@@ -114,7 +114,6 @@ COMMANDS = {None:
               'tau_instrumentor',
               'xmlgen']}}
 
-
 class PdtInstallation(AutotoolsInstallation):
     """Encapsulates a PDT installation.
     
@@ -122,12 +121,15 @@ class PdtInstallation(AutotoolsInstallation):
     proceedure is the same otherwise, so we reuse what we can from AutotoolsInstallation.
     """
 
-    def __init__(self, prefix, src, target_arch, target_os, compilers, shmem, dependencies, URL):
-        super(PdtInstallation, self).__init__('PDT', prefix, src, compilers[CXX_ROLE].info.family.name, 
-                                              target_arch, target_os, compilers, shmem,
-                                              dependencies, SOURCES, COMMANDS, None)
-        self.arch = TauArch.get(target_arch, target_os)
-        self.arch_path = os.path.join(self.install_prefix, self.arch.name)
+    def __init__(self, sources, target_arch, target_os, compilers):
+        prefix = compilers[CXX_ROLE].info.family.name
+        super(PdtInstallation, self).__init__('pdt', 'PDT', prefix, sources, 
+                                              target_arch, target_os, compilers, REPOS, COMMANDS, None, None)
+
+    def _change_install_prefix(self, value):
+        super(PdtInstallation, self)._change_install_prefix(value)
+        arch = TauArch.get(self.target_arch, self.target_os)
+        self.arch_path = os.path.join(self.install_prefix, arch.name)
         self.bin_path = os.path.join(self.arch_path, 'bin')
         self.lib_path = os.path.join(self.arch_path, 'lib')
 

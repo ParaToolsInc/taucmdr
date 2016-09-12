@@ -29,14 +29,16 @@
 
 import os
 import sys
+import shutil
 import hashlib
 import multiprocessing
 from lockfile import LockFile, NotLocked
 from tau import logger, util
 from tau.error import ConfigurationError
+from tau.cf.storage.levels import ORDERED_LEVELS
+from tau.cf.storage.levels import highest_writable_storage 
 from tau.cf.software import SoftwarePackageError
-from tau.cf.target import Architecture, OperatingSystem 
-
+from tau.cf.target import Architecture, OperatingSystem
 
 LOGGER = logger.get_logger(__name__)
 
@@ -61,27 +63,20 @@ class Installation(object):
     
     Attributes:
         name (str): Human readable name of the software package, e.g. 'TAU'.
-        prefix (str): Path to a directory to contain subdirectories for 
-                      installation files, source file, and compilation files.
-        src (str): Path to a directory where the software has already been 
-                   installed, or a path to a source archive file, or the special
-                   keyword 'download'.
+        src (str): Path to a directory where the software has already been installed, 
+                   or path to a source archive file or directory, or the special keyword 'download'.
         target_arch (str): Target architecture name.
         target_os (str): Target operating system name.
         compilers (InstalledCompilerSet): Compilers to use if software must be compiled.
-        archive_prefix (str): Directory containing package source code archive file.
+        verify_commands (list): List of commands that are present in a valid installation.
+        verify_libraries (list): List of libraries that are present in a valid installation.
+        verify_headers (list): List of header files that are present in a valid installation.
         src_prefix (str): Directory containing package source code.
-        install_prefix (str): Directory containing installed package files.
-        include_path (str): Convinence variable, usually ``install_prefix + "/include"``.
-        bin_path (str): Convinence variable, usually ``install_prefix + "/bin"``.
-        lib_path (str): Convinence variable, usually ``install_prefix + "/lib"``.
+        is_installed (bool): True if all required commands and files were found, False otherwise.
     """
-    # Settle down pylint... software installation is a complex thing.
-    #pylint: disable=too-many-instance-attributes
-    #pylint: disable=too-many-arguments
 
-    def __init__(self, name, prefix, src, dst, target_arch, target_os, compilers, 
-                 shmem, dependencies, sources, commands, libraries):
+    def __init__(self, name, title, prefix, sources, target_arch, target_os, compilers, 
+                 repos, commands, libraries, headers):
         """Initializes the installation object.
         
         To set up a new installation, pass `src` as a URL, file path, or the special keyword 'download'.
@@ -91,52 +86,68 @@ class Installation(object):
         Attributes `src` and `src_prefix` will be set to None.
         
         Args:
-            name (str): Human readable name of the software package, e.g. 'TAU'.
-            prefix (str): Path to a directory to contain subdirectories for 
-                          installation files, source file, and compilation files.
-            src (str): Path to a directory where the software has already been 
-                       installed, or a path to a source archive file, or the special
-                       keyword 'download'.
-            dst (str): Installation destination to be created below `prefix`.
-            target_arch (str): Target architecture name.
-            target_os (str): Target operating system name.
+            name (str): The package name, lowercase, alphanumeric with underscores.  All packages have a
+                        corresponding ``tau.cf.software.<name>_installation`` module. 
+            title (str): Human readable name of the software package, e.g. 'TAU Performance System' or 'Score-P'.
+            prefix (str): Installation prefix within a storage container.
+            sources (dict): Packages sources as strings indexed by package names as strings.  A source may be a 
+                            path to a directory where the software has already been installed, or a path to a source
+                            archive file, or the special keyword 'download'.
+            target_arch (Architecture): Target architecture.
+            target_os (OperatingSystem): Target operating system.
             compilers (InstalledCompilerSet): Compilers to use if software must be compiled.
-            sources (dict): Dictionary of URLs for source code archives indexed by architecture and OS.  
-                            `None` specifies the default (i.e. universal) source.
-            commands (dict): Dictionary of commands that must be installed indexed by architecture and OS.
-                             `None` specifies the universal commands.
-            libraries (dict): Dictionary of libraries that must be installed indexed by architecture and OS.
-                              `None` specifies the universal libraries.
+            repos (dict): Dictionary of URLs for source code archives indexed by architecture and OS.  
+                          The None key specifies the default (i.e. universal) source.
+            commands (dict): Dictionary of commands, indexed by architecture and OS, that must be installed.
+            libraries (dict): Dictionary of libraries, indexed by architecture and OS, that must be installed.
+            headers (dict): Dictionary of headers, indexed by architecture and OS, that must be installed.
         """
+        # pylint: disable=too-many-arguments
+        assert isinstance(target_arch, Architecture)
+        assert isinstance(target_os, OperatingSystem)
+        self.dependencies = {}
         self.name = name
-        self.prefix = prefix
-        self.target_arch = Architecture.find(target_arch)
-        self.target_os = OperatingSystem.find(target_os)
+        self.title = title
+        self.target_arch = target_arch
+        self.target_os = target_os
         self.compilers = compilers
-        self.archive_prefix = os.path.join(prefix, 'src')
+        self.verify_commands = self._lookup_target_os_list(commands)
+        self.verify_libraries = self._lookup_target_os_list(libraries)
+        self.verify_headers = self._lookup_target_os_list(headers)
         self.src_prefix = None
+        self.is_installed = False
+        src = sources[name]
         if os.path.isdir(src):
             self.src = None
-            self.install_prefix = src
+            self._change_install_prefix(src)
+            self.verify()
         else:
-            if src.lower() == 'download':
-                self.src = self._lookup_target_os_list(sources)
-            else:
-                self.src = src
+            self.src = src if src.lower() != 'download' else self._lookup_target_os_list(repos)
             md5sum = hashlib.md5()
             md5sum.update(self.src)
-            self.install_prefix = os.path.join(prefix, dst, name, md5sum.hexdigest())
-        self.commands = self._lookup_target_os_list(commands)
-        self.libraries = self._lookup_target_os_list(libraries)
-        self.include_path = os.path.join(self.install_prefix, 'include')
-        self.bin_path = os.path.join(self.install_prefix, 'bin')
-        self.lib_path = os.path.join(self.install_prefix, 'lib')
-        self._lockfile = LockFile(os.path.join(self.install_prefix, '.tau_lock'))
-        self.archive_path = self.archive_prefix
-        self.shmem = shmem
-        self.dependencies = dependencies
+            uid = md5sum.hexdigest()
+            # Search the storage hierarchy for an existing installation
+            for storage in reversed(ORDERED_LEVELS):
+                self._change_install_prefix(os.path.join(storage.prefix, prefix, name, uid))
+                try:
+                    self.verify()
+                except SoftwarePackageError as err:
+                    LOGGER.debug(err)
+                    continue
+                else:
+                    break
+            else:
+                # No existing installation found, install at highest writable storage level
+                self._change_install_prefix(os.path.join(highest_writable_storage().prefix, prefix, name, uid))
         LOGGER.debug("%s installation prefix is %s", self.name, self.install_prefix)
-        
+    
+    def _change_install_prefix(self, value):
+        self.install_prefix = value
+        self.include_path = os.path.join(value, 'include')
+        self.bin_path = os.path.join(value, 'bin')
+        self.lib_path = os.path.join(value, 'lib')
+        self._lockfile = LockFile(os.path.join(value, '.tau_lock'))
+
     def _lookup_target_os_list(self, dct):
         if not dct:
             return []
@@ -163,37 +174,7 @@ class Installation(object):
             pass
         return False
 
-    def dl_src(self, reuse=True):
-        """Downloads source code for installation.
-        
-        Acquires package source code archive file via download.
-        """
-
-        if not self.src:
-            raise ConfigurationError("No source code provided for %s" % self.name)
-        
-        downloaded = os.path.join(self.archive_prefix, os.path.basename(self.src))
-        if reuse and os.path.exists(downloaded):
-            LOGGER.info("Using %s source archive at '%s'", self.name, downloaded)
-        else:
-            try:
-                util.download(self.src, downloaded)
-            except IOError:
-                raise ConfigurationError("Cannot acquire source archive '%s'" % self.src,
-                                         "Check that the file or directory is accessable")
-        self.archive_path = downloaded
-        try:
-            util.archive_toplevel(downloaded)
-        except IOError as err:
-            LOGGER.info("Cannot read %s archive file '%s': %s", self.name, downloaded, err)
-            if reuse:
-                LOGGER.info("Downloading a fresh copy of '%s'", self.src)
-                self.dl_src(reuse=False)
-                return
-            else:
-                raise ConfigurationError("Cannot read %s archive file '%s': %s" % (self.name, downloaded, err))
-
-    def _prepare_src(self, reuse=True):
+    def _prepare_src(self, build_prefix, reuse):
         """Prepares source code for installation.
         
         Acquires package source code archive file via download or file copy,
@@ -201,75 +182,114 @@ class Installation(object):
         Sets `self.src_prefix` to the directory containing the package source files.
         
         Args:
+            build_prefix (str): If not None then download and build package at ``build_prefix``.
+                                The archive file will also be saved in the normal location for reuse.
             reuse (bool): If True, attempt to reuse old archives and source files.
 
         Raises:
             ConfigurationError: The source code couldn't be copied or downloaded.
         """
         if not self.src:
-            raise ConfigurationError("No source code provided for %s" % self.name)
-        
-        downloaded = os.path.join(self.archive_prefix, os.path.basename(self.src))
-        if reuse and os.path.exists(downloaded):
-            LOGGER.info("Using %s source archive at '%s'", self.name, downloaded)
+            raise ConfigurationError("No source code provided for %s" % self.title)
+        archive_name = os.path.basename(self.src)
+        if reuse:
+            # Search storage for source archive.
+            for storage in reversed(ORDERED_LEVELS):
+                archive_prefix = os.path.join(storage.prefix, "src")
+                if not build_prefix:
+                    build_prefix = archive_prefix
+                archive = os.path.join(archive_prefix, archive_name)
+                if os.path.exists(archive):
+                    LOGGER.info("Using %s source archive '%s'", self.title, archive)
+                    if build_prefix != archive_prefix:
+                        LOGGER.info("Copying '%s' ==> '%s'", archive_name, build_prefix)
+                        shutil.copy(archive, os.path.join(build_prefix, archive_name))
+                    break
         else:
+            # Acquire a new copy of the source archive.
+            archive_prefix = os.path.join(highest_writable_storage().prefix, "src")
+            if not build_prefix:
+                build_prefix = archive_prefix
+            archive = os.path.join(build_prefix, archive_name)
             try:
-                util.download(self.src, downloaded)
+                util.download(self.src, archive)
             except IOError:
                 raise ConfigurationError("Cannot acquire source archive '%s'" % self.src,
                                          "Check that the file or directory is accessable")
-        self.archive_path = downloaded
+            if build_prefix != archive_prefix:
+                LOGGER.info("Copying '%s' ==> '%s'", archive_name, archive_prefix)
+                util.mkdirp(archive_prefix)
+                shutil.copy(archive, os.path.join(archive_prefix, archive_name))
         try:
-            topdir = util.archive_toplevel(downloaded)
+            topdir = util.archive_toplevel(archive)
         except IOError as err:
-            LOGGER.info("Cannot read %s archive file '%s': %s", self.name, downloaded, err)
+            LOGGER.debug("Cannot read %s archive file '%s': %s", self.title, archive, err)
             if reuse:
-                LOGGER.info("Downloading a fresh copy of '%s'", self.src)
-                self._prepare_src(reuse=False)
-                return
+                LOGGER.debug("Downloading a fresh copy of '%s'", self.src)
+                return self._prepare_src(build_prefix, reuse=False)
             else:
-                raise ConfigurationError("Cannot read %s archive file '%s': %s" % (self.name, downloaded, err))
-        src_prefix = os.path.join(self.archive_prefix, topdir)
+                raise ConfigurationError("Cannot read %s archive file '%s': %s" % (self.title, archive, err))
+        src_prefix = os.path.join(build_prefix, topdir)
         if reuse and os.path.isdir(src_prefix):
-            LOGGER.info("Reusing %s source files found at '%s'", self.name, src_prefix)
+            LOGGER.info("Reusing %s source files found at '%s'", self.title, src_prefix)
         else:
             util.rmtree(src_prefix, ignore_errors=True)
             try:
-                src_prefix = util.extract_archive(downloaded, self.archive_prefix)
+                src_prefix = util.extract_archive(archive, build_prefix)
             except IOError as err:
-                raise ConfigurationError("Cannot extract source archive '%s': %s" % (downloaded, err),
+                raise ConfigurationError("Cannot extract source archive '%s': %s" % (archive, err),
                                          "Check that the file or directory is accessable")
         self.src_prefix = src_prefix
 
     def verify(self):
-        """Check if the installation is valid.
+        """Check if the installation at :any:`installation_prefix` is valid.
         
-        A valid installation provides all expected libraries and commands.
+        A valid installation provides all expected files and commands.
         Subclasses may wish to perform additional checks.
-        
-        Returns:
-            True: If the installation at self.install_prefix is valid.
         
         Raises:
           SoftwarePackageError: Describs why the installation is invalid.
         """
+        for pkg in self.dependencies.itervalues():
+            pkg.verify()
         LOGGER.debug("Checking %s installation at '%s' targeting %s %s", 
                      self.name, self.install_prefix, self.target_arch, self.target_os)
         if not os.path.exists(self.install_prefix):
             raise SoftwarePackageError("'%s' does not exist" % self.install_prefix)
-        for cmd in self.commands:
+        for cmd in self.verify_commands:
             path = os.path.join(self.bin_path, cmd)
             if not os.path.exists(path):
                 raise SoftwarePackageError("'%s' is missing" % path)
             if not os.access(path, os.X_OK):
                 raise SoftwarePackageError("'%s' exists but is not executable" % path)
-        for lib in self.libraries:
+        for lib in self.verify_libraries:
             path = os.path.join(self.lib_path, lib)
             if not util.file_accessible(path):
                 raise SoftwarePackageError("'%s' is not accessible" % path)
+        for header in self.verify_headers:
+            path = os.path.join(self.include_path, header)
+            if not util.file_accessible(path):
+                raise SoftwarePackageError("'%s' is not accessible" % path)
+        self.is_installed = True
         LOGGER.debug("%s installation at '%s' is valid", self.name, self.install_prefix)
-        return True
         
+    def add_dependency(self, name, sources, *args, **kwargs):
+        """Adds a new package to the list of packages this package depends on.
+        
+        Args:
+            name (str): The name of the package.  There must be a corresponding 
+                        ``tau.cf.software.<name>_installation`` module.
+            sources (dict): Packages sources as strings indexed by package names as strings.  A source may be a 
+                            path to a directory where the software has already been installed, or a path to a source
+                            archive file, or the special keyword 'download'.
+        """
+        module_name = name + '_installation'
+        cls_name = util.camelcase(module_name)
+        pkg = __import__('tau.cf.software.' + module_name, globals(), locals(), [cls_name], -1)
+        cls = getattr(pkg, cls_name)
+        self.dependencies[name] = cls(sources, self.target_arch, self.target_os, self.compilers, *args, **kwargs)
+
+    
     def install(self, force_reinstall):
         """Installs the software package.
         
@@ -345,7 +365,7 @@ class AutotoolsInstallation(Installation):
         make [flags] all [options] 
         make [flags] install [options]
     """
-
+    
     def configure(self, flags, env):
         """Invoke `configure`.
         
@@ -365,9 +385,9 @@ class AutotoolsInstallation(Installation):
         # Prepare configuration flags
         flags += ['--prefix=%s' % self.install_prefix]
         cmd = ['./configure'] + flags
-        LOGGER.info("Configuring %s...", self.name)
+        LOGGER.info("Configuring %s...", self.title)
         if util.create_subprocess(cmd, cwd=self.src_prefix, env=env, stdout=False):
-            raise SoftwarePackageError('%s configure failed' % self.name)   
+            raise SoftwarePackageError('%s configure failed' % self.title)   
     
     def make(self, flags, env, parallel=True):
         """Invoke `make`.
@@ -388,11 +408,11 @@ class AutotoolsInstallation(Installation):
         flags = list(flags)
         par_flags = parallel_make_flags() if parallel else []
         cmd = ['make'] + par_flags + flags
-        LOGGER.info("Compiling %s...", self.name)
+        LOGGER.info("Compiling %s...", self.title)
         if util.create_subprocess(cmd, cwd=self.src_prefix, env=env, stdout=False):
             cmd = ['make'] + flags
             if util.create_subprocess(cmd, cwd=self.src_prefix, env=env, stdout=False):
-                raise SoftwarePackageError('%s compilation failed' % self.name)
+                raise SoftwarePackageError('%s compilation failed' % self.title)
 
     def make_install(self, flags, env, parallel=False):
         """Invoke `make install`.
@@ -415,9 +435,9 @@ class AutotoolsInstallation(Installation):
         if parallel:
             flags += parallel_make_flags()
         cmd = ['make', 'install'] + flags
-        LOGGER.info("Installing %s...", self.name)
+        LOGGER.info("Installing %s...", self.title)
         if util.create_subprocess(cmd, cwd=self.src_prefix, env=env, stdout=False):
-            raise SoftwarePackageError('%s installation failed' % self.name)
+            raise SoftwarePackageError('%s installation failed' % self.title)
         # Some systems use lib64 instead of lib
         if os.path.isdir(self.lib_path+'64') and not os.path.isdir(self.lib_path):
             os.symlink(self.lib_path+'64', self.lib_path)
@@ -430,30 +450,37 @@ class AutotoolsInstallation(Installation):
         Args:
             force_reinstall (bool): If True, reinstall even if the software package passes verification.
             
-        Returns:
-            bool: True if the installation succeeds and is successfully verified.
-            
         Raises:
             SoftwarePackageError: Installation failed.
         """
+        for pkg in self.dependencies.itervalues():
+            pkg.install(force_reinstall)
+
         if not self.src:
             try:
-                return self.verify()
+                self.verify()
             except SoftwarePackageError as err:
-                raise SoftwarePackageError("%s is missing or broken: %s" % (self.name, err),
-                                           "Specify source code path or URL to enable package reinstallation.")
+                raise SoftwarePackageError("Invalid %s installation at '%s': %s" % 
+                                           (self.title, self.install_prefix, err),
+                                           "Specify source code path or URL to enable broken package reinstallation.")
         elif not force_reinstall:
             try:
                 return self.verify()
             except SoftwarePackageError as err:
                 LOGGER.debug(err)
-        LOGGER.info("Installing %s at '%s' from '%s'", self.name, self.install_prefix, self.src)
 
+        LOGGER.info("Installing %s at '%s' from '%s'", self.title, self.install_prefix, self.src)
         if os.path.isdir(self.install_prefix): 
-            LOGGER.info("Cleaning %s installation prefix '%s'", self.name, self.install_prefix)
+            LOGGER.info("Cleaning %s installation prefix '%s'", self.title, self.install_prefix)
             util.rmtree(self.install_prefix, ignore_errors=True)
-            
-        self._prepare_src()
+        
+        # Try to build in shared memory, if available
+        try:
+            build_prefix = util.mkdtemp(dir="/dev/shm")
+        except IOError as err:
+            LOGGER.debug(err)
+            build_prefix = None
+        self._prepare_src(build_prefix, reuse=True)
 
         # Environment variables are shared between the subprocesses
         # created for `configure` ; `make` ; `make install`
@@ -463,7 +490,7 @@ class AutotoolsInstallation(Installation):
             self.make([], env)
             self.make_install([], env)
         except Exception as err:
-            LOGGER.info("%s installation failed: %s ", self.name, err)
+            LOGGER.info("%s installation failed: %s ", self.title, err)
             raise
         else:
             # Delete the decompressed source code to save space and clean up in preperation for
@@ -472,5 +499,5 @@ class AutotoolsInstallation(Installation):
             util.rmtree(self.src_prefix, ignore_errors=True)
 
         # Verify the new installation
-        LOGGER.info("%s installation complete, verifying installation", self.name)
+        LOGGER.info("Verifying %s installation...", self.title)
         return self.verify()

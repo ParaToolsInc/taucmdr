@@ -39,7 +39,7 @@ from tau.cf.compiler import CC_ROLE
 
 LOGGER = logger.get_logger(__name__)
 
-SOURCES = {None: 'http://icl.cs.utk.edu/projects/papi/downloads/papi-5.4.3.tar.gz'}
+REPOS = {None: 'http://icl.cs.utk.edu/projects/papi/downloads/papi-5.4.3.tar.gz'}
 
 LIBRARIES = {None: ['libpapi.a']}
 
@@ -47,15 +47,15 @@ LIBRARIES = {None: ['libpapi.a']}
 class PapiInstallation(AutotoolsInstallation):
     """Encapsulates a PAPI installation."""
 
-    def __init__(self, prefix, src, target_arch, target_os, compilers, shmem, dependencies, URL):
-        dst = os.path.join(target_arch, compilers[CC_ROLE].info.family.name)
-        super(PapiInstallation, self).__init__('PAPI', prefix, src, dst, 
-                                               target_arch, target_os, compilers, shmem,
-                                               dependencies, SOURCES, None, LIBRARIES)
+    def __init__(self, sources, target_arch, target_os, compilers):
+        prefix = os.path.join(str(target_arch), str(target_os), compilers[CC_ROLE].info.family.name)
+        super(PapiInstallation, self).__init__('papi', 'PAPI', prefix, sources, 
+                                               target_arch, target_os, compilers, REPOS, None, LIBRARIES, None)
 
-    def _prepare_src(self, reuse=True):
-        super(PapiInstallation, self)._prepare_src(reuse)
-        self.src_prefix = os.path.join(self.src_prefix, 'src')
+    def _prepare_src(self, build_prefix, reuse):
+        super(PapiInstallation, self)._prepare_src(build_prefix, reuse)
+        if os.path.basename(self.src_prefix) != 'src':
+            self.src_prefix = os.path.join(self.src_prefix, 'src')
 
     def make(self, flags, env, parallel=True):
         # PAPI's tests often fail to compile, so disable them.
