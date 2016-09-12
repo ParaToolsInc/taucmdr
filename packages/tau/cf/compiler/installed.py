@@ -336,7 +336,9 @@ class InstalledCompilerFamily(object):
                         LOGGER.debug(err)
                         continue
                     self.members.setdefault(role, []).append(installed)
-                        
+        if not self.members:
+            raise ConfigurationError("%s compilers not found." % self.family.name)
+
     def preferred(self, role):
         """Return the preferred installed compiler for a given role.
         
