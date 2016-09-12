@@ -283,6 +283,17 @@ class InstalledCompiler(object):
         elif len(info_list) == 0:
             raise ConfigurationError("Unknown %s compiler '%s'" % (family.name, absolute_path))
         return InstalledCompiler(absolute_path, info_list[0])
+    
+    def get_wrapped(self):
+        """Iterate through layers of compiler wrappers to find the true compiler.
+        
+        Returns:
+            InstalledCompiler: Compiler wrapped by this compiler, ``self`` if this compiler doesn't wrap another.
+        """
+        comp = self
+        while comp.wrapped:
+            comp = comp.wrapped
+        return comp
 
 
 class InstalledCompilerFamily(object):

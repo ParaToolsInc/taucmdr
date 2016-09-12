@@ -57,29 +57,28 @@ class BinutilsInstallation(AutotoolsInstallation):
                                                    target_arch, target_os, compilers, REPOS, None, LIBRARIES, None)
 
     def _configure_default(self, flags, env):
-        # pylint: disable=unused-argument
-        flags.extend(['CFLAGS=-fPIC', 'CXXFLAGS=-fPIC',
-                      '--disable-nls', '--disable-werror'])
+        env['CFLAGS'] = '-fPIC'
+        env['CXXFLAGS'] = '-fPIC'
+        flags.extend(['--disable-nls', '--disable-werror'])
     
     def _configure_bgp(self, flags, env):
-        # pylint: disable=unused-argument
-        flags.extend(['CFLAGS=-fPIC', 'CXXFLAGS=-fPIC',
-                      'CC=/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc-bgp-linux-gcc',
-                      'CXX=/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc-bgp-linux-g++',
-                      '--disable-nls', '--disable-werror'])
+        env['CC'] = '/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc-bgp-linux-gcc' 
+        env['CXX'] = '/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc-bgp-linux-g++'
+        env['CFLAGS'] = '-fPIC'
+        env['CXXFLAGS'] = '-fPIC'
+        flags.extend(['--disable-nls', '--disable-werror'])
         
     def _configure_bgq(self, flags, env):
-        # pylint: disable=unused-argument
-        flags.extend(['CFLAGS=-fPIC', 'CXXFLAGS=-fPIC',
-                      'CC=/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc64-bgq-linux-gcc',
-                      'CXX=/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc64-bgq-linux-g++',
-                      '--disable-nls', '--disable-werror'])
+        env['CC'] = '/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc64-bgq-linux-gcc' 
+        env['CXX'] = '/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc64-bgq-linux-g++'
+        env['CFLAGS'] = '-fPIC'
+        env['CXXFLAGS'] = '-fPIC'
+        flags.extend(['--disable-nls', '--disable-werror'])
         
     def _configure_ibm64(self, flags, env):
-        # pylint: disable=unused-argument
-        flags.extend(['CFLAGS=-fPIC', 'CXXFLAGS=-fPIC',
-                      '--disable-nls', '--disable-werror',
-                      '--disable-largefile'])
+        env['CFLAGS'] = '-fPIC'
+        env['CXXFLAGS'] = '-fPIC'
+        flags.extend(['--disable-nls', '--disable-werror', '--disable-largefile'])
         
     def _configure_knc(self, flags, env):
         k1om_ar = util.which('x86_64-k1om-linux-ar')
@@ -89,27 +88,20 @@ class BinutilsInstallation(AutotoolsInstallation):
                 if k1om_ar:
                     break
         env['PATH'] = os.pathsep.join([os.path.dirname(k1om_ar), env.get('PATH', os.environ['PATH'])])
-        flags.extend(['CFLAGS=-fPIC', 'CXXFLAGS=-fPIC',
-                      '--host=x86_64-k1om-linux',
-                      '--disable-nls', '--disable-werror'])
+        env['CFLAGS'] = '-fPIC'
+        env['CXXFLAGS'] = '-fPIC'
+        flags.extend(['--host=x86_64-k1om-linux', '--disable-nls', '--disable-werror'])
 
     def _configure_x86_64(self, flags, env):
-        # pylint: disable=unused-argument
-        cc_comp = self.compilers[CC_ROLE]
-        while cc_comp.wrapped:
-            cc_comp = cc_comp.wrapped
-        cxx_comp = self.compilers[CXX_ROLE]
-        while cxx_comp.wrapped:
-            cxx_comp = cxx_comp.wrapped
-        flags.append("CC=%s" % cc_comp.absolute_path)
-        flags.append("CXX=%s" % cxx_comp.absolute_path)
+        env['CC'] = self.compilers[CC_ROLE].get_wrapped().absolute_path 
+        env['CXX'] = self.compilers[CXX_ROLE].get_wrapped().absolute_path
         if self.target_os is DARWIN_OS:
-            flags.extend(['CFLAGS=-Wno-error=unused-value -Wno-error=deprecated-declarations -fPIC', 
-                          'CXXFLAGS=-Wno-error=unused-value -Wno-error=deprecated-declarations -fPIC',
-                          '--disable-nls', '--disable-werror'])
+            env['CFLAGS'] = '-Wno-error=unused-value -Wno-error=deprecated-declarations -fPIC'
+            env['CXXFLAGS'] = '-Wno-error=unused-value -Wno-error=deprecated-declarations -fPIC'
         else:
-            flags.extend(['CFLAGS=-fPIC', 'CXXFLAGS=-fPIC',
-                          '--disable-nls', '--disable-werror'])
+            env['CFLAGS'] = '-fPIC'
+            env['CXXFLAGS'] = '-fPIC'
+        flags.extend(['--disable-nls', '--disable-werror'])
 
     def configure(self, flags, env):
         arch_config = {IBM_BGP_ARCH: self._configure_bgp,

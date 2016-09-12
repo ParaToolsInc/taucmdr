@@ -554,9 +554,7 @@ class TauInstallation(Installation):
             list: Makefile tags, e.g. ['papi', 'pdt', 'icpc']
         """
         tags = []
-        cxx_compiler = self.compilers[CXX_ROLE] 
-        while cxx_compiler.wrapped:
-            cxx_compiler = cxx_compiler.wrapped            
+        cxx_compiler = self.compilers[CXX_ROLE].get_wrapped() 
         compiler_tags = {INTEL_COMPILERS: 'intel' if self.target_os == CRAY_CNL_OS else 'icpc', 
                          PGI_COMPILERS: 'pgi'}
         try:
@@ -592,10 +590,9 @@ class TauInstallation(Installation):
     def _incompatible_tags(self):
         """Returns a set of makefile tags incompatible with the specified config."""
         tags = []
-        cxx_compiler = self.compilers[CXX_ROLE] 
-        while cxx_compiler.wrapped:
-            cxx_compiler = cxx_compiler.wrapped            
-        compiler_tags = {INTEL_COMPILERS: 'intel' if self.target_os == CRAY_CNL_OS else 'icpc', PGI_COMPILERS: 'pgi'}
+        cxx_compiler = self.compilers[CXX_ROLE].get_wrapped()
+        compiler_tags = {INTEL_COMPILERS: 'intel' if self.target_os == CRAY_CNL_OS else 'icpc', 
+                         PGI_COMPILERS: 'pgi'}
         compiler_tag = compiler_tags.get(cxx_compiler.info.family, None)
         tags.extend(tag for tag in compiler_tags.itervalues() if tag != compiler_tag)
         if not self.mpi_support:
