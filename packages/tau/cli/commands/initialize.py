@@ -131,7 +131,6 @@ class InitializeCommand(AbstractCommand):
         if args.tau_options:
             options.append('--force-tau-options')
             options.extend([i for i in args.tau_options])
-        print options
         try:
             project_create_cmd.main(options)
         except ConfigurationError:
