@@ -365,14 +365,9 @@ class TauInstallation(Installation):
             # and the compiler's library linking flag (e.g. '-l') must be included
             link_library_flag = wrap_cc.info.family.link_library_flags[0]
             parts = [link_library_flag+lib for lib in libraries]
-            print parts
             # Also jam missing library path's onto this option
             library_path_flag = wrap_cc.info.family.library_path_flags[0]
-            print library_path_flag
-            print library_path
-            print selected_lib
             parts = [library_path_flag+path for path in library_path if path != selected_lib] + parts
-            print parts
             selected_library = '#'.join(parts)
         return selected_inc, selected_lib, selected_library
 
@@ -881,7 +876,6 @@ class TauInstallation(Installation):
                     break
                 else:
                     ppath = path
-            print ppath
             if os.path.isfile(ppath):
                 cmd = [tool, ppath]
             else:

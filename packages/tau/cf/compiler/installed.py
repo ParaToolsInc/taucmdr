@@ -273,6 +273,12 @@ class InstalledCompiler(object):
             command (str): Absolute or relative path to an installed compiler command.
             family (CompilerFamily): Installed compiler's family if known, None otherwise.
             role (CompilerRole): Installed compiler's role if known, None otherwise.
+
+        Raises:
+            ConfigurationError: Unknown compiler command or not enough information given to perform the probe.
+
+        Returns:
+            InstalledCompiler: A new InstalledCompiler instance describing the compiler.
         """
         absolute_path = util.which(command)
         command = os.path.basename(absolute_path)

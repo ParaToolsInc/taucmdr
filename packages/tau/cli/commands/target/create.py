@@ -36,8 +36,11 @@ from tau.cli.cli_view import CreateCommand
 from tau.model.target import Target
 from tau.model.compiler import Compiler
 from tau.cf.compiler import CompilerFamily, CompilerRole, CompilerInfo
+from tau.cf.compiler import CC_ROLE, CXX_ROLE, FC_ROLE
 from tau.cf.compiler.mpi import MpiCompilerFamily
+from tau.cf.compiler.mpi import MPI_CC_ROLE, MPI_CXX_ROLE, MPI_FC_ROLE
 from tau.cf.compiler.shmem import ShmemCompilerFamily
+from tau.cf.compiler.shmem import SHMEM_CC_ROLE, SHMEM_CXX_ROLE, SHMEM_FC_ROLE
 from tau.cf.compiler.installed import InstalledCompiler, InstalledCompilerFamily
 from tau.cf.target import host
 from tau.cf.target import TauArch
@@ -197,28 +200,49 @@ class TargetCreateCommand(CreateCommand):
                     setattr(args, attr, path)
                     self.logger.info("  --%s='%s'", attr.replace("_source", ""), path)
 
+
+    def _default_compilers(self, var_roles, fallback):
+        for var, role in var_roles.iteritems():
+            try:
+                comp = InstalledCompiler.probe(os.environ[var], role=role)
+            except KeyError:
+                # Environment variable not set
+                continue
+            except ConfigurationError as err:
+                LOGGER.debug(err)
+                continue
+            else:
+                return comp.info.family.name
+        return fallback
+
     def construct_parser(self):
+        host_var_roles = {'CC': CC_ROLE, 'CXX': CXX_ROLE, 'FC': FC_ROLE, 
+                          'F77': FC_ROLE, 'F90': FC_ROLE}
+        mpi_var_roles = {'MPI_CC': CC_ROLE, 'MPI_CXX': CXX_ROLE, 'MPIFC': FC_ROLE, 
+                         'MPI_F77': FC_ROLE, 'MPI_F90': FC_ROLE}
+        shmem_var_roles = {'SHMEM_CC': CC_ROLE, 'SHMEM_CXX': CXX_ROLE, 'SHMEM_FC': FC_ROLE, 
+                           'SHMEM_F77': FC_ROLE, 'SHMEM_F90': FC_ROLE}
         parser = super(TargetCreateCommand, self).construct_parser()
         group = parser.add_argument_group('host arguments')
         group.add_argument('--compilers',
                            help="select all host compilers automatically from the given family",
                            metavar='<family>',
                            dest='host_family',
-                           default=host.preferred_compilers().name,
+                           default=self._default_compilers(host_var_roles, host.preferred_compilers().name),
                            choices=CompilerFamily.family_names())
         group = parser.add_argument_group('Message Passing Interface (MPI) arguments')
         group.add_argument('--mpi-compilers', 
                            help="select all MPI compilers automatically from the given family",
                            metavar='<family>',
                            dest='mpi_family',
-                           default=host.preferred_mpi_compilers().name,
+                           default=self._default_compilers(mpi_var_roles, host.preferred_mpi_compilers().name),
                            choices=MpiCompilerFamily.family_names())
         group = parser.add_argument_group('Symmetric Hierarchical Memory (SHMEM) arguments')
         group.add_argument('--shmem-compilers', 
                            help="select all SHMEM compilers automatically from the given family",
                            metavar='<family>',
                            dest='shmem_family',
-                           default=host.preferred_shmem_compilers().name,
+                           default=self._default_compilers(shmem_var_roles, host.preferred_shmem_compilers().name),
                            choices=ShmemCompilerFamily.family_names())
         parser.add_argument('--from-tau-makefile',
                             help="Populate target configuration from a TAU Makefile",
