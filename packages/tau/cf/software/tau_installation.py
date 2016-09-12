@@ -517,7 +517,7 @@ class TauInstallation(Installation):
                 return self.verify()
             except SoftwarePackageError as err:
                 raise SoftwarePackageError("Invalid %s installation at '%s': %s" % 
-                                           (self.name, self.install_prefix, err),
+                                           (self.title, self.install_prefix, err),
                                            "Specify source code path or URL to enable broken package reinstallation.")
         elif not force_reinstall:
             try:
@@ -525,7 +525,7 @@ class TauInstallation(Installation):
             except SoftwarePackageError as err:
                 LOGGER.debug(err)
 
-        LOGGER.info("Installing %s at '%s' from '%s'", self.name, self.install_prefix, self.src)
+        LOGGER.info("Installing %s at '%s' from '%s'", self.title, self.install_prefix, self.src)
         
         # Keep reconfiguring the same source because that's how TAU works
         self._prepare_src(None, reuse=True)
@@ -536,11 +536,11 @@ class TauInstallation(Installation):
             self.configure()
             self.make_install()
         except Exception as err:
-            LOGGER.info("%s installation failed: %s ", self.name, err)
+            LOGGER.info("%s installation failed: %s ", self.title, err)
             raise
 
         # Verify the new installation
-        LOGGER.info("Verifying %s installation...", self.name)
+        LOGGER.info("Verifying %s installation...", self.title)
         return self.verify()
 
     def get_tags(self):

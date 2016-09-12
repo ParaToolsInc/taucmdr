@@ -202,7 +202,7 @@ class Installation(object):
                 if os.path.exists(archive):
                     LOGGER.info("Using %s source archive '%s'", self.title, archive)
                     if build_prefix != archive_prefix:
-                        LOGGER.info("Copying '%s' ==> '%s'", archive_name, build_prefix)
+                        LOGGER.debug("Copying '%s' ==> '%s'", archive_name, build_prefix)
                         shutil.copy(archive, os.path.join(build_prefix, archive_name))
                     break
         else:
@@ -217,7 +217,7 @@ class Installation(object):
                 raise ConfigurationError("Cannot acquire source archive '%s'" % self.src,
                                          "Check that the file or directory is accessable")
             if build_prefix != archive_prefix:
-                LOGGER.info("Copying '%s' ==> '%s'", archive_name, archive_prefix)
+                LOGGER.debug("Copying '%s' ==> '%s'", archive_name, archive_prefix)
                 util.mkdirp(archive_prefix)
                 shutil.copy(archive, os.path.join(archive_prefix, archive_name))
         try:
