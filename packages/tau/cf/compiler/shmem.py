@@ -61,7 +61,7 @@ OPENSHMEM_SHEM_COMPILERS.add(SHMEM_CC_ROLE, 'oshcc')
 OPENSHMEM_SHEM_COMPILERS.add(SHMEM_CXX_ROLE, 'oshcxx', 'oshc++')
 OPENSHMEM_SHEM_COMPILERS.add(SHMEM_FC_ROLE, 'oshfort')
 
-CRAY_SHMEM_COMPILERS = ShmemCompilerFamily('Cray', show_wrapper_flags=['-craype-verbose'])
+CRAY_SHMEM_COMPILERS = ShmemCompilerFamily('Cray', show_wrapper_flags=['-craype-verbose', '--version', '-E'])
 CRAY_SHMEM_COMPILERS.add(SHMEM_CC_ROLE, 'cc')
 CRAY_SHMEM_COMPILERS.add(SHMEM_CXX_ROLE, 'CC')
 CRAY_SHMEM_COMPILERS.add(SHMEM_FC_ROLE, 'ftn')
