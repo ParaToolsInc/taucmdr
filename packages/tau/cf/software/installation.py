@@ -33,7 +33,7 @@ import shutil
 import hashlib
 import multiprocessing
 from lockfile import LockFile, NotLocked
-from tau import logger, util
+from tau import logger, util, configuration
 from tau.error import ConfigurationError
 from tau.cf.storage.levels import ORDERED_LEVELS
 from tau.cf.storage.levels import highest_writable_storage 
@@ -54,7 +54,16 @@ def parallel_make_flags(nprocs=None):
         list: Command line arguments to pass to `make`.
     """
     if not nprocs:
-        nprocs = max(1, multiprocessing.cpu_count() - 1)
+        try:
+            nprocs = configuration.get('build.max_make_jobs')
+        except KeyError:
+            nprocs = max(1, multiprocessing.cpu_count() - 1)
+        try:
+            nprocs = int(nprocs)
+            if nprocs < 1:
+                raise ValueError
+        except ValueError:
+            raise ConfigurationError("Invalid parallel make job count: %s" % nprocs)
     return ['-j', str(nprocs)]
 
 

@@ -36,10 +36,23 @@ from tau import util
 from tau.cf.storage import AbstractStorage, StorageError
 from tau.cf.storage.levels import ORDERED_LEVELS
 from tau.cf.storage.project import ProjectStorageError
-from tau.model.target import Target
-from tau.model.application import Application
-from tau.model.measurement import Measurement
 
+
+def _parse_config_string(val):
+    """Converts a string to a bool, int, or float value if possible."""
+    if isinstance(val, basestring):
+        if val.lower() == "true":
+            return True
+        elif val.lower() == "false":
+            return False
+        else:
+            try:
+                return int(val)
+            except ValueError:
+                try:
+                    return float(val)
+                except ValueError:
+                    pass
 
 
 def get(key=None, storage=None):
@@ -98,6 +111,7 @@ def put(key, value, storage=None):
         value (object): Value.
         storage (AbstractStorage): Optional storage container.
     """
+    value = _parse_config_string(value)
     if storage is not None:
         assert isinstance(storage, AbstractStorage)
         storage[key] = value
@@ -174,6 +188,10 @@ def default_config():
     Returns:
         ConfigObj: Initialized configuration object.
     """
+    from tau.model.target import Target
+    from tau.model.application import Application
+    from tau.model.measurement import Measurement
+
     config = ConfigObj(write_empty_values=True)
     for model in Application, Measurement, Target:
         config[model.name] = {}
@@ -205,23 +223,8 @@ def import_from_file(filepath, storage):
     config = ConfigObj(filepath)
     for section in config.sections:
         for key, val in config[section].iteritems():
-            if not val:
-                continue
-            # pylint: disable=redefined-variable-type
-            if isinstance(val, basestring):
-                if val.lower() == "true":
-                    val = True
-                elif val.lower() == "false":
-                    val = False
-                else:
-                    try:
-                        val = int(val)
-                    except ValueError:
-                        try:
-                            val = float(val)
-                        except ValueError:
-                            pass
-            put('%s.%s' % (section, key), val, storage)
+            if val:
+                put('%s.%s' % (section, key), _parse_config_string(val), storage)
 
 
 def open_config_file(filepath):
