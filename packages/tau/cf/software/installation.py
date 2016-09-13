@@ -484,11 +484,13 @@ class AutotoolsInstallation(Installation):
             util.rmtree(self.install_prefix, ignore_errors=True)
 
         # Try to build in shared memory, if available
-        try:
-            build_prefix = util.mkdtemp(dir="/dev/shm")
-        except (OSError, IOError) as err:
-            LOGGER.debug(err)
-            build_prefix = None
+        # FIXME: Check for noexec on the mount point
+#         try:
+#             build_prefix = util.mkdtemp(dir="/dev/shm")
+#         except (OSError, IOError) as err:
+#             LOGGER.debug(err)
+#             build_prefix = None
+        build_prefix = None
         self._prepare_src(build_prefix, reuse=True)
 
         # Environment variables are shared between the subprocesses

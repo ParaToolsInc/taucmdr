@@ -377,10 +377,8 @@ def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True):
             subproc_env[key] = val
             LOGGER.debug("%s=%s", key, val)
     LOGGER.debug("Creating subprocess: cmd=%s, cwd='%s'\n", cmd, cwd)
-    proc = subprocess.Popen(cmd, cwd=cwd, env=subproc_env,
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.STDOUT,
-                            bufsize=1)
+    proc = subprocess.Popen(cmd, cwd=cwd, env=subproc_env, 
+                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1)
     with proc.stdout:
         # Use iter to avoid hidden read-ahead buffer bug in named pipes:
         # http://bugs.python.org/issue3907
