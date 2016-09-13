@@ -3,13 +3,22 @@
 #set -o errexit
 #set -o verbose
 
-# Don't let taucmdr's setup.cfg interfere.
-rm setup.cfg
+export MY_OS=${TRAVIS_OS_NAME}
+export REPO_SLUG=${TRAVIS_REPO_SLUG:-ParaToolsInc/taucmdr}
+export GIT_COMMIT=${TRAVIS_COMMIT:-"$(git rev-parse HEAD)"}
+export COMMIT_RANGE=${TRAVIS_COMMIT_RANGE:-"$(git rev-parse HEAD)^..$(git rev-parse HEAD)"}
+export PR=${TRAVIS_PULL_REQUEST:-false}
+
+###############################################################################
+# Begin package installation
+###############################################################################
+
+# Stay away from setup.cfg while installing support packages
+cd "$HOME"
+pwd
 
 # Install pyenv to globally manage python versions
 # See https://github.com/yyuu/pyenv for further details
-echo "$PYENV_ROOT"
-
 export PYENV_ROOT="$HOME/.pyenv"
 export PATH="$PYENV_ROOT/bin:$PATH"
 
@@ -32,7 +41,7 @@ ls ~/.pyenv/bin
 eval "$(pyenv init -)"
 eval "$(pyenv virtualenv-init -)"
 
-pyenv update ||true
+pyenv update || true
 
 export PYENV_VERSION="${PYENV_VERSION:-2.7.9}"
 pyenv install -s ${PYENV_VERSION}
@@ -47,18 +56,16 @@ python -m virtualenv "$HOME/.venv"
 source "$HOME/.venv/bin/activate"
 
 # Install development requirements enumerated in requirements.txt
-pip install -r $HOME/taucmdr/requirements.txt
+pip install -r "$HOME/$REPO_SLUG/requirements.txt"
 
+###############################################################################
+# End package installation
+###############################################################################
+
+cd "$HOME/$REPO_SLUG"
 export PATH="$PWD/bin:$PATH"
 
-
 ### Determine the files changed in the commit range being tested
-export MY_OS=${TRAVIS_OS_NAME}
-export REPO_SLUG=${TRAVIS_REPO_SLUG:-ParaToolsInc/taucmdr}
-export GIT_COMMIT=${TRAVIS_COMMIT:-"$(git rev-parse HEAD)"}
-export COMMIT_RANGE=${TRAVIS_COMMIT_RANGE:-"$(git rev-parse HEAD)^..$(git rev-parse HEAD)"}
-export PR=${TRAVIS_PULL_REQUEST:-false}
-
 # Be carefull here; pull requests with forced pushes can potentially
 # cause issues
 _diff_range="$(sed 's/\.\.\./../' <<< $COMMIT_RANGE )"

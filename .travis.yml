@@ -5,7 +5,7 @@ branches:
     - gh-pages
 
 git:
-  depth: 1
+  depth: 9999
 
 sudo: false
 os:
