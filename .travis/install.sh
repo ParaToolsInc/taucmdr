@@ -39,7 +39,7 @@ pyenv versions
 pyenv which pip
 
 # Create a clean virtualenv to isolate the environment from Travis-CI defaults
-python -m pip install --user virtualenv
+python -m pip install virtualenv
 python -m virtualenv "$HOME/.venv"
 source "$HOME/.venv/bin/activate"
 
