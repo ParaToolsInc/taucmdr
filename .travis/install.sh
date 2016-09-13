@@ -7,6 +7,8 @@
 # Begin package installation
 ###############################################################################
 
+env
+
 # Stay away from setup.cfg while installing support packages
 TAU_HOME="$PWD"
 echo "$TAU_HOME"

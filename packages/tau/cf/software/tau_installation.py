@@ -222,6 +222,7 @@ class TauInstallation(Installation):
         """
         super(TauInstallation, self).__init__('tau', 'TAU Performance System', "", sources,
                                               target_arch, target_os, compilers, REPOS, COMMANDS, None, None)
+        self.arch = TauArch.get(self.target_arch, self.target_os)
         self.verbose = (logger.LOG_LEVEL == 'DEBUG')
         self.openmp_support = openmp_support
         self.opencl_support = opencl_support
@@ -271,13 +272,12 @@ class TauInstallation(Installation):
             self.add_dependency('scorep', sources, shmem_support, 
                                 self._uses_binutils(), self._uses_libunwind(), self._uses_papi(), self._uses_pdt())
 
-    def _change_install_prefix(self, value):
-        # TAU puts installation files (bin, lib, etc.) in a magically named subfolder
-        super(TauInstallation, self)._change_install_prefix(value)
-        self.arch = TauArch.get(self.target_arch, self.target_os)
-        self.arch_path = os.path.join(self.install_prefix, self.arch.name)
-        self.bin_path = os.path.join(self.arch_path, 'bin')
-        self.lib_path = os.path.join(self.arch_path, 'lib')
+    def _set_install_prefix(self, value):
+        # PDT puts installation files (bin, lib, etc.) in a magically named subfolder
+        super(TauInstallation, self)._set_install_prefix(value)
+        arch_path = os.path.join(self.install_prefix, self.arch.name)
+        self.bin_path = os.path.join(arch_path, 'bin')
+        self.lib_path = os.path.join(arch_path, 'lib')
 
     def _uses_pdt(self):
         return self.source_inst == 'automatic'

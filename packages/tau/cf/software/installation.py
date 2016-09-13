@@ -117,26 +117,38 @@ class Installation(object):
         self.dependencies = {}
         self.name = name
         self.title = title
+        self.prefix = prefix
         self.target_arch = target_arch
         self.target_os = target_os
         self.compilers = compilers
         self.verify_commands = self._lookup_target_os_list(commands)
         self.verify_libraries = self._lookup_target_os_list(libraries)
         self.verify_headers = self._lookup_target_os_list(headers)
-        self.src_prefix = None
-        self.is_installed = False
         src = sources[name]
         if os.path.isdir(src):
             self.src = None
-            self._change_install_prefix(src)
+            self._install_prefix = src
+        elif src.lower() == 'download':
+            self.src = self._lookup_target_os_list(repos)
+            self._install_prefix = None
         else:
-            self.src = src if src.lower() != 'download' else self._lookup_target_os_list(repos)
+            self.src = src
+            self._install_prefix = None
+        self.src_prefix = None
+        self.include_path = None
+        self.bin_path = None
+        self.lib_path = None
+        self._lockfile = None
+        self.is_installed = False
+        
+    def _get_install_prefix(self):
+        if not self._install_prefix:
             md5sum = hashlib.md5()
             md5sum.update(self.src)
             uid = md5sum.hexdigest()
             # Search the storage hierarchy for an existing installation
             for storage in reversed(ORDERED_LEVELS):
-                self._change_install_prefix(os.path.join(storage.prefix, prefix, name, uid))
+                self._set_install_prefix(os.path.join(storage.prefix, self.prefix, self.name, uid))
                 try:
                     self.verify()
                 except SoftwarePackageError as err:
@@ -146,15 +158,24 @@ class Installation(object):
                     break
             else:
                 # No existing installation found, install at highest writable storage level
-                self._change_install_prefix(os.path.join(highest_writable_storage().prefix, prefix, name, uid))
-        LOGGER.debug("%s installation prefix is %s", self.name, self.install_prefix)
+                self._set_install_prefix(os.path.join(highest_writable_storage().prefix, self.prefix, self.name, uid))
+            LOGGER.debug("%s installation prefix is %s", self.name, self._install_prefix)
+        return self._install_prefix
     
-    def _change_install_prefix(self, value):
-        self.install_prefix = value
+    def _set_install_prefix(self, value):
+        self._install_prefix = value
         self.include_path = os.path.join(value, 'include')
         self.bin_path = os.path.join(value, 'bin')
         self.lib_path = os.path.join(value, 'lib')
         self._lockfile = LockFile(os.path.join(value, '.tau_lock'))
+        
+    @property
+    def install_prefix(self):
+        return self._get_install_prefix()
+    
+    @install_prefix.setter
+    def install_prefix(self, value):
+        self._set_install_prefix(value)
 
     def _lookup_target_os_list(self, dct):
         if not dct:
@@ -258,6 +279,7 @@ class Installation(object):
         Raises:
           SoftwarePackageError: Describs why the installation is invalid.
         """
+        self.is_installed = False
         for pkg in self.dependencies.itervalues():
             pkg.verify()
         LOGGER.debug("Checking %s installation at '%s' targeting %s %s", 
