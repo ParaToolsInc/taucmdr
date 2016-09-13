@@ -57,7 +57,7 @@ pip install -r "$TAU_HOME/requirements.txt"
 # End package installation
 ###############################################################################
 
-cd "$HOME/$REPO_SLUG"
+cd "$TAU_HOME"
 export PATH="$PWD/bin:$PATH"
 
 export MY_OS=${TRAVIS_OS_NAME}
