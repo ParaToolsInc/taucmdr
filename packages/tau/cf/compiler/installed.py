@@ -214,7 +214,8 @@ class InstalledCompiler(object):
 
     def _probe_wrapped(self, wrapped_absolute_path, wrapped_args):
         wrapped_family = CompilerFamily.probe(wrapped_absolute_path)
-        found_info = CompilerInfo.find(command=os.path.basename(wrapped_absolute_path), family=wrapped_family)
+        wrapped_command = os.path.basename(wrapped_absolute_path)
+        found_info = CompilerInfo.find(command=wrapped_command, family=wrapped_family)
         if len(found_info) == 1:
             wrapped_info = found_info[0]
             LOGGER.debug("Identified '%s': %s", wrapped_absolute_path, wrapped_info.short_descr)
@@ -281,6 +282,8 @@ class InstalledCompiler(object):
             InstalledCompiler: A new InstalledCompiler instance describing the compiler.
         """
         absolute_path = util.which(command)
+        if not absolute_path:
+            raise ConfigurationError("Compiler '%s' not found on PATH" % command)
         command = os.path.basename(absolute_path)
         if not family:
             family = CompilerFamily.probe(absolute_path)

@@ -119,21 +119,8 @@ class CompilerInfo(TrackedInstance):
         self.short_descr = "%s %s compiler" % (family.name, role.language)
         
     @classmethod
-    def find(cls, command=None, family=None, role=None):
-        """Find CompilerInfo instances that matches the given command and/or family and/or role.
-        
-        Args:
-            command (str): A compiler command without path.
-            family (CompilerFamily): Compiler family to search for.
-            role (CompilerRole): Compiler role to search for.
-
-        Returns:
-            list: CompilerInfo instances matching given compiler information.
-        """
+    def _find(cls, command, family, role):
         # pylint: disable=too-many-return-statements
-        assert command is None or isinstance(command, basestring)
-        assert family is None or isinstance(family, CompilerFamily)
-        assert role is None or isinstance(role, CompilerRole)
         if command and family and role:
             return [info for info in family.members[role] if info.command == command]
         elif command and family:
@@ -150,7 +137,33 @@ class CompilerInfo(TrackedInstance):
             return [info for info in cls.all() if info.role is role]
         else:
             return []
-    
+
+    @classmethod
+    def find(cls, command=None, family=None, role=None):
+        """Find CompilerInfo instances that matches the given command and/or family and/or role.
+        
+        Args:
+            command (str): A compiler command without path.
+            family (CompilerFamily): Compiler family to search for.
+            role (CompilerRole): Compiler role to search for.
+
+        Returns:
+            list: CompilerInfo instances matching given compiler information.
+        """
+        assert command is None or isinstance(command, basestring)
+        assert family is None or isinstance(family, CompilerFamily)
+        assert role is None or isinstance(role, CompilerRole)
+        found = cls._find(command, family, role)
+        if not found:
+            if command:
+                # Strip version info and try again
+                for part in command.split('-'):
+                    found = cls._find(part, family, role)
+                    if found:
+                        break
+                else:
+                    found = []
+        return found
 
 class CompilerFamily(KeyedRecord):
     """Information about a compiler family.

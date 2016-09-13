@@ -486,7 +486,7 @@ class AutotoolsInstallation(Installation):
         # Try to build in shared memory, if available
         try:
             build_prefix = util.mkdtemp(dir="/dev/shm")
-        except IOError as err:
+        except (OSError, IOError) as err:
             LOGGER.debug(err)
             build_prefix = None
         self._prepare_src(build_prefix, reuse=True)

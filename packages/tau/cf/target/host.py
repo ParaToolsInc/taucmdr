@@ -35,7 +35,7 @@ from tau.cf.target import Architecture, TauArch, OperatingSystem
 from tau.cf.target import IBM_BGP_ARCH, IBM_BGQ_ARCH
 from tau.cf.target import CRAY_CNL_OS, IBM_CNK_OS
 from tau.cf.target import TAU_ARCH_CRAYCNL, TAU_ARCH_BGP, TAU_ARCH_BGQ, TAU_ARCH_IBM64_LINUX, TAU_ARCH_MIC_LINUX
-from tau.cf.compiler.installed import InstalledCompilerFamily
+from tau.cf.compiler.installed import InstalledCompiler, InstalledCompilerFamily
  
 
 LOGGER = logger.get_logger(__name__)
@@ -132,6 +132,22 @@ def tau_arch():
     return inst
 
 
+def _env_preferred_compilers(var_roles):
+    """"Check environment variables for default compilers."""
+    for var, role in var_roles.iteritems():
+        try:
+            comp = InstalledCompiler.probe(os.environ[var], role=role)
+        except KeyError:
+            # Environment variable not set
+            continue
+        except ConfigurationError as err:
+            LOGGER.debug(err)
+            continue
+        else:
+            return comp.info.family
+    return None
+
+
 def preferred_compilers():
     """Get the preferred compiler family for the host architecture.
     
@@ -145,23 +161,23 @@ def preferred_compilers():
     try:
         inst = preferred_compilers.inst
     except AttributeError:
-        from tau.cf.compiler import IBM_COMPILERS, GNU_COMPILERS, CRAY_COMPILERS, INTEL_COMPILERS, IBM_BG_COMPILERS
-        host_tau_arch = tau_arch()
-        if host_tau_arch is TAU_ARCH_CRAYCNL:
-            LOGGER.debug("Preferring Cray compiler wrappers")
-            inst = CRAY_COMPILERS
-        elif host_tau_arch in (TAU_ARCH_BGP, TAU_ARCH_BGQ):
-            LOGGER.debug("Preferring IBM compilers")
-            inst = IBM_BG_COMPILERS
-        elif host_tau_arch is TAU_ARCH_IBM64_LINUX:
-            LOGGER.debug("Preferring IBM compilers")
-            inst = IBM_COMPILERS
-        elif host_tau_arch is TAU_ARCH_MIC_LINUX:
-            LOGGER.debug("Preferring Intel compilers")
-            inst = INTEL_COMPILERS
-        else:
-            LOGGER.debug("No preferred compilers for '%s'", host_tau_arch)
-            inst = GNU_COMPILERS
+        from tau.cf import compiler 
+        var_roles = {'CC': compiler.CC_ROLE, 'CXX': compiler.CXX_ROLE, 'FC': compiler.FC_ROLE, 
+                     'F77': compiler.FC_ROLE, 'F90': compiler.FC_ROLE}
+        inst = _env_preferred_compilers(var_roles)
+        if not inst:
+            host_tau_arch = tau_arch()
+            if host_tau_arch is TAU_ARCH_CRAYCNL:
+                inst = compiler.CRAY_COMPILERS
+            elif host_tau_arch in (TAU_ARCH_BGP, TAU_ARCH_BGQ):
+                inst = compiler.IBM_BG_COMPILERS
+            elif host_tau_arch is TAU_ARCH_IBM64_LINUX:
+                inst = compiler.IBM_COMPILERS
+            elif host_tau_arch is TAU_ARCH_MIC_LINUX:
+                inst = compiler.INTEL_COMPILERS
+            else:                
+                inst = compiler.GNU_COMPILERS
+            LOGGER.debug("Preferring %s compilers", inst.name)
         preferred_compilers.inst = inst
     return inst
 
@@ -180,19 +196,20 @@ def preferred_mpi_compilers():
         inst = preferred_mpi_compilers.inst
     except AttributeError:
         from tau.cf.compiler import mpi
-        host_tau_arch = tau_arch()
-        if host_tau_arch is TAU_ARCH_CRAYCNL:
-            LOGGER.debug("Preferring Cray MPI compilers")
-            inst = mpi.CRAY_MPI_COMPILERS
-        elif host_tau_arch in (TAU_ARCH_BGP, TAU_ARCH_BGQ, TAU_ARCH_IBM64_LINUX):
-            LOGGER.debug("Preferring IBM MPI compilers")
-            inst = mpi.IBM_MPI_COMPILERS
-        elif host_tau_arch is TAU_ARCH_MIC_LINUX:
-            LOGGER.debug("Preferring Intel compilers")
-            inst = mpi.INTEL_MPI_COMPILERS
-        else:
-            LOGGER.debug("No preferred MPI compilers for '%s'", host_tau_arch)
-            inst = mpi.SYSTEM_MPI_COMPILERS
+        var_roles = {'MPI_CC': mpi.MPI_CC_ROLE, 'MPI_CXX': mpi.MPI_CXX_ROLE, 'MPIFC': mpi.MPI_FC_ROLE, 
+                     'MPI_F77': mpi.MPI_FC_ROLE, 'MPI_F90': mpi.MPI_FC_ROLE}
+        inst = _env_preferred_compilers(var_roles)
+        if not inst:
+            host_tau_arch = tau_arch()
+            if host_tau_arch is TAU_ARCH_CRAYCNL:
+                inst = mpi.CRAY_MPI_COMPILERS
+            elif host_tau_arch in (TAU_ARCH_BGP, TAU_ARCH_BGQ, TAU_ARCH_IBM64_LINUX):
+                inst = mpi.IBM_MPI_COMPILERS
+            elif host_tau_arch is TAU_ARCH_MIC_LINUX:
+                inst = mpi.INTEL_MPI_COMPILERS
+            else:
+                inst = mpi.SYSTEM_MPI_COMPILERS
+        LOGGER.debug("Preferring %s MPI compilers", inst.name)
         preferred_mpi_compilers.inst = inst
     return inst
 
@@ -211,13 +228,17 @@ def preferred_shmem_compilers():
         inst = preferred_shmem_compilers.inst
     except AttributeError:
         from tau.cf.compiler import shmem
-        host_tau_arch = tau_arch()
-        if host_tau_arch is TAU_ARCH_CRAYCNL:
-            LOGGER.debug("Preferring Cray SHMEM compilers")
-            inst = shmem.CRAY_SHMEM_COMPILERS
-        else:
-            LOGGER.debug("No preferred MPI compilers for '%s': defaulting to OpenSHMEM", host_tau_arch)
-            inst = shmem.OPENSHMEM_SHEM_COMPILERS
+        var_roles = {'SHMEM_CC': shmem.SHMEM_CC_ROLE, 'SHMEM_CXX': shmem.SHMEM_CXX_ROLE, 
+                     'SHMEM_FC': shmem.SHMEM_FC_ROLE, 'SHMEM_F77': shmem.SHMEM_FC_ROLE, 
+                     'SHMEM_F90': shmem.SHMEM_FC_ROLE}
+        inst = _env_preferred_compilers(var_roles)
+        if not inst:
+            host_tau_arch = tau_arch()
+            if host_tau_arch is TAU_ARCH_CRAYCNL:
+                inst = shmem.CRAY_SHMEM_COMPILERS
+            else:
+                inst = shmem.OPENSHMEM_SHEM_COMPILERS
+        LOGGER.debug("Preferring %s SHMEM compilers", inst.name)
         preferred_shmem_compilers.inst = inst
     return inst
 

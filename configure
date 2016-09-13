@@ -81,12 +81,12 @@ def build_parser():
         MutuableArgumentParser: The new argument parser.
     """
     description = ("Write installation configuration files:\n"
-                   "'%s'\n"
-                   "'%s'\n"
-                   "When TAU Commander is installed, the values passed to this script\n"
-                   "will be saved at the system level as the defaults for all new\n"
-                   "configuration objects.  These values can be changed in future via\n"
-                   "the `tau configure` command.") % (SETUP_CFG_FILE, DEFAULTS_CFG_FILE)
+                   "  '%s'\n"
+                   "  '%s'\n"
+                   "When TAU Commander is installed, the values passed to this script will\n"
+                   "be saved at the system level as the defaults for all new configuration\n"
+                   "objects.  These values can be changed in future via `tau configure`."
+                   % (SETUP_CFG_FILE, DEFAULTS_CFG_FILE))
     parser = arguments.get_parser(prog=PROG, usage='%s [arguments]' % PROG, description=description)
     parser.add_argument('--prefix', metavar='<path>', help='installation prefix',
                         default='/opt/ParaTools/taucmdr-%s' % taucmdr_version)

@@ -36,17 +36,32 @@ from tau.cli.cli_view import CreateCommand
 from tau.model.target import Target
 from tau.model.compiler import Compiler
 from tau.cf.compiler import CompilerFamily, CompilerRole, CompilerInfo
-from tau.cf.compiler import CC_ROLE, CXX_ROLE, FC_ROLE
 from tau.cf.compiler.mpi import MpiCompilerFamily
-from tau.cf.compiler.mpi import MPI_CC_ROLE, MPI_CXX_ROLE, MPI_FC_ROLE
 from tau.cf.compiler.shmem import ShmemCompilerFamily
-from tau.cf.compiler.shmem import SHMEM_CC_ROLE, SHMEM_CXX_ROLE, SHMEM_FC_ROLE
 from tau.cf.compiler.installed import InstalledCompiler, InstalledCompilerFamily
 from tau.cf.target import host
 from tau.cf.target import TauArch
 
 class TargetCreateCommand(CreateCommand):
     """``tau target create`` subcommand."""
+
+    def _probe_compiler_family(self, args, compilers, family_attr, family_cls):
+        try:
+            family_arg = getattr(args, family_attr)
+        except AttributeError as err:
+            # User didn't specify that argument, but that's OK
+            self.logger.debug(err)
+            return
+        if family_arg == "None":
+            return
+        try:
+            family_comps = InstalledCompilerFamily(family_cls(family_arg))
+        except KeyError:
+            self.parser.error("Invalid compiler family: %s" % family_arg)
+        for comp in family_comps:
+            self.logger.debug("args.%s=%r", comp.info.role.keyword, comp.absolute_path)
+            setattr(args, comp.info.role.keyword, comp.absolute_path)
+            compilers[comp.info.role] = comp
     
     def parse_compiler_flags(self, args):
         """Parses host compiler flags out of the command line arguments.
@@ -62,26 +77,11 @@ class TargetCreateCommand(CreateCommand):
         """
         compilers = {}
 
-        for family_attr, family_cls in [('host_family', CompilerFamily), 
-                                        ('mpi_family', MpiCompilerFamily),
-                                        ('shmem_family', ShmemCompilerFamily)]:
-            if hasattr(args, 'tau_makefile') and family_attr == 'host_family':
-                # TAU Makefile specifies host compilers, but not others.
-                continue
-            try:
-                family_arg = getattr(args, family_attr)
-            except AttributeError as err:
-                # User didn't specify that argument, but that's OK
-                self.logger.debug(err)
-                continue
-            try:
-                family_comps = InstalledCompilerFamily(family_cls(family_arg))
-            except KeyError:
-                self.parser.error("Invalid compiler family: %s" % family_arg)
-            for comp in family_comps:
-                self.logger.debug("args.%s=%r", comp.info.role.keyword, comp.absolute_path)
-                setattr(args, comp.info.role.keyword, comp.absolute_path)
-                compilers[comp.info.role] = comp
+        if not hasattr(args, 'tau_makefile'):
+            # TAU Makefile specifies host compilers, but not others.
+            self._probe_compiler_family(args, compilers, 'host_family', CompilerFamily)
+        self._probe_compiler_family(args, compilers, 'mpi_family', MpiCompilerFamily)
+        self._probe_compiler_family(args, compilers, 'shmem_family', ShmemCompilerFamily)
 
         compiler_keys = set(CompilerRole.keys())
         all_keys = set(args.__dict__.keys())
@@ -181,50 +181,37 @@ class TargetCreateCommand(CreateCommand):
                     setattr(args, attr, path)
                     self.logger.info("  --%s='%s'", attr.replace("_source", ""), path)
 
-
-    def _default_compilers(self, var_roles, fallback):
-        for var, role in var_roles.iteritems():
-            try:
-                comp = InstalledCompiler.probe(os.environ[var], role=role)
-            except KeyError:
-                # Environment variable not set
-                continue
-            except ConfigurationError as err:
-                self.logger.debug(err)
-                continue
-            else:
-                return comp.info.family.name
-        return fallback
+    def _check_default_compilers(self, family):
+        try:
+            InstalledCompilerFamily(family)
+        except ConfigurationError:
+            return "None"
+        else:
+            return family.name
 
     def construct_parser(self):
-        host_var_roles = {'CC': CC_ROLE, 'CXX': CXX_ROLE, 'FC': FC_ROLE, 
-                          'F77': FC_ROLE, 'F90': FC_ROLE}
-        mpi_var_roles = {'MPI_CC': MPI_CC_ROLE, 'MPI_CXX': MPI_CXX_ROLE, 'MPIFC': MPI_FC_ROLE, 
-                         'MPI_F77': MPI_FC_ROLE, 'MPI_F90': MPI_FC_ROLE}
-        shmem_var_roles = {'SHMEM_CC': SHMEM_CC_ROLE, 'SHMEM_CXX': SHMEM_CXX_ROLE, 'SHMEM_FC': SHMEM_FC_ROLE, 
-                           'SHMEM_F77': SHMEM_FC_ROLE, 'SHMEM_F90': SHMEM_FC_ROLE}
         parser = super(TargetCreateCommand, self).construct_parser()
         group = parser.add_argument_group('host arguments')
         group.add_argument('--compilers',
                            help="select all host compilers automatically from the given family",
                            metavar='<family>',
                            dest='host_family',
-                           default=self._default_compilers(host_var_roles, host.preferred_compilers().name),
+                           default=host.preferred_compilers().name,
                            choices=CompilerFamily.family_names())
         group = parser.add_argument_group('Message Passing Interface (MPI) arguments')
         group.add_argument('--mpi-compilers', 
                            help="select all MPI compilers automatically from the given family",
                            metavar='<family>',
                            dest='mpi_family',
-                           default=self._default_compilers(mpi_var_roles, host.preferred_mpi_compilers().name),
-                           choices=MpiCompilerFamily.family_names())
+                           default=self._check_default_compilers(host.preferred_mpi_compilers()),
+                           choices=["None"] + MpiCompilerFamily.family_names())
         group = parser.add_argument_group('Symmetric Hierarchical Memory (SHMEM) arguments')
         group.add_argument('--shmem-compilers', 
                            help="select all SHMEM compilers automatically from the given family",
                            metavar='<family>',
                            dest='shmem_family',
-                           default=self._default_compilers(shmem_var_roles, host.preferred_shmem_compilers().name),
-                           choices=ShmemCompilerFamily.family_names())
+                           default=self._check_default_compilers(host.preferred_shmem_compilers()),
+                           choices=["None"] + ShmemCompilerFamily.family_names())
         parser.add_argument('--from-tau-makefile',
                             help="Populate target configuration from a TAU Makefile",
                             metavar='<path>',
