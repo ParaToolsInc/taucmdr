@@ -3,6 +3,9 @@
 #set -o errexit
 #set -o verbose
 
+# Don't let taucmdr's setup.cfg interfere.
+rm setup.cfg
+
 # Install pyenv to globally manage python versions
 # See https://github.com/yyuu/pyenv for further details
 echo "$PYENV_ROOT"
@@ -44,7 +47,7 @@ python -m virtualenv "$HOME/.venv"
 source "$HOME/.venv/bin/activate"
 
 # Install development requirements enumerated in requirements.txt
-pip install -r requirements.txt
+pip install -r $HOME/taucmdr/requirements.txt
 
 export PATH="$PWD/bin:$PATH"
 
