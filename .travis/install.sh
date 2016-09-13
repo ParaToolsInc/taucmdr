@@ -3,19 +3,14 @@
 #set -o errexit
 #set -o verbose
 
-export MY_OS=${TRAVIS_OS_NAME}
-export REPO_SLUG=${TRAVIS_REPO_SLUG:-ParaToolsInc/taucmdr}
-export GIT_COMMIT=${TRAVIS_COMMIT:-"$(git rev-parse HEAD)"}
-export COMMIT_RANGE=${TRAVIS_COMMIT_RANGE:-"$(git rev-parse HEAD)^..$(git rev-parse HEAD)"}
-export PR=${TRAVIS_PULL_REQUEST:-false}
-
 ###############################################################################
 # Begin package installation
 ###############################################################################
 
 # Stay away from setup.cfg while installing support packages
+TAU_HOME="$PWD"
+echo "$TAU_HOME"
 cd "$HOME"
-pwd
 
 # Install pyenv to globally manage python versions
 # See https://github.com/yyuu/pyenv for further details
@@ -56,7 +51,7 @@ python -m virtualenv "$HOME/.venv"
 source "$HOME/.venv/bin/activate"
 
 # Install development requirements enumerated in requirements.txt
-pip install -r "$HOME/$REPO_SLUG/requirements.txt"
+pip install -r "$TAU_HOME/requirements.txt"
 
 ###############################################################################
 # End package installation
@@ -64,6 +59,12 @@ pip install -r "$HOME/$REPO_SLUG/requirements.txt"
 
 cd "$HOME/$REPO_SLUG"
 export PATH="$PWD/bin:$PATH"
+
+export MY_OS=${TRAVIS_OS_NAME}
+export REPO_SLUG=${TRAVIS_REPO_SLUG:-ParaToolsInc/taucmdr}
+export GIT_COMMIT=${TRAVIS_COMMIT:-"$(git rev-parse HEAD)"}
+export COMMIT_RANGE=${TRAVIS_COMMIT_RANGE:-"$(git rev-parse HEAD)^..$(git rev-parse HEAD)"}
+export PR=${TRAVIS_PULL_REQUEST:-false}
 
 ### Determine the files changed in the commit range being tested
 # Be carefull here; pull requests with forced pushes can potentially
