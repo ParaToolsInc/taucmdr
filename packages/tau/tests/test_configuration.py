@@ -90,3 +90,24 @@ class ConfigurationTest(tests.TestCase):
         self.reset_project_storage(bare=True)
         self.assertRaises(KeyError, configuration.delete, key='some_key', storage=None)
         
+    def test_parse_config_string(self):
+        def check_value_type(put_val, get_val, get_type):
+            test_key = 'test_parse_config_string'
+            configuration.put(test_key, put_val)
+            test_value = configuration.get(test_key)
+            self.assertIsInstance(test_value, get_type)
+            self.assertEqual(get_val, test_value)
+        self.reset_project_storage(bare=True)
+        check_value_type("True", True, bool)
+        check_value_type("TRUE", True, bool)
+        check_value_type("true", True, bool)
+        check_value_type("False", False, bool)
+        check_value_type("FALSE", False, bool)
+        check_value_type("false", False, bool)
+        check_value_type("15", 15, int)
+        check_value_type("2.5", 2.5, float)
+        check_value_type("Hello", "Hello", basestring)
+        check_value_type("T", "T", basestring)
+        check_value_type("F", "F", basestring)
+        check_value_type("yes", "yes", basestring)
+        check_value_type("no", "no", basestring)

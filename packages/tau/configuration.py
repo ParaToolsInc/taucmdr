@@ -40,19 +40,20 @@ from tau.cf.storage.project import ProjectStorageError
 
 def _parse_config_string(val):
     """Converts a string to a bool, int, or float value if possible."""
-    if isinstance(val, basestring):
-        if val.lower() == "true":
-            return True
-        elif val.lower() == "false":
-            return False
-        else:
+    assert isinstance(val, basestring)
+    if val.lower() == "true":
+        return True
+    elif val.lower() == "false":
+        return False
+    else:
+        try:
+            return int(val)
+        except ValueError:
             try:
-                return int(val)
+                return float(val)
             except ValueError:
-                try:
-                    return float(val)
-                except ValueError:
-                    pass
+                pass
+    return val
 
 
 def get(key=None, storage=None):
