@@ -48,10 +48,11 @@ class ScorepInstallation(AutotoolsInstallation):
     """Downloads ScoreP."""
 
     def __init__(self, sources, target_arch, target_os, compilers, 
-                 use_shmem, use_binutils, use_libunwind, use_papi, use_pdt):
+                 use_mpi, use_shmem, use_binutils, use_libunwind, use_papi, use_pdt):
         prefix = os.path.join(str(target_arch), str(target_os), compilers[CC_ROLE].info.family.name)
         super(ScorepInstallation, self).__init__('scorep', 'Score-P', prefix, sources,
                                                  target_arch, target_os, compilers, REPOS, None, LIBRARIES, None)
+        self.use_mpi = use_mpi
         self.use_shmem = use_shmem
         for pkg, used in (('binutils', use_binutils), ('libunwind', use_libunwind), 
                           ('papi', use_papi), ('pdt', use_pdt)):
@@ -63,6 +64,8 @@ class ScorepInstallation(AutotoolsInstallation):
         if self.target_arch in (X86_64_ARCH, IBM64_ARCH):
             suite_flags = {INTEL_COMPILERS: 'intel', IBM_COMPILERS: 'ibm', PGI_COMPILERS: 'pgi', GNU_COMPILERS: 'gcc'}
             flags.append('--with-nocross-compiler-suite=%s' % suite_flags[self.compilers[CC_ROLE].info.family])
+        if not self.use_mpi:
+            flags.append('--without-mpi')
         if not self.use_shmem:
             flags.append('--without-shmem')
         binutils = self.dependencies.get('binutils')

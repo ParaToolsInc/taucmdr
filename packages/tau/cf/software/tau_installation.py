@@ -269,7 +269,7 @@ class TauInstallation(Installation):
             if uses_pkg():
                 self.add_dependency(pkg, sources)
         if self._uses_scorep():
-            self.add_dependency('scorep', sources, shmem_support, 
+            self.add_dependency('scorep', sources, mpi_support, shmem_support, 
                                 self._uses_binutils(), self._uses_libunwind(), self._uses_papi(), self._uses_pdt())
 
     def _set_install_prefix(self, value):
