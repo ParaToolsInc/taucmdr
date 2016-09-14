@@ -37,9 +37,10 @@ import glob
 import shutil
 import fileinput
 from tau import logger, util
+from tau.error import ConfigurationError
 from tau.cf.software.installation import AutotoolsInstallation
 from tau.cf.compiler import CC_ROLE, CXX_ROLE
-from tau.cf.target import IBM_BGP_ARCH, IBM_BGQ_ARCH, IBM64_ARCH, INTEL_KNC_ARCH, X86_64_ARCH, DARWIN_OS
+from tau.cf.target import IBM_BGP_ARCH, IBM_BGQ_ARCH, IBM64_ARCH, INTEL_KNC_ARCH, DARWIN_OS
 
 LOGGER = logger.get_logger(__name__)
  
@@ -56,61 +57,37 @@ class BinutilsInstallation(AutotoolsInstallation):
         super(BinutilsInstallation, self).__init__('binutils', 'GNU Binutils', prefix, sources, 
                                                    target_arch, target_os, compilers, REPOS, None, LIBRARIES, None)
 
-    def _configure_default(self, flags, env):
-        env['CFLAGS'] = '-fPIC'
-        env['CXXFLAGS'] = '-fPIC'
+    def configure(self, flags, env):
         flags.extend(['--disable-nls', '--disable-werror'])
-    
-    def _configure_bgp(self, flags, env):
-        env['CC'] = '/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc-bgp-linux-gcc' 
-        env['CXX'] = '/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc-bgp-linux-g++'
-        env['CFLAGS'] = '-fPIC'
-        env['CXXFLAGS'] = '-fPIC'
-        flags.extend(['--disable-nls', '--disable-werror'])
-        
-    def _configure_bgq(self, flags, env):
-        env['CC'] = '/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc64-bgq-linux-gcc' 
-        env['CXX'] = '/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc64-bgq-linux-g++'
-        env['CFLAGS'] = '-fPIC'
-        env['CXXFLAGS'] = '-fPIC'
-        flags.extend(['--disable-nls', '--disable-werror'])
-        
-    def _configure_ibm64(self, flags, env):
-        env['CFLAGS'] = '-fPIC'
-        env['CXXFLAGS'] = '-fPIC'
-        flags.extend(['--disable-nls', '--disable-werror', '--disable-largefile'])
-        
-    def _configure_knc(self, flags, env):
-        k1om_ar = util.which('x86_64-k1om-linux-ar')
-        if not k1om_ar:
-            for path in glob.glob('/usr/linux-k1om-*'):
-                k1om_ar = util.which(os.path.join(path, 'bin', 'x86_64-k1om-linux-ar'))
-                if k1om_ar:
-                    break
-        env['PATH'] = os.pathsep.join([os.path.dirname(k1om_ar), env.get('PATH', os.environ['PATH'])])
-        env['CFLAGS'] = '-fPIC'
-        env['CXXFLAGS'] = '-fPIC'
-        flags.extend(['--host=x86_64-k1om-linux', '--disable-nls', '--disable-werror'])
-
-    def _configure_x86_64(self, flags, env):
-        env['CC'] = self.compilers[CC_ROLE].get_wrapped().absolute_path 
-        env['CXX'] = self.compilers[CXX_ROLE].get_wrapped().absolute_path
         if self.target_os is DARWIN_OS:
             env['CFLAGS'] = '-Wno-error=unused-value -Wno-error=deprecated-declarations -fPIC'
             env['CXXFLAGS'] = '-Wno-error=unused-value -Wno-error=deprecated-declarations -fPIC'
         else:
             env['CFLAGS'] = '-fPIC'
             env['CXXFLAGS'] = '-fPIC'
-        flags.extend(['--disable-nls', '--disable-werror'])
-
-    def configure(self, flags, env):
-        arch_config = {IBM_BGP_ARCH: self._configure_bgp,
-                       IBM_BGQ_ARCH: self._configure_bgq,
-                       IBM64_ARCH: self._configure_ibm64,
-                       INTEL_KNC_ARCH: self._configure_knc,
-                       X86_64_ARCH: self._configure_x86_64}
-        config = arch_config.get(self.target_arch, self._configure_default) 
-        config(flags, env)
+            
+        if self.target_arch is IBM_BGP_ARCH:
+            env['CC'] = '/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc-bgp-linux-gcc'
+            env['CXX'] = '/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc-bgp-linux-g++'
+        elif self.target_arch is IBM_BGQ_ARCH:
+            env['CC'] = '/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc64-bgq-linux-gcc' 
+            env['CXX'] = '/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc64-bgq-linux-g++'
+        elif self.target_arch is IBM64_ARCH:
+            flags.append('--disable-largefile')
+        elif self.target_arch is INTEL_KNC_ARCH:
+            k1om_ar = util.which('x86_64-k1om-linux-ar')
+            if not k1om_ar:
+                for path in glob.glob('/usr/linux-k1om-*'):
+                    k1om_ar = util.which(os.path.join(path, 'bin', 'x86_64-k1om-linux-ar'))
+                    if k1om_ar:
+                        break
+                else:
+                    raise ConfigurationError("Cannot find KNC native compilers in /usr/linux-k1om-*")
+            env['PATH'] = os.pathsep.join([os.path.dirname(k1om_ar), env.get('PATH', os.environ['PATH'])])
+            flags.append('--host=x86_64-k1om-linux')
+        else:
+            env['CC'] = self.compilers.get_path(CC_ROLE)
+            env['CXX'] = self.compilers.get_path(CXX_ROLE)
         return super(BinutilsInstallation, self).configure(flags, env)
 
     def make_install(self, flags, env, parallel=False):
