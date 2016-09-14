@@ -508,20 +508,19 @@ class TauInstallation(Installation):
             SoftwarePackageError: TAU failed installation or did not pass verification after it was installed.
         """
         for pkg in self.dependencies.itervalues():
-            pkg.install(force_reinstall)
+            with pkg:
+                pkg.install(force_reinstall)
 
-        if not self.src:
+        if not self.src or not force_reinstall:
             try:
                 return self.verify()
             except SoftwarePackageError as err:
-                raise SoftwarePackageError("Invalid %s installation at '%s': %s" % 
-                                           (self.title, self.install_prefix, err),
-                                           "Specify source code path or URL to enable broken package reinstallation.")
-        elif not force_reinstall:
-            try:
-                return self.verify()
-            except SoftwarePackageError as err:
-                LOGGER.debug(err)
+                if not self.src:
+                    raise SoftwarePackageError("%s source package is unavailable and the installation at '%s' "
+                                               "is invalid: %s" % (self.title, self.install_prefix, err),
+                                               "Specify source code path or URL to enable package reinstallation.")
+                elif not force_reinstall:
+                    LOGGER.debug(err)
 
         LOGGER.info("Installing %s at '%s' from '%s'", self.title, self.install_prefix, self.src)
         

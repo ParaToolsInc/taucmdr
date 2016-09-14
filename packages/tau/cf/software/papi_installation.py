@@ -52,8 +52,8 @@ class PapiInstallation(AutotoolsInstallation):
         super(PapiInstallation, self).__init__('papi', 'PAPI', prefix, sources, 
                                                target_arch, target_os, compilers, REPOS, None, LIBRARIES, None)
 
-    def _prepare_src(self, build_prefix, reuse):
-        super(PapiInstallation, self)._prepare_src(build_prefix, reuse)
+    def _prepare_src(self, build_prefix, *args, **kwargs):
+        super(PapiInstallation, self)._prepare_src(build_prefix, *args, **kwargs)
         if os.path.basename(self.src_prefix) != 'src':
             self.src_prefix = os.path.join(self.src_prefix, 'src')
 
