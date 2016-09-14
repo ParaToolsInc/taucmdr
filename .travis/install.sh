@@ -8,6 +8,7 @@
 ###############################################################################
 
 env
+mount
 
 # Stay away from setup.cfg while installing support packages
 TAU_HOME="$PWD"
