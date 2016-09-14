@@ -214,17 +214,9 @@ class Test(TestCommand):
 
 
 class Install(InstallCommand):
-    
-    _custom_user_options = [('include-setup', None, "Copy config files and setup.py to installation prefix.")]
-    user_options = InstallCommand.user_options + _custom_user_options
-    
-    def initialize_options(self):
-        InstallCommand.initialize_options(self)
-        self.include_setup = False
-        
+
     def finalize_options(self):
         InstallCommand.finalize_options(self)
-        self.include_setup = (self.include_setup.lower() == "true")
         self.install_scripts = os.path.join(self.prefix, 'bin')
         self.install_lib = os.path.join(self.prefix, 'packages')
         self.install_data = os.path.join(self.prefix)
@@ -279,9 +271,6 @@ class Install(InstallCommand):
                 retval = InstallCommand.run(self)
             except:
                 retval = -1
-            if self.include_setup:
-                for setup_file in "setup.py", "setup.cfg", "defaults.cfg":
-                    shutil.copy(os.path.join(PACKAGE_TOPDIR, setup_file), self.prefix)
             if not retval:
                 # Update PYTHONPATH with the TAU packages that were *just installed* 
                 # so SYSTEM_PREFIX etc. are set correctly. 

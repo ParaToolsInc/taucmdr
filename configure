@@ -94,10 +94,6 @@ def build_parser(setup_cfg, default_cfg):
     parser.add_argument('-O', '--optimize', nargs='?', type=int, const=1, metavar='<level>',
                         help="Also compile .py files to optimized .pyo bytecode files.",
                         default=configuration.parse_config_string(install.get('optimize', 1)))
-    parser.add_argument('--include-setup', nargs='?', const=True, metavar='T/F', 
-                        action=arguments.ParseBooleanAction, 
-                        help="Copy config files and setup.py to installation prefix.",
-                        default=configuration.parse_config_string(install.get('include-setup', False)))
     
     target_parser = target_create_cmd.parser
     update_defaults(default_cfg['Target'], target_parser)
@@ -147,7 +143,6 @@ def main():
     install['prefix'] = args.prefix
     install['compile'] = args.compile
     install['optimize'] = args.optimize
-    install['include-setup'] = args.include_setup
     
     # Write config files
     with open(SETUP_CFG_FILE, "w") as fout:
