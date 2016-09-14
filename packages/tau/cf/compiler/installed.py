@@ -181,7 +181,7 @@ class InstalledCompiler(object):
             LOGGER.debug("Not probing wrapper: family '%s' does not provide flags to show wrapper flags", 
                          self.info.family.name)
             return None
-        LOGGER.info("Probing %s '%s' to discover wrapped compiler", self.info.short_descr, self.absolute_path)
+        LOGGER.debug("Probing %s '%s' to discover wrapped compiler", self.info.short_descr, self.absolute_path)
         cmd = [self.absolute_path] + self.info.family.show_wrapper_flags
         LOGGER.debug("Creating subprocess: %s", cmd)
         try:
@@ -203,7 +203,11 @@ class InstalledCompiler(object):
             wrapped_absolute_path = util.which(wrapped_command)
             if not wrapped_absolute_path:
                 continue
-            LOGGER.info("  '%s' wraps '%s'", self.absolute_path, wrapped_absolute_path)
+            if wrapped_absolute_path == self.absolute_path:
+                # A wrapper that wraps itself isn't a wrapper, e.g. compilers that ignore invalid arguments
+                # when version flags are present.
+                return None
+            LOGGER.info("'%s' wraps '%s'", self.absolute_path, wrapped_absolute_path)
             wrapped = self._probe_wrapped(wrapped_absolute_path, wrapped_args)
             if wrapped:
                 break
