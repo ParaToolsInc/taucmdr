@@ -248,7 +248,9 @@ class CompilerFamily(KeyedRecord):
         except KeyError:
             pass
         last_version_flags = None
-        for family in cls.all():
+        # Settle down pylint... the __instances__ member is created by the metaclass
+        # pylint: disable=no-member
+        for family in cls.__instances__.itervalues():
             if family.family_regex:
                 if family.version_flags != last_version_flags:
                     LOGGER.debug("Probing compiler '%s' to discover compiler family", absolute_path)
