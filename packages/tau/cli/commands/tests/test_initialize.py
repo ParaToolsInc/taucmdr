@@ -31,6 +31,7 @@
 Functions used for unit tests of initialize.py.
 """
 
+import os
 from tau import tests
 from tau.cli.commands.initialize import COMMAND as initialize_cmd
 
@@ -51,4 +52,11 @@ class InitializeTest(tests.TestCase):
 
     def test_initialize(self):
         self.destroy_project_storage()
-        self.assertCommandReturnValue(0, initialize_cmd, ['--storage-level', 'project'])
+        self.assertCommandReturnValue(0, initialize_cmd, [])
+        
+    def test_init_below_project(self):
+        self.reset_project_storage()
+        subdir = "foo"
+        os.mkdir(subdir)
+        os.chdir(subdir)
+        self.assertNotCommandReturnValue(0, initialize_cmd, [])
