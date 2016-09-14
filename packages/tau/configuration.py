@@ -30,6 +30,7 @@
 TODO: Docs
 """
 
+import os
 import textwrap
 from configobj import ConfigObj
 from tau import util
@@ -38,21 +39,31 @@ from tau.cf.storage.levels import ORDERED_LEVELS
 from tau.cf.storage.project import ProjectStorageError
 
 
-def _parse_config_string(val):
-    """Converts a string to a bool, int, or float value if possible."""
-    assert isinstance(val, basestring)
-    if val.lower() == "true":
-        return True
-    elif val.lower() == "false":
-        return False
-    else:
-        try:
-            return int(val)
-        except ValueError:
+def parse_config_string(val):
+    """Converts a string to a bool, int, or float value if possible.
+    
+    Val may be any type, but if it's a string and that string can be cast to a bool, int, or float
+    then the typecast value is returned.  Otherwise val is returned unmodified.
+    
+    Args:
+        val: Value to parse.
+        
+    Returns:
+        Parsed value.
+    """
+    if isinstance(val, basestring):
+        if val.lower() == "true":
+            return True
+        elif val.lower() == "false":
+            return False
+        else:
             try:
-                return float(val)
+                return int(val)
             except ValueError:
-                pass
+                try:
+                    return float(val)
+                except ValueError:
+                    pass
     return val
 
 
@@ -112,7 +123,7 @@ def put(key, value, storage=None):
         value (object): Value.
         storage (AbstractStorage): Optional storage container.
     """
-    value = _parse_config_string(value)
+    value = parse_config_string(value)
     if storage is not None:
         assert isinstance(storage, AbstractStorage)
         storage[key] = value
@@ -181,10 +192,13 @@ def config_file_comment(msg, box=False, width=78, line_comment='#', line_char='=
     return lines
 
 
-def default_config():
+def default_config(config_file=None):
     """Build a configuration object with default values from :any:`tau.model`.
     
     Adds "Target", "Application", and "Measurement" sections defining default values for each model attribute.
+    
+    Args:
+        config_file (str): Use defaults in specified configuration file, if it exists. 
     
     Returns:
         ConfigObj: Initialized configuration object.
@@ -192,16 +206,20 @@ def default_config():
     from tau.model.target import Target
     from tau.model.application import Application
     from tau.model.measurement import Measurement
-
-    config = ConfigObj(write_empty_values=True)
+    
+    if config_file is not None and os.path.exists(config_file):
+        config = ConfigObj(config_file, write_empty_values=True)
+    else:
+        config = ConfigObj(write_empty_values=True)
     for model in Application, Measurement, Target:
-        config[model.name] = {}
-        config.comments[model.name] = \
-                config_file_comment("System-level %s configuration defaults.\n\n"
-                                    "New target configurations will use these values as the default"
-                                    " if no better value is available.\n" % model.name.lower(), box=True)
+        if model.name not in config:
+            config[model.name] = {}
+            config.comments[model.name] = \
+                    config_file_comment("System-level %s configuration defaults.\n\n"
+                                        "New target configurations will use these values as the default"
+                                        " if no better value is available.\n" % model.name.lower(), box=True)
         for attr, props in sorted(model.attributes.iteritems()):
-            if 'primary_key' not in props and 'collection' not in props: 
+            if attr not in config[model.name] and 'primary_key' not in props and 'collection' not in props: 
                 config[model.name][attr] = props.get('default', '')
                 config[model.name].comments[attr] = config_file_comment(props.get('description', ''))
     return config
@@ -225,7 +243,7 @@ def import_from_file(filepath, storage):
     for section in config.sections:
         for key, val in config[section].iteritems():
             if val:
-                put('%s.%s' % (section, key), _parse_config_string(val), storage)
+                put('%s.%s' % (section, key), parse_config_string(val), storage)
 
 
 def open_config_file(filepath):

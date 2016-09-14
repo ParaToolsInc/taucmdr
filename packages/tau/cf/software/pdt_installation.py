@@ -135,13 +135,11 @@ class PdtInstallation(AutotoolsInstallation):
         self.lib_path = os.path.join(arch_path, 'lib')
 
     def configure(self, flags, env):
-        family_flags = {GNU_COMPILERS.name: '-GNU', 
-                        INTEL_COMPILERS.name: '-icpc', 
-                        PGI_COMPILERS.name: '-pgCC'}
+        family_flags = {GNU_COMPILERS.name: '-GNU', INTEL_COMPILERS.name: '-icpc', PGI_COMPILERS.name: '-pgCC'}
         family = self.compilers[CXX_ROLE].info.family
         compiler_flag = family_flags.get(family.name, '')
         prefix_flag = '-prefix=%s' % self.install_prefix
         cmd = ['./configure', prefix_flag, compiler_flag]
-        LOGGER.info("Configuring PDT for %s compilers...", family)
+        LOGGER.info("Configuring PDT...")
         if util.create_subprocess(cmd, cwd=self.src_prefix, stdout=False):
             raise SoftwarePackageError('PDT configure failed')

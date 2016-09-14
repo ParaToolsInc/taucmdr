@@ -144,3 +144,4 @@ $(CONDA_SRC):
 
 clean: 
 	$(ECHO)$(RM) -r $(BUILDDIR)
+	$(ECHO)$(RM) setup.cfg defaults.cfg

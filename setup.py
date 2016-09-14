@@ -215,15 +215,33 @@ class Test(TestCommand):
 
 class Install(InstallCommand):
     
+    _custom_user_options = [('include-setup', None, "Copy config files and setup.py to installation prefix.")]
+    user_options = InstallCommand.user_options + _custom_user_options
+    
+    def initialize_options(self):
+        InstallCommand.initialize_options(self)
+        self.include_setup = False
+        
+    def finalize_options(self):
+        InstallCommand.finalize_options(self)
+        self.include_setup = (self.include_setup.lower() == "true")
+        self.install_scripts = os.path.join(self.prefix, 'bin')
+        self.install_lib = os.path.join(self.prefix, 'packages')
+        self.install_data = os.path.join(self.prefix)
+        self.record = os.path.join(self.prefix, 'install.log')
+
     def _configure_new_installation(self):
         import tau
-        from tau import configuration, util
-        from tau.storage.levels import SYSTEM_STORAGE
+        from tau import configuration, util, logger
+        from tau import EXIT_SUCCESS
+        from tau.cf.storage.levels import SYSTEM_STORAGE
         from tau.cf.software import SoftwarePackageError
         from tau.cli.commands.initialize import COMMAND as init_command
         from tau.cli.commands.select import COMMAND as select_command
         from tau.model.project import Project
-                
+        
+        logger.activate_debug_log()
+
         # Import default settings
         SYSTEM_STORAGE.connect_filesystem()
         configuration.import_from_file(os.path.join(PACKAGE_TOPDIR, 'defaults.cfg'), SYSTEM_STORAGE)
@@ -231,7 +249,7 @@ class Install(InstallCommand):
         # Call `tau initialize` to configure system-level packages supporting default experiments
         os.chdir(self.build_base)
         util.rmtree('.tau', ignore_errors=True)
-        if not init_command.main([]):
+        if init_command.main([]) != EXIT_SUCCESS:
             raise SoftwarePackageError("`tau initialize` failed in the simplist case.",
                                        "Check that the values specified in 'defaults.cfg' are valid.")
         
@@ -241,8 +259,8 @@ class Install(InstallCommand):
         for targ in proj['targets']:
             for app in proj['applications']:
                 for meas in proj['measurements']:
-                    argv = ['--target', targ, '--application', app, '--measurement', meas]
-                    if not select_command.main(argv):
+                    argv = ['--target', targ['name'], '--application', app['name'], '--measurement', meas['name']]
+                    if select_command.main(argv) != EXIT_SUCCESS:
                         raise SoftwarePackageError("`%s %s` failed." % (select_command, ' '.join(argv)),
                                                    "Check that the values specified in 'defaults.cfg' are valid.")
         # Indicate success
@@ -261,6 +279,9 @@ class Install(InstallCommand):
                 retval = InstallCommand.run(self)
             except:
                 retval = -1
+            if self.include_setup:
+                for setup_file in "setup.py", "setup.cfg", "defaults.cfg":
+                    shutil.copy(os.path.join(PACKAGE_TOPDIR, setup_file), self.prefix)
             if not retval:
                 # Update PYTHONPATH with the TAU packages that were *just installed* 
                 # so SYSTEM_PREFIX etc. are set correctly. 

@@ -46,7 +46,7 @@ try:
     import setuptools
     import tau
     from tau import __version__ as taucmdr_version
-    from tau import configuration
+    from tau import logger, configuration
     from tau.cli import arguments
     from tau.cli.commands.target.create import COMMAND as target_create_cmd
     from tau.cli.commands.application.create import COMMAND as application_create_cmd
@@ -70,9 +70,9 @@ except:
                      "%(bar)s\n" % {'bar': '!'*78})
     sys.exit(-1)
 
+LOGGER = logger.get_logger(__file__)
 
-
-def build_parser():
+def build_parser(setup_cfg, default_cfg):
     """Builds the command line parser from tau subcommands.
     
     Merges arguments from `tau {target|application|measurement} create` into one parser.
@@ -80,46 +80,70 @@ def build_parser():
     Returns:
         MutuableArgumentParser: The new argument parser.
     """
+    def update_defaults(section, parser):
+        for key, val in section.iteritems():
+                for act in parser._actions:
+                    if val and act.dest == key:
+                        act.default = val
+    install = setup_cfg['install']
     description = ("Write installation configuration files:\n"
-                   "  '%s'\n"
-                   "  '%s'\n"
-                   "When TAU Commander is installed, the values passed to this script will\n"
-                   "be saved at the system level as the defaults for all new configuration\n"
-                   "objects.  These values can be changed in future via `tau configure`."
+                   "  - %s\n"
+                   "  - %s\n"
+                   "\n"
+                   "The values passed to this script will be saved at the system level\n"
+                   "as the defaults for all new configuration objects.  These values can\n"
+                   "be changed in future via `tau configure`."
                    % (SETUP_CFG_FILE, DEFAULTS_CFG_FILE))
     parser = arguments.get_parser(prog=PROG, usage='%s [arguments]' % PROG, description=description)
-    parser.add_argument('--prefix', metavar='<path>', help='installation prefix',
-                        default='/opt/ParaTools/taucmdr-%s' % taucmdr_version)
-    parser.add_argument('-c', '--compile', nargs='?', const=True, default=True, metavar='T/F', 
-                        action=arguments.ParseBooleanAction, help="Compile .py files to .pyc bytecode files")
-    parser.add_argument('-O', '--optimize', nargs='?', type=int, const=1, default=1, metavar='<level>',
-                        help="Also compile .py files to optimized .pyo bytecode files.")
-    parser.merge(target_create_cmd.parser, group_title='target arguments', include_positional=False,
+    parser.add_argument('--prefix', metavar='<path>', help='Installation prefix.',
+                        default=install.get('prefix', '/opt/ParaTools/taucmdr-%s' % taucmdr_version))
+    parser.add_argument('-c', '--compile', nargs='?', const=True, metavar='T/F', 
+                        action=arguments.ParseBooleanAction, help="Compile .py files to .pyc bytecode files.",
+                        default=configuration.parse_config_string(install.get('compile', True)))
+    parser.add_argument('-O', '--optimize', nargs='?', type=int, const=1, metavar='<level>',
+                        help="Also compile .py files to optimized .pyo bytecode files.",
+                        default=configuration.parse_config_string(install.get('optimize', 1)))
+    parser.add_argument('--include-setup', nargs='?', const=True, metavar='T/F', 
+                        action=arguments.ParseBooleanAction, 
+                        help="Copy config files and setup.py to installation prefix.",
+                        default=configuration.parse_config_string(install.get('include-setup', False)))
+    
+    target_parser = target_create_cmd.parser
+    update_defaults(default_cfg['Target'], target_parser)
+    parser.merge(target_parser, group_title='target arguments', include_positional=False,
                  exclude=['from-tau-makefile'])
-    parser.merge(application_create_cmd.parser, group_title='application arguments', include_positional=False)
+    
+    application_parser = application_create_cmd.parser
+    update_defaults(default_cfg['Application'], application_parser)
+    parser.merge(application_parser, group_title='application arguments', include_positional=False)
+    
+    measurement_parser = measurement_create_cmd.parser
+    update_defaults(default_cfg['Measurement'], measurement_parser)    
     parser.merge(measurement_create_cmd.parser, group_title='measurement arguments', include_positional=False)
+
     return parser
 
 
 def main():
-    parser = build_parser()
-    args = parser.parse_args()
-    compilers = target_create_cmd.parse_compiler_flags(args)
-    
     comment = configuration.config_file_comment
     setup_cfg = configuration.open_config_file('setup.cfg')
     setup_cfg.initial_comment = comment(tau.version_banner())
-    defaults_cfg = configuration.default_config()
+    if 'build' not in setup_cfg:
+        setup_cfg['build'] = {}
+        setup_cfg['build']['build-base'] = "build"
+        setup_cfg.comments['build'] = comment("Arguments to `python setup.py build`.", box=True)
+    if 'install' not in setup_cfg:
+        setup_cfg['install'] = {}
+        setup_cfg.comments['install'] = comment("Arguments to `python setup.py install`.", box=True)
+
+    defaults_cfg = configuration.default_config('defaults.cfg')
     defaults_cfg.initial_comment = comment("Initial default values for a new TAU Commander installation.  "
                                            "These can be changed after installation via the `tau configure` command.")
     
-    # Add a section to control `python setup.py build`
-    setup_cfg['build'] = {}
-    setup_cfg.comments['build'] = comment("Arguments to `python setup.py build`.", box=True)
-    setup_cfg['build']['build-base'] = "build"
-    setup_cfg['install'] = {}
-    setup_cfg.comments['install'] = comment("Arguments to `python setup.py install`.", box=True)
-    
+    parser = build_parser(setup_cfg, defaults_cfg)
+    args = parser.parse_args()
+    compilers = target_create_cmd.parse_compiler_flags(args)
+
     # Merge new values into configuration.  Non-model values are added to the 'install' section.
     for section in defaults_cfg.sections:
         for key in defaults_cfg[section]:
@@ -128,19 +152,20 @@ def main():
                 defaults_cfg[section][key] = val
 
     # Configure installation parameters
-    setup_cfg['install']['prefix'] = args.prefix
-    setup_cfg['install']['install-scripts'] = os.path.join(args.prefix, 'bin')
-    setup_cfg['install']['install-lib'] = os.path.join(args.prefix, 'packages')
-    setup_cfg['install']['install-data'] = os.path.join(args.prefix)
-    setup_cfg['install']['record'] = os.path.join(args.prefix, 'install.log')
-    setup_cfg['install']['compile'] = args.compile
-    setup_cfg['install']['optimize'] = args.optimize
+    install = setup_cfg['install']
+    install['prefix'] = args.prefix
+    install['compile'] = args.compile
+    install['optimize'] = args.optimize
+    install['include-setup'] = args.include_setup
     
     # Write config files
     with open(SETUP_CFG_FILE, "w") as fout:
         setup_cfg.write(fout)
     with open(DEFAULTS_CFG_FILE, "w") as fout:
         defaults_cfg.write(fout)
+        
+    if os.path.exists(args.prefix):
+        LOGGER.warning("Installation prefix '%s' already exists.", args.prefix)
 
 if __name__ == '__main__':
     sys.exit(main())
