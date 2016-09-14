@@ -29,7 +29,6 @@
 
 import os
 import sys
-import shutil
 import hashlib
 import multiprocessing
 from lockfile import LockFile, NotLocked
@@ -139,8 +138,8 @@ class Installation(object):
         self.bin_path = None
         self.lib_path = None
         self.is_installed = False
-        self._lockfile = None
         self._build_prefix = None
+        self._lockfile = LockFile(os.path.join(highest_writable_storage().prefix, '.%s_lock' % name))
         
     def _get_install_prefix(self):
         if not self._install_prefix:
@@ -168,7 +167,6 @@ class Installation(object):
         self.include_path = os.path.join(value, 'include')
         self.bin_path = os.path.join(value, 'bin')
         self.lib_path = os.path.join(value, 'lib')
-        self._lockfile = LockFile(os.path.join(value, '.tau_lock'))
         
     def _get_build_prefix(self):
         if not self._build_prefix:
@@ -187,7 +185,7 @@ class Installation(object):
             os.chmod(tmp_path, S_IRUSR | S_IWUSR | S_IEXEC)
             try:
                 subprocess.check_call([tmp_path])
-            except subprocess.CalledProcessError:
+            except (OSError, subprocess.CalledProcessError):
                 build_prefix = os.path.join(highest_writable_storage().prefix, "src")
             self._build_prefix = build_prefix
         return self._build_prefix
@@ -213,9 +211,7 @@ class Installation(object):
         
     def __enter__(self):
         """Lock the software installation for use by this process only."""
-        if self.src:
-            util.mkdirp(self.install_prefix)
-            self._lockfile.acquire()
+        self._lockfile.acquire()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -226,7 +222,7 @@ class Installation(object):
             pass
         return False
 
-    def _prepare_src(self, build_prefix, reuse_archive=True, reuse_source=False):
+    def _prepare_src(self, build_prefix, reuse_archive=True):
         """Prepares source code for installation.
         
         Acquires package source code archive file via download or file copy,
@@ -236,7 +232,6 @@ class Installation(object):
         Args:
             build_prefix (str): Download and build package in this directory.
             reuse_archive (bool): If True, attempt to reuse archive files.
-            reuse_archive (bool): If True, attempt to reuse unarchived source files.
 
         Raises:
             ConfigurationError: The source code couldn't be copied or downloaded.
@@ -267,22 +262,15 @@ class Installation(object):
             LOGGER.debug("Cannot read %s archive file '%s': %s", self.title, archive, err)
             if reuse_archive:
                 LOGGER.debug("Downloading a fresh copy of '%s'", self.src)
-                return self._prepare_src(build_prefix, reuse_archive=False, reuse_source=reuse_source)
+                return self._prepare_src(build_prefix, reuse_archive=False)
             else:
                 raise ConfigurationError("Cannot read %s archive file '%s': %s" % (self.title, archive, err))
-        src_prefix = os.path.join(build_prefix, topdir)
-        if reuse_source and os.path.isdir(src_prefix):
-            LOGGER.info("Reusing %s source files found at '%s'", self.title, src_prefix)
-        else:
-            util.rmtree(src_prefix, ignore_errors=True)
-            if build_prefix != archive_prefix:
-                LOGGER.debug("Copying '%s' ==> '%s'", archive_name, build_prefix)
-                shutil.copy(archive, os.path.join(build_prefix, archive_name))
-            try:
-                src_prefix = util.extract_archive(archive, build_prefix)
-            except IOError as err:
-                raise ConfigurationError("Cannot extract source archive '%s': %s" % (archive, err),
-                                         "Check that the file or directory is accessable")
+        util.rmtree(os.path.join(build_prefix, topdir), ignore_errors=True)
+        try:
+            src_prefix = util.extract_archive(archive, build_prefix)
+        except IOError as err:
+            raise ConfigurationError("Cannot extract source archive '%s': %s" % (archive, err),
+                                     "Check that the file or directory is accessable")
         self.src_prefix = src_prefix
 
     def verify(self):

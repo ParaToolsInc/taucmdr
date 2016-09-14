@@ -32,9 +32,11 @@ TAU is the core software package of TAU Commander.
 
 import os
 import glob
+import shutil
 import resource
 from tau import logger, util
 from tau.error import ConfigurationError, InternalError
+from tau.cf.storage.levels import highest_writable_storage
 from tau.cf.software import SoftwarePackageError
 from tau.cf.software.installation import Installation, parallel_make_flags
 from tau.cf.compiler import GNU_COMPILERS, INTEL_COMPILERS, PGI_COMPILERS, CRAY_COMPILERS 
@@ -445,8 +447,7 @@ class TauInstallation(Installation):
         scorep = self.dependencies.get('scorep')
         
         flags = [flag for flag in
-                 ['-prefix=%s' % self.install_prefix,
-                  '-arch=%s' % self.arch,
+                 ['-arch=%s' % self.arch,
                   '-cc=%s' % cc_command,
                   '-c++=%s' % cxx_command,
                   '-fortran=%s' % fortran_magic if fortran_magic else None,
@@ -525,7 +526,11 @@ class TauInstallation(Installation):
         LOGGER.info("Installing %s at '%s' from '%s'", self.title, self.install_prefix, self.src)
         
         # Keep reconfiguring the same source because that's how TAU works
-        self._prepare_src(build_prefix=None, reuse=True)
+        if not (self.include_path and os.path.isdir(self.include_path)):
+            archive_prefix = os.path.join(highest_writable_storage().prefix, "src")
+            self._prepare_src(archive_prefix, reuse_archive=True)
+            shutil.move(self.src_prefix, self.install_prefix)
+        self.src_prefix = self.install_prefix
 
         # Environment variables are shared between the subprocesses
         # created for `configure` ; `make` ; `make install`
@@ -940,7 +945,7 @@ class TauInstallation(Installation):
             def_files = glob.glob(os.path.join(path, 'traces/*.def'))
             if len(evt_files) + len(def_files) > resource.getrlimit(resource.RLIMIT_NOFILE)[0]:
                 raise ConfigurationError("Too many trace files, use Vampir server to view.")
-            if util.which('vampir') is None:
+            if not util.which('vampir'):
                 raise ConfigurationError("Vampir not found in PATH. Contact ParaTools for more information on Vampir.")
             LOGGER.info("Opening %s in %s", tau_otf2, tool_name)
             cmd = [tool_name, tau_otf2]
