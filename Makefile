@@ -35,9 +35,21 @@ VERBOSE = true
 RM = rm -f
 MKDIR = mkdir -p
 
-# Get build system locations from configuration file
-BUILDDIR = $(shell grep '^build-base =' setup.cfg | sed 's/build-base = //')
-INSTALLDIR = $(shell grep '^prefix =' setup.cfg | sed 's/prefix = //')
+# Get build system locations from configuration file or command line
+ifneq ("$(wildcard setup.cfg)","")
+  BUILDDIR = $(shell grep '^build-base =' setup.cfg | sed 's/build-base = //')
+  INSTALLDIR = $(shell grep '^prefix =' setup.cfg | sed 's/prefix = //')
+else
+  ifeq ($(INSTALLDIR),)
+    $(error INSTALLDIR not set)
+  endif
+  # Bootstrap setup.cfg
+  $(shell cp .bootstrap.cfg setup.cfg && echo "prefix = $(INSTALLDIR)" >> "setup.cfg")
+endif
+ifeq ($(BUILDDIR),)
+  BUILDDIR=build
+endif
+
 TAU = $(INSTALLDIR)/bin/tau
 
 # Get target OS and architecture
@@ -144,4 +156,4 @@ $(CONDA_SRC):
 
 clean: 
 	$(ECHO)$(RM) -r $(BUILDDIR)
-	$(ECHO)$(RM) setup.cfg defaults.cfg
+

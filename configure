@@ -51,26 +51,17 @@ try:
     from tau.cli.commands.target.create import COMMAND as target_create_cmd
     from tau.cli.commands.application.create import COMMAND as application_create_cmd
     from tau.cli.commands.measurement.create import COMMAND as measurement_create_cmd
-except ImportError as err:
-    sys.stderr.write("%(bar)s\n"
-                     "! ERROR: %(err)s\n"
-                     "!\n"
-                     "! Python 2.7 with setuptools is required.\n"
-                     "! Try `make python_check` to install Python then update your\n"
-                     "! PATH environment variable and try this command again.\n"
-                     "%(bar)s\n" % {'bar': '!'*78, 'err': str(err)})
-    sys.exit(-1)
-except:
-    sys.stderr.write("%(bar)s\n"
-                     "! ERROR INITIALIZING CONFIGURATION SCRIPT\n"
-                     "!\n"
-                     "! Python 2.7 with setuptools is required.\n"
-                     "! Try `make python_check` to install Python then update your\n"
-                     "! PATH environment variable and try this command again.\n"
-                     "%(bar)s\n" % {'bar': '!'*78})
+except (SystemExit, Exception) as err:
+    sys.stderr.write("ERROR: %s\n"
+                     "\n"
+                     "Python 2.7 with setuptools is required to install TAU Commander.\n"
+                     "\n"
+                     "Type `make INSTALLDIR=<install_prefix>` to install Python then\n"
+                     "add '<install_prefix>/conda/bin' to your PATH environment variable\n"
+                     "and try this command again.\n" % err)
     sys.exit(-1)
 
-LOGGER = logger.get_logger(__file__)
+logger.activate_debug_log()
 
 def build_parser(setup_cfg, default_cfg):
     """Builds the command line parser from tau subcommands.
@@ -163,9 +154,7 @@ def main():
         setup_cfg.write(fout)
     with open(DEFAULTS_CFG_FILE, "w") as fout:
         defaults_cfg.write(fout)
-        
-    if os.path.exists(args.prefix):
-        LOGGER.warning("Installation prefix '%s' already exists.", args.prefix)
+
 
 if __name__ == '__main__':
     sys.exit(main())
