@@ -32,9 +32,11 @@ TAU uses PDT for source instrumentation.
 
 import os
 from tau import logger, util
+from tau.error import ConfigurationError
 from tau.cf.software import SoftwarePackageError
 from tau.cf.software.installation import AutotoolsInstallation
-from tau.cf.compiler import CXX_ROLE, GNU_COMPILERS, INTEL_COMPILERS, PGI_COMPILERS
+from tau.cf.compiler import CC_ROLE, CXX_ROLE, GNU_COMPILERS, INTEL_COMPILERS, PGI_COMPILERS
+from tau.cf.compiler.installed import InstalledCompilerFamily
 from tau.cf.target import TAU_ARCH_APPLE, TAU_ARCH_BGQ, X86_64_ARCH, LINUX_OS, TauArch
 
 
@@ -122,6 +124,15 @@ class PdtInstallation(AutotoolsInstallation):
     """
 
     def __init__(self, sources, target_arch, target_os, compilers):
+        # PDT 3.22 can't be built with PGI compilers so substitute GNU compilers instead
+        if compilers[CC_ROLE].info.family is PGI_COMPILERS:
+            try:
+                gnu_compilers = InstalledCompilerFamily(GNU_COMPILERS)
+            except ConfigurationError:
+                raise SoftwarePackageError("GNU compilers (required to build PDT) could not be found.")
+            compilers = compilers.modify(CC=gnu_compilers.preferred(CC_ROLE),
+                                         CXX=gnu_compilers.preferred(CXX_ROLE))
+
         prefix = compilers[CXX_ROLE].info.family.name
         super(PdtInstallation, self).__init__('pdt', 'PDT', prefix, sources, 
                                               target_arch, target_os, compilers, REPOS, COMMANDS, None, None)
@@ -133,7 +144,7 @@ class PdtInstallation(AutotoolsInstallation):
         arch_path = os.path.join(self.install_prefix, self.arch.name)
         self.bin_path = os.path.join(arch_path, 'bin')
         self.lib_path = os.path.join(arch_path, 'lib')
-
+    
     def configure(self, flags, env):
         family_flags = {GNU_COMPILERS.name: '-GNU', INTEL_COMPILERS.name: '-icpc', PGI_COMPILERS.name: '-pgCC'}
         family = self.compilers[CXX_ROLE].info.family

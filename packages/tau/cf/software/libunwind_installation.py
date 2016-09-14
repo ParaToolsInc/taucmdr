@@ -34,10 +34,12 @@ instrumentation, and other measurement approaches.
 import os
 import sys
 import fileinput
-from tau import logger, util
+from tau import logger
+from tau.error import ConfigurationError
 from tau.cf.software import SoftwarePackageError
 from tau.cf.software.installation import AutotoolsInstallation
-from tau.cf.compiler import CC_ROLE, CXX_ROLE
+from tau.cf.compiler import CC_ROLE, CXX_ROLE, PGI_COMPILERS, GNU_COMPILERS
+from tau.cf.compiler.installed import InstalledCompilerFamily
 from tau.cf.target import ARM64_ARCH, IBM_BGQ_ARCH, CRAY_CNL_OS
 
 
@@ -48,38 +50,40 @@ REPOS = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/
 
 LIBRARIES = {None: ['libunwind.a']}
 
+HEADERS = {None: ['libunwind.h', 'unwind.h']}
+
 
 class LibunwindInstallation(AutotoolsInstallation):
     """Encapsulates a libunwind installation."""
-
     def __init__(self, sources, target_arch, target_os, compilers):
+        # libunwind can't be built with PGI compilers so substitute GNU compilers instead
+        if compilers[CC_ROLE].info.family is PGI_COMPILERS:
+            try:
+                gnu_compilers = InstalledCompilerFamily(GNU_COMPILERS)
+            except ConfigurationError:
+                raise SoftwarePackageError("GNU compilers (required to build libunwind) could not be found.")
+            compilers = compilers.modify(CC=gnu_compilers.preferred(CC_ROLE),
+                                         CXX=gnu_compilers.preferred(CXX_ROLE))
         prefix = os.path.join(str(target_arch), str(target_os), compilers[CC_ROLE].info.family.name)
         super(LibunwindInstallation, self).__init__('libunwind', 'libunwind', prefix, sources, 
-                                                    target_arch, target_os, compilers, REPOS, None, LIBRARIES, None)
+                                                    target_arch, target_os, compilers, REPOS, None, LIBRARIES, HEADERS)
         
-    def verify(self):
-        headers = ['libunwind.h', 'unwind.h']
-        for hfile in headers:
-            path = os.path.join(self.install_prefix, 'include', hfile)
-            if not util.file_accessible(path):
-                raise SoftwarePackageError("'%s' is not accessible" % path)
-        return super(LibunwindInstallation, self).verify()
-
     def configure(self, flags, env):
-        flags.extend(['CC='+self.compilers[CC_ROLE].absolute_path, 'CXX='+self.compilers[CXX_ROLE].absolute_path]) 
+        env['CC'] = self.compilers[CC_ROLE].get_wrapped().absolute_path
+        env['CXX'] = self.compilers[CXX_ROLE].get_wrapped().absolute_path
         if self.target_arch is IBM_BGQ_ARCH:
             flags.append('--disable-shared')
             for line in fileinput.input(os.path.join(self.src_prefix, 'src', 'unwind', 'Resume.c'), inplace=1):
                 # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
                 sys.stdout.write(line.replace('_Unwind_Resume', '_Unwind_Resume_other'))
         elif self.target_os is CRAY_CNL_OS:
-            flags.extend(['CFLAGS=-fPIC', 'CXXFLAGS=-fPIC', '--disable-shared'])
-
+            env['CFLAGS'] = '-fPIC'
+            env['CXXFLAGS'] = '-fPIC'
+            flags.append('--disable-shared')
         # Fix test so `make install` succeeds more frequently 
         for line in fileinput.input(os.path.join(self.src_prefix, 'tests', 'crasher.c'), inplace=1):
             # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
             sys.stdout.write(line.replace('r = c(1);', 'r = 1;'))
-
         return super(LibunwindInstallation, self).configure(flags, env)
 
     def make(self, flags, env, parallel=True):

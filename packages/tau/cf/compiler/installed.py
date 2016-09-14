@@ -391,6 +391,9 @@ class InstalledCompilerSet(KeyedRecord):
     def __init__(self, uid, **kwargs):
         self.uid = uid
         self.members = {}
+        self._add_members(**kwargs)
+
+    def _add_members(self, **kwargs):
         all_roles = CompilerRole.keys()
         for key, val in kwargs.iteritems():
             assert isinstance(val, InstalledCompiler)
@@ -404,3 +407,17 @@ class InstalledCompilerSet(KeyedRecord):
     
     def __getitem__(self, role):
         return self.members[role]
+
+    def modify(self, **kwargs):
+        """Build a modified copy of this object."""
+        # pylint: disable=protected-access 
+        new_uid = hashlib.md5()
+        new_uid.update(self.uid)
+        new_uid.update(str(sorted(kwargs)))
+        compilers = {role.keyword: comp for role, comp in self.members.iteritems()}
+        modified = InstalledCompilerSet(new_uid.hexdigest(), **compilers)
+        modified._add_members(**kwargs)
+        return modified
+    
+    def get_path(self, role):
+        return self.members[role].get_wrapped().absolute_path
