@@ -138,8 +138,9 @@ class Installation(object):
         self.include_path = None
         self.bin_path = None
         self.lib_path = None
-        self._lockfile = None
         self.is_installed = False
+        self._lockfile = None
+        self._build_prefix = None
         
     def _get_install_prefix(self):
         if not self._install_prefix:
@@ -168,6 +169,28 @@ class Installation(object):
         self.bin_path = os.path.join(value, 'bin')
         self.lib_path = os.path.join(value, 'lib')
         self._lockfile = LockFile(os.path.join(value, '.tau_lock'))
+        
+    def _get_build_prefix(self):
+        if not self._build_prefix:
+            import tempfile
+            import subprocess
+            from stat import S_IRUSR, S_IWUSR, S_IEXEC
+            try:
+                build_prefix = util.mkdtemp(dir="/dev/shm")
+            except (OSError, IOError) as err:
+                LOGGER.debug(err)
+                build_prefix = tempfile.gettempdir()
+            # Make sure we can execute.  Some distros mount tmpfs with the noexec option.
+            with tempfile.NamedTemporaryFile(dir=build_prefix, delete=False) as tmp_file:
+                tmp_path = tmp_file.name
+                tmp_file.write("#!/bin/sh\nexit 0")
+            os.chmod(tmp_path, S_IRUSR | S_IWUSR | S_IEXEC)
+            try:
+                subprocess.check_call([tmp_path])
+            except subprocess.CalledProcessError:
+                build_prefix = os.path.join(highest_writable_storage().prefix, "src")
+            self._build_prefix = build_prefix
+        return self._build_prefix
         
     @property
     def install_prefix(self):
@@ -203,7 +226,7 @@ class Installation(object):
             pass
         return False
 
-    def _prepare_src(self, build_prefix, reuse):
+    def _prepare_src(self, build_prefix, reuse_archive=True, reuse_source=False):
         """Prepares source code for installation.
         
         Acquires package source code archive file via download or file copy,
@@ -211,58 +234,50 @@ class Installation(object):
         Sets `self.src_prefix` to the directory containing the package source files.
         
         Args:
-            build_prefix (str): If not None then download and build package at ``build_prefix``.
-                                The archive file will also be saved in the normal location for reuse.
-            reuse (bool): If True, attempt to reuse old archives and source files.
+            build_prefix (str): Download and build package in this directory.
+            reuse_archive (bool): If True, attempt to reuse archive files.
+            reuse_archive (bool): If True, attempt to reuse unarchived source files.
 
         Raises:
             ConfigurationError: The source code couldn't be copied or downloaded.
         """
+        assert build_prefix is not None
         if not self.src:
             raise ConfigurationError("No source code provided for %s" % self.title)
         archive_name = os.path.basename(self.src)
-        if reuse:
-            # Search storage for source archive.
-            for storage in reversed(ORDERED_LEVELS):
-                archive_prefix = os.path.join(storage.prefix, "src")
-                if not build_prefix:
-                    build_prefix = archive_prefix
-                archive = os.path.join(archive_prefix, archive_name)
-                if os.path.exists(archive):
-                    LOGGER.info("Using %s source archive '%s'", self.title, archive)
-                    if build_prefix != archive_prefix:
-                        LOGGER.debug("Copying '%s' ==> '%s'", archive_name, build_prefix)
-                        shutil.copy(archive, os.path.join(build_prefix, archive_name))
-                    break
-        else:
-            # Acquire a new copy of the source archive.
+        # Acquire a new copy of the source archive, if needed.
+        if not reuse_archive:
             archive_prefix = os.path.join(highest_writable_storage().prefix, "src")
-            if not build_prefix:
-                build_prefix = archive_prefix
-            archive = os.path.join(build_prefix, archive_name)
+            archive = os.path.join(archive_prefix, archive_name)
             try:
                 util.download(self.src, archive)
             except IOError:
                 raise ConfigurationError("Cannot acquire source archive '%s'" % self.src,
                                          "Check that the file or directory is accessable")
-            if build_prefix != archive_prefix:
-                LOGGER.debug("Copying '%s' ==> '%s'", archive_name, archive_prefix)
-                util.mkdirp(archive_prefix)
-                shutil.copy(archive, os.path.join(archive_prefix, archive_name))
+        # Locate archive file
+        for storage in ORDERED_LEVELS:
+            archive_prefix = os.path.join(storage.prefix, "src")
+            archive = os.path.join(archive_prefix, archive_name)
+            if os.path.exists(archive):
+                LOGGER.info("Using %s source archive '%s'", self.title, archive)
+                break
         try:
             topdir = util.archive_toplevel(archive)
         except IOError as err:
             LOGGER.debug("Cannot read %s archive file '%s': %s", self.title, archive, err)
-            if reuse:
+            if reuse_archive:
                 LOGGER.debug("Downloading a fresh copy of '%s'", self.src)
-                return self._prepare_src(build_prefix, reuse=False)
+                return self._prepare_src(build_prefix, reuse_archive=False, reuse_source=reuse_source)
             else:
                 raise ConfigurationError("Cannot read %s archive file '%s': %s" % (self.title, archive, err))
         src_prefix = os.path.join(build_prefix, topdir)
-        if reuse and os.path.isdir(src_prefix):
+        if reuse_source and os.path.isdir(src_prefix):
             LOGGER.info("Reusing %s source files found at '%s'", self.title, src_prefix)
         else:
             util.rmtree(src_prefix, ignore_errors=True)
+            if build_prefix != archive_prefix:
+                LOGGER.debug("Copying '%s' ==> '%s'", archive_name, build_prefix)
+                shutil.copy(archive, os.path.join(build_prefix, archive_name))
             try:
                 src_prefix = util.extract_archive(archive, build_prefix)
             except IOError as err:
@@ -463,7 +478,7 @@ class AutotoolsInstallation(Installation):
             SoftwarePackageError: Configuration failed.
         """
         assert self.src_prefix
-        LOGGER.debug("Installing %s at '%s' to '%s'", self.name, self.src_prefix, self.install_prefix)
+        LOGGER.debug("Installing %s from '%s' to '%s'", self.name, self.src_prefix, self.install_prefix)
         flags = list(flags)
         if parallel:
             flags += parallel_make_flags()
@@ -500,20 +515,13 @@ class AutotoolsInstallation(Installation):
                 elif not force_reinstall:
                     LOGGER.debug(err)
 
-        LOGGER.info("Installing %s at '%s' from '%s'", self.title, self.install_prefix, self.src)
+        LOGGER.info("Installing %s from '%s' to '%s'", self.title, self.src, self.install_prefix)
         if os.path.isdir(self.install_prefix): 
             LOGGER.info("Cleaning %s installation prefix '%s'", self.title, self.install_prefix)
             util.rmtree(self.install_prefix, ignore_errors=True)
 
-        # Try to build in shared memory, if available
-        # FIXME: Check for noexec on the mount point
-#         try:
-#             build_prefix = util.mkdtemp(dir="/dev/shm")
-#         except (OSError, IOError) as err:
-#             LOGGER.debug(err)
-#             build_prefix = None
-        build_prefix = None
-        self._prepare_src(build_prefix, reuse=True)
+        build_prefix = self._get_build_prefix()
+        self._prepare_src(build_prefix)
 
         # Environment variables are shared between the subprocesses
         # created for `configure` ; `make` ; `make install`
