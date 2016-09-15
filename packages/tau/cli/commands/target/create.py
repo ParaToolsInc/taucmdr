@@ -39,8 +39,8 @@ from tau.cf.compiler import CompilerFamily, CompilerRole, CompilerInfo
 from tau.cf.compiler.mpi import MpiCompilerFamily
 from tau.cf.compiler.shmem import ShmemCompilerFamily
 from tau.cf.compiler.installed import InstalledCompiler, InstalledCompilerFamily
-from tau.cf.target import host
 from tau.cf.target import TauArch
+from tau.cf.software.tau_installation import TAU_MINIMAL_COMPILERS
 
 class TargetCreateCommand(CreateCommand):
     """``tau target create`` subcommand."""
@@ -48,17 +48,16 @@ class TargetCreateCommand(CreateCommand):
     def _probe_compiler_family(self, args, compilers, family_attr, family_cls):
         try:
             family_arg = getattr(args, family_attr)
-        except AttributeError as err:
+        except AttributeError:
             # User didn't specify that argument, but that's OK
-            self.logger.debug(err)
             return
         if family_arg == "None":
             return
         try:
-            family_comps = InstalledCompilerFamily(family_cls(family_arg))
+            family = InstalledCompilerFamily(family_cls(family_arg))
         except KeyError:
             self.parser.error("Invalid compiler family: %s" % family_arg)
-        for comp in family_comps:
+        for comp in family:
             self.logger.debug("args.%s=%r", comp.info.role.keyword, comp.absolute_path)
             setattr(args, comp.info.role.keyword, comp.absolute_path)
             compilers[comp.info.role] = comp
@@ -100,15 +99,8 @@ class TargetCreateCommand(CreateCommand):
             role = CompilerRole.find(key)
             compilers[role] = InstalledCompiler.probe(absolute_path, role=role)
 
-        for key in missing_keys:
-            role = CompilerRole.find(key)
-            try:
-                compilers[role] = host.default_compiler(role)
-            except ConfigurationError as err:
-                self.logger.debug(err)
-    
         # Check that all required compilers were found
-        for role in CompilerRole.tau_required():
+        for role in TAU_MINIMAL_COMPILERS:
             if role not in compilers:
                 raise ConfigurationError("%s compiler could not be found" % role.language,
                                          "See 'compiler arguments' under `%s --help`" % COMMAND)
@@ -196,21 +188,21 @@ class TargetCreateCommand(CreateCommand):
                            help="select all host compilers automatically from the given family",
                            metavar='<family>',
                            dest='host_family',
-                           default=host.preferred_compilers().name,
+                           default=CompilerFamily.preferred().name,
                            choices=CompilerFamily.family_names())
         group = parser.add_argument_group('Message Passing Interface (MPI) arguments')
         group.add_argument('--mpi-compilers', 
                            help="select all MPI compilers automatically from the given family",
                            metavar='<family>',
                            dest='mpi_family',
-                           default=self._check_default_compilers(host.preferred_mpi_compilers()),
+                           default=self._check_default_compilers(MpiCompilerFamily.preferred()),
                            choices=["None"] + MpiCompilerFamily.family_names())
         group = parser.add_argument_group('Symmetric Hierarchical Memory (SHMEM) arguments')
         group.add_argument('--shmem-compilers', 
                            help="select all SHMEM compilers automatically from the given family",
                            metavar='<family>',
                            dest='shmem_family',
-                           default=self._check_default_compilers(host.preferred_shmem_compilers()),
+                           default=self._check_default_compilers(ShmemCompilerFamily.preferred()),
                            choices=["None"] + ShmemCompilerFamily.family_names())
         parser.add_argument('--from-tau-makefile',
                             help="Populate target configuration from a TAU Makefile",

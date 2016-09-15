@@ -35,7 +35,6 @@ import sys
 import fileinput
 from tau import logger
 from tau.cf.software.installation import AutotoolsInstallation
-from tau.cf.compiler import CC_ROLE
 
 LOGGER = logger.get_logger(__name__)
 
@@ -48,9 +47,8 @@ class PapiInstallation(AutotoolsInstallation):
     """Encapsulates a PAPI installation."""
 
     def __init__(self, sources, target_arch, target_os, compilers):
-        prefix = os.path.join(str(target_arch), str(target_os), compilers[CC_ROLE].info.family.name)
-        super(PapiInstallation, self).__init__('papi', 'PAPI', prefix, sources, 
-                                               target_arch, target_os, compilers, REPOS, None, LIBRARIES, None)
+        super(PapiInstallation, self).__init__('papi', 'PAPI', sources, target_arch, target_os, 
+                                               compilers, REPOS, None, LIBRARIES, None)
 
     def _prepare_src(self, *args, **kwargs):
         # PAPI's source lives in a 'src' directory instead of the usual top level location

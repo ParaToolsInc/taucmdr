@@ -124,7 +124,7 @@ class Installation(object):
     
     _lockfile = os.path.join(highest_writable_storage().prefix, '.lock')
 
-    def __init__(self, name, title, prefix, sources, target_arch, target_os, compilers, 
+    def __init__(self, name, title, sources, target_arch, target_os, compilers, 
                  repos, commands, libraries, headers):
         """Initializes the installation object.
         
@@ -138,7 +138,6 @@ class Installation(object):
             name (str): The package name, lowercase, alphanumeric with underscores.  All packages have a
                         corresponding ``tau.cf.software.<name>_installation`` module. 
             title (str): Human readable name of the software package, e.g. 'TAU Performance System' or 'Score-P'.
-            prefix (str): Installation prefix within a storage container.
             sources (dict): Packages sources as strings indexed by package names as strings.  A source may be a 
                             path to a directory where the software has already been installed, or a path to a source
                             archive file, or the special keyword 'download'.
@@ -157,7 +156,6 @@ class Installation(object):
         self.dependencies = {}
         self.name = name
         self.title = title
-        self.prefix = prefix
         self.target_arch = target_arch
         self.target_os = target_os
         self.compilers = compilers
@@ -180,14 +178,19 @@ class Installation(object):
         self.lib_path = None
         self._build_prefix = None
         
+    def _calculate_uid(self):
+        uid = hashlib.md5()
+        uid.update(self.src)
+        for _, compiler in self.compilers:
+            uid.update(compiler.uid)
+        return uid.hexdigest()
+
     def _get_install_prefix(self):
         if not self._install_prefix:
-            md5sum = hashlib.md5()
-            md5sum.update(self.src)
-            uid = md5sum.hexdigest()
+            uid = self._calculate_uid()
             # Search the storage hierarchy for an existing installation
             for storage in reversed(ORDERED_LEVELS):
-                self._set_install_prefix(os.path.join(storage.prefix, self.prefix, self.name, uid))
+                self._set_install_prefix(os.path.join(storage.prefix, self.name, uid))
                 try:
                     self.verify()
                 except SoftwarePackageError as err:
@@ -197,7 +200,7 @@ class Installation(object):
                     break
             else:
                 # No existing installation found, install at highest writable storage level
-                self._set_install_prefix(os.path.join(highest_writable_storage().prefix, self.prefix, self.name, uid))
+                self._set_install_prefix(os.path.join(highest_writable_storage().prefix, self.name, uid))
             LOGGER.debug("%s installation prefix is %s", self.name, self._install_prefix)
         return self._install_prefix
     

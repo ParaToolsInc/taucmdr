@@ -41,12 +41,12 @@ from tau import logger, util
 from tau.error import InternalError, ConfigurationError
 from tau.mvc.model import Model
 from tau.mvc.controller import Controller
+from tau.model.compiler import Compiler
 from tau.cf.compiler import CompilerRole, INTEL_COMPILERS
 from tau.cf.compiler.mpi import INTEL_MPI_COMPILERS
 from tau.cf.compiler.installed import InstalledCompilerSet
 from tau.cf.target import host, DARWIN_OS, INTEL_KNC_ARCH
-from tau.model.compiler import Compiler
-
+from tau.cf.software.tau_installation import TAU_MINIMAL_COMPILERS
 
 LOGGER = logger.get_logger(__name__)
 
@@ -382,7 +382,7 @@ class Target(Model):
                 compilers[role.keyword] = compiler_record.installation_info()
                 LOGGER.debug("compilers[%s] = '%s'", role.keyword, compilers[role.keyword].absolute_path)
                 eids.append(compiler_record.eid)
-            missing = [role for role in CompilerRole.tau_required() if role.keyword not in compilers]
+            missing = [role for role in TAU_MINIMAL_COMPILERS if role.keyword not in compilers]
             if missing:
                 raise InternalError("Target '%s' is missing required compilers: %s" % (self['name'], missing))
             self._compilers = InstalledCompilerSet('_'.join([str(x) for x in sorted(eids)]), **compilers)

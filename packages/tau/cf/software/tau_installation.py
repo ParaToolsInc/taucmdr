@@ -106,6 +106,8 @@ COMMANDS = {None:
              'tau_user_setup.sh',
              'trace2profile']}
 
+HEADERS = {None: ['Profile/Profiler.h', 'Profile/TAU.h']}
+
 TAU_COMPILER_WRAPPERS = {CC_ROLE: 'tau_cc.sh',
                          CXX_ROLE: 'tau_cxx.sh',
                          FC_ROLE: 'tau_f90.sh',
@@ -116,6 +118,8 @@ TAU_COMPILER_WRAPPERS = {CC_ROLE: 'tau_cc.sh',
                          SHMEM_CC_ROLE: 'tau_cc.sh',
                          SHMEM_CXX_ROLE: 'tau_cxx.sh',
                          SHMEM_FC_ROLE: 'tau_f90.sh'}
+
+TAU_MINIMAL_COMPILERS = [CC_ROLE, CXX_ROLE]
 
 
 class TauInstallation(Installation):
@@ -222,8 +226,8 @@ class TauInstallation(Installation):
             throttle_per_call (int): Maximum microseconds per call of a lightweight event.
             throttle_num_calls (int): Minimum number of calls for a lightweight event.
         """
-        super(TauInstallation, self).__init__('tau', 'TAU Performance System', "", sources,
-                                              target_arch, target_os, compilers, REPOS, COMMANDS, None, None)
+        super(TauInstallation, self).__init__('tau', 'TAU Performance System', sources, target_arch, target_os, 
+                                              compilers, REPOS, COMMANDS, None, None)
         self.arch = TauArch.get(self.target_arch, self.target_os)
         self.verbose = (logger.LOG_LEVEL == 'DEBUG')
         self.openmp_support = openmp_support
@@ -547,7 +551,7 @@ class TauInstallation(Installation):
             list: Makefile tags, e.g. ['papi', 'pdt', 'icpc']
         """
         tags = []
-        cxx_compiler = self.compilers[CXX_ROLE].get_wrapped() 
+        cxx_compiler = self.compilers[CXX_ROLE].unwrap() 
         compiler_tags = {INTEL_COMPILERS: 'intel' if self.target_os == CRAY_CNL_OS else 'icpc', 
                          PGI_COMPILERS: 'pgi'}
         try:
@@ -583,7 +587,7 @@ class TauInstallation(Installation):
     def _incompatible_tags(self):
         """Returns a set of makefile tags incompatible with the specified config."""
         tags = []
-        cxx_compiler = self.compilers[CXX_ROLE].get_wrapped()
+        cxx_compiler = self.compilers[CXX_ROLE].unwrap()
         compiler_tags = {INTEL_COMPILERS: 'intel' if self.target_os == CRAY_CNL_OS else 'icpc', 
                          PGI_COMPILERS: 'pgi'}
         compiler_tag = compiler_tags.get(cxx_compiler.info.family, None)

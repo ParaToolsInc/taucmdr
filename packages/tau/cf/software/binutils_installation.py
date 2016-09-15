@@ -53,8 +53,7 @@ class BinutilsInstallation(AutotoolsInstallation):
     """Encapsulates a GNU binutils installation."""
     
     def __init__(self, sources, target_arch, target_os, compilers):
-        prefix = os.path.join(str(target_arch), str(target_os), compilers[CC_ROLE].info.family.name)
-        super(BinutilsInstallation, self).__init__('binutils', 'GNU Binutils', prefix, sources, 
+        super(BinutilsInstallation, self).__init__('binutils', 'GNU Binutils', sources, 
                                                    target_arch, target_os, compilers, REPOS, None, LIBRARIES, None)
 
     def configure(self, flags, env):
@@ -86,8 +85,8 @@ class BinutilsInstallation(AutotoolsInstallation):
             env['PATH'] = os.pathsep.join([os.path.dirname(k1om_ar), env.get('PATH', os.environ['PATH'])])
             flags.append('--host=x86_64-k1om-linux')
         else:
-            env['CC'] = self.compilers.get_path(CC_ROLE)
-            env['CXX'] = self.compilers.get_path(CXX_ROLE)
+            env['CC'] = self.compilers[CC_ROLE].unwrap().absolute_path
+            env['CXX'] = self.compilers[CXX_ROLE].unwrap().absolute_path
         return super(BinutilsInstallation, self).configure(flags, env)
 
     def make_install(self, flags, env, parallel=False):

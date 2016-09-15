@@ -31,8 +31,6 @@ Functions used for unit tests of host.py.
 """
 
 from tau.tests import TestCase
-
-from tau.cf.compiler import CC_ROLE
 from tau.cf.target import host
 
 class HostTest(TestCase):
@@ -47,18 +45,3 @@ class HostTest(TestCase):
     
     def test_tau_arch_not_empty(self):
         self.assertNotEqual(host.tau_arch(), '')
-    
-    def test_preferred_compilers_not_empty(self):
-        self.assertNotEqual(host.preferred_compilers(), '')
-    
-    def test_preffered_mpi_compilers_not_empty(self):
-        self.assertNotEqual(host.preferred_mpi_compilers(), '')
-    
-    def test_default_compilers_not_empty(self):
-        self.assertNotEqual(host.default_compilers(), '')
-    
-    def test_default_mpi_compilers_not_empty(self):
-        self.assertNotEqual(host.default_mpi_compilers(), '')
-    
-    def test_default_compiler_not_empty(self):
-        self.assertNotEqual(host.default_compiler(CC_ROLE), '')
