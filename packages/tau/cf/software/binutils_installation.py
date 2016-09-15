@@ -38,8 +38,10 @@ import shutil
 import fileinput
 from tau import logger, util
 from tau.error import ConfigurationError
+from tau.cf.software import SoftwarePackageError
 from tau.cf.software.installation import AutotoolsInstallation
-from tau.cf.compiler import CC_ROLE, CXX_ROLE
+from tau.cf.compiler import CC_ROLE, CXX_ROLE, PGI_COMPILERS, GNU_COMPILERS
+from tau.cf.compiler.installed import InstalledCompilerFamily
 from tau.cf.target import IBM_BGP_ARCH, IBM_BGQ_ARCH, IBM64_ARCH, INTEL_KNC_ARCH, DARWIN_OS
 
 LOGGER = logger.get_logger(__name__)
@@ -53,24 +55,32 @@ class BinutilsInstallation(AutotoolsInstallation):
     """Encapsulates a GNU binutils installation."""
     
     def __init__(self, sources, target_arch, target_os, compilers):
+        # binutils can't be built with PGI compilers so substitute GNU compilers instead
+        if compilers[CC_ROLE].info.family is PGI_COMPILERS:
+            try:
+                gnu_compilers = InstalledCompilerFamily(GNU_COMPILERS)
+            except ConfigurationError:
+                raise SoftwarePackageError("GNU compilers (required to build binutils) could not be found.")
+            compilers = compilers.modify(CC=gnu_compilers[CC_ROLE], CXX=gnu_compilers[CXX_ROLE])
         super(BinutilsInstallation, self).__init__('binutils', 'GNU Binutils', sources, 
                                                    target_arch, target_os, compilers, REPOS, None, LIBRARIES, None)
 
     def configure(self, flags, env):
         flags.extend(['--disable-nls', '--disable-werror'])
+        for var in 'CPP', 'CC', 'CXX', 'FC', 'F77', 'F90':
+            env[var] = None
         if self.target_os is DARWIN_OS:
-            env['CFLAGS'] = '-Wno-error=unused-value -Wno-error=deprecated-declarations -fPIC'
-            env['CXXFLAGS'] = '-Wno-error=unused-value -Wno-error=deprecated-declarations -fPIC'
+            flags.append('CFLAGS=-Wno-error=unused-value -Wno-error=deprecated-declarations -fPIC')
+            flags.append('CXXFLAGS=-Wno-error=unused-value -Wno-error=deprecated-declarations -fPIC')
         else:
-            env['CFLAGS'] = '-fPIC'
-            env['CXXFLAGS'] = '-fPIC'
-            
+            flags.append('CFLAGS=-fPIC')
+            flags.append('CXXFLAGS=-fPIC')
         if self.target_arch is IBM_BGP_ARCH:
-            env['CC'] = '/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc-bgp-linux-gcc'
-            env['CXX'] = '/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc-bgp-linux-g++'
+            flags.append('CC=/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc-bgp-linux-gcc')
+            flags.append('CXX=/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc-bgp-linux-g++')
         elif self.target_arch is IBM_BGQ_ARCH:
-            env['CC'] = '/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc64-bgq-linux-gcc' 
-            env['CXX'] = '/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc64-bgq-linux-g++'
+            flags.append('CC=/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc64-bgq-linux-gcc')
+            flags.append('CXX=/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc64-bgq-linux-g++')
         elif self.target_arch is IBM64_ARCH:
             flags.append('--disable-largefile')
         elif self.target_arch is INTEL_KNC_ARCH:
@@ -84,9 +94,6 @@ class BinutilsInstallation(AutotoolsInstallation):
                     raise ConfigurationError("Cannot find KNC native compilers in /usr/linux-k1om-*")
             env['PATH'] = os.pathsep.join([os.path.dirname(k1om_ar), env.get('PATH', os.environ['PATH'])])
             flags.append('--host=x86_64-k1om-linux')
-        else:
-            env['CC'] = self.compilers[CC_ROLE].unwrap().absolute_path
-            env['CXX'] = self.compilers[CXX_ROLE].unwrap().absolute_path
         return super(BinutilsInstallation, self).configure(flags, env)
 
     def make_install(self, flags, env, parallel=False):
