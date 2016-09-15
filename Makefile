@@ -112,22 +112,22 @@ CONDA_PKG = Miniconda2-$(CONDA_VERSION)-$(CONDA_OS)-$(CONDA_ARCH).sh
 CONDA_URL = $(CONDA_REPO)/$(CONDA_PKG)
 CONDA_SRC = $(BUILDDIR)/$(CONDA_PKG)
 CONDA_DEST = $(INSTALLDIR)/conda
-CONDA_LIBRARY_PATH = $(CONDA_DEST)/lib:$(CONDA_DEST)/lib64
 CONDA = $(CONDA_DEST)/bin/python
 
 ifeq ($(USE_MINICONDA),true)
-	PYTHON_EXE = $(CONDA)
-	PYTHON = $(PYTHON_EXE) -E
+  PYTHON_EXE = $(CONDA)
+  PYTHON_FLAGS = -E
 else
   $(warning WARNING: There are no miniconda packages for this system: $(OS), $(ARCH).)
   PYTHON_EXE = $(shell which python)
-	PYTHON = $(PYTHON_EXE)
-  ifeq ($(PYTHON),)
+  PYTHON_FLAGS =
+  ifeq ($(PYTHON_EXE),)
     $(error python not found in PATH.)
   else
-    $(warning WARNING: I'll try to use '$(PYTHON)' instead.)
+    $(warning WARNING: Trying to use '$(PYTHON_EXE)' instead.)
   endif
 endif
+PYTHON = $(PYTHON_EXE) $(PYTHON_FLAGS)
 
 .PHONY: build install clean python_check
 
@@ -138,6 +138,10 @@ build: python_check
 
 install: build
 	$(ECHO)$(PYTHON) setup.py install --force
+	# Add PYTHON_FLAGS to python command line in bin/tau
+	@tail +2 "$(TAU)" > "$(BUILDDIR)/tau.tail"
+	@echo `head -1 "$(TAU)"` $(PYTHON_FLAGS) > "$(BUILDDIR)/tau.head"
+	@cat "$(BUILDDIR)/tau.head" "$(BUILDDIR)/tau.tail" > "$(TAU)"
 	@echo
 	@echo "-------------------------------------------------------------------------------"
 	@echo "TAU Commander is installed at \"$(INSTALLDIR)\""
