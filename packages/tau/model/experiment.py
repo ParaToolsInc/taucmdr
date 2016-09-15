@@ -37,10 +37,7 @@ from tau import logger, util
 from tau.error import ConfigurationError
 from tau.mvc.model import Model
 from tau.model.trial import Trial
-from tau.model.project import Project
-from tau.cf.target import Architecture, OperatingSystem
 from tau.cf.storage.levels import PROJECT_STORAGE
-from tau.cf.software.tau_installation import TauInstallation
 
 
 LOGGER = logger.get_logger(__name__)
@@ -48,7 +45,8 @@ LOGGER = logger.get_logger(__name__)
 PROFILE_EXPORT_FORMATS = ['ppk', 'zip', 'tar', 'tgz', 'tar.bz2']
 
 
-def attributes():   
+def attributes():
+    from tau.model.project import Project   
     from tau.model.target import Target
     from tau.model.application import Application
     from tau.model.measurement import Measurement
@@ -143,6 +141,8 @@ class Experiment(Model):
         Returns:
             TauInstallation: Object handle for the TAU installation. 
         """
+        from tau.cf.target import Architecture, OperatingSystem
+        from tau.cf.software.tau_installation import TauInstallation
         LOGGER.debug("Configuring experiment %s", self.title())
         populated = self.populate(defaults=True)
         target = populated['target']
