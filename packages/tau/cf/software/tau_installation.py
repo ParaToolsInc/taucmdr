@@ -34,9 +34,9 @@ import os
 import glob
 import shutil
 import resource
+import fasteners
 from tau import logger, util
 from tau.error import ConfigurationError, InternalError
-from tau.cf.storage.levels import highest_writable_storage
 from tau.cf.software import SoftwarePackageError
 from tau.cf.software.installation import Installation, parallel_make_flags
 from tau.cf.compiler import GNU_COMPILERS, INTEL_COMPILERS, PGI_COMPILERS, CRAY_COMPILERS 
@@ -496,6 +496,7 @@ class TauInstallation(Installation):
         if util.create_subprocess(cmd, cwd=self.src_prefix, stdout=False):
             raise SoftwarePackageError('TAU compilation/installation failed')
     
+    @fasteners.interprocess_locked(Installation._lockfile)
     def install(self, force_reinstall=False):
         """Installs TAU.
         
@@ -508,9 +509,7 @@ class TauInstallation(Installation):
             SoftwarePackageError: TAU failed installation or did not pass verification after it was installed.
         """
         for pkg in self.dependencies.itervalues():
-            with pkg:
-                pkg.install(force_reinstall)
-
+            pkg.install(force_reinstall)
         if not self.src or not force_reinstall:
             try:
                 return self.verify()
@@ -521,19 +520,12 @@ class TauInstallation(Installation):
                                                "Specify source code path or URL to enable package reinstallation.")
                 elif not force_reinstall:
                     LOGGER.debug(err)
-
-        LOGGER.info("Installing %s at '%s' from '%s'", self.title, self.install_prefix, self.src)
-        
-        # Keep reconfiguring the same source because that's how TAU works
-        if not (self.include_path and os.path.isdir(self.include_path)):
-            archive_prefix = os.path.join(highest_writable_storage().prefix, "src")
-            self._prepare_src(archive_prefix, reuse_archive=True)
-            shutil.move(self.src_prefix, self.install_prefix)
-        self.src_prefix = self.install_prefix
-
-        # Environment variables are shared between the subprocesses
-        # created for `configure` ; `make` ; `make install`
+        LOGGER.info("Installing %s at '%s' from '%s'", self.title, self.install_prefix, self.src)       
         try:
+            # Keep reconfiguring the same source because that's how TAU works
+            if not (self.include_path and os.path.isdir(self.include_path)):
+                shutil.move(self._prepare_src(), self.install_prefix)
+            self.src_prefix = self.install_prefix
             self.configure()
             self.make_install()
         except Exception as err:

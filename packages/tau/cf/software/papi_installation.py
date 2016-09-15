@@ -52,10 +52,12 @@ class PapiInstallation(AutotoolsInstallation):
         super(PapiInstallation, self).__init__('papi', 'PAPI', prefix, sources, 
                                                target_arch, target_os, compilers, REPOS, None, LIBRARIES, None)
 
-    def _prepare_src(self, build_prefix, *args, **kwargs):
-        super(PapiInstallation, self)._prepare_src(build_prefix, *args, **kwargs)
-        if os.path.basename(self.src_prefix) != 'src':
-            self.src_prefix = os.path.join(self.src_prefix, 'src')
+    def _prepare_src(self, *args, **kwargs):
+        # PAPI's source lives in a 'src' directory instead of the usual top level location
+        src_prefix = super(PapiInstallation, self)._prepare_src(*args, **kwargs)
+        if os.path.basename(src_prefix) != 'src':
+            src_prefix = os.path.join(src_prefix, 'src')
+        return src_prefix
 
     def make(self, flags, env, parallel=True):
         # PAPI's tests often fail to compile, so disable them.

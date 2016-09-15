@@ -202,9 +202,7 @@ class Experiment(Model):
                     throttle=measurement.get_or_default('throttle'),
                     throttle_per_call=measurement.get_or_default('throttle_per_call'),
                     throttle_num_calls=measurement.get_or_default('throttle_num_calls'))
-        if not tau.is_installed:
-            with tau:
-                tau.install()
+        tau.install()
         return tau
 
     def managed_build(self, compiler_cmd, compiler_args):

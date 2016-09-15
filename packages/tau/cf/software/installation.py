@@ -31,7 +31,7 @@ import os
 import sys
 import hashlib
 import multiprocessing
-from lockfile import LockFile, NotLocked
+import fasteners
 from tau import logger, util, configuration
 from tau.error import ConfigurationError
 from tau.cf.storage.levels import ORDERED_LEVELS
@@ -66,6 +66,46 @@ def parallel_make_flags(nprocs=None):
     return ['-j', str(nprocs)]
 
 
+def tmpfs_prefix():
+    """Path to a temporary filesystem, ideally a ramdisk.
+    
+    /dev/shm is the preferred tmpfs, but if it's unavailable or mounted with noexec then
+    fall back to tempfile.gettemdir(), which is usually /tmp.  If that filesystem is also
+    unavailable then use the filesystem prefix of the highest writable storage container.
+    
+    Returns:
+        str: Path to a uniquely-named directory in the temporary filesystem. The directory 
+            and all its contents **will be deleted** when the program exits.
+    """
+    try:
+        return tmpfs_prefix.value
+    except AttributeError:
+        import tempfile
+        import subprocess
+        from stat import S_IRUSR, S_IWUSR, S_IEXEC
+        for prefix in "/dev/shm", tempfile.gettempdir(), highest_writable_storage().prefix:
+            try:
+                tmp_prefix = util.mkdtemp(dir=prefix)
+            except (OSError, IOError) as err:
+                LOGGER.debug(err)
+                continue
+            # Check execute privilages some distros mount tmpfs with the noexec option.
+            try:
+                with tempfile.NamedTemporaryFile(dir=tmp_prefix, delete=False) as tmp_file:
+                    tmp_path = tmp_file.name
+                    tmp_file.write("#!/bin/sh\nexit 0")
+                os.chmod(tmp_path, S_IRUSR | S_IWUSR | S_IEXEC)
+                subprocess.check_call([tmp_path])
+            except (OSError, IOError, subprocess.CalledProcessError) as err:
+                LOGGER.debug(err)
+                continue
+            else:
+                tmpfs_prefix.value = prefix
+                break
+    return tmpfs_prefix.value
+    
+
+
 class Installation(object):
     """Encapsulates a software package installation.
     
@@ -80,8 +120,9 @@ class Installation(object):
         verify_libraries (list): List of libraries that are present in a valid installation.
         verify_headers (list): List of header files that are present in a valid installation.
         src_prefix (str): Directory containing package source code.
-        is_installed (bool): True if all required commands and files were found, False otherwise.
     """
+    
+    _lockfile = os.path.join(highest_writable_storage().prefix, '.lock')
 
     def __init__(self, name, title, prefix, sources, target_arch, target_os, compilers, 
                  repos, commands, libraries, headers):
@@ -137,9 +178,7 @@ class Installation(object):
         self.include_path = None
         self.bin_path = None
         self.lib_path = None
-        self.is_installed = False
         self._build_prefix = None
-        self._lockfile = LockFile(os.path.join(highest_writable_storage().prefix, '.%s_lock' % name))
         
     def _get_install_prefix(self):
         if not self._install_prefix:
@@ -168,28 +207,6 @@ class Installation(object):
         self.bin_path = os.path.join(value, 'bin')
         self.lib_path = os.path.join(value, 'lib')
         
-    def _get_build_prefix(self):
-        if not self._build_prefix:
-            import tempfile
-            import subprocess
-            from stat import S_IRUSR, S_IWUSR, S_IEXEC
-            try:
-                build_prefix = util.mkdtemp(dir="/dev/shm")
-            except (OSError, IOError) as err:
-                LOGGER.debug(err)
-                build_prefix = tempfile.gettempdir()
-            # Make sure we can execute.  Some distros mount tmpfs with the noexec option.
-            with tempfile.NamedTemporaryFile(dir=build_prefix, delete=False) as tmp_file:
-                tmp_path = tmp_file.name
-                tmp_file.write("#!/bin/sh\nexit 0")
-            os.chmod(tmp_path, S_IRUSR | S_IWUSR | S_IEXEC)
-            try:
-                subprocess.check_call([tmp_path])
-            except (OSError, subprocess.CalledProcessError):
-                build_prefix = os.path.join(highest_writable_storage().prefix, "src")
-            self._build_prefix = build_prefix
-        return self._build_prefix
-        
     @property
     def install_prefix(self):
         return self._get_install_prefix()
@@ -209,34 +226,21 @@ class Installation(object):
         else:
             return arch_dct.get(self.target_os, arch_dct.get(None, default))
         
-    def __enter__(self):
-        """Lock the software installation for use by this process only."""
-        self._lockfile.acquire()
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        """Unlock the software installation."""
-        try:
-            self._lockfile.release()
-        except NotLocked:
-            pass
-        return False
-
-    def _prepare_src(self, build_prefix, reuse_archive=True):
+    def _prepare_src(self, reuse_archive=True):
         """Prepares source code for installation.
         
         Acquires package source code archive file via download or file copy,
         unpacks the archive, and verifies that required paths exist.
-        Sets `self.src_prefix` to the directory containing the package source files.
         
         Args:
-            build_prefix (str): Download and build package in this directory.
             reuse_archive (bool): If True, attempt to reuse archive files.
+            
+        Returns:
+            str: The path to the unpacked source code files.
 
         Raises:
-            ConfigurationError: The source code couldn't be copied or downloaded.
+            ConfigurationError: The source code couldn't be acquired or unpacked.
         """
-        assert build_prefix is not None
         if not self.src:
             raise ConfigurationError("No source code provided for %s" % self.title)
         archive_name = os.path.basename(self.src)
@@ -257,21 +261,13 @@ class Installation(object):
                 LOGGER.info("Using %s source archive '%s'", self.title, archive)
                 break
         try:
-            topdir = util.archive_toplevel(archive)
+            return util.extract_archive(archive, tmpfs_prefix())
         except IOError as err:
-            LOGGER.debug("Cannot read %s archive file '%s': %s", self.title, archive, err)
             if reuse_archive:
-                LOGGER.debug("Downloading a fresh copy of '%s'", self.src)
-                return self._prepare_src(build_prefix, reuse_archive=False)
-            else:
-                raise ConfigurationError("Cannot read %s archive file '%s': %s" % (self.title, archive, err))
-        util.rmtree(os.path.join(build_prefix, topdir), ignore_errors=True)
-        try:
-            src_prefix = util.extract_archive(archive, build_prefix)
-        except IOError as err:
+                # Try again with a fresh copy of the source archive
+                return self._prepare_src(reuse_archive=False)
             raise ConfigurationError("Cannot extract source archive '%s': %s" % (archive, err),
                                      "Check that the file or directory is accessable")
-        self.src_prefix = src_prefix
 
     def verify(self):
         """Check if the installation at :any:`installation_prefix` is valid.
@@ -282,11 +278,6 @@ class Installation(object):
         Raises:
           SoftwarePackageError: Describs why the installation is invalid.
         """
-        self.is_installed = False
-        for pkg in self.dependencies.itervalues():
-            pkg.verify()
-        LOGGER.debug("Checking %s installation at '%s' targeting %s %s", 
-                     self.name, self.install_prefix, self.target_arch, self.target_os)
         if not os.path.exists(self.install_prefix):
             raise SoftwarePackageError("'%s' does not exist" % self.install_prefix)
         for cmd in self.verify_commands:
@@ -306,7 +297,6 @@ class Installation(object):
             path = os.path.join(self.include_path, header)
             if not util.file_accessible(path):
                 raise SoftwarePackageError("'%s' is not accessible" % path)
-        self.is_installed = True
         LOGGER.debug("%s installation at '%s' is valid", self.name, self.install_prefix)
         
     def add_dependency(self, name, sources, *args, **kwargs):
@@ -325,7 +315,6 @@ class Installation(object):
         cls = getattr(pkg, cls_name)
         self.dependencies[name] = cls(sources, self.target_arch, self.target_os, self.compilers, *args, **kwargs)
 
-    
     def install(self, force_reinstall):
         """Installs the software package.
         
@@ -478,6 +467,7 @@ class AutotoolsInstallation(Installation):
         if os.path.isdir(self.lib_path+'64') and not os.path.isdir(self.lib_path):
             os.symlink(self.lib_path+'64', self.lib_path)
 
+    @fasteners.interprocess_locked(Installation._lockfile)
     def install(self, force_reinstall=False):
         """Execute the typical GNU Autotools installation sequence.
         
@@ -490,9 +480,7 @@ class AutotoolsInstallation(Installation):
             SoftwarePackageError: Installation failed.
         """
         for pkg in self.dependencies.itervalues():
-            with pkg:
-                pkg.install(force_reinstall)
-
+            pkg.install(force_reinstall)
         if not self.src or not force_reinstall:
             try:
                 return self.verify()
@@ -503,19 +491,15 @@ class AutotoolsInstallation(Installation):
                                                "Specify source code path or URL to enable package reinstallation.")
                 elif not force_reinstall:
                     LOGGER.debug(err)
-
         LOGGER.info("Installing %s from '%s' to '%s'", self.title, self.src, self.install_prefix)
-        if os.path.isdir(self.install_prefix): 
+        if os.path.isdir(self.install_prefix):
             LOGGER.info("Cleaning %s installation prefix '%s'", self.title, self.install_prefix)
             util.rmtree(self.install_prefix, ignore_errors=True)
-
-        build_prefix = self._get_build_prefix()
-        self._prepare_src(build_prefix)
-
         # Environment variables are shared between the subprocesses
         # created for `configure` ; `make` ; `make install`
         env = {}
         try:
+            self.src_prefix = self._prepare_src()
             self.configure([], env)
             self.make([], env)
             self.make_install([], env)
@@ -527,6 +511,7 @@ class AutotoolsInstallation(Installation):
             # future reconfigurations.  The compressed source archive is retained.
             LOGGER.debug("Deleting '%s'", self.src_prefix)
             util.rmtree(self.src_prefix, ignore_errors=True)
+            self.src_prefix = None
 
         # Verify the new installation
         LOGGER.info("Verifying %s installation...", self.title)
