@@ -178,8 +178,6 @@ class InstalledCompiler(object):
 
     def _probe_wrapper(self):
         if not self.info.family.show_wrapper_flags:
-            LOGGER.debug("Not probing wrapper: family '%s' does not provide flags to show wrapper flags", 
-                         self.info.family.name)
             return None
         LOGGER.debug("Probing %s '%s' to discover wrapped compiler", self.info.short_descr, self.absolute_path)
         cmd = [self.absolute_path] + self.info.family.show_wrapper_flags
@@ -187,9 +185,10 @@ class InstalledCompiler(object):
         try:
             stdout = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError:
-            LOGGER.warning("Unable to identify compiler wrapped by wrapper '%s'."
-                           " TAU will attempt to continue but may fail later on.", self.absolute_path)
-            return None
+            # If this command didn't accept show_wrapper_flags then it's not a compiler wrapper to begin with,
+            # i.e. another command just happens to be the same as a known compiler command.
+            raise ConfigurationError("'%s' isn't actually a %s since it doesn't accept arguments %s." % 
+                                     (self.absolute_path, self.info.short_descr, self.info.family.show_wrapper_flags))
         LOGGER.debug(stdout)
         LOGGER.debug("%s returned 0", cmd)
         # Assume the longest line starting with a known compiler command is the wrapped compiler followed by arguments.
@@ -272,7 +271,7 @@ class InstalledCompiler(object):
         LOGGER.debug("Wrapper include path: %s", self.include_path)
         LOGGER.debug("Wrapper library path: %s", self.library_path)
         LOGGER.debug("Wrapper libraries: %s", self.libraries)
-
+        
     @classmethod
     def probe(cls, command, family=None, role=None):
         """Probe the system to discover information about an installed compiler.
@@ -301,8 +300,8 @@ class InstalledCompiler(object):
         elif len(info_list) == 0:
             raise ConfigurationError("Unknown %s compiler '%s'" % (family.name, absolute_path))
         return InstalledCompiler(absolute_path, info_list[0])
-    
-    def get_wrapped(self):
+        
+    def unwrap(self):
         """Iterate through layers of compiler wrappers to find the true compiler.
         
         Returns:
@@ -335,10 +334,7 @@ class InstalledCompilerFamily(object):
         for role, info_list in family.members.iteritems():
             for info in info_list:
                 absolute_path = util.which(info.command)
-                if not absolute_path:
-                    LOGGER.debug("%s %s compiler '%s' not found in PATH", 
-                                 family.name, info.role.language, info.command)
-                else:
+                if absolute_path:
                     LOGGER.debug("%s %s compiler is '%s'", family.name, info.role.language, absolute_path)
                     try:
                         installed = InstalledCompiler(absolute_path, info)
@@ -349,7 +345,13 @@ class InstalledCompilerFamily(object):
         if not self.members:
             raise ConfigurationError("%s compilers not found." % self.family.name)
 
-    def preferred(self, role):
+    def get(self, role, default):
+        try:
+            return self[role]
+        except KeyError:
+            return default 
+
+    def __getitem__(self, role):
         """Return the preferred installed compiler for a given role.
         
         Since compiler can perform multiple roles we often have many commands
@@ -367,7 +369,10 @@ class InstalledCompilerFamily(object):
             KeyError: This family has no compiler in the given role.
             IndexError: No installed compiler fills the given role.
         """
-        return self.members[role][0]
+        try:
+            return self.members[role][0]
+        except IndexError:
+            raise KeyError
 
     def __iter__(self):
         """Yield one InstalledCompiler for each role filled by any compiler in this installation."""
@@ -421,6 +426,3 @@ class InstalledCompilerSet(KeyedRecord):
         modified = InstalledCompilerSet(new_uid.hexdigest(), **compilers)
         modified._add_members(**kwargs)
         return modified
-    
-    def get_path(self, role):
-        return self.members[role].get_wrapped().absolute_path

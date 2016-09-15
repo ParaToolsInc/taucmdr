@@ -167,7 +167,7 @@ class Compiler(Model):
                 fatal = True
                 msg_parts.append("It has changed from a compiler wrapper to a regular compiler.")
             elif comp.wrapped and self_wrapped:
-                new_wrapped = comp.wrapped.get_wrapped()
+                new_wrapped = comp.wrapped.unwrap()
                 old_wrapped = self.populate('wrapped')
                 while 'wrapped' in old_wrapped:
                     old_wrapped = self.populate('wrapped')

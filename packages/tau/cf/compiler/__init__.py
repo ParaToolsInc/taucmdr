@@ -61,6 +61,7 @@ import os
 import re
 import subprocess
 from tau import logger
+from tau.error import ConfigurationError
 from tau.cf import TrackedInstance, KeyedRecord
 from tau.error import InternalError 
 
@@ -84,19 +85,9 @@ class CompilerRole(KeyedRecord):
     
     __key__ = 'keyword'
     
-    def __init__(self, keyword, language, required=False):
+    def __init__(self, keyword, language):
         self.keyword = keyword
         self.language = language
-        # FIXME: Required should move to software.tau_installation
-        self.required = required
-
-    # FIXME: Required should move to software.tau_installation
-    @classmethod
-    def tau_required(cls):
-        """Iterate over roles that must be filled to get TAU to compile."""
-        for role in cls.all():
-            if role.required:
-                yield role
 
 
 class CompilerInfo(TrackedInstance):
@@ -202,18 +193,61 @@ class CompilerFamily(KeyedRecord):
         self.show_wrapper_flags = show_wrapper_flags or []
         self.members = {}
 
+    @staticmethod
+    def _env_preferred_compilers(var_roles):
+        """"Check environment variables for default compilers."""
+        from tau.cf.compiler.installed import InstalledCompiler
+        for var, role in var_roles.iteritems():
+            try:
+                comp = InstalledCompiler.probe(os.environ[var], role=role)
+            except KeyError:
+                # Environment variable not set
+                continue
+            except ConfigurationError as err:
+                LOGGER.debug(err)
+                continue
+            else:
+                return comp.info.family
+        return None
+
     @classmethod
     def preferred(cls):
-        """Get the host's preferred compiler family.
-        
+        """The preferred compiler family for the host architecture.
+
         For example, Cray machines prefer Cray compilers, Linux hosts prefer GNU compilers, etc.
         See :any:`tau.cf.target.host` for more info.
+        
+        May probe environment variables and file systems in cases where the arch 
+        isn't immediately known to Python.  These tests may be expensive so the 
+        detected value is cached to improve performance.
         
         Returns:
             CompilerFamily: The host's preferred compiler family.
         """
-        from tau.cf.target import host
-        return host.preferred_compilers()
+        try:
+            inst = cls._preferred
+        except AttributeError:
+            from tau.cf import target
+            from tau.cf.target import host
+            var_roles = {'CC': CC_ROLE, 'CXX': CXX_ROLE, 'FC': FC_ROLE, 'F77': FC_ROLE, 'F90': FC_ROLE}
+            inst = cls._env_preferred_compilers(var_roles)
+            if inst:
+                LOGGER.debug("Preferring %s compilers by environment", inst.name)
+            else:
+                host_tau_arch = host.tau_arch()
+                if host_tau_arch is target.TAU_ARCH_CRAYCNL:
+                    inst = CRAY_COMPILERS
+                elif host_tau_arch in (target.TAU_ARCH_BGP, target.TAU_ARCH_BGQ):
+                    inst = IBM_BG_COMPILERS
+                elif host_tau_arch is target.TAU_ARCH_IBM64_LINUX:
+                    inst = IBM_COMPILERS
+                elif host_tau_arch is target.TAU_ARCH_MIC_LINUX:
+                    inst = INTEL_COMPILERS
+                else:
+                    inst = GNU_COMPILERS
+                LOGGER.debug("%s prefers %s compilers by default", host_tau_arch, inst.name)
+            cls._preferred = inst
+        return inst
     
     @classmethod
     def all(cls):
@@ -292,8 +326,8 @@ class CompilerFamily(KeyedRecord):
             self.members.setdefault(role, []).append(info)
 
 
-CC_ROLE = CompilerRole('CC', 'C', True)
-CXX_ROLE = CompilerRole('CXX', 'C++', True)
+CC_ROLE = CompilerRole('CC', 'C')
+CXX_ROLE = CompilerRole('CXX', 'C++')
 FC_ROLE = CompilerRole('FC', 'Fortran')
 UPC_ROLE = CompilerRole('UPC', 'Universal Parallel C')
 

@@ -130,9 +130,7 @@ class PdtInstallation(AutotoolsInstallation):
                 gnu_compilers = InstalledCompilerFamily(GNU_COMPILERS)
             except ConfigurationError:
                 raise SoftwarePackageError("GNU compilers (required to build PDT) could not be found.")
-            compilers = compilers.modify(CC=gnu_compilers.preferred(CC_ROLE),
-                                         CXX=gnu_compilers.preferred(CXX_ROLE))
-
+            compilers = compilers.modify(CC=gnu_compilers[CC_ROLE], CXX=gnu_compilers[CXX_ROLE])
         prefix = compilers[CXX_ROLE].info.family.name
         super(PdtInstallation, self).__init__('pdt', 'PDT', prefix, sources, 
                                               target_arch, target_os, compilers, REPOS, COMMANDS, None, None)

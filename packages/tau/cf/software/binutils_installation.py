@@ -86,8 +86,8 @@ class BinutilsInstallation(AutotoolsInstallation):
             env['PATH'] = os.pathsep.join([os.path.dirname(k1om_ar), env.get('PATH', os.environ['PATH'])])
             flags.append('--host=x86_64-k1om-linux')
         else:
-            env['CC'] = self.compilers.get_path(CC_ROLE)
-            env['CXX'] = self.compilers.get_path(CXX_ROLE)
+            env['CC'] = self.compilers[CC_ROLE].unwrap().absolute_path
+            env['CXX'] = self.compilers[CXX_ROLE].unwrap().absolute_path
         return super(BinutilsInstallation, self).configure(flags, env)
 
     def make_install(self, flags, env, parallel=False):

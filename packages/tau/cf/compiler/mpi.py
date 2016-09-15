@@ -57,9 +57,38 @@ class MpiCompilerFamily(CompilerFamily):
 
     @classmethod
     def preferred(cls):
-        """Return the host's preferred MPI compiler family."""
-        from tau.cf.target import host
-        return host.preferred_mpi_compilers()
+        """Get the preferred MPI compiler family for the host architecture.
+        
+        May probe environment variables and file systems in cases where the arch 
+        isn't immediately known to Python.  These tests may be expensive so the 
+        detected value is cached to improve performance.
+    
+        Returns:
+            MpiCompilerFamily: The host's preferred compiler family.
+        """
+        try:
+            inst = cls._mpi_preferred
+        except AttributeError:
+            from tau.cf import target
+            from tau.cf.target import host
+            var_roles = {'MPI_CC': MPI_CC_ROLE, 'MPI_CXX': MPI_CXX_ROLE, 'MPIFC': MPI_FC_ROLE, 
+                         'MPI_F77': MPI_FC_ROLE, 'MPI_F90': MPI_FC_ROLE}
+            inst = cls._env_preferred_compilers(var_roles)
+            if inst:
+                LOGGER.debug("Preferring %s MPI compilers by environment", inst.name)
+            else:
+                host_tau_arch = host.tau_arch()
+                if host_tau_arch is target.TAU_ARCH_CRAYCNL:
+                    inst = CRAY_MPI_COMPILERS
+                elif host_tau_arch in (target.TAU_ARCH_BGP, target.TAU_ARCH_BGQ, target.TAU_ARCH_IBM64_LINUX):
+                    inst = IBM_MPI_COMPILERS
+                elif host_tau_arch is target.TAU_ARCH_MIC_LINUX:
+                    inst = INTEL_MPI_COMPILERS
+                else:
+                    inst = SYSTEM_MPI_COMPILERS
+            LOGGER.debug("%s prefers %s MPI compilers by default", host_tau_arch, inst.name)
+            cls._mpi_preferred = inst
+        return inst
 
 
 MPI_CC_ROLE = CompilerRole('MPI_CC', 'MPI C')

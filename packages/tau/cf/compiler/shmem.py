@@ -47,10 +47,34 @@ class ShmemCompilerFamily(CompilerFamily):
 
     @classmethod
     def preferred(cls):
-        """Return the host's preferred SHMEM compiler family."""
-        from tau.cf.target import host
-        return host.preferred_shmem_compilers()
-
+        """Get the preferred SHMEM compiler family for the host architecture.
+        
+        May probe environment variables and file systems in cases where the arch 
+        isn't immediately known to Python.  These tests may be expensive so the 
+        detected value is cached to improve performance.
+    
+        Returns:
+            ShmemCompilerFamily: The host's preferred compiler family.
+        """
+        try:
+            inst = cls._shmem_preferred
+        except AttributeError:
+            from tau.cf import target
+            from tau.cf.target import host
+            var_roles = {'SHMEM_CC': SHMEM_CC_ROLE, 'SHMEM_CXX': SHMEM_CXX_ROLE, 'SHMEM_FC': SHMEM_FC_ROLE, 
+                         'SHMEM_F77': SHMEM_FC_ROLE, 'SHMEM_F90': SHMEM_FC_ROLE}
+            inst = cls._env_preferred_compilers(var_roles)
+            if inst:
+                LOGGER.debug("Preferring %s SHMEM compilers by environment", inst.name)
+            else:
+                host_tau_arch = host.tau_arch()
+                if host_tau_arch is target.TAU_ARCH_CRAYCNL:
+                    inst = CRAY_SHMEM_COMPILERS
+                else:
+                    inst = OPENSHMEM_SHEM_COMPILERS
+            LOGGER.debug("%s prefers %s SHMEM compilers by default", host_tau_arch, inst.name)
+            cls._shmem_preferred = inst
+        return inst
 
 SHMEM_CC_ROLE = CompilerRole('SHMEM_CC', 'C with calls to a SHMEM library')
 SHMEM_CXX_ROLE = CompilerRole('SHMEM_CXX', 'C++ with calls to a SHMEM library')

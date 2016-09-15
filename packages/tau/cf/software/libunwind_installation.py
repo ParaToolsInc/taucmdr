@@ -62,15 +62,14 @@ class LibunwindInstallation(AutotoolsInstallation):
                 gnu_compilers = InstalledCompilerFamily(GNU_COMPILERS)
             except ConfigurationError:
                 raise SoftwarePackageError("GNU compilers (required to build libunwind) could not be found.")
-            compilers = compilers.modify(CC=gnu_compilers.preferred(CC_ROLE),
-                                         CXX=gnu_compilers.preferred(CXX_ROLE))
+            compilers = compilers.modify(CC=gnu_compilers[CC_ROLE], CXX=gnu_compilers[CXX_ROLE])
         prefix = os.path.join(str(target_arch), str(target_os), compilers[CC_ROLE].info.family.name)
         super(LibunwindInstallation, self).__init__('libunwind', 'libunwind', prefix, sources, 
                                                     target_arch, target_os, compilers, REPOS, None, LIBRARIES, HEADERS)
         
     def configure(self, flags, env):
-        env['CC'] = self.compilers[CC_ROLE].get_wrapped().absolute_path
-        env['CXX'] = self.compilers[CXX_ROLE].get_wrapped().absolute_path
+        env['CC'] = self.compilers[CC_ROLE].unwrap().absolute_path
+        env['CXX'] = self.compilers[CXX_ROLE].unwrap().absolute_path
         if self.target_arch is IBM_BGQ_ARCH:
             flags.append('--disable-shared')
             for line in fileinput.input(os.path.join(self.src_prefix, 'src', 'unwind', 'Resume.c'), inplace=1):

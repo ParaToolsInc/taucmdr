@@ -117,6 +117,8 @@ TAU_COMPILER_WRAPPERS = {CC_ROLE: 'tau_cc.sh',
                          SHMEM_CXX_ROLE: 'tau_cxx.sh',
                          SHMEM_FC_ROLE: 'tau_f90.sh'}
 
+TAU_MINIMAL_COMPILERS = [CC_ROLE, CXX_ROLE]
+
 
 class TauInstallation(Installation):
     """Encapsulates a TAU installation.
@@ -547,7 +549,7 @@ class TauInstallation(Installation):
             list: Makefile tags, e.g. ['papi', 'pdt', 'icpc']
         """
         tags = []
-        cxx_compiler = self.compilers[CXX_ROLE].get_wrapped() 
+        cxx_compiler = self.compilers[CXX_ROLE].unwrap() 
         compiler_tags = {INTEL_COMPILERS: 'intel' if self.target_os == CRAY_CNL_OS else 'icpc', 
                          PGI_COMPILERS: 'pgi'}
         try:
@@ -583,7 +585,7 @@ class TauInstallation(Installation):
     def _incompatible_tags(self):
         """Returns a set of makefile tags incompatible with the specified config."""
         tags = []
-        cxx_compiler = self.compilers[CXX_ROLE].get_wrapped()
+        cxx_compiler = self.compilers[CXX_ROLE].unwrap()
         compiler_tags = {INTEL_COMPILERS: 'intel' if self.target_os == CRAY_CNL_OS else 'icpc', 
                          PGI_COMPILERS: 'pgi'}
         compiler_tag = compiler_tags.get(cxx_compiler.info.family, None)
