@@ -181,8 +181,10 @@ class Installation(object):
     def _calculate_uid(self):
         uid = hashlib.md5()
         uid.update(self.src)
-        for _, compiler in self.compilers:
-            uid.update(compiler.uid)
+        uid.update(self.target_arch.name)
+        uid.update(self.target_os.name)
+        for compiler_uid in sorted([comp.uid for _, comp in self.compilers]):
+            uid.update(compiler_uid)
         return uid.hexdigest()
 
     def _get_install_prefix(self):

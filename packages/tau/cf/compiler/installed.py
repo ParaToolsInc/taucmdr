@@ -170,7 +170,6 @@ class InstalledCompiler(object):
         uid.update(self.absolute_path)
         uid.update(self.info.family.name)
         uid.update(self.info.role.keyword)
-        uid.update(self.version_string())
         if self.wrapped:
             uid.update(self.wrapped.uid)
             for attr in 'include_path', 'library_path', 'compiler_flags', 'libraries':
