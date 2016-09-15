@@ -78,7 +78,7 @@ def tmpfs_prefix():
             and all its contents **will be deleted** when the program exits.
     """
     try:
-        return tmpfs_prefix.value
+        tmp_prefix = tmpfs_prefix.value
     except AttributeError:
         import tempfile
         import subprocess
@@ -100,9 +100,9 @@ def tmpfs_prefix():
                 LOGGER.debug(err)
                 continue
             else:
-                tmpfs_prefix.value = prefix
                 break
-    return tmpfs_prefix.value
+        tmpfs_prefix.value = tmp_prefix
+    return tmp_prefix
     
 
 
