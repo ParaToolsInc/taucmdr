@@ -112,10 +112,13 @@ CONDA_PKG = Miniconda2-$(CONDA_VERSION)-$(CONDA_OS)-$(CONDA_ARCH).sh
 CONDA_URL = $(CONDA_REPO)/$(CONDA_PKG)
 CONDA_SRC = $(BUILDDIR)/$(CONDA_PKG)
 CONDA_DEST = $(INSTALLDIR)/conda
+CONDA_LIBRARY_PATH = $(CONDA_DEST)/lib:$(CONDA_DEST)/lib64
 CONDA = $(CONDA_DEST)/bin/python
 
 ifeq ($(USE_MINICONDA),true)
-  PYTHON = $(CONDA)
+	LD_LIBRARY_PATH := $(CONDA_LIBRARY_PATH):$(LD_LIBRARY_PATH)
+	export LD_LIBRARY_PATH
+	PYTHON = $(CONDA)
 else
   $(warning WARNING: There are no miniconda packages for this system: $(OS), $(ARCH).)
   PYTHON = $(shell which python)
