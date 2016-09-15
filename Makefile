@@ -148,6 +148,7 @@ install: build
 	@echo
 
 python_check: $(PYTHON)
+	@echo "Checking Python installed at '$(PYTHON)'"
 	@echo "$$LD_LIBRARY_PATH"
 	@$(PYTHON) -c "import sys; print sys.path ; import setuptools;" || (echo "ERROR: setuptools is required." && false)
 	@echo "Python installed at '$(PYTHON)' appears to work."
