@@ -273,8 +273,18 @@ def archive_toplevel(archive):
     except tarfile.ReadError:
         raise IOError
     else:
-        dirs = [d.name for d in fin.getmembers() if d.type == tarfile.DIRTYPE]
-        topdir = min(dirs, key=len)
+        dirs = [d.name for d in fin.getmembers() if d.isdir()]
+        if dirs:
+            topdir = min(dirs, key=len)
+        else:
+            dirs = set()
+            names = [d.name for d in fin.getmembers() if d.isfile()]
+            for name in names:
+                dirname, basename = os.path.split(name)
+                while dirname:
+                    dirname, basename = os.path.split(dirname)
+                dirs.add(basename)
+            topdir = min(dirs, key=len)
         LOGGER.debug("Top-level directory in '%s' is '%s'", archive, topdir)
         return topdir
 
@@ -297,14 +307,12 @@ def extract_archive(archive, dest):
     """
     topdir = archive_toplevel(archive)
     full_dest = os.path.join(dest, topdir)
-    LOGGER.debug("Extracting '%s' to create '%s'", archive, full_dest)
-    LOGGER.info("Extracting '%s'", archive)
+    LOGGER.info("Extracting '%s' to create '%s'", archive, full_dest)
     mkdirp(dest)
     with tarfile.open(archive) as fin:
         fin.extractall(dest)
     if not os.path.isdir(full_dest):
         raise IOError("Extracting '%s' does not create '%s'" % (archive, full_dest))
-    LOGGER.debug("Created '%s'", full_dest)
     return full_dest
 
 
