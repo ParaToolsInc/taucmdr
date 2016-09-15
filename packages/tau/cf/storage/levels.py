@@ -62,7 +62,13 @@ STORAGE_LEVELS = {level.name: level for level in ORDERED_LEVELS}
 """All storage levels indexed by their names."""
 
 def highest_writable_storage():
-    for storage in reversed(ORDERED_LEVELS):
-        if storage.is_writable():
-            return storage
-    raise StorageError("No writable storage levels")
+    try:
+        return highest_writable_storage.value
+    except AttributeError:
+        for storage in reversed(ORDERED_LEVELS):
+            if storage.is_writable():
+                highest_writable_storage.value = storage
+                break
+        else:
+            raise StorageError("No writable storage levels")
+        return highest_writable_storage.value
