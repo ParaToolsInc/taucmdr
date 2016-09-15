@@ -53,8 +53,7 @@ class BinutilsInstallation(AutotoolsInstallation):
     """Encapsulates a GNU binutils installation."""
     
     def __init__(self, sources, target_arch, target_os, compilers):
-        prefix = os.path.join(str(target_arch), str(target_os), compilers[CC_ROLE].info.family.name)
-        super(BinutilsInstallation, self).__init__('binutils', 'GNU Binutils', prefix, sources, 
+        super(BinutilsInstallation, self).__init__('binutils', 'GNU Binutils', sources, 
                                                    target_arch, target_os, compilers, REPOS, None, LIBRARIES, None)
 
     def configure(self, flags, env):

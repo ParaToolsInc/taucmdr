@@ -107,8 +107,8 @@ class InstalledCompiler(object):
     
     __instances__ = {}
 
-    def __init__(self, absolute_path, info, 
-                 uid=None, wrapped=None, include_path=None, library_path=None, compiler_flags=None, libraries=None):
+    def __init__(self, absolute_path, info, uid=None, 
+                 wrapped=None, include_path=None, library_path=None, compiler_flags=None, libraries=None):
         """Initializes the InstalledCompiler instance.
         
         Any information not provided on the argument list may be probed from the system.
@@ -141,6 +141,7 @@ class InstalledCompiler(object):
             libraries (list): Additional libraries to link when linking with the wrapped compiler.
                                  Ignored if :any:`wrapped` is None.
         """
+        self._version_string = None
         self.absolute_path = absolute_path
         self.info = info
         self.command = os.path.basename(absolute_path)
@@ -169,6 +170,7 @@ class InstalledCompiler(object):
         uid.update(self.absolute_path)
         uid.update(self.info.family.name)
         uid.update(self.info.role.keyword)
+        uid.update(self.version_string())
         if self.wrapped:
             uid.update(self.wrapped.uid)
             for attr in 'include_path', 'library_path', 'compiler_flags', 'libraries':
@@ -311,7 +313,23 @@ class InstalledCompiler(object):
         while comp.wrapped:
             comp = comp.wrapped
         return comp
-
+    
+    def version_string(self):
+        """Get the compiler's self-reported version info.
+        
+        Usually whatever the compiler prints when the --version flag is provided.
+        
+        Returns:
+            str: The compilers' version string.
+        """
+        if self._version_string is None:
+            cmd = [self.absolute_path] + self.info.family.version_flags
+            try:
+                self._version_string = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+            except subprocess.CalledProcessError:
+                raise ConfigurationError("Invalid version flags %s for compiler '%s'" % 
+                                         (self.info.family.version_flags, self.absolute_path))
+        return self._version_string
 
 class InstalledCompilerFamily(object):
     """Information about an installed compiler family.

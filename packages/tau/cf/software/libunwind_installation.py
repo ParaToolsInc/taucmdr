@@ -63,9 +63,8 @@ class LibunwindInstallation(AutotoolsInstallation):
             except ConfigurationError:
                 raise SoftwarePackageError("GNU compilers (required to build libunwind) could not be found.")
             compilers = compilers.modify(CC=gnu_compilers[CC_ROLE], CXX=gnu_compilers[CXX_ROLE])
-        prefix = os.path.join(str(target_arch), str(target_os), compilers[CC_ROLE].info.family.name)
-        super(LibunwindInstallation, self).__init__('libunwind', 'libunwind', prefix, sources, 
-                                                    target_arch, target_os, compilers, REPOS, None, LIBRARIES, HEADERS)
+        super(LibunwindInstallation, self).__init__('libunwind', 'libunwind', sources, target_arch, target_os, 
+                                                    compilers, REPOS, None, LIBRARIES, HEADERS)
         
     def configure(self, flags, env):
         env['CC'] = self.compilers[CC_ROLE].unwrap().absolute_path

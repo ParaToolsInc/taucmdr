@@ -106,6 +106,8 @@ COMMANDS = {None:
              'tau_user_setup.sh',
              'trace2profile']}
 
+HEADERS = {None: ['Profile/Profiler.h', 'Profile/TAU.h']}
+
 TAU_COMPILER_WRAPPERS = {CC_ROLE: 'tau_cc.sh',
                          CXX_ROLE: 'tau_cxx.sh',
                          FC_ROLE: 'tau_f90.sh',
@@ -224,8 +226,8 @@ class TauInstallation(Installation):
             throttle_per_call (int): Maximum microseconds per call of a lightweight event.
             throttle_num_calls (int): Minimum number of calls for a lightweight event.
         """
-        super(TauInstallation, self).__init__('tau', 'TAU Performance System', "", sources,
-                                              target_arch, target_os, compilers, REPOS, COMMANDS, None, None)
+        super(TauInstallation, self).__init__('tau', 'TAU Performance System', sources, target_arch, target_os, 
+                                              compilers, REPOS, COMMANDS, None, None)
         self.arch = TauArch.get(self.target_arch, self.target_os)
         self.verbose = (logger.LOG_LEVEL == 'DEBUG')
         self.openmp_support = openmp_support

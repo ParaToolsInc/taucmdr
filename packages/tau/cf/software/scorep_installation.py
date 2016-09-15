@@ -30,7 +30,6 @@
 Score-P is a tool suite for profiling, event tracing, and online analysis of HPC applications.
 """
 
-import os
 from tau import logger
 from tau.cf.software.installation import AutotoolsInstallation
 from tau.cf.compiler import CC_ROLE, INTEL_COMPILERS, IBM_COMPILERS, PGI_COMPILERS, GNU_COMPILERS
@@ -49,9 +48,8 @@ class ScorepInstallation(AutotoolsInstallation):
 
     def __init__(self, sources, target_arch, target_os, compilers, 
                  use_mpi, use_shmem, use_binutils, use_libunwind, use_papi, use_pdt):
-        prefix = os.path.join(str(target_arch), str(target_os), compilers[CC_ROLE].info.family.name)
-        super(ScorepInstallation, self).__init__('scorep', 'Score-P', prefix, sources,
-                                                 target_arch, target_os, compilers, REPOS, None, LIBRARIES, None)
+        super(ScorepInstallation, self).__init__('scorep', 'Score-P', sources, target_arch, target_os, 
+                                                 compilers, REPOS, None, LIBRARIES, None)
         self.use_mpi = use_mpi
         self.use_shmem = use_shmem
         for pkg, used in (('binutils', use_binutils), ('libunwind', use_libunwind), 
