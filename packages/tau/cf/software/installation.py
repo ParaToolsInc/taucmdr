@@ -31,7 +31,6 @@ import os
 import sys
 import hashlib
 import multiprocessing
-import fasteners
 from tau import logger, util, configuration
 from tau.error import ConfigurationError
 from tau.cf.storage.levels import ORDERED_LEVELS
@@ -67,7 +66,7 @@ def parallel_make_flags(nprocs=None):
 
 
 def tmpfs_prefix():
-    """Path to a temporary filesystem, ideally a ramdisk.
+    """Path to a uniquely named directory in a temporary filesystem, ideally a ramdisk.
     
     /dev/shm is the preferred tmpfs, but if it's unavailable or mounted with noexec then
     fall back to tempfile.gettemdir(), which is usually /tmp.  If that filesystem is also
@@ -122,8 +121,6 @@ class Installation(object):
         src_prefix (str): Directory containing package source code.
     """
     
-    _lockfile = os.path.join(highest_writable_storage().prefix, '.lock')
-
     def __init__(self, name, title, sources, target_arch, target_os, compilers, 
                  repos, commands, libraries, headers):
         """Initializes the installation object.
@@ -472,7 +469,6 @@ class AutotoolsInstallation(Installation):
         if os.path.isdir(self.lib_path+'64') and not os.path.isdir(self.lib_path):
             os.symlink(self.lib_path+'64', self.lib_path)
 
-    #@fasteners.interprocess_locked(Installation._lockfile)
     def install(self, force_reinstall=False):
         """Execute the typical GNU Autotools installation sequence.
         

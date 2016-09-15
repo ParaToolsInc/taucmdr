@@ -34,7 +34,6 @@ import os
 import glob
 import shutil
 import resource
-import fasteners
 from tau import logger, util
 from tau.error import ConfigurationError, InternalError
 from tau.cf.software import SoftwarePackageError
@@ -500,7 +499,6 @@ class TauInstallation(Installation):
         if util.create_subprocess(cmd, cwd=self.src_prefix, stdout=False):
             raise SoftwarePackageError('TAU compilation/installation failed')
     
-    #@fasteners.interprocess_locked(Installation._lockfile)
     def install(self, force_reinstall=False):
         """Installs TAU.
         

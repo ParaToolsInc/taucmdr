@@ -33,11 +33,12 @@ The selected experiment will be used for application compilation and trial visua
 """
 
 import os
+import fasteners
 from tau import logger, util
 from tau.error import ConfigurationError
 from tau.mvc.model import Model
 from tau.model.trial import Trial
-from tau.cf.storage.levels import PROJECT_STORAGE
+from tau.cf.storage.levels import PROJECT_STORAGE, highest_writable_storage
 
 
 LOGGER = logger.get_logger(__name__)
@@ -132,6 +133,7 @@ class Experiment(Model):
                 return i
         return len(trials)
     
+    @fasteners.interprocess_locked(os.path.join(highest_writable_storage().prefix, '.lock'))
     def configure(self):
         """Sets up the Experiment for a new trial.
         
