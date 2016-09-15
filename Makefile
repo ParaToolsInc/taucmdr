@@ -116,10 +116,12 @@ CONDA_LIBRARY_PATH = $(CONDA_DEST)/lib:$(CONDA_DEST)/lib64
 CONDA = $(CONDA_DEST)/bin/python
 
 ifeq ($(USE_MINICONDA),true)
-	PYTHON = $(CONDA) -E
+	PYTHON_EXE = $(CONDA)
+	PYTHON = $(PYTHON_EXE) -E
 else
   $(warning WARNING: There are no miniconda packages for this system: $(OS), $(ARCH).)
-  PYTHON = $(shell which python)
+  PYTHON_EXE = $(shell which python)
+	PYTHON = $(PYTHON_EXE)
   ifeq ($(PYTHON),)
     $(error python not found in PATH.)
   else
@@ -143,11 +145,11 @@ install: build
 	@echo "-------------------------------------------------------------------------------"
 	@echo
 
-python_check: $(PYTHON)
-	@echo "Checking '$(PYTHON)'"
+python_check: $(PYTHON_EXE)
+	@echo "Checking '$(PYTHON_EXE)'"
 	@echo "$$LD_LIBRARY_PATH"
 	@$(PYTHON) -c "import sys; print sys.path ; import setuptools;" || (echo "ERROR: setuptools is required." && false)
-	@echo "'$(PYTHON)' appears to work."
+	@echo "'$(PYTHON_EXE)' appears to work."
 
 $(CONDA): $(CONDA_SRC)
 	$(ECHO)bash $< -b -p $(CONDA_DEST)
