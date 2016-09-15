@@ -192,7 +192,8 @@ class InstalledCompiler(object):
             return None
         LOGGER.debug(stdout)
         LOGGER.debug("%s returned 0", cmd)
-        # Assume the longest line starting with an executable is the wrapped compiler followed by arguments.
+        # Assume the longest line starting with a known compiler command is the wrapped compiler followed by arguments.
+        known_commands = set(info.command for info in CompilerInfo.all())
         wrapped = None
         for line in sorted(stdout.split('\n'), key=len, reverse=True):
             if not line:
@@ -200,6 +201,8 @@ class InstalledCompiler(object):
             parts = line.split()
             wrapped_command = parts[0]
             wrapped_args = parts[1:]
+            if os.path.basename(wrapped_command) not in known_commands:
+                continue
             wrapped_absolute_path = util.which(wrapped_command)
             if not wrapped_absolute_path:
                 continue
@@ -207,9 +210,9 @@ class InstalledCompiler(object):
                 # A wrapper that wraps itself isn't a wrapper, e.g. compilers that ignore invalid arguments
                 # when version flags are present.
                 return None
-            LOGGER.info("'%s' wraps '%s'", self.absolute_path, wrapped_absolute_path)
             wrapped = self._probe_wrapped(wrapped_absolute_path, wrapped_args)
             if wrapped:
+                LOGGER.info("'%s' wraps '%s'", self.absolute_path, wrapped.absolute_path)
                 break
         else:
             LOGGER.warning("Unable to identify compiler wrapped by wrapper '%s'."
