@@ -472,7 +472,7 @@ class AutotoolsInstallation(Installation):
         if os.path.isdir(self.lib_path+'64') and not os.path.isdir(self.lib_path):
             os.symlink(self.lib_path+'64', self.lib_path)
 
-    @fasteners.interprocess_locked(Installation._lockfile)
+    #@fasteners.interprocess_locked(Installation._lockfile)
     def install(self, force_reinstall=False):
         """Execute the typical GNU Autotools installation sequence.
         

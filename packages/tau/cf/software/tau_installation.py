@@ -500,7 +500,7 @@ class TauInstallation(Installation):
         if util.create_subprocess(cmd, cwd=self.src_prefix, stdout=False):
             raise SoftwarePackageError('TAU compilation/installation failed')
     
-    @fasteners.interprocess_locked(Installation._lockfile)
+    #@fasteners.interprocess_locked(Installation._lockfile)
     def install(self, force_reinstall=False):
         """Installs TAU.
         
