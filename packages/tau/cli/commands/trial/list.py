@@ -27,13 +27,14 @@
 #
 """``tau trial list`` subcommand."""
 
+from tau import util
 from tau.cli.cli_view import ListCommand
 from tau.model.trial import Trial
 
 
 DASHBOARD_COLUMNS = [{'header': 'Experiment', 'function': lambda x: x['experiment'].title()},
                      {'header': 'Number', 'value': 'number'},
-                     {'header': 'Data Size', 'value': 'data_size'},
+                     {'header': 'Data Size', 'function': lambda x: util.human_size(x['data_size'])},
                      {'header': 'Command', 'value': 'command'},
                      {'header': 'In Directory', 'value': 'cwd'}]
 
