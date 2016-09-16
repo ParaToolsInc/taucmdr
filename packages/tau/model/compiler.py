@@ -50,7 +50,7 @@ def attributes():
         'uid': {
             'type': 'string',
             'required': True,
-            'description': "unique identifier of the compiler command"
+            'description': "compiler unique identifier"
         },
         'path': {
             'type': 'string',
