@@ -29,7 +29,7 @@
 
 from tau import logger
 from tau.error import ConfigurationError, ModelError, InternalError
-from tau.cf.storage import StorageRecord, StorageError
+from tau.cf.storage import StorageRecord
 from tau.mvc.controller import Controller
 
 LOGGER = logger.get_logger(__name__)
@@ -148,8 +148,32 @@ class Model(StorageRecord):
         pass
     
     def populate(self, attribute=None, defaults=False):
-        return self.controller(self.storage).populate(self, attribute, defaults)
-
+        """Shorthand for ``self.controller(self.storage).populate(self, attribute, defaults)``.
+        
+        Result is cached in the object instance when possible so this should be faster
+        than populating directly from the controller.
+        
+        Args:
+            attribute (Optional[str]): If given, return only the populated attribute.
+            defaults (Optional[bool]): If given, set undefined attributes to their default values.
+        
+        Returns:
+            If attribute is None, a dictionary of controlled data merged with associated records.
+            If attribute is not None, the value of the populated attribute. 
+            
+        Raises:
+            KeyError: `attribute` is undefined in the record. 
+        """
+        if attribute:
+            if self._populated is not None and not defaults:
+                return self._populated[attribute]
+            else:
+                return self.controller(self.storage).populate(self, attribute, defaults)
+        else:
+            if self._populated is None:
+                self._populated = self.controller(self.storage).populate(self, attribute, defaults)
+            return self._populated
+    
     @classmethod
     def controller(cls, storage):
         return cls.__controller__(cls, storage)
@@ -565,7 +589,7 @@ class Model(StorageRecord):
             the above expressions do nothing.
         """
         as_tuple = lambda x: x if isinstance(x, tuple) else (x,)
-        for attr, props in self.attributes.iteritems():    # pylint: disable=no-member
+        for attr, props in self.attributes.iteritems():
             try:
                 compat = props['compat']
             except KeyError:
