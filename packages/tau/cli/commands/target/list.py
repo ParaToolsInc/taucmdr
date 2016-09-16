@@ -36,7 +36,7 @@ from tau.model.target import Target
 
 DASHBOARD_COLUMNS = [{'header': 'Name', 'value': 'name', 'align': 'r'},
                      {'header': 'Host OS', 'value': 'host_os'},
-                     {'header': 'Host Arch.', 'value': 'host_arch'},
+                     {'header': 'Host Arch', 'value': 'host_arch'},
                      {'header': 'Host Compilers', 'function': 
                       lambda data: data[CC_ROLE.keyword]['family']},
                      {'header': 'MPI Compilers', 'function': 
