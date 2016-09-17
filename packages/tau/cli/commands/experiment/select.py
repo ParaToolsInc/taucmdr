@@ -48,10 +48,23 @@ class ExperimentSelectCommand(AbstractCommand):
         name = args.experiment
 
         try:
-            Experiment.select(name)
+            changed = Experiment.select(name)
         except ConfigurationError as err:
             self.parser.error(str(err))        
         self.logger.info("Selected experiment '%s'.", name)
+        
+        if changed:
+            parts = ["Application rebuild required:"]
+            for attr, change in changed.iteritems():
+                old, new = change
+                if old is None:
+                    parts.append("  - %s is now set to %s" % (attr, new))
+                elif new is None:
+                    parts.append("  - %s is now unset" % attr)
+                else:
+                    parts.append("  - %s changed from %s to %s" % (attr, old, new))
+            self.logger.info('\n'.join(parts))
+        
         return EXIT_SUCCESS
 
 

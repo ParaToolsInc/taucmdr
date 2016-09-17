@@ -109,8 +109,8 @@ class Experiment(Model):
         elif len(matching) > 1:
             raise InternalError("More than one experiment with data %r exists!" % data)
         else:
-            expr = matching[0]
-        proj_ctrl.select(proj, expr)
+            expr = matching[0]            
+        return proj_ctrl.select(proj, expr)
     
     @property
     def prefix(self):

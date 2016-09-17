@@ -28,7 +28,7 @@
 """``tau select`` subcommand."""
 
 from tau import EXIT_SUCCESS
-from tau.error import ConfigurationError
+from tau.error import ConfigurationError, IncompatibleRecordError, ImmutableRecordError
 from tau.model.experiment import Experiment
 from tau.cli.commands.experiment.create import ExperimentCreateCommand
 from tau.cli.commands.experiment.select import COMMAND as experiment_select_cmd
@@ -61,7 +61,12 @@ class SelectCommand(ExperimentCreateCommand):
                 return EXIT_SUCCESS
 
         _, _, _, _, name = self._parse_args(argv)
-        super(SelectCommand, self).main(argv)
+        try:
+            super(SelectCommand, self).main(argv)
+        except (IncompatibleRecordError, ImmutableRecordError) as err:
+            raise err
+        except ConfigurationError:
+            pass
         return experiment_select_cmd.main([name])
 
 COMMAND = SelectCommand(__name__, summary_fmt="Create a new experiment or select an existing experiment.")

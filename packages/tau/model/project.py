@@ -135,34 +135,55 @@ class ProjectController(Controller):
             if selected is None:
                 self.unselect()
 
+    def _check_rebuild(self, project, new_experiment):
+        from tau.model.measurement import Measurement
+        try:
+            old_experiment = project.controller().selected().experiment()
+        except (ProjectSelectionError, ExperimentSelectionError) as err:
+            LOGGER.debug(err)
+            return
+        meas = new_experiment.populate('measurement')
+        meas_old = old_experiment.populate('measurement')
+        new_attrs = set(meas.keys())
+        old_attrs = set(meas_old.keys())
+        changed = {}
+        for attr in new_attrs - old_attrs:
+            if Measurement.attributes[attr]['application_rebuild']:
+                changed[attr] = (None, meas[attr])
+                break
+        for attr in old_attrs - new_attrs:
+            if Measurement.attributes[attr]['application_rebuild']:
+                changed[attr] = (meas_old[attr], None)
+                break
+        for attr in new_attrs & old_attrs:
+            if meas[attr] != meas_old[attr] and Measurement.attributes[attr]['application_rebuild']:
+                changed[attr] = (meas_old[attr], meas[attr])
+                break
+        return changed
+    
     def select(self, project, experiment=None):
         self.storage['selected_project'] = project.eid
         if experiment is not None:
             for attr in 'target', 'application', 'measurement':
                 if experiment[attr] not in project[attr+'s']:
                     raise InternalError("Experiment contains %s not in project" % attr)
+            changed = self._check_rebuild(project, experiment)
             self.update({'experiment': experiment.eid}, project.eid)
             experiment.configure()
+            return changed
     
     def unselect(self):
         del self.storage['selected_project']
         
-    def _selected_eid(self):
+    def selected(self):
         try:
-            return self.storage['selected_project']
+            selected = self.one(self.storage['selected_project'])
+            if not selected:
+                raise KeyError
         except KeyError:
             raise ProjectSelectionError("No project selected")
-
-    def selected(self):
-        """Gets the currently selected project's configuration data.
-        
-        Returns:
-            Project: The current project.
-            
-        Raises:
-            ProjectSelectionError: No project currently selected.
-        """
-        return self.one(self._selected_eid())
+        else:
+            return selected
 
 
 class Project(Model):
