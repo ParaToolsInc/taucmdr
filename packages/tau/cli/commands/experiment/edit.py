@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2016, ParaTools, Inc.
+# Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -25,31 +25,10 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""Test functions.
+"""``tau experiment edit`` subcommand."""
 
-Functions used for unit tests of select.py.
-"""
+from tau.cli.cli_view import EditCommand
+from tau.model.experiment import Experiment
 
 
-import unittest
-from tau import tests, util
-from tau.cli.commands import select
-from tau.cli.commands.measurement import create
-from tau.cli.commands.target import create as create_target
-
-class SelectTest(tests.TestCase):
-    
-    def test_select(self):
-        self.reset_project_storage(app_name='testing_app')
-        argv = ['testing_app', 'profile']
-        self.assertCommandReturnValue(0, select.COMMAND, argv)
-
-    @unittest.skipUnless(util.which('pgcc'), "PGI compilers required for this test")
-    def test_pgi(self):
-        self.reset_project_storage()
-        stdout, stderr = self.assertCommandReturnValue(0, create_target.COMMAND, ['test_targ', '--compilers', 'PGI'])
-        _, _, stderr = self.exec_command(create.COMMAND, ['meas_PGI'])
-        argv = ['proj1', 'test_targ', 'meas_PGI']
-        self.assertCommandReturnValue(0, select.COMMAND, argv)
-        self.assertIn('Added measurement \'meas_PGI\' to project configuration', stdout)
-        self.assertFalse(stderr)
+COMMAND = EditCommand(Experiment, __name__, include_storage_flag=False)

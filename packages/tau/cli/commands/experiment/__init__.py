@@ -25,26 +25,10 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""``tau project export`` subcommand."""
+"""``tau experiment`` subcommand."""
 
-from pprint import pprint
-from tau import EXIT_SUCCESS
-from tau.cli import arguments
-from tau.cli.command import AbstractCommand
-from tau.model.project import Project
+from tau.cli.cli_view import RootCommand
+from tau.model.experiment import Experiment
 
 
-class ProjectExportCommand(AbstractCommand):
-    
-    def construct_parser(self):
-        usage = self.command
-        parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
-        return parser
-
-    def main(self, argv):
-        args = self.parse_args(argv)
-        ctrl = Project.controller()
-        pprint(ctrl.export_records(eids=[proj.eid for proj in ctrl.all()]))
-        return EXIT_SUCCESS
-
-COMMAND = ProjectExportCommand(__name__, summary_fmt="Export project configurations.")
+COMMAND = RootCommand(Experiment, __name__, summary_fmt="Create and manage experiments.", group="configuration")

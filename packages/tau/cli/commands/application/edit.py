@@ -25,10 +25,25 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
+
 """``tau application`` subcommand."""
 
+from tau.error import ImmutableRecordError, IncompatibleRecordError
 from tau.cli.cli_view import EditCommand
+from tau.cli.commands.application.copy import COMMAND as application_copy_cmd
+from tau.cli.commands.experiment.delete import COMMAND as experiment_delete_cmd
 from tau.model.application import Application
 
 
-COMMAND = EditCommand(Application, __name__)
+class ApplicationEditCommand(EditCommand):
+    
+    def update_record(self, store, data, key):
+        try:
+            return super(ApplicationEditCommand, self).update_record(store, data, key)
+        except (ImmutableRecordError, IncompatibleRecordError) as err:
+            err.hints = ["Use `%s` to create a modified copy of the application" % application_copy_cmd,
+                         "Use `%s` to delete the experiments." % experiment_delete_cmd]
+            raise err
+            
+
+COMMAND = ApplicationEditCommand(Application, __name__)

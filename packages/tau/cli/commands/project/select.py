@@ -25,26 +25,34 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""``tau project export`` subcommand."""
+"""``tau project select`` subcommand."""
 
-from pprint import pprint
 from tau import EXIT_SUCCESS
 from tau.cli import arguments
-from tau.cli.command import AbstractCommand
 from tau.model.project import Project
+from tau.cli.command import AbstractCommand
 
 
-class ProjectExportCommand(AbstractCommand):
-    
+class ProjectSelectCommand(AbstractCommand):
+    """``tau project select`` subcommand."""
+
     def construct_parser(self):
-        usage = self.command
+        usage = "%s project" % self.command
         parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
+        parser.add_argument('project', help="Project configuration name", metavar='<name>')
         return parser
 
     def main(self, argv):
         args = self.parse_args(argv)
-        ctrl = Project.controller()
-        pprint(ctrl.export_records(eids=[proj.eid for proj in ctrl.all()]))
+        proj_ctrl = Project.controller()
+        name = args.project
+        proj = proj_ctrl.one({"name": name})
+        if not proj:
+            self.parser.error("There is no project configuration named '%s.'" % name)
+        proj_ctrl.select(proj)
         return EXIT_SUCCESS
 
-COMMAND = ProjectExportCommand(__name__, summary_fmt="Export project configurations.")
+
+COMMAND = ProjectSelectCommand(__name__, 
+                               summary_fmt=("Select a project configuration.\n"
+                                            "Use `project list` to see all project configurations."))

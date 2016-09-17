@@ -25,26 +25,36 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""``tau project export`` subcommand."""
+"""``tau experiment select`` subcommand."""
 
-from pprint import pprint
 from tau import EXIT_SUCCESS
+from tau.error import ConfigurationError
 from tau.cli import arguments
+from tau.model.experiment import Experiment
 from tau.cli.command import AbstractCommand
-from tau.model.project import Project
 
 
-class ProjectExportCommand(AbstractCommand):
-    
+class ExperimentSelectCommand(AbstractCommand):
+    """``tau experiment select`` subcommand."""
+
     def construct_parser(self):
-        usage = self.command
+        usage = "%s experiment" % self.command
         parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
+        parser.add_argument('experiment', help="Experiment name", metavar='<name>')
         return parser
-
+    
     def main(self, argv):
         args = self.parse_args(argv)
-        ctrl = Project.controller()
-        pprint(ctrl.export_records(eids=[proj.eid for proj in ctrl.all()]))
+        name = args.experiment
+
+        try:
+            Experiment.select(name)
+        except ConfigurationError as err:
+            self.parser.error(str(err))        
+        self.logger.info("Selected experiment '%s'.", name)
         return EXIT_SUCCESS
 
-COMMAND = ProjectExportCommand(__name__, summary_fmt="Export project configurations.")
+
+COMMAND = ExperimentSelectCommand(__name__, 
+                                  summary_fmt=("Select a project configuration.\n"
+                                               "Use `project list` to see all project configurations."))

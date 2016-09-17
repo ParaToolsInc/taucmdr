@@ -35,6 +35,7 @@ are potentially two application records for the same application code: one
 specifying OpenMP is used and the other specifying OpenMP is not used.
 """
 
+from tau.error import IncompatibleRecordError, ConfigurationError
 from tau.mvc.model import Model
 
 
@@ -137,3 +138,25 @@ class Application(Model):
     
     __attributes__ = attributes
 
+    def before_update(self):
+        from tau.error import ImmutableRecordError
+        from tau.model.experiment import Experiment
+        expr_ctrl = Experiment.controller()
+        found = expr_ctrl.search({'application': self.eid})
+        using_app = [expr['name'] for expr in found if expr.data_size() > 0]
+        if using_app:
+            raise ImmutableRecordError("Application '%s' cannot be modified because "
+                                       "it is used by these experiments: %s" % (self['name'], ', '.join(using_app)))
+
+    def after_update(self):
+        from tau.model.experiment import Experiment
+        expr_ctrl = Experiment.controller()
+        using_app = expr_ctrl.search({'application': self.eid})
+        for expr in using_app:
+            try:
+                expr.verify()
+            except IncompatibleRecordError as err:
+                raise ConfigurationError("Changing application '%s' in this way will create an invalid condition "
+                                         "in experiment '%s':\n    %s." % (self['name'], expr['name'], err),
+                                         "Delete experiment '%s' and try again." % expr['name'])
+        

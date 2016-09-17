@@ -47,7 +47,7 @@ class ConfigureCommand(AbstractCommand):
         """
         usage = "%s [arguments] <key> <value>" % self.command
         parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
-        arguments.add_storage_flags(parser, "Get or set", "configuration item")
+        arguments.add_storage_flag(parser, "Get or set", "configuration item")
         parser.add_argument('key',
                             help="option key",
                             metavar='<key>',
@@ -71,10 +71,8 @@ class ConfigureCommand(AbstractCommand):
         return parser
 
     def main(self, argv):
-        args = self.parser.parse_args(args=argv)
-        self.logger.debug('Arguments: %s', args)
-        
-        storage = STORAGE_LEVELS[getattr(args, arguments.STORAGE_LEVEL_FLAG)[0]]
+        args = self.parse_args(argv)
+        storage = arguments.parse_storage_flag(args)[0]
         if storage is not PROJECT_STORAGE:
             storage.connect_filesystem()
 

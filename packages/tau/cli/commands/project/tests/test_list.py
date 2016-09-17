@@ -45,5 +45,6 @@ class ListTest(tests.TestCase):
     
     def test_wrongname(self):
         self.reset_project_storage(project_name='proj1')
-        _, stdout, _ = self.exec_command(list_cmd, ['proj2'])
-        self.assertIn('No projects', stdout)
+        stdout, stderr = self.assertNotCommandReturnValue(0, list_cmd, ['proj2'])
+        self.assertIn("No project with name='proj2'", stderr)
+        self.assertFalse(stdout)

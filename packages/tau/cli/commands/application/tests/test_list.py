@@ -44,6 +44,7 @@ class ListTest(tests.TestCase):
         self.assertFalse(stderr)
         
     def test_wrongname(self):
-        self.reset_project_storage(project_name='proj1')
-        _, stdout, _ = self.exec_command(LIST_COMMAND, ['app2'])
-        self.assertIn('No applications', stdout)
+        self.reset_project_storage(app_name='app1')
+        stdout, stderr = self.assertNotCommandReturnValue(0, LIST_COMMAND, ['app2'])
+        self.assertIn("No application with name='app2'", stderr)
+        self.assertFalse(stdout)

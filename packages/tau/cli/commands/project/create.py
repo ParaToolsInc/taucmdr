@@ -118,9 +118,7 @@ class ProjectCreateCommand(CreateCommand):
 
 
     def main(self, argv):
-        args = self.parser.parse_args(args=argv)
-        self.logger.debug('Arguments: %s', args)
-    
+        args = self.parse_args(argv)
         targets = set()
         applications = set()
         measurements = set()

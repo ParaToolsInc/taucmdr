@@ -96,12 +96,12 @@ def attributes():
 class ProjectSelectionError(ConfigurationError):
     
     def __init__(self, value, *hints):
-        from tau.cli.commands.select import COMMAND as select_cmd
-        from tau.cli.commands.project.list import COMMAND as project_list_cmd
         from tau.cli.commands.project.create import COMMAND as project_create_cmd
+        from tau.cli.commands.project.select import COMMAND as project_select_cmd
+        from tau.cli.commands.project.list import COMMAND as project_list_cmd
         if not hints:
             hints = ("Use `%s` to create a new project configuration." % project_create_cmd,
-                     "Use `%s <project_name>` to select a project configuration." % select_cmd,
+                     "Use `%s <project_name>` to select a project configuration." % project_select_cmd,
                      "Use `%s` to see available project configurations." % project_list_cmd)    
         super(ProjectSelectionError, self).__init__(value, *hints)
 
@@ -109,10 +109,10 @@ class ProjectSelectionError(ConfigurationError):
 class ExperimentSelectionError(ConfigurationError):
     
     def __init__(self, value, *hints):
-        from tau.cli.commands.select import COMMAND as select_cmd
+        from tau.cli.commands.experiment.create import COMMAND as experiment_create_cmd
         from tau.cli.commands.project.list import COMMAND as project_list_cmd
         if not hints:
-            hints = ("Use `%s` to create a new experiment." % select_cmd,
+            hints = ("Use `%s` to create a new experiment." % experiment_create_cmd,
                      "Use `%s` to see available project configurations." % project_list_cmd)    
         super(ExperimentSelectionError, self).__init__(value, *hints)
 

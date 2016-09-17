@@ -96,9 +96,7 @@ class TrialCreateCommand(CreateCommand):
         return launcher_cmd, application_cmd
 
     def main(self, argv):
-        args = self.parser.parse_args(args=argv)
-        self.logger.debug('Arguments: %s', args)
-        
+        args = self.parse_args(argv)
         application_cmd = [args.cmd] + args.cmd_args
         try:
             launcher_cmd = args.launcher

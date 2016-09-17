@@ -41,9 +41,7 @@ class DashboardCommand(AbstractCommand):
         return arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
 
     def main(self, argv):
-        args = self.parser.parse_args(args=argv)
-        self.logger.debug('Arguments: %s', args)
-
+        args = self.parse_args(argv)
         subargs = ['--dashboard']
         proj_ctrl = Project.controller()
         print

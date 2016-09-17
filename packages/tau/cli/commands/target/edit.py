@@ -29,9 +29,11 @@
 
 from tau import EXIT_SUCCESS
 from tau import util
-from tau.cf.storage.levels import STORAGE_LEVELS
+from tau.error import ImmutableRecordError, IncompatibleRecordError
 from tau.cli import arguments
 from tau.cli.cli_view import EditCommand
+from tau.cli.commands.target.copy import COMMAND as target_copy_cmd
+from tau.cli.commands.experiment.delete import COMMAND as experiment_delete_cmd
 from tau.model.target import Target
 from tau.model.compiler import Compiler
 from tau.cf.compiler import CompilerFamily, CompilerRole
@@ -118,15 +120,15 @@ class TargetEditCommand(EditCommand):
         return parser
     
     def main(self, argv):
-        args = self.parser.parse_args(args=argv)
-        self.logger.debug('Arguments: %s', args)
-        store = STORAGE_LEVELS[getattr(args, arguments.STORAGE_LEVEL_FLAG)[0]]
+        args = self.parse_args(argv)
+        store = arguments.parse_storage_flag(args)[0]
         ctrl = self.model.controller(store)
         key_attr = self.model.key_attribute
         key = getattr(args, key_attr)
-        if not ctrl.exists({key_attr: key}):
+        targ = ctrl.one({key_attr: key})
+        if not targ:
             self.parser.error("No %s-level %s with %s='%s'." % (ctrl.storage.name, self.model_name, key_attr, key)) 
-
+        
         compilers = self.parse_compiler_flags(args)
         self.logger.debug('Arguments after parsing compiler flags: %s', args)
 
@@ -139,7 +141,12 @@ class TargetEditCommand(EditCommand):
             data[key_attr] = args.new_key
         except AttributeError:
             pass
-        ctrl.update(data, {key_attr: key})
+        try:
+            ctrl.update(data, {key_attr: key})
+        except (ImmutableRecordError, IncompatibleRecordError) as err:
+            err.hints = ["Use `%s` to create a modified copy of the target" % target_copy_cmd,
+                         "Use `%s` to delete the experiments." % experiment_delete_cmd]
+            raise err
         self.logger.info("Updated %s '%s'", self.model_name, key)
         return EXIT_SUCCESS
 

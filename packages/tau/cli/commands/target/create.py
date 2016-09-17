@@ -212,9 +212,8 @@ class TargetCreateCommand(CreateCommand):
         return parser
     
     def main(self, argv):
-        args = self.parser.parse_args(args=argv)
-        self.logger.debug('Arguments: %s', args)
-        store = STORAGE_LEVELS[getattr(args, arguments.STORAGE_LEVEL_FLAG)[0]]
+        args = self.parse_args(argv)
+        store = arguments.parse_storage_flag(args)[0]
 
         if hasattr(args, "tau_makefile"):
             self._parse_tau_makefile(args)

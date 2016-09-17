@@ -42,6 +42,7 @@ from tau.cli.commands.target.create import COMMAND as target_create_cmd
 from tau.cli.commands.application.create import COMMAND as application_create_cmd
 from tau.cli.commands.measurement.create import COMMAND as measurement_create_cmd
 from tau.cli.commands.project.create import COMMAND as project_create_cmd
+from tau.cli.commands.project.select import COMMAND as project_select_cmd
 from tau.cli.commands.select import COMMAND as select_cmd
 from tau.cli.commands.dashboard import COMMAND as dashboard_cmd
 from tau.cf.target import host, DARWIN_OS, IBM_CNK_OS
@@ -138,7 +139,7 @@ class InitializeCommand(AbstractCommand):
             util.rmtree(PROJECT_STORAGE.prefix, ignore_errors=True)
             raise
         else:
-            select_cmd.main(['--project', project_name])
+            project_select_cmd.main([project_name])
         
     def _populate_project(self, argv, args):
         def _safe_execute(cmd, argv):
@@ -160,7 +161,6 @@ class InitializeCommand(AbstractCommand):
         elif host_os is IBM_CNK_OS: 
             self.logger.info("IBM CNK OS detected: disabling sampling")
             sample = False
-        project_name = args.project_name
         target_name = args.target_name
         application_name = args.application_name
 
@@ -201,12 +201,12 @@ class InitializeCommand(AbstractCommand):
                            '--link-only=False'] + measurement_args)
             measurement_names.append('trace')
 
-        select_cmd.main(['--project', project_name, '--target', target_name, 
-                         '--application', application_name, '--measurement', measurement_names[0]])
+        select_cmd.main(['--target', target_name, 
+                         '--application', application_name, 
+                         '--measurement', measurement_names[0]])
 
     def main(self, argv):
-        args = self.parser.parse_args(args=argv)
-        self.logger.debug('Arguments: %s', args)
+        args = self.parse_args(argv)
         if not (args.profile or args.trace or args.sample):
             self.parser.error('You must specify at least one measurement.')
 

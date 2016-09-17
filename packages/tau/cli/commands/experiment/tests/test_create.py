@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2016, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -25,26 +25,29 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""``tau project export`` subcommand."""
+"""Test functions.
 
-from pprint import pprint
-from tau import EXIT_SUCCESS
-from tau.cli import arguments
-from tau.cli.command import AbstractCommand
-from tau.model.project import Project
+Functions used for unit tests of create.py.
+"""
 
 
-class ProjectExportCommand(AbstractCommand):
+import unittest
+from tau import tests, util
+from tau.cli.commands.experiment.create import COMMAND as experiment_create_cmd
+from tau.cli.commands.measurement.create import COMMAND as measurement_create_cmd
+from tau.cli.commands.target.create import COMMAND as target_create_cmd
+
+class CreateTest(tests.TestCase):
     
-    def construct_parser(self):
-        usage = self.command
-        parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
-        return parser
-
-    def main(self, argv):
-        args = self.parse_args(argv)
-        ctrl = Project.controller()
-        pprint(ctrl.export_records(eids=[proj.eid for proj in ctrl.all()]))
-        return EXIT_SUCCESS
-
-COMMAND = ProjectExportCommand(__name__, summary_fmt="Export project configurations.")
+    @unittest.skipUnless(util.which('pgcc'), "PGI compilers required for this test")
+    def test_pgi(self):
+        self.reset_project_storage(project_name="proj1")
+        stdout, stderr = self.assertCommandReturnValue(0, target_create_cmd, ['test_targ', '--compilers', 'PGI'])
+        self.assertIn('Added target \'test_targ\' to project configuration', stdout)
+        self.assertFalse(stderr)
+        stdout, stderr = self.assertCommandReturnValue(0, measurement_create_cmd, ['meas_PGI'])
+        self.assertIn('Added measurement \'meas_PGI\' to project configuration', stdout)
+        self.assertFalse(stderr)
+        argv = ['proj1', 'test_targ', 'meas_PGI']
+        _, stderr = self.assertCommandReturnValue(0, experiment_create_cmd, argv)
+        self.assertFalse(stderr)

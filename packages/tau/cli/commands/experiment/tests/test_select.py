@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2016, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -25,26 +25,18 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""``tau project export`` subcommand."""
+"""Test functions.
 
-from pprint import pprint
-from tau import EXIT_SUCCESS
-from tau.cli import arguments
-from tau.cli.command import AbstractCommand
-from tau.model.project import Project
+Functions used for unit tests of select.py.
+"""
 
 
-class ProjectExportCommand(AbstractCommand):
+from tau import tests
+from tau.cli.commands.experiment.select import COMMAND as experiment_select_cmd
+
+class SelectTest(tests.TestCase):
     
-    def construct_parser(self):
-        usage = self.command
-        parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
-        return parser
+    def test_select(self):
+        self.reset_project_storage(target_name='targ1', app_name='app1')
+        self.assertCommandReturnValue(0, experiment_select_cmd, ['targ1-app1-profile'])
 
-    def main(self, argv):
-        args = self.parse_args(argv)
-        ctrl = Project.controller()
-        pprint(ctrl.export_records(eids=[proj.eid for proj in ctrl.all()]))
-        return EXIT_SUCCESS
-
-COMMAND = ProjectExportCommand(__name__, summary_fmt="Export project configurations.")

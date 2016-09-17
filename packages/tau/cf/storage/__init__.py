@@ -318,7 +318,7 @@ class AbstractStorage(object):
             table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
             
         Returns:
-            Record: The new record.       
+            Record: The new record.
         """
 
     @abstractmethod

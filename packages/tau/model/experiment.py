@@ -35,9 +35,10 @@ The selected experiment will be used for application compilation and trial visua
 import os
 import fasteners
 from tau import logger, util
-from tau.error import ConfigurationError
+from tau.error import ConfigurationError, InternalError, IncompatibleRecordError
 from tau.mvc.model import Model
 from tau.model.trial import Trial
+from tau.model.project import Project
 from tau.cf.storage.levels import PROJECT_STORAGE, highest_writable_storage
 
 
@@ -47,11 +48,18 @@ PROFILE_EXPORT_FORMATS = ['ppk', 'zip', 'tar', 'tgz', 'tar.bz2']
 
 
 def attributes():
-    from tau.model.project import Project   
     from tau.model.target import Target
     from tau.model.application import Application
     from tau.model.measurement import Measurement
     return {
+        'name': {
+            'primary_key': True,
+            'type': 'string',
+            'unique': True,
+            'description': 'human-readable experiment name',
+            'argparse': {'flags': ('--name',),
+                         'metavar': '<name>'}
+        },
         'project': {
             'model': Project,
             'required': True,
@@ -84,47 +92,61 @@ class Experiment(Model):
     """Experiment data model."""
     
     __attributes__ = attributes
-
+    
     @classmethod
     def controller(cls, storage=PROJECT_STORAGE):
         return cls.__controller__(cls, storage)
     
-    def title(self):
-        populated = self.populate()
-        return '(%s, %s, %s)' % (populated['target']['name'],
-                                 populated['application']['name'],
-                                 populated['measurement']['name'])
-        
-    def data_size(self):
-        return sum([int(trial.get('data_size', 0)) for trial in self.populate('trials')])
-
+    @classmethod
+    def select(cls, name):
+        proj_ctrl = Project.controller()
+        proj = proj_ctrl.selected()
+        expr_ctrl = cls.controller()
+        data = {"name": name, "project": proj.eid}
+        matching = expr_ctrl.search(data)
+        if not matching:
+            raise ConfigurationError("There is no experiment named '%s' in project '%s'." % (name, proj['name']))
+        elif len(matching) > 1:
+            raise InternalError("More than one experiment with data %r exists!" % data)
+        else:
+            expr = matching[0]
+        proj_ctrl.select(proj, expr)
+    
     @property
     def prefix(self):
-        # pylint: disable=attribute-defined-outside-init
-        try:
-            return self._prefix
-        except AttributeError: 
-            populated = self.populate()
-            self._prefix = os.path.join(populated['project'].prefix,
-                                        populated['target']['name'],
-                                        populated['application']['name'],
-                                        populated['measurement']['name'])
-            return self._prefix
-        
-    def on_create(self):
+        return os.path.join(self.populate('project').prefix, self['name'])
+    
+    def verify(self):
+        populated = self.populate()
+        proj = populated['project']
+        targ = populated['target']
+        app = populated['application']
+        meas = populated['measurement']
+        for model in targ, app, meas:
+            if proj.eid not in model['projects']:
+                raise IncompatibleRecordError("%s '%s' is not a member of project configuration '%s'." % 
+                                              (model.name, model['name'], proj['name']))
+        for lhs in [targ, app, meas]:
+            for rhs in [targ, app, meas]:
+                lhs.check_compatibility(rhs)
+
+    def after_create(self):
+        self.verify()
         try:
             util.mkdirp(self.prefix)
         except:
-            raise ConfigurationError('Cannot create directory %r' % self.prefix,
+            raise ConfigurationError('Cannot create directory %r' % self.prefix, 
                                      'Check that you have `write` access')
 
-    def on_delete(self):
-        # pylint: disable=broad-except
+    def before_delete(self):
         try:
             util.rmtree(self.prefix)
-        except Exception as err:
+        except Exception as err:  # pylint: disable=broad-except
             if os.path.exists(self.prefix):
                 LOGGER.error("Could not remove experiment data at '%s': %s", self.prefix, err)
+
+    def data_size(self):
+        return sum([int(trial.get('data_size', 0)) for trial in self.populate('trials')])
 
     def next_trial_number(self):
         trials = self.populate('trials')
@@ -145,7 +167,7 @@ class Experiment(Model):
         """
         from tau.cf.target import Architecture, OperatingSystem
         from tau.cf.software.tau_installation import TauInstallation
-        LOGGER.debug("Configuring experiment %s", self.title())
+        LOGGER.debug("Configuring experiment %s", self['name'])
         populated = self.populate(defaults=True)
         target = populated['target']
         application = populated['application']
@@ -290,7 +312,7 @@ class Experiment(Model):
                         found = trial
                 trials = [found]
         if not trials:
-            raise ConfigurationError("No trials in experiment %s" % self.title(), "See `tau trial create --help`")
+            raise ConfigurationError("No trials in experiment %s" % self['name'], "See `tau trial create --help`")
         return trials
     
     def show(self, profile_tool=None, trace_tool=None, trial_numbers=None):
@@ -331,19 +353,15 @@ class Experiment(Model):
         assert profile_format in PROFILE_EXPORT_FORMATS
         if not export_location:
             export_location = os.getcwd()
-        populated = self.populate()
-        expr_name = '%s_%s_%s' % (populated['target']['name'],
-                                  populated['application']['name'],
-                                  populated['measurement']['name'])
         if profile_format == 'ppk':
             tau = self.configure()
             for trial in self._get_trials(trial_numbers):
-                ppk_file = expr_name + '_trial' + str(trial['number']) + '.ppk'
+                ppk_file = self['name'] + '.trial' + str(trial['number']) + '.ppk'
                 tau.pack_profiles(trial.prefix, os.path.join(export_location, ppk_file))
         elif profile_format in ('zip', 'tar', 'tgz', 'tar.bz2'):
             for trial in self._get_trials(trial_numbers):
                 trial_number = str(trial['number'])
-                archive_file = expr_name + '_trial' + trial_number + '.' + profile_format
+                archive_file = self['name'] + '.trial' + trial_number + '.' + profile_format
                 profile_files = [os.path.join(trial_number, os.path.basename(x)) for x in trial.profile_files()]
                 old_cwd = os.getcwd()
                 os.chdir(os.path.dirname(trial.prefix))

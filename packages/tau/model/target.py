@@ -38,7 +38,7 @@ compilers are installed then there will target configurations for each compiler 
 import os
 import glob
 from tau import logger, util
-from tau.error import InternalError, ConfigurationError
+from tau.error import InternalError, ConfigurationError, IncompatibleRecordError
 from tau.mvc.model import Model
 from tau.mvc.controller import Controller
 from tau.model.compiler import Compiler
@@ -360,11 +360,33 @@ class Target(Model):
         super(Target, self).__init__(*args, **kwargs)
         self._compilers = None
     
-    def on_create(self):
-        super(Target, self).on_create()
-        if not self['tau_source']:
+    @classmethod
+    def before_create(cls, storage, data):
+        if not data['tau_source']:
             raise ConfigurationError("A TAU installation or source code must be provided.")
     
+    def before_update(self):
+        from tau.error import ImmutableRecordError
+        from tau.model.experiment import Experiment
+        expr_ctrl = Experiment.controller()
+        found = expr_ctrl.search({'target': self.eid})
+        used_by = [expr['name'] for expr in found if expr.data_size() > 0]
+        if used_by:
+            raise ImmutableRecordError("Target '%s' cannot be modified because "
+                                       "it is used by these experiments: %s" % (self['name'], ', '.join(used_by)))
+
+    def after_update(self):
+        from tau.model.experiment import Experiment
+        expr_ctrl = Experiment.controller()
+        used_by = expr_ctrl.search({'measurement': self.eid})
+        for expr in used_by:
+            try:
+                expr.verify()
+            except IncompatibleRecordError as err:
+                raise ConfigurationError("Changing measurement '%s' in this way will create an invalid condition "
+                                         "in experiment '%s':\n    %s." % (self['name'], expr['name'], err),
+                                         "Delete experiment '%s' and try again." % expr['name'])
+
     def compilers(self):
         """Get information about the compilers used by this target configuration.
         

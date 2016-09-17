@@ -28,8 +28,11 @@
 """``tau measurement`` subcommand."""
 
 import os
+from tau.error import ImmutableRecordError, IncompatibleRecordError
 from tau.cli.cli_view import EditCommand
 from tau.model.measurement import Measurement
+from tau.cli.commands.measurement.copy import COMMAND as measurement_copy_cmd
+from tau.cli.commands.experiment.delete import COMMAND as experiment_delete_cmd
 
 
 class MeasurementEditCommand(EditCommand):
@@ -42,6 +45,14 @@ class MeasurementEditCommand(EditCommand):
                 self.parser.error("Selective instrumentation file '%s' not found" % absolute_path)
             args.select_file = absolute_path
         return args
+
+    def update_record(self, store, data, key):
+        try:
+            return super(MeasurementEditCommand, self).update_record(store, data, key)
+        except (ImmutableRecordError, IncompatibleRecordError) as err:
+            err.hints = ["Use `%s` to create a modified copy of the measurement" % measurement_copy_cmd,
+                         "Use `%s` to delete the experiments." % experiment_delete_cmd]
+            raise err
 
 
 COMMAND = MeasurementEditCommand(Measurement, __name__)

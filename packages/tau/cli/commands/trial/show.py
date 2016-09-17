@@ -53,9 +53,7 @@ class TrialShowCommand(AbstractCommand):
         return parser
 
     def main(self, argv):
-        args = self.parser.parse_args(args=argv)
-        self.logger.debug('Arguments: %s', args)
-    
+        args = self.parse_args(argv)
         proj_ctrl = Project.controller()
         proj = proj_ctrl.selected()
         expr = proj.experiment()

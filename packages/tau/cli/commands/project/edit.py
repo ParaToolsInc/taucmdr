@@ -162,9 +162,7 @@ class ProjectEditCommand(EditCommand):
 
     def main(self, argv):
         from tau.cli.commands.project.list import COMMAND as project_list
-
-        args = self.parser.parse_args(args=argv)
-        self.logger.debug('Arguments: %s', args)
+        args = self.parse_args(argv)
     
         tar_ctrl = Target.controller(PROJECT_STORAGE)
         app_ctrl = Application.controller(PROJECT_STORAGE)

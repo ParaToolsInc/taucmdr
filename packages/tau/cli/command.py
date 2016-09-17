@@ -57,6 +57,7 @@ class AbstractCommand(object):
         self.summary_fmt = summary_fmt
         self.help_page_fmt = help_page_fmt
         self.group = group
+        self._parser = None
         
     def __str__(self):
         return self.command
@@ -71,12 +72,9 @@ class AbstractCommand(object):
 
     @property
     def parser(self):
-        # pylint: disable=attribute-defined-outside-init
-        try:
-            return self._parser
-        except AttributeError:
+        if self._parser is None:
             self._parser = self.construct_parser()
-            return self._parser
+        return self._parser
         
     @property
     def usage(self):
@@ -85,6 +83,11 @@ class AbstractCommand(object):
     @abstractmethod
     def construct_parser(self):
         """Construct a command line argument parser."""
+
+    def parse_args(self, argv):
+        args = self.parser.parse_args(args=argv)
+        self.logger.debug('%s args: %s', self.command, args)
+        return args
 
     @abstractmethod
     def main(self, argv):

@@ -25,26 +25,20 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""``tau project export`` subcommand."""
+"""``tau experiment list`` subcommand."""
 
-from pprint import pprint
-from tau import EXIT_SUCCESS
-from tau.cli import arguments
-from tau.cli.command import AbstractCommand
-from tau.model.project import Project
+from tau import util
+from tau.cli.cli_view import ListCommand
+from tau.model.experiment import Experiment
 
+def data_size(expr):
+    return util.human_size(sum(int(trial.get('data_size', 0)) for trial in expr['trials']))
 
-class ProjectExportCommand(AbstractCommand):
-    
-    def construct_parser(self):
-        usage = self.command
-        parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
-        return parser
+DASHBOARD_COLUMNS = [{'header': 'Name', 'value': 'name', 'align': 'r'},
+                     {'header': 'Trials', 'function': lambda x: len(x['trials'])},
+                     {'header': 'Data Size', 'function': data_size},
+                     {'header': 'Target', 'function': lambda x: x['target']['name']},
+                     {'header': 'Application', 'function': lambda x: x['application']['name']},
+                     {'header': 'Measurement', 'function': lambda x: x['measurement']['name']}]
 
-    def main(self, argv):
-        args = self.parse_args(argv)
-        ctrl = Project.controller()
-        pprint(ctrl.export_records(eids=[proj.eid for proj in ctrl.all()]))
-        return EXIT_SUCCESS
-
-COMMAND = ProjectExportCommand(__name__, summary_fmt="Export project configurations.")
+COMMAND = ListCommand(Experiment, __name__, dashboard_columns=DASHBOARD_COLUMNS, include_storage_flag=False)

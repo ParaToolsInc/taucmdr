@@ -154,6 +154,13 @@ class UniqueAttributeError(ModelError):
         super(UniqueAttributeError, self).__init__(model, "A record with one of '%s' already exists" % unique)
 
 
+class ImmutableRecordError(ConfigurationError):
+    """Indicates that a data record cannot be modified.""" 
+
+class IncompatibleRecordError(ConfigurationError):
+    """Indicates that a pair of data records are incompatible.""" 
+
+
 def excepthook(etype, value, tb):
     """Exception handler for any uncaught exception (except SystemExit).
     

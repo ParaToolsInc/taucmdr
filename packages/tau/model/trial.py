@@ -239,18 +239,17 @@ class Trial(Model):
         experiment = self.populate('experiment')
         return os.path.join(experiment.prefix, str(self['number']))
 
-    def on_create(self):
+    def after_create(self):
         try:
             util.mkdirp(self.prefix)
         except Exception as err:
             raise ConfigurationError('Cannot create directory %r: %s' % (self.prefix, err),
                                      'Check that you have `write` access')
 
-    def on_delete(self):
-        # pylint: disable=broad-except
+    def before_delete(self):
         try:
             util.rmtree(self.prefix)
-        except Exception as err:
+        except Exception as err:  # pylint: disable=broad-except
             if os.path.exists(self.prefix):
                 LOGGER.error("Could not remove trial data at '%s': %s", self.prefix, err)
 

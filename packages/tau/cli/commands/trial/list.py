@@ -32,7 +32,7 @@ from tau.cli.cli_view import ListCommand
 from tau.model.trial import Trial
 
 
-DASHBOARD_COLUMNS = [{'header': 'Experiment', 'function': lambda x: x['experiment'].title()},
+DASHBOARD_COLUMNS = [{'header': 'Experiment', 'function': lambda x: x['experiment']['name']},
                      {'header': 'Number', 'value': 'number'},
                      {'header': 'Data Size', 'function': lambda x: util.human_size(x['data_size'])},
                      {'header': 'Command', 'value': 'command'},

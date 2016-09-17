@@ -35,6 +35,8 @@ import argparse
 import textwrap
 from operator import attrgetter
 from tau import logger, util
+from tau.cf.storage.levels import ORDERED_LEVELS, STORAGE_LEVELS
+
 
 SUPPRESS = argparse.SUPPRESS
 """Suppress attribute creation in parsed argument namespace."""
@@ -44,6 +46,8 @@ REMAINDER = argparse.REMAINDER
 
 STORAGE_LEVEL_FLAG = "@"
 """Command line flag that indicates storage level."""
+
+_DEFAULT_STORAGE_LEVEL = ORDERED_LEVELS[0].name
 
 
 class MutableGroupArgumentParser(argparse.ArgumentParser):
@@ -338,8 +342,8 @@ def get_parser_from_model(model, use_defaults=True, prog=None, usage=None, descr
         group.add_argument(*flags, **options)
     return parser
 
-def add_storage_flags(parser, action, object_name, plural=False, exclusive=True):
-    """Add flags to indicate target storage container.
+def add_storage_flag(parser, action, object_name, plural=False, exclusive=True):
+    """Add flag to indicate target storage container.
     
     Args:
         parser (MutableGroupArgumentParser): The parser to modify.
@@ -348,17 +352,22 @@ def add_storage_flags(parser, action, object_name, plural=False, exclusive=True)
         plural (bool): Pluralize help message if True.
         exclusive (bool): Only one storage level may be specified if True.
     """
-    from tau.cf.storage.levels import ORDERED_LEVELS
     help_parts = ["%s %ss" if plural else "%s the %s",
                   " at the specified storage ",
                   "level" if exclusive else "levels"]
     help_str = "".join(help_parts) % (action, object_name)
     nargs = 1 if exclusive else '+'
     choices = [container.name for container in ORDERED_LEVELS]
-    default = [ORDERED_LEVELS[0].name]
     parser.add_argument('-'+STORAGE_LEVEL_FLAG,
                         help=help_str,
                         metavar="<level>", 
                         nargs=nargs, 
                         choices=choices,
-                        default=default)
+                        default=[_DEFAULT_STORAGE_LEVEL])
+
+def parse_storage_flag(args):
+    try:
+        names = getattr(args, STORAGE_LEVEL_FLAG)
+    except AttributeError:
+        names = [_DEFAULT_STORAGE_LEVEL]
+    return [STORAGE_LEVELS[name] for name in names]

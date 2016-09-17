@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2016, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -25,26 +25,4 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""``tau project export`` subcommand."""
 
-from pprint import pprint
-from tau import EXIT_SUCCESS
-from tau.cli import arguments
-from tau.cli.command import AbstractCommand
-from tau.model.project import Project
-
-
-class ProjectExportCommand(AbstractCommand):
-    
-    def construct_parser(self):
-        usage = self.command
-        parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
-        return parser
-
-    def main(self, argv):
-        args = self.parse_args(argv)
-        ctrl = Project.controller()
-        pprint(ctrl.export_records(eids=[proj.eid for proj in ctrl.all()]))
-        return EXIT_SUCCESS
-
-COMMAND = ProjectExportCommand(__name__, summary_fmt="Export project configurations.")

@@ -28,7 +28,7 @@
 """TODO: FIXME: Docs"""
 
 from tau import logger
-from tau.error import ConfigurationError, ModelError, InternalError
+from tau.error import IncompatibleRecordError, ModelError, InternalError
 from tau.cf.storage import StorageRecord
 from tau.mvc.controller import Controller
 
@@ -135,18 +135,26 @@ class Model(StorageRecord):
         """            
         return self.element.get(key, self.attributes[key]['default'])
 
-    def on_create(self):
-        """Callback to be invoked when a new data record is created.""" 
-        self.check_compatibility(self)
+    @classmethod
+    def before_create(cls, storage, data):
+        """Callback to be invoked before a new data record is created.""" 
 
-    def on_update(self): 
+    def after_create(self):
+        """Callback to be invoked after a new data record is created.""" 
+
+    def before_update(self): 
         """Callback to be invoked when a data record is updated."""
-        self.check_compatibility(self)
 
-    def on_delete(self): 
+    def after_update(self): 
+        """Callback to be invoked when a data record is updated."""
+
+    def before_delete(self): 
         """Callback to be invoked when a data record is deleted."""
-        pass
-    
+
+    @classmethod
+    def after_delete(cls, storage, data): 
+        """Callback to be invoked when a data record is deleted."""
+
     def populate(self, attribute=None, defaults=False):
         """Shorthand for ``self.controller(self.storage).populate(self, attribute, defaults)``.
         
@@ -311,7 +319,7 @@ class Model(StorageRecord):
             * checked_value (str): The required or desired value of the attribute we are checking for compatibility.
                                    Only used by `attr_eq` and `attr_ne`.
         
-        The `condition` callable raises a :any:`ConfigurationError` if the compared attributes 
+        The `condition` callable raises a :any:`IncompatibleRecordError` if the compared attributes 
         are fatally incompatibile, i.e. the user's operation is guaranteed to fail with the chosen 
         records. It may emit log messages to indicate that the records are not perfectly compatible 
         but that the user's operation is still likely to succeed with the chosen records.
@@ -374,7 +382,7 @@ class Model(StorageRecord):
     def require(cls, *args):
         """Constructs a compatibility condition to enforce required conditions.
         
-        The condition will raise a :any:`ConfigurationError` if the specified attribute is
+        The condition will raise a :any:`IncompatibleRecordError` if the specified attribute is
         undefined or not equal to the specified value (if given).
         
         Args:
@@ -399,14 +407,14 @@ class Model(StorageRecord):
         def attr_undefined(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
             lhs_name = lhs.name.lower()
             rhs_name = rhs.name.lower()
-            raise ConfigurationError("%s = %s in %s requires %s be defined in %s but it is undefined" % 
-                                     (lhs_attr, lhs_value, lhs_name, rhs_attr, rhs_name))
+            raise IncompatibleRecordError("%s = %s in %s requires %s be defined in %s but it is undefined" % 
+                                          (lhs_attr, lhs_value, lhs_name, rhs_attr, rhs_name))
         def attr_ne(lhs, lhs_attr, lhs_value, rhs, rhs_attr, checked_value):
             lhs_name = lhs.name.lower()
             rhs_name = rhs.name.lower()
             rhs_value = rhs[rhs_attr]
-            raise ConfigurationError("%s = %s in %s requires %s = %s in %s but it is %s" % 
-                                     (lhs_attr, lhs_value, lhs_name, rhs_attr, checked_value, rhs_name, rhs_value))
+            raise IncompatibleRecordError("%s = %s in %s requires %s = %s in %s but it is %s" % 
+                                          (lhs_attr, lhs_value, lhs_name, rhs_attr, checked_value, rhs_name, rhs_value))
         return cls.construct_condition(args, attr_undefined=attr_undefined, attr_ne=attr_ne)
 
     @classmethod
@@ -490,7 +498,7 @@ class Model(StorageRecord):
     def exclude(cls, *args):
         """Constructs a compatibility condition to enforce required conditions.
         
-        The condition will raise a :any:`ConfigurationError` if the specified attribute is
+        The condition will raise a :any:`IncompatibleRecordError` if the specified attribute is
         defined or equal to the specified value (if given).
         
         Args:
@@ -515,13 +523,13 @@ class Model(StorageRecord):
         def attr_defined(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
             lhs_name = lhs.name.lower()
             rhs_name = rhs.name.lower()
-            raise ConfigurationError("%s = %s in %s requires %s be undefined in %s" %
-                                     (lhs_attr, lhs_value, lhs_name, rhs_attr, rhs_name))
+            raise IncompatibleRecordError("%s = %s in %s requires %s be undefined in %s" %
+                                          (lhs_attr, lhs_value, lhs_name, rhs_attr, rhs_name))
         def attr_eq(lhs, lhs_attr, lhs_value, rhs, rhs_attr, checked_value):
             lhs_name = lhs.name.lower()
             rhs_name = rhs.name.lower()
-            raise ConfigurationError("%s = %s in %s is incompatible with %s = %s in %s" %
-                                     (lhs_attr, lhs_value, lhs_name, rhs_attr, checked_value, rhs_name))
+            raise IncompatibleRecordError("%s = %s in %s is incompatible with %s = %s in %s" %
+                                          (lhs_attr, lhs_value, lhs_name, rhs_attr, checked_value, rhs_name))
         return cls.construct_condition(args, attr_defined=attr_defined, attr_eq=attr_eq)        
 
     def check_compatibility(self, rhs):
@@ -552,7 +560,7 @@ class Model(StorageRecord):
             rhs (Model): Check compatibility with this data record.
             
         Raises:
-            ConfigurationError: The two records are not compatible.
+            IncompatibleRecordError: The two records are not compatible.
 
         Examples:
 
@@ -575,7 +583,7 @@ class Model(StorageRecord):
                 louis = ProgramManager({'holding_long_meeting': True})
                 keith = Roommate({'steals_food': True})
                 
-            These expressions raise :any:`ConfigurationError`::
+            These expressions raise :any:`IncompatibleRecordError`::
             
                 bob.check_compatibility(world_o_cheese)   # Because have_cheese == False
                 bob.check_compatibility(keith)            # Because steals_food == True

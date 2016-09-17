@@ -110,8 +110,7 @@ class HelpCommand(AbstractCommand):
         return parser
 
     def main(self, argv):
-        args = self.parser.parse_args(args=argv)
-        self.logger.debug('Arguments: %s', args)
+        args = self.parse_args(argv)
         if not args.command:
             return self.exit_with_help([])
     

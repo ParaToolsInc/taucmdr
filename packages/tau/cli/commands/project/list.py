@@ -27,15 +27,14 @@
 #
 """``tau measurement`` subcommand."""
 
-from texttable import Texttable
-from tau import logger, util
-from tau.cli.arguments import STORAGE_LEVEL_FLAG
+from tau import util
+from tau.cli import arguments
 from tau.cli.cli_view import ListCommand
+from tau.cli.commands.select import COMMAND as select_cmd
 from tau.cli.commands.target.list import COMMAND as target_list_cmd
 from tau.cli.commands.application.list import COMMAND as application_list_cmd
 from tau.cli.commands.measurement.list import COMMAND as measurement_list_cmd
-from tau.cli.commands.select import COMMAND as select_cmd
-from tau.cf.storage.levels import STORAGE_LEVELS
+from tau.cli.commands.experiment.list import COMMAND as experiment_list_cmd
 from tau.model.project import Project, ExperimentSelectionError
 
 
@@ -52,35 +51,6 @@ class ProjectListCommand(ListCommand):
                              {'header': '# Experiments', 'function': lambda x: len(x['experiments'])}]
         super(ProjectListCommand, self).__init__(Project, __name__, dashboard_columns=dashboard_columns)
 
-    def _print_experiments(self, proj):
-        parts = []
-        experiments = proj.populate('experiments')
-        if not experiments:
-            label = util.color_text('%s: No experiments' % proj['name'], color='red', attrs=['bold'])
-            msg = "%s.  Use `%s` to create a new experiment." % (label, select_cmd) 
-            parts.append(msg)
-        if experiments:
-            title = util.hline("Experiments in project '%s'" % proj['name'], 'cyan')
-            header_row = ['Experiment', 'Trials', 'Data Size']
-            rows = [header_row]
-            for expr in experiments:
-                rows.append([expr.title(), len(expr['trials']), util.human_size(expr.data_size())])
-            table = Texttable(logger.LINE_WIDTH)
-            table.add_rows(rows)
-            parts.extend([title, table.draw(), ''])
-        try:
-            expr = proj.experiment()
-        except ExperimentSelectionError:
-            pass
-        else:
-            if expr:
-                current = util.color_text('Current experiment: ', 'cyan') + expr.title()
-            else:
-                current = (util.color_text('No experiment: ', 'red') + 
-                           ('Use `%s` to configure a new experiment' % select_cmd))  
-            parts.append(current)
-        print '\n'.join(parts)
-
     def main(self, argv):
         """Command program entry point.
 
@@ -90,10 +60,9 @@ class ProjectListCommand(ListCommand):
         Returns:
             int: Process return code: non-zero if a problem occurred, 0 otherwise
         """
-        args = self.parser.parse_args(args=argv)
-        self.logger.debug('Arguments: %s', args)
+        args = self.parse_args(argv)
+        levels = arguments.parse_storage_flag(args)
         keys = getattr(args, 'keys', [])
-        levels = getattr(args, STORAGE_LEVEL_FLAG, [])
         single = (len(keys) == 1 and len(levels) == 1)
 
         if single:
@@ -102,29 +71,36 @@ class ProjectListCommand(ListCommand):
             target_list_cmd.title_fmt = "Targets in project '%s'" % proj_name
             application_list_cmd.title_fmt = "Applications in project '%s'" % proj_name
             measurement_list_cmd.title_fmt = "Measurements in project '%s'" % proj_name
+            experiment_list_cmd.title_fmt = "Experiments in project '%s'" % proj_name
 
         retval = super(ProjectListCommand, self).main(argv)
 
         if single:
-            storage = STORAGE_LEVELS[levels[0]]
+            storage = levels[0]
             ctrl = Project.controller(storage)
             proj = ctrl.one({'name': keys[0]})
             for cmd, prop in ((target_list_cmd, 'targets'),
                               (application_list_cmd, 'applications'),
-                              (measurement_list_cmd, 'measurements')):
-                try:
-                    records = proj.populate(prop)
-                except:     # pylint: disable=bare-except
-                    return retval
+                              (measurement_list_cmd, 'measurements'),
+                              (experiment_list_cmd, 'experiments')):
+                primary_key = proj.attributes[prop]['collection'].key_attribute
+                records = proj.populate(prop)
                 if records:
-                    cmd.main([record['name'] for record in records])
+                    cmd.main([record[primary_key] for record in records])
                 else:
                     label = util.color_text('%s: No %s' % (proj['name'], prop), color='red', attrs=['bold'])
                     print "%s.  Use `%s` to view available %s.\n" % (label, cmd, prop)
-            self._print_experiments(proj)
             if proj.get('force_tau_options', False):
                 self.logger.warning("Project '%s' will add '%s' to TAU_OPTIONS without error checking.", 
                                     proj['name'], ' '.join(proj['force_tau_options']))
+            try:
+                expr = proj.experiment()
+            except ExperimentSelectionError:
+                print (util.color_text('No selected experiment: ', 'red') + 
+                       'Use `%s` to create or select an experiment.' % select_cmd)
+            else:
+                print util.color_text('Selected experiment: ', 'cyan') + expr['name']
+
         return retval
 
 COMMAND = ProjectListCommand()

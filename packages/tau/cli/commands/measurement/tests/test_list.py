@@ -48,6 +48,7 @@ class ListTest(tests.TestCase):
 
     def test_wrongname(self):
         self.reset_project_storage()
-        _, stdout, _ = self.exec_command(LIST_COMMAND, ['INVALID_NAME'])
-        self.assertIn('No measurements', stdout)
+        stdout, stderr = self.assertNotCommandReturnValue(0, LIST_COMMAND, ['INVALID_NAME'])
+        self.assertIn("No measurement with name='INVALID_NAME'", stderr)
+        self.assertFalse(stdout)
 

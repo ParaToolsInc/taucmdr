@@ -34,7 +34,7 @@ measurements allow us to take different views of the application's performance.
 """
 
 import os
-from tau.error import ConfigurationError
+from tau.error import ConfigurationError, IncompatibleRecordError
 from tau.mvc.model import Model
 from tau.cf.compiler import INTEL_COMPILERS, GNU_COMPILERS
 from tau.cf.target import host, DARWIN_OS
@@ -374,12 +374,11 @@ class Measurement(Model):
     
     __attributes__ = attributes
 
-    def on_create(self):
-        super(Measurement, self).on_create()
+    def after_create(self):
         def get_flag(key):
             return self.attributes[key]['argparse']['flags'][0]
 
-        if not (self['profile'] or self['trace']):
+        if self['profile'] == 'none' and self['trace'] == 'none':
             profile_flag = get_flag('profile')
             trace_flag = get_flag('trace')
             raise ConfigurationError("Profiling, tracing, or both must be enabled",
@@ -403,3 +402,25 @@ class Measurement(Model):
                 raise ConfigurationError("Selective instrumentation file '%s' not found" % select_file)
 
 
+    def before_update(self):
+        from tau.error import ImmutableRecordError
+        from tau.model.experiment import Experiment
+        expr_ctrl = Experiment.controller()
+        found = expr_ctrl.search({'measurement': self.eid})
+        used_by = [expr['name'] for expr in found if expr.data_size() > 0]
+        if used_by:
+            raise ImmutableRecordError("Measurement '%s' cannot be modified because "
+                                       "it is used by these experiments: %s" % (self['name'], ', '.join(used_by)))
+
+    def after_update(self):
+        from tau.model.experiment import Experiment
+        expr_ctrl = Experiment.controller()
+        used_by = expr_ctrl.search({'measurement': self.eid})
+        for expr in used_by:
+            try:
+                expr.verify()
+            except IncompatibleRecordError as err:
+                raise ConfigurationError("Changing measurement '%s' in this way will create an invalid condition "
+                                         "in experiment '%s':\n    %s." % (self['name'], expr['name'], err),
+                                         "Delete experiment '%s' and try again." % expr['name'])
+        

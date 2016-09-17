@@ -74,8 +74,10 @@ class MainCommand(AbstractCommand):
                   "  %(command)s <program>   Gather data from a program",
                   "                  - Example: %(command)s ./a.out",
                   "                  - Alias for '%(command)s trial create <program>'",
+                  "  %(command)s select      Select configuration objects to create a new experiment",
+                  "                  - Alias for '%(command)s experiment create'",
                   "  %(command)s show        Show data from the most recent trial",
-                  "                  - An alias for '%(command)s trial show'",
+                  "                  - Alias for '%(command)s trial show'",
                   "",
                   "See '%(command)s help <subcommand>' for more information on <subcommand>."]
         parser = arguments.get_parser(prog=self.command,
@@ -117,8 +119,7 @@ class MainCommand(AbstractCommand):
         Returns:
             int: Process return code: non-zero if a problem occurred, 0 otherwise
         """
-        args = self.parser.parse_args(args=argv)
-
+        args = self.parse_args(argv)
         cmd = args.command
         cmd_args = args.options
         
@@ -144,7 +145,7 @@ class MainCommand(AbstractCommand):
         elif trial_create_command.is_compatible(cmd):
             shortcut = ['trial', 'create']
             cmd_args = [cmd] + cmd_args
-        elif cmd == 'show':
+        elif 'show'.startswith(cmd):
             shortcut = ['trial', 'show']
         if shortcut:
             LOGGER.debug('Trying shortcut: %s', shortcut)

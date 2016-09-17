@@ -46,9 +46,7 @@ class TrialDeleteCommand(DeleteCommand):
         return parser
 
     def main(self, argv):
-        args = self.parser.parse_args(args=argv)
-        self.logger.debug('Arguments: %s', args)
-    
+        args = self.parse_args(argv)
         proj_ctrl = Project.controller()
         trial_ctrl = Trial.controller(proj_ctrl.storage)
         proj = proj_ctrl.selected()

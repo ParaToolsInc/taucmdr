@@ -45,5 +45,6 @@ class ListTest(tests.TestCase):
 
     def test_wrongname(self):
         self.reset_project_storage(project_name='proj1')
-        _, stdout, _ = self.exec_command(LIST_COMMAND, ['targ2'])
-        self.assertIn('No targets', stdout)
+        stdout, stderr = self.assertNotCommandReturnValue(0, LIST_COMMAND, ['INVALID_NAME'])
+        self.assertIn("No target with name='INVALID_NAME'", stderr)
+        self.assertFalse(stdout)
