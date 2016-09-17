@@ -59,5 +59,6 @@ class ListTest(tests.TestCase):
 
     def test_wrongnumber(self):
         self.reset_project_storage(project_name='proj1')
-        _, stdout, _ = self.exec_command(LIST_COMMAND, ['0'])
-        self.assertIn('No trials', stdout)
+        stdout, stderr = self.assertNotCommandReturnValue(0, LIST_COMMAND, ['0'])
+        self.assertIn("No trial with number='0'", stderr)
+        self.assertFalse(stdout)

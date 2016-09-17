@@ -32,11 +32,7 @@ Functions used for unit tests of select.py.
 
 
 from tau import tests
-from tau.cli.commands.experiment.select import COMMAND as experiment_select_cmd
 
+@tests.not_implemented
 class SelectTest(tests.TestCase):
-    
-    def test_select(self):
-        self.reset_project_storage(target_name='targ1', app_name='app1')
-        self.assertCommandReturnValue(0, experiment_select_cmd, ['targ1-app1-profile'])
-
+    pass
