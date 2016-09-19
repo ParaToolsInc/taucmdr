@@ -337,7 +337,7 @@ def attributes():
             'type': 'string',
             'description': 'path or URL to a Score-P installation or archive file',
             'default': 'download',
-            'argparse': {'flags': ('--score-p',),
+            'argparse': {'flags': ('--scorep',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction}
