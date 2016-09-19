@@ -173,9 +173,13 @@ class TargetCreateCommand(CreateCommand):
                     self.logger.info("  --%s='%s'", attr.replace("_source", ""), path)
 
     def _check_default_compilers(self, family):
-        try:
-            InstalledCompilerFamily(family)
-        except ConfigurationError:
+        found = {}
+        for role, complist in family.members.iteritems():
+            for comp in complist:
+                if util.which(comp.command):
+                    found[role] = comp
+                    break
+        if not found:
             return "None"
         else:
             return family.name
