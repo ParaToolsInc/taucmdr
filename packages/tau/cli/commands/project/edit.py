@@ -40,7 +40,7 @@ from tau.model.measurement import Measurement
 class ProjectEditCommand(EditCommand):
     """``tau project edit`` subcommand."""
 
-    def construct_parser(self):
+    def _construct_parser(self):
         usage = "%s <project_name> [arguments]" % self.command
         parser = arguments.get_parser_from_model(self.model,
                                                  use_defaults=False,
@@ -162,7 +162,7 @@ class ProjectEditCommand(EditCommand):
 
     def main(self, argv):
         from tau.cli.commands.project.list import COMMAND as project_list
-        args = self.parse_args(argv)
+        args = self._parse_args(argv)
     
         tar_ctrl = Target.controller(PROJECT_STORAGE)
         app_ctrl = Application.controller(PROJECT_STORAGE)

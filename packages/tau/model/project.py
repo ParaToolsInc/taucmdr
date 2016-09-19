@@ -167,26 +167,33 @@ class Project(Model):
     __controller__ = ProjectController
     
     @classmethod
+    def _check_rebuild_required(cls, model_attr, old, new):
+        from tau.model.experiment import Experiment
+        model_cls = Experiment.attributes[model_attr]['model']
+        model_new = new.populate(model_attr)
+        model_old = old.populate(model_attr)
+        changed = {}
+        for attr, props in model_cls.attributes.iteritems():
+            if 'on_change' in props:
+                old_value = model_old.get(attr, None)
+                new_value = model_new.get(attr, None)
+                if old_value != new_value:
+                    changed[attr] = (old_value, new_value)
+        return changed
+    
+    @classmethod
     def on_experiment_change(cls, model, attr, new_value):
         from tau.model.experiment import Experiment
         old_value = model.get(attr, None)
         if old_value and new_value:
             new = Experiment.controller().one(new_value)
             old = Experiment.controller().one(old_value)
+            rebuild_required = {}
             for model_attr in 'target', 'application', 'measurement':
                 if old[model_attr] != new[model_attr]:
-                    rebuild_required = {}
-                    model_cls = Experiment.attributes[model_attr]['model']
-                    model_new = new.populate(model_attr)
-                    model_old = old.populate(model_attr)
-                    for attr, props in model_cls.attributes.iteritems():
-                        if 'on_change' in props:
-                            old_value = model_old.get(attr, None)
-                            new_value = model_new.get(attr, None)
-                            if old_value != new_value:
-                                rebuild_required[attr] = (old_value, new_value)
-                    if rebuild_required:
-                        cls.controller(model.storage).push_to_topic('rebuild_required', rebuild_required)
+                    rebuild_required.update(cls._check_rebuild_required(model_attr, old, new))
+            if rebuild_required:
+                cls.controller(model.storage).push_to_topic('rebuild_required', rebuild_required)
 
     @classmethod
     def controller(cls, storage=PROJECT_STORAGE):

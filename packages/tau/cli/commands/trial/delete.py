@@ -37,7 +37,7 @@ from tau.model.project import Project
 class TrialDeleteCommand(DeleteCommand):
     """``tau trial delete`` subcommand."""
 
-    def construct_parser(self):
+    def _construct_parser(self):
         usage = "%s <trial_number> [arguments]" % self.command
         parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
         parser.add_argument('number', 
@@ -46,7 +46,7 @@ class TrialDeleteCommand(DeleteCommand):
         return parser
 
     def main(self, argv):
-        args = self.parse_args(argv)
+        args = self._parse_args(argv)
         proj_ctrl = Project.controller()
         trial_ctrl = Trial.controller(proj_ctrl.storage)
         proj = proj_ctrl.selected()

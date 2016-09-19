@@ -29,7 +29,7 @@
 
 Functions used for unit tests of create.py.
 """
-
+#pylint: disable=missing-docstring 
 
 import unittest
 from tau import tests, util

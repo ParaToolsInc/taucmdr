@@ -29,6 +29,7 @@
 
 Functions used for unit tests of configuration.py.
 """
+#pylint: disable=missing-docstring
 
 from tau import tests, configuration
 from tau.cf.storage.levels import PROJECT_STORAGE, ORDERED_LEVELS

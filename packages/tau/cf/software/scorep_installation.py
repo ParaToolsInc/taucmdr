@@ -45,6 +45,8 @@ LIBRARIES = {None: ['libcube4.a']}
 
 class ScorepInstallation(AutotoolsInstallation):
     """Downloads ScoreP."""
+    # Settle down pylint.  Score-P is complex so we need a few extra arguments.
+    # pylint: disable=too-many-arguments
 
     def __init__(self, sources, target_arch, target_os, compilers, 
                  use_mpi, use_shmem, use_binutils, use_libunwind, use_papi, use_pdt):

@@ -36,14 +36,14 @@ from tau.cli.command import AbstractCommand
 class ProjectSelectCommand(AbstractCommand):
     """``tau project select`` subcommand."""
 
-    def construct_parser(self):
+    def _construct_parser(self):
         usage = "%s project" % self.command
         parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
         parser.add_argument('project', help="Project configuration name", metavar='<name>')
         return parser
 
     def main(self, argv):
-        args = self.parse_args(argv)
+        args = self._parse_args(argv)
         proj_ctrl = Project.controller()
         name = args.project
         proj = proj_ctrl.one({"name": name})

@@ -25,7 +25,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""``tau measurement`` subcommand."""
+"""``tau measurement edit`` subcommand."""
 
 import os
 from tau.error import ImmutableRecordError, IncompatibleRecordError
@@ -37,9 +37,10 @@ from tau.model.experiment import Experiment
 
 
 class MeasurementEditCommand(EditCommand):
+    """``tau measurement edit`` subcommand."""
     
-    def parse_args(self, argv):
-        args = super(MeasurementEditCommand, self).parse_args(argv)
+    def _parse_args(self, argv):
+        args = super(MeasurementEditCommand, self)._parse_args(argv)
         if hasattr(args, 'select_file'):
             absolute_path = os.path.abspath(args.select_file)
             if not os.path.exists(absolute_path):
@@ -47,9 +48,9 @@ class MeasurementEditCommand(EditCommand):
             args.select_file = absolute_path
         return args
 
-    def update_record(self, store, data, key):
+    def _update_record(self, store, data, key):
         try:
-            retval = super(MeasurementEditCommand, self).update_record(store, data, key)
+            retval = super(MeasurementEditCommand, self)._update_record(store, data, key)
         except (ImmutableRecordError, IncompatibleRecordError) as err:
             err.hints = ["Use `%s` to create a modified copy of the measurement" % measurement_copy_cmd,
                          "Use `%s` to delete the experiments." % experiment_delete_cmd]

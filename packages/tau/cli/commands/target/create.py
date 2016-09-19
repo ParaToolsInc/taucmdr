@@ -30,7 +30,6 @@
 import os
 from tau import util
 from tau.error import ConfigurationError
-from tau.cf.storage.levels import STORAGE_LEVELS
 from tau.cli import arguments
 from tau.cli.cli_view import CreateCommand
 from tau.model.target import Target
@@ -181,8 +180,8 @@ class TargetCreateCommand(CreateCommand):
         else:
             return family.name
 
-    def construct_parser(self):
-        parser = super(TargetCreateCommand, self).construct_parser()
+    def _construct_parser(self):
+        parser = super(TargetCreateCommand, self)._construct_parser()
         group = parser.add_argument_group('host arguments')
         group.add_argument('--compilers',
                            help="select all host compilers automatically from the given family",
@@ -212,7 +211,7 @@ class TargetCreateCommand(CreateCommand):
         return parser
     
     def main(self, argv):
-        args = self.parse_args(argv)
+        args = self._parse_args(argv)
         store = arguments.parse_storage_flag(args)[0]
 
         if hasattr(args, "tau_makefile"):
@@ -228,6 +227,6 @@ class TargetCreateCommand(CreateCommand):
             record = Compiler.controller(store).register(comp)
             data[comp.info.role.keyword] = record.eid
             
-        return super(TargetCreateCommand, self).create_record(store, data)
+        return super(TargetCreateCommand, self)._create_record(store, data)
 
 COMMAND = TargetCreateCommand(Target, __name__)

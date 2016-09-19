@@ -78,7 +78,7 @@ class ProjectCreateCommand(CreateCommand):
                 else:
                     acc.add(found)
     
-    def construct_parser(self):
+    def _construct_parser(self):
         usage = "%s <project_name> [targets] [applications] [measurements] [arguments]" % self.command
         parser = arguments.get_parser_from_model(self.model, prog=self.command, usage=usage, description=self.summary)
         parser.add_argument('impl_targets',
@@ -118,7 +118,7 @@ class ProjectCreateCommand(CreateCommand):
 
 
     def main(self, argv):
-        args = self.parse_args(argv)
+        args = self._parse_args(argv)
         targets = set()
         applications = set()
         measurements = set()

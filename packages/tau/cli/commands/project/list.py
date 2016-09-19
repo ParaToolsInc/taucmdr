@@ -60,7 +60,7 @@ class ProjectListCommand(ListCommand):
         Returns:
             int: Process return code: non-zero if a problem occurred, 0 otherwise
         """
-        args = self.parse_args(argv)
+        args = self._parse_args(argv)
         levels = arguments.parse_storage_flag(args)
         keys = getattr(args, 'keys', [])
         single = (len(keys) == 1 and len(levels) == 1)

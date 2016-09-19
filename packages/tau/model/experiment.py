@@ -99,6 +99,11 @@ class Experiment(Model):
     
     @classmethod
     def select(cls, name):
+        """Changes the selected experiment in the current project.
+        
+        Args:
+            name (str): Name of the experiment to select.
+        """
         proj_ctrl = Project.controller()
         proj = proj_ctrl.selected()
         expr_ctrl = cls.controller()
@@ -114,7 +119,14 @@ class Experiment(Model):
 
     @classmethod
     def rebuild_required(cls):
-        rebuild_required = cls.__controller__.pop_topic('rebuild_required')
+        """Builds a string indicating if an application rebuild is required.
+        
+        Rebuild information is taken from the 'rebuild_required' topic.
+        
+        Returns:
+            str: String indicating why an application rebuild is required.
+        """
+        rebuild_required = cls.controller().pop_topic('rebuild_required')
         if not rebuild_required:
             return 'Experiment may be performed without application rebuild.'
         parts = ["Application rebuild required:"]
@@ -134,6 +146,7 @@ class Experiment(Model):
         return os.path.join(self.populate('project').prefix, self['name'])
     
     def verify(self):
+        """Checks all components of the experiment for mutual compatibility."""
         populated = self.populate()
         proj = populated['project']
         targ = populated['target']

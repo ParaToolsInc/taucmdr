@@ -60,7 +60,7 @@ class MainCommand(AbstractCommand):
         super(MainCommand, self).__init__(__name__, summary_fmt=SUMMARY_FMT, help_page_fmt=HELP_PAGE_FMT)
         self.command = os.path.basename(tau.TAU_SCRIPT)
     
-    def construct_parser(self):
+    def _construct_parser(self):
         try:
             log_default = configuration.get('logging.debug_log')
         except KeyError:
@@ -119,7 +119,7 @@ class MainCommand(AbstractCommand):
         Returns:
             int: Process return code: non-zero if a problem occurred, 0 otherwise
         """
-        args = self.parse_args(argv)
+        args = self._parse_args(argv)
         cmd = args.command
         cmd_args = args.options
         

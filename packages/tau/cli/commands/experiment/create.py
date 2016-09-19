@@ -88,7 +88,7 @@ class ExperimentCreateCommand(AbstractCommand):
         elif len(acc) == 1:
             return acc.pop()
 
-    def construct_parser(self):
+    def _construct_parser(self):
         usage = "%s [target] [application] [measurement] [arguments]" % self.command
         parser = arguments.get_parser_from_model(Experiment, prog=self.command, usage=usage, description=self.summary)
         parser.add_argument('impl_target',
@@ -120,10 +120,10 @@ class ExperimentCreateCommand(AbstractCommand):
                             default=arguments.SUPPRESS)
         return parser
 
-    def _parse_args(self, argv):
+    def _parse_models_from_args(self, argv):
         if not argv:
             self.parser.error("At least one target, application, or measurement must be specified.")
-        args = self.parse_args(argv)
+        args = self._parse_args(argv)
         proj_ctrl = Project.controller()
         proj = proj_ctrl.selected()
         targ, app, meas = self._parse_implicit(args)
@@ -134,7 +134,7 @@ class ExperimentCreateCommand(AbstractCommand):
         return proj, targ, app, meas, name
     
     def main(self, argv):
-        proj, targ, app, meas, name = self._parse_args(argv)
+        proj, targ, app, meas, name = self._parse_models_from_args(argv)
         expr_ctrl = Experiment.controller()
         data = {'name': name}
         matching = expr_ctrl.search(data)

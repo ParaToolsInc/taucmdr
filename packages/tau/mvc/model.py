@@ -36,6 +36,7 @@ LOGGER = logger.get_logger(__name__)
 
 
 class ModelMeta(type):
+    """Constructs model attributes, configures defaults, and establishes relationships.""" 
 
     def __new__(mcs, name, bases, dct):
         if dct['__module__'] != __name__:
@@ -87,8 +88,6 @@ class ModelMeta(type):
 
 class Model(StorageRecord):
     """The "M" in `MVC`_.
-    
-    TODO: Docs
 
     Attributes:
         name (str): Name of the model.

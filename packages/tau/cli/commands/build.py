@@ -49,7 +49,7 @@ class BuildCommand(AbstractCommand):
         """
         return os.path.basename(cmd) in [info.command for info in CompilerInfo.all()]
 
-    def construct_parser(self):
+    def _construct_parser(self):
         parts = ['  %s  %s' % ('{:<15}'.format(comp.command), comp.short_descr) for comp in CompilerInfo.all()]
         epilog = "known compiler commands and their roles:\n%s\n" % '\n'.join(sorted(parts))
         usage = "%s <command> [arguments]" % self.command
@@ -64,7 +64,7 @@ class BuildCommand(AbstractCommand):
         return parser
 
     def main(self, argv):
-        args = self.parse_args(argv)
+        args = self._parse_args(argv)
         proj_ctrl = Project.controller()
         proj = proj_ctrl.selected()
         expr = proj.experiment()

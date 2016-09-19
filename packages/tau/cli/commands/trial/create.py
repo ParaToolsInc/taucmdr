@@ -53,7 +53,7 @@ class TrialCreateCommand(CreateCommand):
         """
         return bool(util.which(cmd))
 
-    def construct_parser(self):
+    def _construct_parser(self):
         usage = "%s [arguments] [--] <command> [command_arguments]" % self.command
         parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
         parser.add_argument('cmd',
@@ -96,7 +96,7 @@ class TrialCreateCommand(CreateCommand):
         return launcher_cmd, application_cmd
 
     def main(self, argv):
-        args = self.parse_args(argv)
+        args = self._parse_args(argv)
         application_cmd = [args.cmd] + args.cmd_args
         try:
             launcher_cmd = args.launcher

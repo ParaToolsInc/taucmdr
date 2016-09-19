@@ -35,15 +35,15 @@ from tau.cli.commands.experiment.select import COMMAND as experiment_select_cmd
 class SelectCommand(ExperimentCreateCommand):
     """``tau select`` subcommand."""
     
-    def construct_parser(self):
-        parser = super(SelectCommand, self).construct_parser()
+    def _construct_parser(self):
+        parser = super(SelectCommand, self)._construct_parser()
         parser.prog = self.command
         parser.usage = "%s [experiment] [target] [application] [measurement] [arguments]" % self.command
         parser.description = self.summary
         return parser
     
     def main(self, argv):
-        args = self.parse_args(argv)
+        args = self._parse_args(argv)
         arg_dict = dict(args.__dict__)
         
         if len(arg_dict) == 1:
@@ -55,7 +55,7 @@ class SelectCommand(ExperimentCreateCommand):
             except ConfigurationError as err:
                 self.logger.debug(err)
 
-        _, _, _, _, name = self._parse_args(argv)
+        _, _, _, _, name = self._parse_models_from_args(argv)
         try:
             super(SelectCommand, self).main(argv)
         except UniqueAttributeError as err:

@@ -238,14 +238,14 @@ class InstalledCompiler(object):
             return None
         wrapped = InstalledCompiler(wrapped_absolute_path, wrapped_info)
         try:
-            self._parse_args(wrapped_args)
+            self._parse_wrapped_args(wrapped_args)
         except IndexError:
             LOGGER.warning("Unexpected output from compiler wrapper '%s'."
                            " TAU will attempt to continue but may fail later on.", self.absolute_path)
             return None
         return wrapped
 
-    def _parse_args(self, args):
+    def _parse_wrapped_args(self, args):
         def parse_flags(idx, flags, acc):
             arg = args[idx]
             for flag in flags:

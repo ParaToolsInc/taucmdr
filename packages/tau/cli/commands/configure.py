@@ -32,14 +32,14 @@ from tau import configuration
 from tau.error import InternalError
 from tau.cli import arguments
 from tau.cli.command import AbstractCommand
-from tau.cf.storage.levels import STORAGE_LEVELS, PROJECT_STORAGE
+from tau.cf.storage.levels import PROJECT_STORAGE
 
 
 
 class ConfigureCommand(AbstractCommand):
     """``tau configure`` subcommand."""
 
-    def construct_parser(self):
+    def _construct_parser(self):
         """Constructs the command line argument parser.
           
         Returns:
@@ -71,7 +71,7 @@ class ConfigureCommand(AbstractCommand):
         return parser
 
     def main(self, argv):
-        args = self.parse_args(argv)
+        args = self._parse_args(argv)
         storage = arguments.parse_storage_flag(args)[0]
         if storage is not PROJECT_STORAGE:
             storage.connect_filesystem()

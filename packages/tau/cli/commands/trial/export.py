@@ -36,7 +36,7 @@ from tau.model.experiment import PROFILE_EXPORT_FORMATS
 class TrialExportCommand(AbstractCommand):
     """``tau trial export`` subcommand."""
     
-    def construct_parser(self):
+    def _construct_parser(self):
         usage = "%s [trial_number] [trial_number] ... [arguments]" % self.command
         parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
         parser.add_argument('--export-location', 
@@ -56,7 +56,7 @@ class TrialExportCommand(AbstractCommand):
         return parser
 
     def main(self, argv):
-        args = self.parse_args(argv)
+        args = self._parse_args(argv)
         proj_ctrl = Project.controller()
         proj = proj_ctrl.selected()
         expr = proj.experiment()

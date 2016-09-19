@@ -73,21 +73,21 @@ class AbstractCommand(object):
     @property
     def parser(self):
         if self._parser is None:
-            self._parser = self.construct_parser()
+            self._parser = self._construct_parser()
         return self._parser
         
     @property
     def usage(self):
         return self.parser.format_help()
 
-    @abstractmethod
-    def construct_parser(self):
-        """Construct a command line argument parser."""
-
-    def parse_args(self, argv):
+    def _parse_args(self, argv):
         args = self.parser.parse_args(args=argv)
         self.logger.debug('%s args: %s', self.command, args)
         return args
+
+    @abstractmethod
+    def _construct_parser(self):
+        """Construct a command line argument parser."""
 
     @abstractmethod
     def main(self, argv):

@@ -29,7 +29,7 @@
 
 Functions used for unit tests of list.py.
 """
-
+#pylint: disable=missing-docstring
 
 import shutil
 import unittest

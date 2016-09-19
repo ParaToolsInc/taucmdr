@@ -36,12 +36,11 @@ from tau.model.project import Project, ProjectSelectionError
 
 class DashboardCommand(AbstractCommand):
     
-    def construct_parser(self):
+    def _construct_parser(self):
         usage = "%s [arguments]" % self.command
         return arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
 
     def main(self, argv):
-        args = self.parse_args(argv)
         subargs = ['--dashboard']
         proj_ctrl = Project.controller()
         print

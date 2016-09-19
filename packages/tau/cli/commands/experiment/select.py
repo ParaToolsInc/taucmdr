@@ -36,14 +36,14 @@ from tau.model.experiment import Experiment
 class ExperimentSelectCommand(AbstractCommand):
     """``tau experiment select`` subcommand."""
 
-    def construct_parser(self):
+    def _construct_parser(self):
         usage = "%s experiment" % self.command
         parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
         parser.add_argument('experiment', help="Experiment name", metavar='<name>')
         return parser
     
     def main(self, argv):
-        args = self.parse_args(argv)
+        args = self._parse_args(argv)
         name = args.experiment
         Experiment.select(name)
         self.logger.info("Selected experiment '%s'.", name)

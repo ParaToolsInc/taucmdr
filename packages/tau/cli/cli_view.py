@@ -70,7 +70,7 @@ class AbstractCliView(AbstractCommand):
 class RootCommand(AbstractCliView):
     """A command with subcommands for actions."""
     
-    def construct_parser(self):
+    def _construct_parser(self):
         usage = "%s <subcommand> [arguments]" % self.command
         epilog = ['', cli.commands_description(self.module_name), '',
                   "See '%s <subcommand> --help' for more information on <subcommand>." % self.command]
@@ -86,7 +86,7 @@ class RootCommand(AbstractCliView):
         return parser
 
     def main(self, argv):
-        args = self.parse_args(argv)
+        args = self._parse_args(argv)
         return cli.execute_command([args.subcommand], args.options, self.module_name)
     
     
@@ -97,7 +97,7 @@ class CreateCommand(AbstractCliView):
         kwargs.setdefault('summary_fmt', "Create %(model_name)s configurations.")
         super(CreateCommand, self).__init__(*args, **kwargs)
 
-    def construct_parser(self):
+    def _construct_parser(self):
         usage = "%s <%s_%s> [arguments]" % (self.command, self.model_name, self.model.key_attribute)
         parser = arguments.get_parser_from_model(self.model,
                                                  prog=self.command,
@@ -107,7 +107,7 @@ class CreateCommand(AbstractCliView):
             arguments.add_storage_flag(parser, "create", self.model_name)
         return parser
     
-    def create_record(self, store, data):
+    def _create_record(self, store, data):
         """Create the model record.
         
         Args:
@@ -142,10 +142,10 @@ class CreateCommand(AbstractCliView):
         return EXIT_SUCCESS
 
     def main(self, argv):
-        args = self.parse_args(argv)
+        args = self._parse_args(argv)
         store = arguments.parse_storage_flag(args)[0]
         data = {attr: getattr(args, attr) for attr in self.model.attributes if hasattr(args, attr)}
-        return self.create_record(store, data)
+        return self._create_record(store, data)
 
 class DeleteCommand(AbstractCliView):
     """Base class for the `delete` subcommand of command line views."""
@@ -154,7 +154,7 @@ class DeleteCommand(AbstractCliView):
         kwargs.setdefault('summary_fmt', "Delete %(model_name)s configurations.")
         super(DeleteCommand, self).__init__(*args, **kwargs)
         
-    def construct_parser(self):
+    def _construct_parser(self):
         key_attr = self.model.key_attribute
         usage = "%s <%s_%s> [arguments]" % (self.command, self.model_name, key_attr)       
         epilog = "WARNING: This cannot be undone."
@@ -169,7 +169,7 @@ class DeleteCommand(AbstractCliView):
             arguments.add_storage_flag(parser, "delete", self.model_name)
         return parser
 
-    def delete_record(self, store, key):
+    def _delete_record(self, store, key):
         key_attr = self.model.key_attribute
         ctrl = self.model.controller(store)
         if not ctrl.exists({key_attr: key}):
@@ -179,10 +179,10 @@ class DeleteCommand(AbstractCliView):
         return EXIT_SUCCESS
     
     def main(self, argv):
-        args = self.parse_args(argv)
+        args = self._parse_args(argv)
         store = arguments.parse_storage_flag(args)[0]
         key = getattr(args, self.model.key_attribute)
-        return self.delete_record(store, key)
+        return self._delete_record(store, key)
 
 
 class EditCommand(AbstractCliView):
@@ -192,7 +192,7 @@ class EditCommand(AbstractCliView):
         kwargs.setdefault('summary_fmt', "Modify %(model_name)s configurations.")
         super(EditCommand, self).__init__(*args, **kwargs)
         
-    def construct_parser(self):
+    def _construct_parser(self):
         key_attr = self.model.key_attribute
         usage = "%s <%s_%s> [arguments]" % (self.command, self.model_name, key_attr)       
         parser = arguments.get_parser_from_model(self.model,
@@ -210,7 +210,7 @@ class EditCommand(AbstractCliView):
             arguments.add_storage_flag(parser, "modify", self.model_name)
         return parser
 
-    def update_record(self, store, data, key):
+    def _update_record(self, store, data, key):
         ctrl = self.model.controller(store)
         key_attr = self.model.key_attribute
         if not ctrl.exists({key_attr: key}):
@@ -218,9 +218,9 @@ class EditCommand(AbstractCliView):
         ctrl.update(data, {key_attr: key})
         self.logger.info("Updated %s '%s'", self.model_name, key)
         return EXIT_SUCCESS
-        
+
     def main(self, argv):
-        args = self.parse_args(argv)
+        args = self._parse_args(argv)
         store = arguments.parse_storage_flag(args)[0]
         data = {attr: getattr(args, attr) for attr in self.model.attributes if hasattr(args, attr)}
         key_attr = self.model.key_attribute
@@ -229,7 +229,7 @@ class EditCommand(AbstractCliView):
         except AttributeError:
             pass
         key = getattr(args, key_attr)
-        return self.update_record(store, data, key)
+        return self._update_record(store, data, key)
 
 
 class ListCommand(AbstractCliView):
@@ -322,7 +322,7 @@ class ListCommand(AbstractCliView):
         self.logger.debug("JSON format")
         return [json.dumps(record.data) for record in records]
 
-    def construct_parser(self):
+    def _construct_parser(self):
         key_str = self.model_name + '_' + self.model.key_attribute
         usage_head = ("%(command)s [%(key_str)s] [%(key_str)s] ... [arguments]" % 
                       {'command': self.command, 'key_str': key_str})
@@ -356,7 +356,7 @@ class ListCommand(AbstractCliView):
             arguments.add_storage_flag(parser, "show", self.model_name, plural=True, exclusive=False)
         return parser
     
-    def list_records(self, storage_levels, keys, style):
+    def _list_records(self, storage_levels, keys, style):
         """Shows record data via `print`.
         
         Args:
@@ -395,11 +395,11 @@ class ListCommand(AbstractCliView):
         return EXIT_SUCCESS
         
     def main(self, argv):
-        args = self.parse_args(argv)
+        args = self._parse_args(argv)
         keys = getattr(args, 'keys', None)
         style = getattr(args, 'style', None) or self.default_style
         storage_levels = arguments.parse_storage_flag(args)
-        return self.list_records(storage_levels, keys, style)
+        return self._list_records(storage_levels, keys, style)
     
     def _retrieve_records(self, ctrl, keys):
         """Retrieve modeled data from the controller.
@@ -480,7 +480,7 @@ class CopyCommand(CreateCommand):
         kwargs.setdefault('summary_fmt', "Copy and modify %(model_name)s configurations.")
         super(CopyCommand, self).__init__(*args, **kwargs)
         
-    def construct_parser(self):
+    def _construct_parser(self):
         key_attr = self.model.key_attribute
         usage = ("%s <%s_%s> <copy_%s> [arguments]" % (self.command, self.model_name, key_attr, key_attr))       
         parser = arguments.get_parser_from_model(self.model,
@@ -497,7 +497,7 @@ class CopyCommand(CreateCommand):
             arguments.add_storage_flag(parser, "copy", self.model_name)
         return parser
 
-    def copy_record(self, store, updates, key):
+    def _copy_record(self, store, updates, key):
         ctrl = self.model.controller(store)
         key_attr = self.model.key_attribute
         matching = ctrl.search({key_attr: key})
@@ -510,10 +510,10 @@ class CopyCommand(CreateCommand):
             found = matching[0]
         data = dict(found)
         data.update(updates)
-        return self.create_record(store, data)
+        return self._create_record(store, data)
 
     def main(self, argv):
-        args = self.parse_args(argv)
+        args = self._parse_args(argv)
         store = arguments.parse_storage_flag(args)[0]
         data = {attr: getattr(args, attr) for attr in self.model.attributes if hasattr(args, attr)}
         key_attr = self.model.key_attribute
@@ -522,5 +522,5 @@ class CopyCommand(CreateCommand):
         except AttributeError:
             pass
         key = getattr(args, key_attr)
-        return self.copy_record(store, data, key)
+        return self._copy_record(store, data, key)
 

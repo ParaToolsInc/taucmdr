@@ -51,7 +51,7 @@ from tau.cf.target import host, DARWIN_OS, IBM_CNK_OS
 class InitializeCommand(AbstractCommand):
     """``tau initialize`` subcommand."""
 
-    def construct_parser(self):
+    def _construct_parser(self):
         """Constructs the command line argument parser.
          
         Returns:
@@ -206,7 +206,7 @@ class InitializeCommand(AbstractCommand):
                          '--measurement', measurement_names[0]])
 
     def main(self, argv):
-        args = self.parse_args(argv)
+        args = self._parse_args(argv)
         if not (args.profile or args.trace or args.sample):
             self.parser.error('You must specify at least one measurement.')
 

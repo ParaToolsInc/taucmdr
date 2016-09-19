@@ -100,7 +100,7 @@ class HelpCommand(AbstractCommand):
         print '\n'.join(parts)
         return EXIT_SUCCESS
 
-    def construct_parser(self):
+    def _construct_parser(self):
         usage_head = "%s <command>|<file> [arguments]" % self.command
         parser = arguments.get_parser(prog=self.command, usage=usage_head, description=self.summary)
         parser.add_argument('command', 
@@ -110,7 +110,7 @@ class HelpCommand(AbstractCommand):
         return parser
 
     def main(self, argv):
-        args = self.parse_args(argv)
+        args = self._parse_args(argv)
         if not args.command:
             return self.exit_with_help([])
     

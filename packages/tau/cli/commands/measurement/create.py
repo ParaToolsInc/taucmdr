@@ -34,8 +34,8 @@ from tau.model.measurement import Measurement
 
 class MeasurementCreateCommand(CreateCommand):
     
-    def parse_args(self, argv):
-        args = super(MeasurementCreateCommand, self).parse_args(argv)
+    def _parse_args(self, argv):
+        args = super(MeasurementCreateCommand, self)._parse_args(argv)
         if hasattr(args, 'select_file'):
             absolute_path = os.path.abspath(args.select_file)
             if not os.path.exists(absolute_path):

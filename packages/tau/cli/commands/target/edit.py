@@ -94,8 +94,8 @@ class TargetEditCommand(EditCommand):
             compilers[role] = InstalledCompiler.probe(absolute_path, role=role)
         return compilers
 
-    def construct_parser(self):
-        parser = super(TargetEditCommand, self).construct_parser()
+    def _construct_parser(self):
+        parser = super(TargetEditCommand, self)._construct_parser()
         group = parser.add_argument_group('host arguments')
         group.add_argument('--compilers',
                            help="select all host compilers automatically from the given family",
@@ -119,9 +119,9 @@ class TargetEditCommand(EditCommand):
                            choices=ShmemCompilerFamily.family_names())
         return parser
     
-    def update_record(self, store, data, key):
+    def _update_record(self, store, data, key):
         try:
-            retval = super(TargetEditCommand, self).update_record(store, data, key)
+            retval = super(TargetEditCommand, self)._update_record(store, data, key)
         except (ImmutableRecordError, IncompatibleRecordError) as err:
             err.hints = ["Use `%s` to create a modified copy of the target" % target_copy_cmd,
                          "Use `%s` to delete the experiments." % experiment_delete_cmd]
@@ -131,7 +131,7 @@ class TargetEditCommand(EditCommand):
         return retval
 
     def main(self, argv):
-        args = self.parse_args(argv)
+        args = self._parse_args(argv)
         store = arguments.parse_storage_flag(args)[0]
         
         compilers = self.parse_compiler_flags(args)
@@ -148,7 +148,7 @@ class TargetEditCommand(EditCommand):
         except AttributeError:
             pass
         key = getattr(args, key_attr)
-        return self.update_record(store, data, key)
+        return self._update_record(store, data, key)
 
 
 COMMAND = TargetEditCommand(Target, __name__)
