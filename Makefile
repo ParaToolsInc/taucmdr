@@ -139,7 +139,7 @@ build: python_check
 install: build
 	$(ECHO)$(PYTHON) setup.py install --force
 	# Add PYTHON_FLAGS to python command line in bin/tau
-	@tail +2 "$(TAU)" > "$(BUILDDIR)/tau.tail"
+	@tail -n +2 "$(TAU)" > "$(BUILDDIR)/tau.tail"
 	@echo `head -1 "$(TAU)"` $(PYTHON_FLAGS) > "$(BUILDDIR)/tau.head"
 	@cat "$(BUILDDIR)/tau.head" "$(BUILDDIR)/tau.tail" > "$(TAU)"
 	@echo
