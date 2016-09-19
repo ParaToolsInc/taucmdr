@@ -226,11 +226,10 @@ class Compiler(Model):
             except KeyError:
                 comp = InstalledCompiler(self['path'], info, uid=self['uid'])
             else:
-                comp = InstalledCompiler(self['path'], info, 
+                comp = InstalledCompiler(self['path'], info, uid=self['uid'], 
                                          wrapped=wrapped.installation_info(probe), 
                                          include_path=self.get('include_path', None), 
                                          library_path=self.get('library_path', None), 
                                          compiler_flags=self.get('compiler_flags', None), 
-                                         libraries=self.get('libraries', None),
-                                         uid=self['uid'])
+                                         libraries=self.get('libraries', None))
         return comp

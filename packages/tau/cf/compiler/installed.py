@@ -67,14 +67,13 @@ class InstalledCompilerCreator(type):
     def __call__(cls, absolute_path, info, **kwargs):
         assert isinstance(absolute_path, basestring) and os.path.isabs(absolute_path)
         assert isinstance(info, CompilerInfo)
+        wrapped_path = kwargs['wrapped'].absolute_path if 'wrapped' in kwargs else None
         try:
-            instance = cls.__instances__[absolute_path, info]
+            instance = cls.__instances__[absolute_path, info, wrapped_path]
         except KeyError: 
-            LOGGER.debug("No cached compiler installation info for '%s'", absolute_path)
             instance = super(InstalledCompilerCreator, cls).__call__(absolute_path, info, **kwargs)
-            cls.__instances__[absolute_path, info] = instance
-        else:
-            LOGGER.debug("Using cached compiler installation info for '%s'", absolute_path)
+            wrapped_path = instance.wrapped.absolute_path if instance.wrapped else None 
+            cls.__instances__[absolute_path, info, wrapped_path] = instance
         return instance
 
 
@@ -99,11 +98,7 @@ class InstalledCompiler(object):
         libraries (list): Additional libraries to link when linking with the wrapped compiler.
     """
     
-    # FIXME: Caching breaks compiler wrapper probing on cori
-    # FIXME: `tau init` with PrgEnv-intel
-    # FIXME: `module swap PrgEnv-intel PrgEnv-gnu`
-    # FIXME: tau cc foo.c # No warnings, Intel TAU config applied to GNU compiler
-    # __metaclass__ = InstalledCompilerCreator
+    __metaclass__ = InstalledCompilerCreator
     
     __instances__ = {}
 
@@ -180,7 +175,7 @@ class InstalledCompiler(object):
     def _probe_wrapper(self):
         if not self.info.family.show_wrapper_flags:
             return None
-        LOGGER.debug("Probing %s '%s' to discover wrapped compiler", self.info.short_descr, self.absolute_path)
+        LOGGER.info("Probing %s '%s'", self.info.short_descr, self.absolute_path)
         cmd = [self.absolute_path] + self.info.family.show_wrapper_flags
         LOGGER.debug("Creating subprocess: %s", cmd)
         try:
