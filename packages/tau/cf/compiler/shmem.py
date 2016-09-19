@@ -76,9 +76,9 @@ class ShmemCompilerFamily(CompilerFamily):
             cls._shmem_preferred = inst
         return inst
 
-SHMEM_CC_ROLE = CompilerRole('SHMEM_CC', 'C with calls to a SHMEM library')
-SHMEM_CXX_ROLE = CompilerRole('SHMEM_CXX', 'C++ with calls to a SHMEM library')
-SHMEM_FC_ROLE = CompilerRole('SHMEM_FC', 'Fortran with calls to a SHMEM library')
+SHMEM_CC_ROLE = CompilerRole('SHMEM_CC', 'SHMEM C')
+SHMEM_CXX_ROLE = CompilerRole('SHMEM_CXX', 'SHMEM C++')
+SHMEM_FC_ROLE = CompilerRole('SHMEM_FC', 'SHMEM Fortran')
 
 OPENSHMEM_SHEM_COMPILERS = ShmemCompilerFamily('OpenSHMEM')
 OPENSHMEM_SHEM_COMPILERS.add(SHMEM_CC_ROLE, 'oshcc')
