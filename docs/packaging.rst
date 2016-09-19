@@ -1,36 +1,6 @@
 Packaging and Releasing TAU Commander
 =====================================
 
-TL;DR
------
-
-Building a new TAU Commander release package is as simple as::
-
-   python setup.py build_release  # Creates build/taucmdr-VERSION.sh
-
-Users install the release with::
-
-   ./taucmdr-VERSION.sh [options]
-
-
--------------------------------------------------------------------------------
-
-
-There are two parts to getting the TAU Commander tool into a user's hands:
-
-:Packaging:
-   Collecting all the TAU Commander Python files into a single archive file called a **distribution**.  Distributions
-   are built via the setup.py script as described below and, like most Python packages, they do not include 
-   dependencies. TAU, PDT, and Python are *not* included in a TAU Commander distribution.  TAU Commander distributions 
-   are not fit for user consumption. [1]_
-
-:Releasing:
-   Bundling a TAU Commander distribution with supporting files and scripts to form a complete software **release**
-   ready for installation by the user.  A release will either include all of TAU Commander's dependencies in the 
-   release itself, or provide scripts or metadata of some kind that ensure the missing dependencies are installed 
-   before TAU Commander is.
-   
-
 setup.py
 --------
 
@@ -40,8 +10,7 @@ setup.py script in the project root directory.  The script has many commands but
 TAU Commander.  The important ones are:
 
 :build:
-   Build a new TAU Commander distribution in the ``build`` directory. 
-   Use this to see what's included in the distribution.
+   Build everything needed for a new TAU Commander installation in the ``build`` directory. 
 
 :build_sphinx:
    Rebuild TAU Commander developer documentation (which you are currently reading) in the ``build/sphinx`` directory.
@@ -52,16 +21,12 @@ TAU Commander.  The important ones are:
    Run all unit tests and pylint.
    
 :install:
-   Install a TAU Commander distribution. **NEVER** use ``python setup.py install`` directly!  TAU Commander must have 
+   Install a TAU Commander distribution. End users must **NEVER** use ``python setup.py install``!  TAU Commander needs
    its own, private, un-shared Python installation to avoid environment contamination when profiling a user's code.  
    For example, if the user's Python has a package named "tau" installed in it then both TAU Commander and the user's 
    code will break.  The top-level Makefile will call ``python setup.py install`` with appropriate options after 
-   installing a pristine Python just for TAU Commander. [2]_ Should always be used with ``--prefix`` and 
-   ``--install-scripts`` options.
-   
-:build_release:
-   Build a new TAU Commander release file, ``taucmdr-VERSION.sh``, in the ``build`` directory.
-   
+   installing a pristine Python just for TAU Commander. [2]_
+
 Use ``python setup.py <command> --help`` to see command line options for each command. 
 
 

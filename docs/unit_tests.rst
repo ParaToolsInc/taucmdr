@@ -4,8 +4,15 @@ How to write and run unit tests
 After modifying or creating a file, make sure to check that function works as
 expected with unit testing.
 
-Writing unit tests
+Running unit tests
 ------------------
+
+Run the setup.py script to execute all unit tests::
+
+   python setup.py test
+
+Writing new unit tests
+----------------------
 
 Step 1: Create a tests directory
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -42,11 +49,4 @@ Further information on the unit test package
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The `page <https://docs.python.org/2/library/unittest.html>`_ has more
 information on writing a unit test function.
-
-Running unit tests
-------------------
-
-Run the setup.py script to execute all unit tests::
-
-   python setup.py test
 
