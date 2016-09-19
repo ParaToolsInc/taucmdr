@@ -40,7 +40,6 @@ import glob
 from tau import logger, util
 from tau.error import InternalError, ConfigurationError, IncompatibleRecordError
 from tau.mvc.model import Model
-from tau.mvc.controller import Controller
 from tau.model.compiler import Compiler
 from tau.cf.compiler import CompilerRole, INTEL_COMPILERS
 from tau.cf.compiler.mpi import INTEL_MPI_COMPILERS
@@ -113,7 +112,8 @@ def attributes():
             'argparse': {'flags': ('--os',),
                          'group': 'host',
                          'metavar': '<os>',
-                         'choices': OperatingSystem.keys()}
+                         'choices': OperatingSystem.keys()},
+            'on_change': Target.attribute_changed
         },
         'host_arch': {
             'type': 'string',
@@ -131,7 +131,8 @@ def attributes():
                         Target.require('host_arch', knc_require_k1om),
                         Target.require('MPI_CC', knc_intel_mpi_only),
                         Target.require('MPI_CXX', knc_intel_mpi_only),
-                        Target.require('MPI_FC', knc_intel_mpi_only))}
+                        Target.require('MPI_FC', knc_intel_mpi_only))},
+            'on_change': Target.attribute_changed
         },
         'CC': {
             'model': Compiler,
@@ -139,7 +140,8 @@ def attributes():
             'description': 'Host C compiler command',
             'argparse': {'flags': ('--cc',),
                          'group': 'host',
-                         'metavar': '<command>'}
+                         'metavar': '<command>'},
+            'on_change': Target.attribute_changed
         },
         'CXX': {
             'model': Compiler,
@@ -147,7 +149,8 @@ def attributes():
             'description': 'Host C++ compiler command',
             'argparse': {'flags': ('--cxx',),
                          'group': 'host',
-                         'metavar': '<command>'}
+                         'metavar': '<command>'},
+            'on_change': Target.attribute_changed
         },
         'FC': {
             'model': Compiler,
@@ -155,7 +158,8 @@ def attributes():
             'description': 'Host Fortran compiler command',
             'argparse': {'flags': ('--fc',),
                          'group': 'host',
-                         'metavar': '<command>'}
+                         'metavar': '<command>'},
+            'on_change': Target.attribute_changed
         },
         'UPC': {
             'model': Compiler,
@@ -163,7 +167,8 @@ def attributes():
             'description': 'Universal Parallel C compiler command',
             'argparse': {'flags': ('--upc',),
                          'group': 'Universal Parallel C',
-                         'metavar': '<command>'}
+                         'metavar': '<command>'},
+            'on_change': Target.attribute_changed
         },
         'MPI_CC': {
             'model': Compiler,
@@ -171,7 +176,8 @@ def attributes():
             'description': 'MPI C compiler command',
             'argparse': {'flags': ('--mpi-cc',),
                          'group': 'Message Passing Interface (MPI)',
-                         'metavar': '<command>'}
+                         'metavar': '<command>'},
+            'on_change': Target.attribute_changed
         },
         'MPI_CXX': {
             'model': Compiler,
@@ -179,7 +185,8 @@ def attributes():
             'description': 'MPI C++ compiler command',
             'argparse': {'flags': ('--mpi-cxx',),
                          'group': 'Message Passing Interface (MPI)',
-                         'metavar': '<command>'}
+                         'metavar': '<command>'},
+            'on_change': Target.attribute_changed
         },
         'MPI_FC': {
             'model': Compiler,
@@ -187,7 +194,8 @@ def attributes():
             'description': 'MPI Fortran compiler command',
             'argparse': {'flags': ('--mpi-fc',),
                          'group': 'Message Passing Interface (MPI)',
-                         'metavar': '<command>'}
+                         'metavar': '<command>'},
+            'on_change': Target.attribute_changed
         },
         'mpi_include_path': {
             'type': 'array',
@@ -198,7 +206,8 @@ def attributes():
                          'nargs': '+'},
             'compat': {bool: (Target.require("MPI_CC"),
                               Target.require("MPI_CXX"),
-                              Target.require("MPI_FC"))}
+                              Target.require("MPI_FC"))},
+            'on_change': Target.attribute_changed
         },
         'mpi_library_path': {
             'type': 'array',
@@ -209,7 +218,8 @@ def attributes():
                          'nargs': '+'},
             'compat': {bool: (Target.require("MPI_CC"),
                               Target.require("MPI_CXX"),
-                              Target.require("MPI_FC"))}
+                              Target.require("MPI_FC"))},
+            'on_change': Target.attribute_changed
         },
         'mpi_libraries': {
             'type': 'array',
@@ -220,7 +230,8 @@ def attributes():
                          'nargs': '+'},
             'compat': {bool: (Target.require("MPI_CC"),
                               Target.require("MPI_CXX"),
-                              Target.require("MPI_FC"))}
+                              Target.require("MPI_FC"))},
+            'on_change': Target.attribute_changed
         },
         'SHMEM_CC': {
             'model': Compiler,
@@ -228,7 +239,8 @@ def attributes():
             'description': 'SHMEM C compiler command',
             'argparse': {'flags': ('--shmem-cc',),
                          'group': 'Symmetric Hierarchical Memory (SHMEM)',
-                         'metavar': '<command>'}
+                         'metavar': '<command>'},
+            'on_change': Target.attribute_changed
         },
         'SHMEM_CXX': {
             'model': Compiler,
@@ -236,7 +248,8 @@ def attributes():
             'description': 'SHMEM C++ compiler command',
             'argparse': {'flags': ('--shmem-cxx',),
                          'group': 'Symmetric Hierarchical Memory (SHMEM)',
-                         'metavar': '<command>'}
+                         'metavar': '<command>'},
+            'on_change': Target.attribute_changed
         },
         'SHMEM_FC': {
             'model': Compiler,
@@ -244,7 +257,8 @@ def attributes():
             'description': 'SHMEM Fortran compiler command',
             'argparse': {'flags': ('--shmem-fc',),
                          'group': 'Symmetric Hierarchical Memory (SHMEM)',
-                         'metavar': '<command>'}
+                         'metavar': '<command>'},
+            'on_change': Target.attribute_changed
         },
         'shmem_include_path': {
             'type': 'array',
@@ -253,6 +267,7 @@ def attributes():
                          'group': 'Symmetric Hierarchical Memory (SHMEM)',
                          'metavar': '<path>',
                          'nargs': '+'},
+            'on_change': Target.attribute_changed
         },
         'shmem_library_path': {
             'type': 'array',
@@ -261,6 +276,7 @@ def attributes():
                          'group': 'Symmetric Hierarchical Memory (SHMEM)',
                          'metavar': '<path>',
                          'nargs': '+'},
+            'on_change': Target.attribute_changed
         },
         'shmem_libraries': {
             'type': 'array',
@@ -269,6 +285,7 @@ def attributes():
                          'group': 'Symmetric Hierarchical Memory (SHMEM)',
                          'metavar': '<flag>',
                          'nargs': '+'},
+            'on_change': Target.attribute_changed
         },
         'cuda': {
             'type': 'string',
@@ -277,15 +294,8 @@ def attributes():
                          'group': 'software package',
                          'metavar': '<path>',
                          'action': ParsePackagePathAction},
+            'on_change': Target.attribute_changed
         },
-        #'opencl': {
-        #    'type': 'string',
-        #    'description': 'path to OpenCL libraries and headers',
-        #    'argparse': {'flags': ('--opencl',),
-        #                 'group': 'software package',
-        #                 'metavar': '<path>',
-        #                 'action': ParsePackagePathAction},
-        #},
         'tau_source': {
             'type': 'string',
             'description': 'path or URL to a TAU installation or archive file',
@@ -293,7 +303,8 @@ def attributes():
             'argparse': {'flags': ('--tau',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download)',
-                         'action': ParsePackagePathAction}
+                         'action': ParsePackagePathAction},
+            'on_change': Target.attribute_changed
         },
         'pdt_source': {
             'type': 'string',
@@ -303,6 +314,7 @@ def attributes():
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction},
+            'on_change': Target.attribute_changed
         },
         'binutils_source': {
             'type': 'string',
@@ -312,7 +324,8 @@ def attributes():
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction},
-            'compat': {(lambda x: x is not None): Target.discourage('host_os', DARWIN_OS.name)}
+            'compat': {(lambda x: x is not None): Target.discourage('host_os', DARWIN_OS.name)},
+            'on_change': Target.attribute_changed
         },
         'libunwind_source': {
             'type': 'string',
@@ -321,7 +334,8 @@ def attributes():
             'argparse': {'flags': ('--libunwind',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
-                         'action': ParsePackagePathAction}
+                         'action': ParsePackagePathAction},
+            'on_change': Target.attribute_changed
         },
         'papi_source': {
             'type': 'string',
@@ -331,7 +345,8 @@ def attributes():
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction},
-            'compat': {(lambda x: x is not None): Target.discourage('host_os', DARWIN_OS.name)}
+            'compat': {(lambda x: x is not None): Target.discourage('host_os', DARWIN_OS.name)},
+            'on_change': Target.attribute_changed
         },
         'scorep_source': {
             'type': 'string',
@@ -340,32 +355,32 @@ def attributes():
             'argparse': {'flags': ('--scorep',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
-                         'action': ParsePackagePathAction}
+                         'action': ParsePackagePathAction},
+            'on_change': Target.attribute_changed
         }
     }
-
-
-class TargetController(Controller):
-    """Target data controller."""
 
 
 class Target(Model):
     """Target data model."""
     
     __attributes__ = attributes
-
-    __controller__ = TargetController
     
     def __init__(self, *args, **kwargs):
         super(Target, self).__init__(*args, **kwargs)
         self._compilers = None
-    
+        
     @classmethod
-    def before_create(cls, storage, data):
-        if not data['tau_source']:
+    def attribute_changed(cls, model, attr, new_value):
+        if model.is_selected():
+            old_value = model.get(attr, None)
+            Target.controller(model.storage).push_to_topic('rebuild_required', {attr: (old_value, new_value)})
+    
+    def on_create(self):
+        if not self['tau_source']:
             raise ConfigurationError("A TAU installation or source code must be provided.")
     
-    def before_update(self):
+    def on_update(self):
         from tau.error import ImmutableRecordError
         from tau.model.experiment import Experiment
         expr_ctrl = Experiment.controller()
@@ -374,19 +389,23 @@ class Target(Model):
         if used_by:
             raise ImmutableRecordError("Target '%s' cannot be modified because "
                                        "it is used by these experiments: %s" % (self['name'], ', '.join(used_by)))
-
-    def after_update(self):
-        from tau.model.experiment import Experiment
-        expr_ctrl = Experiment.controller()
-        used_by = expr_ctrl.search({'measurement': self.eid})
-        for expr in used_by:
+        for expr in found:
             try:
                 expr.verify()
             except IncompatibleRecordError as err:
                 raise ConfigurationError("Changing measurement '%s' in this way will create an invalid condition "
                                          "in experiment '%s':\n    %s." % (self['name'], expr['name'], err),
                                          "Delete experiment '%s' and try again." % expr['name'])
-
+    
+    def is_selected(self):
+        """Returns True if this target configuration is part of the selected experiment, False otherwise."""
+        from tau.model.project import Project, ProjectSelectionError, ExperimentSelectionError
+        try:
+            selected = Project.controller().selected().experiment()
+        except (ProjectSelectionError, ExperimentSelectionError):
+            return False
+        return selected['target'] == self.eid
+    
     def compilers(self):
         """Get information about the compilers used by this target configuration.
         

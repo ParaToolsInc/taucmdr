@@ -28,10 +28,9 @@
 """``tau experiment select`` subcommand."""
 
 from tau import EXIT_SUCCESS
-from tau.error import ConfigurationError
 from tau.cli import arguments
-from tau.model.experiment import Experiment
 from tau.cli.command import AbstractCommand
+from tau.model.experiment import Experiment
 
 
 class ExperimentSelectCommand(AbstractCommand):
@@ -46,25 +45,9 @@ class ExperimentSelectCommand(AbstractCommand):
     def main(self, argv):
         args = self.parse_args(argv)
         name = args.experiment
-
-        try:
-            changed = Experiment.select(name)
-        except ConfigurationError as err:
-            self.parser.error(str(err))        
+        Experiment.select(name)
         self.logger.info("Selected experiment '%s'.", name)
-        
-        if changed:
-            parts = ["Application rebuild required:"]
-            for attr, change in changed.iteritems():
-                old, new = change
-                if old is None:
-                    parts.append("  - %s is now set to %s" % (attr, new))
-                elif new is None:
-                    parts.append("  - %s is now unset" % attr)
-                else:
-                    parts.append("  - %s changed from %s to %s" % (attr, old, new))
-            self.logger.info('\n'.join(parts))
-        
+        self.logger.info(Experiment.rebuild_required())   
         return EXIT_SUCCESS
 
 

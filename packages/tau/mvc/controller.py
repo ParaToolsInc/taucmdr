@@ -43,9 +43,19 @@ class Controller(object):
     .. _MVC: https://en.wikipedia.org/wiki/Model-view-controller
     """
     
+    messages = {}
+    
     def __init__(self, model_cls, storage):
         self.model = model_cls
         self.storage = storage
+        
+    @classmethod
+    def push_to_topic(cls, topic, message):
+        cls.messages.setdefault(topic, []).append(message)
+        
+    @classmethod
+    def pop_topic(cls, topic):
+        return cls.messages.pop(topic, [])
 
     def one(self, key):
         """Get a record.
@@ -167,10 +177,10 @@ class Controller(object):
             return foreign.controller(self.storage).one(value)
 
     def create(self, data):
-        """Store a new record and update associations.
+        """Atomically store a new record and update associations.
         
-        Invokes the `before_create` callback before the data is recorded.
-        Invokes the `after_create` callback after the data is recorded.
+        Invokes the `on_create` callback **after** the data is recorded.  If this callback raises
+        an exception then the operation is reverted.
         
         Args:
             data (dict): Data to record.
@@ -183,7 +193,6 @@ class Controller(object):
         if unique and self.storage.contains(unique, match_any=True, table_name=self.model.name):
             raise UniqueAttributeError(self.model, unique)
         with self.storage as database:
-            self.model.before_create(database, data)
             record = database.insert(data, table_name=self.model.name)
             for attr, foreign in self.model.associations.iteritems():
                 if 'model' or 'collection' in self.model.attributes[attr]:
@@ -193,7 +202,7 @@ class Controller(object):
                         self._associate(record, foreign_cls, affected, via)
             model = self.model(record)
             model.check_compatibility(model)
-            model.after_create()
+            model.on_create()
             return model
     
     def update(self, data, keys):
@@ -205,8 +214,8 @@ class Controller(object):
             * list or tuple: apply update to all records matching the elements of `keys`.
             * ``bool(keys) == False``: raise ValueError.
             
-        Invokes the `before_update` callback for each record before the record is updated.
-        Invokes the `after_update` callback for each record after the record is updated.
+        Invokes the `on_update` callback **after** the data is modified.  If this callback raises
+        an exception then the operation is reverted.
 
         Args:
             data (dict): New data for existing records.
@@ -218,10 +227,16 @@ class Controller(object):
         with self.storage as database:
             # Get the list of affected records **before** updating the data so foreign keys are correct
             changing = self.search(keys)
-            for model in changing:
-                model.before_update()
             database.update(data, keys, table_name=self.model.name)
             for model in changing:
+                for attr, new_value in data.iteritems():
+                    try:
+                        on_change = self.model.attributes[attr]['on_change']
+                    except KeyError:
+                        pass
+                    else:
+                        if not (attr in model and model[attr] == new_value):
+                            on_change(model, attr, new_value)
                 for attr, foreign in self.model.associations.iteritems():
                     try:
                         # 'collection' attribute is iterable
@@ -249,7 +264,7 @@ class Controller(object):
             changed = self.search(keys)
             for model in changed:
                 model.check_compatibility(model)
-                model.after_update()
+                model.on_update()
 
     def unset(self, fields, keys):
         """Unset recorded data fields and update associations.
@@ -260,8 +275,8 @@ class Controller(object):
             * list or tuple: apply update to all records matching the elements of `keys`.
             * ``bool(keys) == False``: raise ValueError.
 
-        Invokes the `before_update` callback for each record before the record is updated.
-        Invokes the `after_update` callback for each record after the record is updated.
+        Invokes the `on_update` callback **after** the data is modified.  If this callback raises
+        an exception then the operation is reverted.
 
         Args:
             fields (list): Names of fields to unset.
@@ -273,10 +288,16 @@ class Controller(object):
         with self.storage as database:
             # Get the list of affected records **before** updating the data so foreign keys are correct
             changing = self.search(keys)
-            for model in changing:
-                model.before_update()
             database.unset(fields, keys, table_name=self.model.name)
             for model in changing:
+                for attr in fields:
+                    try:
+                        on_change = self.model.attributes[attr]['on_change']
+                    except KeyError:
+                        pass
+                    else:
+                        if attr in model.keys():
+                            on_change(model, attr, None)
                 for attr, foreign in self.model.associations.iteritems():
                     if attr in fields:
                         foreign_cls, via = foreign
@@ -286,7 +307,7 @@ class Controller(object):
             changed = self.search(keys)
             for model in changed:
                 model.check_compatibility(model)
-                model.after_update()
+                model.on_update()
 
     def delete(self, keys):
         """Delete recorded data and update associations.
@@ -297,8 +318,8 @@ class Controller(object):
             * list or tuple: delete all records matching the elements of `keys`.
             * ``bool(keys) == False``: raise ValueError.
 
-        Invokes the `before_delete` callback for each record before the record is deleted.
-        Invokes the `after_delete` callback for each record after the record is deleted.
+        Invokes the `on_delete` callback **after** the data is deleted.  If this callback raises
+        an exception then the operation is reverted.
 
         Args:
             keys (dict): Attributes to match.
@@ -306,8 +327,8 @@ class Controller(object):
         """
         with self.storage as database:
             removed_data = []
-            for model in self.search(keys):
-                model.before_delete()
+            changing = self.search(keys)
+            for model in changing:
                 for attr, foreign in model.associations.iteritems():
                     foreign_model, via = foreign
                     affected_keys = model.get(attr, None)
@@ -319,7 +340,7 @@ class Controller(object):
                     # pylint complains because `model` is changing on every iteration so we'll have
                     # a different lambda function `test` on each iteration.  This is exactly what
                     # we want so we disble the warning. 
-                    # pylint: disable=cell-var-from-loop
+                    # pylint: disable=cell-var-from-loop, undefined-loop-variable
                     test = lambda x: model.eid in x if isinstance(x, list) else model.eid == x
                     affected = database.match(via, test=test, table_name=foreign_model.name)
                     affected_keys = [record.eid for record in affected]
@@ -329,8 +350,8 @@ class Controller(object):
                         self._disassociate(model, foreign_model, affected_keys, via)
                 removed_data.append(dict(model))
             database.remove(keys, table_name=self.model.name)
-            for data in removed_data:
-                self.model.after_delete(database, data)
+            for model in changing:
+                model.on_delete()
 
     @staticmethod
     def import_records(data):

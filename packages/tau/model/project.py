@@ -79,12 +79,13 @@ def attributes():
         },
         'experiment': {
             'model': Experiment,
-            'description': 'the current experiment'
+            'description': 'the current experiment',
+            'on_change': Project.on_experiment_change
         },
         'force_tau_options': {
             'type': 'array',
             'description': "forcibly add options to TAU_OPTIONS environment variable (not recommended)",
-            'application_rebuild': True,
+            'rebuild_on_change': True,
             'argparse': {'flags': ('--force-tau-options',),
                          'metavar': '<option>',
                          'nargs': '+'},
@@ -135,42 +136,14 @@ class ProjectController(Controller):
             if selected is None:
                 self.unselect()
 
-    def _check_rebuild(self, project, new_experiment):
-        from tau.model.measurement import Measurement
-        try:
-            old_experiment = project.controller().selected().experiment()
-        except (ProjectSelectionError, ExperimentSelectionError) as err:
-            LOGGER.debug(err)
-            return
-        meas = new_experiment.populate('measurement')
-        meas_old = old_experiment.populate('measurement')
-        new_attrs = set(meas.keys())
-        old_attrs = set(meas_old.keys())
-        changed = {}
-        for attr in new_attrs - old_attrs:
-            if Measurement.attributes[attr]['application_rebuild']:
-                changed[attr] = (None, meas[attr])
-                break
-        for attr in old_attrs - new_attrs:
-            if Measurement.attributes[attr]['application_rebuild']:
-                changed[attr] = (meas_old[attr], None)
-                break
-        for attr in new_attrs & old_attrs:
-            if meas[attr] != meas_old[attr] and Measurement.attributes[attr]['application_rebuild']:
-                changed[attr] = (meas_old[attr], meas[attr])
-                break
-        return changed
-    
     def select(self, project, experiment=None):
         self.storage['selected_project'] = project.eid
         if experiment is not None:
             for attr in 'target', 'application', 'measurement':
                 if experiment[attr] not in project[attr+'s']:
                     raise InternalError("Experiment contains %s not in project" % attr)
-            changed = self._check_rebuild(project, experiment)
             self.update({'experiment': experiment.eid}, project.eid)
             experiment.configure()
-            return changed
     
     def unselect(self):
         del self.storage['selected_project']
@@ -192,6 +165,28 @@ class Project(Model):
     __attributes__ = attributes
 
     __controller__ = ProjectController
+    
+    @classmethod
+    def on_experiment_change(cls, model, attr, new_value):
+        from tau.model.experiment import Experiment
+        old_value = model.get(attr, None)
+        if old_value and new_value:
+            new = Experiment.controller().one(new_value)
+            old = Experiment.controller().one(old_value)
+            for model_attr in 'target', 'application', 'measurement':
+                if old[model_attr] != new[model_attr]:
+                    rebuild_required = {}
+                    model_cls = Experiment.attributes[model_attr]['model']
+                    model_new = new.populate(model_attr)
+                    model_old = old.populate(model_attr)
+                    for attr, props in model_cls.attributes.iteritems():
+                        if 'on_change' in props:
+                            old_value = model_old.get(attr, None)
+                            new_value = model_new.get(attr, None)
+                            if old_value != new_value:
+                                rebuild_required[attr] = (old_value, new_value)
+                    if rebuild_required:
+                        cls.controller(model.storage).push_to_topic('rebuild_required', rebuild_required)
 
     @classmethod
     def controller(cls, storage=PROJECT_STORAGE):

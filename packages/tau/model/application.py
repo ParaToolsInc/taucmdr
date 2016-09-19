@@ -60,12 +60,13 @@ def attributes():
         'openmp': {
             'type': 'boolean', 
             'description': 'application uses OpenMP',
-            'default': False, 
+            'default': False,
             'argparse': {'flags': ('--use-openmp',),
                          'metavar': 'T/F',
                          'nargs': '?',
                          'const': True,
                          'action': ParseBooleanAction},
+            'on_change': Application.attribute_changed
         },
         'pthreads': {
             'type': 'boolean',
@@ -75,7 +76,8 @@ def attributes():
                          'metavar': 'T/F',
                          'nargs': '?',
                          'const': True,
-                         'action': ParseBooleanAction}
+                         'action': ParseBooleanAction},
+            'on_change': Application.attribute_changed
         },
         'mpi': {
             'type': 'boolean',
@@ -86,7 +88,8 @@ def attributes():
                          'nargs': '?',
                          'const': True,
                          'action': ParseBooleanAction},
-            'compat': {True: Measurement.require('mpi', True)}
+            'compat': {True: Measurement.require('mpi', True)},
+            'on_change': Application.attribute_changed
         },
         'cuda': {
             'type': 'boolean',
@@ -97,7 +100,8 @@ def attributes():
                          'nargs': '?',
                          'const': True,
                          'action': ParseBooleanAction},
-            'compat': {True: Target.require('cuda')}
+            'compat': {True: Target.require('cuda')},
+            'on_change': Application.attribute_changed
         },
         'opencl': {
             'type': 'boolean',
@@ -109,7 +113,8 @@ def attributes():
                          'const': True,
                          'action': ParseBooleanAction},
             'compat': {True: (Target.require('cuda'),
-                              Measurement.encourage('opencl', True))}
+                              Measurement.encourage('opencl', True))},
+            'on_change': Application.attribute_changed
         },
         'shmem': {
             'type': 'boolean',
@@ -120,6 +125,7 @@ def attributes():
                          'nargs': '?',
                          'const': True,
                          'action': ParseBooleanAction},
+            'on_change': Application.attribute_changed
         },
         'mpc': {
             'type': 'boolean',
@@ -129,34 +135,45 @@ def attributes():
                          'metavar': 'T/F',
                          'nargs': '?',
                          'const': True,
-                         'action': ParseBooleanAction}
+                         'action': ParseBooleanAction},
+            'on_change': Application.attribute_changed
         }
     }
         
 
 class Application(Model):
+    """Application data model."""
     
     __attributes__ = attributes
+    
+    @classmethod
+    def attribute_changed(cls, model, attr, new_value):
+        if model.is_selected():
+            old_value = model.get(attr, None)
+            cls.controller(model.storage).push_to_topic('rebuild_required', {attr: (old_value, new_value)})
 
-    def before_update(self):
+    def on_update(self):
         from tau.error import ImmutableRecordError
         from tau.model.experiment import Experiment
-        expr_ctrl = Experiment.controller()
+        expr_ctrl = Experiment.controller(self.storage)
         found = expr_ctrl.search({'application': self.eid})
         using_app = [expr['name'] for expr in found if expr.data_size() > 0]
         if using_app:
             raise ImmutableRecordError("Application '%s' cannot be modified because "
                                        "it is used by these experiments: %s" % (self['name'], ', '.join(using_app)))
-
-    def after_update(self):
-        from tau.model.experiment import Experiment
-        expr_ctrl = Experiment.controller()
-        using_app = expr_ctrl.search({'application': self.eid})
-        for expr in using_app:
+        for expr in found:
             try:
                 expr.verify()
             except IncompatibleRecordError as err:
                 raise ConfigurationError("Changing application '%s' in this way will create an invalid condition "
                                          "in experiment '%s':\n    %s." % (self['name'], expr['name'], err),
                                          "Delete experiment '%s' and try again." % expr['name'])
-        
+
+    def is_selected(self):
+        """Returns True if this target configuration is part of the selected experiment, False otherwise."""
+        from tau.model.project import Project, ProjectSelectionError, ExperimentSelectionError
+        try:
+            selected = Project.controller().selected().experiment()
+        except (ProjectSelectionError, ExperimentSelectionError):
+            return False
+        return selected['application'] == self.eid

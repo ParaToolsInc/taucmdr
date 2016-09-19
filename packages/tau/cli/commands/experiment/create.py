@@ -29,7 +29,7 @@
 
 from tau import EXIT_SUCCESS
 from tau.cli import arguments
-from tau.error import ConfigurationError
+from tau.error import UniqueAttributeError
 from tau.cf.storage.levels import PROJECT_STORAGE
 from tau.model.project import Project
 from tau.model.target import Target
@@ -139,7 +139,7 @@ class ExperimentCreateCommand(AbstractCommand):
         data = {'name': name}
         matching = expr_ctrl.search(data)
         if matching:
-            raise ConfigurationError("An experiment named '%s' already exists." % name)
+            raise UniqueAttributeError(Experiment, "name="+name)
         self.logger.debug('Creating new experiment')
         data.update({'project': proj.eid, 'target': targ.eid, 'application': app.eid, 'measurement': meas.eid})
         expr_ctrl.create(data)

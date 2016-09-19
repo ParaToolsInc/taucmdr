@@ -135,25 +135,14 @@ class Model(StorageRecord):
         """            
         return self.element.get(key, self.attributes[key]['default'])
 
-    @classmethod
-    def before_create(cls, storage, data):
-        """Callback to be invoked before a new data record is created.""" 
-
-    def after_create(self):
+    def on_create(self):
         """Callback to be invoked after a new data record is created.""" 
 
-    def before_update(self): 
-        """Callback to be invoked when a data record is updated."""
+    def on_update(self): 
+        """Callback to be invoked after a data record is updated."""
 
-    def after_update(self): 
-        """Callback to be invoked when a data record is updated."""
-
-    def before_delete(self): 
-        """Callback to be invoked when a data record is deleted."""
-
-    @classmethod
-    def after_delete(cls, storage, data): 
-        """Callback to be invoked when a data record is deleted."""
+    def on_delete(self): 
+        """Callback to be invoked before a data record is deleted."""
 
     def populate(self, attribute=None, defaults=False):
         """Shorthand for ``self.controller(self.storage).populate(self, attribute, defaults)``.
@@ -610,4 +599,3 @@ class Model(StorageRecord):
                 if (callable(value) and value(attr_value)) or attr_value == value: 
                     for condition in as_tuple(conditions):
                         condition(self, attr, attr_value, rhs)
-

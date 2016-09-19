@@ -110,7 +110,24 @@ class Experiment(Model):
             raise InternalError("More than one experiment with data %r exists!" % data)
         else:
             expr = matching[0]            
-        return proj_ctrl.select(proj, expr)
+        proj_ctrl.select(proj, expr)
+
+    @classmethod
+    def rebuild_required(cls):
+        rebuild_required = cls.__controller__.pop_topic('rebuild_required')
+        if not rebuild_required:
+            return 'Experiment may be performed without application rebuild.'
+        parts = ["Application rebuild required:"]
+        for changed in rebuild_required:
+            for attr, change in changed.iteritems():
+                old, new = change
+                if old is None:
+                    parts.append("  - %s is now set to %s" % (attr, new))
+                elif new is None:
+                    parts.append("  - %s is now unset" % attr)
+                else:
+                    parts.append("  - %s changed from %s to %s" % (attr, old, new))
+        return '\n'.join(parts)
     
     @property
     def prefix(self):
@@ -130,7 +147,7 @@ class Experiment(Model):
             for rhs in [targ, app, meas]:
                 lhs.check_compatibility(rhs)
 
-    def after_create(self):
+    def on_create(self):
         self.verify()
         try:
             util.mkdirp(self.prefix)
@@ -138,7 +155,7 @@ class Experiment(Model):
             raise ConfigurationError('Cannot create directory %r' % self.prefix, 
                                      'Check that you have `write` access')
 
-    def before_delete(self):
+    def on_delete(self):
         try:
             util.rmtree(self.prefix)
         except Exception as err:  # pylint: disable=broad-except

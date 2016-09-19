@@ -65,7 +65,6 @@ def attributes():
         'projects': {
             'collection': Project,
             'via': 'measurements',
-            'application_rebuild': False,
             'description': "projects using this measurement"
         },
         'name': {
@@ -73,7 +72,6 @@ def attributes():
             'type': 'string',
             'unique': True,
             'description': "measurement configuration name",
-            'application_rebuild': False,
             'argparse': {'help': 'measurement configuration name',
                          'metavar': '<measurement_name>'},
         
@@ -82,7 +80,6 @@ def attributes():
             'type': 'string',
             'default': 'tau',
             'description': "generate application profiles",
-            'application_rebuild': False,
             'argparse': {'flags': ('--profile',),
                          'group': 'output format',
                          'metavar': '<format>',
@@ -95,7 +92,6 @@ def attributes():
             'type': 'string',
             'default': 'none',
             'description': "generate application traces",
-            'application_rebuild': False,
             'argparse': {'flags': ('--trace',),
                          'group': 'output format',
                          'metavar': '<format>',
@@ -114,7 +110,6 @@ def attributes():
                          'nargs': '?',
                          'const': True,
                          'action': ParseBooleanAction},
-            'application_rebuild': False,
             'compat': {True: (Target.require('binutils_source'),
                               Target.exclude('binutils_source', None),
                               Target.require('libunwind_source'),
@@ -131,8 +126,8 @@ def attributes():
                          'nargs': '?',
                          'choices': ('automatic', 'manual', 'never'),
                          'const': 'automatic'},
-            'application_rebuild': True,
-            'compat': {'automatic': Target.exclude('pdt_source', None)}
+            'compat': {'automatic': Target.exclude('pdt_source', None)},
+            'on_change': Measurement.attribute_changed
         },
         'compiler_inst': {
             'type': 'string',
@@ -144,25 +139,25 @@ def attributes():
                          'nargs': '?',
                          'choices': ('always', 'fallback', 'never'),
                          'const': 'always'},
-            'application_rebuild': True,
             'compat': {lambda x: x in ('always', 'fallback'):
                        (Target.require('binutils_source'),
                         Target.exclude('binutils_source', None),
                         Target.require('libunwind_source'),
                         Target.exclude('libunwind_source', None),
-                        Target.exclude('host_os', DARWIN_OS))}
+                        Target.exclude('host_os', DARWIN_OS))},
+            'on_change': Measurement.attribute_changed
         },
         'link_only': {
             'type': 'boolean',
             'default': False,
             'description': "don't instrument, only link the TAU library to the application",
-            'application_rebuild': True,
             'argparse': {'flags': ('--link-only',),
                          'group': 'instrumentation',
                          'metavar': 'T/F',
                          'nargs': '?',
                          'const': True,
                          'action': ParseBooleanAction},
+            'on_change': Measurement.attribute_changed
         },
         'select_file': {
             'type': 'string',
@@ -170,10 +165,10 @@ def attributes():
             'argparse': {'flags': ('--select-file',),
                          'group': 'instrumentation',
                          'metavar': 'path'},
-            'application_rebuild': True,
             'compat': {True:
                        (Target.require('source_inst'),
                         Target.exclude('source_inst', 'never'))},
+            'on_change': Measurement.attribute_changed
         },
         'mpi': {
             'type': 'boolean',
@@ -184,11 +179,11 @@ def attributes():
                          'nargs': '?',
                          'const': True,
                          'action': ParseBooleanAction},
-            'application_rebuild': True,
             'compat': {True:
                        (Target.require('MPI_CC'),
                         Target.require('MPI_CXX'),
-                        Target.require('MPI_FC'))}
+                        Target.require('MPI_FC'))},
+            'on_change': Measurement.attribute_changed
         },
         'openmp': {
             'type': 'string',
@@ -197,7 +192,6 @@ def attributes():
             'argparse': {'flags': ('--openmp',),
                          'metavar': 'library',
                          'choices': ('none', 'opari', 'ompt', 'gomp')},
-            'application_rebuild': True,
             'compat': {'opari':
                        Application.require('openmp', True),
                        'ompt':
@@ -209,7 +203,8 @@ def attributes():
                        (Application.require('openmp', True),
                         Target.require('CC', gomp_gnu_only),
                         Target.require('CXX', gomp_gnu_only),
-                        Target.require('FC', gomp_gnu_only))}
+                        Target.require('FC', gomp_gnu_only))},
+            'on_change': Measurement.attribute_changed
         },
         'cuda': {
             'type': 'boolean',
@@ -220,7 +215,6 @@ def attributes():
                          'nargs': '?',
                          'const': True,
                          'action': ParseBooleanAction},
-            'application_rebuild': False,
             'compat': {True: Target.require('cuda')}
         },
         'opencl': {
@@ -232,7 +226,6 @@ def attributes():
                          'nargs': '?',
                          'const': True,
                          'action': ParseBooleanAction},
-            'application_rebuild': False,
             'compat': {True: (Target.require('cuda'),
                               Application.require('opencl'))}
         },
@@ -240,7 +233,6 @@ def attributes():
             'type': 'integer',
             'default': 100,
             'description': 'maximum depth for callpath recording',
-            'application_rebuild': False,
             'argparse': {'flags': ('--callpath',),
                          'group': 'data',
                          'metavar': 'depth',
@@ -252,18 +244,17 @@ def attributes():
             'type': 'boolean',
             'default': False,
             'description': 'measure time spent in POSIX I/O calls',
-            'application_rebuild': True,
             'argparse': {'flags': ('--io',),
                          'metavar': 'T/F',
                          'nargs': '?',
                          'const': True,
                          'action': ParseBooleanAction},
+            'on_change': Measurement.attribute_changed
         },
         'heap_usage': {
             'type': 'boolean',
             'default': False,
             'description': 'measure heap memory usage',
-            'application_rebuild': False,
             'argparse': {'flags': ('--heap-usage',),
                          'group': 'memory',
                          'metavar': 'T/F',
@@ -275,32 +266,31 @@ def attributes():
             'type': 'boolean',
             'default': False,
             'description': 'record memory allocation and deallocation events',
-            'application_rebuild': True,
             'argparse': {'flags': ('--memory-alloc',),
                          'group': 'memory',
                          'metavar': 'T/F',
                          'nargs': '?',
                          'const': True,
                          'action': ParseBooleanAction},
+            'on_change': Measurement.attribute_changed
         },
         'metrics': {
             'type': 'array',
             'default': ['TIME'],
             'description': 'performance metrics to gather, e.g. TIME, PAPI_FP_INS',
-            'application_rebuild': False,
             'argparse': {'flags': ('--metrics',),
                          'group': 'data',
                          'metavar': '<metric>',
                          'nargs': '+'},
             'compat': {lambda metrics: bool(len([met for met in metrics if 'PAPI' in met])):
                        (Target.require('papi_source'), 
-                        Target.exclude('papi_source', None))}
+                        Target.exclude('papi_source', None))},
+            'on_change': Measurement.attribute_changed
         },
         'keep_inst_files': {
             'type': 'boolean',
             'default': False,
             'description': "don't remove instrumented files after compilation",
-            'application_rebuild': False,
             'argparse': {'flags': ('--keep-inst-files',),
                          'group': 'instrumentation',
                          'metavar': 'T/F',
@@ -313,7 +303,6 @@ def attributes():
             'type': 'boolean',
             'default': False,
             'description': 'reuse and preserve instrumented files after compilation',
-            'application_rebuild': False,
             'argparse': {'flags': ('--reuse-inst-files',),
                          'group': 'instrumentation',
                          'metavar': 'T/F',
@@ -326,7 +315,6 @@ def attributes():
             'type': 'boolean',
             'default': False,
             'description': 'record the point-to-point communication matrix',
-            'application_rebuild': False,
             'argparse': {'flags': ('--comm-matrix',),
                          'metavar': 'T/F',
                          'nargs': '?',
@@ -337,7 +325,6 @@ def attributes():
             'type': 'boolean',
             'default': True,
             'description': 'throttle lightweight events to reduce overhead',
-            'application_rebuild': False,
             'argparse': {'flags': ('--throttle',),
                          'metavar': 'T/F',
                          'nargs': '?',
@@ -348,7 +335,6 @@ def attributes():
             'type': 'integer',
             'default': 10,
             'description': 'lightweight event duration threshold in microseconds',
-            'application_rebuild': False,
             'argparse': {'flags': ('--throttle-per-call',),
                          'metavar': 'us',
                          'nargs': '?',
@@ -359,7 +345,6 @@ def attributes():
             'type': 'integer',
             'default': 100000,
             'description': 'lightweight event call count threshold',
-            'application_rebuild': False,
             'argparse': {'flags': ('--throttle-num-calls',),
                          'metavar': 'count',
                          'nargs': '?',
@@ -374,17 +359,23 @@ class Measurement(Model):
     
     __attributes__ = attributes
 
-    def after_create(self):
+    @classmethod
+    def attribute_changed(cls, model, attr, new_value):
+        if model.is_selected():
+            old_value = model.get(attr, None)
+            cls.controller(model.storage).push_to_topic('rebuild_required', {attr: (old_value, new_value)})
+    
+    def on_create(self):
         def get_flag(key):
             return self.attributes[key]['argparse']['flags'][0]
 
-        if self['profile'] == 'none' and self['trace'] == 'none':
+        if self['profile'].lower() == 'none' and self['trace'].lower() == 'none':
             profile_flag = get_flag('profile')
             trace_flag = get_flag('trace')
             raise ConfigurationError("Profiling, tracing, or both must be enabled",
                                      "Specify %s or %s or both" % (profile_flag, trace_flag))
         
-        if ((self['source_inst'] == 'never') and (self['compiler_inst'] == 'never') and 
+        if ((self['source_inst'].lower() == 'never') and (self['compiler_inst'].lower() == 'never') and 
                 (not self['sample']) and (not self['link_only'])):
             source_inst_flag = get_flag('source_inst')
             compiler_inst_flag = get_flag('compiler_inst')
@@ -401,8 +392,7 @@ class Measurement(Model):
             if not os.path.exists(select_file):
                 raise ConfigurationError("Selective instrumentation file '%s' not found" % select_file)
 
-
-    def before_update(self):
+    def on_update(self):
         from tau.error import ImmutableRecordError
         from tau.model.experiment import Experiment
         expr_ctrl = Experiment.controller()
@@ -411,16 +401,19 @@ class Measurement(Model):
         if used_by:
             raise ImmutableRecordError("Measurement '%s' cannot be modified because "
                                        "it is used by these experiments: %s" % (self['name'], ', '.join(used_by)))
-
-    def after_update(self):
-        from tau.model.experiment import Experiment
-        expr_ctrl = Experiment.controller()
-        used_by = expr_ctrl.search({'measurement': self.eid})
-        for expr in used_by:
+        for expr in found:
             try:
                 expr.verify()
             except IncompatibleRecordError as err:
                 raise ConfigurationError("Changing measurement '%s' in this way will create an invalid condition "
                                          "in experiment '%s':\n    %s." % (self['name'], expr['name'], err),
                                          "Delete experiment '%s' and try again." % expr['name'])
-        
+
+    def is_selected(self):
+        """Returns True if this target configuration is part of the selected experiment, False otherwise."""
+        from tau.model.project import Project, ProjectSelectionError, ExperimentSelectionError
+        try:
+            selected = Project.controller().selected().experiment()
+        except (ProjectSelectionError, ExperimentSelectionError):
+            return False
+        return selected['measurement'] == self.eid

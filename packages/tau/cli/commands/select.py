@@ -27,9 +27,7 @@
 #
 """``tau select`` subcommand."""
 
-from tau import EXIT_SUCCESS
-from tau.error import ConfigurationError, IncompatibleRecordError, ImmutableRecordError
-from tau.model.experiment import Experiment
+from tau.error import ConfigurationError, UniqueAttributeError
 from tau.cli.commands.experiment.create import ExperimentCreateCommand
 from tau.cli.commands.experiment.select import COMMAND as experiment_select_cmd
 
@@ -40,7 +38,7 @@ class SelectCommand(ExperimentCreateCommand):
     def construct_parser(self):
         parser = super(SelectCommand, self).construct_parser()
         parser.prog = self.command
-        parser.usage = "%s [target] [application] [measurement] [arguments]" % self.command
+        parser.usage = "%s [experiment] [target] [application] [measurement] [arguments]" % self.command
         parser.description = self.summary
         return parser
     
@@ -53,20 +51,15 @@ class SelectCommand(ExperimentCreateCommand):
             if isinstance(name, list):
                 name = name[0]
             try:
-                Experiment.select(name)
+                return experiment_select_cmd.main([name])
             except ConfigurationError as err:
                 self.logger.debug(err)
-            else:
-                self.logger.info("Selected experiment '%s'.", name)
-                return EXIT_SUCCESS
 
         _, _, _, _, name = self._parse_args(argv)
         try:
             super(SelectCommand, self).main(argv)
-        except (IncompatibleRecordError, ImmutableRecordError) as err:
-            raise err
-        except ConfigurationError:
-            pass
+        except UniqueAttributeError as err:
+            self.logger.debug(err)
         return experiment_select_cmd.main([name])
 
 COMMAND = SelectCommand(__name__, summary_fmt="Create a new experiment or select an existing experiment.")

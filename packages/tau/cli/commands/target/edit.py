@@ -27,7 +27,6 @@
 #
 """``tau target edit`` subcommand."""
 
-from tau import EXIT_SUCCESS
 from tau import util
 from tau.error import ImmutableRecordError, IncompatibleRecordError
 from tau.cli import arguments
@@ -35,6 +34,7 @@ from tau.cli.cli_view import EditCommand
 from tau.cli.commands.target.copy import COMMAND as target_copy_cmd
 from tau.cli.commands.experiment.delete import COMMAND as experiment_delete_cmd
 from tau.model.target import Target
+from tau.model.experiment import Experiment
 from tau.model.compiler import Compiler
 from tau.cf.compiler import CompilerFamily, CompilerRole
 from tau.cf.compiler.mpi import MpiCompilerFamily
@@ -119,35 +119,36 @@ class TargetEditCommand(EditCommand):
                            choices=ShmemCompilerFamily.family_names())
         return parser
     
+    def update_record(self, store, data, key):
+        try:
+            retval = super(TargetEditCommand, self).update_record(store, data, key)
+        except (ImmutableRecordError, IncompatibleRecordError) as err:
+            err.hints = ["Use `%s` to create a modified copy of the target" % target_copy_cmd,
+                         "Use `%s` to delete the experiments." % experiment_delete_cmd]
+            raise err
+        if not retval:
+            self.logger.info(Experiment.rebuild_required())
+        return retval
+
     def main(self, argv):
         args = self.parse_args(argv)
         store = arguments.parse_storage_flag(args)[0]
-        ctrl = self.model.controller(store)
-        key_attr = self.model.key_attribute
-        key = getattr(args, key_attr)
-        targ = ctrl.one({key_attr: key})
-        if not targ:
-            self.parser.error("No %s-level %s with %s='%s'." % (ctrl.storage.name, self.model_name, key_attr, key)) 
         
         compilers = self.parse_compiler_flags(args)
         self.logger.debug('Arguments after parsing compiler flags: %s', args)
-
         data = {attr: getattr(args, attr) for attr in self.model.attributes if hasattr(args, attr)}
         for keyword, comp in compilers.iteritems():
             self.logger.debug("%s=%s (%s)", keyword, comp.absolute_path, comp.info.short_descr)
             record = Compiler.controller(store).register(comp)
             data[comp.info.role.keyword] = record.eid
+
+        key_attr = self.model.key_attribute
         try:
             data[key_attr] = args.new_key
         except AttributeError:
             pass
-        try:
-            ctrl.update(data, {key_attr: key})
-        except (ImmutableRecordError, IncompatibleRecordError) as err:
-            err.hints = ["Use `%s` to create a modified copy of the target" % target_copy_cmd,
-                         "Use `%s` to delete the experiments." % experiment_delete_cmd]
-            raise err
-        self.logger.info("Updated %s '%s'", self.model_name, key)
-        return EXIT_SUCCESS
+        key = getattr(args, key_attr)
+        return self.update_record(store, data, key)
+
 
 COMMAND = TargetEditCommand(Target, __name__)
