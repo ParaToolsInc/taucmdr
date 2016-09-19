@@ -72,18 +72,15 @@ the master branch.</p>
 <div class="section" id="the-tau-commandments">
 <h1>The TAU Commandments<a class="headerlink" href="#the-tau-commandments" title="Permalink to this headline">¶</a></h1>
 <ol class="arabic simple">
-<li>Thou shalt use <a class="reference external" href="http://www.pylint.org/">pylint</a> 1.5 or later as part of your development cycle.</li>
+<li>Thou shalt use <a class="reference external" href="http://www.pylint.org/">pylint</a> 1.5.4 or later as part of your development cycle.</li>
 <li>Thou shalt follow the <a class="reference internal" href="design.html"><em>TAU Commander Design</em></a> for it is sacred.</li>
 <li>Thou shalt style thine code according to the <a class="reference internal" href="style.html"><em>TAU Commander Code Style</em></a>.</li>
 <li>Thou shalt document your code according to the <a class="reference internal" href="documentation.html"><em>TAU Commander Code Documentation</em></a>.</li>
 <li><strong>Never</strong> shalt thou develop on the master branch, for that is an abomination.</li>
-<li><strong>Never</strong> shalt thou merge broken code to the master branch.</li>
+<li><strong>Never</strong> shalt thou merge code into the master branch that is failing the continuous integration (CI) tests.</li>
 <li><strong>Never</strong> shalt thou <em>just quickly fix this one thing because I have a hard deadline I forgot and now I really
 really really need this feature to be part of TAU Commander whatever the cost and oh God I broke it I broke it
 and everything is on fire</em>.</li>
-<li><strong>Never</strong> shalt thou merge code into the master branch that is failing the continuous integration (CI) tests. At
-a <em>minimum</em>, one of the following must be fixed <em>on your topic branch</em> <strong>prior</strong> to merging with master: 1) The code
-that broke the build or failed the test(s) 2) the <a class="reference internal" href="continuous_integration.html"><em>Continuous Integration</em></a> build 3) the <a class="reference external" href="./unit_tests.html">unit tests</a>.</li>
 </ol>
 </div>
 <div class="section" id="table-of-contents">
@@ -128,12 +125,11 @@ that broke the build or failed the test(s) 2) the <a class="reference internal" 
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="unit_tests.html">How to write and run unit tests</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="unit_tests.html#writing-unit-tests">Writing unit tests</a></li>
 <li class="toctree-l2"><a class="reference internal" href="unit_tests.html#running-unit-tests">Running unit tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="unit_tests.html#writing-new-unit-tests">Writing new unit tests</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="packaging.html">Packaging and Releasing TAU Commander</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="packaging.html#tl-dr">TL;DR</a></li>
 <li class="toctree-l2"><a class="reference internal" href="packaging.html#setup-py">setup.py</a></li>
 </ul>
 </li>
@@ -154,11 +150,9 @@ that broke the build or failed the test(s) 2) the <a class="reference internal" 
 <li class="toctree-l3"><a class="reference internal" href="tau.html#subpackages">Subpackages</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="tau.cf.html">tau.cf package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tau.cli.html">tau.cli package</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tau.data.html">tau.data package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tau.gui.html">tau.gui package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tau.model.html">tau.model package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tau.mvc.html">tau.mvc package</a></li>
-<li class="toctree-l4"><a class="reference internal" href="tau.storage.html">tau.storage package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tau.tests.html">tau.tests package</a></li>
 </ul>
 </li>

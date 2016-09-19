@@ -13,6 +13,7 @@ Submodules
 
 .. toctree::
 
+   tau.cli.commands.target.copy
    tau.cli.commands.target.create
    tau.cli.commands.target.delete
    tau.cli.commands.target.edit

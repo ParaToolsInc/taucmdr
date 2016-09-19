@@ -85,7 +85,7 @@
 <span class="kn">from</span> <span class="nn">tau.error</span> <span class="kn">import</span> <span class="n">InternalError</span><span class="p">,</span> <span class="n">ConfigurationError</span>
 <span class="kn">from</span> <span class="nn">tau.mvc.model</span> <span class="kn">import</span> <span class="n">Model</span>
 <span class="kn">from</span> <span class="nn">tau.mvc.controller</span> <span class="kn">import</span> <span class="n">Controller</span>
-<span class="kn">from</span> <span class="nn">tau.storage.levels</span> <span class="kn">import</span> <span class="n">PROJECT_STORAGE</span>
+<span class="kn">from</span> <span class="nn">tau.cf.storage.levels</span> <span class="kn">import</span> <span class="n">PROJECT_STORAGE</span>
 
 
 <span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
@@ -126,12 +126,13 @@
         <span class="p">},</span>
         <span class="s1">&#39;experiment&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="n">Experiment</span><span class="p">,</span>
-            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;the current experiment&#39;</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;the current experiment&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Project</span><span class="o">.</span><span class="n">on_experiment_change</span>
         <span class="p">},</span>
         <span class="s1">&#39;force_tau_options&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;array&#39;</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s2">&quot;forcibly add options to TAU_OPTIONS environment variable (not recommended)&quot;</span><span class="p">,</span>
-            <span class="s1">&#39;application_rebuild&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+            <span class="s1">&#39;rebuild_on_change&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--force-tau-options&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;option&gt;&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;+&#39;</span><span class="p">},</span>
@@ -143,12 +144,12 @@
 <div class="viewcode-block" id="ProjectSelectionError"><a class="viewcode-back" href="../../../tau.model.project.html#tau.model.project.ProjectSelectionError">[docs]</a><span class="k">class</span> <span class="nc">ProjectSelectionError</span><span class="p">(</span><span class="n">ConfigurationError</span><span class="p">):</span>
     
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">*</span><span class="n">hints</span><span class="p">):</span>
-        <span class="kn">from</span> <span class="nn">tau.cli.commands.select</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">select_cmd</span>
-        <span class="kn">from</span> <span class="nn">tau.cli.commands.project.list</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">project_list_cmd</span>
         <span class="kn">from</span> <span class="nn">tau.cli.commands.project.create</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">project_create_cmd</span>
+        <span class="kn">from</span> <span class="nn">tau.cli.commands.project.select</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">project_select_cmd</span>
+        <span class="kn">from</span> <span class="nn">tau.cli.commands.project.list</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">project_list_cmd</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">hints</span><span class="p">:</span>
             <span class="n">hints</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Use `</span><span class="si">%s</span><span class="s2">` to create a new project configuration.&quot;</span> <span class="o">%</span> <span class="n">project_create_cmd</span><span class="p">,</span>
-                     <span class="s2">&quot;Use `</span><span class="si">%s</span><span class="s2"> &lt;project_name&gt;` to select a project configuration.&quot;</span> <span class="o">%</span> <span class="n">select_cmd</span><span class="p">,</span>
+                     <span class="s2">&quot;Use `</span><span class="si">%s</span><span class="s2"> &lt;project_name&gt;` to select a project configuration.&quot;</span> <span class="o">%</span> <span class="n">project_select_cmd</span><span class="p">,</span>
                      <span class="s2">&quot;Use `</span><span class="si">%s</span><span class="s2">` to see available project configurations.&quot;</span> <span class="o">%</span> <span class="n">project_list_cmd</span><span class="p">)</span>    
         <span class="nb">super</span><span class="p">(</span><span class="n">ProjectSelectionError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="o">*</span><span class="n">hints</span><span class="p">)</span></div>
 
@@ -156,10 +157,10 @@
 <div class="viewcode-block" id="ExperimentSelectionError"><a class="viewcode-back" href="../../../tau.model.project.html#tau.model.project.ExperimentSelectionError">[docs]</a><span class="k">class</span> <span class="nc">ExperimentSelectionError</span><span class="p">(</span><span class="n">ConfigurationError</span><span class="p">):</span>
     
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">*</span><span class="n">hints</span><span class="p">):</span>
-        <span class="kn">from</span> <span class="nn">tau.cli.commands.select</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">select_cmd</span>
+        <span class="kn">from</span> <span class="nn">tau.cli.commands.experiment.create</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">experiment_create_cmd</span>
         <span class="kn">from</span> <span class="nn">tau.cli.commands.project.list</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">project_list_cmd</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">hints</span><span class="p">:</span>
-            <span class="n">hints</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Use `</span><span class="si">%s</span><span class="s2">` to create a new experiment.&quot;</span> <span class="o">%</span> <span class="n">select_cmd</span><span class="p">,</span>
+            <span class="n">hints</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Use `</span><span class="si">%s</span><span class="s2">` to create a new experiment.&quot;</span> <span class="o">%</span> <span class="n">experiment_create_cmd</span><span class="p">,</span>
                      <span class="s2">&quot;Use `</span><span class="si">%s</span><span class="s2">` to see available project configurations.&quot;</span> <span class="o">%</span> <span class="n">project_list_cmd</span><span class="p">)</span>    
         <span class="nb">super</span><span class="p">(</span><span class="n">ExperimentSelectionError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="o">*</span><span class="n">hints</span><span class="p">)</span></div>
 
@@ -194,22 +195,15 @@
 <div class="viewcode-block" id="ProjectController.unselect"><a class="viewcode-back" href="../../../tau.model.project.html#tau.model.project.ProjectController.unselect">[docs]</a>    <span class="k">def</span> <span class="nf">unselect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="p">[</span><span class="s1">&#39;selected_project&#39;</span><span class="p">]</span></div>
         
-    <span class="k">def</span> <span class="nf">_selected_eid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ProjectController.selected"><a class="viewcode-back" href="../../../tau.model.project.html#tau.model.project.ProjectController.selected">[docs]</a>    <span class="k">def</span> <span class="nf">selected</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="p">[</span><span class="s1">&#39;selected_project&#39;</span><span class="p">]</span>
+            <span class="n">selected</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">one</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="p">[</span><span class="s1">&#39;selected_project&#39;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">selected</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ProjectSelectionError</span><span class="p">(</span><span class="s2">&quot;No project selected&quot;</span><span class="p">)</span>
-
-<div class="viewcode-block" id="ProjectController.selected"><a class="viewcode-back" href="../../../tau.model.project.html#tau.model.project.ProjectController.selected">[docs]</a>    <span class="k">def</span> <span class="nf">selected</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Gets the currently selected project&#39;s configuration data.</span>
-<span class="sd">        </span>
-<span class="sd">        Returns:</span>
-<span class="sd">            Project: The current project.</span>
-<span class="sd">            </span>
-<span class="sd">        Raises:</span>
-<span class="sd">            ProjectSelectionError: No project currently selected.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">one</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_selected_eid</span><span class="p">())</span></div></div>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">selected</span></div></div>
 
 
 <div class="viewcode-block" id="Project"><a class="viewcode-back" href="../../../tau.model.project.html#tau.model.project.Project">[docs]</a><span class="k">class</span> <span class="nc">Project</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
@@ -218,6 +212,35 @@
     <span class="n">__attributes__</span> <span class="o">=</span> <span class="n">attributes</span>
 
     <span class="n">__controller__</span> <span class="o">=</span> <span class="n">ProjectController</span>
+    
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_check_rebuild_required</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">model_attr</span><span class="p">,</span> <span class="n">old</span><span class="p">,</span> <span class="n">new</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">tau.model.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
+        <span class="n">model_cls</span> <span class="o">=</span> <span class="n">Experiment</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="n">model_attr</span><span class="p">][</span><span class="s1">&#39;model&#39;</span><span class="p">]</span>
+        <span class="n">model_new</span> <span class="o">=</span> <span class="n">new</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="n">model_attr</span><span class="p">)</span>
+        <span class="n">model_old</span> <span class="o">=</span> <span class="n">old</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="n">model_attr</span><span class="p">)</span>
+        <span class="n">changed</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">props</span> <span class="ow">in</span> <span class="n">model_cls</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="k">if</span> <span class="s1">&#39;on_change&#39;</span> <span class="ow">in</span> <span class="n">props</span><span class="p">:</span>
+                <span class="n">old_value</span> <span class="o">=</span> <span class="n">model_old</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+                <span class="n">new_value</span> <span class="o">=</span> <span class="n">model_new</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">old_value</span> <span class="o">!=</span> <span class="n">new_value</span><span class="p">:</span>
+                    <span class="n">changed</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">old_value</span><span class="p">,</span> <span class="n">new_value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">changed</span>
+    
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Project.on_experiment_change"><a class="viewcode-back" href="../../../tau.model.project.html#tau.model.project.Project.on_experiment_change">[docs]</a>    <span class="k">def</span> <span class="nf">on_experiment_change</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">new_value</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">tau.model.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
+        <span class="n">old_value</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">old_value</span> <span class="ow">and</span> <span class="n">new_value</span><span class="p">:</span>
+            <span class="n">new</span> <span class="o">=</span> <span class="n">Experiment</span><span class="o">.</span><span class="n">controller</span><span class="p">()</span><span class="o">.</span><span class="n">one</span><span class="p">(</span><span class="n">new_value</span><span class="p">)</span>
+            <span class="n">old</span> <span class="o">=</span> <span class="n">Experiment</span><span class="o">.</span><span class="n">controller</span><span class="p">()</span><span class="o">.</span><span class="n">one</span><span class="p">(</span><span class="n">old_value</span><span class="p">)</span>
+            <span class="n">rebuild_required</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">model_attr</span> <span class="ow">in</span> <span class="s1">&#39;target&#39;</span><span class="p">,</span> <span class="s1">&#39;application&#39;</span><span class="p">,</span> <span class="s1">&#39;measurement&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">old</span><span class="p">[</span><span class="n">model_attr</span><span class="p">]</span> <span class="o">!=</span> <span class="n">new</span><span class="p">[</span><span class="n">model_attr</span><span class="p">]:</span>
+                    <span class="n">rebuild_required</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">_check_rebuild_required</span><span class="p">(</span><span class="n">model_attr</span><span class="p">,</span> <span class="n">old</span><span class="p">,</span> <span class="n">new</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">rebuild_required</span><span class="p">:</span>
+                <span class="n">cls</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="p">)</span><span class="o">.</span><span class="n">push_to_topic</span><span class="p">(</span><span class="s1">&#39;rebuild_required&#39;</span><span class="p">,</span> <span class="n">rebuild_required</span><span class="p">)</span></div>
 
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="Project.controller"><a class="viewcode-back" href="../../../tau.model.project.html#tau.model.project.Project.controller">[docs]</a>    <span class="k">def</span> <span class="nf">controller</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">storage</span><span class="o">=</span><span class="n">PROJECT_STORAGE</span><span class="p">):</span>

@@ -76,6 +76,7 @@
 
 <span class="sd">Functions used for unit tests of create.py.</span>
 <span class="sd">&quot;&quot;&quot;</span>
+<span class="c1">#pylint: disable=missing-docstring</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">unittest</span>
@@ -124,7 +125,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s2">&quot;test_targ&quot;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">stderr</span><span class="p">)</span>
 
-        <span class="kn">from</span> <span class="nn">tau.storage.levels</span> <span class="kn">import</span> <span class="n">PROJECT_STORAGE</span>
+        <span class="kn">from</span> <span class="nn">tau.cf.storage.levels</span> <span class="kn">import</span> <span class="n">PROJECT_STORAGE</span>
         <span class="kn">from</span> <span class="nn">tau.model.target</span> <span class="kn">import</span> <span class="n">Target</span>
         <span class="n">ctrl</span> <span class="o">=</span> <span class="n">Target</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="n">PROJECT_STORAGE</span><span class="p">)</span>
         <span class="n">test_targ</span> <span class="o">=</span> <span class="n">ctrl</span><span class="o">.</span><span class="n">one</span><span class="p">({</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;test_targ&#39;</span><span class="p">})</span>
@@ -142,7 +143,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s2">&quot;test_targ&quot;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">stderr</span><span class="p">)</span>
 
-        <span class="kn">from</span> <span class="nn">tau.storage.levels</span> <span class="kn">import</span> <span class="n">PROJECT_STORAGE</span>
+        <span class="kn">from</span> <span class="nn">tau.cf.storage.levels</span> <span class="kn">import</span> <span class="n">PROJECT_STORAGE</span>
         <span class="kn">from</span> <span class="nn">tau.model.target</span> <span class="kn">import</span> <span class="n">Target</span>
         <span class="n">ctrl</span> <span class="o">=</span> <span class="n">Target</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="n">PROJECT_STORAGE</span><span class="p">)</span>
         <span class="n">test_targ</span> <span class="o">=</span> <span class="n">ctrl</span><span class="o">.</span><span class="n">one</span><span class="p">({</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;test_targ&#39;</span><span class="p">})</span>

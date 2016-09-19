@@ -81,9 +81,9 @@
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>record</strong> (<a class="reference internal" href="tau.storage.local_file.html#tau.storage.local_file.LocalFileStorage.Record" title="tau.storage.local_file.LocalFileStorage.Record"><em>Record</em></a>) &#8211; Record to associate.</li>
+<li><strong>record</strong> (<a class="reference internal" href="tau.cf.storage.html#tau.cf.storage.AbstractStorage.Record" title="tau.cf.storage.AbstractStorage.Record"><em>Record</em></a>) &#8211; Record to associate.</li>
 <li><strong>foreign_model</strong> (<a class="reference internal" href="tau.mvc.model.html#tau.mvc.model.Model" title="tau.mvc.model.Model"><em>Model</em></a>) &#8211; Foreign record&#8217;s data model.</li>
-<li><strong>affected</strong> (<a class="reference internal" href="tau.cli.commands.target.list.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Identifiers for the records that will be updated to associate with <cite>record</cite>.</li>
+<li><strong>affected</strong> (<a class="reference internal" href="tau.cli.commands.measurement.list.html#module-tau.cli.commands.measurement.list" title="tau.cli.commands.measurement.list"><em>list</em></a>) &#8211; Identifiers for the records that will be updated to associate with <cite>record</cite>.</li>
 <li><strong>via</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The name of the associated foreign attribute.</li>
 </ul>
 </td>
@@ -101,9 +101,9 @@
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>record</strong> (<a class="reference internal" href="tau.storage.local_file.html#tau.storage.local_file.LocalFileStorage.Record" title="tau.storage.local_file.LocalFileStorage.Record"><em>Record</em></a>) &#8211; Record to disassociate.</li>
+<li><strong>record</strong> (<a class="reference internal" href="tau.cf.storage.html#tau.cf.storage.AbstractStorage.Record" title="tau.cf.storage.AbstractStorage.Record"><em>Record</em></a>) &#8211; Record to disassociate.</li>
 <li><strong>foreign_model</strong> (<a class="reference internal" href="tau.mvc.model.html#tau.mvc.model.Model" title="tau.mvc.model.Model"><em>Model</em></a>) &#8211; Foreign record&#8217;s data model.</li>
-<li><strong>affected</strong> (<a class="reference internal" href="tau.cli.commands.target.list.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Identifiers for the records that will be updated to disassociate from <cite>record</cite>.</li>
+<li><strong>affected</strong> (<a class="reference internal" href="tau.cli.commands.measurement.list.html#module-tau.cli.commands.measurement.list" title="tau.cli.commands.measurement.list"><em>list</em></a>) &#8211; Identifiers for the records that will be updated to disassociate from <cite>record</cite>.</li>
 <li><strong>via</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The name of the associated foreign attribute.</li>
 </ul>
 </td>
@@ -122,7 +122,7 @@
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Models for all records or an empty lists if no records exist.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="tau.cli.commands.target.list.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list">list</a></td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="tau.cli.commands.measurement.list.html#module-tau.cli.commands.measurement.list" title="tau.cli.commands.measurement.list">list</a></td>
 </tr>
 </tbody>
 </table>
@@ -147,8 +147,9 @@
 <dl class="method">
 <dt id="tau.mvc.controller.Controller.create">
 <code class="descname">create</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/controller.html#Controller.create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.controller.Controller.create" title="Permalink to this definition">¶</a></dt>
-<dd><p>Store a new record and update associations.</p>
-<p>Invokes the <cite>on_create</cite> callback <strong>after</strong> the data is recorded.</p>
+<dd><p>Atomically store a new record and update associations.</p>
+<p>Invokes the <cite>on_create</cite> callback <strong>after</strong> the data is recorded.  If this callback raises
+an exception then the operation is reverted.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -177,7 +178,8 @@
 </ul>
 </dd>
 </dl>
-<p>Invokes the <cite>on_delete</cite> callback for each record <strong>before</strong> the record is deleted.</p>
+<p>Invokes the <cite>on_delete</cite> callback <strong>after</strong> the data is deleted.  If this callback raises
+an exception then the operation is reverted.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -223,7 +225,7 @@ and may contain eids of undefined records.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>keys</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Attributes to match.</li>
-<li><strong>eids</strong> (<a class="reference internal" href="tau.cli.commands.target.list.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Record identifiers to match.</li>
+<li><strong>eids</strong> (<a class="reference internal" href="tau.cli.commands.measurement.list.html#module-tau.cli.commands.measurement.list" title="tau.cli.commands.measurement.list"><em>list</em></a>) &#8211; Record identifiers to match.</li>
 </ul>
 </td>
 </tr>
@@ -271,21 +273,26 @@ and may contain eids of undefined records.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>field</strong> &#8211; See <a class="reference internal" href="tau.storage.html#tau.storage.AbstractStorage.match" title="tau.storage.AbstractStorage.match"><code class="xref any py py-meth docutils literal"><span class="pre">AbstractStorage.match</span></code></a>.</li>
-<li><strong>regex</strong> &#8211; See <a class="reference internal" href="tau.storage.html#tau.storage.AbstractStorage.match" title="tau.storage.AbstractStorage.match"><code class="xref any py py-meth docutils literal"><span class="pre">AbstractStorage.match</span></code></a>.</li>
-<li><strong>test</strong> &#8211; See <a class="reference internal" href="tau.storage.html#tau.storage.AbstractStorage.match" title="tau.storage.AbstractStorage.match"><code class="xref any py py-meth docutils literal"><span class="pre">AbstractStorage.match</span></code></a>.</li>
+<li><strong>field</strong> &#8211; See <a class="reference internal" href="tau.cf.storage.html#tau.cf.storage.AbstractStorage.match" title="tau.cf.storage.AbstractStorage.match"><code class="xref any py py-meth docutils literal"><span class="pre">AbstractStorage.match</span></code></a>.</li>
+<li><strong>regex</strong> &#8211; See <a class="reference internal" href="tau.cf.storage.html#tau.cf.storage.AbstractStorage.match" title="tau.cf.storage.AbstractStorage.match"><code class="xref any py py-meth docutils literal"><span class="pre">AbstractStorage.match</span></code></a>.</li>
+<li><strong>test</strong> &#8211; See <a class="reference internal" href="tau.cf.storage.html#tau.cf.storage.AbstractStorage.match" title="tau.cf.storage.AbstractStorage.match"><code class="xref any py py-meth docutils literal"><span class="pre">AbstractStorage.match</span></code></a>.</li>
 </ul>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Models for records that have a matching field.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="tau.cli.commands.target.list.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list">list</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="tau.cli.commands.measurement.list.html#module-tau.cli.commands.measurement.list" title="tau.cli.commands.measurement.list">list</a></p>
 </td>
 </tr>
 </tbody>
 </table>
 </dd></dl>
+
+<dl class="attribute">
+<dt id="tau.mvc.controller.Controller.messages">
+<code class="descname">messages</code><em class="property"> = {}</em><a class="headerlink" href="#tau.mvc.controller.Controller.messages" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="method">
 <dt id="tau.mvc.controller.Controller.one">
@@ -295,7 +302,7 @@ and may contain eids of undefined records.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>key</strong> &#8211; See <a class="reference internal" href="tau.storage.html#tau.storage.AbstractStorage.get" title="tau.storage.AbstractStorage.get"><code class="xref any py py-meth docutils literal"><span class="pre">AbstractStorage.get</span></code></a>.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>key</strong> &#8211; See <a class="reference internal" href="tau.cf.storage.html#tau.cf.storage.AbstractStorage.get" title="tau.cf.storage.AbstractStorage.get"><code class="xref any py py-meth docutils literal"><span class="pre">AbstractStorage.get</span></code></a>.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The model for the matching record or None if no such record exists.</td>
 </tr>
@@ -304,6 +311,11 @@ and may contain eids of undefined records.</p>
 </tbody>
 </table>
 </dd></dl>
+
+<dl class="classmethod">
+<dt id="tau.mvc.controller.Controller.pop_topic">
+<em class="property">classmethod </em><code class="descname">pop_topic</code><span class="sig-paren">(</span><em>topic</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/controller.html#Controller.pop_topic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.controller.Controller.pop_topic" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="method">
 <dt id="tau.mvc.controller.Controller.populate">
@@ -344,6 +356,11 @@ If attribute is not None, the value of the populated attribute.</p>
 </table>
 </dd></dl>
 
+<dl class="classmethod">
+<dt id="tau.mvc.controller.Controller.push_to_topic">
+<em class="property">classmethod </em><code class="descname">push_to_topic</code><span class="sig-paren">(</span><em>topic</em>, <em>message</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/controller.html#Controller.push_to_topic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.controller.Controller.push_to_topic" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="method">
 <dt id="tau.mvc.controller.Controller.search">
 <code class="descname">search</code><span class="sig-paren">(</span><em>keys=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/controller.html#Controller.search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.controller.Controller.search" title="Permalink to this definition">¶</a></dt>
@@ -352,11 +369,11 @@ If attribute is not None, the value of the populated attribute.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>keys</strong> &#8211; See <a class="reference internal" href="tau.storage.html#tau.storage.AbstractStorage.search" title="tau.storage.AbstractStorage.search"><code class="xref any py py-meth docutils literal"><span class="pre">AbstractStorage.search</span></code></a>.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>keys</strong> &#8211; See <a class="reference internal" href="tau.cf.storage.html#tau.cf.storage.AbstractStorage.search" title="tau.cf.storage.AbstractStorage.search"><code class="xref any py py-meth docutils literal"><span class="pre">AbstractStorage.search</span></code></a>.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Models for records with the given keys or an empty lists if no records have all keys.</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="tau.cli.commands.target.list.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list">list</a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="tau.cli.commands.measurement.list.html#module-tau.cli.commands.measurement.list" title="tau.cli.commands.measurement.list">list</a></td>
 </tr>
 </tbody>
 </table>
@@ -376,13 +393,14 @@ If attribute is not None, the value of the populated attribute.</p>
 </ul>
 </dd>
 </dl>
-<p>Invokes the <cite>on_update</cite> callback for each record <strong>after</strong> the records are updated.</p>
+<p>Invokes the <cite>on_update</cite> callback <strong>after</strong> the data is modified.  If this callback raises
+an exception then the operation is reverted.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>fields</strong> (<a class="reference internal" href="tau.cli.commands.target.list.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Names of fields to unset.</li>
+<li><strong>fields</strong> (<a class="reference internal" href="tau.cli.commands.measurement.list.html#module-tau.cli.commands.measurement.list" title="tau.cli.commands.measurement.list"><em>list</em></a>) &#8211; Names of fields to unset.</li>
 <li><strong>keys</strong> &#8211; Fields or element identifiers to match.</li>
 </ul>
 </td>
@@ -405,7 +423,8 @@ If attribute is not None, the value of the populated attribute.</p>
 </ul>
 </dd>
 </dl>
-<p>Invokes the <cite>on_update</cite> callback for each record <strong>after</strong> the records are updated.</p>
+<p>Invokes the <cite>on_update</cite> callback <strong>after</strong> the data is modified.  If this callback raises
+an exception then the operation is reverted.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />

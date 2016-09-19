@@ -28,7 +28,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
     <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
     <link rel="up" title="tau.cf.software package" href="tau.cf.software.html" />
-    <link rel="next" title="tau.cf.target package" href="tau.cf.target.html" />
+    <link rel="next" title="tau.cf.storage package" href="tau.cf.storage.html" />
     <link rel="prev" title="tau.cf.software.scorep_installation module" href="tau.cf.software.scorep_installation.html" /> 
   </head>
   <body role="document">
@@ -43,7 +43,7 @@
         &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
         &#160;&#160;::&#160;&#160;
-        <a href="tau.cf.target.html">tau.cf.target package</a>&#160;&#160;»
+        <a href="tau.cf.storage.html">tau.cf.storage package</a>&#160;&#160;»
         </p>
 
       </div>
@@ -56,7 +56,7 @@
 <p>TAU is the core software package of TAU Commander.</p>
 <dl class="class">
 <dt id="tau.cf.software.tau_installation.TauInstallation">
-<em class="property">class </em><code class="descclassname">tau.cf.software.tau_installation.</code><code class="descname">TauInstallation</code><span class="sig-paren">(</span><em>prefix</em>, <em>src</em>, <em>target_arch</em>, <em>target_os</em>, <em>compilers</em>, <em>verbose</em>, <em>pdt</em>, <em>binutils</em>, <em>libunwind</em>, <em>papi</em>, <em>scorep</em>, <em>openmp_support</em>, <em>pthreads_support</em>, <em>mpi_support</em>, <em>mpi_include_path</em>, <em>mpi_library_path</em>, <em>mpi_libraries</em>, <em>cuda_support</em>, <em>cuda_prefix</em>, <em>opencl_support</em>, <em>opencl_prefix</em>, <em>shmem_support</em>, <em>shmem_include_path</em>, <em>shmem_library_path</em>, <em>shmem_libraries</em>, <em>mpc_support</em>, <em>scorep_source</em>, <em>source_inst</em>, <em>compiler_inst</em>, <em>link_only</em>, <em>io_inst</em>, <em>keep_inst_files</em>, <em>reuse_inst_files</em>, <em>select_file</em>, <em>profile</em>, <em>trace</em>, <em>sample</em>, <em>metrics</em>, <em>measure_mpi</em>, <em>measure_openmp</em>, <em>measure_opencl</em>, <em>measure_pthreads</em>, <em>measure_cuda</em>, <em>measure_shmem</em>, <em>measure_mpc</em>, <em>measure_heap_usage</em>, <em>measure_memory_alloc</em>, <em>measure_comm_matrix</em>, <em>callpath_depth</em>, <em>throttle</em>, <em>throttle_per_call</em>, <em>throttle_num_calls</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/tau_installation.html#TauInstallation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.tau_installation.TauInstallation" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.cf.software.tau_installation.</code><code class="descname">TauInstallation</code><span class="sig-paren">(</span><em>sources</em>, <em>target_arch</em>, <em>target_os</em>, <em>compilers</em>, <em>openmp_support</em>, <em>pthreads_support</em>, <em>mpi_support</em>, <em>mpi_include_path</em>, <em>mpi_library_path</em>, <em>mpi_libraries</em>, <em>cuda_support</em>, <em>cuda_prefix</em>, <em>opencl_support</em>, <em>opencl_prefix</em>, <em>shmem_support</em>, <em>shmem_include_path</em>, <em>shmem_library_path</em>, <em>shmem_libraries</em>, <em>mpc_support</em>, <em>source_inst</em>, <em>compiler_inst</em>, <em>link_only</em>, <em>io_inst</em>, <em>keep_inst_files</em>, <em>reuse_inst_files</em>, <em>select_file</em>, <em>profile</em>, <em>trace</em>, <em>sample</em>, <em>metrics</em>, <em>measure_mpi</em>, <em>measure_openmp</em>, <em>measure_opencl</em>, <em>measure_pthreads</em>, <em>measure_cuda</em>, <em>measure_shmem</em>, <em>measure_mpc</em>, <em>measure_heap_usage</em>, <em>measure_memory_alloc</em>, <em>measure_comm_matrix</em>, <em>callpath_depth</em>, <em>throttle</em>, <em>throttle_per_call</em>, <em>throttle_num_calls</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/tau_installation.html#TauInstallation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.tau_installation.TauInstallation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="tau.cf.software.installation.html#tau.cf.software.installation.Installation" title="tau.cf.software.installation.Installation"><code class="xref py py-class docutils literal"><span class="pre">tau.cf.software.installation.Installation</span></code></a></p>
 <p>Encapsulates a TAU installation.</p>
 <p>TAU is an enormous, organic, complex piece of software so this class is
@@ -81,7 +81,7 @@ executes the compiler command.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>compiler</strong> (<a class="reference internal" href="tau.model.compiler.html#tau.model.compiler.Compiler" title="tau.model.compiler.Compiler"><em>Compiler</em></a>) &#8211; A compiler command.</li>
-<li><strong>compiler_args</strong> (<a class="reference internal" href="tau.cli.commands.target.list.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Compiler command line arguments.</li>
+<li><strong>compiler_args</strong> (<a class="reference internal" href="tau.cli.commands.measurement.list.html#module-tau.cli.commands.measurement.list" title="tau.cli.commands.measurement.list"><em>list</em></a>) &#8211; Compiler command line arguments.</li>
 </ul>
 </td>
 </tr>
@@ -110,7 +110,7 @@ for the TAU compiler wrapper scripts.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>opts</strong> (<a class="reference internal" href="tau.cli.commands.target.list.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Command line options.</li>
+<li><strong>opts</strong> (<a class="reference internal" href="tau.cli.commands.measurement.list.html#module-tau.cli.commands.measurement.list" title="tau.cli.commands.measurement.list"><em>list</em></a>) &#8211; Command line options.</li>
 <li><strong>env</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Environment variables.</li>
 </ul>
 </td>
@@ -215,7 +215,7 @@ function will likely not match the order they appear in the makefile name or tau
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Makefile tags, e.g. [&#8216;papi&#8217;, &#8216;pdt&#8217;, &#8216;icpc&#8217;]</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="tau.cli.commands.target.list.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list">list</a></td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="tau.cli.commands.measurement.list.html#module-tau.cli.commands.measurement.list" title="tau.cli.commands.measurement.list">list</a></td>
 </tr>
 </tbody>
 </table>
@@ -288,7 +288,7 @@ for the TAU library and tau_exec script.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>opts</strong> (<a class="reference internal" href="tau.cli.commands.target.list.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Command line options.</li>
+<li><strong>opts</strong> (<a class="reference internal" href="tau.cli.commands.measurement.list.html#module-tau.cli.commands.measurement.list" title="tau.cli.commands.measurement.list"><em>list</em></a>) &#8211; Command line options.</li>
 <li><strong>env</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Environment variables.</li>
 </ul>
 </td>
@@ -355,24 +355,7 @@ for the TAU library and tau_exec script.</p>
 <dl class="method">
 <dt id="tau.cf.software.tau_installation.TauInstallation.verify">
 <code class="descname">verify</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/tau_installation.html#TauInstallation.verify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.tau_installation.TauInstallation.verify" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns true if the installation is valid.</p>
-<p>A working TAU installation has a directory named <cite>arch</cite>
-containing <cite>bin</cite> and <cite>lib</cite> directories and provides all expected
-libraries and commands.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">If the installation at <cite>install_prefix</cite> is working.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/constants.html#True" title="(in Python v2.7)">True</a></td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">SoftwarePackageError</span></code> &#8211;
-Describes why the installation is invalid.</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
+<dd></dd></dl>
 
 </dd></dl>
 
@@ -387,7 +370,7 @@ Describes why the installation is invalid.</td>
         &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
         &#160;&#160;::&#160;&#160;
-        <a href="tau.cf.target.html">tau.cf.target package</a>&#160;&#160;»
+        <a href="tau.cf.storage.html">tau.cf.storage package</a>&#160;&#160;»
         </p>
 
       </div>

@@ -82,7 +82,7 @@
 <span class="kn">from</span> <span class="nn">tau.model.target</span> <span class="kn">import</span> <span class="n">Target</span>
 <span class="kn">from</span> <span class="nn">tau.model.application</span> <span class="kn">import</span> <span class="n">Application</span>
 <span class="kn">from</span> <span class="nn">tau.model.measurement</span> <span class="kn">import</span> <span class="n">Measurement</span>
-<span class="kn">from</span> <span class="nn">tau.storage.levels</span> <span class="kn">import</span> <span class="n">PROJECT_STORAGE</span>
+<span class="kn">from</span> <span class="nn">tau.cf.storage.levels</span> <span class="kn">import</span> <span class="n">PROJECT_STORAGE</span>
 
 
 <div class="viewcode-block" id="ProjectCreateCommand"><a class="viewcode-back" href="../../../../../tau.cli.commands.project.create.html#tau.cli.commands.project.create.ProjectCreateCommand">[docs]</a><span class="k">class</span> <span class="nc">ProjectCreateCommand</span><span class="p">(</span><span class="n">CreateCommand</span><span class="p">):</span>
@@ -125,7 +125,7 @@
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">acc</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">found</span><span class="p">)</span>
     
-<div class="viewcode-block" id="ProjectCreateCommand.construct_parser"><a class="viewcode-back" href="../../../../../tau.cli.commands.project.create.html#tau.cli.commands.project.create.ProjectCreateCommand.construct_parser">[docs]</a>    <span class="k">def</span> <span class="nf">construct_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_construct_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">usage</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> &lt;project_name&gt; [targets] [applications] [measurements] [arguments]&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span>
         <span class="n">parser</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">get_parser_from_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">prog</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">,</span> <span class="n">usage</span><span class="o">=</span><span class="n">usage</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">summary</span><span class="p">)</span>
         <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;impl_targets&#39;</span><span class="p">,</span>
@@ -161,13 +161,11 @@
                             <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;+&#39;</span><span class="p">,</span>
                             <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">,</span>
                             <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;measurement&#39;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">parser</span></div>
+        <span class="k">return</span> <span class="n">parser</span>
 
 
 <div class="viewcode-block" id="ProjectCreateCommand.main"><a class="viewcode-back" href="../../../../../tau.cli.commands.project.create.html#tau.cli.commands.project.create.ProjectCreateCommand.main">[docs]</a>    <span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">argv</span><span class="p">):</span>
-        <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">argv</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Arguments: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
-    
+        <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_args</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
         <span class="n">targets</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="n">applications</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="n">measurements</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>

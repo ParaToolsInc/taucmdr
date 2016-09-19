@@ -28,7 +28,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
     <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
     <link rel="up" title="tau.mvc package" href="tau.mvc.html" />
-    <link rel="next" title="tau.storage package" href="tau.storage.html" />
+    <link rel="next" title="tau.tests package" href="tau.tests.html" />
     <link rel="prev" title="tau.mvc.controller module" href="tau.mvc.controller.html" /> 
   </head>
   <body role="document">
@@ -43,7 +43,7 @@
         &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
         &#160;&#160;::&#160;&#160;
-        <a href="tau.storage.html">tau.storage package</a>&#160;&#160;»
+        <a href="tau.tests.html">tau.tests package</a>&#160;&#160;»
         </p>
 
       </div>
@@ -56,9 +56,8 @@
 <dl class="class">
 <dt id="tau.mvc.model.Model">
 <em class="property">class </em><code class="descclassname">tau.mvc.model.</code><code class="descname">Model</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/model.html#Model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.model.Model" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="tau.storage.html#tau.storage.StorageRecord" title="tau.storage.StorageRecord"><code class="xref py py-class docutils literal"><span class="pre">tau.storage.StorageRecord</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="tau.cf.storage.html#tau.cf.storage.StorageRecord" title="tau.cf.storage.StorageRecord"><code class="xref py py-class docutils literal"><span class="pre">tau.cf.storage.StorageRecord</span></code></a></p>
 <p>The &#8220;M&#8221; in <a class="reference external" href="https://en.wikipedia.org/wiki/Model-view-controller">MVC</a>.</p>
-<p>TODO: Docs</p>
 <dl class="attribute">
 <dt id="tau.mvc.model.Model.name">
 <code class="descname">name</code><a class="headerlink" href="#tau.mvc.model.Model.name" title="Permalink to this definition">¶</a></dt>
@@ -127,7 +126,7 @@ then the listed conditions are checked when the attribute&#8217;s value matches 
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>rhs</strong> (<a class="reference internal" href="#tau.mvc.model.Model" title="tau.mvc.model.Model"><em>Model</em></a>) &#8211; Check compatibility with this data record.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211;
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">IncompatibleRecordError</span></code> &#8211;
 The two records are not compatible.</td>
 </tr>
 </tbody>
@@ -151,7 +150,7 @@ louis = ProgramManager({&#39;holding_long_meeting&#39;: True})
 keith = Roommate({&#39;steals_food&#39;: True})
 </pre></div>
 </div>
-<p>These expressions raise <a class="reference internal" href="tau.error.html#tau.error.ConfigurationError" title="tau.error.ConfigurationError"><code class="xref any py py-exc docutils literal"><span class="pre">ConfigurationError</span></code></a>:</p>
+<p>These expressions raise <a class="reference internal" href="tau.error.html#tau.error.IncompatibleRecordError" title="tau.error.IncompatibleRecordError"><code class="xref any py py-exc docutils literal"><span class="pre">IncompatibleRecordError</span></code></a>:</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">bob</span><span class="o">.</span><span class="n">check_compatibility</span><span class="p">(</span><span class="n">world_o_cheese</span><span class="p">)</span>   <span class="c1"># Because have_cheese == False</span>
 <span class="n">bob</span><span class="o">.</span><span class="n">check_compatibility</span><span class="p">(</span><span class="n">keith</span><span class="p">)</span>            <span class="c1"># Because steals_food == True</span>
 </pre></div>
@@ -191,7 +190,7 @@ the above expressions do nothing.</p>
 </ul>
 </dd>
 </dl>
-<p>The <cite>condition</cite> callable raises a <a class="reference internal" href="tau.error.html#tau.error.ConfigurationError" title="tau.error.ConfigurationError"><code class="xref any py py-exc docutils literal"><span class="pre">ConfigurationError</span></code></a> if the compared attributes
+<p>The <cite>condition</cite> callable raises a <a class="reference internal" href="tau.error.html#tau.error.IncompatibleRecordError" title="tau.error.IncompatibleRecordError"><code class="xref any py py-exc docutils literal"><span class="pre">IncompatibleRecordError</span></code></a> if the compared attributes
 are fatally incompatibile, i.e. the user&#8217;s operation is guaranteed to fail with the chosen
 records. It may emit log messages to indicate that the records are not perfectly compatible
 but that the user&#8217;s operation is still likely to succeed with the chosen records.</p>
@@ -292,7 +291,7 @@ undefined or not equal to the specified value (if given).</p>
 <dt id="tau.mvc.model.Model.exclude">
 <em class="property">classmethod </em><code class="descname">exclude</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/model.html#Model.exclude"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.model.Model.exclude" title="Permalink to this definition">¶</a></dt>
 <dd><p>Constructs a compatibility condition to enforce required conditions.</p>
-<p>The condition will raise a <a class="reference internal" href="tau.error.html#tau.error.ConfigurationError" title="tau.error.ConfigurationError"><code class="xref any py py-exc docutils literal"><span class="pre">ConfigurationError</span></code></a> if the specified attribute is
+<p>The condition will raise a <a class="reference internal" href="tau.error.html#tau.error.IncompatibleRecordError" title="tau.error.IncompatibleRecordError"><code class="xref any py py-exc docutils literal"><span class="pre">IncompatibleRecordError</span></code></a> if the specified attribute is
 defined or equal to the specified value (if given).</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -346,25 +345,48 @@ If the attribute is not set then the attribute&#8217;s default value is returned
 <dl class="method">
 <dt id="tau.mvc.model.Model.on_create">
 <code class="descname">on_create</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/model.html#Model.on_create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.model.Model.on_create" title="Permalink to this definition">¶</a></dt>
-<dd><p>Callback to be invoked when a new data record is created.</p>
+<dd><p>Callback to be invoked after a new data record is created.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="tau.mvc.model.Model.on_delete">
 <code class="descname">on_delete</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/model.html#Model.on_delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.model.Model.on_delete" title="Permalink to this definition">¶</a></dt>
-<dd><p>Callback to be invoked when a data record is deleted.</p>
+<dd><p>Callback to be invoked before a data record is deleted.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="tau.mvc.model.Model.on_update">
 <code class="descname">on_update</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/model.html#Model.on_update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.model.Model.on_update" title="Permalink to this definition">¶</a></dt>
-<dd><p>Callback to be invoked when a data record is updated.</p>
+<dd><p>Callback to be invoked after a data record is updated.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="tau.mvc.model.Model.populate">
 <code class="descname">populate</code><span class="sig-paren">(</span><em>attribute=None</em>, <em>defaults=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/model.html#Model.populate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.model.Model.populate" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Shorthand for <code class="docutils literal"><span class="pre">self.controller(self.storage).populate(self,</span> <span class="pre">attribute,</span> <span class="pre">defaults)</span></code>.</p>
+<p>Result is cached in the object instance when possible so this should be faster
+than populating directly from the controller.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>attribute</strong> (<em>Optional[str]</em>) &#8211; If given, return only the populated attribute.</li>
+<li><strong>defaults</strong> (<em>Optional[bool]</em>) &#8211; If given, set undefined attributes to their default values.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">If attribute is None, a dictionary of controlled data merged with associated records.
+If attribute is not None, the value of the populated attribute.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">KeyError</span></code> &#8211;
+<cite>attribute</cite> is undefined in the record.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="attribute">
 <dt>
@@ -375,7 +397,7 @@ If the attribute is not set then the attribute&#8217;s default value is returned
 <dt id="tau.mvc.model.Model.require">
 <em class="property">classmethod </em><code class="descname">require</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/mvc/model.html#Model.require"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.model.Model.require" title="Permalink to this definition">¶</a></dt>
 <dd><p>Constructs a compatibility condition to enforce required conditions.</p>
-<p>The condition will raise a <a class="reference internal" href="tau.error.html#tau.error.ConfigurationError" title="tau.error.ConfigurationError"><code class="xref any py py-exc docutils literal"><span class="pre">ConfigurationError</span></code></a> if the specified attribute is
+<p>The condition will raise a <a class="reference internal" href="tau.error.html#tau.error.IncompatibleRecordError" title="tau.error.IncompatibleRecordError"><code class="xref any py py-exc docutils literal"><span class="pre">IncompatibleRecordError</span></code></a> if the specified attribute is
 undefined or not equal to the specified value (if given).</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -429,7 +451,7 @@ The given data doesn&#8217;t fit the model.</td>
 <dt id="tau.mvc.model.ModelMeta">
 <em class="property">class </em><code class="descclassname">tau.mvc.model.</code><code class="descname">ModelMeta</code><a class="reference internal" href="_modules/tau/mvc/model.html#ModelMeta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.mvc.model.ModelMeta" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#type" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">type</span></code></a></p>
-<p>Metaclass TODO: FIXME: Docs</p>
+<p>Constructs model attributes, configures defaults, and establishes relationships.</p>
 <dl class="attribute">
 <dt id="tau.mvc.model.ModelMeta.attributes">
 <code class="descname">attributes</code><a class="headerlink" href="#tau.mvc.model.ModelMeta.attributes" title="Permalink to this definition">¶</a></dt>
@@ -453,7 +475,7 @@ The given data doesn&#8217;t fit the model.</td>
         &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
         &#160;&#160;::&#160;&#160;
-        <a href="tau.storage.html">tau.storage package</a>&#160;&#160;»
+        <a href="tau.tests.html">tau.tests package</a>&#160;&#160;»
         </p>
 
       </div>

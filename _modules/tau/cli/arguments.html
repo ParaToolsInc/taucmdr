@@ -82,6 +82,8 @@
 <span class="kn">import</span> <span class="nn">textwrap</span>
 <span class="kn">from</span> <span class="nn">operator</span> <span class="kn">import</span> <span class="n">attrgetter</span>
 <span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">util</span>
+<span class="kn">from</span> <span class="nn">tau.cf.storage.levels</span> <span class="kn">import</span> <span class="n">ORDERED_LEVELS</span><span class="p">,</span> <span class="n">STORAGE_LEVELS</span>
+
 
 <span class="n">SUPPRESS</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">SUPPRESS</span>
 <span class="sd">&quot;&quot;&quot;Suppress attribute creation in parsed argument namespace.&quot;&quot;&quot;</span>
@@ -91,6 +93,8 @@
 
 <span class="n">STORAGE_LEVEL_FLAG</span> <span class="o">=</span> <span class="s2">&quot;@&quot;</span>
 <span class="sd">&quot;&quot;&quot;Command line flag that indicates storage level.&quot;&quot;&quot;</span>
+
+<span class="n">_DEFAULT_STORAGE_LEVEL</span> <span class="o">=</span> <span class="n">ORDERED_LEVELS</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span>
 
 
 <div class="viewcode-block" id="MutableGroupArgumentParser"><a class="viewcode-back" href="../../../tau.cli.arguments.html#tau.cli.arguments.MutableGroupArgumentParser">[docs]</a><span class="k">class</span> <span class="nc">MutableGroupArgumentParser</span><span class="p">(</span><span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">):</span>
@@ -150,19 +154,36 @@
             <span class="k">if</span> <span class="n">group</span><span class="o">.</span><span class="n">title</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="n">positional_title</span><span class="p">,</span> <span class="n">optional_title</span><span class="p">]:</span>
                 <span class="k">yield</span> <span class="n">group</span></div>
                 
-<div class="viewcode-block" id="MutableGroupArgumentParser.merge"><a class="viewcode-back" href="../../../tau.cli.arguments.html#tau.cli.arguments.MutableGroupArgumentParser.merge">[docs]</a>    <span class="k">def</span> <span class="nf">merge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parser</span><span class="p">,</span> <span class="n">group_title</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">include_positional</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">include_optional</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">include_storage</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<div class="viewcode-block" id="MutableGroupArgumentParser.merge"><a class="viewcode-back" href="../../../tau.cli.arguments.html#tau.cli.arguments.MutableGroupArgumentParser.merge">[docs]</a>    <span class="k">def</span> <span class="nf">merge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parser</span><span class="p">,</span> <span class="n">group_title</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> 
+              <span class="n">include_positional</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">include_optional</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">include_storage</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">exclude</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Merge arguments from a parser into this parser.</span>
+<span class="sd">        </span>
+<span class="sd">        Modify this parser by adding additional arguments taken from the supplied parser.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            parser (ArgumentParser): Parser to pull arguments from.</span>
+<span class="sd">            group_title (str): Optional group title for merged arguments.</span>
+<span class="sd">            include_positional (bool): If True, include positional arguments.</span>
+<span class="sd">            include_optional (bool): If True, include optional arguments.</span>
+<span class="sd">            include_storage (bool): If True, include the storage level argument, see :any:`STORAGE_LEVEL_FLAG`.</span>
+<span class="sd">            exclude (list): Strings identifying arguments that should be excluded.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">group</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="n">group_title</span><span class="p">)</span> <span class="k">if</span> <span class="n">group_title</span> <span class="k">else</span> <span class="bp">self</span>
         <span class="k">for</span> <span class="n">action</span> <span class="ow">in</span> <span class="n">parser</span><span class="o">.</span><span class="n">_actions</span><span class="p">:</span>
             <span class="n">optional</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">action</span><span class="o">.</span><span class="n">option_strings</span><span class="p">)</span>
             <span class="n">storage</span> <span class="o">=</span> <span class="s1">&#39;-&#39;</span><span class="o">+</span><span class="n">STORAGE_LEVEL_FLAG</span> <span class="ow">in</span> <span class="n">action</span><span class="o">.</span><span class="n">option_strings</span>
+            <span class="n">excluded</span> <span class="o">=</span> <span class="n">exclude</span> <span class="ow">and</span> <span class="nb">bool</span><span class="p">([</span><span class="n">optstr</span> <span class="k">for</span> <span class="n">optstr</span> <span class="ow">in</span> <span class="n">action</span><span class="o">.</span><span class="n">option_strings</span>  
+                                         <span class="k">for</span> <span class="n">substr</span> <span class="ow">in</span> <span class="n">exclude</span> <span class="k">if</span> <span class="n">substr</span> <span class="ow">in</span> <span class="n">optstr</span><span class="p">])</span>
             <span class="c1"># pylint: disable=too-many-boolean-expressions</span>
-            <span class="k">if</span> <span class="p">((</span><span class="ow">not</span> <span class="n">include_storage</span> <span class="ow">and</span> <span class="n">storage</span><span class="p">)</span> <span class="ow">or</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">excluded</span> <span class="ow">or</span>
+                    <span class="p">(</span><span class="ow">not</span> <span class="n">include_storage</span> <span class="ow">and</span> <span class="n">storage</span><span class="p">)</span> <span class="ow">or</span>
                     <span class="p">(</span><span class="ow">not</span> <span class="n">include_optional</span> <span class="ow">and</span> <span class="n">optional</span><span class="p">)</span> <span class="ow">or</span>
                     <span class="p">(</span><span class="ow">not</span> <span class="n">include_positional</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">optional</span><span class="p">)):</span>
                 <span class="k">continue</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">group</span><span class="o">.</span><span class="n">_add_action</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
             <span class="k">except</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentError</span><span class="p">:</span>
+                <span class="c1"># Argument is already in this parser.</span>
                 <span class="k">pass</span></div></div>
 
 
@@ -368,8 +389,8 @@
         <span class="n">group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="o">*</span><span class="n">flags</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">parser</span></div>
 
-<div class="viewcode-block" id="add_storage_flags"><a class="viewcode-back" href="../../../tau.cli.arguments.html#tau.cli.arguments.add_storage_flags">[docs]</a><span class="k">def</span> <span class="nf">add_storage_flags</span><span class="p">(</span><span class="n">parser</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">object_name</span><span class="p">,</span> <span class="n">plural</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">exclusive</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Add flags to indicate target storage container.</span>
+<div class="viewcode-block" id="add_storage_flag"><a class="viewcode-back" href="../../../tau.cli.arguments.html#tau.cli.arguments.add_storage_flag">[docs]</a><span class="k">def</span> <span class="nf">add_storage_flag</span><span class="p">(</span><span class="n">parser</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">object_name</span><span class="p">,</span> <span class="n">plural</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">exclusive</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Add flag to indicate target storage container.</span>
 <span class="sd">    </span>
 <span class="sd">    Args:</span>
 <span class="sd">        parser (MutableGroupArgumentParser): The parser to modify.</span>
@@ -378,20 +399,25 @@
 <span class="sd">        plural (bool): Pluralize help message if True.</span>
 <span class="sd">        exclusive (bool): Only one storage level may be specified if True.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="kn">from</span> <span class="nn">tau.storage.levels</span> <span class="kn">import</span> <span class="n">ORDERED_LEVELS</span>
     <span class="n">help_parts</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">s&quot;</span> <span class="k">if</span> <span class="n">plural</span> <span class="k">else</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> the </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
                   <span class="s2">&quot; at the specified storage &quot;</span><span class="p">,</span>
                   <span class="s2">&quot;level&quot;</span> <span class="k">if</span> <span class="n">exclusive</span> <span class="k">else</span> <span class="s2">&quot;levels&quot;</span><span class="p">]</span>
     <span class="n">help_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">help_parts</span><span class="p">)</span> <span class="o">%</span> <span class="p">(</span><span class="n">action</span><span class="p">,</span> <span class="n">object_name</span><span class="p">)</span>
     <span class="n">nargs</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">exclusive</span> <span class="k">else</span> <span class="s1">&#39;+&#39;</span>
     <span class="n">choices</span> <span class="o">=</span> <span class="p">[</span><span class="n">container</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">container</span> <span class="ow">in</span> <span class="n">ORDERED_LEVELS</span><span class="p">]</span>
-    <span class="n">default</span> <span class="o">=</span> <span class="p">[</span><span class="n">ORDERED_LEVELS</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="o">+</span><span class="n">STORAGE_LEVEL_FLAG</span><span class="p">,</span>
                         <span class="n">help</span><span class="o">=</span><span class="n">help_str</span><span class="p">,</span>
                         <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;&lt;level&gt;&quot;</span><span class="p">,</span> 
                         <span class="n">nargs</span><span class="o">=</span><span class="n">nargs</span><span class="p">,</span> 
                         <span class="n">choices</span><span class="o">=</span><span class="n">choices</span><span class="p">,</span>
-                        <span class="n">default</span><span class="o">=</span><span class="n">default</span><span class="p">)</span></div>
+                        <span class="n">default</span><span class="o">=</span><span class="p">[</span><span class="n">_DEFAULT_STORAGE_LEVEL</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="parse_storage_flag"><a class="viewcode-back" href="../../../tau.cli.arguments.html#tau.cli.arguments.parse_storage_flag">[docs]</a><span class="k">def</span> <span class="nf">parse_storage_flag</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">STORAGE_LEVEL_FLAG</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="n">_DEFAULT_STORAGE_LEVEL</span><span class="p">]</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">STORAGE_LEVELS</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">]</span></div>
 </pre></div>
 
       </div>

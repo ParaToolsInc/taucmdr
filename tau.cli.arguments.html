@@ -121,8 +121,26 @@ and generates &#8220;scruffy&#8221; looking help, so we fix this problems in thi
 
 <dl class="method">
 <dt id="tau.cli.arguments.MutableGroupArgumentParser.merge">
-<code class="descname">merge</code><span class="sig-paren">(</span><em>parser</em>, <em>group_title=None</em>, <em>include_positional=True</em>, <em>include_optional=True</em>, <em>include_storage=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/arguments.html#MutableGroupArgumentParser.merge"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.arguments.MutableGroupArgumentParser.merge" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="descname">merge</code><span class="sig-paren">(</span><em>parser</em>, <em>group_title=None</em>, <em>include_positional=True</em>, <em>include_optional=True</em>, <em>include_storage=False</em>, <em>exclude=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/arguments.html#MutableGroupArgumentParser.merge"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.arguments.MutableGroupArgumentParser.merge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Merge arguments from a parser into this parser.</p>
+<p>Modify this parser by adding additional arguments taken from the supplied parser.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>parser</strong> (<em>ArgumentParser</em>) &#8211; Parser to pull arguments from.</li>
+<li><strong>group_title</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Optional group title for merged arguments.</li>
+<li><strong>include_positional</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True, include positional arguments.</li>
+<li><strong>include_optional</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True, include optional arguments.</li>
+<li><strong>include_storage</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True, include the storage level argument, see <a class="reference internal" href="#tau.cli.arguments.STORAGE_LEVEL_FLAG" title="tau.cli.arguments.STORAGE_LEVEL_FLAG"><code class="xref any py py-data docutils literal"><span class="pre">STORAGE_LEVEL_FLAG</span></code></a>.</li>
+<li><strong>exclude</strong> (<a class="reference internal" href="tau.cli.commands.measurement.list.html#module-tau.cli.commands.measurement.list" title="tau.cli.commands.measurement.list"><em>list</em></a>) &#8211; Strings identifying arguments that should be excluded.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 </dd></dl>
 
@@ -209,9 +227,9 @@ Otherwise the attribute value is the value of <cite>flag</cite>.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="tau.cli.arguments.add_storage_flags">
-<code class="descclassname">tau.cli.arguments.</code><code class="descname">add_storage_flags</code><span class="sig-paren">(</span><em>parser</em>, <em>action</em>, <em>object_name</em>, <em>plural=False</em>, <em>exclusive=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/arguments.html#add_storage_flags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.arguments.add_storage_flags" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add flags to indicate target storage container.</p>
+<dt id="tau.cli.arguments.add_storage_flag">
+<code class="descclassname">tau.cli.arguments.</code><code class="descname">add_storage_flag</code><span class="sig-paren">(</span><em>parser</em>, <em>action</em>, <em>object_name</em>, <em>plural=False</em>, <em>exclusive=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/arguments.html#add_storage_flag"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.arguments.add_storage_flag" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add flag to indicate target storage container.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -308,6 +326,11 @@ as the argument&#8217;s value if argument is not specified.</li>
 </tbody>
 </table>
 </dd></dl>
+
+<dl class="function">
+<dt id="tau.cli.arguments.parse_storage_flag">
+<code class="descclassname">tau.cli.arguments.</code><code class="descname">parse_storage_flag</code><span class="sig-paren">(</span><em>args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/arguments.html#parse_storage_flag"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.arguments.parse_storage_flag" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </div>
 

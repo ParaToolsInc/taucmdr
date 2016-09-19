@@ -16,8 +16,8 @@ Submodules
    tau.cli.commands.project.create
    tau.cli.commands.project.delete
    tau.cli.commands.project.edit
-   tau.cli.commands.project.export
    tau.cli.commands.project.list
+   tau.cli.commands.project.select
 
 Module contents
 ---------------

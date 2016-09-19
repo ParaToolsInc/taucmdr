@@ -27,7 +27,7 @@
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
     <link rel="top" title="TAU Commander Developer Documentation" href="../../index.html" />
-    <link rel="up" title="Module code" href="../index.html" /> 
+    <link rel="up" title="tau" href="../tau.html" /> 
   </head>
   <body role="document">
       <div class="header" role="banner"><img class="rightlogo" src="../../_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="../../index.html">
@@ -199,6 +199,13 @@
 <span class="sd">            unique (dict): Dictionary of unique attributes in the data model.  </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">UniqueAttributeError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;A record with one of &#39;</span><span class="si">%s</span><span class="s2">&#39; already exists&quot;</span> <span class="o">%</span> <span class="n">unique</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ImmutableRecordError"><a class="viewcode-back" href="../../tau.error.html#tau.error.ImmutableRecordError">[docs]</a><span class="k">class</span> <span class="nc">ImmutableRecordError</span><span class="p">(</span><span class="n">ConfigurationError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Indicates that a data record cannot be modified.&quot;&quot;&quot;</span> </div>
+
+<div class="viewcode-block" id="IncompatibleRecordError"><a class="viewcode-back" href="../../tau.error.html#tau.error.IncompatibleRecordError">[docs]</a><span class="k">class</span> <span class="nc">IncompatibleRecordError</span><span class="p">(</span><span class="n">ConfigurationError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Indicates that a pair of data records are incompatible.&quot;&quot;&quot;</span> </div>
 
 
 <div class="viewcode-block" id="excepthook"><a class="viewcode-back" href="../../tau.error.html#tau.error.excepthook">[docs]</a><span class="k">def</span> <span class="nf">excepthook</span><span class="p">(</span><span class="n">etype</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tb</span><span class="p">):</span>

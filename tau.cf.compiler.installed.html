@@ -144,12 +144,55 @@ command (e.g. icc, gcc-4.2, etc.) with a compiler command in the knowledgebase.<
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>command</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Absolute or relative path to an installed compiler command.</li>
 <li><strong>family</strong> (<a class="reference internal" href="tau.cf.compiler.html#tau.cf.compiler.CompilerFamily" title="tau.cf.compiler.CompilerFamily"><em>CompilerFamily</em></a>) &#8211; Installed compiler&#8217;s family if known, None otherwise.</li>
 <li><strong>role</strong> (<a class="reference internal" href="tau.cf.compiler.html#tau.cf.compiler.CompilerRole" title="tau.cf.compiler.CompilerRole"><em>CompilerRole</em></a>) &#8211; Installed compiler&#8217;s role if known, None otherwise.</li>
 </ul>
 </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211;
+Unknown compiler command or not enough information given to perform the probe.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A new InstalledCompiler instance describing the compiler.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#tau.cf.compiler.installed.InstalledCompiler" title="tau.cf.compiler.installed.InstalledCompiler">InstalledCompiler</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.cf.compiler.installed.InstalledCompiler.unwrap">
+<code class="descname">unwrap</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/compiler/installed.html#InstalledCompiler.unwrap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.compiler.installed.InstalledCompiler.unwrap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate through layers of compiler wrappers to find the true compiler.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Compiler wrapped by this compiler, <code class="docutils literal"><span class="pre">self</span></code> if this compiler doesn&#8217;t wrap another.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#tau.cf.compiler.installed.InstalledCompiler" title="tau.cf.compiler.installed.InstalledCompiler">InstalledCompiler</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.cf.compiler.installed.InstalledCompiler.version_string">
+<code class="descname">version_string</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/compiler/installed.html#InstalledCompiler.version_string"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.compiler.installed.InstalledCompiler.version_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the compiler&#8217;s self-reported version info.</p>
+<p>Usually whatever the compiler prints when the &#8211;version flag is provided.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The compilers&#8217; version string.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)">str</a></td>
 </tr>
 </tbody>
 </table>
@@ -203,14 +246,8 @@ are actually installed on the system.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="tau.cf.compiler.installed.InstalledCompilerFamily.__iter__">
-<code class="descname">__iter__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/compiler/installed.html#InstalledCompilerFamily.__iter__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.compiler.installed.InstalledCompilerFamily.__iter__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Yield one InstalledCompiler for each role filled by any compiler in this installation.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tau.cf.compiler.installed.InstalledCompilerFamily.preferred">
-<code class="descname">preferred</code><span class="sig-paren">(</span><em>role</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/compiler/installed.html#InstalledCompilerFamily.preferred"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.compiler.installed.InstalledCompilerFamily.preferred" title="Permalink to this definition">¶</a></dt>
+<dt id="tau.cf.compiler.installed.InstalledCompilerFamily.__getitem__">
+<code class="descname">__getitem__</code><span class="sig-paren">(</span><em>role</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/compiler/installed.html#InstalledCompilerFamily.__getitem__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.compiler.installed.InstalledCompilerFamily.__getitem__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the preferred installed compiler for a given role.</p>
 <p>Since compiler can perform multiple roles we often have many commands
 that could fit a given role, but only one <em>preferred</em> command for the
@@ -241,6 +278,17 @@ No installed compiler fills the given role.</li>
 </table>
 </dd></dl>
 
+<dl class="method">
+<dt id="tau.cf.compiler.installed.InstalledCompilerFamily.__iter__">
+<code class="descname">__iter__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/compiler/installed.html#InstalledCompilerFamily.__iter__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.compiler.installed.InstalledCompilerFamily.__iter__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Yield one InstalledCompiler for each role filled by any compiler in this installation.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.cf.compiler.installed.InstalledCompilerFamily.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>role</em>, <em>default</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/compiler/installed.html#InstalledCompilerFamily.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.compiler.installed.InstalledCompilerFamily.get" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="class">
@@ -260,6 +308,12 @@ one compiler in each required compiler role.</p>
 <dt id="tau.cf.compiler.installed.InstalledCompilerSet.members">
 <code class="descname">members</code><a class="headerlink" href="#tau.cf.compiler.installed.InstalledCompilerSet.members" title="Permalink to this definition">¶</a></dt>
 <dd><p>(CompilerRole, InstalledCompiler) dictionary containing members of this set</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.cf.compiler.installed.InstalledCompilerSet.modify">
+<code class="descname">modify</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/compiler/installed.html#InstalledCompilerSet.modify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.compiler.installed.InstalledCompilerSet.modify" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build a modified copy of this object.</p>
 </dd></dl>
 
 </dd></dl>

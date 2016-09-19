@@ -8,6 +8,7 @@ Subpackages
 
     tau.cf.compiler
     tau.cf.software
+    tau.cf.storage
     tau.cf.target
 
 Module contents

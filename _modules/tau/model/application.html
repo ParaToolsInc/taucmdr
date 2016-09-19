@@ -82,6 +82,7 @@
 <span class="sd">specifying OpenMP is used and the other specifying OpenMP is not used.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
+<span class="kn">from</span> <span class="nn">tau.error</span> <span class="kn">import</span> <span class="n">IncompatibleRecordError</span><span class="p">,</span> <span class="n">ConfigurationError</span>
 <span class="kn">from</span> <span class="nn">tau.mvc.model</span> <span class="kn">import</span> <span class="n">Model</span>
 
 
@@ -106,12 +107,13 @@
         <span class="s1">&#39;openmp&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span> 
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;application uses OpenMP&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span> 
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--use-openmp&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;T/F&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;?&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;const&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
                          <span class="s1">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParseBooleanAction</span><span class="p">},</span>
+            <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Application</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">},</span>
         <span class="s1">&#39;pthreads&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
@@ -121,7 +123,8 @@
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;T/F&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;?&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;const&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
-                         <span class="s1">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParseBooleanAction</span><span class="p">}</span>
+                         <span class="s1">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParseBooleanAction</span><span class="p">},</span>
+            <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Application</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">},</span>
         <span class="s1">&#39;mpi&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
@@ -132,7 +135,8 @@
                          <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;?&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;const&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
                          <span class="s1">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParseBooleanAction</span><span class="p">},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="bp">True</span><span class="p">:</span> <span class="n">Measurement</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;mpi&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)}</span>
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="bp">True</span><span class="p">:</span> <span class="n">Measurement</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;mpi&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)},</span>
+            <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Application</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">},</span>
         <span class="s1">&#39;cuda&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
@@ -143,7 +147,8 @@
                          <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;?&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;const&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
                          <span class="s1">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParseBooleanAction</span><span class="p">},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="bp">True</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;cuda&#39;</span><span class="p">)}</span>
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="bp">True</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;cuda&#39;</span><span class="p">)},</span>
+            <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Application</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">},</span>
         <span class="s1">&#39;opencl&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
@@ -155,7 +160,8 @@
                          <span class="s1">&#39;const&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
                          <span class="s1">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParseBooleanAction</span><span class="p">},</span>
             <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="bp">True</span><span class="p">:</span> <span class="p">(</span><span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;cuda&#39;</span><span class="p">),</span>
-                              <span class="n">Measurement</span><span class="o">.</span><span class="n">encourage</span><span class="p">(</span><span class="s1">&#39;opencl&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">))}</span>
+                              <span class="n">Measurement</span><span class="o">.</span><span class="n">encourage</span><span class="p">(</span><span class="s1">&#39;opencl&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">))},</span>
+            <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Application</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">},</span>
         <span class="s1">&#39;shmem&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
@@ -166,6 +172,7 @@
                          <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;?&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;const&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
                          <span class="s1">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParseBooleanAction</span><span class="p">},</span>
+            <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Application</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">},</span>
         <span class="s1">&#39;mpc&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
@@ -175,15 +182,48 @@
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;T/F&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;?&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;const&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
-                         <span class="s1">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParseBooleanAction</span><span class="p">}</span>
+                         <span class="s1">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParseBooleanAction</span><span class="p">},</span>
+            <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Application</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">}</span>
     <span class="p">}</span></div>
         
 
 <div class="viewcode-block" id="Application"><a class="viewcode-back" href="../../../tau.model.application.html#tau.model.application.Application">[docs]</a><span class="k">class</span> <span class="nc">Application</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Application data model.&quot;&quot;&quot;</span>
     
-    <span class="n">__attributes__</span> <span class="o">=</span> <span class="n">attributes</span></div>
+    <span class="n">__attributes__</span> <span class="o">=</span> <span class="n">attributes</span>
+    
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Application.attribute_changed"><a class="viewcode-back" href="../../../tau.model.application.html#tau.model.application.Application.attribute_changed">[docs]</a>    <span class="k">def</span> <span class="nf">attribute_changed</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">new_value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">is_selected</span><span class="p">():</span>
+            <span class="n">old_value</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+            <span class="n">cls</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="p">)</span><span class="o">.</span><span class="n">push_to_topic</span><span class="p">(</span><span class="s1">&#39;rebuild_required&#39;</span><span class="p">,</span> <span class="p">{</span><span class="n">attr</span><span class="p">:</span> <span class="p">(</span><span class="n">old_value</span><span class="p">,</span> <span class="n">new_value</span><span class="p">)})</span></div>
 
+<div class="viewcode-block" id="Application.on_update"><a class="viewcode-back" href="../../../tau.model.application.html#tau.model.application.Application.on_update">[docs]</a>    <span class="k">def</span> <span class="nf">on_update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">tau.error</span> <span class="kn">import</span> <span class="n">ImmutableRecordError</span>
+        <span class="kn">from</span> <span class="nn">tau.model.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
+        <span class="n">expr_ctrl</span> <span class="o">=</span> <span class="n">Experiment</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="p">)</span>
+        <span class="n">found</span> <span class="o">=</span> <span class="n">expr_ctrl</span><span class="o">.</span><span class="n">search</span><span class="p">({</span><span class="s1">&#39;application&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">eid</span><span class="p">})</span>
+        <span class="n">using_app</span> <span class="o">=</span> <span class="p">[</span><span class="n">expr</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">expr</span> <span class="ow">in</span> <span class="n">found</span> <span class="k">if</span> <span class="n">expr</span><span class="o">.</span><span class="n">data_size</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">using_app</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ImmutableRecordError</span><span class="p">(</span><span class="s2">&quot;Application &#39;</span><span class="si">%s</span><span class="s2">&#39; cannot be modified because &quot;</span>
+                                       <span class="s2">&quot;it is used by these experiments: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">using_app</span><span class="p">)))</span>
+        <span class="k">for</span> <span class="n">expr</span> <span class="ow">in</span> <span class="n">found</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">expr</span><span class="o">.</span><span class="n">verify</span><span class="p">()</span>
+            <span class="k">except</span> <span class="n">IncompatibleRecordError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Changing application &#39;</span><span class="si">%s</span><span class="s2">&#39; in this way will create an invalid condition &quot;</span>
+                                         <span class="s2">&quot;in experiment &#39;</span><span class="si">%s</span><span class="s2">&#39;:</span><span class="se">\n</span><span class="s2">    </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">expr</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">err</span><span class="p">),</span>
+                                         <span class="s2">&quot;Delete experiment &#39;</span><span class="si">%s</span><span class="s2">&#39; and try again.&quot;</span> <span class="o">%</span> <span class="n">expr</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="Application.is_selected"><a class="viewcode-back" href="../../../tau.model.application.html#tau.model.application.Application.is_selected">[docs]</a>    <span class="k">def</span> <span class="nf">is_selected</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns True if this target configuration is part of the selected experiment, False otherwise.&quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">tau.model.project</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">ProjectSelectionError</span><span class="p">,</span> <span class="n">ExperimentSelectionError</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">selected</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">controller</span><span class="p">()</span><span class="o">.</span><span class="n">selected</span><span class="p">()</span><span class="o">.</span><span class="n">experiment</span><span class="p">()</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">ProjectSelectionError</span><span class="p">,</span> <span class="n">ExperimentSelectionError</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">return</span> <span class="n">selected</span><span class="p">[</span><span class="s1">&#39;application&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">eid</span></div></div>
 </pre></div>
 
       </div>

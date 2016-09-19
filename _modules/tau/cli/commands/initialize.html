@@ -82,13 +82,14 @@
 <span class="kn">from</span> <span class="nn">tau.cli</span> <span class="kn">import</span> <span class="n">arguments</span>
 <span class="kn">from</span> <span class="nn">tau.cli.command</span> <span class="kn">import</span> <span class="n">AbstractCommand</span>
 <span class="kn">from</span> <span class="nn">tau.model.project</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">ProjectSelectionError</span>
-<span class="kn">from</span> <span class="nn">tau.storage.project</span> <span class="kn">import</span> <span class="n">ProjectStorageError</span>
-<span class="kn">from</span> <span class="nn">tau.storage.levels</span> <span class="kn">import</span> <span class="n">PROJECT_STORAGE</span><span class="p">,</span> <span class="n">STORAGE_LEVELS</span>
+<span class="kn">from</span> <span class="nn">tau.cf.storage.project</span> <span class="kn">import</span> <span class="n">ProjectStorageError</span>
+<span class="kn">from</span> <span class="nn">tau.cf.storage.levels</span> <span class="kn">import</span> <span class="n">PROJECT_STORAGE</span><span class="p">,</span> <span class="n">STORAGE_LEVELS</span>
 <span class="kn">from</span> <span class="nn">tau.cli.arguments</span> <span class="kn">import</span> <span class="n">ParseBooleanAction</span>
 <span class="kn">from</span> <span class="nn">tau.cli.commands.target.create</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">target_create_cmd</span>
 <span class="kn">from</span> <span class="nn">tau.cli.commands.application.create</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">application_create_cmd</span>
 <span class="kn">from</span> <span class="nn">tau.cli.commands.measurement.create</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">measurement_create_cmd</span>
 <span class="kn">from</span> <span class="nn">tau.cli.commands.project.create</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">project_create_cmd</span>
+<span class="kn">from</span> <span class="nn">tau.cli.commands.project.select</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">project_select_cmd</span>
 <span class="kn">from</span> <span class="nn">tau.cli.commands.select</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">select_cmd</span>
 <span class="kn">from</span> <span class="nn">tau.cli.commands.dashboard</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">dashboard_cmd</span>
 <span class="kn">from</span> <span class="nn">tau.cf.target</span> <span class="kn">import</span> <span class="n">host</span><span class="p">,</span> <span class="n">DARWIN_OS</span><span class="p">,</span> <span class="n">IBM_CNK_OS</span>
@@ -97,7 +98,7 @@
 <div class="viewcode-block" id="InitializeCommand"><a class="viewcode-back" href="../../../../tau.cli.commands.initialize.html#tau.cli.commands.initialize.InitializeCommand">[docs]</a><span class="k">class</span> <span class="nc">InitializeCommand</span><span class="p">(</span><span class="n">AbstractCommand</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;``tau initialize`` subcommand.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="InitializeCommand.construct_parser"><a class="viewcode-back" href="../../../../tau.cli.commands.initialize.html#tau.cli.commands.initialize.InitializeCommand.construct_parser">[docs]</a>    <span class="k">def</span> <span class="nf">construct_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="InitializeCommand._construct_parser"><a class="viewcode-back" href="../../../../tau.cli.commands.initialize.html#tau.cli.commands.initialize.InitializeCommand._construct_parser">[docs]</a>    <span class="k">def</span> <span class="nf">_construct_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Constructs the command line argument parser.</span>
 <span class="sd">         </span>
 <span class="sd">        Returns:</span>
@@ -157,14 +158,12 @@
                                        <span class="n">const</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
                                        <span class="n">choices</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;tau&#39;</span><span class="p">,</span> <span class="s1">&#39;merged&#39;</span><span class="p">,</span> <span class="s1">&#39;cubex&#39;</span><span class="p">,</span> <span class="s1">&#39;none&#39;</span><span class="p">),</span>
                                        <span class="n">default</span><span class="o">=</span><span class="s1">&#39;tau&#39;</span><span class="p">)</span>
-                                       <span class="c1">#action=ParseBooleanAction)</span>
         <span class="n">measurement_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--trace&#39;</span><span class="p">,</span>
                                        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Create measurement configurations for tracing&quot;</span><span class="p">,</span>
                                        <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;&lt;format&gt;&#39;</span><span class="p">,</span>
                                        <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;?&#39;</span><span class="p">,</span>
                                        <span class="n">const</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
                                        <span class="n">default</span><span class="o">=</span><span class="s1">&#39;otf2&#39;</span><span class="p">)</span>
-                                       <span class="c1">#action=ParseBooleanAction)</span>
         <span class="n">measurement_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--sample&#39;</span><span class="p">,</span>
                                        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Create measurement configurations for event-based sampling&quot;</span><span class="p">,</span>
                                        <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;T/F&#39;</span><span class="p">,</span>
@@ -180,7 +179,6 @@
         <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">tau_options</span><span class="p">:</span>
             <span class="n">options</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;--force-tau-options&#39;</span><span class="p">)</span>
             <span class="n">options</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">args</span><span class="o">.</span><span class="n">tau_options</span><span class="p">])</span>
-        <span class="k">print</span> <span class="n">options</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">project_create_cmd</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
         <span class="k">except</span> <span class="n">ConfigurationError</span><span class="p">:</span>
@@ -188,7 +186,7 @@
             <span class="n">util</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">PROJECT_STORAGE</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
             <span class="k">raise</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">select_cmd</span><span class="o">.</span><span class="n">main</span><span class="p">([</span><span class="s1">&#39;--project&#39;</span><span class="p">,</span> <span class="n">project_name</span><span class="p">])</span>
+            <span class="n">project_select_cmd</span><span class="o">.</span><span class="n">main</span><span class="p">([</span><span class="n">project_name</span><span class="p">])</span>
         
     <span class="k">def</span> <span class="nf">_populate_project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">argv</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
         <span class="k">def</span> <span class="nf">_safe_execute</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">argv</span><span class="p">):</span>
@@ -210,7 +208,6 @@
         <span class="k">elif</span> <span class="n">host_os</span> <span class="ow">is</span> <span class="n">IBM_CNK_OS</span><span class="p">:</span> 
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;IBM CNK OS detected: disabling sampling&quot;</span><span class="p">)</span>
             <span class="n">sample</span> <span class="o">=</span> <span class="bp">False</span>
-        <span class="n">project_name</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">project_name</span>
         <span class="n">target_name</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">target_name</span>
         <span class="n">application_name</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">application_name</span>
 
@@ -251,12 +248,12 @@
                            <span class="s1">&#39;--link-only=False&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">measurement_args</span><span class="p">)</span>
             <span class="n">measurement_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;trace&#39;</span><span class="p">)</span>
 
-        <span class="n">select_cmd</span><span class="o">.</span><span class="n">main</span><span class="p">([</span><span class="s1">&#39;--project&#39;</span><span class="p">,</span> <span class="n">project_name</span><span class="p">,</span> <span class="s1">&#39;--target&#39;</span><span class="p">,</span> <span class="n">target_name</span><span class="p">,</span> 
-                         <span class="s1">&#39;--application&#39;</span><span class="p">,</span> <span class="n">application_name</span><span class="p">,</span> <span class="s1">&#39;--measurement&#39;</span><span class="p">,</span> <span class="n">measurement_names</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+        <span class="n">select_cmd</span><span class="o">.</span><span class="n">main</span><span class="p">([</span><span class="s1">&#39;--target&#39;</span><span class="p">,</span> <span class="n">target_name</span><span class="p">,</span> 
+                         <span class="s1">&#39;--application&#39;</span><span class="p">,</span> <span class="n">application_name</span><span class="p">,</span> 
+                         <span class="s1">&#39;--measurement&#39;</span><span class="p">,</span> <span class="n">measurement_names</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
 
 <div class="viewcode-block" id="InitializeCommand.main"><a class="viewcode-back" href="../../../../tau.cli.commands.initialize.html#tau.cli.commands.initialize.InitializeCommand.main">[docs]</a>    <span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">argv</span><span class="p">):</span>
-        <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">argv</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Arguments: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_args</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">profile</span> <span class="ow">or</span> <span class="n">args</span><span class="o">.</span><span class="n">trace</span> <span class="ow">or</span> <span class="n">args</span><span class="o">.</span><span class="n">sample</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;You must specify at least one measurement.&#39;</span><span class="p">)</span>
 
@@ -266,9 +263,13 @@
         <span class="k">except</span> <span class="n">ProjectStorageError</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;No project found, initializing a new project.&quot;</span><span class="p">)</span>
             <span class="n">PROJECT_STORAGE</span><span class="o">.</span><span class="n">connect_filesystem</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_create_project</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">bare</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_populate_project</span><span class="p">(</span><span class="n">argv</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_create_project</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">bare</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_populate_project</span><span class="p">(</span><span class="n">argv</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">PROJECT_STORAGE</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+                <span class="k">raise</span>
             <span class="k">return</span> <span class="n">dashboard_cmd</span><span class="o">.</span><span class="n">main</span><span class="p">([])</span>
         <span class="k">except</span> <span class="n">ProjectSelectionError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
             <span class="n">err</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;The project has been initialized but no project configuration is selected.&quot;</span>

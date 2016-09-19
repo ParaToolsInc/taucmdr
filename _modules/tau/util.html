@@ -27,7 +27,7 @@
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
     <link rel="top" title="TAU Commander Developer Documentation" href="../../index.html" />
-    <link rel="up" title="Module code" href="../index.html" /> 
+    <link rel="up" title="tau" href="../tau.html" /> 
   </head>
   <body role="document">
       <div class="header" role="banner"><img class="rightlogo" src="../../_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="../../index.html">
@@ -80,6 +80,7 @@
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">atexit</span>
 <span class="kn">import</span> <span class="nn">subprocess</span>
 <span class="kn">import</span> <span class="nn">errno</span>
 <span class="kn">import</span> <span class="nn">shutil</span>
@@ -87,6 +88,7 @@
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">pkgutil</span>
 <span class="kn">import</span> <span class="nn">tarfile</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
 <span class="kn">import</span> <span class="nn">urlparse</span>
 <span class="kn">import</span> <span class="nn">itertools</span>
 <span class="kn">from</span> <span class="nn">zipimport</span> <span class="kn">import</span> <span class="n">zipimporter</span>
@@ -98,6 +100,23 @@
 <span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
 
 <span class="n">_PY_SUFFEXES</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;.py&#39;</span><span class="p">,</span> <span class="s1">&#39;.pyo&#39;</span><span class="p">,</span> <span class="s1">&#39;.pyc&#39;</span><span class="p">)</span>
+
+<span class="n">_DTEMP_STACK</span> <span class="o">=</span> <span class="p">[]</span>
+
+
+<span class="k">def</span> <span class="nf">_cleanup_dtemp</span><span class="p">():</span>
+    <span class="k">if</span> <span class="n">_DTEMP_STACK</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">_DTEMP_STACK</span><span class="p">:</span>
+            <span class="n">rmtree</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="n">atexit</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">_cleanup_dtemp</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="mkdtemp"><a class="viewcode-back" href="../../tau.util.html#tau.util.mkdtemp">[docs]</a><span class="k">def</span> <span class="nf">mkdtemp</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Like tempfile.mkdtemp but directory will be recursively deleted when program exits.&quot;&quot;&quot;</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">_DTEMP_STACK</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">path</span></div>
 
 
 <div class="viewcode-block" id="mkdirp"><a class="viewcode-back" href="../../tau.util.html#tau.util.mkdirp">[docs]</a><span class="k">def</span> <span class="nf">mkdirp</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
@@ -115,6 +134,7 @@
         <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">exc</span><span class="o">.</span><span class="n">errno</span> <span class="o">==</span> <span class="n">errno</span><span class="o">.</span><span class="n">EEXIST</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">path</span><span class="p">)):</span>
                 <span class="k">raise</span></div>
+
 
 <div class="viewcode-block" id="rmtree"><a class="viewcode-back" href="../../tau.util.html#tau.util.rmtree">[docs]</a><span class="k">def</span> <span class="nf">rmtree</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">onerror</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">attempts</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Wrapper around shutil.rmtree to work around stale or slow NFS directories.</span>
@@ -138,6 +158,7 @@
             <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Unexpected error: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
             <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="p">,</span> <span class="n">onerror</span><span class="p">)</span></div>
+
 
 <span class="k">def</span> <span class="nf">_is_exec</span><span class="p">(</span><span class="n">fpath</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">fpath</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">access</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">X_OK</span><span class="p">)</span>
@@ -224,6 +245,7 @@
             <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;urllib failed to download &#39;</span><span class="si">%s</span><span class="s2">&#39;: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
             <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;Failed to download &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">src</span><span class="p">)</span></div>
 
+
 <span class="k">def</span> <span class="nf">_create_dl_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">src</span><span class="p">):</span>
     <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Creating subprocess: cmd=</span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;curl&#39;</span><span class="p">):</span>
@@ -271,6 +293,7 @@
             <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;[</span><span class="si">%s</span><span class="s1">] UNKNOWN</span><span class="se">\r</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">_spinner</span><span class="o">.</span><span class="n">next</span><span class="p">())</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span></div>
 
+
 <div class="viewcode-block" id="archive_toplevel"><a class="viewcode-back" href="../../tau.util.html#tau.util.archive_toplevel">[docs]</a><span class="k">def</span> <span class="nf">archive_toplevel</span><span class="p">(</span><span class="n">archive</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Returns the name of the top-level directory in an archive.</span>
 <span class="sd">    </span>
@@ -297,8 +320,18 @@
     <span class="k">except</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">ReadError</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">IOError</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">dirs</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">fin</span><span class="o">.</span><span class="n">getmembers</span><span class="p">()</span> <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">DIRTYPE</span><span class="p">]</span>
-        <span class="n">topdir</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">dirs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="nb">len</span><span class="p">)</span>
+        <span class="n">dirs</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">fin</span><span class="o">.</span><span class="n">getmembers</span><span class="p">()</span> <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">isdir</span><span class="p">()]</span>
+        <span class="k">if</span> <span class="n">dirs</span><span class="p">:</span>
+            <span class="n">topdir</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">dirs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="nb">len</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">dirs</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+            <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">fin</span><span class="o">.</span><span class="n">getmembers</span><span class="p">()</span> <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">isfile</span><span class="p">()]</span>
+            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
+                <span class="n">dirname</span><span class="p">,</span> <span class="n">basename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+                <span class="k">while</span> <span class="n">dirname</span><span class="p">:</span>
+                    <span class="n">dirname</span><span class="p">,</span> <span class="n">basename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">dirname</span><span class="p">)</span>
+                <span class="n">dirs</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">basename</span><span class="p">)</span>
+            <span class="n">topdir</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">dirs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="nb">len</span><span class="p">)</span>
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Top-level directory in &#39;</span><span class="si">%s</span><span class="s2">&#39; is &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">archive</span><span class="p">,</span> <span class="n">topdir</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">topdir</span></div>
 
@@ -321,15 +354,14 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">topdir</span> <span class="o">=</span> <span class="n">archive_toplevel</span><span class="p">(</span><span class="n">archive</span><span class="p">)</span>
     <span class="n">full_dest</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dest</span><span class="p">,</span> <span class="n">topdir</span><span class="p">)</span>
-    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Extracting &#39;</span><span class="si">%s</span><span class="s2">&#39; to create &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">archive</span><span class="p">,</span> <span class="n">full_dest</span><span class="p">)</span>
-    <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Extracting &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">archive</span><span class="p">)</span>
+    <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Extracting &#39;</span><span class="si">%s</span><span class="s2">&#39; to create &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">archive</span><span class="p">,</span> <span class="n">full_dest</span><span class="p">)</span>
     <span class="n">mkdirp</span><span class="p">(</span><span class="n">dest</span><span class="p">)</span>
     <span class="k">with</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">archive</span><span class="p">)</span> <span class="k">as</span> <span class="n">fin</span><span class="p">:</span>
         <span class="n">fin</span><span class="o">.</span><span class="n">extractall</span><span class="p">(</span><span class="n">dest</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">full_dest</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;Extracting &#39;</span><span class="si">%s</span><span class="s2">&#39; does not create &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">archive</span><span class="p">,</span> <span class="n">full_dest</span><span class="p">))</span>
-    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Created &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">full_dest</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">full_dest</span></div>
+
 
 <div class="viewcode-block" id="create_archive"><a class="viewcode-back" href="../../tau.util.html#tau.util.create_archive">[docs]</a><span class="k">def</span> <span class="nf">create_archive</span><span class="p">(</span><span class="n">fmt</span><span class="p">,</span> <span class="n">dest</span><span class="p">,</span> <span class="n">items</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Creates a new archive file in the specified format.</span>
@@ -349,6 +381,7 @@
         <span class="k">with</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">dest</span><span class="p">,</span> <span class="n">mode_map</span><span class="p">[</span><span class="n">fmt</span><span class="p">])</span> <span class="k">as</span> <span class="n">archive</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
                 <span class="n">archive</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">item</span><span class="p">)</span></div>
+
 
 <div class="viewcode-block" id="file_accessible"><a class="viewcode-back" href="../../tau.util.html#tau.util.file_accessible">[docs]</a><span class="k">def</span> <span class="nf">file_accessible</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Check if a file is accessable.</span>
@@ -396,13 +429,15 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="n">subproc_env</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">env</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
-            <span class="n">subproc_env</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
-            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">subproc_env</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;unset </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">subproc_env</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
     <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Creating subprocess: cmd=</span><span class="si">%s</span><span class="s2">, cwd=&#39;</span><span class="si">%s</span><span class="s2">&#39;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="p">)</span>
-    <span class="n">proc</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">cwd</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">subproc_env</span><span class="p">,</span>
-                            <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
-                            <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">STDOUT</span><span class="p">,</span>
-                            <span class="n">bufsize</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">proc</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">cwd</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">subproc_env</span><span class="p">,</span> 
+                            <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">STDOUT</span><span class="p">,</span> <span class="n">bufsize</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="k">with</span> <span class="n">proc</span><span class="o">.</span><span class="n">stdout</span><span class="p">:</span>
         <span class="c1"># Use iter to avoid hidden read-ahead buffer bug in named pipes:</span>
         <span class="c1"># http://bugs.python.org/issue3907</span>
@@ -511,7 +546,6 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        str: The horizontal rule.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;{:=&lt;{}}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39;== </span><span class="si">%s</span><span class="s1"> ==&#39;</span> <span class="o">%</span> <span class="n">title</span><span class="p">,</span> <span class="n">logger</span><span class="o">.</span><span class="n">LINE_WIDTH</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">color_text</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 

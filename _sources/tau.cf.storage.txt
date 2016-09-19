@@ -1,0 +1,26 @@
+tau.cf.storage package
+======================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    tau.cf.storage.tests
+
+Submodules
+----------
+
+.. toctree::
+
+   tau.cf.storage.levels
+   tau.cf.storage.local_file
+   tau.cf.storage.project
+
+Module contents
+---------------
+
+.. automodule:: tau.cf.storage
+    :members:
+    :undoc-members:
+    :show-inheritance:

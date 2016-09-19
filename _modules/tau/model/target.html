@@ -85,15 +85,14 @@
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">glob</span>
 <span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">util</span>
-<span class="kn">from</span> <span class="nn">tau.error</span> <span class="kn">import</span> <span class="n">InternalError</span><span class="p">,</span> <span class="n">ConfigurationError</span>
+<span class="kn">from</span> <span class="nn">tau.error</span> <span class="kn">import</span> <span class="n">InternalError</span><span class="p">,</span> <span class="n">ConfigurationError</span><span class="p">,</span> <span class="n">IncompatibleRecordError</span>
 <span class="kn">from</span> <span class="nn">tau.mvc.model</span> <span class="kn">import</span> <span class="n">Model</span>
-<span class="kn">from</span> <span class="nn">tau.mvc.controller</span> <span class="kn">import</span> <span class="n">Controller</span>
+<span class="kn">from</span> <span class="nn">tau.model.compiler</span> <span class="kn">import</span> <span class="n">Compiler</span>
 <span class="kn">from</span> <span class="nn">tau.cf.compiler</span> <span class="kn">import</span> <span class="n">CompilerRole</span><span class="p">,</span> <span class="n">INTEL_COMPILERS</span>
 <span class="kn">from</span> <span class="nn">tau.cf.compiler.mpi</span> <span class="kn">import</span> <span class="n">INTEL_MPI_COMPILERS</span>
 <span class="kn">from</span> <span class="nn">tau.cf.compiler.installed</span> <span class="kn">import</span> <span class="n">InstalledCompilerSet</span>
 <span class="kn">from</span> <span class="nn">tau.cf.target</span> <span class="kn">import</span> <span class="n">host</span><span class="p">,</span> <span class="n">DARWIN_OS</span><span class="p">,</span> <span class="n">INTEL_KNC_ARCH</span>
-<span class="kn">from</span> <span class="nn">tau.model.compiler</span> <span class="kn">import</span> <span class="n">Compiler</span>
-
+<span class="kn">from</span> <span class="nn">tau.cf.software.tau_installation</span> <span class="kn">import</span> <span class="n">TAU_MINIMAL_COMPILERS</span>
 
 <span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
 
@@ -160,7 +159,8 @@
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--os&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;host&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;os&gt;&#39;</span><span class="p">,</span>
-                         <span class="s1">&#39;choices&#39;</span><span class="p">:</span> <span class="n">OperatingSystem</span><span class="o">.</span><span class="n">keys</span><span class="p">()}</span>
+                         <span class="s1">&#39;choices&#39;</span><span class="p">:</span> <span class="n">OperatingSystem</span><span class="o">.</span><span class="n">keys</span><span class="p">()},</span>
+            <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">},</span>
         <span class="s1">&#39;host_arch&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
@@ -178,7 +178,8 @@
                         <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;host_arch&#39;</span><span class="p">,</span> <span class="n">knc_require_k1om</span><span class="p">),</span>
                         <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;MPI_CC&#39;</span><span class="p">,</span> <span class="n">knc_intel_mpi_only</span><span class="p">),</span>
                         <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;MPI_CXX&#39;</span><span class="p">,</span> <span class="n">knc_intel_mpi_only</span><span class="p">),</span>
-                        <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;MPI_FC&#39;</span><span class="p">,</span> <span class="n">knc_intel_mpi_only</span><span class="p">))}</span>
+                        <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;MPI_FC&#39;</span><span class="p">,</span> <span class="n">knc_intel_mpi_only</span><span class="p">))},</span>
+            <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">},</span>
         <span class="s1">&#39;CC&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="n">Compiler</span><span class="p">,</span>
@@ -186,7 +187,8 @@
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;Host C compiler command&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--cc&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;host&#39;</span><span class="p">,</span>
-                         <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;command&gt;&#39;</span><span class="p">}</span>
+                         <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;command&gt;&#39;</span><span class="p">},</span>
+            <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">},</span>
         <span class="s1">&#39;CXX&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="n">Compiler</span><span class="p">,</span>
@@ -194,7 +196,8 @@
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;Host C++ compiler command&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--cxx&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;host&#39;</span><span class="p">,</span>
-                         <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;command&gt;&#39;</span><span class="p">}</span>
+                         <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;command&gt;&#39;</span><span class="p">},</span>
+            <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">},</span>
         <span class="s1">&#39;FC&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="n">Compiler</span><span class="p">,</span>
@@ -202,7 +205,8 @@
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;Host Fortran compiler command&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--fc&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;host&#39;</span><span class="p">,</span>
-                         <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;command&gt;&#39;</span><span class="p">}</span>
+                         <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;command&gt;&#39;</span><span class="p">},</span>
+            <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">},</span>
         <span class="s1">&#39;UPC&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="n">Compiler</span><span class="p">,</span>
@@ -210,7 +214,8 @@
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;Universal Parallel C compiler command&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--upc&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;Universal Parallel C&#39;</span><span class="p">,</span>
-                         <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;command&gt;&#39;</span><span class="p">}</span>
+                         <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;command&gt;&#39;</span><span class="p">},</span>
+            <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">},</span>
         <span class="s1">&#39;MPI_CC&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="n">Compiler</span><span class="p">,</span>
@@ -218,7 +223,8 @@
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;MPI C compiler command&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--mpi-cc&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;Message Passing Interface (MPI)&#39;</span><span class="p">,</span>
-                         <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;command&gt;&#39;</span><span class="p">}</span>
+                         <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;command&gt;&#39;</span><span class="p">},</span>
+            <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">},</span>
         <span class="s1">&#39;MPI_CXX&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="n">Compiler</span><span class="p">,</span>
@@ -226,7 +232,8 @@
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;MPI C++ compiler command&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--mpi-cxx&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;Message Passing Interface (MPI)&#39;</span><span class="p">,</span>
-                         <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;command&gt;&#39;</span><span class="p">}</span>
+                         <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;command&gt;&#39;</span><span class="p">},</span>
+            <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">},</span>
         <span class="s1">&#39;MPI_FC&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="n">Compiler</span><span class="p">,</span>
@@ -234,7 +241,8 @@
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;MPI Fortran compiler command&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--mpi-fc&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;Message Passing Interface (MPI)&#39;</span><span class="p">,</span>
-                         <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;command&gt;&#39;</span><span class="p">}</span>
+                         <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;command&gt;&#39;</span><span class="p">},</span>
+            <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">},</span>
         <span class="s1">&#39;mpi_include_path&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;array&#39;</span><span class="p">,</span>
@@ -245,7 +253,8 @@
                          <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;+&#39;</span><span class="p">},</span>
             <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="nb">bool</span><span class="p">:</span> <span class="p">(</span><span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s2">&quot;MPI_CC&quot;</span><span class="p">),</span>
                               <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s2">&quot;MPI_CXX&quot;</span><span class="p">),</span>
-                              <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s2">&quot;MPI_FC&quot;</span><span class="p">))}</span>
+                              <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s2">&quot;MPI_FC&quot;</span><span class="p">))},</span>
+            <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">},</span>
         <span class="s1">&#39;mpi_library_path&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;array&#39;</span><span class="p">,</span>
@@ -256,7 +265,8 @@
                          <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;+&#39;</span><span class="p">},</span>
             <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="nb">bool</span><span class="p">:</span> <span class="p">(</span><span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s2">&quot;MPI_CC&quot;</span><span class="p">),</span>
                               <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s2">&quot;MPI_CXX&quot;</span><span class="p">),</span>
-                              <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s2">&quot;MPI_FC&quot;</span><span class="p">))}</span>
+                              <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s2">&quot;MPI_FC&quot;</span><span class="p">))},</span>
+            <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">},</span>
         <span class="s1">&#39;mpi_libraries&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;array&#39;</span><span class="p">,</span>
@@ -267,7 +277,8 @@
                          <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;+&#39;</span><span class="p">},</span>
             <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="nb">bool</span><span class="p">:</span> <span class="p">(</span><span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s2">&quot;MPI_CC&quot;</span><span class="p">),</span>
                               <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s2">&quot;MPI_CXX&quot;</span><span class="p">),</span>
-                              <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s2">&quot;MPI_FC&quot;</span><span class="p">))}</span>
+                              <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s2">&quot;MPI_FC&quot;</span><span class="p">))},</span>
+            <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">},</span>
         <span class="s1">&#39;SHMEM_CC&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="n">Compiler</span><span class="p">,</span>
@@ -275,7 +286,8 @@
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;SHMEM C compiler command&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--shmem-cc&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;Symmetric Hierarchical Memory (SHMEM)&#39;</span><span class="p">,</span>
-                         <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;command&gt;&#39;</span><span class="p">}</span>
+                         <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;command&gt;&#39;</span><span class="p">},</span>
+            <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">},</span>
         <span class="s1">&#39;SHMEM_CXX&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="n">Compiler</span><span class="p">,</span>
@@ -283,7 +295,8 @@
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;SHMEM C++ compiler command&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--shmem-cxx&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;Symmetric Hierarchical Memory (SHMEM)&#39;</span><span class="p">,</span>
-                         <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;command&gt;&#39;</span><span class="p">}</span>
+                         <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;command&gt;&#39;</span><span class="p">},</span>
+            <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">},</span>
         <span class="s1">&#39;SHMEM_FC&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="n">Compiler</span><span class="p">,</span>
@@ -291,7 +304,8 @@
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;SHMEM Fortran compiler command&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--shmem-fc&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;Symmetric Hierarchical Memory (SHMEM)&#39;</span><span class="p">,</span>
-                         <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;command&gt;&#39;</span><span class="p">}</span>
+                         <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;command&gt;&#39;</span><span class="p">},</span>
+            <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">},</span>
         <span class="s1">&#39;shmem_include_path&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;array&#39;</span><span class="p">,</span>
@@ -300,6 +314,7 @@
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;Symmetric Hierarchical Memory (SHMEM)&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;path&gt;&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;+&#39;</span><span class="p">},</span>
+            <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">},</span>
         <span class="s1">&#39;shmem_library_path&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;array&#39;</span><span class="p">,</span>
@@ -308,6 +323,7 @@
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;Symmetric Hierarchical Memory (SHMEM)&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;path&gt;&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;+&#39;</span><span class="p">},</span>
+            <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">},</span>
         <span class="s1">&#39;shmem_libraries&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;array&#39;</span><span class="p">,</span>
@@ -316,6 +332,7 @@
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;Symmetric Hierarchical Memory (SHMEM)&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;flag&gt;&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;+&#39;</span><span class="p">},</span>
+            <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">},</span>
         <span class="s1">&#39;cuda&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
@@ -324,15 +341,8 @@
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;software package&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;path&gt;&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParsePackagePathAction</span><span class="p">},</span>
+            <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">},</span>
-        <span class="c1">#&#39;opencl&#39;: {</span>
-        <span class="c1">#    &#39;type&#39;: &#39;string&#39;,</span>
-        <span class="c1">#    &#39;description&#39;: &#39;path to OpenCL libraries and headers&#39;,</span>
-        <span class="c1">#    &#39;argparse&#39;: {&#39;flags&#39;: (&#39;--opencl&#39;,),</span>
-        <span class="c1">#                 &#39;group&#39;: &#39;software package&#39;,</span>
-        <span class="c1">#                 &#39;metavar&#39;: &#39;&lt;path&gt;&#39;,</span>
-        <span class="c1">#                 &#39;action&#39;: ParsePackagePathAction},</span>
-        <span class="c1">#},</span>
         <span class="s1">&#39;tau_source&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;path or URL to a TAU installation or archive file&#39;</span><span class="p">,</span>
@@ -340,7 +350,8 @@
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--tau&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;software package&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;(&lt;path&gt;|&lt;url&gt;|download)&#39;</span><span class="p">,</span>
-                         <span class="s1">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParsePackagePathAction</span><span class="p">}</span>
+                         <span class="s1">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParsePackagePathAction</span><span class="p">},</span>
+            <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">},</span>
         <span class="s1">&#39;pdt_source&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
@@ -350,6 +361,7 @@
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;software package&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;(&lt;path&gt;|&lt;url&gt;|download|None)&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParsePackagePathAction</span><span class="p">},</span>
+            <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">},</span>
         <span class="s1">&#39;binutils_source&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
@@ -359,7 +371,8 @@
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;software package&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;(&lt;path&gt;|&lt;url&gt;|download|None)&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParsePackagePathAction</span><span class="p">},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">):</span> <span class="n">Target</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;host_os&#39;</span><span class="p">,</span> <span class="n">DARWIN_OS</span><span class="o">.</span><span class="n">name</span><span class="p">)}</span>
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">):</span> <span class="n">Target</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;host_os&#39;</span><span class="p">,</span> <span class="n">DARWIN_OS</span><span class="o">.</span><span class="n">name</span><span class="p">)},</span>
+            <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">},</span>
         <span class="s1">&#39;libunwind_source&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
@@ -368,7 +381,8 @@
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--libunwind&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;software package&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;(&lt;path&gt;|&lt;url&gt;|download|None)&#39;</span><span class="p">,</span>
-                         <span class="s1">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParsePackagePathAction</span><span class="p">}</span>
+                         <span class="s1">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParsePackagePathAction</span><span class="p">},</span>
+            <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">},</span>
         <span class="s1">&#39;papi_source&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
@@ -378,39 +392,66 @@
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;software package&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;(&lt;path&gt;|&lt;url&gt;|download|None)&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParsePackagePathAction</span><span class="p">},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">):</span> <span class="n">Target</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;host_os&#39;</span><span class="p">,</span> <span class="n">DARWIN_OS</span><span class="o">.</span><span class="n">name</span><span class="p">)}</span>
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">):</span> <span class="n">Target</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;host_os&#39;</span><span class="p">,</span> <span class="n">DARWIN_OS</span><span class="o">.</span><span class="n">name</span><span class="p">)},</span>
+            <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">},</span>
         <span class="s1">&#39;scorep_source&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;path or URL to a Score-P installation or archive file&#39;</span><span class="p">,</span>
             <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="s1">&#39;download&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--score-p&#39;</span><span class="p">,),</span>
+            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--scorep&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;software package&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;(&lt;path&gt;|&lt;url&gt;|download|None)&#39;</span><span class="p">,</span>
-                         <span class="s1">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParsePackagePathAction</span><span class="p">}</span>
+                         <span class="s1">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParsePackagePathAction</span><span class="p">},</span>
+            <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">}</span>
     <span class="p">}</span></div>
-
-
-<div class="viewcode-block" id="TargetController"><a class="viewcode-back" href="../../../tau.model.target.html#tau.model.target.TargetController">[docs]</a><span class="k">class</span> <span class="nc">TargetController</span><span class="p">(</span><span class="n">Controller</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Target data controller.&quot;&quot;&quot;</span></div>
 
 
 <div class="viewcode-block" id="Target"><a class="viewcode-back" href="../../../tau.model.target.html#tau.model.target.Target">[docs]</a><span class="k">class</span> <span class="nc">Target</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Target data model.&quot;&quot;&quot;</span>
     
     <span class="n">__attributes__</span> <span class="o">=</span> <span class="n">attributes</span>
-
-    <span class="n">__controller__</span> <span class="o">=</span> <span class="n">TargetController</span>
     
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Target</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_compilers</span> <span class="o">=</span> <span class="bp">None</span>
+        
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Target.attribute_changed"><a class="viewcode-back" href="../../../tau.model.target.html#tau.model.target.Target.attribute_changed">[docs]</a>    <span class="k">def</span> <span class="nf">attribute_changed</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">new_value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">is_selected</span><span class="p">():</span>
+            <span class="n">old_value</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+            <span class="n">Target</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="p">)</span><span class="o">.</span><span class="n">push_to_topic</span><span class="p">(</span><span class="s1">&#39;rebuild_required&#39;</span><span class="p">,</span> <span class="p">{</span><span class="n">attr</span><span class="p">:</span> <span class="p">(</span><span class="n">old_value</span><span class="p">,</span> <span class="n">new_value</span><span class="p">)})</span></div>
     
 <div class="viewcode-block" id="Target.on_create"><a class="viewcode-back" href="../../../tau.model.target.html#tau.model.target.Target.on_create">[docs]</a>    <span class="k">def</span> <span class="nf">on_create</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">Target</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">on_create</span><span class="p">()</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;tau_source&#39;</span><span class="p">]:</span>
             <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;A TAU installation or source code must be provided.&quot;</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="Target.on_update"><a class="viewcode-back" href="../../../tau.model.target.html#tau.model.target.Target.on_update">[docs]</a>    <span class="k">def</span> <span class="nf">on_update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">tau.error</span> <span class="kn">import</span> <span class="n">ImmutableRecordError</span>
+        <span class="kn">from</span> <span class="nn">tau.model.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
+        <span class="n">expr_ctrl</span> <span class="o">=</span> <span class="n">Experiment</span><span class="o">.</span><span class="n">controller</span><span class="p">()</span>
+        <span class="n">found</span> <span class="o">=</span> <span class="n">expr_ctrl</span><span class="o">.</span><span class="n">search</span><span class="p">({</span><span class="s1">&#39;target&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">eid</span><span class="p">})</span>
+        <span class="n">used_by</span> <span class="o">=</span> <span class="p">[</span><span class="n">expr</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">expr</span> <span class="ow">in</span> <span class="n">found</span> <span class="k">if</span> <span class="n">expr</span><span class="o">.</span><span class="n">data_size</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">used_by</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ImmutableRecordError</span><span class="p">(</span><span class="s2">&quot;Target &#39;</span><span class="si">%s</span><span class="s2">&#39; cannot be modified because &quot;</span>
+                                       <span class="s2">&quot;it is used by these experiments: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">used_by</span><span class="p">)))</span>
+        <span class="k">for</span> <span class="n">expr</span> <span class="ow">in</span> <span class="n">found</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">expr</span><span class="o">.</span><span class="n">verify</span><span class="p">()</span>
+            <span class="k">except</span> <span class="n">IncompatibleRecordError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Changing measurement &#39;</span><span class="si">%s</span><span class="s2">&#39; in this way will create an invalid condition &quot;</span>
+                                         <span class="s2">&quot;in experiment &#39;</span><span class="si">%s</span><span class="s2">&#39;:</span><span class="se">\n</span><span class="s2">    </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">expr</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">err</span><span class="p">),</span>
+                                         <span class="s2">&quot;Delete experiment &#39;</span><span class="si">%s</span><span class="s2">&#39; and try again.&quot;</span> <span class="o">%</span> <span class="n">expr</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span></div>
+    
+<div class="viewcode-block" id="Target.is_selected"><a class="viewcode-back" href="../../../tau.model.target.html#tau.model.target.Target.is_selected">[docs]</a>    <span class="k">def</span> <span class="nf">is_selected</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns True if this target configuration is part of the selected experiment, False otherwise.&quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">tau.model.project</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">ProjectSelectionError</span><span class="p">,</span> <span class="n">ExperimentSelectionError</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">selected</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">controller</span><span class="p">()</span><span class="o">.</span><span class="n">selected</span><span class="p">()</span><span class="o">.</span><span class="n">experiment</span><span class="p">()</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">ProjectSelectionError</span><span class="p">,</span> <span class="n">ExperimentSelectionError</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">return</span> <span class="n">selected</span><span class="p">[</span><span class="s1">&#39;target&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">eid</span></div>
     
 <div class="viewcode-block" id="Target.compilers"><a class="viewcode-back" href="../../../tau.model.target.html#tau.model.target.Target.compilers">[docs]</a>    <span class="k">def</span> <span class="nf">compilers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get information about the compilers used by this target configuration.</span>
@@ -429,7 +470,7 @@
                 <span class="n">compilers</span><span class="p">[</span><span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="p">]</span> <span class="o">=</span> <span class="n">compiler_record</span><span class="o">.</span><span class="n">installation_info</span><span class="p">()</span>
                 <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;compilers[</span><span class="si">%s</span><span class="s2">] = &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="p">,</span> <span class="n">compilers</span><span class="p">[</span><span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="p">]</span><span class="o">.</span><span class="n">absolute_path</span><span class="p">)</span>
                 <span class="n">eids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">compiler_record</span><span class="o">.</span><span class="n">eid</span><span class="p">)</span>
-            <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span><span class="n">role</span> <span class="k">for</span> <span class="n">role</span> <span class="ow">in</span> <span class="n">CompilerRole</span><span class="o">.</span><span class="n">tau_required</span><span class="p">()</span> <span class="k">if</span> <span class="n">role</span><span class="o">.</span><span class="n">keyword</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">compilers</span><span class="p">]</span>
+            <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span><span class="n">role</span> <span class="k">for</span> <span class="n">role</span> <span class="ow">in</span> <span class="n">TAU_MINIMAL_COMPILERS</span> <span class="k">if</span> <span class="n">role</span><span class="o">.</span><span class="n">keyword</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">compilers</span><span class="p">]</span>
             <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">InternalError</span><span class="p">(</span><span class="s2">&quot;Target &#39;</span><span class="si">%s</span><span class="s2">&#39; is missing required compilers: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">missing</span><span class="p">))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_compilers</span> <span class="o">=</span> <span class="n">InstalledCompilerSet</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">eids</span><span class="p">)]),</span> <span class="o">**</span><span class="n">compilers</span><span class="p">)</span>

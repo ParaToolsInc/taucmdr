@@ -27,7 +27,7 @@
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
     <link rel="top" title="TAU Commander Developer Documentation" href="../../../index.html" />
-    <link rel="up" title="Module code" href="../../index.html" /> 
+    <link rel="up" title="tau" href="../../tau.html" /> 
   </head>
   <body role="document">
       <div class="header" role="banner"><img class="rightlogo" src="../../../_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="../../../index.html">
@@ -75,15 +75,15 @@
 <span class="sd">&quot;&quot;&quot;TODO: FIXME: Docs&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">logger</span>
-<span class="kn">from</span> <span class="nn">tau.error</span> <span class="kn">import</span> <span class="n">ConfigurationError</span><span class="p">,</span> <span class="n">ModelError</span><span class="p">,</span> <span class="n">InternalError</span>
-<span class="kn">from</span> <span class="nn">tau.storage</span> <span class="kn">import</span> <span class="n">StorageRecord</span>
+<span class="kn">from</span> <span class="nn">tau.error</span> <span class="kn">import</span> <span class="n">IncompatibleRecordError</span><span class="p">,</span> <span class="n">ModelError</span><span class="p">,</span> <span class="n">InternalError</span>
+<span class="kn">from</span> <span class="nn">tau.cf.storage</span> <span class="kn">import</span> <span class="n">StorageRecord</span>
 <span class="kn">from</span> <span class="nn">tau.mvc.controller</span> <span class="kn">import</span> <span class="n">Controller</span>
 
 <span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="ModelMeta"><a class="viewcode-back" href="../../../tau.mvc.model.html#tau.mvc.model.ModelMeta">[docs]</a><span class="k">class</span> <span class="nc">ModelMeta</span><span class="p">(</span><span class="nb">type</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Metaclass TODO: FIXME: Docs&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Constructs model attributes, configures defaults, and establishes relationships.&quot;&quot;&quot;</span> 
 
     <span class="k">def</span> <span class="nf">__new__</span><span class="p">(</span><span class="n">mcs</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">dct</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">dct</span><span class="p">[</span><span class="s1">&#39;__module__&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="n">__name__</span><span class="p">:</span>
@@ -113,6 +113,7 @@
             <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">_attributes</span>
         <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
             <span class="n">cls</span><span class="o">.</span><span class="n">_attributes</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">__attributes__</span><span class="p">()</span>
+            <span class="n">cls</span><span class="o">.</span><span class="n">_configure_defaults</span><span class="p">()</span>
             <span class="n">cls</span><span class="o">.</span><span class="n">_construct_relationships</span><span class="p">()</span>
             <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">_attributes</span>
         
@@ -134,8 +135,6 @@
 
 <div class="viewcode-block" id="Model"><a class="viewcode-back" href="../../../tau.mvc.model.html#tau.mvc.model.Model">[docs]</a><span class="k">class</span> <span class="nc">Model</span><span class="p">(</span><span class="n">StorageRecord</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;The &quot;M&quot; in `MVC`_.</span>
-<span class="sd">    </span>
-<span class="sd">    TODO: Docs    </span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        name (str): Name of the model.</span>
@@ -183,24 +182,53 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;default&#39;</span><span class="p">])</span></div>
 
 <div class="viewcode-block" id="Model.on_create"><a class="viewcode-back" href="../../../tau.mvc.model.html#tau.mvc.model.Model.on_create">[docs]</a>    <span class="k">def</span> <span class="nf">on_create</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Callback to be invoked when a new data record is created.&quot;&quot;&quot;</span> 
-        <span class="bp">self</span><span class="o">.</span><span class="n">check_compatibility</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+        <span class="sd">&quot;&quot;&quot;Callback to be invoked after a new data record is created.&quot;&quot;&quot;</span> </div>
 
 <div class="viewcode-block" id="Model.on_update"><a class="viewcode-back" href="../../../tau.mvc.model.html#tau.mvc.model.Model.on_update">[docs]</a>    <span class="k">def</span> <span class="nf">on_update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> 
-        <span class="sd">&quot;&quot;&quot;Callback to be invoked when a data record is updated.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">check_compatibility</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+        <span class="sd">&quot;&quot;&quot;Callback to be invoked after a data record is updated.&quot;&quot;&quot;</span></div>
 
 <div class="viewcode-block" id="Model.on_delete"><a class="viewcode-back" href="../../../tau.mvc.model.html#tau.mvc.model.Model.on_delete">[docs]</a>    <span class="k">def</span> <span class="nf">on_delete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> 
-        <span class="sd">&quot;&quot;&quot;Callback to be invoked when a data record is deleted.&quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-    
-<div class="viewcode-block" id="Model.populate"><a class="viewcode-back" href="../../../tau.mvc.model.html#tau.mvc.model.Model.populate">[docs]</a>    <span class="k">def</span> <span class="nf">populate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">defaults</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="p">)</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">,</span> <span class="n">defaults</span><span class="p">)</span></div>
+        <span class="sd">&quot;&quot;&quot;Callback to be invoked before a data record is deleted.&quot;&quot;&quot;</span></div>
 
+<div class="viewcode-block" id="Model.populate"><a class="viewcode-back" href="../../../tau.mvc.model.html#tau.mvc.model.Model.populate">[docs]</a>    <span class="k">def</span> <span class="nf">populate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">defaults</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Shorthand for ``self.controller(self.storage).populate(self, attribute, defaults)``.</span>
+<span class="sd">        </span>
+<span class="sd">        Result is cached in the object instance when possible so this should be faster</span>
+<span class="sd">        than populating directly from the controller.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            attribute (Optional[str]): If given, return only the populated attribute.</span>
+<span class="sd">            defaults (Optional[bool]): If given, set undefined attributes to their default values.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            If attribute is None, a dictionary of controlled data merged with associated records.</span>
+<span class="sd">            If attribute is not None, the value of the populated attribute. </span>
+<span class="sd">            </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            KeyError: `attribute` is undefined in the record. </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">attribute</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_populated</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">defaults</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_populated</span><span class="p">[</span><span class="n">attribute</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="p">)</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">,</span> <span class="n">defaults</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_populated</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_populated</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="p">)</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">,</span> <span class="n">defaults</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_populated</span></div>
+    
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="Model.controller"><a class="viewcode-back" href="../../../tau.mvc.model.html#tau.mvc.model.Model.controller">[docs]</a>    <span class="k">def</span> <span class="nf">controller</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">storage</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">__controller__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">storage</span><span class="p">)</span></div>
     
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_configure_defaults</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">configuration</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">configuration</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">val</span> <span class="ow">and</span> <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+                <span class="n">attr</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">cls</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="n">attr</span><span class="p">][</span><span class="s1">&#39;default&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">_construct_relationships</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
         <span class="n">primary_key</span> <span class="o">=</span> <span class="bp">None</span>
@@ -326,7 +354,7 @@
 <span class="sd">            * checked_value (str): The required or desired value of the attribute we are checking for compatibility.</span>
 <span class="sd">                                   Only used by `attr_eq` and `attr_ne`.</span>
 <span class="sd">        </span>
-<span class="sd">        The `condition` callable raises a :any:`ConfigurationError` if the compared attributes </span>
+<span class="sd">        The `condition` callable raises a :any:`IncompatibleRecordError` if the compared attributes </span>
 <span class="sd">        are fatally incompatibile, i.e. the user&#39;s operation is guaranteed to fail with the chosen </span>
 <span class="sd">        records. It may emit log messages to indicate that the records are not perfectly compatible </span>
 <span class="sd">        but that the user&#39;s operation is still likely to succeed with the chosen records.</span>
@@ -389,7 +417,7 @@
 <div class="viewcode-block" id="Model.require"><a class="viewcode-back" href="../../../tau.mvc.model.html#tau.mvc.model.Model.require">[docs]</a>    <span class="k">def</span> <span class="nf">require</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Constructs a compatibility condition to enforce required conditions.</span>
 <span class="sd">        </span>
-<span class="sd">        The condition will raise a :any:`ConfigurationError` if the specified attribute is</span>
+<span class="sd">        The condition will raise a :any:`IncompatibleRecordError` if the specified attribute is</span>
 <span class="sd">        undefined or not equal to the specified value (if given).</span>
 <span class="sd">        </span>
 <span class="sd">        Args:</span>
@@ -414,14 +442,14 @@
         <span class="k">def</span> <span class="nf">attr_undefined</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">rhs</span><span class="p">,</span> <span class="n">rhs_attr</span><span class="p">):</span>
             <span class="n">lhs_name</span> <span class="o">=</span> <span class="n">lhs</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
             <span class="n">rhs_name</span> <span class="o">=</span> <span class="n">rhs</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> = </span><span class="si">%s</span><span class="s2"> in </span><span class="si">%s</span><span class="s2"> requires </span><span class="si">%s</span><span class="s2"> be defined in </span><span class="si">%s</span><span class="s2"> but it is undefined&quot;</span> <span class="o">%</span> 
-                                     <span class="p">(</span><span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">lhs_name</span><span class="p">,</span> <span class="n">rhs_attr</span><span class="p">,</span> <span class="n">rhs_name</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="n">IncompatibleRecordError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> = </span><span class="si">%s</span><span class="s2"> in </span><span class="si">%s</span><span class="s2"> requires </span><span class="si">%s</span><span class="s2"> be defined in </span><span class="si">%s</span><span class="s2"> but it is undefined&quot;</span> <span class="o">%</span> 
+                                          <span class="p">(</span><span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">lhs_name</span><span class="p">,</span> <span class="n">rhs_attr</span><span class="p">,</span> <span class="n">rhs_name</span><span class="p">))</span>
         <span class="k">def</span> <span class="nf">attr_ne</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">rhs</span><span class="p">,</span> <span class="n">rhs_attr</span><span class="p">,</span> <span class="n">checked_value</span><span class="p">):</span>
             <span class="n">lhs_name</span> <span class="o">=</span> <span class="n">lhs</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
             <span class="n">rhs_name</span> <span class="o">=</span> <span class="n">rhs</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
             <span class="n">rhs_value</span> <span class="o">=</span> <span class="n">rhs</span><span class="p">[</span><span class="n">rhs_attr</span><span class="p">]</span>
-            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> = </span><span class="si">%s</span><span class="s2"> in </span><span class="si">%s</span><span class="s2"> requires </span><span class="si">%s</span><span class="s2"> = </span><span class="si">%s</span><span class="s2"> in </span><span class="si">%s</span><span class="s2"> but it is </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> 
-                                     <span class="p">(</span><span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">lhs_name</span><span class="p">,</span> <span class="n">rhs_attr</span><span class="p">,</span> <span class="n">checked_value</span><span class="p">,</span> <span class="n">rhs_name</span><span class="p">,</span> <span class="n">rhs_value</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="n">IncompatibleRecordError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> = </span><span class="si">%s</span><span class="s2"> in </span><span class="si">%s</span><span class="s2"> requires </span><span class="si">%s</span><span class="s2"> = </span><span class="si">%s</span><span class="s2"> in </span><span class="si">%s</span><span class="s2"> but it is </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> 
+                                          <span class="p">(</span><span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">lhs_name</span><span class="p">,</span> <span class="n">rhs_attr</span><span class="p">,</span> <span class="n">checked_value</span><span class="p">,</span> <span class="n">rhs_name</span><span class="p">,</span> <span class="n">rhs_value</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">construct_condition</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">attr_undefined</span><span class="o">=</span><span class="n">attr_undefined</span><span class="p">,</span> <span class="n">attr_ne</span><span class="o">=</span><span class="n">attr_ne</span><span class="p">)</span></div>
 
     <span class="nd">@classmethod</span>
@@ -505,7 +533,7 @@
 <div class="viewcode-block" id="Model.exclude"><a class="viewcode-back" href="../../../tau.mvc.model.html#tau.mvc.model.Model.exclude">[docs]</a>    <span class="k">def</span> <span class="nf">exclude</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Constructs a compatibility condition to enforce required conditions.</span>
 <span class="sd">        </span>
-<span class="sd">        The condition will raise a :any:`ConfigurationError` if the specified attribute is</span>
+<span class="sd">        The condition will raise a :any:`IncompatibleRecordError` if the specified attribute is</span>
 <span class="sd">        defined or equal to the specified value (if given).</span>
 <span class="sd">        </span>
 <span class="sd">        Args:</span>
@@ -530,13 +558,13 @@
         <span class="k">def</span> <span class="nf">attr_defined</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">rhs</span><span class="p">,</span> <span class="n">rhs_attr</span><span class="p">):</span>
             <span class="n">lhs_name</span> <span class="o">=</span> <span class="n">lhs</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
             <span class="n">rhs_name</span> <span class="o">=</span> <span class="n">rhs</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> = </span><span class="si">%s</span><span class="s2"> in </span><span class="si">%s</span><span class="s2"> requires </span><span class="si">%s</span><span class="s2"> be undefined in </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span>
-                                     <span class="p">(</span><span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">lhs_name</span><span class="p">,</span> <span class="n">rhs_attr</span><span class="p">,</span> <span class="n">rhs_name</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="n">IncompatibleRecordError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> = </span><span class="si">%s</span><span class="s2"> in </span><span class="si">%s</span><span class="s2"> requires </span><span class="si">%s</span><span class="s2"> be undefined in </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span>
+                                          <span class="p">(</span><span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">lhs_name</span><span class="p">,</span> <span class="n">rhs_attr</span><span class="p">,</span> <span class="n">rhs_name</span><span class="p">))</span>
         <span class="k">def</span> <span class="nf">attr_eq</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">rhs</span><span class="p">,</span> <span class="n">rhs_attr</span><span class="p">,</span> <span class="n">checked_value</span><span class="p">):</span>
             <span class="n">lhs_name</span> <span class="o">=</span> <span class="n">lhs</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
             <span class="n">rhs_name</span> <span class="o">=</span> <span class="n">rhs</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> = </span><span class="si">%s</span><span class="s2"> in </span><span class="si">%s</span><span class="s2"> is incompatible with </span><span class="si">%s</span><span class="s2"> = </span><span class="si">%s</span><span class="s2"> in </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span>
-                                     <span class="p">(</span><span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">lhs_name</span><span class="p">,</span> <span class="n">rhs_attr</span><span class="p">,</span> <span class="n">checked_value</span><span class="p">,</span> <span class="n">rhs_name</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="n">IncompatibleRecordError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> = </span><span class="si">%s</span><span class="s2"> in </span><span class="si">%s</span><span class="s2"> is incompatible with </span><span class="si">%s</span><span class="s2"> = </span><span class="si">%s</span><span class="s2"> in </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span>
+                                          <span class="p">(</span><span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">lhs_name</span><span class="p">,</span> <span class="n">rhs_attr</span><span class="p">,</span> <span class="n">checked_value</span><span class="p">,</span> <span class="n">rhs_name</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">construct_condition</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">attr_defined</span><span class="o">=</span><span class="n">attr_defined</span><span class="p">,</span> <span class="n">attr_eq</span><span class="o">=</span><span class="n">attr_eq</span><span class="p">)</span>        </div>
 
 <div class="viewcode-block" id="Model.check_compatibility"><a class="viewcode-back" href="../../../tau.mvc.model.html#tau.mvc.model.Model.check_compatibility">[docs]</a>    <span class="k">def</span> <span class="nf">check_compatibility</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rhs</span><span class="p">):</span>
@@ -567,7 +595,7 @@
 <span class="sd">            rhs (Model): Check compatibility with this data record.</span>
 <span class="sd">            </span>
 <span class="sd">        Raises:</span>
-<span class="sd">            ConfigurationError: The two records are not compatible.</span>
+<span class="sd">            IncompatibleRecordError: The two records are not compatible.</span>
 
 <span class="sd">        Examples:</span>
 
@@ -590,7 +618,7 @@
 <span class="sd">                louis = ProgramManager({&#39;holding_long_meeting&#39;: True})</span>
 <span class="sd">                keith = Roommate({&#39;steals_food&#39;: True})</span>
 <span class="sd">                </span>
-<span class="sd">            These expressions raise :any:`ConfigurationError`::</span>
+<span class="sd">            These expressions raise :any:`IncompatibleRecordError`::</span>
 <span class="sd">            </span>
 <span class="sd">                bob.check_compatibility(world_o_cheese)   # Because have_cheese == False</span>
 <span class="sd">                bob.check_compatibility(keith)            # Because steals_food == True</span>
@@ -604,7 +632,7 @@
 <span class="sd">            the above expressions do nothing.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">as_tuple</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="k">else</span> <span class="p">(</span><span class="n">x</span><span class="p">,)</span>
-        <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">props</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>    <span class="c1"># pylint: disable=no-member</span>
+        <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">props</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">compat</span> <span class="o">=</span> <span class="n">props</span><span class="p">[</span><span class="s1">&#39;compat&#39;</span><span class="p">]</span>
             <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
@@ -617,7 +645,6 @@
                 <span class="k">if</span> <span class="p">(</span><span class="nb">callable</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="ow">and</span> <span class="n">value</span><span class="p">(</span><span class="n">attr_value</span><span class="p">))</span> <span class="ow">or</span> <span class="n">attr_value</span> <span class="o">==</span> <span class="n">value</span><span class="p">:</span> 
                     <span class="k">for</span> <span class="n">condition</span> <span class="ow">in</span> <span class="n">as_tuple</span><span class="p">(</span><span class="n">conditions</span><span class="p">):</span>
                         <span class="n">condition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">attr_value</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span></div></div>
-
 </pre></div>
 
       </div>

@@ -81,14 +81,14 @@
 
 <div class="viewcode-block" id="MeasurementCreateCommand"><a class="viewcode-back" href="../../../../../tau.cli.commands.measurement.create.html#tau.cli.commands.measurement.create.MeasurementCreateCommand">[docs]</a><span class="k">class</span> <span class="nc">MeasurementCreateCommand</span><span class="p">(</span><span class="n">CreateCommand</span><span class="p">):</span>
     
-<div class="viewcode-block" id="MeasurementCreateCommand.parse_args"><a class="viewcode-back" href="../../../../../tau.cli.commands.measurement.create.html#tau.cli.commands.measurement.create.MeasurementCreateCommand.parse_args">[docs]</a>    <span class="k">def</span> <span class="nf">parse_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">argv</span><span class="p">):</span>
-        <span class="n">args</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">MeasurementCreateCommand</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_parse_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">argv</span><span class="p">):</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">MeasurementCreateCommand</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_parse_args</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s1">&#39;select_file&#39;</span><span class="p">):</span>
             <span class="n">absolute_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">select_file</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">absolute_path</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Selective instrumentation file &#39;</span><span class="si">%s</span><span class="s2">&#39; not found&quot;</span> <span class="o">%</span> <span class="n">absolute_path</span><span class="p">)</span>
             <span class="n">args</span><span class="o">.</span><span class="n">select_file</span> <span class="o">=</span> <span class="n">absolute_path</span>
-        <span class="k">return</span> <span class="n">args</span></div></div>
+        <span class="k">return</span> <span class="n">args</span></div>
 
 <span class="n">COMMAND</span> <span class="o">=</span> <span class="n">MeasurementCreateCommand</span><span class="p">(</span><span class="n">Measurement</span><span class="p">,</span> <span class="n">__name__</span><span class="p">)</span>
 </pre></div>

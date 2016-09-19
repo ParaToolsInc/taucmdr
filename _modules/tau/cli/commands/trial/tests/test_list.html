@@ -76,7 +76,7 @@
 
 <span class="sd">Functions used for unit tests of list.py.</span>
 <span class="sd">&quot;&quot;&quot;</span>
-
+<span class="c1">#pylint: disable=missing-docstring</span>
 
 <span class="kn">import</span> <span class="nn">shutil</span>
 <span class="kn">import</span> <span class="nn">unittest</span>
@@ -106,8 +106,9 @@
 
 <div class="viewcode-block" id="ListTest.test_wrongnumber"><a class="viewcode-back" href="../../../../../../tau.cli.commands.trial.tests.test_list.html#tau.cli.commands.trial.tests.test_list.ListTest.test_wrongnumber">[docs]</a>    <span class="k">def</span> <span class="nf">test_wrongnumber</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">(</span><span class="n">project_name</span><span class="o">=</span><span class="s1">&#39;proj1&#39;</span><span class="p">)</span>
-        <span class="n">_</span><span class="p">,</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exec_command</span><span class="p">(</span><span class="n">LIST_COMMAND</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;0&#39;</span><span class="p">])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;No trials&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span></div></div>
+        <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertNotCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">LIST_COMMAND</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;0&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s2">&quot;No trial with number=&#39;0&#39;&quot;</span><span class="p">,</span> <span class="n">stderr</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">stdout</span><span class="p">)</span></div></div>
 </pre></div>
 
       </div>

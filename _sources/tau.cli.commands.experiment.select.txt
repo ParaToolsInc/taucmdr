@@ -1,0 +1,7 @@
+tau.cli.commands.experiment.select module
+=========================================
+
+.. automodule:: tau.cli.commands.experiment.select
+    :members:
+    :undoc-members:
+    :show-inheritance:

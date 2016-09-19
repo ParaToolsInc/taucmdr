@@ -27,7 +27,7 @@
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
     <link rel="top" title="TAU Commander Developer Documentation" href="../../../index.html" />
-    <link rel="up" title="Module code" href="../../index.html" /> 
+    <link rel="up" title="tau" href="../../tau.html" /> 
   </head>
   <body role="document">
       <div class="header" role="banner"><img class="rightlogo" src="../../../_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="../../../index.html">
@@ -90,9 +90,19 @@
 <span class="sd">    .. _MVC: https://en.wikipedia.org/wiki/Model-view-controller</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     
+    <span class="n">messages</span> <span class="o">=</span> <span class="p">{}</span>
+    
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_cls</span><span class="p">,</span> <span class="n">storage</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model_cls</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">storage</span> <span class="o">=</span> <span class="n">storage</span>
+        
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Controller.push_to_topic"><a class="viewcode-back" href="../../../tau.mvc.controller.html#tau.mvc.controller.Controller.push_to_topic">[docs]</a>    <span class="k">def</span> <span class="nf">push_to_topic</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">topic</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">messages</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">topic</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
+        
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Controller.pop_topic"><a class="viewcode-back" href="../../../tau.mvc.controller.html#tau.mvc.controller.Controller.pop_topic">[docs]</a>    <span class="k">def</span> <span class="nf">pop_topic</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">topic</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">messages</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">topic</span><span class="p">,</span> <span class="p">[])</span></div>
 
 <div class="viewcode-block" id="Controller.one"><a class="viewcode-back" href="../../../tau.mvc.controller.html#tau.mvc.controller.Controller.one">[docs]</a>    <span class="k">def</span> <span class="nf">one</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get a record.</span>
@@ -214,9 +224,10 @@
             <span class="k">return</span> <span class="n">foreign</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Controller.create"><a class="viewcode-back" href="../../../tau.mvc.controller.html#tau.mvc.controller.Controller.create">[docs]</a>    <span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Store a new record and update associations.</span>
+        <span class="sd">&quot;&quot;&quot;Atomically store a new record and update associations.</span>
 <span class="sd">        </span>
-<span class="sd">        Invokes the `on_create` callback **after** the data is recorded.</span>
+<span class="sd">        Invokes the `on_create` callback **after** the data is recorded.  If this callback raises</span>
+<span class="sd">        an exception then the operation is reverted.</span>
 <span class="sd">        </span>
 <span class="sd">        Args:</span>
 <span class="sd">            data (dict): Data to record.</span>
@@ -237,6 +248,7 @@
                         <span class="n">foreign_cls</span><span class="p">,</span> <span class="n">via</span> <span class="o">=</span> <span class="n">foreign</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">_associate</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">foreign_cls</span><span class="p">,</span> <span class="n">affected</span><span class="p">,</span> <span class="n">via</span><span class="p">)</span>
             <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">check_compatibility</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
             <span class="n">model</span><span class="o">.</span><span class="n">on_create</span><span class="p">()</span>
             <span class="k">return</span> <span class="n">model</span></div>
     
@@ -249,7 +261,8 @@
 <span class="sd">            * list or tuple: apply update to all records matching the elements of `keys`.</span>
 <span class="sd">            * ``bool(keys) == False``: raise ValueError.</span>
 <span class="sd">            </span>
-<span class="sd">        Invokes the `on_update` callback for each record **after** the records are updated.</span>
+<span class="sd">        Invokes the `on_update` callback **after** the data is modified.  If this callback raises</span>
+<span class="sd">        an exception then the operation is reverted.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            data (dict): New data for existing records.</span>
@@ -263,6 +276,14 @@
             <span class="n">changing</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
             <span class="n">database</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">changing</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">new_value</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">on_change</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="n">attr</span><span class="p">][</span><span class="s1">&#39;on_change&#39;</span><span class="p">]</span>
+                    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                        <span class="k">pass</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">attr</span> <span class="ow">in</span> <span class="n">model</span> <span class="ow">and</span> <span class="n">model</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span> <span class="o">==</span> <span class="n">new_value</span><span class="p">):</span>
+                            <span class="n">on_change</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">new_value</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">foreign</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">associations</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
                     <span class="k">try</span><span class="p">:</span>
                         <span class="c1"># &#39;collection&#39; attribute is iterable</span>
@@ -287,7 +308,10 @@
                         <span class="bp">self</span><span class="o">.</span><span class="n">_associate</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">foreign_cls</span><span class="p">,</span> <span class="n">added</span><span class="p">,</span> <span class="n">via</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">deled</span><span class="p">:</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">_disassociate</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">foreign_cls</span><span class="p">,</span> <span class="n">deled</span><span class="p">,</span> <span class="n">via</span><span class="p">)</span>
-                    <span class="n">model</span><span class="o">.</span><span class="n">on_update</span><span class="p">()</span></div>
+            <span class="n">changed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">changed</span><span class="p">:</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">check_compatibility</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">on_update</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="Controller.unset"><a class="viewcode-back" href="../../../tau.mvc.controller.html#tau.mvc.controller.Controller.unset">[docs]</a>    <span class="k">def</span> <span class="nf">unset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fields</span><span class="p">,</span> <span class="n">keys</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Unset recorded data fields and update associations.</span>
@@ -298,7 +322,8 @@
 <span class="sd">            * list or tuple: apply update to all records matching the elements of `keys`.</span>
 <span class="sd">            * ``bool(keys) == False``: raise ValueError.</span>
 
-<span class="sd">        Invokes the `on_update` callback for each record **after** the records are updated.</span>
+<span class="sd">        Invokes the `on_update` callback **after** the data is modified.  If this callback raises</span>
+<span class="sd">        an exception then the operation is reverted.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            fields (list): Names of fields to unset.</span>
@@ -312,13 +337,24 @@
             <span class="n">changing</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
             <span class="n">database</span><span class="o">.</span><span class="n">unset</span><span class="p">(</span><span class="n">fields</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">changing</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">on_change</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="n">attr</span><span class="p">][</span><span class="s1">&#39;on_change&#39;</span><span class="p">]</span>
+                    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                        <span class="k">pass</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                            <span class="n">on_change</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">foreign</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">associations</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
                     <span class="k">if</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">:</span>
                         <span class="n">foreign_cls</span><span class="p">,</span> <span class="n">via</span> <span class="o">=</span> <span class="n">foreign</span>
                         <span class="n">old_foreign_keys</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
                         <span class="k">if</span> <span class="n">old_foreign_keys</span><span class="p">:</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">_disassociate</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">foreign_cls</span><span class="p">,</span> <span class="n">old_foreign_keys</span><span class="p">,</span> <span class="n">via</span><span class="p">)</span>
-                        <span class="n">model</span><span class="o">.</span><span class="n">on_update</span><span class="p">()</span></div>
+            <span class="n">changed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">changed</span><span class="p">:</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">check_compatibility</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">on_update</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="Controller.delete"><a class="viewcode-back" href="../../../tau.mvc.controller.html#tau.mvc.controller.Controller.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Delete recorded data and update associations.</span>
@@ -329,15 +365,17 @@
 <span class="sd">            * list or tuple: delete all records matching the elements of `keys`.</span>
 <span class="sd">            * ``bool(keys) == False``: raise ValueError.</span>
 
-<span class="sd">        Invokes the `on_delete` callback for each record **before** the record is deleted.</span>
+<span class="sd">        Invokes the `on_delete` callback **after** the data is deleted.  If this callback raises</span>
+<span class="sd">        an exception then the operation is reverted.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            keys (dict): Attributes to match.</span>
 <span class="sd">            keys: Fields or element identifiers to match.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span> <span class="k">as</span> <span class="n">database</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">keys</span><span class="p">):</span>
-                <span class="n">model</span><span class="o">.</span><span class="n">on_delete</span><span class="p">()</span>
+            <span class="n">removed_data</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">changing</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">changing</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">foreign</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">associations</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
                     <span class="n">foreign_model</span><span class="p">,</span> <span class="n">via</span> <span class="o">=</span> <span class="n">foreign</span>
                     <span class="n">affected_keys</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
@@ -349,7 +387,7 @@
                     <span class="c1"># pylint complains because `model` is changing on every iteration so we&#39;ll have</span>
                     <span class="c1"># a different lambda function `test` on each iteration.  This is exactly what</span>
                     <span class="c1"># we want so we disble the warning. </span>
-                    <span class="c1"># pylint: disable=cell-var-from-loop</span>
+                    <span class="c1"># pylint: disable=cell-var-from-loop, undefined-loop-variable</span>
                     <span class="n">test</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">eid</span> <span class="ow">in</span> <span class="n">x</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="n">model</span><span class="o">.</span><span class="n">eid</span> <span class="o">==</span> <span class="n">x</span>
                     <span class="n">affected</span> <span class="o">=</span> <span class="n">database</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">via</span><span class="p">,</span> <span class="n">test</span><span class="o">=</span><span class="n">test</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="n">foreign_model</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
                     <span class="n">affected_keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">record</span><span class="o">.</span><span class="n">eid</span> <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">affected</span><span class="p">]</span>
@@ -357,7 +395,10 @@
                         <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Deleting </span><span class="si">%s</span><span class="s2">(</span><span class="si">%s</span><span class="s2">) affects &#39;</span><span class="si">%s</span><span class="s2">&#39; in </span><span class="si">%s</span><span class="s2">(</span><span class="si">%s</span><span class="s2">)&quot;</span><span class="p">,</span> 
                                      <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">eid</span><span class="p">,</span> <span class="n">via</span><span class="p">,</span> <span class="n">foreign_model</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">affected_keys</span><span class="p">)</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">_disassociate</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">foreign_model</span><span class="p">,</span> <span class="n">affected_keys</span><span class="p">,</span> <span class="n">via</span><span class="p">)</span>
-            <span class="n">database</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
+                <span class="n">removed_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">model</span><span class="p">))</span>
+            <span class="n">database</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">changing</span><span class="p">:</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">on_delete</span><span class="p">()</span></div>
 
     <span class="nd">@staticmethod</span>
 <div class="viewcode-block" id="Controller.import_records"><a class="viewcode-back" href="../../../tau.mvc.controller.html#tau.mvc.controller.Controller.import_records">[docs]</a>    <span class="k">def</span> <span class="nf">import_records</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>

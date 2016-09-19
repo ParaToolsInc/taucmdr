@@ -76,10 +76,11 @@
 
 <span class="sd">Functions used for unit tests of configuration.py.</span>
 <span class="sd">&quot;&quot;&quot;</span>
+<span class="c1">#pylint: disable=missing-docstring</span>
 
 <span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">tests</span><span class="p">,</span> <span class="n">configuration</span>
-<span class="kn">from</span> <span class="nn">tau.storage.levels</span> <span class="kn">import</span> <span class="n">PROJECT_STORAGE</span><span class="p">,</span> <span class="n">ORDERED_LEVELS</span>
-<span class="kn">from</span> <span class="nn">tau.storage.project</span> <span class="kn">import</span> <span class="n">ProjectStorageError</span>
+<span class="kn">from</span> <span class="nn">tau.cf.storage.levels</span> <span class="kn">import</span> <span class="n">PROJECT_STORAGE</span><span class="p">,</span> <span class="n">ORDERED_LEVELS</span>
+<span class="kn">from</span> <span class="nn">tau.cf.storage.project</span> <span class="kn">import</span> <span class="n">ProjectStorageError</span>
 
 <div class="viewcode-block" id="ConfigurationTest"><a class="viewcode-back" href="../../../tau.tests.test_configuration.html#tau.tests.test_configuration.ConfigurationTest">[docs]</a><span class="k">class</span> <span class="nc">ConfigurationTest</span><span class="p">(</span><span class="n">tests</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
        
@@ -135,8 +136,29 @@
 
 <div class="viewcode-block" id="ConfigurationTest.test_delete_unset"><a class="viewcode-back" href="../../../tau.tests.test_configuration.html#tau.tests.test_configuration.ConfigurationTest.test_delete_unset">[docs]</a>    <span class="k">def</span> <span class="nf">test_delete_unset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">(</span><span class="n">bare</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="n">configuration</span><span class="o">.</span><span class="n">delete</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s1">&#39;some_key&#39;</span><span class="p">,</span> <span class="n">storage</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="n">configuration</span><span class="o">.</span><span class="n">delete</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s1">&#39;some_key&#39;</span><span class="p">,</span> <span class="n">storage</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span></div>
         
+<div class="viewcode-block" id="ConfigurationTest.test_parse_config_string"><a class="viewcode-back" href="../../../tau.tests.test_configuration.html#tau.tests.test_configuration.ConfigurationTest.test_parse_config_string">[docs]</a>    <span class="k">def</span> <span class="nf">test_parse_config_string</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">check_value_type</span><span class="p">(</span><span class="n">put_val</span><span class="p">,</span> <span class="n">get_val</span><span class="p">,</span> <span class="n">get_type</span><span class="p">):</span>
+            <span class="n">test_key</span> <span class="o">=</span> <span class="s1">&#39;test_parse_config_string&#39;</span>
+            <span class="n">configuration</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">test_key</span><span class="p">,</span> <span class="n">put_val</span><span class="p">)</span>
+            <span class="n">test_value</span> <span class="o">=</span> <span class="n">configuration</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">test_key</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertIsInstance</span><span class="p">(</span><span class="n">test_value</span><span class="p">,</span> <span class="n">get_type</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">get_val</span><span class="p">,</span> <span class="n">test_value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">(</span><span class="n">bare</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">check_value_type</span><span class="p">(</span><span class="s2">&quot;True&quot;</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
+        <span class="n">check_value_type</span><span class="p">(</span><span class="s2">&quot;TRUE&quot;</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
+        <span class="n">check_value_type</span><span class="p">(</span><span class="s2">&quot;true&quot;</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
+        <span class="n">check_value_type</span><span class="p">(</span><span class="s2">&quot;False&quot;</span><span class="p">,</span> <span class="bp">False</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
+        <span class="n">check_value_type</span><span class="p">(</span><span class="s2">&quot;FALSE&quot;</span><span class="p">,</span> <span class="bp">False</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
+        <span class="n">check_value_type</span><span class="p">(</span><span class="s2">&quot;false&quot;</span><span class="p">,</span> <span class="bp">False</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
+        <span class="n">check_value_type</span><span class="p">(</span><span class="s2">&quot;15&quot;</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+        <span class="n">check_value_type</span><span class="p">(</span><span class="s2">&quot;2.5&quot;</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="n">check_value_type</span><span class="p">(</span><span class="s2">&quot;Hello&quot;</span><span class="p">,</span> <span class="s2">&quot;Hello&quot;</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">)</span>
+        <span class="n">check_value_type</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">,</span> <span class="s2">&quot;T&quot;</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">)</span>
+        <span class="n">check_value_type</span><span class="p">(</span><span class="s2">&quot;F&quot;</span><span class="p">,</span> <span class="s2">&quot;F&quot;</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">)</span>
+        <span class="n">check_value_type</span><span class="p">(</span><span class="s2">&quot;yes&quot;</span><span class="p">,</span> <span class="s2">&quot;yes&quot;</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">)</span>
+        <span class="n">check_value_type</span><span class="p">(</span><span class="s2">&quot;no&quot;</span><span class="p">,</span> <span class="s2">&quot;no&quot;</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">)</span></div></div>
 </pre></div>
 
       </div>

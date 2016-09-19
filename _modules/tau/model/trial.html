@@ -294,10 +294,9 @@
                                      <span class="s1">&#39;Check that you have `write` access&#39;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Trial.on_delete"><a class="viewcode-back" href="../../../tau.model.trial.html#tau.model.trial.Trial.on_delete">[docs]</a>    <span class="k">def</span> <span class="nf">on_delete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c1"># pylint: disable=broad-except</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">util</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>  <span class="c1"># pylint: disable=broad-except</span>
             <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">):</span>
                 <span class="n">LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Could not remove trial data at &#39;</span><span class="si">%s</span><span class="s2">&#39;: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span></div>
 

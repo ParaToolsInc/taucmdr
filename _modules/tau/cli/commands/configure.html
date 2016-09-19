@@ -79,13 +79,14 @@
 <span class="kn">from</span> <span class="nn">tau.error</span> <span class="kn">import</span> <span class="n">InternalError</span>
 <span class="kn">from</span> <span class="nn">tau.cli</span> <span class="kn">import</span> <span class="n">arguments</span>
 <span class="kn">from</span> <span class="nn">tau.cli.command</span> <span class="kn">import</span> <span class="n">AbstractCommand</span>
-<span class="kn">from</span> <span class="nn">tau.storage.levels</span> <span class="kn">import</span> <span class="n">STORAGE_LEVELS</span>
+<span class="kn">from</span> <span class="nn">tau.cf.storage.levels</span> <span class="kn">import</span> <span class="n">PROJECT_STORAGE</span>
+
 
 
 <div class="viewcode-block" id="ConfigureCommand"><a class="viewcode-back" href="../../../../tau.cli.commands.configure.html#tau.cli.commands.configure.ConfigureCommand">[docs]</a><span class="k">class</span> <span class="nc">ConfigureCommand</span><span class="p">(</span><span class="n">AbstractCommand</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;``tau configure`` subcommand.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="ConfigureCommand.construct_parser"><a class="viewcode-back" href="../../../../tau.cli.commands.configure.html#tau.cli.commands.configure.ConfigureCommand.construct_parser">[docs]</a>    <span class="k">def</span> <span class="nf">construct_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ConfigureCommand._construct_parser"><a class="viewcode-back" href="../../../../tau.cli.commands.configure.html#tau.cli.commands.configure.ConfigureCommand._construct_parser">[docs]</a>    <span class="k">def</span> <span class="nf">_construct_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Constructs the command line argument parser.</span>
 <span class="sd">          </span>
 <span class="sd">        Returns:</span>
@@ -93,7 +94,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">usage</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> [arguments] &lt;key&gt; &lt;value&gt;&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span>
         <span class="n">parser</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">get_parser</span><span class="p">(</span><span class="n">prog</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">,</span> <span class="n">usage</span><span class="o">=</span><span class="n">usage</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">summary</span><span class="p">)</span>
-        <span class="n">arguments</span><span class="o">.</span><span class="n">add_storage_flags</span><span class="p">(</span><span class="n">parser</span><span class="p">,</span> <span class="s2">&quot;Get or set&quot;</span><span class="p">,</span> <span class="s2">&quot;configuration item&quot;</span><span class="p">)</span>
+        <span class="n">arguments</span><span class="o">.</span><span class="n">add_storage_flag</span><span class="p">(</span><span class="n">parser</span><span class="p">,</span> <span class="s2">&quot;Get or set&quot;</span><span class="p">,</span> <span class="s2">&quot;configuration item&quot;</span><span class="p">)</span>
         <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;key&#39;</span><span class="p">,</span>
                             <span class="n">help</span><span class="o">=</span><span class="s2">&quot;option key&quot;</span><span class="p">,</span>
                             <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;&lt;key&gt;&#39;</span><span class="p">,</span>
@@ -109,17 +110,29 @@
                             <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_const&#39;</span><span class="p">,</span>
                             <span class="n">const</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
                             <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--import&#39;</span><span class="p">,</span>
+                            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;import configuration file&quot;</span><span class="p">,</span>
+                            <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;&lt;path&gt;&#39;</span><span class="p">,</span>
+                            <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;import_file&#39;</span><span class="p">,</span>
+                            <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">parser</span></div>
 
 <div class="viewcode-block" id="ConfigureCommand.main"><a class="viewcode-back" href="../../../../tau.cli.commands.configure.html#tau.cli.commands.configure.ConfigureCommand.main">[docs]</a>    <span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">argv</span><span class="p">):</span>
-        <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">argv</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Arguments: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
-        
-        <span class="n">storage</span> <span class="o">=</span> <span class="n">STORAGE_LEVELS</span><span class="p">[</span><span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s1">&#39;@&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_args</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
+        <span class="n">storage</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">parse_storage_flag</span><span class="p">(</span><span class="n">args</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">storage</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">PROJECT_STORAGE</span><span class="p">:</span>
+            <span class="n">storage</span><span class="o">.</span><span class="n">connect_filesystem</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s1">&#39;import_file&#39;</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">configuration</span><span class="o">.</span><span class="n">import_from_file</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">import_file</span><span class="p">,</span> <span class="n">storage</span><span class="o">=</span><span class="n">storage</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Can&#39;t read configuration file &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">args</span><span class="o">.</span><span class="n">import_file</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">EXIT_SUCCESS</span>
         
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s1">&#39;key&#39;</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">configuration</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">storage</span><span class="o">=</span><span class="n">storage</span><span class="p">)</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
-                <span class="k">print</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> : </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>       
+                <span class="k">print</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> : </span><span class="si">%r</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>       
         <span class="k">elif</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s1">&#39;unset&#39;</span><span class="p">)):</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="k">print</span> <span class="n">configuration</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">storage</span><span class="p">)</span>
@@ -138,6 +151,7 @@
 
 
 <span class="n">COMMAND</span> <span class="o">=</span> <span class="n">ConfigureCommand</span><span class="p">(</span><span class="n">__name__</span><span class="p">,</span> <span class="n">summary_fmt</span><span class="o">=</span><span class="s2">&quot;Configure TAU Commander.&quot;</span><span class="p">)</span>
+
 </pre></div>
 
       </div>

@@ -75,12 +75,12 @@ some performance data (profiles, traces, etc.).</p>
 
 <dl class="attribute">
 <dt id="tau.model.project.Project.attributes">
-<code class="descname">attributes</code><em class="property"> = {'name': {'argparse': {'metavar': '&lt;project_name&gt;'}, 'unique': True, 'type': 'string', 'primary_key': True, 'description': 'project name'}, 'experiment': {'model': &lt;class 'tau.model.experiment.Experiment'&gt;, 'description': 'the current experiment'}, 'measurements': {'via': 'projects', 'description': 'measurements used by this project', 'collection': &lt;class 'tau.model.measurement.Measurement'&gt;}, 'force_tau_options': {'compat': {True: &lt;function condition at 0x7f177563c050&gt;}, 'argparse': {'nargs': '+', 'flags': ('--force-tau-options',), 'metavar': '&lt;option&gt;'}, 'type': 'array', 'description': 'forcibly add options to TAU_OPTIONS environment variable (not recommended)', 'application_rebuild': True}, 'applications': {'via': 'projects', 'description': 'applications used by this project', 'collection': &lt;class 'tau.model.application.Application'&gt;}, 'experiments': {'via': 'project', 'description': 'experiments formed from this project', 'collection': &lt;class 'tau.model.experiment.Experiment'&gt;}, 'targets': {'via': 'projects', 'description': 'targets used by this project', 'collection': &lt;class 'tau.model.target.Target'&gt;}}</em><a class="headerlink" href="#tau.model.project.Project.attributes" title="Permalink to this definition">¶</a></dt>
+<code class="descname">attributes</code><em class="property"> = {'name': {'argparse': {'metavar': '&lt;project_name&gt;'}, 'unique': True, 'type': 'string', 'primary_key': True, 'description': 'project name'}, 'experiment': {'model': &lt;class 'tau.model.experiment.Experiment'&gt;, 'on_change': &lt;bound method ModelMeta.on_experiment_change of &lt;class 'tau.model.project.Project'&gt;&gt;, 'description': 'the current experiment'}, 'measurements': {'via': 'projects', 'description': 'measurements used by this project', 'collection': &lt;class 'tau.model.measurement.Measurement'&gt;}, 'force_tau_options': {'compat': {True: &lt;function condition at 0x7f3ac94192a8&gt;}, 'argparse': {'nargs': '+', 'flags': ('--force-tau-options',), 'metavar': '&lt;option&gt;'}, 'rebuild_on_change': True, 'type': 'array', 'description': 'forcibly add options to TAU_OPTIONS environment variable (not recommended)'}, 'applications': {'via': 'projects', 'description': 'applications used by this project', 'collection': &lt;class 'tau.model.application.Application'&gt;}, 'experiments': {'via': 'project', 'description': 'experiments formed from this project', 'collection': &lt;class 'tau.model.experiment.Experiment'&gt;}, 'targets': {'via': 'projects', 'description': 'targets used by this project', 'collection': &lt;class 'tau.model.target.Target'&gt;}}</em><a class="headerlink" href="#tau.model.project.Project.attributes" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="classmethod">
 <dt id="tau.model.project.Project.controller">
-<em class="property">classmethod </em><code class="descname">controller</code><span class="sig-paren">(</span><em>storage=&lt;tau.storage.project.ProjectStorage object&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/project.html#Project.controller"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.project.Project.controller" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="descname">controller</code><span class="sig-paren">(</span><em>storage=&lt;tau.cf.storage.project.ProjectStorage object&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/project.html#Project.controller"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.project.Project.controller" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -110,6 +110,11 @@ No experiment currently selected.</td>
 <dl class="attribute">
 <dt id="tau.model.project.Project.name">
 <code class="descname">name</code><em class="property"> = 'Project'</em><a class="headerlink" href="#tau.model.project.Project.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="tau.model.project.Project.on_experiment_change">
+<em class="property">classmethod </em><code class="descname">on_experiment_change</code><span class="sig-paren">(</span><em>model</em>, <em>attr</em>, <em>new_value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/project.html#Project.on_experiment_change"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.project.Project.on_experiment_change" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -147,21 +152,7 @@ No experiment currently selected.</td>
 <dl class="method">
 <dt id="tau.model.project.ProjectController.selected">
 <code class="descname">selected</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/project.html#ProjectController.selected"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.project.ProjectController.selected" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the currently selected project&#8217;s configuration data.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The current project.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#tau.model.project.Project" title="tau.model.project.Project">Project</a></td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#tau.model.project.ProjectSelectionError" title="tau.model.project.ProjectSelectionError"><code class="xref py py-exc docutils literal"><span class="pre">ProjectSelectionError</span></code></a> &#8211;
-No project currently selected.</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="method">
 <dt id="tau.model.project.ProjectController.unselect">

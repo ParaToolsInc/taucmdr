@@ -31,18 +31,15 @@ the master branch.
 The TAU Commandments
 ====================
 
-1. Thou shalt use `pylint`_ 1.5 or later as part of your development cycle.
+1. Thou shalt use `pylint`_ 1.5.4 or later as part of your development cycle.
 2. Thou shalt follow the :doc:`design` for it is sacred.
 3. Thou shalt style thine code according to the :doc:`style`.
 4. Thou shalt document your code according to the :doc:`documentation`.
 5. **Never** shalt thou develop on the master branch, for that is an abomination.
-6. **Never** shalt thou merge broken code to the master branch.
+6. **Never** shalt thou merge code into the master branch that is failing the continuous integration (CI) tests.
 7. **Never** shalt thou *just quickly fix this one thing because I have a hard deadline I forgot and now I really 
    really really need this feature to be part of TAU Commander whatever the cost and oh God I broke it I broke it 
    and everything is on fire*.
-8. **Never** shalt thou merge code into the master branch that is failing the continuous integration (CI) tests. At 
-   a *minimum*, one of the following must be fixed *on your topic branch* **prior** to merging with master: 1) The code
-   that broke the build or failed the test(s) 2) the :doc:`continuous_integration` build 3) the `unit tests`_.
 
 Table of Contents
 =================
@@ -78,3 +75,4 @@ Modules
 .. _TAU Performance System: http://tau.uoregon.edu/
 .. _pylint: http://www.pylint.org/
 .. _`unit tests`: ./unit_tests.html
+

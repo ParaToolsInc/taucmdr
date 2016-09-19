@@ -1,0 +1,7 @@
+tau.cf.storage.tests.test_local_file module
+===========================================
+
+.. automodule:: tau.cf.storage.tests.test_local_file
+    :members:
+    :undoc-members:
+    :show-inheritance:

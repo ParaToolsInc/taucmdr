@@ -13,6 +13,7 @@ Submodules
 
 .. toctree::
 
+   tau.cli.commands.measurement.copy
    tau.cli.commands.measurement.create
    tau.cli.commands.measurement.delete
    tau.cli.commands.measurement.edit

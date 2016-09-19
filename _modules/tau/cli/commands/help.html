@@ -147,18 +147,17 @@
         <span class="k">print</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">EXIT_SUCCESS</span></div>
 
-<div class="viewcode-block" id="HelpCommand.construct_parser"><a class="viewcode-back" href="../../../../tau.cli.commands.help.html#tau.cli.commands.help.HelpCommand.construct_parser">[docs]</a>    <span class="k">def</span> <span class="nf">construct_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_construct_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">usage_head</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> &lt;command&gt;|&lt;file&gt; [arguments]&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span>
         <span class="n">parser</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">get_parser</span><span class="p">(</span><span class="n">prog</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">,</span> <span class="n">usage</span><span class="o">=</span><span class="n">usage_head</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">summary</span><span class="p">)</span>
         <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;command&#39;</span><span class="p">,</span> 
                             <span class="n">help</span><span class="o">=</span><span class="s2">&quot;A TAU command, system command, or file&quot;</span><span class="p">,</span>
                             <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;(&lt;command&gt;|&lt;file&gt;)&#39;</span><span class="p">,</span>
                             <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;+&#39;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">parser</span></div>
+        <span class="k">return</span> <span class="n">parser</span>
 
 <div class="viewcode-block" id="HelpCommand.main"><a class="viewcode-back" href="../../../../tau.cli.commands.help.html#tau.cli.commands.help.HelpCommand.main">[docs]</a>    <span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">argv</span><span class="p">):</span>
-        <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">argv</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Arguments: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_args</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">command</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">exit_with_help</span><span class="p">([])</span>
     

@@ -83,7 +83,7 @@
 <div class="viewcode-block" id="TrialExportCommand"><a class="viewcode-back" href="../../../../../tau.cli.commands.trial.export.html#tau.cli.commands.trial.export.TrialExportCommand">[docs]</a><span class="k">class</span> <span class="nc">TrialExportCommand</span><span class="p">(</span><span class="n">AbstractCommand</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;``tau trial export`` subcommand.&quot;&quot;&quot;</span>
     
-<div class="viewcode-block" id="TrialExportCommand.construct_parser"><a class="viewcode-back" href="../../../../../tau.cli.commands.trial.export.html#tau.cli.commands.trial.export.TrialExportCommand.construct_parser">[docs]</a>    <span class="k">def</span> <span class="nf">construct_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_construct_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">usage</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> [trial_number] [trial_number] ... [arguments]&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span>
         <span class="n">parser</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">get_parser</span><span class="p">(</span><span class="n">prog</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">,</span> <span class="n">usage</span><span class="o">=</span><span class="n">usage</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">summary</span><span class="p">)</span>
         <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--export-location&#39;</span><span class="p">,</span> 
@@ -100,12 +100,10 @@
                             <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;trial_number&#39;</span><span class="p">,</span>
                             <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;*&#39;</span><span class="p">,</span>
                             <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">parser</span></div>
+        <span class="k">return</span> <span class="n">parser</span>
 
 <div class="viewcode-block" id="TrialExportCommand.main"><a class="viewcode-back" href="../../../../../tau.cli.commands.trial.export.html#tau.cli.commands.trial.export.TrialExportCommand.main">[docs]</a>    <span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">argv</span><span class="p">):</span>
-        <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">argv</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Arguments: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
-        
+        <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_args</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
         <span class="n">proj_ctrl</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">controller</span><span class="p">()</span>
         <span class="n">proj</span> <span class="o">=</span> <span class="n">proj_ctrl</span><span class="o">.</span><span class="n">selected</span><span class="p">()</span>
         <span class="n">expr</span> <span class="o">=</span> <span class="n">proj</span><span class="o">.</span><span class="n">experiment</span><span class="p">()</span>

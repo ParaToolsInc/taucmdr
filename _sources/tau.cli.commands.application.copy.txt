@@ -1,0 +1,7 @@
+tau.cli.commands.application.copy module
+========================================
+
+.. automodule:: tau.cli.commands.application.copy
+    :members:
+    :undoc-members:
+    :show-inheritance:

@@ -55,7 +55,7 @@
 <p>Software installation management.</p>
 <dl class="class">
 <dt id="tau.cf.software.installation.AutotoolsInstallation">
-<em class="property">class </em><code class="descclassname">tau.cf.software.installation.</code><code class="descname">AutotoolsInstallation</code><span class="sig-paren">(</span><em>name</em>, <em>prefix</em>, <em>src</em>, <em>dst</em>, <em>target_arch</em>, <em>target_os</em>, <em>compilers</em>, <em>sources</em>, <em>commands</em>, <em>libraries</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/installation.html#AutotoolsInstallation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.installation.AutotoolsInstallation" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.cf.software.installation.</code><code class="descname">AutotoolsInstallation</code><span class="sig-paren">(</span><em>name</em>, <em>title</em>, <em>sources</em>, <em>target_arch</em>, <em>target_os</em>, <em>compilers</em>, <em>repos</em>, <em>commands</em>, <em>libraries</em>, <em>headers</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/installation.html#AutotoolsInstallation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.installation.AutotoolsInstallation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#tau.cf.software.installation.Installation" title="tau.cf.software.installation.Installation"><code class="xref py py-class docutils literal"><span class="pre">tau.cf.software.installation.Installation</span></code></a></p>
 <p>Base class for installations that follow the GNU Autotools installation process.</p>
 <dl class="docutils">
@@ -75,7 +75,7 @@ Changes to <cite>flags</cite> are not propogated to subsequent steps.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>flags</strong> (<a class="reference internal" href="tau.cli.commands.target.list.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Command line flags to pass to <cite>configure</cite>.</li>
+<li><strong>flags</strong> (<a class="reference internal" href="tau.cli.commands.measurement.list.html#module-tau.cli.commands.measurement.list" title="tau.cli.commands.measurement.list"><em>list</em></a>) &#8211; Command line flags to pass to <cite>configure</cite>.</li>
 <li><strong>env</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Environment variables to set before invoking <cite>configure</cite>.</li>
 </ul>
 </td>
@@ -99,10 +99,6 @@ Configuration failed.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>force_reinstall</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True, reinstall even if the software package passes verification.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True if the installation succeeds and is successfully verified.</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)">bool</a></td>
-</tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">SoftwarePackageError</span></code> &#8211;
 Installation failed.</td>
 </tr>
@@ -121,7 +117,7 @@ Changes to <cite>flags</cite> are not propogated to subsequent steps.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>flags</strong> (<a class="reference internal" href="tau.cli.commands.target.list.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Command line flags to pass to <cite>make</cite>.</li>
+<li><strong>flags</strong> (<a class="reference internal" href="tau.cli.commands.measurement.list.html#module-tau.cli.commands.measurement.list" title="tau.cli.commands.measurement.list"><em>list</em></a>) &#8211; Command line flags to pass to <cite>make</cite>.</li>
 <li><strong>env</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Environment variables to set before invoking <cite>make</cite>.</li>
 <li><strong>parallel</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True, pass parallelization flags to <cite>make</cite>.</li>
 </ul>
@@ -147,7 +143,7 @@ Changes to <cite>flags</cite> are not propogated to subsequent steps.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>flags</strong> (<a class="reference internal" href="tau.cli.commands.target.list.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Command line flags to pass to <cite>make</cite>.</li>
+<li><strong>flags</strong> (<a class="reference internal" href="tau.cli.commands.measurement.list.html#module-tau.cli.commands.measurement.list" title="tau.cli.commands.measurement.list"><em>list</em></a>) &#8211; Command line flags to pass to <cite>make</cite>.</li>
 <li><strong>env</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Environment variables to set before invoking <cite>make</cite>.</li>
 <li><strong>parallel</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True, pass parallelization flags to <cite>make</cite>.</li>
 </ul>
@@ -165,7 +161,7 @@ Configuration failed.</p>
 
 <dl class="class">
 <dt id="tau.cf.software.installation.Installation">
-<em class="property">class </em><code class="descclassname">tau.cf.software.installation.</code><code class="descname">Installation</code><span class="sig-paren">(</span><em>name</em>, <em>prefix</em>, <em>src</em>, <em>dst</em>, <em>target_arch</em>, <em>target_os</em>, <em>compilers</em>, <em>sources</em>, <em>commands</em>, <em>libraries</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/installation.html#Installation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.installation.Installation" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.cf.software.installation.</code><code class="descname">Installation</code><span class="sig-paren">(</span><em>name</em>, <em>title</em>, <em>sources</em>, <em>target_arch</em>, <em>target_os</em>, <em>compilers</em>, <em>repos</em>, <em>commands</em>, <em>libraries</em>, <em>headers</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/installation.html#Installation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.installation.Installation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
 <p>Encapsulates a software package installation.</p>
 <dl class="attribute">
@@ -176,20 +172,11 @@ Configuration failed.</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="tau.cf.software.installation.Installation.prefix">
-<code class="descname">prefix</code><a class="headerlink" href="#tau.cf.software.installation.Installation.prefix" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>str</em></p>
-<p>Path to a directory to contain subdirectories for
-installation files, source file, and compilation files.</p>
-</dd></dl>
-
-<dl class="attribute">
 <dt id="tau.cf.software.installation.Installation.src">
 <code class="descname">src</code><a class="headerlink" href="#tau.cf.software.installation.Installation.src" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>str</em></p>
-<p>Path to a directory where the software has already been
-installed, or a path to a source archive file, or the special
-keyword &#8216;download&#8217;.</p>
+<p>Path to a directory where the software has already been installed,
+or path to a source archive file or directory, or the special keyword &#8216;download&#8217;.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -214,10 +201,24 @@ keyword &#8216;download&#8217;.</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="tau.cf.software.installation.Installation.archive_prefix">
-<code class="descname">archive_prefix</code><a class="headerlink" href="#tau.cf.software.installation.Installation.archive_prefix" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>str</em></p>
-<p>Directory containing package source code archive file.</p>
+<dt id="tau.cf.software.installation.Installation.verify_commands">
+<code class="descname">verify_commands</code><a class="headerlink" href="#tau.cf.software.installation.Installation.verify_commands" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>list</em></p>
+<p>List of commands that are present in a valid installation.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.cf.software.installation.Installation.verify_libraries">
+<code class="descname">verify_libraries</code><a class="headerlink" href="#tau.cf.software.installation.Installation.verify_libraries" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>list</em></p>
+<p>List of libraries that are present in a valid installation.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tau.cf.software.installation.Installation.verify_headers">
+<code class="descname">verify_headers</code><a class="headerlink" href="#tau.cf.software.installation.Installation.verify_headers" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>list</em></p>
+<p>List of header files that are present in a valid installation.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -227,61 +228,45 @@ keyword &#8216;download&#8217;.</p>
 <p>Directory containing package source code.</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="tau.cf.software.installation.Installation.install_prefix">
-<code class="descname">install_prefix</code><a class="headerlink" href="#tau.cf.software.installation.Installation.install_prefix" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>str</em></p>
-<p>Directory containing installed package files.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="tau.cf.software.installation.Installation.include_path">
-<code class="descname">include_path</code><a class="headerlink" href="#tau.cf.software.installation.Installation.include_path" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>str</em></p>
-<p>Convinence variable, usually <code class="docutils literal"><span class="pre">install_prefix</span> <span class="pre">+</span> <span class="pre">&quot;/include&quot;</span></code>.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="tau.cf.software.installation.Installation.bin_path">
-<code class="descname">bin_path</code><a class="headerlink" href="#tau.cf.software.installation.Installation.bin_path" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>str</em></p>
-<p>Convinence variable, usually <code class="docutils literal"><span class="pre">install_prefix</span> <span class="pre">+</span> <span class="pre">&quot;/bin&quot;</span></code>.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="tau.cf.software.installation.Installation.lib_path">
-<code class="descname">lib_path</code><a class="headerlink" href="#tau.cf.software.installation.Installation.lib_path" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>str</em></p>
-<p>Convinence variable, usually <code class="docutils literal"><span class="pre">install_prefix</span> <span class="pre">+</span> <span class="pre">&quot;/lib&quot;</span></code>.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tau.cf.software.installation.Installation.__enter__">
-<code class="descname">__enter__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/installation.html#Installation.__enter__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.installation.Installation.__enter__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Lock the software installation for use by this process only.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tau.cf.software.installation.Installation.__exit__">
-<code class="descname">__exit__</code><span class="sig-paren">(</span><em>exc_type</em>, <em>exc_val</em>, <em>exc_tb</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/installation.html#Installation.__exit__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.installation.Installation.__exit__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Unlock the software installation.</p>
-</dd></dl>
-
 <dl class="method">
 <dt id="tau.cf.software.installation.Installation._prepare_src">
-<code class="descname">_prepare_src</code><span class="sig-paren">(</span><em>reuse=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/installation.html#Installation._prepare_src"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.installation.Installation._prepare_src" title="Permalink to this definition">¶</a></dt>
+<code class="descname">_prepare_src</code><span class="sig-paren">(</span><em>reuse_archive=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/installation.html#Installation._prepare_src"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.installation.Installation._prepare_src" title="Permalink to this definition">¶</a></dt>
 <dd><p>Prepares source code for installation.</p>
 <p>Acquires package source code archive file via download or file copy,
-unpacks the archive, and verifies that required paths exist.
-Sets <cite>self.src_prefix</cite> to the directory containing the package source files.</p>
+unpacks the archive, and verifies that required paths exist.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>reuse</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True, attempt to reuse old archives and source files.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>reuse_archive</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True, attempt to reuse archive files.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The path to the unpacked source code files.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)">str</a></td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211;
-The source code couldn&#8217;t be copied or downloaded.</td>
+The source code couldn&#8217;t be acquired or unpacked.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.cf.software.installation.Installation.add_dependency">
+<code class="descname">add_dependency</code><span class="sig-paren">(</span><em>name</em>, <em>sources</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/installation.html#Installation.add_dependency"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.installation.Installation.add_dependency" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a new package to the list of packages this package depends on.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The name of the package.  There must be a corresponding
+<code class="docutils literal"><span class="pre">tau.cf.software.&lt;name&gt;_installation</span></code> module.</li>
+<li><strong>sources</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Packages sources as strings indexed by package names as strings.  A source may be a
+path to a directory where the software has already been installed, or a path to a source
+archive file, or the special keyword &#8216;download&#8217;.</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
@@ -300,7 +285,7 @@ prepend <code class="docutils literal"><span class="pre">self.bin_path</span></c
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>opts</strong> (<a class="reference internal" href="tau.cli.commands.target.list.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Optional list of command line options.</li>
+<li><strong>opts</strong> (<a class="reference internal" href="tau.cli.commands.measurement.list.html#module-tau.cli.commands.measurement.list" title="tau.cli.commands.measurement.list"><em>list</em></a>) &#8211; Optional list of command line options.</li>
 <li><strong>env</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Optional dictionary of environment variables.</li>
 </ul>
 </td>
@@ -313,13 +298,6 @@ prepend <code class="docutils literal"><span class="pre">self.bin_path</span></c
 </tr>
 </tbody>
 </table>
-</dd></dl>
-
-<dl class="method">
-<dt id="tau.cf.software.installation.Installation.dl_src">
-<code class="descname">dl_src</code><span class="sig-paren">(</span><em>reuse=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/installation.html#Installation.dl_src"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.installation.Installation.dl_src" title="Permalink to this definition">¶</a></dt>
-<dd><p>Downloads source code for installation.</p>
-<p>Acquires package source code archive file via download.</p>
 </dd></dl>
 
 <dl class="method">
@@ -337,6 +315,11 @@ This method must be overridden by a subclass.</td>
 </table>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="tau.cf.software.installation.Installation.install_prefix">
+<code class="descname">install_prefix</code><a class="headerlink" href="#tau.cf.software.installation.Installation.install_prefix" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="method">
 <dt id="tau.cf.software.installation.Installation.runtime_config">
 <code class="descname">runtime_config</code><span class="sig-paren">(</span><em>opts=None</em>, <em>env=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/installation.html#Installation.runtime_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.installation.Installation.runtime_config" title="Permalink to this definition">¶</a></dt>
@@ -351,7 +334,7 @@ prepend <code class="docutils literal"><span class="pre">self.bin_path</span></c
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>opts</strong> (<a class="reference internal" href="tau.cli.commands.target.list.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Optional list of command line options.</li>
+<li><strong>opts</strong> (<a class="reference internal" href="tau.cli.commands.measurement.list.html#module-tau.cli.commands.measurement.list" title="tau.cli.commands.measurement.list"><em>list</em></a>) &#8211; Optional list of command line options.</li>
 <li><strong>env</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Optional dictionary of environment variables.</li>
 </ul>
 </td>
@@ -369,17 +352,13 @@ prepend <code class="docutils literal"><span class="pre">self.bin_path</span></c
 <dl class="method">
 <dt id="tau.cf.software.installation.Installation.verify">
 <code class="descname">verify</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/installation.html#Installation.verify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.installation.Installation.verify" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check if the installation is valid.</p>
-<p>A valid installation provides all expected libraries and commands.
+<dd><p>Check if the installation at <code class="xref any docutils literal"><span class="pre">installation_prefix</span></code> is valid.</p>
+<p>A valid installation provides all expected files and commands.
 Subclasses may wish to perform additional checks.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">If the installation at self.install_prefix is valid.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/constants.html#True" title="(in Python v2.7)">True</a></td>
-</tr>
 <tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">SoftwarePackageError</span></code> &#8211;
 Describs why the installation is invalid.</td>
 </tr>
@@ -402,7 +381,27 @@ Default is one less than the number of CPU cores.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Command line arguments to pass to <cite>make</cite>.</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="tau.cli.commands.target.list.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list">list</a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="tau.cli.commands.measurement.list.html#module-tau.cli.commands.measurement.list" title="tau.cli.commands.measurement.list">list</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.cf.software.installation.tmpfs_prefix">
+<code class="descclassname">tau.cf.software.installation.</code><code class="descname">tmpfs_prefix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/software/installation.html#tmpfs_prefix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.software.installation.tmpfs_prefix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Path to a uniquely named directory in a temporary filesystem, ideally a ramdisk.</p>
+<p>/dev/shm is the preferred tmpfs, but if it&#8217;s unavailable or mounted with noexec then
+fall back to tempfile.gettemdir(), which is usually /tmp.  If that filesystem is also
+unavailable then use the filesystem prefix of the highest writable storage container.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Path to a uniquely-named directory in the temporary filesystem. The directory
+and all its contents <strong>will be deleted</strong> when the program exits.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)">str</a></td>
 </tr>
 </tbody>
 </table>

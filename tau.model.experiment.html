@@ -50,9 +50,9 @@
       <div class="content">
         
         
-  <div class="section" id="tau-model-experiment-module">
-<h1>tau.model.experiment module<a class="headerlink" href="#tau-model-experiment-module" title="Permalink to this headline">¶</a></h1>
-<span class="target" id="module-tau.model.experiment"></span><p>Experiment data model.</p>
+  <div class="section" id="module-tau.model.experiment">
+<span id="tau-model-experiment-module"></span><h1>tau.model.experiment module<a class="headerlink" href="#module-tau.model.experiment" title="Permalink to this headline">¶</a></h1>
+<p>Experiment data model.</p>
 <p>An Experiment uniquely groups a <a class="reference internal" href="tau.model.target.html#tau.model.target.Target" title="tau.model.target.Target"><code class="xref any py py-class docutils literal"><span class="pre">Target</span></code></a>, <a class="reference internal" href="tau.model.application.html#tau.model.application.Application" title="tau.model.application.Application"><code class="xref any py py-class docutils literal"><span class="pre">Application</span></code></a>, and <a class="reference internal" href="tau.model.measurement.html#tau.model.measurement.Measurement" title="tau.model.measurement.Measurement"><code class="xref any py py-class docutils literal"><span class="pre">Measurement</span></code></a>
 and will have zero or more <a class="reference internal" href="tau.model.trial.html#tau.model.trial.Trial" title="tau.model.trial.Trial"><code class="xref any py py-class docutils literal"><span class="pre">Trial</span></code></a>. There is one selected experiment per project.
 The selected experiment will be used for application compilation and trial visualization.</p>
@@ -70,11 +70,11 @@ The selected experiment will be used for application compilation and trial visua
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>trial_numbers</strong> (<a class="reference internal" href="tau.cli.commands.target.list.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; List of numbers of trials to retrieve or None.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>trial_numbers</strong> (<a class="reference internal" href="tau.cli.commands.measurement.list.html#module-tau.cli.commands.measurement.list" title="tau.cli.commands.measurement.list"><em>list</em></a>) &#8211; List of numbers of trials to retrieve or None.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Trial data.</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="tau.cli.commands.target.list.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list">list</a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="tau.cli.commands.measurement.list.html#module-tau.cli.commands.measurement.list" title="tau.cli.commands.measurement.list">list</a></td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211;
 Invalid trial number or no trials in this experiment.</td>
@@ -90,12 +90,12 @@ Invalid trial number or no trials in this experiment.</td>
 
 <dl class="attribute">
 <dt id="tau.model.experiment.Experiment.attributes">
-<code class="descname">attributes</code><em class="property"> = {'project': {'model': &lt;class 'tau.model.project.Project'&gt;, 'required': True, 'description': 'Project this experiment belongs to'}, 'application': {'model': &lt;class 'tau.model.application.Application'&gt;, 'required': True, 'description': 'Application this experiment uses'}, 'target': {'model': &lt;class 'tau.model.target.Target'&gt;, 'required': True, 'description': 'Target this experiment runs on'}, 'trials': {'via': 'experiment', 'description': 'Trials of this experiment', 'collection': &lt;class 'tau.model.trial.Trial'&gt;}, 'measurement': {'model': &lt;class 'tau.model.measurement.Measurement'&gt;, 'required': True, 'description': 'Measurement parameters for this experiment'}}</em><a class="headerlink" href="#tau.model.experiment.Experiment.attributes" title="Permalink to this definition">¶</a></dt>
+<code class="descname">attributes</code><em class="property"> = {'name': {'argparse': {'flags': ('--name',), 'metavar': '&lt;name&gt;'}, 'unique': True, 'type': 'string', 'primary_key': True, 'description': 'human-readable experiment name'}, 'trials': {'via': 'experiment', 'description': 'Trials of this experiment', 'collection': &lt;class 'tau.model.trial.Trial'&gt;}, 'project': {'model': &lt;class 'tau.model.project.Project'&gt;, 'required': True, 'description': 'Project this experiment belongs to'}, 'application': {'model': &lt;class 'tau.model.application.Application'&gt;, 'required': True, 'description': 'Application this experiment uses'}, 'measurement': {'model': &lt;class 'tau.model.measurement.Measurement'&gt;, 'required': True, 'description': 'Measurement parameters for this experiment'}, 'target': {'model': &lt;class 'tau.model.target.Target'&gt;, 'required': True, 'description': 'Target this experiment runs on'}}</em><a class="headerlink" href="#tau.model.experiment.Experiment.attributes" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="tau.model.experiment.Experiment.configure">
-<code class="descname">configure</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.configure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.configure" title="Permalink to this definition">¶</a></dt>
+<code class="descname">configure</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.configure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.configure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets up the Experiment for a new trial.</p>
 <p>Installs or configures TAU and all its dependencies.  After calling this
 function, the experiment is ready to operate on the user&#8217;s application.</p>
@@ -111,68 +111,14 @@ function, the experiment is ready to operate on the user&#8217;s application.</p
 </table>
 </dd></dl>
 
-<dl class="method">
-<dt id="tau.model.experiment.Experiment.configure_tau">
-<code class="descname">configure_tau</code><span class="sig-paren">(</span><em>prefix</em>, <em>dependencies</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.configure_tau"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.configure_tau" title="Permalink to this definition">¶</a></dt>
-<dd><p>Configures TAU for the current experiment, if necessary.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>prefix</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Filesystem prefix where TAU will be installed, if necessary.</li>
-<li><strong>dependencies</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Installation objects indexed by dependency name.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Object handle for the TAU installation.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="tau.cf.software.tau_installation.html#tau.cf.software.tau_installation.TauInstallation" title="tau.cf.software.tau_installation.TauInstallation">TauInstallation</a></p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="tau.model.experiment.Experiment.configure_tau_dependency">
-<code class="descname">configure_tau_dependency</code><span class="sig-paren">(</span><em>name</em>, <em>prefix</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.configure_tau_dependency"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.configure_tau_dependency" title="Permalink to this definition">¶</a></dt>
-<dd><p>Installs dependency packages for TAU, e.g. PDT.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the dependency to install.
-Must have a matching tau.cf.software.&lt;name&gt;_installation module.</li>
-<li><strong>prefix</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Installation prefix.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A new installation instance for the installed dependency.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="tau.cf.software.installation.html#tau.cf.software.installation.Installation" title="tau.cf.software.installation.Installation">Installation</a></p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
 <dl class="classmethod">
 <dt id="tau.model.experiment.Experiment.controller">
-<em class="property">classmethod </em><code class="descname">controller</code><span class="sig-paren">(</span><em>storage=&lt;tau.storage.project.ProjectStorage object&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.controller"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.controller" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="descname">controller</code><span class="sig-paren">(</span><em>storage=&lt;tau.cf.storage.project.ProjectStorage object&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.controller"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.controller" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="tau.model.experiment.Experiment.data_size">
 <code class="descname">data_size</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.data_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.data_size" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="tau.model.experiment.Experiment.download_scorep">
-<code class="descname">download_scorep</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.download_scorep"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.download_scorep" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -187,7 +133,7 @@ Must have a matching tau.cf.software.&lt;name&gt;_installation module.</li>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>profile_format</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; File format for exported profiles, see <code class="xref any docutils literal"><span class="pre">PROFILE_EXPORT_FORMATS</span></code></li>
 <li><strong>export_location</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Directory to contain exported profiles.</li>
-<li><strong>trial_numbers</strong> (<a class="reference internal" href="tau.cli.commands.target.list.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Numbers of trials to show.</li>
+<li><strong>trial_numbers</strong> (<a class="reference internal" href="tau.cli.commands.measurement.list.html#module-tau.cli.commands.measurement.list" title="tau.cli.commands.measurement.list"><em>list</em></a>) &#8211; Numbers of trials to show.</li>
 </ul>
 </td>
 </tr>
@@ -198,6 +144,11 @@ Invalid trial numbers or no trial data for this experiment.</p>
 </tbody>
 </table>
 </dd></dl>
+
+<dl class="attribute">
+<dt id="tau.model.experiment.Experiment.key_attribute">
+<code class="descname">key_attribute</code><em class="property"> = 'name'</em><a class="headerlink" href="#tau.model.experiment.Experiment.key_attribute" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="method">
 <dt id="tau.model.experiment.Experiment.managed_build">
@@ -211,7 +162,7 @@ prepares the experiment, and performs the operation.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>compiler_cmd</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The compiler command intercepted by TAU Commander.</li>
-<li><strong>compiler_args</strong> (<a class="reference internal" href="tau.cli.commands.target.list.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Compiler command line arguments intercepted by TAU Commander.</li>
+<li><strong>compiler_args</strong> (<a class="reference internal" href="tau.cli.commands.measurement.list.html#module-tau.cli.commands.measurement.list" title="tau.cli.commands.measurement.list"><em>list</em></a>) &#8211; Compiler command line arguments intercepted by TAU Commander.</li>
 </ul>
 </td>
 </tr>
@@ -240,8 +191,8 @@ under the specified experimental configuration.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>launcher_cmd</strong> (<a class="reference internal" href="tau.cli.commands.target.list.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Application launcher with command line arguments.</li>
-<li><strong>application_cmd</strong> (<a class="reference internal" href="tau.cli.commands.target.list.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Application executable with command line arguments.</li>
+<li><strong>launcher_cmd</strong> (<a class="reference internal" href="tau.cli.commands.measurement.list.html#module-tau.cli.commands.measurement.list" title="tau.cli.commands.measurement.list"><em>list</em></a>) &#8211; Application launcher with command line arguments.</li>
+<li><strong>application_cmd</strong> (<a class="reference internal" href="tau.cli.commands.measurement.list.html#module-tau.cli.commands.measurement.list" title="tau.cli.commands.measurement.list"><em>list</em></a>) &#8211; Application executable with command line arguments.</li>
 </ul>
 </td>
 </tr>
@@ -284,10 +235,41 @@ The experiment is not configured to perform the desired run.</p>
 <code class="descname">prefix</code><a class="headerlink" href="#tau.model.experiment.Experiment.prefix" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="classmethod">
+<dt id="tau.model.experiment.Experiment.rebuild_required">
+<em class="property">classmethod </em><code class="descname">rebuild_required</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.rebuild_required"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.rebuild_required" title="Permalink to this definition">¶</a></dt>
+<dd><p>Builds a string indicating if an application rebuild is required.</p>
+<p>Rebuild information is taken from the &#8216;rebuild_required&#8217; topic.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">String indicating why an application rebuild is required.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)">str</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="attribute">
 <dt id="tau.model.experiment.Experiment.references">
 <code class="descname">references</code><em class="property"> = set([(&lt;class 'tau.model.trial.Trial'&gt;, 'experiment'), (&lt;class 'tau.model.project.Project'&gt;, 'experiment')])</em><a class="headerlink" href="#tau.model.experiment.Experiment.references" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="tau.model.experiment.Experiment.select">
+<em class="property">classmethod </em><code class="descname">select</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.select"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.select" title="Permalink to this definition">¶</a></dt>
+<dd><p>Changes the selected experiment in the current project.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the experiment to select.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="tau.model.experiment.Experiment.show">
@@ -301,7 +283,7 @@ The experiment is not configured to perform the desired run.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>profile_tool</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the visualization or data processing tool for profiles, e.g. <cite>pprof</cite>.</li>
 <li><strong>trace_tool</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the visualization or data processing tool for traces, e.g. <cite>vampir</cite>.</li>
-<li><strong>trial_numbers</strong> (<a class="reference internal" href="tau.cli.commands.target.list.html#module-tau.cli.commands.target.list" title="tau.cli.commands.target.list"><em>list</em></a>) &#8211; Numbers of trials to show.</li>
+<li><strong>trial_numbers</strong> (<a class="reference internal" href="tau.cli.commands.measurement.list.html#module-tau.cli.commands.measurement.list" title="tau.cli.commands.measurement.list"><em>list</em></a>) &#8211; Numbers of trials to show.</li>
 </ul>
 </td>
 </tr>
@@ -314,39 +296,10 @@ Invalid trial numbers or no trial data for this experiment.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="tau.model.experiment.Experiment.title">
-<code class="descname">title</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.title"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.title" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="tau.model.experiment.Experiment.uses_binutils">
-<code class="descname">uses_binutils</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.uses_binutils"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.uses_binutils" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="tau.model.experiment.Experiment.uses_libunwind">
-<code class="descname">uses_libunwind</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.uses_libunwind"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.uses_libunwind" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="tau.model.experiment.Experiment.uses_papi">
-<code class="descname">uses_papi</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.uses_papi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.uses_papi" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="tau.model.experiment.Experiment.uses_pdt">
-<code class="descname">uses_pdt</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.uses_pdt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.uses_pdt" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="tau.model.experiment.Experiment.uses_scorep">
-<code class="descname">uses_scorep</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.uses_scorep"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.uses_scorep" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="tau.model.experiment.Experiment.uses_tau">
-<code class="descname">uses_tau</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.uses_tau"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.uses_tau" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="tau.model.experiment.Experiment.verify">
+<code class="descname">verify</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.verify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.verify" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks all components of the experiment for mutual compatibility.</p>
+</dd></dl>
 
 </dd></dl>
 
