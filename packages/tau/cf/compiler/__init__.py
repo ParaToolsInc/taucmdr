@@ -330,6 +330,7 @@ CC_ROLE = CompilerRole('CC', 'C')
 CXX_ROLE = CompilerRole('CXX', 'C++')
 FC_ROLE = CompilerRole('FC', 'Fortran')
 UPC_ROLE = CompilerRole('UPC', 'Universal Parallel C')
+COMPILER_ROLES = CC_ROLE, CXX_ROLE, FC_ROLE, UPC_ROLE
 
 SYSTEM_COMPILERS = CompilerFamily('System')
 SYSTEM_COMPILERS.add(CC_ROLE, 'cc')
@@ -340,7 +341,7 @@ SYSTEM_COMPILERS.add(UPC_ROLE, 'upc')
 GNU_COMPILERS = CompilerFamily('GNU', family_regex=r'Free Software Foundation, Inc')
 GNU_COMPILERS.add(CC_ROLE, 'gcc')
 GNU_COMPILERS.add(CXX_ROLE, 'g++')
-GNU_COMPILERS.add(FC_ROLE, 'gfortran')
+GNU_COMPILERS.add(FC_ROLE, 'gfortran', 'g77')
 GNU_COMPILERS.add(UPC_ROLE, 'gupc')
 
 INTEL_COMPILERS = CompilerFamily('Intel', family_regex=r'Intel Corporation')
@@ -369,5 +370,5 @@ CRAY_COMPILERS = CompilerFamily('Cray', show_wrapper_flags=['-craype-verbose', '
 CRAY_COMPILERS.add(CC_ROLE, 'cc')
 CRAY_COMPILERS.add(CXX_ROLE, 'CC')
 CRAY_COMPILERS.add(FC_ROLE, 'ftn')
-CRAY_COMPILERS.add(UPC_ROLE, 'upc')
+CRAY_COMPILERS.add(UPC_ROLE, 'cc')
 

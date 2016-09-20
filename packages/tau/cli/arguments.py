@@ -50,6 +50,23 @@ STORAGE_LEVEL_FLAG = "@"
 _DEFAULT_STORAGE_LEVEL = ORDERED_LEVELS[0].name
 
 
+def _track_seen_action(action_cls):
+    class Action(action_cls):
+        def __call__(self, parser, namespace, value, *args, **kwargs):
+            if not hasattr(namespace, '__seen_actions__'):
+                namespace.__seen_actions__ = {}
+            namespace.__seen_actions__[self.dest] = self
+            return super(Action, self).__call__(parser, namespace, value, *args, **kwargs)
+    return Action
+
+def _add_argument(self, *args, **kwargs):
+    kwargs['action'] = _track_seen_action(self._pop_action_class(kwargs))
+    return self.__add_argument__(*args, **kwargs)
+
+argparse._ActionsContainer.__add_argument__ = argparse._ActionsContainer.add_argument
+argparse._ActionsContainer.add_argument = _add_argument
+
+
 class MutableGroupArgumentParser(argparse.ArgumentParser):
     """Argument parser with mutable groups and better help formatting.
 
@@ -193,29 +210,29 @@ class ParsePackagePathAction(argparse.Action):
     """
     # pylint: disable=too-few-public-methods
 
-    def __call__(self, parser, namespace, flag, unused_option_string=None):
-        """Sets the `self.dest` attribute in `namespace` to the parsed value of `flag`.
+    def __call__(self, parser, namespace, value, unused_option_string=None):
+        """Sets the `self.dest` attribute in `namespace` to the parsed value of `value`.
         
-        If `flag` parses to a boolean True value then the attribute value is 'download'.
-        If `flag` parses to a boolean False value then the attribute value is ``None``.
-        Otherwise the attribute value is the value of `flag`.
+        If `value` parses to a boolean True value then the attribute value is 'download'.
+        If `value` parses to a boolean False value then the attribute value is ``None``.
+        Otherwise the attribute value is the value of `value`.
             
         Args:
             parser (str): Argument parser object this group belongs to.
             namespace (object): Namespace to receive parsed value via setattr.
-            flag (str): Value parsed from the command line.
+            value (str): Value parsed from the command line.
         """
         try:
-            flag_as_bool = util.parse_bool(flag, additional_true=['download'])
+            value_as_bool = util.parse_bool(value, additional_true=['download'])
         except TypeError:
-            if util.is_url(flag):
-                value = flag
+            if util.is_url(value):
+                value = value
             else:
-                value = os.path.abspath(os.path.expanduser(flag))
+                value = os.path.abspath(os.path.expanduser(value))
                 if not (os.path.isdir(value) or util.file_accessible(value)):
                     raise argparse.ArgumentError(self, "Boolean, 'download', valid path, or URL required: %s" % value)
         else:
-            value = 'download' if flag_as_bool else None
+            value = 'download' if value_as_bool else None
         setattr(namespace, self.dest, value)
 
 
@@ -226,19 +243,19 @@ class ParseBooleanAction(argparse.Action):
     """
     # pylint: disable=too-few-public-methods
 
-    def __call__(self, parser, namespace, flag, unused_option_string=None):
-        """Sets the `self.dest` attribute in `namespace` to the parsed value of `flag`.
+    def __call__(self, parser, namespace, value, unused_option_string=None):
+        """Sets the `self.dest` attribute in `namespace` to the parsed value of `value`.
         
-        If `flag` parses to a boolean via :any:`tau.util.parse_bool` then the 
+        If `value` parses to a boolean via :any:`tau.util.parse_bool` then the 
         attribute value is that boolean value.
             
         Args:
             parser (str): Argument parser object this group belongs to.
             namespace (object): Namespace to receive parsed value via setattr.
-            flag (str): Value parsed from the command line/
+            value (str): Value parsed from the command line/
         """
         try:
-            setattr(namespace, self.dest, util.parse_bool(flag))
+            setattr(namespace, self.dest, util.parse_bool(value))
         except TypeError:
             raise argparse.ArgumentError(self, 'Boolean value required')
 

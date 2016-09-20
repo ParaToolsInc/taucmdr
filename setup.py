@@ -215,6 +215,13 @@ class Test(TestCommand):
 
 class Install(InstallCommand):
 
+    _custom_user_options = [('initialize', None, "Initialize default TAU project dependencies")]
+    user_options = InstallCommand.user_options + _custom_user_options
+
+    def initialize_options(self):
+        InstallCommand.initialize_options(self)
+        self.initialize = False
+    
     def finalize_options(self):
         InstallCommand.finalize_options(self)
         self.install_scripts = os.path.join(self.prefix, 'bin')
@@ -222,7 +229,15 @@ class Install(InstallCommand):
         self.install_data = os.path.join(self.prefix)
         self.record = os.path.join(self.prefix, 'install.log')
 
+    def _import_system_config(self):
+        sys.path.insert(0, os.path.join(self.prefix, 'packages'))
+        from tau import configuration
+        from tau.cf.storage.levels import SYSTEM_STORAGE
+        SYSTEM_STORAGE.connect_filesystem()
+        configuration.import_from_file(os.path.join(PACKAGE_TOPDIR, 'defaults.cfg'), SYSTEM_STORAGE)
+
     def _configure_new_installation(self):
+        sys.path.insert(0, os.path.join(self.prefix, 'packages'))
         import tau
         from tau import configuration, util, logger
         from tau import EXIT_SUCCESS
@@ -230,14 +245,13 @@ class Install(InstallCommand):
         from tau.cf.software import SoftwarePackageError
         from tau.cli.commands.initialize import COMMAND as init_command
         from tau.cli.commands.select import COMMAND as select_command
+        from tau.cli.commands.configure import COMMAND as configure_command
         from tau.model.project import Project
-        
         logger.activate_debug_log()
 
-        # Import default settings
-        SYSTEM_STORAGE.connect_filesystem()
-        configuration.import_from_file(os.path.join(PACKAGE_TOPDIR, 'defaults.cfg'), SYSTEM_STORAGE)
-        
+        # Show system-level configuration
+        configure_command.main(['-@', 'system'])
+
         # Call `tau initialize` to configure system-level packages supporting default experiments
         os.chdir(self.build_base)
         util.rmtree('.tau', ignore_errors=True)
@@ -266,19 +280,16 @@ class Install(InstallCommand):
                    "  ./configure\n"
                    "  make\n"
                    "  make install")
+        elif self.initialize:
+            self._configure_new_installation()
         else:
             try:
                 retval = InstallCommand.run(self)
             except:
                 retval = -1
             if not retval:
-                # Update PYTHONPATH with the TAU packages that were *just installed* 
-                # so SYSTEM_PREFIX etc. are set correctly. 
-                sys.path.insert(0, os.path.join(self.prefix, 'packages'))
-                self._configure_new_installation()
+                self._import_system_config()
                 
-            
-
 
 def update_version():
     """Rewrite packages/tau/__init__.py to update __version__.

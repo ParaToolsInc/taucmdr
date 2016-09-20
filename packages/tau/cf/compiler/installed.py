@@ -67,12 +67,12 @@ class InstalledCompilerCreator(type):
     def __call__(cls, absolute_path, info, **kwargs):
         assert isinstance(absolute_path, basestring) and os.path.isabs(absolute_path)
         assert isinstance(info, CompilerInfo)
-        wrapped_path = kwargs['wrapped'].absolute_path if 'wrapped' in kwargs else None
+        wrapped_path = kwargs['wrapped'].unwrap().absolute_path if 'wrapped' in kwargs else None
         try:
             instance = cls.__instances__[absolute_path, info, wrapped_path]
         except KeyError: 
             instance = super(InstalledCompilerCreator, cls).__call__(absolute_path, info, **kwargs)
-            wrapped_path = instance.wrapped.absolute_path if instance.wrapped else None 
+            wrapped_path = instance.unwrap().absolute_path if instance.wrapped else None 
             cls.__instances__[absolute_path, info, wrapped_path] = instance
         return instance
 
@@ -175,7 +175,7 @@ class InstalledCompiler(object):
     def _probe_wrapper(self):
         if not self.info.family.show_wrapper_flags:
             return None
-        LOGGER.info("Probing %s '%s'", self.info.short_descr, self.absolute_path)
+        LOGGER.debug("Probing %s '%s'", self.info.short_descr, self.absolute_path)
         cmd = [self.absolute_path] + self.info.family.show_wrapper_flags
         LOGGER.debug("Creating subprocess: %s", cmd)
         try:
@@ -207,7 +207,8 @@ class InstalledCompiler(object):
                 return None
             wrapped = self._probe_wrapped(wrapped_absolute_path, wrapped_args)
             if wrapped:
-                LOGGER.info("'%s' wraps '%s'", self.absolute_path, wrapped.absolute_path)
+                LOGGER.info("'%s' wrapped by %s '%s'", wrapped.absolute_path, 
+                            self.info.short_descr, self.absolute_path)
                 break
         else:
             LOGGER.warning("Unable to identify compiler wrapped by wrapper '%s'."
@@ -283,12 +284,20 @@ class InstalledCompiler(object):
         Returns:
             InstalledCompiler: A new InstalledCompiler instance describing the compiler.
         """
+        from tau.cf.compiler.mpi import MpiCompilerFamily
+        from tau.cf.compiler.shmem import ShmemCompilerFamily
         absolute_path = util.which(command)
         if not absolute_path:
             raise ConfigurationError("Compiler '%s' not found on PATH" % command)
         command = os.path.basename(absolute_path)
         if not family:
-            family = CompilerFamily.probe(absolute_path)
+            # FIXME: Compiler family classes are fragmented and weird.
+            if role.keyword.startswith('MPI_'):
+                family = MpiCompilerFamily.probe(absolute_path)
+            elif role.keyword.startswith('SHMEM_'):
+                family = ShmemCompilerFamily.probe(absolute_path)
+            else:
+                family = CompilerFamily.probe(absolute_path)
         info_list = CompilerInfo.find(command, family, role)
         if len(info_list) > 1:
             raise ConfigurationError("%s compiler '%s' is ambiguous: could be any of %s"  % 

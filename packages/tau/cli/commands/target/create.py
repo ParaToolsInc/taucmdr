@@ -34,9 +34,9 @@ from tau.cli import arguments
 from tau.cli.cli_view import CreateCommand
 from tau.model.target import Target
 from tau.model.compiler import Compiler
-from tau.cf.compiler import CompilerFamily, CompilerRole, CompilerInfo
-from tau.cf.compiler.mpi import MpiCompilerFamily
-from tau.cf.compiler.shmem import ShmemCompilerFamily
+from tau.cf.compiler import CompilerFamily, CompilerRole, CompilerInfo, COMPILER_ROLES
+from tau.cf.compiler.mpi import MpiCompilerFamily, MPI_COMPILER_ROLES
+from tau.cf.compiler.shmem import ShmemCompilerFamily, SHMEM_COMPILER_ROLES
 from tau.cf.compiler.installed import InstalledCompiler, InstalledCompilerFamily
 from tau.cf.target import TauArch
 from tau.cf.software.tau_installation import TAU_MINIMAL_COMPILERS
@@ -44,22 +44,75 @@ from tau.cf.software.tau_installation import TAU_MINIMAL_COMPILERS
 class TargetCreateCommand(CreateCommand):
     """``tau target create`` subcommand."""
 
-    def _probe_compiler_family(self, args, compilers, family_attr, family_cls):
-        try:
-            family_arg = getattr(args, family_attr)
-        except AttributeError:
-            # User didn't specify that argument, but that's OK
-            return
-        if family_arg == "None":
-            return
-        try:
+    def _find_from_family(self, family_arg, family_cls):
+        if family_arg.lower() != "none":
             family = InstalledCompilerFamily(family_cls(family_arg))
-        except KeyError:
-            self.parser.error("Invalid compiler family: %s" % family_arg)
-        for comp in family:
-            self.logger.debug("args.%s=%r", comp.info.role.keyword, comp.absolute_path)
-            setattr(args, comp.info.role.keyword, comp.absolute_path)
-            compilers[comp.info.role] = comp
+            return {comp.info.role: comp for comp in family}
+        return {}
+
+    def _probe_compiler_family(self, args, family_attr, family_cls, family_roles):
+        compilers = {}
+        seen_actions = getattr(args, '__seen_actions__', {})
+        compiler_keys = set(role.keyword for role in family_roles)
+        all_keys = set(seen_actions.keys())
+        given_keys = compiler_keys & all_keys
+        missing_keys = compiler_keys - given_keys
+        self.logger.debug("Given %s compilers: %s", family_attr, given_keys)
+        self.logger.debug("Missing %s compilers: %s", family_attr, missing_keys)
+        # Either the family or role flags should be given, not both
+        if given_keys and family_attr in seen_actions:
+            role_flags = []
+            for key in given_keys:
+                role_flags.extend(Target.attributes[key]['argparse']['flags'])
+            family_flags = seen_actions[family_attr].option_strings
+            self.parser.error("%s may not be used with %s" % (', '.join(family_flags), ', '.join(role_flags)))
+        # Check manually specified compiler commands
+        for key in given_keys:
+            cmd = getattr(args, key)
+            absolute_path = util.which(cmd)
+            if not absolute_path:
+                self.parser.error("Invalid compiler command: %s" % cmd)
+            role = CompilerRole.find(key)
+            compilers[role] = InstalledCompiler.probe(absolute_path, role=role)
+        # Find compilers not specified by the user
+        if missing_keys:
+            if compilers:
+                # Use a compiler to discover missing compilers
+                comp = compilers.itervalues().next()
+                for key in missing_keys:
+                    role = CompilerRole.find(key)
+                    for info in comp.info.family.members.get(role, []):
+                        try:
+                            compilers[role] = InstalledCompiler.probe(info.command, role=role)
+                        except ConfigurationError as err:
+                            self.logger.debug(err)
+            elif family_attr in seen_actions:
+                # Use family argument to discover all missing compilers 
+                family_arg = getattr(args, family_attr)
+                compilers.update(self._find_from_family(family_arg, family_cls))
+            else:
+                # Fall back to parser default values. Prefer CC, etc. over family argument.
+                for role in family_roles:
+                    try:
+                        compilers[role] = InstalledCompiler.probe(getattr(args, role.keyword), role=role)
+                    except AttributeError:
+                        # No default value for this compiler role
+                        pass
+                    except ConfigurationError as err:
+                        self.logger.debug(err)
+        # If any compilers are still missing then use the family argument to find them.
+        missing_keys = missing_keys - set(role.keyword for role in compilers.iterkeys())
+        if missing_keys:
+            self.logger.debug("Missing %s compilers after probe: %s", family_attr, missing_keys)
+            family_arg = getattr(args, family_attr)
+            compilers.update(self._find_from_family(family_arg, family_cls))
+
+        # Warn user if a compiler role can't be filled
+        for role in family_roles:
+            if role not in compilers:
+                self.logger.info("Could not find a %s compiler.", role.language)
+        delattr(args, family_attr)
+        return compilers
     
     def parse_compiler_flags(self, args):
         """Parses host compiler flags out of the command line arguments.
@@ -74,35 +127,35 @@ class TargetCreateCommand(CreateCommand):
             ConfigurationError: Invalid command line arguments specified
         """
         compilers = {}
-
         if not hasattr(args, 'tau_makefile'):
             # TAU Makefile specifies host compilers, but not others.
-            self._probe_compiler_family(args, compilers, 'host_family', CompilerFamily)
-        self._probe_compiler_family(args, compilers, 'mpi_family', MpiCompilerFamily)
-        self._probe_compiler_family(args, compilers, 'shmem_family', ShmemCompilerFamily)
-
-        compiler_keys = set(CompilerRole.keys())
-        all_keys = set(args.__dict__.keys())
-        given_keys = compiler_keys & all_keys
-        missing_keys = compiler_keys - given_keys
-        family_keys = set(role.keyword for role in compilers)
-        self.logger.debug("Given compilers: %s", given_keys)
-        self.logger.debug("Missing compilers: %s", missing_keys)
-        self.logger.debug("Family compilers: %s", family_keys)
-
-        for key in given_keys - family_keys:
-            cmd = getattr(args, key)
-            absolute_path = util.which(cmd)
-            if not absolute_path:
-                self.parser.error("Invalid compiler command: %s" % cmd)
-            role = CompilerRole.find(key)
-            compilers[role] = InstalledCompiler.probe(absolute_path, role=role)
-
+            compilers.update(self._probe_compiler_family(args, 'host_family', CompilerFamily, COMPILER_ROLES))
+        compilers.update(self._probe_compiler_family(args, 'mpi_family', MpiCompilerFamily, MPI_COMPILER_ROLES))
+        compilers.update(self._probe_compiler_family(args, 'shmem_family', ShmemCompilerFamily, SHMEM_COMPILER_ROLES))
         # Check that all required compilers were found
         for role in TAU_MINIMAL_COMPILERS:
             if role not in compilers:
-                raise ConfigurationError("%s compiler could not be found" % role.language,
+                raise ConfigurationError("%s compiler is required but could not be found" % role.language,
                                          "See 'compiler arguments' under `%s --help`" % COMMAND)
+        # Warn user if mixing compiler families
+        families = set(comp.unwrap().info.family for comp in compilers.itervalues())
+        if len(families) > 1:
+            comp_parts = []
+            for comp in compilers.itervalues():
+                if comp.wrapped:
+                    wrapped = comp.unwrap()
+                    comp_parts.append("  - %s '%s' wrapped by %s '%s'" % 
+                                      (wrapped.info.short_descr, wrapped.absolute_path, 
+                                       comp.info.short_descr, comp.absolute_path))
+                else:
+                    comp_parts.append("  - %s '%s'" % (comp.info.short_descr, comp.absolute_path))
+            parts = ["Configured with compilers from different families:"]
+            parts.extend(sorted(comp_parts))
+            self.logger.warning('\n'.join(parts))
+        # Update arguments
+        for role, comp in compilers.iteritems():
+            self.logger.debug("args.%s='%s'", role.keyword, comp.absolute_path)
+            setattr(args, role.keyword, comp.absolute_path)
         return compilers
     
     def _parse_tau_makefile(self, args):
@@ -188,21 +241,24 @@ class TargetCreateCommand(CreateCommand):
         parser = super(TargetCreateCommand, self)._construct_parser()
         group = parser.add_argument_group('host arguments')
         group.add_argument('--compilers',
-                           help="select all host compilers automatically from the given family",
+                           help=("select all host compilers automatically from the given family, "
+                                 "ignored if at least one host compiler is specified"),
                            metavar='<family>',
                            dest='host_family',
                            default=CompilerFamily.preferred().name,
                            choices=CompilerFamily.family_names())
         group = parser.add_argument_group('Message Passing Interface (MPI) arguments')
         group.add_argument('--mpi-compilers', 
-                           help="select all MPI compilers automatically from the given family",
+                           help=("select all MPI compilers automatically from the given family, "
+                                 "ignored if at least one MPI compiler is specified"),
                            metavar='<family>',
                            dest='mpi_family',
                            default=self._check_default_compilers(MpiCompilerFamily.preferred()),
                            choices=["None"] + MpiCompilerFamily.family_names())
         group = parser.add_argument_group('Symmetric Hierarchical Memory (SHMEM) arguments')
         group.add_argument('--shmem-compilers', 
-                           help="select all SHMEM compilers automatically from the given family",
+                           help=("select all SHMEM compilers automatically from the given family, "
+                                 "ignored if at least one SHMEM compiler is specified"),
                            metavar='<family>',
                            dest='shmem_family',
                            default=self._check_default_compilers(ShmemCompilerFamily.preferred()),
@@ -213,7 +269,7 @@ class TargetCreateCommand(CreateCommand):
                             dest='tau_makefile',
                             default=arguments.SUPPRESS)
         return parser
-    
+
     def main(self, argv):
         args = self._parse_args(argv)
         store = arguments.parse_storage_flag(args)[0]
@@ -226,8 +282,7 @@ class TargetCreateCommand(CreateCommand):
         self.logger.debug('Arguments after parsing compiler flags: %s', args)
 
         data = {attr: getattr(args, attr) for attr in self.model.attributes if hasattr(args, attr)}
-        for keyword, comp in compilers.iteritems():
-            self.logger.debug("%s=%s (%s)", keyword, comp.absolute_path, comp.info.short_descr)
+        for comp in compilers.itervalues():
             record = Compiler.controller(store).register(comp)
             data[comp.info.role.keyword] = record.eid
             

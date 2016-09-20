@@ -94,6 +94,7 @@ class MpiCompilerFamily(CompilerFamily):
 MPI_CC_ROLE = CompilerRole('MPI_CC', 'MPI C')
 MPI_CXX_ROLE = CompilerRole('MPI_CXX', 'MPI C++')
 MPI_FC_ROLE = CompilerRole('MPI_FC', 'MPI Fortran')
+MPI_COMPILER_ROLES = MPI_CC_ROLE, MPI_CXX_ROLE, MPI_FC_ROLE
 
 SYSTEM_MPI_COMPILERS = MpiCompilerFamily('System')
 SYSTEM_MPI_COMPILERS.add(MPI_CC_ROLE, 'mpicc')
