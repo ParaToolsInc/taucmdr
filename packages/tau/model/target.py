@@ -476,7 +476,7 @@ class Target(Model):
                 LOGGER.debug("'%s' appears to be a %s", compiler_cmd, installed_comp.info.short_descr)
                 break
         else:
-            parts = ["No compiler in target '%s' matches '%s'." % (self['name'], compiler_cmd),
+            parts = ["No compiler in target '%s' matches '%s'." % (self['name'], absolute_path),
                      "The known compiler commands are:"]
             parts.extend('  %s (%s)' % (comp.absolute_path, comp.info.short_descr) for comp in known_compilers)
             hints = ("Try one of the valid compiler commands",
