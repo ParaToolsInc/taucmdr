@@ -56,6 +56,8 @@ def parse_config_string(val):
             return True
         elif val.lower() == "false":
             return False
+        elif val == "None":
+            return None
         else:
             try:
                 return int(val)

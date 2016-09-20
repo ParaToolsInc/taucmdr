@@ -351,11 +351,12 @@ def attributes():
         'scorep_source': {
             'type': 'string',
             'description': 'path or URL to a Score-P installation or archive file',
-            'default': 'download',
+            'default': 'download' if host_os is not DARWIN_OS else None,
             'argparse': {'flags': ('--scorep',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction},
+            'compat': {(lambda x: x is not None): Target.discourage('host_os', DARWIN_OS.name)},
             'on_change': Target.attribute_changed
         }
     }

@@ -149,14 +149,16 @@ class InitializeCommand(AbstractCommand):
         papi = True
         binutils = True
         sample = True
+        scorep = True
         comp_inst = 'fallback'
         host_os = host.operating_system()
         if host_os is DARWIN_OS:
             self.logger.info("Darwin OS detected: disabling PAPI, binutils, "
-                             "compiler-based instrumentation, and sampling.")
+                             "compiler-based instrumentation, sampling, and Score-P.")
             papi = False
             binutils = False
             sample = False
+            scorep = False
             comp_inst = 'never'
         elif host_os is IBM_CNK_OS: 
             self.logger.info("IBM CNK OS detected: disabling sampling")
@@ -181,7 +183,6 @@ class InitializeCommand(AbstractCommand):
         measurement_names = []
         measurement_args = ['--%s=True' % attr 
                             for attr in 'cuda', 'mpi', 'opencl' if getattr(application_args, attr, False)]
-
         if args.sample and sample:
             _safe_execute(measurement_create_cmd, 
                           ['sample', '--profile=tau', '--trace=none', '--sample=True',
@@ -196,8 +197,8 @@ class InitializeCommand(AbstractCommand):
             measurement_names.append('profile')
         if args.trace:
             _safe_execute(measurement_create_cmd, 
-                          ['trace', '--profile=none', '--trace=otf2', '--sample=False', 
-                           '--source-inst=automatic', '--compiler-inst=%s' % comp_inst, 
+                          ['trace', '--profile=none', '--trace=%s' % ('otf2' if scorep else 'slog2'), 
+                           '--sample=False', '--source-inst=automatic', '--compiler-inst=%s' % comp_inst, 
                            '--link-only=False'] + measurement_args)
             measurement_names.append('trace')
 
