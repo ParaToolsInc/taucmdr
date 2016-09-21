@@ -71,29 +71,23 @@ class MpiCompilerFamily(CompilerFamily):
         except AttributeError:
             from tau.cf import target
             from tau.cf.target import host
-            var_roles = {'MPI_CC': MPI_CC_ROLE, 'MPI_CXX': MPI_CXX_ROLE, 'MPIFC': MPI_FC_ROLE, 
-                         'MPI_F77': MPI_FC_ROLE, 'MPI_F90': MPI_FC_ROLE}
-            inst = cls._env_preferred_compilers(var_roles)
-            if inst:
-                LOGGER.debug("Preferring %s MPI compilers by environment", inst.name)
+            host_tau_arch = host.tau_arch()
+            if host_tau_arch is target.TAU_ARCH_CRAYCNL:
+                inst = CRAY_MPI_COMPILERS
+            elif host_tau_arch in (target.TAU_ARCH_BGP, target.TAU_ARCH_BGQ, target.TAU_ARCH_IBM64_LINUX):
+                inst = IBM_MPI_COMPILERS
+            elif host_tau_arch is target.TAU_ARCH_MIC_LINUX:
+                inst = INTEL_MPI_COMPILERS
             else:
-                host_tau_arch = host.tau_arch()
-                if host_tau_arch is target.TAU_ARCH_CRAYCNL:
-                    inst = CRAY_MPI_COMPILERS
-                elif host_tau_arch in (target.TAU_ARCH_BGP, target.TAU_ARCH_BGQ, target.TAU_ARCH_IBM64_LINUX):
-                    inst = IBM_MPI_COMPILERS
-                elif host_tau_arch is target.TAU_ARCH_MIC_LINUX:
-                    inst = INTEL_MPI_COMPILERS
-                else:
-                    inst = SYSTEM_MPI_COMPILERS
+                inst = SYSTEM_MPI_COMPILERS
             LOGGER.debug("%s prefers %s MPI compilers by default", host_tau_arch, inst.name)
             cls._mpi_preferred = inst
         return inst
 
 
-MPI_CC_ROLE = CompilerRole('MPI_CC', 'MPI C')
-MPI_CXX_ROLE = CompilerRole('MPI_CXX', 'MPI C++')
-MPI_FC_ROLE = CompilerRole('MPI_FC', 'MPI Fortran')
+MPI_CC_ROLE = CompilerRole('MPI_CC', 'MPI C', ['MPI_CC'])
+MPI_CXX_ROLE = CompilerRole('MPI_CXX', 'MPI C++', ['MPI_CXX'])
+MPI_FC_ROLE = CompilerRole('MPI_FC', 'MPI Fortran', ['MPI_FC', 'MPI_F77', 'MPI_F90'])
 MPI_COMPILER_ROLES = MPI_CC_ROLE, MPI_CXX_ROLE, MPI_FC_ROLE
 
 SYSTEM_MPI_COMPILERS = MpiCompilerFamily('System')

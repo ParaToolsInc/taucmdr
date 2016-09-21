@@ -37,6 +37,8 @@ from operator import attrgetter
 from tau import logger, util
 from tau.cf.storage.levels import ORDERED_LEVELS, STORAGE_LEVELS
 
+Action = argparse.Action
+"""Action base class."""
 
 SUPPRESS = argparse.SUPPRESS
 """Suppress attribute creation in parsed argument namespace."""
@@ -48,23 +50,6 @@ STORAGE_LEVEL_FLAG = "@"
 """Command line flag that indicates storage level."""
 
 _DEFAULT_STORAGE_LEVEL = ORDERED_LEVELS[0].name
-
-
-def _track_seen_action(action_cls):
-    class Action(action_cls):
-        def __call__(self, parser, namespace, value, *args, **kwargs):
-            if not hasattr(namespace, '__seen_actions__'):
-                namespace.__seen_actions__ = {}
-            namespace.__seen_actions__[self.dest] = self
-            return super(Action, self).__call__(parser, namespace, value, *args, **kwargs)
-    return Action
-
-def _add_argument(self, *args, **kwargs):
-    kwargs['action'] = _track_seen_action(self._pop_action_class(kwargs))
-    return self.__add_argument__(*args, **kwargs)
-
-argparse._ActionsContainer.__add_argument__ = argparse._ActionsContainer.add_argument
-argparse._ActionsContainer.add_argument = _add_argument
 
 
 class MutableGroupArgumentParser(argparse.ArgumentParser):

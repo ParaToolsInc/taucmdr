@@ -61,24 +61,18 @@ class ShmemCompilerFamily(CompilerFamily):
         except AttributeError:
             from tau.cf import target
             from tau.cf.target import host
-            var_roles = {'SHMEM_CC': SHMEM_CC_ROLE, 'SHMEM_CXX': SHMEM_CXX_ROLE, 'SHMEM_FC': SHMEM_FC_ROLE, 
-                         'SHMEM_F77': SHMEM_FC_ROLE, 'SHMEM_F90': SHMEM_FC_ROLE}
-            inst = cls._env_preferred_compilers(var_roles)
-            if inst:
-                LOGGER.debug("Preferring %s SHMEM compilers by environment", inst.name)
+            host_tau_arch = host.tau_arch()
+            if host_tau_arch is target.TAU_ARCH_CRAYCNL:
+                inst = CRAY_SHMEM_COMPILERS
             else:
-                host_tau_arch = host.tau_arch()
-                if host_tau_arch is target.TAU_ARCH_CRAYCNL:
-                    inst = CRAY_SHMEM_COMPILERS
-                else:
-                    inst = OPENSHMEM_SHEM_COMPILERS
+                inst = OPENSHMEM_SHEM_COMPILERS
             LOGGER.debug("%s prefers %s SHMEM compilers by default", host_tau_arch, inst.name)
             cls._shmem_preferred = inst
         return inst
 
-SHMEM_CC_ROLE = CompilerRole('SHMEM_CC', 'SHMEM C')
-SHMEM_CXX_ROLE = CompilerRole('SHMEM_CXX', 'SHMEM C++')
-SHMEM_FC_ROLE = CompilerRole('SHMEM_FC', 'SHMEM Fortran')
+SHMEM_CC_ROLE = CompilerRole('SHMEM_CC', 'SHMEM C', ['SHMEM_CC'])
+SHMEM_CXX_ROLE = CompilerRole('SHMEM_CXX', 'SHMEM C++', ['SHMEM_CXX'])
+SHMEM_FC_ROLE = CompilerRole('SHMEM_FC', 'SHMEM Fortran', ['SHMEM_FC', 'SHMEM_F77', 'SHMEM_F90'])
 SHMEM_COMPILER_ROLES = SHMEM_CC_ROLE, SHMEM_CXX_ROLE, SHMEM_FC_ROLE
 
 OPENSHMEM_SHEM_COMPILERS = ShmemCompilerFamily('OpenSHMEM')

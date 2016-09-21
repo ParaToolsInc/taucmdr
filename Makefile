@@ -143,6 +143,7 @@ install: build
 	@tail -n +2 "$(TAU)" > "$(BUILDDIR)/tau.tail"
 	@echo `head -1 "$(TAU)"` $(PYTHON_FLAGS) > "$(BUILDDIR)/tau.head"
 	@cat "$(BUILDDIR)/tau.head" "$(BUILDDIR)/tau.tail" > "$(TAU)"
+	@chmod -R a+rX,g+w $(INSTALLDIR)
 	@echo
 	@echo "-------------------------------------------------------------------------------"
 	@echo "TAU Commander is installed at \"$(INSTALLDIR)\""

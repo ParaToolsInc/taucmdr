@@ -35,6 +35,7 @@ discover features that change from system to system.
 
 import os
 import hashlib
+import pprint
 import subprocess
 from tau import logger, util
 from tau.error import InternalError, ConfigurationError
@@ -154,6 +155,11 @@ class InstalledCompiler(object):
             self.compiler_flags = []
             self.libraries = []
             self.wrapped = self._probe_wrapper()
+        if not self.wrapped:
+            probed_family = CompilerFamily.probe(absolute_path)
+            if probed_family is not info.family:
+                raise ConfigurationError("Compiler '%s' is a %s compiler, not a '%s' compiler." %
+                                         (absolute_path, probed_family.name, info.family.name))
         if uid:
             self.uid = uid
         else:
@@ -290,6 +296,9 @@ class InstalledCompiler(object):
         if not absolute_path:
             raise ConfigurationError("Compiler '%s' not found on PATH" % command)
         command = os.path.basename(absolute_path)
+        info_list = CompilerInfo.find(command, family, role)
+        if len(info_list) == 1:
+            return InstalledCompiler(absolute_path, info_list[0])
         if not family:
             # FIXME: Compiler family classes are fragmented and weird.
             if role.keyword.startswith('MPI_'):
@@ -298,7 +307,8 @@ class InstalledCompiler(object):
                 family = ShmemCompilerFamily.probe(absolute_path)
             else:
                 family = CompilerFamily.probe(absolute_path)
-        info_list = CompilerInfo.find(command, family, role)
+            if family:
+                info_list = CompilerInfo.find(command, family, role)
         if len(info_list) > 1:
             raise ConfigurationError("%s compiler '%s' is ambiguous: could be any of %s"  % 
                                      (family.name, absolute_path, [info.short_descr for info in info_list]))
@@ -357,11 +367,7 @@ class InstalledCompilerFamily(object):
                 absolute_path = util.which(info.command)
                 if absolute_path:
                     LOGGER.debug("%s %s compiler is '%s'", family.name, info.role.language, absolute_path)
-                    try:
-                        installed = InstalledCompiler(absolute_path, info)
-                    except ConfigurationError as err:
-                        LOGGER.debug(err)
-                        continue
+                    installed = InstalledCompiler(absolute_path, info)
                     self.members.setdefault(role, []).append(installed)
         if not self.members:
             raise ConfigurationError("%s compilers not found." % self.family.name)

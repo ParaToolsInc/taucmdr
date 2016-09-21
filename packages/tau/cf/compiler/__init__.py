@@ -80,19 +80,20 @@ class CompilerRole(KeyedRecord):
     Attributes:
         keyword (str): Name of the compiler's role, e.g. 'CXX'.
         language (str): Name of the programming language corresponding to the compiler role, e.g. 'C++'.
-        required (bool): True if this role must be filled to compile TAU, False otherwise.
+        envars (list): Environment variables commonly used to identify the compiler in  this role, e.g. "CXX" or "CC".
     """
     
     __key__ = 'keyword'
     
-    def __init__(self, keyword, language):
+    def __init__(self, keyword, language, envars):
         self.keyword = keyword
         self.language = language
+        self.envars = envars
 
 
 class CompilerInfo(TrackedInstance):
     """Information about a compiler.
-    
+   
     A compiler's basic information includes it's family (e.g. `Intel`) and role (e.g. CXX).
     The compiler might not be installed.  
     
@@ -193,23 +194,6 @@ class CompilerFamily(KeyedRecord):
         self.show_wrapper_flags = show_wrapper_flags or []
         self.members = {}
 
-    @staticmethod
-    def _env_preferred_compilers(var_roles):
-        """"Check environment variables for default compilers."""
-        from tau.cf.compiler.installed import InstalledCompiler
-        for var, role in var_roles.iteritems():
-            try:
-                comp = InstalledCompiler.probe(os.environ[var], role=role)
-            except KeyError:
-                # Environment variable not set
-                continue
-            except ConfigurationError as err:
-                LOGGER.debug(err)
-                continue
-            else:
-                return comp.info.family
-        return None
-
     @classmethod
     def preferred(cls):
         """The preferred compiler family for the host architecture.
@@ -229,23 +213,18 @@ class CompilerFamily(KeyedRecord):
         except AttributeError:
             from tau.cf import target
             from tau.cf.target import host
-            var_roles = {'CC': CC_ROLE, 'CXX': CXX_ROLE, 'FC': FC_ROLE, 'F77': FC_ROLE, 'F90': FC_ROLE}
-            inst = cls._env_preferred_compilers(var_roles)
-            if inst:
-                LOGGER.debug("Preferring %s compilers by environment", inst.name)
+            host_tau_arch = host.tau_arch()
+            if host_tau_arch is target.TAU_ARCH_CRAYCNL:
+                inst = CRAY_COMPILERS
+            elif host_tau_arch in (target.TAU_ARCH_BGP, target.TAU_ARCH_BGQ):
+                inst = IBM_BG_COMPILERS
+            elif host_tau_arch is target.TAU_ARCH_IBM64_LINUX:
+                inst = IBM_COMPILERS
+            elif host_tau_arch is target.TAU_ARCH_MIC_LINUX:
+                inst = INTEL_COMPILERS
             else:
-                host_tau_arch = host.tau_arch()
-                if host_tau_arch is target.TAU_ARCH_CRAYCNL:
-                    inst = CRAY_COMPILERS
-                elif host_tau_arch in (target.TAU_ARCH_BGP, target.TAU_ARCH_BGQ):
-                    inst = IBM_BG_COMPILERS
-                elif host_tau_arch is target.TAU_ARCH_IBM64_LINUX:
-                    inst = IBM_COMPILERS
-                elif host_tau_arch is target.TAU_ARCH_MIC_LINUX:
-                    inst = INTEL_COMPILERS
-                else:
-                    inst = GNU_COMPILERS
-                LOGGER.debug("%s prefers %s compilers by default", host_tau_arch, inst.name)
+                inst = GNU_COMPILERS
+            LOGGER.debug("%s prefers %s compilers by default", host_tau_arch, inst.name)
             cls._preferred = inst
         return inst
     
@@ -274,37 +253,55 @@ class CompilerFamily(KeyedRecord):
     
     @classmethod
     def probe(cls, absolute_path):
-        """
-        TODO: Docs
+        """Determine the compiler family of a given command.
+
+        Executes the command with :any:`version_flags` from all families
+        and compares the output against :any:`family_regex`.
+
+        Args:
+            absolute_path (str): Absolute path to a compiler command.
+
+        Raises:
+            ConfigurationError: Compiler family could not be determined.
+
+        Returns:
+            CompilerFamily: The compiler's family.
         """
         try:
             return cls._probe_cache[absolute_path]
         except KeyError:
             pass
+        LOGGER.debug("Probing '%s' to discover compiler family." % absolute_path)
+        messages = []
         last_version_flags = None
+        stdout = None
         # Settle down pylint... the __instances__ member is created by the metaclass
         # pylint: disable=no-member
         for family in cls.__instances__.itervalues():
-            if family.family_regex:
-                if family.version_flags != last_version_flags:
-                    LOGGER.debug("Probing compiler '%s' to discover compiler family", absolute_path)
-                    cmd = [absolute_path] + family.version_flags
-                    LOGGER.debug("Creating subprocess: %s", cmd)
-                    try:
-                        stdout = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-                    except subprocess.CalledProcessError as err:
-                        LOGGER.debug("%s failed with return code %d: %s", cmd, err.returncode, err.output)
-                        continue
+            if not family.family_regex:
+                continue
+            if family.version_flags != last_version_flags:
+                last_version_flags = family.version_flags
+                LOGGER.debug("Probing compiler '%s' to discover compiler family", absolute_path)
+                cmd = [absolute_path] + family.version_flags
+                LOGGER.debug("Creating subprocess: %s", cmd)
+                try:
+                    stdout = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+                except subprocess.CalledProcessError as err:
+                    messages.append(err.output)
+                    LOGGER.debug("%s failed with return code %d: %s", cmd, err.returncode, err.output)
+                    continue
+                else:
                     LOGGER.debug(stdout)
                     LOGGER.debug("%s returned 0", cmd)
-                    last_version_flags = family.version_flags
+            if stdout:
                 if re.search(family.family_regex, stdout):
                     LOGGER.debug("'%s' is a %s compiler", absolute_path, family.name)
                     cls._probe_cache[absolute_path] = family
                     return family
-                LOGGER.debug("'%s' is not a %s compiler", absolute_path, family.name)
-        cls._probe_cache[absolute_path] = None
-        return None
+                else:
+                    LOGGER.debug("'%s' is not a %s compiler", absolute_path, family.name)
+        raise ConfigurationError("Cannot determine compiler family: %s" % '\n'.join(messages))
 
     def add(self, role, *commands):
         """Register compiler commands in the given role.
@@ -326,10 +323,10 @@ class CompilerFamily(KeyedRecord):
             self.members.setdefault(role, []).append(info)
 
 
-CC_ROLE = CompilerRole('CC', 'C')
-CXX_ROLE = CompilerRole('CXX', 'C++')
-FC_ROLE = CompilerRole('FC', 'Fortran')
-UPC_ROLE = CompilerRole('UPC', 'Universal Parallel C')
+CC_ROLE = CompilerRole('CC', 'C', ['CC'])
+CXX_ROLE = CompilerRole('CXX', 'C++', ['CXX'])
+FC_ROLE = CompilerRole('FC', 'Fortran', ['FC', 'F77', 'F90'])
+UPC_ROLE = CompilerRole('UPC', 'Universal Parallel C', ['UPC'])
 COMPILER_ROLES = CC_ROLE, CXX_ROLE, FC_ROLE, UPC_ROLE
 
 SYSTEM_COMPILERS = CompilerFamily('System')
