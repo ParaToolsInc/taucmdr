@@ -34,6 +34,7 @@ import os
 import sys
 import fileinput
 from tau import logger
+from tau.cf.compiler import CC_ROLE, CXX_ROLE, FC_ROLE
 from tau.cf.software.installation import AutotoolsInstallation
 
 LOGGER = logger.get_logger(__name__)
@@ -49,6 +50,16 @@ class PapiInstallation(AutotoolsInstallation):
     def __init__(self, sources, target_arch, target_os, compilers):
         super(PapiInstallation, self).__init__('papi', 'PAPI', sources, target_arch, target_os, 
                                                compilers, REPOS, None, LIBRARIES, None)
+
+    def _calculate_uid(self):
+        # PAPI only cares about changes in C/C++ and Fortran compilers
+        uid = hashlib.md5()
+        uid.update(self.src)
+        uid.update(self.target_arch.name)
+        uid.update(self.target_os.name)
+        for role in CC_ROLE, CXX_ROLE, FC_ROLE:
+            uid.update(self.compilers[role].uid)
+        return uid.hexdigest()
 
     def _prepare_src(self, *args, **kwargs):
         # PAPI's source lives in a 'src' directory instead of the usual top level location

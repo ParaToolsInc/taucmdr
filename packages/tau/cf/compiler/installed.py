@@ -175,7 +175,7 @@ class InstalledCompiler(object):
             uid.update(self.wrapped.uid)
             for attr in 'include_path', 'library_path', 'compiler_flags', 'libraries':
                 for value in getattr(self, attr):
-                    uid.update(value)
+                    uid.update(str(value))
         return uid.hexdigest()
 
     def _probe_wrapper(self):

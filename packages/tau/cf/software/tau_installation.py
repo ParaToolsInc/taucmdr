@@ -286,17 +286,17 @@ class TauInstallation(Installation):
 
     def _uses_pdt(self):
         return self.source_inst == 'automatic'
-     
+
     def _uses_binutils(self):
         return self.sample or self.compiler_inst != 'never' or self.measure_openmp in ('ompt', 'gomp')
-         
+
     def _uses_libunwind(self):
         return (self.target_os is not DARWIN_OS and
                 (self.sample or self.compiler_inst != 'never' or self.openmp_support))
- 
+
     def _uses_papi(self):
         return bool(len([met for met in self.metrics if 'PAPI' in met]))
- 
+
     def _uses_scorep(self):
         return self.profile == 'cubex' or self.trace == 'otf2'
 
@@ -335,7 +335,7 @@ class TauInstallation(Installation):
             if not iowrap_libs and not os.path.exists(iowrap_link_options):
                 raise SoftwarePackageError("iowrap libraries or link options not found")
         LOGGER.debug("TAU installation at '%s' is valid", self.install_prefix)
-    
+
     def _select_flags(self, header, libglob, user_inc, user_lib, user_libraries, wrap_cc, wrap_cxx, wrap_fc):
         def unique(seq):
             seen = set()

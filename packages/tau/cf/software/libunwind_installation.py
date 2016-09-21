@@ -55,6 +55,7 @@ HEADERS = {None: ['libunwind.h', 'unwind.h']}
 
 class LibunwindInstallation(AutotoolsInstallation):
     """Encapsulates a libunwind installation."""
+
     def __init__(self, sources, target_arch, target_os, compilers):
         # libunwind can't be built with PGI compilers so substitute GNU compilers instead
         if compilers[CC_ROLE].info.family is PGI_COMPILERS:
@@ -65,7 +66,17 @@ class LibunwindInstallation(AutotoolsInstallation):
             compilers = compilers.modify(CC=gnu_compilers[CC_ROLE], CXX=gnu_compilers[CXX_ROLE])
         super(LibunwindInstallation, self).__init__('libunwind', 'libunwind', sources, target_arch, target_os, 
                                                     compilers, REPOS, None, LIBRARIES, HEADERS)
-        
+
+    def _calculate_uid(self):
+        # libunwind only cares about changes in C/C++ compilers
+        uid = hashlib.md5()
+        uid.update(self.src)
+        uid.update(self.target_arch.name)
+        uid.update(self.target_os.name)
+        for role in CC_ROLE, CXX_ROLE:
+            uid.update(self.compilers[role].uid)
+        return uid.hexdigest()
+
     def configure(self, flags, env):
         env['CC'] = self.compilers[CC_ROLE].unwrap().absolute_path
         env['CXX'] = self.compilers[CXX_ROLE].unwrap().absolute_path
