@@ -397,7 +397,7 @@ class TauInstallation(Installation):
             # around these problems e.g. 'gcc-4.9' becomes 'gcc' 
             cc_command = self.compilers[CC_ROLE].info.command
             cxx_command = self.compilers[CXX_ROLE].info.command
-            fc_comp = self.compilers[FC_ROLE].info.family if FC_ROLE in self.compilers else None
+            fc_comp = self.compilers[FC_ROLE] if FC_ROLE in self.compilers else None
 
         # TAU's configure script can't detect Fortran compiler from the compiler
         # command so translate Fortran compiler command into TAU's magic words
