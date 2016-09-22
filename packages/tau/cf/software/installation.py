@@ -160,21 +160,17 @@ class Installation(object):
         self.verify_libraries = self._lookup_target_os_list(libraries)
         self.verify_headers = self._lookup_target_os_list(headers)
         src = sources[name]
-        if os.path.isdir(src):
-            self.src = None
-            self._install_prefix = src
-        elif src.lower() == 'download':
+        if src.lower() == 'download':
             self.src = self._lookup_target_os_list(repos)
-            self._install_prefix = None
         else:
             self.src = src
-            self._install_prefix = None
         self.src_prefix = None
         self.include_path = None
         self.bin_path = None
         self.lib_path = None
         self._build_prefix = None
-        
+        self._install_prefix = None
+
     def _calculate_uid(self):
         uid = hashlib.md5()
         uid.update(self.src)
@@ -186,24 +182,29 @@ class Installation(object):
 
     def _get_install_prefix(self):
         if not self._install_prefix:
-            uid = self._calculate_uid()
-            # Search the storage hierarchy for an existing installation
-            for storage in reversed(ORDERED_LEVELS):
-                self._set_install_prefix(os.path.join(storage.prefix, self.name, uid))
-                try:
-                    self.verify()
-                except SoftwarePackageError as err:
-                    LOGGER.debug(err)
-                    continue
-                else:
-                    break
+            if os.path.isdir(self.src):
+                self._set_install_prefix(self.src)
+                self.src = None
             else:
-                # No existing installation found, install at highest writable storage level
-                self._set_install_prefix(os.path.join(highest_writable_storage().prefix, self.name, uid))
-            LOGGER.debug("%s installation prefix is %s", self.name, self._install_prefix)
+                uid = self._calculate_uid()
+                # Search the storage hierarchy for an existing installation
+                for storage in reversed(ORDERED_LEVELS):
+                    self._set_install_prefix(os.path.join(storage.prefix, self.name, uid))
+                    try:
+                        self.verify()
+                    except SoftwarePackageError as err:
+                        LOGGER.debug(err)
+                        continue
+                    else:
+                        break
+                else:
+                    # No existing installation found, install at highest writable storage level
+                    self._set_install_prefix(os.path.join(highest_writable_storage().prefix, self.name, uid))
+                LOGGER.debug("%s installation prefix is %s", self.name, self._install_prefix)
         return self._install_prefix
     
     def _set_install_prefix(self, value):
+        assert value is not None
         self._install_prefix = value
         self.include_path = os.path.join(value, 'include')
         self.bin_path = os.path.join(value, 'bin')
@@ -280,6 +281,7 @@ class Installation(object):
         Raises:
           SoftwarePackageError: Describs why the installation is invalid.
         """
+        LOGGER.debug("Verifying %s installation at '%s'", self.title, self.install_prefix)
         if not os.path.exists(self.install_prefix):
             raise SoftwarePackageError("'%s' does not exist" % self.install_prefix)
         for cmd in self.verify_commands:
