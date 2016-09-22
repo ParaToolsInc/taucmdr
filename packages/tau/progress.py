@@ -155,21 +155,20 @@ class ProgressIndicator(object):
             elapsed = "% 6.1f seconds " % tdelta.total_seconds()
             line_width = logger.LINE_WIDTH - len(self._line_marker) - len(elapsed) - 5
             if self.show_cpu:
-                cpu_load = load_average()
+                cpu_load = min(load_average(), 1.0)
                 cpu_label = "CPU: {: 6.1%} ".format(cpu_load)
-                cpu_width = 10 if show_bar else line_width - 2
+                cpu_width = 10 if show_bar else line_width - 5
                 cpu_fill = '|'*min(max(int(cpu_load*cpu_width), 1), cpu_width)
                 colored_cpu_fill = termcolor.colored(cpu_fill, 'white', 'on_white')
                 hidden_chars = len(colored_cpu_fill) - len(cpu_fill)
                 width = cpu_width + (hidden_chars if show_bar else 0)
                 cpu_avg = "[{}{:<{width}}] ".format(cpu_label, colored_cpu_fill, width=width)
-                #cpu_avg = "[%s%s%s]" % (cpu_label, colored_cpu_fill, ' '*(cpu_width-len(colored_cpu_fill)))
                 line_width -= len(cpu_avg) - hidden_chars
             else:
                 cpu_avg = ''
             if show_bar:
-                percent = float(self.count*self.block_size) / self.total_size
-                bar_width = line_width - 2
+                percent = min(float(self.count*self.block_size) / self.total_size, 1.0)
+                bar_width = line_width - 5
                 bar_fill = '>'*min(max(int(percent*bar_width), 1), bar_width)
                 colored_bar_fill = termcolor.colored(bar_fill, 'green')
                 hidden_chars = len(colored_bar_fill) - len(bar_fill)
