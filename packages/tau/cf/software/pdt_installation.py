@@ -31,6 +31,7 @@ TAU uses PDT for source instrumentation.
 """
 
 import os
+import hashlib
 from tau import logger, util
 from tau.error import ConfigurationError
 from tau.cf.software import SoftwarePackageError

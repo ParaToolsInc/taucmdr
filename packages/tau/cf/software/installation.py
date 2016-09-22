@@ -208,7 +208,7 @@ class Installation(object):
         self.include_path = os.path.join(value, 'include')
         self.bin_path = os.path.join(value, 'bin')
         self.lib_path = os.path.join(value, 'lib')
-        
+
     @property
     def install_prefix(self):
         return self._get_install_prefix()
@@ -413,7 +413,7 @@ class AutotoolsInstallation(Installation):
         flags += ['--prefix=%s' % self.install_prefix]
         cmd = ['./configure'] + flags
         LOGGER.info("Configuring %s...", self.title)
-        if util.create_subprocess(cmd, cwd=self.src_prefix, env=env, stdout=False):
+        if util.create_subprocess(cmd, cwd=self.src_prefix, env=env, stdout=False, show_progress=True):
             raise SoftwarePackageError('%s configure failed' % self.title)   
     
     def make(self, flags, env, parallel=True):
@@ -436,9 +436,9 @@ class AutotoolsInstallation(Installation):
         par_flags = parallel_make_flags() if parallel else []
         cmd = ['make'] + par_flags + flags
         LOGGER.info("Compiling %s...", self.title)
-        if util.create_subprocess(cmd, cwd=self.src_prefix, env=env, stdout=False):
+        if util.create_subprocess(cmd, cwd=self.src_prefix, env=env, stdout=False, show_progress=True):
             cmd = ['make'] + flags
-            if util.create_subprocess(cmd, cwd=self.src_prefix, env=env, stdout=False):
+            if util.create_subprocess(cmd, cwd=self.src_prefix, env=env, stdout=False, show_progress=True):
                 raise SoftwarePackageError('%s compilation failed' % self.title)
 
     def make_install(self, flags, env, parallel=False):
@@ -463,7 +463,7 @@ class AutotoolsInstallation(Installation):
             flags += parallel_make_flags()
         cmd = ['make', 'install'] + flags
         LOGGER.info("Installing %s...", self.title)
-        if util.create_subprocess(cmd, cwd=self.src_prefix, env=env, stdout=False):
+        if util.create_subprocess(cmd, cwd=self.src_prefix, env=env, stdout=False, show_progress=True):
             raise SoftwarePackageError('%s installation failed' % self.title)
         # Some systems use lib64 instead of lib
         if os.path.isdir(self.lib_path+'64') and not os.path.isdir(self.lib_path):

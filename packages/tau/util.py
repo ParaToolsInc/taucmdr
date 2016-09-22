@@ -38,16 +38,16 @@ import subprocess
 import errno
 import shutil
 import urllib
-import logging
 import pkgutil
 import tarfile
 import tempfile
 import urlparse
-import itertools
+from contextlib import contextmanager
 from zipimport import zipimporter
 from zipfile import ZipFile
 from termcolor import termcolor
 from tau import logger
+from tau.progress import ProgressIndicator, progress_spinner
 
 
 LOGGER = logger.get_logger(__name__)
@@ -61,7 +61,6 @@ def _cleanup_dtemp():
     if _DTEMP_STACK:
         for path in _DTEMP_STACK:
             rmtree(path, ignore_errors=True)
-
 atexit.register(_cleanup_dtemp)
 
 
@@ -192,11 +191,12 @@ def download(src, dest):
                     return
                 LOGGER.warning("%s failed to download '%s'. Retrying with a different method...", cmd[0], src)                    
         # Fallback: this is usually **much** slower than curl or wget
-        try:
-            urllib.urlretrieve(src, dest, reporthook=progress_bar)
-        except Exception as err:
-            LOGGER.warning("urllib failed to download '%s': %s", src, err)
-            raise IOError("Failed to download '%s'" % src)
+        with ProgressIndicator() as progress_bar:
+            try:
+                urllib.urlretrieve(src, dest, reporthook=progress_bar.update)
+            except Exception as err:
+                LOGGER.warning("urllib failed to download '%s': %s", src, err)
+                raise IOError("Failed to download '%s'" % src)
 
 
 def _create_dl_subprocess(cmd, src):
@@ -213,39 +213,20 @@ def _create_dl_subprocess(cmd, src):
     except (ValueError, IndexError):
         LOGGER.warning("Invalid response while retrieving download file size")
         file_size = -1
-    with open(os.devnull, 'wb') as devnull:
-        proc = subprocess.Popen(cmd, stdout=devnull, stderr=subprocess.STDOUT)
-        while proc.poll() is None:
-            try:
-                current_size = os.stat(cmd[-1]).st_size
-            except OSError:
-                current_size = 0
-            progress_bar(current_size, 1, file_size)
-        proc.wait()
-        sys.stdout.write('\n')
-        retval = proc.returncode
-        LOGGER.debug("%s returned %d", cmd, retval)
-        return retval
-
-    
-_spinner = itertools.cycle(['-', '/', '|', '\\']) # pylint: disable=invalid-name
-def progress_bar(count, block_size, total_size):
-    """Show a bar or spinner on stdout to indicate progress.
-    
-    Args:
-        count (int): Number of blocks of `block_size` that have been completed
-        block_size (int): Size of a work block.
-        total_size (int): Total amount of work to be completed.
-    """
-    if getattr(logging, logger.LOG_LEVEL) < logging.ERROR: 
-        if total_size > 0:
-            width = max(1, logger.LINE_WIDTH - 10)
-            percent = min(100, float(count*block_size) / total_size)
-            sys.stdout.write('[' + '>'*int(percent*width) + '-'*int((1-percent)*width) + '] %3s%%\r' % int(100*percent))
-        else:
-            sys.stdout.write('[%s] UNKNOWN\r' % _spinner.next())
-        sys.stdout.flush()
-
+    with ProgressIndicator(file_size) as progress_bar:
+        with open(os.devnull, 'wb') as devnull:
+            proc = subprocess.Popen(cmd, stdout=devnull, stderr=subprocess.STDOUT)
+            while proc.poll() is None:
+                try:
+                    current_size = os.stat(cmd[-1]).st_size
+                except OSError:
+                    current_size = 0
+                progress_bar.update(current_size)
+                time.sleep(0.1)
+            proc.wait()
+            retval = proc.returncode
+            LOGGER.debug("%s returned %d", cmd, retval)
+            return retval
 
 def archive_toplevel(archive):
     """Returns the name of the top-level directory in an archive.
@@ -289,7 +270,13 @@ def archive_toplevel(archive):
         return topdir
 
 
-def extract_archive(archive, dest):
+def _show_extract_progress(members):
+    with ProgressIndicator(len(members), show_cpu=False) as progress_bar:
+        for i, member in enumerate(members):
+            progress_bar.update(i)
+            yield member
+
+def extract_archive(archive, dest, show_progress=True):
     """Extracts archive file to dest.
     
     Supports compressed and uncompressed tar archives. Destination folder will
@@ -307,10 +294,17 @@ def extract_archive(archive, dest):
     """
     topdir = archive_toplevel(archive)
     full_dest = os.path.join(dest, topdir)
-    LOGGER.info("Extracting '%s' to create '%s'", archive, full_dest)
     mkdirp(dest)
     with tarfile.open(archive) as fin:
-        fin.extractall(dest)
+        if show_progress:
+            LOGGER.info("Checking contents of '%s'", archive)
+            with progress_spinner(show_cpu=False):
+                members = fin.getmembers()
+            LOGGER.info("Extracting '%s' to create '%s'", archive, full_dest)
+            fin.extractall(dest, members=_show_extract_progress(members))
+        else:
+            LOGGER.info("Extracting '%s' to create '%s'", archive, full_dest)
+            fin.extractall(dest)
     if not os.path.isdir(full_dest):
         raise IOError("Extracting '%s' does not create '%s'" % (archive, full_dest))
     return full_dest
@@ -358,8 +352,11 @@ def file_accessible(filepath, mode='r'):
             handle.close()
     return False
 
+@contextmanager
+def _null_context():
+    yield
 
-def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True):
+def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True, show_progress=False):
     """Create a subprocess.
     
     See :any:`subprocess.Popen`.
@@ -389,21 +386,23 @@ def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True):
                 subproc_env[key] = val
                 LOGGER.debug("%s=%s", key, val)
     LOGGER.debug("Creating subprocess: cmd=%s, cwd='%s'\n", cmd, cwd)
-    proc = subprocess.Popen(cmd, cwd=cwd, env=subproc_env, 
-                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1)
-    with proc.stdout:
-        # Use iter to avoid hidden read-ahead buffer bug in named pipes:
-        # http://bugs.python.org/issue3907
-        for line in iter(proc.stdout.readline, b''):
-            if log:
-                LOGGER.debug(line[:-1])
-            if stdout:
-                print line,
-    proc.wait()
+    context = progress_spinner if show_progress else _null_context
+    with context():
+        proc = subprocess.Popen(cmd, cwd=cwd, env=subproc_env, 
+                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1)
+        with proc.stdout:
+            # Use iter to avoid hidden read-ahead buffer bug in named pipes:
+            # http://bugs.python.org/issue3907
+            for line in iter(proc.stdout.readline, b''):
+                if log:
+                    LOGGER.debug(line[:-1])
+                if stdout:
+                    print line,
+        proc.wait()
     retval = proc.returncode
     LOGGER.debug("%s returned %d", cmd, retval)
     return retval
-    
+
 
 def human_size(num, suffix='B'):
     """Converts a byte count to human readable units.

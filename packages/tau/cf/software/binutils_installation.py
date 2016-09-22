@@ -35,6 +35,7 @@ import os
 import sys
 import glob
 import shutil
+import hashlib
 import fileinput
 from tau import logger, util
 from tau.error import ConfigurationError

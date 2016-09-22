@@ -33,6 +33,7 @@ instrumentation, and other measurement approaches.
 
 import os
 import sys
+import hashlib
 import fileinput
 from tau import logger
 from tau.error import ConfigurationError
