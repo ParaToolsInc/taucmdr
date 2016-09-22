@@ -388,9 +388,9 @@ class TauInstallation(Installation):
         if self.mpi_support: 
             # TAU's configure script does a really bad job detecting MPI wrapped compiler commands
             # so don't even bother trying.  Pass as much of this as we can and hope for the best.
-            cc_command = self.compilers[MPI_CC_ROLE].wrapped.info.command
-            cxx_command = self.compilers[MPI_CXX_ROLE].wrapped.info.command
-            fc_comp = self.compilers[MPI_FC_ROLE].wrapped if FC_ROLE in self.compilers else None
+            cc_command = self.compilers[MPI_CC_ROLE].unwrap().info.command
+            cxx_command = self.compilers[MPI_CXX_ROLE].unwrap().info.command
+            fc_comp = self.compilers[MPI_FC_ROLE].unwrap() if FC_ROLE in self.compilers else None
         else:
             # TAU's configure script can't cope with compiler absolute paths or compiler names that
             # don't exactly match what it expects.  Use `info.command` instead of `command` to work
