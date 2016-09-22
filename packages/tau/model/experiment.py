@@ -128,7 +128,7 @@ class Experiment(Model):
         """
         rebuild_required = cls.controller().pop_topic('rebuild_required')
         if not rebuild_required:
-            return 'Experiment may be performed without application rebuild.'
+            return ''
         parts = ["Application rebuild required:"]
         for changed in rebuild_required:
             for attr, change in changed.iteritems():
