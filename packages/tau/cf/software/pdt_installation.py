@@ -161,5 +161,5 @@ class PdtInstallation(AutotoolsInstallation):
         prefix_flag = '-prefix=%s' % self.install_prefix
         cmd = ['./configure', prefix_flag, compiler_flag]
         LOGGER.info("Configuring PDT...")
-        if util.create_subprocess(cmd, cwd=self.src_prefix, stdout=False):
+        if util.create_subprocess(cmd, cwd=self.src_prefix, stdout=False, show_progress=True):
             raise SoftwarePackageError('PDT configure failed')
