@@ -35,7 +35,7 @@ import sys
 import hashlib
 import fileinput
 from tau import logger
-from tau.cf.compiler import CC_ROLE, CXX_ROLE, FC_ROLE
+from tau.cf.compiler import CC_ROLE, CXX_ROLE
 from tau.cf.software.installation import AutotoolsInstallation
 
 LOGGER = logger.get_logger(__name__)
@@ -53,12 +53,12 @@ class PapiInstallation(AutotoolsInstallation):
                                                compilers, REPOS, None, LIBRARIES, None)
 
     def _calculate_uid(self):
-        # PAPI only cares about changes in C/C++ and Fortran compilers
+        # PAPI only cares about changes in C/C++ compilers
         uid = hashlib.md5()
         uid.update(self.src)
         uid.update(self.target_arch.name)
         uid.update(self.target_os.name)
-        for role in CC_ROLE, CXX_ROLE, FC_ROLE:
+        for role in CC_ROLE, CXX_ROLE:
             uid.update(self.compilers[role].uid)
         return uid.hexdigest()
 

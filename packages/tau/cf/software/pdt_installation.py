@@ -36,7 +36,7 @@ from tau import logger, util
 from tau.error import ConfigurationError
 from tau.cf.software import SoftwarePackageError
 from tau.cf.software.installation import AutotoolsInstallation
-from tau.cf.compiler import CC_ROLE, CXX_ROLE, FC_ROLE
+from tau.cf.compiler import CC_ROLE, CXX_ROLE
 from tau.cf.compiler import GNU_COMPILERS, INTEL_COMPILERS, PGI_COMPILERS
 from tau.cf.compiler.installed import InstalledCompilerFamily
 from tau.cf.target import TAU_ARCH_APPLE, TAU_ARCH_BGQ, X86_64_ARCH, LINUX_OS, TauArch
@@ -138,13 +138,14 @@ class PdtInstallation(AutotoolsInstallation):
         self.arch = TauArch.get(self.target_arch, self.target_os)
         
     def _calculate_uid(self):
-        # PDT only cares about changes in C/C++ and Fortran compilers
+        # PDT only cares about changes in C/C++ compilers
         uid = hashlib.md5()
         uid.update(self.src)
         uid.update(self.target_arch.name)
         uid.update(self.target_os.name)
-        for role in CC_ROLE, CXX_ROLE, FC_ROLE:
-            uid.update(self.compilers[role].uid)
+        for role in CC_ROLE, CXX_ROLE:
+            if role in self.compilers:
+                uid.update(self.compilers[role].uid)
         return uid.hexdigest()
 
     def _set_install_prefix(self, value):
