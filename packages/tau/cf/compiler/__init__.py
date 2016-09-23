@@ -222,6 +222,8 @@ class CompilerFamily(KeyedRecord):
                 inst = IBM_COMPILERS
             elif host_tau_arch is target.TAU_ARCH_MIC_LINUX:
                 inst = INTEL_COMPILERS
+            elif host_tau_arch is target.TAU_ARCH_APPLE:
+                inst = APPLE_LLVM_COMPILERS
             else:
                 inst = GNU_COMPILERS
             LOGGER.debug("%s prefers %s compilers by default", host_tau_arch, inst.name)
@@ -271,7 +273,7 @@ class CompilerFamily(KeyedRecord):
             return cls._probe_cache[absolute_path]
         except KeyError:
             pass
-        LOGGER.debug("Probing '%s' to discover compiler family." % absolute_path)
+        LOGGER.debug("Probing '%s' to discover compiler family.", absolute_path)
         messages = []
         last_version_flags = None
         stdout = None
@@ -369,3 +371,6 @@ CRAY_COMPILERS.add(CXX_ROLE, 'CC')
 CRAY_COMPILERS.add(FC_ROLE, 'ftn')
 CRAY_COMPILERS.add(UPC_ROLE, 'cc')
 
+APPLE_LLVM_COMPILERS = CompilerFamily('Apple', family_regex=r'Apple LLVM')
+APPLE_LLVM_COMPILERS.add(CC_ROLE, 'cc')
+APPLE_LLVM_COMPILERS.add(CXX_ROLE, 'c++')
