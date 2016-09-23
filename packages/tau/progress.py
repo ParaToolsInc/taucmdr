@@ -34,9 +34,9 @@ import sys
 import threading
 import logging
 import itertools
-from termcolor import termcolor
-from datetime import datetime
 from contextlib import contextmanager
+from datetime import datetime
+from termcolor import termcolor
 from tau import logger
 
 
@@ -77,12 +77,12 @@ def load_average():
     try:
         cpu_load_avg = _proc_stat_cpu_load_average()
     except IOError:
-        cpu_load_avg = 0
+        cpu_load_avg = 0.0
     return cpu_load_avg
 
 
 @contextmanager
-def progress_spinner(show_cpu=True, stream=sys.stdout):
+def progress_spinner(show_cpu=True, stream=None):
     """Show a progress spinner until the wrapped object returns."""
     flag = threading.Event()
     def show_progress():
@@ -104,7 +104,7 @@ def progress_spinner(show_cpu=True, stream=sys.stdout):
 class ProgressIndicator(object):
     """Display a progress bar or spinner on a stream."""
 
-    def __init__(self, total_size=0, block_size=1, show_cpu=True, stream=sys.stdout):
+    def __init__(self, total_size=0, block_size=1, show_cpu=True, stream=None):
         """ Initialize the ProgressBar object.
 
         Args:
@@ -113,6 +113,8 @@ class ProgressIndicator(object):
             show_cpu (bool): If True, show CPU load average as well as progress.
             stream (file): Stream object to write progress indication to.
         """
+        if stream is None:
+            stream = sys.stdout
         self._spinner = itertools.cycle(['-', '/', '|', '\\'])
         self.count = 0
         self.total_size = total_size
@@ -156,13 +158,12 @@ class ProgressIndicator(object):
             line_width = logger.LINE_WIDTH - len(self._line_marker) - len(elapsed) - 5
             if self.show_cpu:
                 cpu_load = min(load_average(), 1.0)
-                cpu_label = "CPU: {: 6.1%} ".format(cpu_load)
                 cpu_width = 10 if show_bar else line_width - 5
                 cpu_fill = '|'*min(max(int(cpu_load*cpu_width), 1), cpu_width)
                 colored_cpu_fill = termcolor.colored(cpu_fill, 'white', 'on_white')
                 hidden_chars = len(colored_cpu_fill) - len(cpu_fill)
                 width = cpu_width + (hidden_chars if show_bar else 0)
-                cpu_avg = "[{}{:<{width}}] ".format(cpu_label, colored_cpu_fill, width=width)
+                cpu_avg = "[CPU: {: 6.1%} {:<{width}}] ".format(cpu_load, colored_cpu_fill, width=width)
                 line_width -= len(cpu_avg) - hidden_chars
             else:
                 cpu_avg = ''
@@ -170,7 +171,7 @@ class ProgressIndicator(object):
                 percent = min(float(self.count*self.block_size) / self.total_size, 1.0)
                 bar_width = line_width - 5
                 bar_fill = '>'*min(max(int(percent*bar_width), 1), bar_width)
-                colored_bar_fill = termcolor.colored(bar_fill, 'green')
+                colored_bar_fill = termcolor.colored(bar_fill, 'green', 'on_green')
                 hidden_chars = len(colored_bar_fill) - len(bar_fill)
                 width = bar_width + hidden_chars
                 progress = "[{:-<{width}}] {: 6.1%}".format(colored_bar_fill, percent, width=width)
