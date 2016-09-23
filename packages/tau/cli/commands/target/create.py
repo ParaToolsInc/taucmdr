@@ -189,10 +189,25 @@ class TargetCreateCommand(CreateCommand):
                     return comp
         return None
 
-    def _configure_argument_group(self, group, kbase, family_flag, family_attr):
-        # Start by checking environment variables for default compilers.
+    def _configure_argument_group(self, group, kbase, family_flag, family_attr, hint):
+        # Check environment variables for default compilers.
         compilers = {role: self._get_compiler_from_env(role) for role in kbase.roles.itervalues()}
-        # If some compilers specified in environment, but not all, then use compiler
+        # Use the result of previous compiler detection to find compilers not specified in the environment
+        if hint:
+            try:
+                family = InstalledCompilerFamily(kbase.families[hint])
+            except ConfigurationError as err:
+                # Something wrong with that installation... oh well, keep going
+                self.logger.debug(err)
+            except KeyError:
+                # Suggested family might not support this compiler group,
+                # e.g. Intel doesn't have SHMEM compilers.
+                pass
+            else:
+                for role, comp in compilers.iteritems():
+                    if comp is None:
+                        compilers[role] = family[role]
+        # If some compilers found, but not all, then use compiler
         # family information to get default compilers.
         sibling = next((comp for comp in compilers.itervalues() if comp is not None), None)
         if sibling:
@@ -228,17 +243,19 @@ class TargetCreateCommand(CreateCommand):
             action.default = comp.absolute_path if comp else arguments.SUPPRESS
             action.__action_call__ = action.__call__
             action.__call__ = TargetCreateCommand._compiler_flag_action_call(family_attr)
+        # Use the name of the default compiler family as a hint for the next search
+        return family_default
 
     def _construct_parser(self):
         parser = super(TargetCreateCommand, self)._construct_parser()
         group = parser.add_argument_group('host arguments')
-        self._configure_argument_group(group, HOST_COMPILERS, '--compilers', 'host_family')
+        host_family_name = self._configure_argument_group(group, HOST_COMPILERS, '--compilers', 'host_family', None)
         
         group = parser.add_argument_group('Message Passing Interface (MPI) arguments')
-        self._configure_argument_group(group, MPI_COMPILERS, '--mpi-compilers', 'mpi_family')
+        self._configure_argument_group(group, MPI_COMPILERS, '--mpi-compilers', 'mpi_family', host_family_name)
 
         group = parser.add_argument_group('Symmetric Hierarchical Memory (SHMEM) arguments')
-        self._configure_argument_group(group, SHMEM_COMPILERS, '--shmem-compilers', 'shmem_family')
+        self._configure_argument_group(group, SHMEM_COMPILERS, '--shmem-compilers', 'shmem_family', host_family_name)
 
         parser.add_argument('--from-tau-makefile',
                             help="Populate target configuration from a TAU Makefile",
