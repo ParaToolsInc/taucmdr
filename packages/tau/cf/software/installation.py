@@ -176,7 +176,7 @@ class Installation(object):
         uid.update(self.src)
         uid.update(self.target_arch.name)
         uid.update(self.target_os.name)
-        for compiler_uid in sorted([comp.uid for _, comp in self.compilers]):
+        for compiler_uid in sorted(comp.uid for comp in self.compilers.itervalues()):
             uid.update(compiler_uid)
         return uid.hexdigest()
 

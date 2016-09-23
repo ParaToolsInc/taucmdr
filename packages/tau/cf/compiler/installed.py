@@ -35,7 +35,6 @@ discover features that change from system to system.
 
 import os
 import hashlib
-import pprint
 import subprocess
 from tau import logger, util
 from tau.error import InternalError, ConfigurationError
@@ -427,6 +426,26 @@ class InstalledCompilerSet(KeyedRecord):
         self.uid = uid
         self.members = {}
         self._add_members(**kwargs)
+        for attr in '__contains__', '__iter__', '__getitem__', 'get', 'iterkeys', 'itervalues', 'iteritems':
+            setattr(self, attr, getattr(self.members, attr))
+            
+    def __contains__(self, key):
+        return key in self.members
+
+    def __iter__(self):
+        return self.members.__iter__()
+    
+    def __getitem__(self, key):
+        return self.members[key]
+
+    def iterkeys(self):
+        return self.members.iterkeys()
+    
+    def itervalues(self):
+        return self.members.itervalues()
+
+    def iteritems(self):
+        return self.members.iteritems()
 
     def _add_members(self, **kwargs):
         all_roles = CompilerRole.keys()
@@ -436,15 +455,6 @@ class InstalledCompilerSet(KeyedRecord):
                 raise InternalError("Invalid role: %s" % key)
             role = CompilerRole.find(key)
             self.members[role] = val
-
-    def __contains__(self, key):
-        return key in self.members
-
-    def __iter__(self):
-        return self.members.iteritems()
-    
-    def __getitem__(self, role):
-        return self.members[role]
 
     def modify(self, **kwargs):
         """Build a modified copy of this object."""
