@@ -34,6 +34,7 @@ Functions used for unit tests of create.py.
 import os
 import unittest
 from tau import tests, util
+from tau.cf.compiler.host import CC, CXX, FC
 from tau.cli.commands.target.create import COMMAND as create_cmd
 
 class CreateTest(tests.TestCase):
@@ -82,8 +83,8 @@ class CreateTest(tests.TestCase):
         from tau.model.target import Target
         ctrl = Target.controller(PROJECT_STORAGE)
         test_targ = ctrl.one({'name': 'test_targ'})
-        for role, expected in ('CC', 'icc'), ('CXX', 'icpc'), ('FC', 'ifort'):
-            path = test_targ.populate(role)['path']
+        for role, expected in (CC, 'icc'), (CXX, 'icpc'), (FC, 'ifort'):
+            path = test_targ.populate(role.keyword)['path']
             self.assertEqual(os.path.basename(path), expected, 
                              "Target[%s] is '%s', not '%s'" % (role, path, expected))
 
@@ -100,6 +101,6 @@ class CreateTest(tests.TestCase):
         from tau.model.target import Target
         ctrl = Target.controller(PROJECT_STORAGE)
         test_targ = ctrl.one({'name': 'test_targ'})
-        path = test_targ.populate('CC')['path']
+        path = test_targ.populate(CC.keyword)['path']
         self.assertEqual('pgcc', os.path.basename(path), "Target[CC] is '%s', not 'pgcc'" % path)
 
