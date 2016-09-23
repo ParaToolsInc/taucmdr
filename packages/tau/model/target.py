@@ -41,9 +41,7 @@ from tau import logger, util
 from tau.error import InternalError, ConfigurationError, IncompatibleRecordError
 from tau.mvc.model import Model
 from tau.model.compiler import Compiler
-from tau.cf.compiler import CompilerRole, INTEL_COMPILERS
-from tau.cf.compiler.mpi import INTEL_MPI_COMPILERS
-from tau.cf.compiler.installed import InstalledCompilerSet
+from tau.cf.compiler import Knowledgebase, InstalledCompilerSet
 from tau.cf.target import host, DARWIN_OS, INTEL_KNC_ARCH
 from tau.cf.software.tau_installation import TAU_MINIMAL_COMPILERS
 
@@ -80,12 +78,15 @@ def attributes():
     from tau.model.project import Project
     from tau.cli.arguments import ParsePackagePathAction
     from tau.cf.target import Architecture, OperatingSystem
+    from tau.cf.compiler.host import CC, CXX, FC, UPC, INTEL
+    from tau.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC, INTEL as INTEL_MPI
+    from tau.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
     from tau.model import require_compiler_family
- 
-    knc_intel_only = require_compiler_family(INTEL_COMPILERS, 
+    
+    knc_intel_only = require_compiler_family(INTEL, 
                                              "You must use Intel compilers to target the Xeon Phi",
                                              "Try adding `--compilers=Intel` to the command line")
-    knc_intel_mpi_only = require_compiler_family(INTEL_MPI_COMPILERS,
+    knc_intel_mpi_only = require_compiler_family(INTEL_MPI,
                                                  "You must use Intel MPI compilers to target the Xeon Phi",
                                                  "Try adding `--mpi-compilers=Intel` to the command line")
 
@@ -134,7 +135,7 @@ def attributes():
                         Target.require('MPI_FC', knc_intel_mpi_only))},
             'on_change': Target.attribute_changed
         },
-        'CC': {
+        CC.keyword: {
             'model': Compiler,
             'required': True,
             'description': 'Host C compiler command',
@@ -143,7 +144,7 @@ def attributes():
                          'metavar': '<command>'},
             'on_change': Target.attribute_changed
         },
-        'CXX': {
+        CXX.keyword: {
             'model': Compiler,
             'required': True,
             'description': 'Host C++ compiler command',
@@ -152,7 +153,7 @@ def attributes():
                          'metavar': '<command>'},
             'on_change': Target.attribute_changed
         },
-        'FC': {
+        FC.keyword: {
             'model': Compiler,
             'required': False,
             'description': 'Host Fortran compiler command',
@@ -161,7 +162,7 @@ def attributes():
                          'metavar': '<command>'},
             'on_change': Target.attribute_changed
         },
-        'UPC': {
+        UPC.keyword: {
             'model': Compiler,
             'required': False,
             'description': 'Universal Parallel C compiler command',
@@ -170,7 +171,7 @@ def attributes():
                          'metavar': '<command>'},
             'on_change': Target.attribute_changed
         },
-        'MPI_CC': {
+        MPI_CC.keyword: {
             'model': Compiler,
             'required': False,
             'description': 'MPI C compiler command',
@@ -179,7 +180,7 @@ def attributes():
                          'metavar': '<command>'},
             'on_change': Target.attribute_changed
         },
-        'MPI_CXX': {
+        MPI_CXX.keyword: {
             'model': Compiler,
             'required': False,
             'description': 'MPI C++ compiler command',
@@ -188,7 +189,7 @@ def attributes():
                          'metavar': '<command>'},
             'on_change': Target.attribute_changed
         },
-        'MPI_FC': {
+        MPI_FC.keyword: {
             'model': Compiler,
             'required': False,
             'description': 'MPI Fortran compiler command',
@@ -233,7 +234,7 @@ def attributes():
                               Target.require("MPI_FC"))},
             'on_change': Target.attribute_changed
         },
-        'SHMEM_CC': {
+        SHMEM_CC.keyword: {
             'model': Compiler,
             'required': False,
             'description': 'SHMEM C compiler command',
@@ -242,7 +243,7 @@ def attributes():
                          'metavar': '<command>'},
             'on_change': Target.attribute_changed
         },
-        'SHMEM_CXX': {
+        SHMEM_CXX.keyword: {
             'model': Compiler,
             'required': False,
             'description': 'SHMEM C++ compiler command',
@@ -251,7 +252,7 @@ def attributes():
                          'metavar': '<command>'},
             'on_change': Target.attribute_changed
         },
-        'SHMEM_FC': {
+        SHMEM_FC.keyword: {
             'model': Compiler,
             'required': False,
             'description': 'SHMEM Fortran compiler command',
@@ -416,7 +417,7 @@ class Target(Model):
         if not self._compilers:
             eids = []
             compilers = {}
-            for role in CompilerRole.all():
+            for role in Knowledgebase.all_roles():
                 try:
                     compiler_record = self.populate(role.keyword)
                 except KeyError:
@@ -454,7 +455,7 @@ class Target(Model):
         installed_comp = None
         known_compilers = [comp for comp in self.compilers().iteritems()]
         # Check that this target supports the given compiler
-        for role in CompilerRole.all():
+        for role in Knowledgebase.all_roles():
             try:
                 compiler_record = self.populate(role.keyword)
             except KeyError:

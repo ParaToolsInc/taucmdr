@@ -35,10 +35,10 @@ from tau.cli import arguments
 from tau.cli.cli_view import CreateCommand
 from tau.model.target import Target
 from tau.model.compiler import Compiler
-from tau.cf.compiler import CompilerFamily, CompilerRole, CompilerInfo, COMPILER_ROLES
-from tau.cf.compiler.mpi import MpiCompilerFamily, MPI_COMPILER_ROLES
-from tau.cf.compiler.shmem import ShmemCompilerFamily, SHMEM_COMPILER_ROLES
-from tau.cf.compiler.installed import InstalledCompiler, InstalledCompilerFamily
+from tau.cf.compiler import Knowledgebase, InstalledCompiler, InstalledCompilerFamily
+from tau.cf.compiler.host import HOST_COMPILERS
+from tau.cf.compiler.mpi import MPI_COMPILERS
+from tau.cf.compiler.shmem import SHMEM_COMPILERS
 from tau.cf.target import TauArch
 from tau.cf.software.tau_installation import TAU_MINIMAL_COMPILERS
 
@@ -58,14 +58,15 @@ class TargetCreateCommand(CreateCommand):
         return call
 
     @staticmethod
-    def _family_flag_action(family_attr, family_cls):
+    def _family_flag_action(kbase, family_attr):
         class Action(arguments.Action):
+            # pylint: disable=too-few-public-methods
             def __call__(self, parser, namespace, value, *args, **kwargs):
                 try:
                     delattr(namespace, family_attr)
                 except AttributeError:
                     pass
-                family = InstalledCompilerFamily(family_cls(value))
+                family = InstalledCompilerFamily(kbase.families[value])
                 for comp in family:
                     setattr(namespace, comp.info.role.keyword, comp.absolute_path)
         return Action
@@ -111,7 +112,7 @@ class TargetCreateCommand(CreateCommand):
                     if not path:
                         self.logger.warning("Failed to parse %s in TAU Makefile '%s'", key, makefile)
                         continue
-                    matching_info = CompilerInfo.find(os.path.basename(path))
+                    matching_info = Knowledgebase.find_compiler(os.path.basename(path))
                     if matching_info:
                         if len(matching_info) > 1:
                             self.logger.warning("Ambiguous compiler '%s' in TAU Makefile '%s'", path, makefile)
@@ -164,8 +165,8 @@ class TargetCreateCommand(CreateCommand):
                 return comp
         return None
 
-    def _get_compiler_from_defaults(self, role, family_cls):
-        """Use model defaults and host preferred family to fill this role."""
+    def _get_compiler_from_defaults(self, kbase, role):
+        """Use model defaults and preferred family to fill this role."""
         # If default not set in environment, use model default.
         try:
             comp = InstalledCompiler.probe(Target.attributes[role.keyword]['default'], role=role)
@@ -177,10 +178,10 @@ class TargetCreateCommand(CreateCommand):
         else:
             return comp
         # If no model default use check all compiler families starting with the host's preferred family
-        for host_family in family_cls.all():
-            for info in host_family.members.get(role, []):
+        for family in kbase.iterfamilies():
+            for info in family.members.get(role, []):
                 try:
-                    comp = InstalledCompiler.probe(info.command, family=host_family, role=role)
+                    comp = InstalledCompiler.probe(info.command, family=family, role=role)
                 except ConfigurationError as err:
                     self.logger.debug(err)
                     continue
@@ -188,9 +189,9 @@ class TargetCreateCommand(CreateCommand):
                     return comp
         return None
 
-    def _configure_argument_group(self, group, roles, family_cls, family_flag, family_attr, family_keyword):
+    def _configure_argument_group(self, group, kbase, family_flag, family_attr):
         # Start by checking environment variables for default compilers.
-        compilers = {role: self._get_compiler_from_env(role) for role in roles}
+        compilers = {role: self._get_compiler_from_env(role) for role in kbase.roles.itervalues()}
         # If some compilers specified in environment, but not all, then use compiler
         # family information to get default compilers.
         sibling = next((comp for comp in compilers.itervalues() if comp is not None), None)
@@ -201,23 +202,27 @@ class TargetCreateCommand(CreateCommand):
         # No environment variables specify compiler defaults so use model defaults.
         for role, comp in compilers.iteritems():
             if comp is None:
-                compilers[role] = self._get_compiler_from_defaults(role, family_cls)
+                compilers[role] = self._get_compiler_from_defaults(kbase, role)
         # Use the majority family as the default compiler family.
         family_count = Counter(comp.info.family for comp in compilers.itervalues() if comp is not None)
         try:
             family_default = family_count.most_common()[0][0].name
         except IndexError:
             family_default = arguments.SUPPRESS
-        # Add the compiler family flag
+        # Add the compiler family flag. If the knowledgebase keyword isn't all-caps then show in lower case. 
+        keyword = kbase.keyword
+        if keyword.upper() != keyword:
+            keyword = keyword.lower()
         group.add_argument(family_flag,
                            help=("select all %(kw)s compilers automatically from the given family, "
-                                 "ignored if at least one %(kw)s compiler is specified") % {'kw': family_keyword},
+                                 "ignored if at least one %(kw)s compiler is specified") % {'kw': keyword},
                            metavar='<family>',
                            dest=family_attr,
                            default=family_default,
-                           choices=family_cls.family_names(),
-                           action=TargetCreateCommand._family_flag_action(family_attr, family_cls))
-        # Configure default actions for compiler arguments
+                           choices=kbase.family_names(),
+                           action=TargetCreateCommand._family_flag_action(kbase, family_attr))
+        # Monkey-patch default actions for compiler arguments
+        # pylint: disable=protected-access
         for role, comp in compilers.iteritems():
             action = next(act for act in group._actions if act.dest == role.keyword)
             action.default = comp.absolute_path if comp else arguments.SUPPRESS
@@ -227,14 +232,14 @@ class TargetCreateCommand(CreateCommand):
     def _construct_parser(self):
         parser = super(TargetCreateCommand, self)._construct_parser()
         group = parser.add_argument_group('host arguments')
-        self._configure_argument_group(group, COMPILER_ROLES, CompilerFamily,
-                                       '--compilers', 'host_family', 'host')
+        self._configure_argument_group(group, HOST_COMPILERS, '--compilers', 'host_family')
+        
         group = parser.add_argument_group('Message Passing Interface (MPI) arguments')
-        self._configure_argument_group(group, MPI_COMPILER_ROLES, MpiCompilerFamily,
-                                       '--mpi-compilers', 'mpi_family', 'MPI')
+        self._configure_argument_group(group, MPI_COMPILERS, '--mpi-compilers', 'mpi_family')
+
         group = parser.add_argument_group('Symmetric Hierarchical Memory (SHMEM) arguments')
-        self._configure_argument_group(group, SHMEM_COMPILER_ROLES, ShmemCompilerFamily,
-                                       '--shmem-compilers', 'shmem_family', 'SHMEM')
+        self._configure_argument_group(group, SHMEM_COMPILERS, '--shmem-compilers', 'shmem_family')
+
         parser.add_argument('--from-tau-makefile',
                             help="Populate target configuration from a TAU Makefile",
                             metavar='<path>',
@@ -253,7 +258,7 @@ class TargetCreateCommand(CreateCommand):
 
     def parse_compiler_flags(self, args):
         compilers = {}
-        for role in CompilerRole.all():
+        for role in Knowledgebase.all_roles():
             try:
                 compilers[role.keyword] = InstalledCompiler.probe(getattr(args, role.keyword), role=role)
             except AttributeError:
@@ -263,11 +268,9 @@ class TargetCreateCommand(CreateCommand):
     def main(self, argv):
         args = self._parse_args(argv)
         store = arguments.parse_storage_flag(args)[0]
-
         if hasattr(args, "tau_makefile"):
             self._parse_tau_makefile(args)
             self.logger.debug('Arguments after parsing TAU Makefile: %s', args)
-
         compilers = self.parse_compiler_flags(args)
 
         data = {attr: getattr(args, attr) for attr in self.model.attributes if hasattr(args, attr)}

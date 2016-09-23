@@ -32,7 +32,7 @@ Score-P is a tool suite for profiling, event tracing, and online analysis of HPC
 
 from tau import logger
 from tau.cf.software.installation import AutotoolsInstallation
-from tau.cf.compiler import CC_ROLE, INTEL_COMPILERS, IBM_COMPILERS, PGI_COMPILERS, GNU_COMPILERS
+from tau.cf.compiler.host import CC, INTEL, IBM, PGI, GNU
 from tau.cf.target import X86_64_ARCH, IBM64_ARCH
 
 
@@ -62,8 +62,9 @@ class ScorepInstallation(AutotoolsInstallation):
     def configure(self, flags, env):
         flags.extend(['--enable-shared', '--without-otf2', '--without-opari2', '--without-cube', '--without-gui'])
         if self.target_arch in (X86_64_ARCH, IBM64_ARCH):
-            suite_flags = {INTEL_COMPILERS: 'intel', IBM_COMPILERS: 'ibm', PGI_COMPILERS: 'pgi', GNU_COMPILERS: 'gcc'}
-            flags.append('--with-nocross-compiler-suite=%s' % suite_flags[self.compilers[CC_ROLE].info.family])
+            suite_flags = {INTEL: 'intel', IBM: 'ibm', PGI: 'pgi', GNU: 'gcc'}
+            family = self.compilers[CC].info.family
+            flags.append('--with-nocross-compiler-suite=%s' % suite_flags[family])
         if not self.use_mpi:
             flags.append('--without-mpi')
         if not self.use_shmem:

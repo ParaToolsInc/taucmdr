@@ -35,7 +35,7 @@ import sys
 import hashlib
 import fileinput
 from tau import logger
-from tau.cf.compiler import CC_ROLE, CXX_ROLE
+from tau.cf.compiler.host import CC, CXX
 from tau.cf.software.installation import AutotoolsInstallation
 
 LOGGER = logger.get_logger(__name__)
@@ -58,7 +58,7 @@ class PapiInstallation(AutotoolsInstallation):
         uid.update(self.src)
         uid.update(self.target_arch.name)
         uid.update(self.target_os.name)
-        for role in CC_ROLE, CXX_ROLE:
+        for role in CC, CXX:
             uid.update(self.compilers[role].uid)
         return uid.hexdigest()
 

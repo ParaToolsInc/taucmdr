@@ -36,7 +36,7 @@ import unittest
 from tau import tests, TAU_HOME
 from tau.cli.commands.build import COMMAND as build_cmd
 from tau.cli.commands.trial.create import COMMAND as create_cmd
-from tau.cf.compiler import CC_ROLE
+from tau.cf.compiler.host import CC
 from tau.cf.target import IBM_BGP_ARCH, IBM_BGQ_ARCH
 from tau.cf.target import host
 
@@ -47,7 +47,7 @@ class CreateTest(tests.TestCase):
     def test_create(self):
         self.reset_project_storage()
         shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests.get_test_workdir()+'/hello.c')
-        cc_cmd = self.get_compiler(CC_ROLE)
+        cc_cmd = self.get_compiler(CC)
         self.assertCommandReturnValue(0, build_cmd, [cc_cmd, 'hello.c'])
         stdout, stderr = self.assertCommandReturnValue(0, create_cmd, ['./a.out'])
         self.assertIn('BEGIN', stdout)

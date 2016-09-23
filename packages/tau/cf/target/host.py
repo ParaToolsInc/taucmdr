@@ -31,10 +31,8 @@ import os
 import platform
 from tau import logger
 from tau.error import ConfigurationError
-from tau.cf.target import Architecture, TauArch, OperatingSystem
-from tau.cf.target import IBM_BGP_ARCH, IBM_BGQ_ARCH
-from tau.cf.target import CRAY_CNL_OS, IBM_CNK_OS
- 
+from tau.cf.target import Architecture, OperatingSystem, TauArch
+from tau.cf.target import IBM_BGP_ARCH, IBM_BGQ_ARCH, IBM_CNK_OS, CRAY_CNL_OS
 
 LOGGER = logger.get_logger(__name__)
 

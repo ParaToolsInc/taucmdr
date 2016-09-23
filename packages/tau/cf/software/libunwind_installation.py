@@ -37,17 +37,18 @@ import hashlib
 import fileinput
 from tau import logger
 from tau.error import ConfigurationError
+from tau.cf.target import IBM_BGQ_ARCH, CRAY_CNL_OS, ARM64_ARCH, LINUX_OS
 from tau.cf.software import SoftwarePackageError
 from tau.cf.software.installation import AutotoolsInstallation
-from tau.cf.compiler import CC_ROLE, CXX_ROLE, PGI_COMPILERS, GNU_COMPILERS
-from tau.cf.compiler.installed import InstalledCompilerFamily
-from tau.cf.target import ARM64_ARCH, IBM_BGQ_ARCH, CRAY_CNL_OS
+from tau.cf.compiler.host import CC, CXX, PGI, GNU
+
 
 
 LOGGER = logger.get_logger(__name__)
 
 REPOS = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-1.1.tar.gz',
-         ARM64_ARCH: {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-arm64-1.1.tgz'}}
+         ARM64_ARCH: {LINUX_OS: 
+                      ('http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-arm64-1.1.tgz')}}
 
 LIBRARIES = {None: ['libunwind.a']}
 
@@ -59,12 +60,12 @@ class LibunwindInstallation(AutotoolsInstallation):
 
     def __init__(self, sources, target_arch, target_os, compilers):
         # libunwind can't be built with PGI compilers so substitute GNU compilers instead
-        if compilers[CC_ROLE].info.family is PGI_COMPILERS:
+        if compilers[CC].info.family is PGI:
             try:
-                gnu_compilers = InstalledCompilerFamily(GNU_COMPILERS)
+                gnu_compilers = GNU.installation()
             except ConfigurationError:
                 raise SoftwarePackageError("GNU compilers (required to build libunwind) could not be found.")
-            compilers = compilers.modify(CC=gnu_compilers[CC_ROLE], CXX=gnu_compilers[CXX_ROLE])
+            compilers = compilers.modify(CC=gnu_compilers[CC], CXX=gnu_compilers[CXX])
         super(LibunwindInstallation, self).__init__('libunwind', 'libunwind', sources, target_arch, target_os, 
                                                     compilers, REPOS, None, LIBRARIES, HEADERS)
 
@@ -74,13 +75,13 @@ class LibunwindInstallation(AutotoolsInstallation):
         uid.update(self.src)
         uid.update(self.target_arch.name)
         uid.update(self.target_os.name)
-        for role in CC_ROLE, CXX_ROLE:
+        for role in CC, CXX:
             uid.update(self.compilers[role].uid)
         return uid.hexdigest()
 
     def configure(self, flags, env):
-        env['CC'] = self.compilers[CC_ROLE].unwrap().absolute_path
-        env['CXX'] = self.compilers[CXX_ROLE].unwrap().absolute_path
+        env['CC'] = self.compilers[CC].unwrap().absolute_path
+        env['CXX'] = self.compilers[CXX].unwrap().absolute_path
         if self.target_arch is IBM_BGQ_ARCH:
             flags.append('--disable-shared')
             for line in fileinput.input(os.path.join(self.src_prefix, 'src', 'unwind', 'Resume.c'), inplace=1):

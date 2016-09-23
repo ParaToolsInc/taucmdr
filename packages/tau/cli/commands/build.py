@@ -30,7 +30,7 @@
 import os
 from tau.cli import arguments
 from tau.cli.command import AbstractCommand
-from tau.cf.compiler import CompilerInfo
+from tau.cf.compiler import Knowledgebase
 from tau.model.project import Project
 
 
@@ -47,10 +47,11 @@ class BuildCommand(AbstractCommand):
         Returns:
             bool: True if this subcommand is compatible with `cmd`.
         """
-        return os.path.basename(cmd) in [info.command for info in CompilerInfo.all()]
+        return os.path.basename(cmd) in [info.command for info in Knowledgebase.all_compilers()]
 
     def _construct_parser(self):
-        parts = ['  %s  %s' % ('{:<15}'.format(comp.command), comp.short_descr) for comp in CompilerInfo.all()]
+        parts = ['  %s  %s' % ('{:<15}'.format(comp.command), comp.short_descr) 
+                 for comp in Knowledgebase.all_compilers()]
         epilog = "known compiler commands and their roles:\n%s\n" % '\n'.join(sorted(parts))
         usage = "%s <command> [arguments]" % self.command
         parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary, epilog=epilog)

@@ -25,88 +25,40 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""MPI compiler detection.
+"""MPI compiler knowledgebase.
 
 MPI compilers are a special case for several reasons including:
     1) No binary compatibility guarantee among MPI compilers.
     2) They're almost always wrappers, not actual compilers.
-    3) They almost always depend on system compilers.
+    3) They almost always depend on CPU compilers.
     
 We keep a separate knowledge base for MPI compilers to simplify compiler
 identification and because TAU doesn't require MPI for all configurations.
 """
-
-from tau import logger
-from tau.cf.compiler import CompilerFamily, CompilerRole
+from tau.cf.compiler import Knowledgebase
 
 
-LOGGER = logger.get_logger(__name__)
+MPI_COMPILERS = Knowledgebase('MPI', 'Compilers supporting the Message Passing Interface (MPI)',
+                              CC=('MPI C', 'MPI_CC'),
+                              CXX=('MPI C++', 'MPI_CXX'),
+                              FC=('MPI Fortran', ('MPI_FC', 'MPI_F77', 'MPI_F90')))
 
+SYSTEM = MPI_COMPILERS.add('System', show_wrapper_flags=['-show'],
+                           CC='mpicc', CXX=('mpic++', 'mpicxx', 'mpiCC'), FC=('mpiftn', 'mpif90', 'mpif77'))
 
-class MpiCompilerFamily(CompilerFamily):
-    """Information about an MPI compiler family.
-    
-    Subclassing CompilerFamily creates a second database of compiler family 
-    records and keeps MPI compilers from mixing with host etc. compilers.
-    """
-    
-    def __init__(self, *args, **kwargs):
-        if 'show_wrapper_flags' not in kwargs:
-            kwargs['show_wrapper_flags'] = ['-show']
-        super(MpiCompilerFamily, self).__init__(*args, **kwargs)
+INTEL = MPI_COMPILERS.add('Intel', show_wrapper_flags=['-show'],
+                          CC='mpiicc', CXX='mpiicpc', FC='mpiifort')
 
-    @classmethod
-    def preferred(cls):
-        """Get the preferred MPI compiler family for the host architecture.
-        
-        May probe environment variables and file systems in cases where the arch 
-        isn't immediately known to Python.  These tests may be expensive so the 
-        detected value is cached to improve performance.
-    
-        Returns:
-            MpiCompilerFamily: The host's preferred compiler family.
-        """
-        try:
-            inst = cls._mpi_preferred
-        except AttributeError:
-            from tau.cf import target
-            from tau.cf.target import host
-            host_tau_arch = host.tau_arch()
-            if host_tau_arch is target.TAU_ARCH_CRAYCNL:
-                inst = CRAY_MPI_COMPILERS
-            elif host_tau_arch in (target.TAU_ARCH_BGP, target.TAU_ARCH_BGQ, target.TAU_ARCH_IBM64_LINUX):
-                inst = IBM_MPI_COMPILERS
-            elif host_tau_arch is target.TAU_ARCH_MIC_LINUX:
-                inst = INTEL_MPI_COMPILERS
-            else:
-                inst = SYSTEM_MPI_COMPILERS
-            LOGGER.debug("%s prefers %s MPI compilers by default", host_tau_arch, inst.name)
-            cls._mpi_preferred = inst
-        return inst
+IBM = MPI_COMPILERS.add('IBM', show_wrapper_flags=['-show'],
+                        CC=('mpixlc', 'mpixlc_r'), 
+                        CXX=('mpixlcxx', 'mpixlcxx_r'),
+                        FC=('mpixlf95', 'mpixlf95_r', 'mpixlf90', 'mpixlf90_r', 'mpixlf2003', 'mpixlf2003_r', 
+                            'mpixlf2008', 'mpixlf2008_r', 'mpixlf77', 'mpixlf77_r'))
 
+CRAY = MPI_COMPILERS.add('Cray', show_wrapper_flags=['-craype-verbose', '--version', '-E'],
+                         CC='cc', CXX='CC', FC='ftn')
 
-MPI_CC_ROLE = CompilerRole('MPI_CC', 'MPI C', ['MPI_CC'])
-MPI_CXX_ROLE = CompilerRole('MPI_CXX', 'MPI C++', ['MPI_CXX'])
-MPI_FC_ROLE = CompilerRole('MPI_FC', 'MPI Fortran', ['MPI_FC', 'MPI_F77', 'MPI_F90'])
-MPI_COMPILER_ROLES = MPI_CC_ROLE, MPI_CXX_ROLE, MPI_FC_ROLE
+MPI_CC = MPI_COMPILERS.roles['CC']
+MPI_CXX = MPI_COMPILERS.roles['CXX']
+MPI_FC = MPI_COMPILERS.roles['FC']
 
-SYSTEM_MPI_COMPILERS = MpiCompilerFamily('System')
-SYSTEM_MPI_COMPILERS.add(MPI_CC_ROLE, 'mpicc')
-SYSTEM_MPI_COMPILERS.add(MPI_CXX_ROLE, 'mpic++', 'mpicxx', 'mpiCC')
-SYSTEM_MPI_COMPILERS.add(MPI_FC_ROLE, 'mpiftn', 'mpif90', 'mpif77')
-
-INTEL_MPI_COMPILERS = MpiCompilerFamily('Intel')
-INTEL_MPI_COMPILERS.add(MPI_CC_ROLE, 'mpiicc')
-INTEL_MPI_COMPILERS.add(MPI_CXX_ROLE, 'mpiicpc')
-INTEL_MPI_COMPILERS.add(MPI_FC_ROLE, 'mpiifort')
-
-IBM_MPI_COMPILERS = MpiCompilerFamily('IBM')
-IBM_MPI_COMPILERS.add(MPI_CC_ROLE, 'mpixlc', 'mpixlc_r', )
-IBM_MPI_COMPILERS.add(MPI_CXX_ROLE, 'mpixlcxx', 'mpixlcxx_r')
-IBM_MPI_COMPILERS.add(MPI_FC_ROLE, 'mpixlf95', 'mpixlf95_r', 'mpixlf90', 'mpixlf90_r', 
-                      'mpixlf2003', 'mpixlf2003_r', 'mpixlf2008', 'mpixlf2008_r', 'mpixlf77', 'mpixlf77_r', )
-
-CRAY_MPI_COMPILERS = MpiCompilerFamily('Cray', show_wrapper_flags=['-craype-verbose', '--version', '-E'])
-CRAY_MPI_COMPILERS.add(MPI_CC_ROLE, 'cc')
-CRAY_MPI_COMPILERS.add(MPI_CXX_ROLE, 'CC')
-CRAY_MPI_COMPILERS.add(MPI_FC_ROLE, 'ftn')

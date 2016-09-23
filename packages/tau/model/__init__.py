@@ -32,7 +32,7 @@ def require_compiler_family(family, *hints):
     """Creates a compatibility callback to check a compiler family.
     
     Args:
-        family (CompilerFamily): The required compiler family.
+        family: The required compiler family.
         *hints: String hints to show the user when the check fails.
         
     Returns:

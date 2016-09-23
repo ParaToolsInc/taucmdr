@@ -27,9 +27,9 @@
 #
 """``tau target`` subcommand."""
 
-from tau.cf.compiler import CC_ROLE
-from tau.cf.compiler.mpi import MPI_CC_ROLE
-from tau.cf.compiler.shmem import SHMEM_CC_ROLE
+from tau.cf.compiler.host import CC
+from tau.cf.compiler.mpi import MPI_CC
+from tau.cf.compiler.shmem import SHMEM_CC
 from tau.cli.cli_view import ListCommand
 from tau.model.target import Target
 
@@ -38,10 +38,10 @@ DASHBOARD_COLUMNS = [{'header': 'Name', 'value': 'name', 'align': 'r'},
                      {'header': 'Host OS', 'value': 'host_os'},
                      {'header': 'Host Arch', 'value': 'host_arch'},
                      {'header': 'Host Compilers', 'function': 
-                      lambda data: data[CC_ROLE.keyword]['family']},
+                      lambda data: data[CC.keyword]['family']},
                      {'header': 'MPI Compilers', 'function': 
-                      lambda data: data.get(MPI_CC_ROLE.keyword, {'family': 'None'})['family']},
+                      lambda data: data.get(MPI_CC.keyword, {'family': 'None'})['family']},
                      {'header': 'SHMEM Compilers', 'function': 
-                      lambda data: data.get(SHMEM_CC_ROLE.keyword, {'family': 'None'})['family']}]
+                      lambda data: data.get(SHMEM_CC.keyword, {'family': 'None'})['family']}]
 
 COMMAND = ListCommand(Target, __name__, dashboard_columns=DASHBOARD_COLUMNS)

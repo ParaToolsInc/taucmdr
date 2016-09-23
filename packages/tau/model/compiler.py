@@ -37,10 +37,7 @@ from tau import logger
 from tau.error import InternalError, ConfigurationError
 from tau.mvc.model import Model
 from tau.mvc.controller import Controller
-from tau.cf.compiler import CompilerFamily, CompilerRole, CompilerInfo
-from tau.cf.compiler.mpi import MpiCompilerFamily
-from tau.cf.compiler.shmem import ShmemCompilerFamily
-from tau.cf.compiler.installed import InstalledCompiler
+from tau.cf.compiler import Knowledgebase, InstalledCompiler
 
 LOGGER = logger.get_logger(__name__)
 
@@ -204,17 +201,11 @@ class Compiler(Model):
             InstalledCompiler: Information about the installed compiler command.
         """
         command = os.path.basename(self['path'])
-        role = CompilerRole.find(self['role'])
-        # FIXME: Compiler family classes are fragmented and weird.
-        if role.keyword.startswith('MPI_'):
-            family = MpiCompilerFamily.find(self['family'])
-        elif role.keyword.startswith('SHMEM_'):
-            family = ShmemCompilerFamily.find(self['family'])
-        else:
-            family = CompilerFamily.find(self['family'])
-        info_list = CompilerInfo.find(command, family, role)
+        role = Knowledgebase.find_role(self['role'])
+        family = role.kbase.families[self['family']]
+        info_list = Knowledgebase.find_compiler(command, family, role)
         if len(info_list) != 1:
-            raise InternalError("Zero or more than one CompilerInfo objects match '%s'" % self)
+            raise InternalError("Zero or more than one known compilers match '%s'" % self)
         info = info_list[0]
         if probe:
             comp = InstalledCompiler(self['path'], info)

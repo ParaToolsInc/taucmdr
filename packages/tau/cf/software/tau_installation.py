@@ -38,12 +38,10 @@ from tau import logger, util
 from tau.error import ConfigurationError, InternalError
 from tau.cf.software import SoftwarePackageError
 from tau.cf.software.installation import Installation, parallel_make_flags
-from tau.cf.compiler import GNU_COMPILERS, INTEL_COMPILERS, PGI_COMPILERS, CRAY_COMPILERS 
-from tau.cf.compiler import IBM_COMPILERS, IBM_BG_COMPILERS
-from tau.cf.compiler import CC_ROLE, CXX_ROLE, FC_ROLE, UPC_ROLE
-from tau.cf.compiler.mpi import SYSTEM_MPI_COMPILERS, INTEL_MPI_COMPILERS, IBM_MPI_COMPILERS
-from tau.cf.compiler.mpi import MPI_CC_ROLE, MPI_CXX_ROLE, MPI_FC_ROLE
-from tau.cf.compiler.shmem import SHMEM_CC_ROLE, SHMEM_CXX_ROLE, SHMEM_FC_ROLE
+from tau.cf.compiler import host, mpi
+from tau.cf.compiler.host import CC, CXX, FC, UPC
+from tau.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC
+from tau.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
 from tau.cf.target import TauArch, CRAY_CNL_OS, DARWIN_OS
 
 
@@ -107,18 +105,18 @@ COMMANDS = {None:
 
 HEADERS = {None: ['Profile/Profiler.h', 'Profile/TAU.h']}
 
-TAU_COMPILER_WRAPPERS = {CC_ROLE: 'tau_cc.sh',
-                         CXX_ROLE: 'tau_cxx.sh',
-                         FC_ROLE: 'tau_f90.sh',
-                         UPC_ROLE: 'tau_upc.sh',
-                         MPI_CC_ROLE: 'tau_cc.sh',
-                         MPI_CXX_ROLE: 'tau_cxx.sh',
-                         MPI_FC_ROLE: 'tau_f90.sh',
-                         SHMEM_CC_ROLE: 'tau_cc.sh',
-                         SHMEM_CXX_ROLE: 'tau_cxx.sh',
-                         SHMEM_FC_ROLE: 'tau_f90.sh'}
+TAU_COMPILER_WRAPPERS = {CC: 'tau_cc.sh',
+                         CXX: 'tau_cxx.sh',
+                         FC: 'tau_f90.sh',
+                         UPC: 'tau_upc.sh',
+                         MPI_CC: 'tau_cc.sh',
+                         MPI_CXX: 'tau_cxx.sh',
+                         MPI_FC: 'tau_f90.sh',
+                         SHMEM_CC: 'tau_cc.sh',
+                         SHMEM_CXX: 'tau_cxx.sh',
+                         SHMEM_FC: 'tau_f90.sh'}
 
-TAU_MINIMAL_COMPILERS = [CC_ROLE, CXX_ROLE]
+TAU_MINIMAL_COMPILERS = [CC, CXX]
 
 
 class TauInstallation(Installation):
@@ -388,31 +386,31 @@ class TauInstallation(Installation):
         if self.mpi_support: 
             # TAU's configure script does a really bad job detecting MPI wrapped compiler commands
             # so don't even bother trying.  Pass as much of this as we can and hope for the best.
-            cc_command = self.compilers[MPI_CC_ROLE].unwrap().info.command
-            cxx_command = self.compilers[MPI_CXX_ROLE].unwrap().info.command
-            fc_comp = self.compilers[MPI_FC_ROLE].unwrap() if FC_ROLE in self.compilers else None
+            cc_command = self.compilers[MPI_CC].unwrap().info.command
+            cxx_command = self.compilers[MPI_CXX].unwrap().info.command
+            fc_comp = self.compilers[MPI_FC].unwrap() if FC in self.compilers else None
         else:
             # TAU's configure script can't cope with compiler absolute paths or compiler names that
             # don't exactly match what it expects.  Use `info.command` instead of `command` to work
             # around these problems e.g. 'gcc-4.9' becomes 'gcc' 
-            cc_command = self.compilers[CC_ROLE].info.command
-            cxx_command = self.compilers[CXX_ROLE].info.command
-            fc_comp = self.compilers[FC_ROLE] if FC_ROLE in self.compilers else None
+            cc_command = self.compilers[CC].info.command
+            cxx_command = self.compilers[CXX].info.command
+            fc_comp = self.compilers[FC] if FC in self.compilers else None
 
         # TAU's configure script can't detect Fortran compiler from the compiler
         # command so translate Fortran compiler command into TAU's magic words
         fortran_magic = None
         if fc_comp:
             fc_family = fc_comp.info.family
-            fc_magic_map = {GNU_COMPILERS: 'gfortran',
-                            INTEL_COMPILERS: 'intel',
-                            PGI_COMPILERS: 'pgi',
-                            CRAY_COMPILERS: 'cray',
-                            IBM_COMPILERS: 'ibm',
-                            IBM_BG_COMPILERS: 'ibm',
-                            SYSTEM_MPI_COMPILERS: 'mpif90',
-                            INTEL_MPI_COMPILERS: 'mpiifort',
-                            IBM_MPI_COMPILERS: 'ibm'}
+            fc_magic_map = {host.GNU: 'gfortran',
+                            host.INTEL: 'intel',
+                            host.PGI: 'pgi',
+                            host.CRAY: 'cray',
+                            host.IBM: 'ibm',
+                            host.IBM_BG: 'ibm',
+                            mpi.SYSTEM: 'mpif90',
+                            mpi.INTEL: 'mpiifort',
+                            mpi.IBM: 'ibm'}
             try:
                 fortran_magic = fc_magic_map[fc_family]
             except KeyError:
@@ -427,9 +425,9 @@ class TauInstallation(Installation):
                                    self.mpi_include_path, 
                                    self.mpi_library_path, 
                                    self.mpi_libraries,
-                                   self.compilers[MPI_CC_ROLE], 
-                                   self.compilers[MPI_CXX_ROLE], 
-                                   self.compilers[MPI_FC_ROLE])
+                                   self.compilers[MPI_CC], 
+                                   self.compilers[MPI_CXX], 
+                                   self.compilers[MPI_FC])
         
         # Set up SHMEM paths and libraries
         shmeminc, shmemlib, shmemlibrary = None, None, None
@@ -439,9 +437,9 @@ class TauInstallation(Installation):
                                    self.shmem_include_path, 
                                    self.shmem_library_path, 
                                    self.shmem_libraries,
-                                   self.compilers[SHMEM_CC_ROLE], 
-                                   self.compilers[SHMEM_CXX_ROLE], 
-                                   self.compilers[SHMEM_FC_ROLE])
+                                   self.compilers[SHMEM_CC], 
+                                   self.compilers[SHMEM_CXX], 
+                                   self.compilers[SHMEM_FC])
         
         binutils = self.dependencies.get('binutils')
         libunwind = self.dependencies.get('libunwind')
@@ -472,7 +470,7 @@ class TauInstallation(Installation):
                  ] if flag]
         if pdt:
             flags.append('-pdt=%s' % pdt.install_prefix)
-            flags.append('-pdt_c++=%s' % pdt.compilers[CXX_ROLE].info.command)
+            flags.append('-pdt_c++=%s' % pdt.compilers[CXX].info.command)
         if self.openmp_support:
             flags.append('-openmp')
             if self.measure_openmp == 'ompt':
@@ -549,9 +547,9 @@ class TauInstallation(Installation):
             list: Makefile tags, e.g. ['papi', 'pdt', 'icpc']
         """
         tags = []
-        cxx_compiler = self.compilers[CXX_ROLE].unwrap() 
-        compiler_tags = {INTEL_COMPILERS: 'intel' if self.target_os == CRAY_CNL_OS else 'icpc', 
-                         PGI_COMPILERS: 'pgi'}
+        cxx_compiler = self.compilers[CXX].unwrap() 
+        compiler_tags = {host.INTEL: 'intel' if self.target_os == CRAY_CNL_OS else 'icpc', 
+                         host.PGI: 'pgi'}
         try:
             tags.append(compiler_tags[cxx_compiler.info.family])
         except KeyError:
@@ -585,9 +583,9 @@ class TauInstallation(Installation):
     def _incompatible_tags(self):
         """Returns a set of makefile tags incompatible with the specified config."""
         tags = []
-        cxx_compiler = self.compilers[CXX_ROLE].unwrap()
-        compiler_tags = {INTEL_COMPILERS: 'intel' if self.target_os == CRAY_CNL_OS else 'icpc', 
-                         PGI_COMPILERS: 'pgi'}
+        cxx_compiler = self.compilers[CXX].unwrap()
+        compiler_tags = {host.INTEL: 'intel' if self.target_os == CRAY_CNL_OS else 'icpc', 
+                         host.PGI: 'pgi'}
         compiler_tag = compiler_tags.get(cxx_compiler.info.family, None)
         tags.extend(tag for tag in compiler_tags.itervalues() if tag != compiler_tag)
         if not self.mpi_support:

@@ -36,8 +36,6 @@ measurements allow us to take different views of the application's performance.
 import os
 from tau.error import ConfigurationError, IncompatibleRecordError
 from tau.mvc.model import Model
-from tau.cf.compiler import INTEL_COMPILERS, GNU_COMPILERS
-from tau.cf.target import host, DARWIN_OS
 
 
 
@@ -55,11 +53,11 @@ def attributes():
     from tau.model.application import Application
     from tau.cli.arguments import ParseBooleanAction
     from tau.model import require_compiler_family
+    from tau.cf.target import host, DARWIN_OS
+    from tau.cf.compiler.host import INTEL, GNU
 
-    ompt_intel_only = require_compiler_family(INTEL_COMPILERS, 
-                                              "OMPT for OpenMP measurement only works with Intel compilers")
-    gomp_gnu_only = require_compiler_family(GNU_COMPILERS, 
-                                            "GOMP for OpenMP measurement only works with GNU compilers")
+    ompt_intel_only = require_compiler_family(INTEL, "OMPT for OpenMP measurement only works with Intel compilers")
+    gomp_gnu_only = require_compiler_family(GNU, "GOMP for OpenMP measurement only works with GNU compilers")
 
     return {
         'projects': {

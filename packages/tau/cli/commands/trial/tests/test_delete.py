@@ -36,7 +36,7 @@ import unittest
 from tau import tests, TAU_HOME
 from tau.cli.commands import build
 from tau.cli.commands.trial import delete, create
-from tau.cf.compiler import CC_ROLE
+from tau.cf.compiler.host import CC
 from tau.cf.target import IBM_BGP_ARCH, IBM_BGQ_ARCH
 from tau.cf.target import host
 
@@ -47,7 +47,7 @@ class DeleteTest(tests.TestCase):
     def test_delete(self):
         self.reset_project_storage(project_name='proj1')
         shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests.get_test_workdir()+'/hello.c')
-        cc_cmd = self.get_compiler(CC_ROLE)
+        cc_cmd = self.get_compiler(CC)
         argv = [cc_cmd, 'hello.c']
         self.exec_command(build.COMMAND, argv)
         self.exec_command(create.COMMAND, ['./a.out'])

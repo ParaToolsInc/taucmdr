@@ -25,62 +25,24 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""SHMEM compiler detection.
+"""SHMEM compiler knowledgebase.
 
 Keep a separate knowledge base for SHMEM compilers to simplify compiler
 identification and because TAU doesn't require SHMEM for all configurations.
 """
-
-from tau import logger
-from tau.cf.compiler import CompilerFamily, CompilerRole
+from tau.cf.compiler import Knowledgebase
 
 
-LOGGER = logger.get_logger(__name__)
+SHMEM_COMPILERS = Knowledgebase('SHMEM', 'Compilers supporting Symmetric Hierarchical Memory',
+                                CC=('SHMEM C', 'SHMEM_CC'),
+                                CXX=('SHMEM C++', 'SHMEM_CXX'),
+                                FC=('SHMEM Fortran', ('SHMEM_FC', 'SHMEM_F77', 'SHMEM_F90')))
 
+OPENSHMEM = SHMEM_COMPILERS.add('OpenSHMEM', CC='oshcc', CXX=('oshcxx', 'oshc++'), FC='oshfort')
 
-class ShmemCompilerFamily(CompilerFamily):
-    """Information about a SHMEM compiler family.
-    
-    Subclassing CompilerFamily creates a second database of compiler family 
-    records and keeps SHMEM compilers from mixing with host etc. compilers.
-    """
+CRAY_SHMEM = SHMEM_COMPILERS.add('Cray', show_wrapper_flags=['-craype-verbose', '--version', '-E'],
+                                 CC='cc', CXX='CC', FC='ftn')
 
-    @classmethod
-    def preferred(cls):
-        """Get the preferred SHMEM compiler family for the host architecture.
-        
-        May probe environment variables and file systems in cases where the arch 
-        isn't immediately known to Python.  These tests may be expensive so the 
-        detected value is cached to improve performance.
-    
-        Returns:
-            ShmemCompilerFamily: The host's preferred compiler family.
-        """
-        try:
-            inst = cls._shmem_preferred
-        except AttributeError:
-            from tau.cf import target
-            from tau.cf.target import host
-            host_tau_arch = host.tau_arch()
-            if host_tau_arch is target.TAU_ARCH_CRAYCNL:
-                inst = CRAY_SHMEM_COMPILERS
-            else:
-                inst = OPENSHMEM_SHEM_COMPILERS
-            LOGGER.debug("%s prefers %s SHMEM compilers by default", host_tau_arch, inst.name)
-            cls._shmem_preferred = inst
-        return inst
-
-SHMEM_CC_ROLE = CompilerRole('SHMEM_CC', 'SHMEM C', ['SHMEM_CC'])
-SHMEM_CXX_ROLE = CompilerRole('SHMEM_CXX', 'SHMEM C++', ['SHMEM_CXX'])
-SHMEM_FC_ROLE = CompilerRole('SHMEM_FC', 'SHMEM Fortran', ['SHMEM_FC', 'SHMEM_F77', 'SHMEM_F90'])
-SHMEM_COMPILER_ROLES = SHMEM_CC_ROLE, SHMEM_CXX_ROLE, SHMEM_FC_ROLE
-
-OPENSHMEM_SHEM_COMPILERS = ShmemCompilerFamily('OpenSHMEM')
-OPENSHMEM_SHEM_COMPILERS.add(SHMEM_CC_ROLE, 'oshcc')
-OPENSHMEM_SHEM_COMPILERS.add(SHMEM_CXX_ROLE, 'oshcxx', 'oshc++')
-OPENSHMEM_SHEM_COMPILERS.add(SHMEM_FC_ROLE, 'oshfort')
-
-CRAY_SHMEM_COMPILERS = ShmemCompilerFamily('Cray', show_wrapper_flags=['-craype-verbose', '--version', '-E'])
-CRAY_SHMEM_COMPILERS.add(SHMEM_CC_ROLE, 'cc')
-CRAY_SHMEM_COMPILERS.add(SHMEM_CXX_ROLE, 'CC')
-CRAY_SHMEM_COMPILERS.add(SHMEM_FC_ROLE, 'ftn')
+SHMEM_CC = SHMEM_COMPILERS.roles['CC']
+SHMEM_CXX = SHMEM_COMPILERS.roles['CXX']
+SHMEM_FC = SHMEM_COMPILERS.roles['FC']

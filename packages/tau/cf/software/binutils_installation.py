@@ -39,11 +39,11 @@ import hashlib
 import fileinput
 from tau import logger, util
 from tau.error import ConfigurationError
+from tau.cf.target import DARWIN_OS, IBM_BGP_ARCH, IBM_BGQ_ARCH, IBM64_ARCH, INTEL_KNC_ARCH
 from tau.cf.software import SoftwarePackageError
 from tau.cf.software.installation import AutotoolsInstallation
-from tau.cf.compiler import CC_ROLE, CXX_ROLE, PGI_COMPILERS, GNU_COMPILERS
-from tau.cf.compiler.installed import InstalledCompilerFamily
-from tau.cf.target import IBM_BGP_ARCH, IBM_BGQ_ARCH, IBM64_ARCH, INTEL_KNC_ARCH, DARWIN_OS
+from tau.cf.compiler.host import CC, CXX, PGI, GNU
+
 
 LOGGER = logger.get_logger(__name__)
  
@@ -57,12 +57,12 @@ class BinutilsInstallation(AutotoolsInstallation):
     
     def __init__(self, sources, target_arch, target_os, compilers):
         # binutils can't be built with PGI compilers so substitute GNU compilers instead
-        if compilers[CC_ROLE].info.family is PGI_COMPILERS:
+        if compilers[CC].info.family is PGI:
             try:
-                gnu_compilers = InstalledCompilerFamily(GNU_COMPILERS)
+                gnu_compilers = GNU.installation()
             except ConfigurationError:
                 raise SoftwarePackageError("GNU compilers (required to build binutils) could not be found.")
-            compilers = compilers.modify(CC=gnu_compilers[CC_ROLE], CXX=gnu_compilers[CXX_ROLE])
+            compilers = compilers.modify(CC=gnu_compilers[CC], CXX=gnu_compilers[CXX])
         super(BinutilsInstallation, self).__init__('binutils', 'GNU Binutils', sources, 
                                                    target_arch, target_os, compilers, REPOS, None, LIBRARIES, None)
 
@@ -72,7 +72,7 @@ class BinutilsInstallation(AutotoolsInstallation):
         uid.update(self.src)
         uid.update(self.target_arch.name)
         uid.update(self.target_os.name)
-        for role in CC_ROLE, CXX_ROLE:
+        for role in CC, CXX:
             uid.update(self.compilers[role].uid)
         return uid.hexdigest()
 

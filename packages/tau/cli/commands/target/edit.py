@@ -27,99 +27,83 @@
 #
 """``tau target edit`` subcommand."""
 
-from tau import util
 from tau.error import ImmutableRecordError, IncompatibleRecordError
 from tau.cli import arguments
 from tau.cli.cli_view import EditCommand
-from tau.cli.commands.target.copy import COMMAND as target_copy_cmd
-from tau.cli.commands.experiment.delete import COMMAND as experiment_delete_cmd
+from tau.cli.commands.target.create import COMMAND as target_create_cmd
 from tau.model.target import Target
 from tau.model.experiment import Experiment
 from tau.model.compiler import Compiler
-from tau.cf.compiler import CompilerFamily, CompilerRole
-from tau.cf.compiler.mpi import MpiCompilerFamily
-from tau.cf.compiler.shmem import ShmemCompilerFamily
-from tau.cf.compiler.installed import InstalledCompiler, InstalledCompilerFamily
+from tau.cf.compiler import InstalledCompilerFamily
+from tau.cf.compiler.host import HOST_COMPILERS
+from tau.cf.compiler.mpi import MPI_COMPILERS
+from tau.cf.compiler.shmem import SHMEM_COMPILERS
 
 
 class TargetEditCommand(EditCommand):
     """``tau target edit`` subcommand."""
 
-    def parse_compiler_flags(self, args):
-        """Parses host compiler flags out of the command line arguments.
-
-        Args:
-            args: Argument namespace containing command line arguments.
-
-        Returns:
-            dict: Installed compilers by role keyword string.
-
-        Raises:
-            ConfigurationError: Invalid command line arguments specified
-        """
-        compilers = {}
-
-        for family_attr, family_cls in [('host_family', CompilerFamily), 
-                                        ('mpi_family', MpiCompilerFamily),
-                                        ('shmem_family', ShmemCompilerFamily)]:
+    @staticmethod
+    def _compiler_flag_action_call(family_attr):
+        def call(self, parser, namespace, value, *args, **kwargs):
             try:
-                family_arg = getattr(args, family_attr)
-            except AttributeError as err:
-                # User didn't specify that argument, but that's OK
-                self.logger.debug(err)
-                continue
-            else:
-                delattr(args, family_attr)
-            try:
-                family_comps = InstalledCompilerFamily(family_cls(family_arg))
-            except KeyError:
-                self.parser.error("Invalid compiler family: %s" % family_arg)
-            for comp in family_comps:
-                self.logger.debug("args.%s=%r", comp.info.role.keyword, comp.absolute_path)
-                setattr(args, comp.info.role.keyword, comp.absolute_path)
-                compilers[comp.info.role] = comp
+                delattr(namespace, family_attr)
+            except AttributeError:
+                pass
+            return self.__action_call__(parser, namespace, value, *args, **kwargs)
+        return call
 
-        compiler_keys = set(CompilerRole.keys())
-        all_keys = set(args.__dict__.keys())
-        given_keys = compiler_keys & all_keys
-        family_keys = set(role.keyword for role in compilers)
-        self.logger.debug("Given compilers: %s", given_keys)
-        self.logger.debug("Family compilers: %s", family_keys)
+    @staticmethod
+    def _family_flag_action(kbase, family_attr):
+        class Action(arguments.Action):
+            # pylint: disable=too-few-public-methods
+            def __call__(self, parser, namespace, value, *args, **kwargs):
+                try:
+                    delattr(namespace, family_attr)
+                except AttributeError:
+                    pass
+                family = InstalledCompilerFamily(kbase.families[value])
+                for comp in family:
+                    setattr(namespace, comp.info.role.keyword, comp.absolute_path)
+        return Action
 
-        for key in given_keys - family_keys:
-            absolute_path = util.which(getattr(args, key))
-            if not absolute_path:
-                self.parser.error("Invalid compiler command: %s")
-            role = CompilerRole.find(key)
-            compilers[role] = InstalledCompiler.probe(absolute_path, role=role)
-        return compilers
+    def _configure_argument_group(self, group, kbase, family_flag, family_attr):
+        # Add the compiler family flag. If the knowledgebase keyword isn't all-caps then show in lower case. 
+        keyword = kbase.keyword
+        if keyword.upper() != keyword:
+            keyword = keyword.lower()
+        group.add_argument(family_flag,
+                           help=("select all %(kw)s compilers automatically from the given family, "
+                                 "ignored if at least one %(kw)s compiler is specified") % {'kw': keyword},
+                           metavar='<family>',
+                           dest=family_attr,
+                           default=arguments.SUPPRESS,
+                           choices=kbase.family_names(),
+                           action=TargetEditCommand._family_flag_action(kbase, family_attr))
+
+        # Monkey-patch default actions for compiler arguments
+        # pylint: disable=protected-access
+        for role in kbase.roles.itervalues():
+            action = next(act for act in group._actions if act.dest == role.keyword)
+            action.__action_call__ = action.__call__
+            action.__call__ = TargetEditCommand._compiler_flag_action_call(family_attr)
+
 
     def _construct_parser(self):
         parser = super(TargetEditCommand, self)._construct_parser()
         group = parser.add_argument_group('host arguments')
-        group.add_argument('--compilers',
-                           help="select all host compilers automatically from the given family",
-                           metavar='<family>',
-                           dest='host_family',
-                           default=arguments.SUPPRESS,
-                           choices=CompilerFamily.family_names())
+        self._configure_argument_group(group, HOST_COMPILERS, '--compilers', 'host_family')
+        
         group = parser.add_argument_group('Message Passing Interface (MPI) arguments')
-        group.add_argument('--mpi-compilers', 
-                           help="select all MPI compilers automatically from the given family",
-                           metavar='<family>',
-                           dest='mpi_family',
-                           default=arguments.SUPPRESS,
-                           choices=MpiCompilerFamily.family_names())
+        self._configure_argument_group(group, MPI_COMPILERS, '--mpi-compilers', 'mpi_family')
+
         group = parser.add_argument_group('Symmetric Hierarchical Memory (SHMEM) arguments')
-        group.add_argument('--shmem-compilers', 
-                           help="select all SHMEM compilers automatically from the given family",
-                           metavar='<family>',
-                           dest='shmem_family',
-                           default=arguments.SUPPRESS,
-                           choices=ShmemCompilerFamily.family_names())
+        self._configure_argument_group(group, SHMEM_COMPILERS, '--shmem-compilers', 'shmem_family')
         return parser
-    
+     
     def _update_record(self, store, data, key):
+        from tau.cli.commands.target.copy import COMMAND as target_copy_cmd
+        from tau.cli.commands.experiment.delete import COMMAND as experiment_delete_cmd
         try:
             retval = super(TargetEditCommand, self)._update_record(store, data, key)
         except (ImmutableRecordError, IncompatibleRecordError) as err:
@@ -133,15 +117,15 @@ class TargetEditCommand(EditCommand):
     def main(self, argv):
         args = self._parse_args(argv)
         store = arguments.parse_storage_flag(args)[0]
-        
-        compilers = self.parse_compiler_flags(args)
+        compilers = target_create_cmd.parse_compiler_flags(args)
         self.logger.debug('Arguments after parsing compiler flags: %s', args)
+        
         data = {attr: getattr(args, attr) for attr in self.model.attributes if hasattr(args, attr)}
         for keyword, comp in compilers.iteritems():
             self.logger.debug("%s=%s (%s)", keyword, comp.absolute_path, comp.info.short_descr)
             record = Compiler.controller(store).register(comp)
             data[comp.info.role.keyword] = record.eid
-
+ 
         key_attr = self.model.key_attribute
         try:
             data[key_attr] = args.new_key

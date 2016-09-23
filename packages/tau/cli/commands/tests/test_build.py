@@ -34,19 +34,19 @@ Functions used for unit tests of build.py.
 import shutil
 from tau import tests, TAU_HOME
 from tau.cli.commands.build import COMMAND as build_command
-from tau.cf.compiler import CC_ROLE
+from tau.cf.compiler.host import CC
 
 class BuildTest(tests.TestCase):
 
     def test_build(self):
         self.reset_project_storage()
         shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests.get_test_workdir()+'/hello.c')
-        cc_cmd = self.get_compiler(CC_ROLE)
+        cc_cmd = self.get_compiler(CC)
         argv = [cc_cmd, 'hello.c']
         self.assertCommandReturnValue(0, build_command, argv)
 
     def test_abspath_compat(self):
         self.reset_project_storage()
-        cc_cmd = self.get_compiler(CC_ROLE)
+        cc_cmd = self.get_compiler(CC)
         self.assertTrue(build_command.is_compatible(cc_cmd))
 

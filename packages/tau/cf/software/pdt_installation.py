@@ -34,12 +34,10 @@ import os
 import hashlib
 from tau import logger, util
 from tau.error import ConfigurationError
+from tau.cf.target import TauArch, X86_64_ARCH, LINUX_OS, TAU_ARCH_APPLE, TAU_ARCH_BGQ
 from tau.cf.software import SoftwarePackageError
 from tau.cf.software.installation import AutotoolsInstallation
-from tau.cf.compiler import CC_ROLE, CXX_ROLE
-from tau.cf.compiler import GNU_COMPILERS, INTEL_COMPILERS, PGI_COMPILERS
-from tau.cf.compiler.installed import InstalledCompilerFamily
-from tau.cf.target import TAU_ARCH_APPLE, TAU_ARCH_BGQ, X86_64_ARCH, LINUX_OS, TauArch
+from tau.cf.compiler.host import CC, CXX, PGI, GNU, INTEL
 
 
 LOGGER = logger.get_logger(__name__)
@@ -127,12 +125,12 @@ class PdtInstallation(AutotoolsInstallation):
 
     def __init__(self, sources, target_arch, target_os, compilers):
         # PDT 3.22 can't be built with PGI compilers so substitute GNU compilers instead
-        if compilers[CC_ROLE].info.family is PGI_COMPILERS:
+        if compilers[CC].info.family is PGI:
             try:
-                gnu_compilers = InstalledCompilerFamily(GNU_COMPILERS)
+                gnu_compilers = GNU.installation()
             except ConfigurationError:
                 raise SoftwarePackageError("GNU compilers (required to build PDT) could not be found.")
-            compilers = compilers.modify(CC=gnu_compilers[CC_ROLE], CXX=gnu_compilers[CXX_ROLE])
+            compilers = compilers.modify(CC=gnu_compilers[CC], CXX=gnu_compilers[CXX])
         super(PdtInstallation, self).__init__('pdt', 'PDT', sources, target_arch, target_os, 
                                               compilers, REPOS, COMMANDS, None, None)
         self.arch = TauArch.get(self.target_arch, self.target_os)
@@ -143,7 +141,7 @@ class PdtInstallation(AutotoolsInstallation):
         uid.update(self.src)
         uid.update(self.target_arch.name)
         uid.update(self.target_os.name)
-        for role in CC_ROLE, CXX_ROLE:
+        for role in CC, CXX:
             if role in self.compilers:
                 uid.update(self.compilers[role].uid)
         return uid.hexdigest()
@@ -156,8 +154,8 @@ class PdtInstallation(AutotoolsInstallation):
         self.lib_path = os.path.join(arch_path, 'lib')
     
     def configure(self, flags, env):
-        family_flags = {GNU_COMPILERS.name: '-GNU', INTEL_COMPILERS.name: '-icpc', PGI_COMPILERS.name: '-pgCC'}
-        family = self.compilers[CXX_ROLE].info.family
+        family_flags = {GNU.name: '-GNU', INTEL.name: '-icpc', PGI.name: '-pgCC'}
+        family = self.compilers[CXX].info.family
         compiler_flag = family_flags.get(family.name, '')
         prefix_flag = '-prefix=%s' % self.install_prefix
         cmd = ['./configure', prefix_flag, compiler_flag]
