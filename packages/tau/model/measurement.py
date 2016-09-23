@@ -285,7 +285,7 @@ def attributes():
             'compat': {lambda metrics: bool(len([met for met in metrics if 'PAPI' in met])):
                        (Target.require('papi_source'), 
                         Target.exclude('papi_source', None))},
-            'on_change': Measurement.attribute_changed
+            'on_change': Measurement.metrics_changed
         },
         'keep_inst_files': {
             'type': 'boolean',
@@ -360,11 +360,20 @@ class Measurement(Model):
     __attributes__ = attributes
 
     @classmethod
-    def attribute_changed(cls, model, attr, new_value):
-        if model.is_selected():
-            old_value = model.get(attr, None)
-            cls.controller(model.storage).push_to_topic('rebuild_required', {attr: (old_value, new_value)})
+    def attribute_changed(cls, meas, attr, new_value):
+        if meas.is_selected():
+            old_value = meas.get(attr, None)
+            cls.controller(meas.storage).push_to_topic('rebuild_required', {attr: (old_value, new_value)})
     
+    @classmethod
+    def metrics_changed(cls, meas, attr, new_value):
+        if meas.is_selected():
+            old_value = meas.get(attr, [])
+            old_papi = [metric for metric in old_value if 'PAPI' in metric]
+            new_papi = [metric for metric in new_value if 'PAPI' in metric]
+            if bool(old_papi) != bool(new_papi):
+                cls.controller(meas.storage).push_to_topic('rebuild_required', {attr: (old_value, new_value)})
+
     def on_create(self):
         def get_flag(key):
             return self.attributes[key]['argparse']['flags'][0]
