@@ -81,20 +81,20 @@
 <span class="kn">import</span> <span class="nn">shutil</span>
 <span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">tests</span><span class="p">,</span> <span class="n">TAU_HOME</span>
 <span class="kn">from</span> <span class="nn">tau.cli.commands.build</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">build_command</span>
-<span class="kn">from</span> <span class="nn">tau.cf.compiler</span> <span class="kn">import</span> <span class="n">CC_ROLE</span>
+<span class="kn">from</span> <span class="nn">tau.cf.compiler.host</span> <span class="kn">import</span> <span class="n">CC</span>
 
 <div class="viewcode-block" id="BuildTest"><a class="viewcode-back" href="../../../../../tau.cli.commands.tests.test_build.html#tau.cli.commands.tests.test_build.BuildTest">[docs]</a><span class="k">class</span> <span class="nc">BuildTest</span><span class="p">(</span><span class="n">tests</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
 
 <div class="viewcode-block" id="BuildTest.test_build"><a class="viewcode-back" href="../../../../../tau.cli.commands.tests.test_build.html#tau.cli.commands.tests.test_build.BuildTest.test_build">[docs]</a>    <span class="k">def</span> <span class="nf">test_build</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">()</span>
         <span class="n">shutil</span><span class="o">.</span><span class="n">copyfile</span><span class="p">(</span><span class="n">TAU_HOME</span><span class="o">+</span><span class="s1">&#39;/.testfiles/hello.c&#39;</span><span class="p">,</span> <span class="n">tests</span><span class="o">.</span><span class="n">get_test_workdir</span><span class="p">()</span><span class="o">+</span><span class="s1">&#39;/hello.c&#39;</span><span class="p">)</span>
-        <span class="n">cc_cmd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_compiler</span><span class="p">(</span><span class="n">CC_ROLE</span><span class="p">)</span>
+        <span class="n">cc_cmd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_compiler</span><span class="p">(</span><span class="n">CC</span><span class="p">)</span>
         <span class="n">argv</span> <span class="o">=</span> <span class="p">[</span><span class="n">cc_cmd</span><span class="p">,</span> <span class="s1">&#39;hello.c&#39;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">build_command</span><span class="p">,</span> <span class="n">argv</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="BuildTest.test_abspath_compat"><a class="viewcode-back" href="../../../../../tau.cli.commands.tests.test_build.html#tau.cli.commands.tests.test_build.BuildTest.test_abspath_compat">[docs]</a>    <span class="k">def</span> <span class="nf">test_abspath_compat</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">()</span>
-        <span class="n">cc_cmd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_compiler</span><span class="p">(</span><span class="n">CC_ROLE</span><span class="p">)</span>
+        <span class="n">cc_cmd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_compiler</span><span class="p">(</span><span class="n">CC</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">build_command</span><span class="o">.</span><span class="n">is_compatible</span><span class="p">(</span><span class="n">cc_cmd</span><span class="p">))</span></div></div>
 
 </pre></div>

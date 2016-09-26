@@ -84,10 +84,7 @@
 <span class="kn">from</span> <span class="nn">tau.error</span> <span class="kn">import</span> <span class="n">InternalError</span><span class="p">,</span> <span class="n">ConfigurationError</span>
 <span class="kn">from</span> <span class="nn">tau.mvc.model</span> <span class="kn">import</span> <span class="n">Model</span>
 <span class="kn">from</span> <span class="nn">tau.mvc.controller</span> <span class="kn">import</span> <span class="n">Controller</span>
-<span class="kn">from</span> <span class="nn">tau.cf.compiler</span> <span class="kn">import</span> <span class="n">CompilerFamily</span><span class="p">,</span> <span class="n">CompilerRole</span><span class="p">,</span> <span class="n">CompilerInfo</span>
-<span class="kn">from</span> <span class="nn">tau.cf.compiler.mpi</span> <span class="kn">import</span> <span class="n">MpiCompilerFamily</span>
-<span class="kn">from</span> <span class="nn">tau.cf.compiler.shmem</span> <span class="kn">import</span> <span class="n">ShmemCompilerFamily</span>
-<span class="kn">from</span> <span class="nn">tau.cf.compiler.installed</span> <span class="kn">import</span> <span class="n">InstalledCompiler</span>
+<span class="kn">from</span> <span class="nn">tau.cf.compiler</span> <span class="kn">import</span> <span class="n">Knowledgebase</span><span class="p">,</span> <span class="n">InstalledCompiler</span>
 
 <span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
 
@@ -251,17 +248,11 @@
 <span class="sd">            InstalledCompiler: Information about the installed compiler command.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">command</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">])</span>
-        <span class="n">role</span> <span class="o">=</span> <span class="n">CompilerRole</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;role&#39;</span><span class="p">])</span>
-        <span class="c1"># FIXME: Compiler family classes are fragmented and weird.</span>
-        <span class="k">if</span> <span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;MPI_&#39;</span><span class="p">):</span>
-            <span class="n">family</span> <span class="o">=</span> <span class="n">MpiCompilerFamily</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;family&#39;</span><span class="p">])</span>
-        <span class="k">elif</span> <span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;SHMEM_&#39;</span><span class="p">):</span>
-            <span class="n">family</span> <span class="o">=</span> <span class="n">ShmemCompilerFamily</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;family&#39;</span><span class="p">])</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">family</span> <span class="o">=</span> <span class="n">CompilerFamily</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;family&#39;</span><span class="p">])</span>
-        <span class="n">info_list</span> <span class="o">=</span> <span class="n">CompilerInfo</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">family</span><span class="p">,</span> <span class="n">role</span><span class="p">)</span>
+        <span class="n">role</span> <span class="o">=</span> <span class="n">Knowledgebase</span><span class="o">.</span><span class="n">find_role</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;role&#39;</span><span class="p">])</span>
+        <span class="n">family</span> <span class="o">=</span> <span class="n">role</span><span class="o">.</span><span class="n">kbase</span><span class="o">.</span><span class="n">families</span><span class="p">[</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;family&#39;</span><span class="p">]]</span>
+        <span class="n">info_list</span> <span class="o">=</span> <span class="n">Knowledgebase</span><span class="o">.</span><span class="n">find_compiler</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">family</span><span class="p">,</span> <span class="n">role</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">info_list</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">InternalError</span><span class="p">(</span><span class="s2">&quot;Zero or more than one CompilerInfo objects match &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">InternalError</span><span class="p">(</span><span class="s2">&quot;Zero or more than one known compilers match &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="p">)</span>
         <span class="n">info</span> <span class="o">=</span> <span class="n">info_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">probe</span><span class="p">:</span>
             <span class="n">comp</span> <span class="o">=</span> <span class="n">InstalledCompiler</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">],</span> <span class="n">info</span><span class="p">)</span>

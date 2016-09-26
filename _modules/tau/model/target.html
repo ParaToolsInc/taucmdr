@@ -88,9 +88,7 @@
 <span class="kn">from</span> <span class="nn">tau.error</span> <span class="kn">import</span> <span class="n">InternalError</span><span class="p">,</span> <span class="n">ConfigurationError</span><span class="p">,</span> <span class="n">IncompatibleRecordError</span>
 <span class="kn">from</span> <span class="nn">tau.mvc.model</span> <span class="kn">import</span> <span class="n">Model</span>
 <span class="kn">from</span> <span class="nn">tau.model.compiler</span> <span class="kn">import</span> <span class="n">Compiler</span>
-<span class="kn">from</span> <span class="nn">tau.cf.compiler</span> <span class="kn">import</span> <span class="n">CompilerRole</span><span class="p">,</span> <span class="n">INTEL_COMPILERS</span>
-<span class="kn">from</span> <span class="nn">tau.cf.compiler.mpi</span> <span class="kn">import</span> <span class="n">INTEL_MPI_COMPILERS</span>
-<span class="kn">from</span> <span class="nn">tau.cf.compiler.installed</span> <span class="kn">import</span> <span class="n">InstalledCompilerSet</span>
+<span class="kn">from</span> <span class="nn">tau.cf.compiler</span> <span class="kn">import</span> <span class="n">Knowledgebase</span><span class="p">,</span> <span class="n">InstalledCompilerSet</span>
 <span class="kn">from</span> <span class="nn">tau.cf.target</span> <span class="kn">import</span> <span class="n">host</span><span class="p">,</span> <span class="n">DARWIN_OS</span><span class="p">,</span> <span class="n">INTEL_KNC_ARCH</span>
 <span class="kn">from</span> <span class="nn">tau.cf.software.tau_installation</span> <span class="kn">import</span> <span class="n">TAU_MINIMAL_COMPILERS</span>
 
@@ -127,12 +125,15 @@
     <span class="kn">from</span> <span class="nn">tau.model.project</span> <span class="kn">import</span> <span class="n">Project</span>
     <span class="kn">from</span> <span class="nn">tau.cli.arguments</span> <span class="kn">import</span> <span class="n">ParsePackagePathAction</span>
     <span class="kn">from</span> <span class="nn">tau.cf.target</span> <span class="kn">import</span> <span class="n">Architecture</span><span class="p">,</span> <span class="n">OperatingSystem</span>
+    <span class="kn">from</span> <span class="nn">tau.cf.compiler.host</span> <span class="kn">import</span> <span class="n">CC</span><span class="p">,</span> <span class="n">CXX</span><span class="p">,</span> <span class="n">FC</span><span class="p">,</span> <span class="n">UPC</span><span class="p">,</span> <span class="n">INTEL</span>
+    <span class="kn">from</span> <span class="nn">tau.cf.compiler.mpi</span> <span class="kn">import</span> <span class="n">MPI_CC</span><span class="p">,</span> <span class="n">MPI_CXX</span><span class="p">,</span> <span class="n">MPI_FC</span><span class="p">,</span> <span class="n">INTEL</span> <span class="k">as</span> <span class="n">INTEL_MPI</span>
+    <span class="kn">from</span> <span class="nn">tau.cf.compiler.shmem</span> <span class="kn">import</span> <span class="n">SHMEM_CC</span><span class="p">,</span> <span class="n">SHMEM_CXX</span><span class="p">,</span> <span class="n">SHMEM_FC</span>
     <span class="kn">from</span> <span class="nn">tau.model</span> <span class="kn">import</span> <span class="n">require_compiler_family</span>
- 
-    <span class="n">knc_intel_only</span> <span class="o">=</span> <span class="n">require_compiler_family</span><span class="p">(</span><span class="n">INTEL_COMPILERS</span><span class="p">,</span> 
+    
+    <span class="n">knc_intel_only</span> <span class="o">=</span> <span class="n">require_compiler_family</span><span class="p">(</span><span class="n">INTEL</span><span class="p">,</span> 
                                              <span class="s2">&quot;You must use Intel compilers to target the Xeon Phi&quot;</span><span class="p">,</span>
                                              <span class="s2">&quot;Try adding `--compilers=Intel` to the command line&quot;</span><span class="p">)</span>
-    <span class="n">knc_intel_mpi_only</span> <span class="o">=</span> <span class="n">require_compiler_family</span><span class="p">(</span><span class="n">INTEL_MPI_COMPILERS</span><span class="p">,</span>
+    <span class="n">knc_intel_mpi_only</span> <span class="o">=</span> <span class="n">require_compiler_family</span><span class="p">(</span><span class="n">INTEL_MPI</span><span class="p">,</span>
                                                  <span class="s2">&quot;You must use Intel MPI compilers to target the Xeon Phi&quot;</span><span class="p">,</span>
                                                  <span class="s2">&quot;Try adding `--mpi-compilers=Intel` to the command line&quot;</span><span class="p">)</span>
 
@@ -181,7 +182,7 @@
                         <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;MPI_FC&#39;</span><span class="p">,</span> <span class="n">knc_intel_mpi_only</span><span class="p">))},</span>
             <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">},</span>
-        <span class="s1">&#39;CC&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="n">CC</span><span class="o">.</span><span class="n">keyword</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="n">Compiler</span><span class="p">,</span>
             <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;Host C compiler command&#39;</span><span class="p">,</span>
@@ -190,7 +191,7 @@
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;command&gt;&#39;</span><span class="p">},</span>
             <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">},</span>
-        <span class="s1">&#39;CXX&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="n">CXX</span><span class="o">.</span><span class="n">keyword</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="n">Compiler</span><span class="p">,</span>
             <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;Host C++ compiler command&#39;</span><span class="p">,</span>
@@ -199,7 +200,7 @@
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;command&gt;&#39;</span><span class="p">},</span>
             <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">},</span>
-        <span class="s1">&#39;FC&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="n">FC</span><span class="o">.</span><span class="n">keyword</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="n">Compiler</span><span class="p">,</span>
             <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;Host Fortran compiler command&#39;</span><span class="p">,</span>
@@ -208,7 +209,7 @@
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;command&gt;&#39;</span><span class="p">},</span>
             <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">},</span>
-        <span class="s1">&#39;UPC&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="n">UPC</span><span class="o">.</span><span class="n">keyword</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="n">Compiler</span><span class="p">,</span>
             <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;Universal Parallel C compiler command&#39;</span><span class="p">,</span>
@@ -217,7 +218,7 @@
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;command&gt;&#39;</span><span class="p">},</span>
             <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">},</span>
-        <span class="s1">&#39;MPI_CC&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="n">MPI_CC</span><span class="o">.</span><span class="n">keyword</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="n">Compiler</span><span class="p">,</span>
             <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;MPI C compiler command&#39;</span><span class="p">,</span>
@@ -226,7 +227,7 @@
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;command&gt;&#39;</span><span class="p">},</span>
             <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">},</span>
-        <span class="s1">&#39;MPI_CXX&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="n">MPI_CXX</span><span class="o">.</span><span class="n">keyword</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="n">Compiler</span><span class="p">,</span>
             <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;MPI C++ compiler command&#39;</span><span class="p">,</span>
@@ -235,7 +236,7 @@
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;command&gt;&#39;</span><span class="p">},</span>
             <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">},</span>
-        <span class="s1">&#39;MPI_FC&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="n">MPI_FC</span><span class="o">.</span><span class="n">keyword</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="n">Compiler</span><span class="p">,</span>
             <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;MPI Fortran compiler command&#39;</span><span class="p">,</span>
@@ -280,7 +281,7 @@
                               <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s2">&quot;MPI_FC&quot;</span><span class="p">))},</span>
             <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">},</span>
-        <span class="s1">&#39;SHMEM_CC&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="n">SHMEM_CC</span><span class="o">.</span><span class="n">keyword</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="n">Compiler</span><span class="p">,</span>
             <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;SHMEM C compiler command&#39;</span><span class="p">,</span>
@@ -289,7 +290,7 @@
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;command&gt;&#39;</span><span class="p">},</span>
             <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">},</span>
-        <span class="s1">&#39;SHMEM_CXX&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="n">SHMEM_CXX</span><span class="o">.</span><span class="n">keyword</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="n">Compiler</span><span class="p">,</span>
             <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;SHMEM C++ compiler command&#39;</span><span class="p">,</span>
@@ -298,7 +299,7 @@
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;command&gt;&#39;</span><span class="p">},</span>
             <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">},</span>
-        <span class="s1">&#39;SHMEM_FC&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="n">SHMEM_FC</span><span class="o">.</span><span class="n">keyword</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="n">Compiler</span><span class="p">,</span>
             <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;SHMEM Fortran compiler command&#39;</span><span class="p">,</span>
@@ -398,11 +399,12 @@
         <span class="s1">&#39;scorep_source&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;path or URL to a Score-P installation or archive file&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="s1">&#39;download&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="s1">&#39;download&#39;</span> <span class="k">if</span> <span class="n">host_os</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">DARWIN_OS</span> <span class="k">else</span> <span class="bp">None</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--scorep&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;software package&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;(&lt;path&gt;|&lt;url&gt;|download|None)&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParsePackagePathAction</span><span class="p">},</span>
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">):</span> <span class="n">Target</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;host_os&#39;</span><span class="p">,</span> <span class="n">DARWIN_OS</span><span class="o">.</span><span class="n">name</span><span class="p">)},</span>
             <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">}</span>
     <span class="p">}</span></div>
@@ -462,7 +464,7 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compilers</span><span class="p">:</span>
             <span class="n">eids</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="n">compilers</span> <span class="o">=</span> <span class="p">{}</span>
-            <span class="k">for</span> <span class="n">role</span> <span class="ow">in</span> <span class="n">CompilerRole</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">role</span> <span class="ow">in</span> <span class="n">Knowledgebase</span><span class="o">.</span><span class="n">all_roles</span><span class="p">():</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">compiler_record</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="p">)</span>
                 <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
@@ -498,9 +500,9 @@
         <span class="n">compiler_ctrl</span> <span class="o">=</span> <span class="n">Compiler</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="p">)</span>
         <span class="n">absolute_path</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="n">compiler_cmd</span><span class="p">)</span>
         <span class="n">installed_comp</span> <span class="o">=</span> <span class="bp">None</span>
-        <span class="n">known_compilers</span> <span class="o">=</span> <span class="p">[</span><span class="n">comp</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">compilers</span><span class="p">()]</span>
+        <span class="n">known_compilers</span> <span class="o">=</span> <span class="p">[</span><span class="n">comp</span> <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">compilers</span><span class="p">()</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()]</span>
         <span class="c1"># Check that this target supports the given compiler</span>
-        <span class="k">for</span> <span class="n">role</span> <span class="ow">in</span> <span class="n">CompilerRole</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">role</span> <span class="ow">in</span> <span class="n">Knowledgebase</span><span class="o">.</span><span class="n">all_roles</span><span class="p">():</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">compiler_record</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
@@ -523,7 +525,7 @@
                 <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;&#39;</span><span class="si">%s</span><span class="s2">&#39; appears to be a </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">compiler_cmd</span><span class="p">,</span> <span class="n">installed_comp</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">short_descr</span><span class="p">)</span>
                 <span class="k">break</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;No compiler in target &#39;</span><span class="si">%s</span><span class="s2">&#39; matches &#39;</span><span class="si">%s</span><span class="s2">&#39;.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">compiler_cmd</span><span class="p">),</span>
+            <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;No compiler in target &#39;</span><span class="si">%s</span><span class="s2">&#39; matches &#39;</span><span class="si">%s</span><span class="s2">&#39;.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">absolute_path</span><span class="p">),</span>
                      <span class="s2">&quot;The known compiler commands are:&quot;</span><span class="p">]</span>
             <span class="n">parts</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="s1">&#39;  </span><span class="si">%s</span><span class="s1"> (</span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">comp</span><span class="o">.</span><span class="n">absolute_path</span><span class="p">,</span> <span class="n">comp</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">short_descr</span><span class="p">)</span> <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="n">known_compilers</span><span class="p">)</span>
             <span class="n">hints</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Try one of the valid compiler commands&quot;</span><span class="p">,</span>

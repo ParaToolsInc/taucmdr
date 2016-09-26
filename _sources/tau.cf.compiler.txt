@@ -13,7 +13,7 @@ Submodules
 
 .. toctree::
 
-   tau.cf.compiler.installed
+   tau.cf.compiler.host
    tau.cf.compiler.mpi
    tau.cf.compiler.shmem
 

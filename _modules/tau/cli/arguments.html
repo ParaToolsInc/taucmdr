@@ -84,6 +84,8 @@
 <span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">util</span>
 <span class="kn">from</span> <span class="nn">tau.cf.storage.levels</span> <span class="kn">import</span> <span class="n">ORDERED_LEVELS</span><span class="p">,</span> <span class="n">STORAGE_LEVELS</span>
 
+<span class="n">Action</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">Action</span>
+<span class="sd">&quot;&quot;&quot;Action base class.&quot;&quot;&quot;</span>
 
 <span class="n">SUPPRESS</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">SUPPRESS</span>
 <span class="sd">&quot;&quot;&quot;Suppress attribute creation in parsed argument namespace.&quot;&quot;&quot;</span>
@@ -240,29 +242,29 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># pylint: disable=too-few-public-methods</span>
 
-<div class="viewcode-block" id="ParsePackagePathAction.__call__"><a class="viewcode-back" href="../../../tau.cli.arguments.html#tau.cli.arguments.ParsePackagePathAction.__call__">[docs]</a>    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parser</span><span class="p">,</span> <span class="n">namespace</span><span class="p">,</span> <span class="n">flag</span><span class="p">,</span> <span class="n">unused_option_string</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Sets the `self.dest` attribute in `namespace` to the parsed value of `flag`.</span>
+<div class="viewcode-block" id="ParsePackagePathAction.__call__"><a class="viewcode-back" href="../../../tau.cli.arguments.html#tau.cli.arguments.ParsePackagePathAction.__call__">[docs]</a>    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parser</span><span class="p">,</span> <span class="n">namespace</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">unused_option_string</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Sets the `self.dest` attribute in `namespace` to the parsed value of `value`.</span>
 <span class="sd">        </span>
-<span class="sd">        If `flag` parses to a boolean True value then the attribute value is &#39;download&#39;.</span>
-<span class="sd">        If `flag` parses to a boolean False value then the attribute value is ``None``.</span>
-<span class="sd">        Otherwise the attribute value is the value of `flag`.</span>
+<span class="sd">        If `value` parses to a boolean True value then the attribute value is &#39;download&#39;.</span>
+<span class="sd">        If `value` parses to a boolean False value then the attribute value is ``None``.</span>
+<span class="sd">        Otherwise the attribute value is the value of `value`.</span>
 <span class="sd">            </span>
 <span class="sd">        Args:</span>
 <span class="sd">            parser (str): Argument parser object this group belongs to.</span>
 <span class="sd">            namespace (object): Namespace to receive parsed value via setattr.</span>
-<span class="sd">            flag (str): Value parsed from the command line.</span>
+<span class="sd">            value (str): Value parsed from the command line.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">flag_as_bool</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">parse_bool</span><span class="p">(</span><span class="n">flag</span><span class="p">,</span> <span class="n">additional_true</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;download&#39;</span><span class="p">])</span>
+            <span class="n">value_as_bool</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">parse_bool</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">additional_true</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;download&#39;</span><span class="p">])</span>
         <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">util</span><span class="o">.</span><span class="n">is_url</span><span class="p">(</span><span class="n">flag</span><span class="p">):</span>
-                <span class="n">value</span> <span class="o">=</span> <span class="n">flag</span>
+            <span class="k">if</span> <span class="n">util</span><span class="o">.</span><span class="n">is_url</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">value</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">flag</span><span class="p">))</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="ow">or</span> <span class="n">util</span><span class="o">.</span><span class="n">file_accessible</span><span class="p">(</span><span class="n">value</span><span class="p">)):</span>
                     <span class="k">raise</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentError</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;Boolean, &#39;download&#39;, valid path, or URL required: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">value</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">value</span> <span class="o">=</span> <span class="s1">&#39;download&#39;</span> <span class="k">if</span> <span class="n">flag_as_bool</span> <span class="k">else</span> <span class="bp">None</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="s1">&#39;download&#39;</span> <span class="k">if</span> <span class="n">value_as_bool</span> <span class="k">else</span> <span class="bp">None</span>
         <span class="nb">setattr</span><span class="p">(</span><span class="n">namespace</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div></div>
 
 
@@ -273,19 +275,19 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># pylint: disable=too-few-public-methods</span>
 
-<div class="viewcode-block" id="ParseBooleanAction.__call__"><a class="viewcode-back" href="../../../tau.cli.arguments.html#tau.cli.arguments.ParseBooleanAction.__call__">[docs]</a>    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parser</span><span class="p">,</span> <span class="n">namespace</span><span class="p">,</span> <span class="n">flag</span><span class="p">,</span> <span class="n">unused_option_string</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Sets the `self.dest` attribute in `namespace` to the parsed value of `flag`.</span>
+<div class="viewcode-block" id="ParseBooleanAction.__call__"><a class="viewcode-back" href="../../../tau.cli.arguments.html#tau.cli.arguments.ParseBooleanAction.__call__">[docs]</a>    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parser</span><span class="p">,</span> <span class="n">namespace</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">unused_option_string</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Sets the `self.dest` attribute in `namespace` to the parsed value of `value`.</span>
 <span class="sd">        </span>
-<span class="sd">        If `flag` parses to a boolean via :any:`tau.util.parse_bool` then the </span>
+<span class="sd">        If `value` parses to a boolean via :any:`tau.util.parse_bool` then the </span>
 <span class="sd">        attribute value is that boolean value.</span>
 <span class="sd">            </span>
 <span class="sd">        Args:</span>
 <span class="sd">            parser (str): Argument parser object this group belongs to.</span>
 <span class="sd">            namespace (object): Namespace to receive parsed value via setattr.</span>
-<span class="sd">            flag (str): Value parsed from the command line/</span>
+<span class="sd">            value (str): Value parsed from the command line/</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="nb">setattr</span><span class="p">(</span><span class="n">namespace</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="p">,</span> <span class="n">util</span><span class="o">.</span><span class="n">parse_bool</span><span class="p">(</span><span class="n">flag</span><span class="p">))</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">namespace</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="p">,</span> <span class="n">util</span><span class="o">.</span><span class="n">parse_bool</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
         <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentError</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;Boolean value required&#39;</span><span class="p">)</span></div></div>
 

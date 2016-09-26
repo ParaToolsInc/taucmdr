@@ -1,0 +1,7 @@
+tau.progress module
+===================
+
+.. automodule:: tau.progress
+    :members:
+    :undoc-members:
+    :show-inheritance:

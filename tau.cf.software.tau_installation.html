@@ -81,7 +81,7 @@ executes the compiler command.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>compiler</strong> (<a class="reference internal" href="tau.model.compiler.html#tau.model.compiler.Compiler" title="tau.model.compiler.Compiler"><em>Compiler</em></a>) &#8211; A compiler command.</li>
-<li><strong>compiler_args</strong> (<a class="reference internal" href="tau.cli.commands.measurement.list.html#module-tau.cli.commands.measurement.list" title="tau.cli.commands.measurement.list"><em>list</em></a>) &#8211; Compiler command line arguments.</li>
+<li><strong>compiler_args</strong> (<a class="reference internal" href="tau.cli.commands.experiment.list.html#module-tau.cli.commands.experiment.list" title="tau.cli.commands.experiment.list"><em>list</em></a>) &#8211; Compiler command line arguments.</li>
 </ul>
 </td>
 </tr>
@@ -110,7 +110,7 @@ for the TAU compiler wrapper scripts.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>opts</strong> (<a class="reference internal" href="tau.cli.commands.measurement.list.html#module-tau.cli.commands.measurement.list" title="tau.cli.commands.measurement.list"><em>list</em></a>) &#8211; Command line options.</li>
+<li><strong>opts</strong> (<a class="reference internal" href="tau.cli.commands.experiment.list.html#module-tau.cli.commands.experiment.list" title="tau.cli.commands.experiment.list"><em>list</em></a>) &#8211; Command line options.</li>
 <li><strong>env</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Environment variables.</li>
 </ul>
 </td>
@@ -173,7 +173,7 @@ variables to set before running the application command.</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>compiler</strong> (<a class="reference internal" href="tau.cf.compiler.installed.html#tau.cf.compiler.installed.InstalledCompiler" title="tau.cf.compiler.installed.InstalledCompiler"><em>InstalledCompiler</em></a>) &#8211; A compiler to find a wrapper for.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>compiler</strong> (<a class="reference internal" href="tau.cf.compiler.html#tau.cf.compiler.InstalledCompiler" title="tau.cf.compiler.InstalledCompiler"><em>InstalledCompiler</em></a>) &#8211; A compiler to find a wrapper for.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Command for TAU compiler wrapper without path or arguments.</td>
 </tr>
@@ -215,7 +215,7 @@ function will likely not match the order they appear in the makefile name or tau
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Makefile tags, e.g. [&#8216;papi&#8217;, &#8216;pdt&#8217;, &#8216;icpc&#8217;]</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="tau.cli.commands.measurement.list.html#module-tau.cli.commands.measurement.list" title="tau.cli.commands.measurement.list">list</a></td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="tau.cli.commands.experiment.list.html#module-tau.cli.commands.experiment.list" title="tau.cli.commands.experiment.list">list</a></td>
 </tr>
 </tbody>
 </table>
@@ -288,7 +288,7 @@ for the TAU library and tau_exec script.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>opts</strong> (<a class="reference internal" href="tau.cli.commands.measurement.list.html#module-tau.cli.commands.measurement.list" title="tau.cli.commands.measurement.list"><em>list</em></a>) &#8211; Command line options.</li>
+<li><strong>opts</strong> (<a class="reference internal" href="tau.cli.commands.experiment.list.html#module-tau.cli.commands.experiment.list" title="tau.cli.commands.experiment.list"><em>list</em></a>) &#8211; Command line options.</li>
 <li><strong>env</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Environment variables.</li>
 </ul>
 </td>

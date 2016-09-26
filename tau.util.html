@@ -28,7 +28,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
     <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
     <link rel="up" title="tau package" href="tau.html" />
-    <link rel="prev" title="tau.logger module" href="tau.logger.html" /> 
+    <link rel="prev" title="tau.progress module" href="tau.progress.html" /> 
   </head>
   <body role="document">
       <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="index.html">
@@ -38,7 +38,7 @@
       <div class="topnav" role="navigation" aria-label="top navigation">
       
         <p>
-        «&#160;&#160;<a href="tau.logger.html">tau.logger module</a>
+        «&#160;&#160;<a href="tau.progress.html">tau.progress module</a>
         &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
         </p>
@@ -143,7 +143,7 @@ This routine will return stupid results for archives with multiple top-level ele
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>fmt</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Archive fmt, e.g. &#8216;zip&#8217; or &#8216;tgz&#8217;.</li>
 <li><strong>dest</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Path to the archive file that will be created.</li>
-<li><strong>items</strong> (<a class="reference internal" href="tau.cli.commands.measurement.list.html#module-tau.cli.commands.measurement.list" title="tau.cli.commands.measurement.list"><em>list</em></a>) &#8211; Items (i.e. files or folders) to add to the archive.</li>
+<li><strong>items</strong> (<a class="reference internal" href="tau.cli.commands.experiment.list.html#module-tau.cli.commands.experiment.list" title="tau.cli.commands.experiment.list"><em>list</em></a>) &#8211; Items (i.e. files or folders) to add to the archive.</li>
 </ul>
 </td>
 </tr>
@@ -153,7 +153,7 @@ This routine will return stupid results for archives with multiple top-level ele
 
 <dl class="function">
 <dt id="tau.util.create_subprocess">
-<code class="descclassname">tau.util.</code><code class="descname">create_subprocess</code><span class="sig-paren">(</span><em>cmd</em>, <em>cwd=None</em>, <em>env=None</em>, <em>stdout=True</em>, <em>log=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#create_subprocess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.create_subprocess" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.util.</code><code class="descname">create_subprocess</code><span class="sig-paren">(</span><em>cmd</em>, <em>cwd=None</em>, <em>env=None</em>, <em>stdout=True</em>, <em>log=True</em>, <em>show_progress=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#create_subprocess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.create_subprocess" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a subprocess.</p>
 <p>See <a class="reference external" href="https://docs.python.org/library/subprocess.html#subprocess.Popen" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">subprocess.Popen</span></code></a>.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -161,7 +161,7 @@ This routine will return stupid results for archives with multiple top-level ele
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>cmd</strong> (<a class="reference internal" href="tau.cli.commands.measurement.list.html#module-tau.cli.commands.measurement.list" title="tau.cli.commands.measurement.list"><em>list</em></a>) &#8211; Command and its command line arguments.</li>
+<li><strong>cmd</strong> (<a class="reference internal" href="tau.cli.commands.experiment.list.html#module-tau.cli.commands.experiment.list" title="tau.cli.commands.experiment.list"><em>list</em></a>) &#8211; Command and its command line arguments.</li>
 <li><strong>cwd</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Change directory to <cite>cwd</cite> if given, otherwise use <a class="reference external" href="https://docs.python.org/library/os.html#os.getcwd" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">os.getcwd</span></code></a>.</li>
 <li><strong>env</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Environment variables to set before launching cmd.</li>
 <li><strong>stdout</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True send subprocess stdout and stderr to this processes&#8217; stdout.</li>
@@ -205,7 +205,7 @@ File copy or download failed.</p>
 
 <dl class="function">
 <dt id="tau.util.extract_archive">
-<code class="descclassname">tau.util.</code><code class="descname">extract_archive</code><span class="sig-paren">(</span><em>archive</em>, <em>dest</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#extract_archive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.extract_archive" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.util.</code><code class="descname">extract_archive</code><span class="sig-paren">(</span><em>archive</em>, <em>dest</em>, <em>show_progress=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#extract_archive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.extract_archive" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extracts archive file to dest.</p>
 <p>Supports compressed and uncompressed tar archives. Destination folder will
 be created if it doesn&#8217;t exist.</p>
@@ -359,8 +359,8 @@ Otherwise raise TypeError.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>value</strong> &#8211; value to parse to a boolean.</li>
-<li><strong>additional_true</strong> (<a class="reference internal" href="tau.cli.commands.measurement.list.html#module-tau.cli.commands.measurement.list" title="tau.cli.commands.measurement.list"><em>list</em></a>) &#8211; optional additional string values that stand for True.</li>
-<li><strong>additional_false</strong> (<a class="reference internal" href="tau.cli.commands.measurement.list.html#module-tau.cli.commands.measurement.list" title="tau.cli.commands.measurement.list"><em>list</em></a>) &#8211; optional additional string values that stand for False.</li>
+<li><strong>additional_true</strong> (<a class="reference internal" href="tau.cli.commands.experiment.list.html#module-tau.cli.commands.experiment.list" title="tau.cli.commands.experiment.list"><em>list</em></a>) &#8211; optional additional string values that stand for True.</li>
+<li><strong>additional_false</strong> (<a class="reference internal" href="tau.cli.commands.experiment.list.html#module-tau.cli.commands.experiment.list" title="tau.cli.commands.experiment.list"><em>list</em></a>) &#8211; optional additional string values that stand for False.</li>
 </ul>
 </td>
 </tr>
@@ -372,25 +372,6 @@ Otherwise raise TypeError.</p>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211;
 <cite>value</cite> does not parse.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="tau.util.progress_bar">
-<code class="descclassname">tau.util.</code><code class="descname">progress_bar</code><span class="sig-paren">(</span><em>count</em>, <em>block_size</em>, <em>total_size</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#progress_bar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.progress_bar" title="Permalink to this definition">¶</a></dt>
-<dd><p>Show a bar or spinner on stdout to indicate progress.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>count</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Number of blocks of <cite>block_size</cite> that have been completed</li>
-<li><strong>block_size</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Size of a work block.</li>
-<li><strong>total_size</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Total amount of work to be completed.</li>
-</ul>
 </td>
 </tr>
 </tbody>
@@ -463,7 +444,7 @@ Caches the result.</p>
       <div class="bottomnav" role="navigation" aria-label="bottom navigation">
       
         <p>
-        «&#160;&#160;<a href="tau.logger.html">tau.logger module</a>
+        «&#160;&#160;<a href="tau.progress.html">tau.progress module</a>
         &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
         </p>

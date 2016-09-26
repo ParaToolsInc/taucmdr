@@ -83,8 +83,6 @@
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">tau.error</span> <span class="kn">import</span> <span class="n">ConfigurationError</span><span class="p">,</span> <span class="n">IncompatibleRecordError</span>
 <span class="kn">from</span> <span class="nn">tau.mvc.model</span> <span class="kn">import</span> <span class="n">Model</span>
-<span class="kn">from</span> <span class="nn">tau.cf.compiler</span> <span class="kn">import</span> <span class="n">INTEL_COMPILERS</span><span class="p">,</span> <span class="n">GNU_COMPILERS</span>
-<span class="kn">from</span> <span class="nn">tau.cf.target</span> <span class="kn">import</span> <span class="n">host</span><span class="p">,</span> <span class="n">DARWIN_OS</span>
 
 
 
@@ -102,11 +100,11 @@
     <span class="kn">from</span> <span class="nn">tau.model.application</span> <span class="kn">import</span> <span class="n">Application</span>
     <span class="kn">from</span> <span class="nn">tau.cli.arguments</span> <span class="kn">import</span> <span class="n">ParseBooleanAction</span>
     <span class="kn">from</span> <span class="nn">tau.model</span> <span class="kn">import</span> <span class="n">require_compiler_family</span>
+    <span class="kn">from</span> <span class="nn">tau.cf.target</span> <span class="kn">import</span> <span class="n">host</span><span class="p">,</span> <span class="n">DARWIN_OS</span>
+    <span class="kn">from</span> <span class="nn">tau.cf.compiler.host</span> <span class="kn">import</span> <span class="n">INTEL</span><span class="p">,</span> <span class="n">GNU</span>
 
-    <span class="n">ompt_intel_only</span> <span class="o">=</span> <span class="n">require_compiler_family</span><span class="p">(</span><span class="n">INTEL_COMPILERS</span><span class="p">,</span> 
-                                              <span class="s2">&quot;OMPT for OpenMP measurement only works with Intel compilers&quot;</span><span class="p">)</span>
-    <span class="n">gomp_gnu_only</span> <span class="o">=</span> <span class="n">require_compiler_family</span><span class="p">(</span><span class="n">GNU_COMPILERS</span><span class="p">,</span> 
-                                            <span class="s2">&quot;GOMP for OpenMP measurement only works with GNU compilers&quot;</span><span class="p">)</span>
+    <span class="n">ompt_intel_only</span> <span class="o">=</span> <span class="n">require_compiler_family</span><span class="p">(</span><span class="n">INTEL</span><span class="p">,</span> <span class="s2">&quot;OMPT for OpenMP measurement only works with Intel compilers&quot;</span><span class="p">)</span>
+    <span class="n">gomp_gnu_only</span> <span class="o">=</span> <span class="n">require_compiler_family</span><span class="p">(</span><span class="n">GNU</span><span class="p">,</span> <span class="s2">&quot;GOMP for OpenMP measurement only works with GNU compilers&quot;</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="p">{</span>
         <span class="s1">&#39;projects&#39;</span><span class="p">:</span> <span class="p">{</span>
@@ -332,7 +330,7 @@
             <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="k">lambda</span> <span class="n">metrics</span><span class="p">:</span> <span class="nb">bool</span><span class="p">(</span><span class="nb">len</span><span class="p">([</span><span class="n">met</span> <span class="k">for</span> <span class="n">met</span> <span class="ow">in</span> <span class="n">metrics</span> <span class="k">if</span> <span class="s1">&#39;PAPI&#39;</span> <span class="ow">in</span> <span class="n">met</span><span class="p">])):</span>
                        <span class="p">(</span><span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;papi_source&#39;</span><span class="p">),</span> 
                         <span class="n">Target</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;papi_source&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">))},</span>
-            <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Measurement</span><span class="o">.</span><span class="n">attribute_changed</span>
+            <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Measurement</span><span class="o">.</span><span class="n">metrics_changed</span>
         <span class="p">},</span>
         <span class="s1">&#39;keep_inst_files&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
@@ -407,11 +405,20 @@
     <span class="n">__attributes__</span> <span class="o">=</span> <span class="n">attributes</span>
 
     <span class="nd">@classmethod</span>
-<div class="viewcode-block" id="Measurement.attribute_changed"><a class="viewcode-back" href="../../../tau.model.measurement.html#tau.model.measurement.Measurement.attribute_changed">[docs]</a>    <span class="k">def</span> <span class="nf">attribute_changed</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">new_value</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">is_selected</span><span class="p">():</span>
-            <span class="n">old_value</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
-            <span class="n">cls</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="p">)</span><span class="o">.</span><span class="n">push_to_topic</span><span class="p">(</span><span class="s1">&#39;rebuild_required&#39;</span><span class="p">,</span> <span class="p">{</span><span class="n">attr</span><span class="p">:</span> <span class="p">(</span><span class="n">old_value</span><span class="p">,</span> <span class="n">new_value</span><span class="p">)})</span></div>
+<div class="viewcode-block" id="Measurement.attribute_changed"><a class="viewcode-back" href="../../../tau.model.measurement.html#tau.model.measurement.Measurement.attribute_changed">[docs]</a>    <span class="k">def</span> <span class="nf">attribute_changed</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">meas</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">new_value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">meas</span><span class="o">.</span><span class="n">is_selected</span><span class="p">():</span>
+            <span class="n">old_value</span> <span class="o">=</span> <span class="n">meas</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+            <span class="n">cls</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="n">meas</span><span class="o">.</span><span class="n">storage</span><span class="p">)</span><span class="o">.</span><span class="n">push_to_topic</span><span class="p">(</span><span class="s1">&#39;rebuild_required&#39;</span><span class="p">,</span> <span class="p">{</span><span class="n">attr</span><span class="p">:</span> <span class="p">(</span><span class="n">old_value</span><span class="p">,</span> <span class="n">new_value</span><span class="p">)})</span></div>
     
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Measurement.metrics_changed"><a class="viewcode-back" href="../../../tau.model.measurement.html#tau.model.measurement.Measurement.metrics_changed">[docs]</a>    <span class="k">def</span> <span class="nf">metrics_changed</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">meas</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">new_value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">meas</span><span class="o">.</span><span class="n">is_selected</span><span class="p">():</span>
+            <span class="n">old_value</span> <span class="o">=</span> <span class="n">meas</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="p">[])</span>
+            <span class="n">old_papi</span> <span class="o">=</span> <span class="p">[</span><span class="n">metric</span> <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="n">old_value</span> <span class="k">if</span> <span class="s1">&#39;PAPI&#39;</span> <span class="ow">in</span> <span class="n">metric</span><span class="p">]</span>
+            <span class="n">new_papi</span> <span class="o">=</span> <span class="p">[</span><span class="n">metric</span> <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="n">new_value</span> <span class="k">if</span> <span class="s1">&#39;PAPI&#39;</span> <span class="ow">in</span> <span class="n">metric</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">bool</span><span class="p">(</span><span class="n">old_papi</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">new_papi</span><span class="p">):</span>
+                <span class="n">cls</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="n">meas</span><span class="o">.</span><span class="n">storage</span><span class="p">)</span><span class="o">.</span><span class="n">push_to_topic</span><span class="p">(</span><span class="s1">&#39;rebuild_required&#39;</span><span class="p">,</span> <span class="p">{</span><span class="n">attr</span><span class="p">:</span> <span class="p">(</span><span class="n">old_value</span><span class="p">,</span> <span class="n">new_value</span><span class="p">)})</span></div>
+
 <div class="viewcode-block" id="Measurement.on_create"><a class="viewcode-back" href="../../../tau.model.measurement.html#tau.model.measurement.Measurement.on_create">[docs]</a>    <span class="k">def</span> <span class="nf">on_create</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">def</span> <span class="nf">get_flag</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;argparse&#39;</span><span class="p">][</span><span class="s1">&#39;flags&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>

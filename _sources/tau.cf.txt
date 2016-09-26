@@ -11,6 +11,13 @@ Subpackages
     tau.cf.storage
     tau.cf.target
 
+Submodules
+----------
+
+.. toctree::
+
+   tau.cf.objects
+
 Module contents
 ---------------
 

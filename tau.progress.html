@@ -1,0 +1,133 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tau.progress module &mdash; TAU Commander Developer Documentation</title>
+    
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1
+',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
+    <link rel="up" title="tau package" href="tau.html" />
+    <link rel="next" title="tau.util module" href="tau.util.html" />
+    <link rel="prev" title="tau.logger module" href="tau.logger.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="index.html">
+          <span>TAU Commander Developer Documentation</span></a></h1>
+        <h2 class="heading"><span>tau.progress module</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="tau.logger.html">tau.logger module</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="tau.util.html">tau.util module</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="module-tau.progress">
+<span id="tau-progress-module"></span><h1>tau.progress module<a class="headerlink" href="#module-tau.progress" title="Permalink to this headline">¶</a></h1>
+<p>Draw progress indicators on the console.</p>
+<p>Show bars or spinners, possibly with instantaneous CPU load average.</p>
+<dl class="class">
+<dt id="tau.progress.ProgressIndicator">
+<em class="property">class </em><code class="descclassname">tau.progress.</code><code class="descname">ProgressIndicator</code><span class="sig-paren">(</span><em>total_size=0</em>, <em>block_size=1</em>, <em>show_cpu=True</em>, <em>stream=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/progress.html#ProgressIndicator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.progress.ProgressIndicator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Display a progress bar or spinner on a stream.</p>
+<dl class="method">
+<dt id="tau.progress.ProgressIndicator.complete">
+<code class="descname">complete</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/progress.html#ProgressIndicator.complete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.progress.ProgressIndicator.complete" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.progress.ProgressIndicator.update">
+<code class="descname">update</code><span class="sig-paren">(</span><em>count=None</em>, <em>block_size=None</em>, <em>total_size=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/progress.html#ProgressIndicator.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.progress.ProgressIndicator.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show progress.</p>
+<p>Updates <cite>block_size</cite> or <cite>total_size</cite> if given for compatibility with <a class="reference external" href="https://docs.python.org/library/urllib.html#urllib.urlretrieve" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">urllib.urlretrieve</span></code></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>count</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Number of blocks of <cite>block_size</cite> that have been completed.</li>
+<li><strong>block_size</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Size of a work block.</li>
+<li><strong>total_size</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Total amount of work to be completed.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.progress.load_average">
+<code class="descclassname">tau.progress.</code><code class="descname">load_average</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/progress.html#load_average"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.progress.load_average" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the CPU load average.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Load average since last time this routine was called
+or 0.0 if couldn&#8217;t calculate load average.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#float" title="(in Python v2.7)">float</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="tau.progress.progress_spinner">
+<code class="descclassname">tau.progress.</code><code class="descname">progress_spinner</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwds</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/progress.html#progress_spinner"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.progress.progress_spinner" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show a progress spinner until the wrapped object returns.</p>
+</dd></dl>
+
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="tau.logger.html">tau.logger module</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="tau.util.html">tau.util module</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015 ParaTools, Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+    </div>
+  </body>
+</html>

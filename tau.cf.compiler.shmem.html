@@ -52,37 +52,9 @@
         
   <div class="section" id="module-tau.cf.compiler.shmem">
 <span id="tau-cf-compiler-shmem-module"></span><h1>tau.cf.compiler.shmem module<a class="headerlink" href="#module-tau.cf.compiler.shmem" title="Permalink to this headline">¶</a></h1>
-<p>SHMEM compiler detection.</p>
+<p>SHMEM compiler knowledgebase.</p>
 <p>Keep a separate knowledge base for SHMEM compilers to simplify compiler
 identification and because TAU doesn&#8217;t require SHMEM for all configurations.</p>
-<dl class="class">
-<dt id="tau.cf.compiler.shmem.ShmemCompilerFamily">
-<em class="property">class </em><code class="descclassname">tau.cf.compiler.shmem.</code><code class="descname">ShmemCompilerFamily</code><span class="sig-paren">(</span><em>name</em>, <em>version_flags=None</em>, <em>include_path_flags=None</em>, <em>library_path_flags=None</em>, <em>link_library_flags=None</em>, <em>show_wrapper_flags=None</em>, <em>family_regex=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/compiler/shmem.html#ShmemCompilerFamily"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.compiler.shmem.ShmemCompilerFamily" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="tau.cf.compiler.html#tau.cf.compiler.CompilerFamily" title="tau.cf.compiler.CompilerFamily"><code class="xref py py-class docutils literal"><span class="pre">tau.cf.compiler.CompilerFamily</span></code></a></p>
-<p>Information about a SHMEM compiler family.</p>
-<p>Subclassing CompilerFamily creates a second database of compiler family
-records and keeps SHMEM compilers from mixing with host etc. compilers.</p>
-<dl class="classmethod">
-<dt id="tau.cf.compiler.shmem.ShmemCompilerFamily.preferred">
-<em class="property">classmethod </em><code class="descname">preferred</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/compiler/shmem.html#ShmemCompilerFamily.preferred"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.compiler.shmem.ShmemCompilerFamily.preferred" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the preferred SHMEM compiler family for the host architecture.</p>
-<p>May probe environment variables and file systems in cases where the arch
-isn&#8217;t immediately known to Python.  These tests may be expensive so the
-detected value is cached to improve performance.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The host&#8217;s preferred compiler family.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#tau.cf.compiler.shmem.ShmemCompilerFamily" title="tau.cf.compiler.shmem.ShmemCompilerFamily">ShmemCompilerFamily</a></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-</dd></dl>
-
 </div>
 
 

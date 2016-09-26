@@ -70,11 +70,11 @@ The selected experiment will be used for application compilation and trial visua
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>trial_numbers</strong> (<a class="reference internal" href="tau.cli.commands.measurement.list.html#module-tau.cli.commands.measurement.list" title="tau.cli.commands.measurement.list"><em>list</em></a>) &#8211; List of numbers of trials to retrieve or None.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>trial_numbers</strong> (<a class="reference internal" href="tau.cli.commands.experiment.list.html#module-tau.cli.commands.experiment.list" title="tau.cli.commands.experiment.list"><em>list</em></a>) &#8211; List of numbers of trials to retrieve or None.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Trial data.</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="tau.cli.commands.measurement.list.html#module-tau.cli.commands.measurement.list" title="tau.cli.commands.measurement.list">list</a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="tau.cli.commands.experiment.list.html#module-tau.cli.commands.experiment.list" title="tau.cli.commands.experiment.list">list</a></td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211;
 Invalid trial number or no trials in this experiment.</td>
@@ -133,7 +133,7 @@ function, the experiment is ready to operate on the user&#8217;s application.</p
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>profile_format</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; File format for exported profiles, see <code class="xref any docutils literal"><span class="pre">PROFILE_EXPORT_FORMATS</span></code></li>
 <li><strong>export_location</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Directory to contain exported profiles.</li>
-<li><strong>trial_numbers</strong> (<a class="reference internal" href="tau.cli.commands.measurement.list.html#module-tau.cli.commands.measurement.list" title="tau.cli.commands.measurement.list"><em>list</em></a>) &#8211; Numbers of trials to show.</li>
+<li><strong>trial_numbers</strong> (<a class="reference internal" href="tau.cli.commands.experiment.list.html#module-tau.cli.commands.experiment.list" title="tau.cli.commands.experiment.list"><em>list</em></a>) &#8211; Numbers of trials to show.</li>
 </ul>
 </td>
 </tr>
@@ -162,7 +162,7 @@ prepares the experiment, and performs the operation.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>compiler_cmd</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The compiler command intercepted by TAU Commander.</li>
-<li><strong>compiler_args</strong> (<a class="reference internal" href="tau.cli.commands.measurement.list.html#module-tau.cli.commands.measurement.list" title="tau.cli.commands.measurement.list"><em>list</em></a>) &#8211; Compiler command line arguments intercepted by TAU Commander.</li>
+<li><strong>compiler_args</strong> (<a class="reference internal" href="tau.cli.commands.experiment.list.html#module-tau.cli.commands.experiment.list" title="tau.cli.commands.experiment.list"><em>list</em></a>) &#8211; Compiler command line arguments intercepted by TAU Commander.</li>
 </ul>
 </td>
 </tr>
@@ -191,8 +191,8 @@ under the specified experimental configuration.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>launcher_cmd</strong> (<a class="reference internal" href="tau.cli.commands.measurement.list.html#module-tau.cli.commands.measurement.list" title="tau.cli.commands.measurement.list"><em>list</em></a>) &#8211; Application launcher with command line arguments.</li>
-<li><strong>application_cmd</strong> (<a class="reference internal" href="tau.cli.commands.measurement.list.html#module-tau.cli.commands.measurement.list" title="tau.cli.commands.measurement.list"><em>list</em></a>) &#8211; Application executable with command line arguments.</li>
+<li><strong>launcher_cmd</strong> (<a class="reference internal" href="tau.cli.commands.experiment.list.html#module-tau.cli.commands.experiment.list" title="tau.cli.commands.experiment.list"><em>list</em></a>) &#8211; Application launcher with command line arguments.</li>
+<li><strong>application_cmd</strong> (<a class="reference internal" href="tau.cli.commands.experiment.list.html#module-tau.cli.commands.experiment.list" title="tau.cli.commands.experiment.list"><em>list</em></a>) &#8211; Application executable with command line arguments.</li>
 </ul>
 </td>
 </tr>
@@ -254,7 +254,7 @@ The experiment is not configured to perform the desired run.</p>
 
 <dl class="attribute">
 <dt id="tau.model.experiment.Experiment.references">
-<code class="descname">references</code><em class="property"> = set([(&lt;class 'tau.model.trial.Trial'&gt;, 'experiment'), (&lt;class 'tau.model.project.Project'&gt;, 'experiment')])</em><a class="headerlink" href="#tau.model.experiment.Experiment.references" title="Permalink to this definition">¶</a></dt>
+<code class="descname">references</code><em class="property"> = set([(&lt;class 'tau.model.project.Project'&gt;, 'experiment'), (&lt;class 'tau.model.trial.Trial'&gt;, 'experiment')])</em><a class="headerlink" href="#tau.model.experiment.Experiment.references" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="classmethod">
@@ -283,7 +283,7 @@ The experiment is not configured to perform the desired run.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>profile_tool</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the visualization or data processing tool for profiles, e.g. <cite>pprof</cite>.</li>
 <li><strong>trace_tool</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the visualization or data processing tool for traces, e.g. <cite>vampir</cite>.</li>
-<li><strong>trial_numbers</strong> (<a class="reference internal" href="tau.cli.commands.measurement.list.html#module-tau.cli.commands.measurement.list" title="tau.cli.commands.measurement.list"><em>list</em></a>) &#8211; Numbers of trials to show.</li>
+<li><strong>trial_numbers</strong> (<a class="reference internal" href="tau.cli.commands.experiment.list.html#module-tau.cli.commands.experiment.list" title="tau.cli.commands.experiment.list"><em>list</em></a>) &#8211; Numbers of trials to show.</li>
 </ul>
 </td>
 </tr>

@@ -59,6 +59,24 @@
 <dd><p>Bases: <a class="reference internal" href="tau.cli.cli_view.html#tau.cli.cli_view.CreateCommand" title="tau.cli.cli_view.CreateCommand"><code class="xref py py-class docutils literal"><span class="pre">tau.cli.cli_view.CreateCommand</span></code></a></p>
 <p><code class="docutils literal"><span class="pre">tau</span> <span class="pre">target</span> <span class="pre">create</span></code> subcommand.</p>
 <dl class="method">
+<dt id="tau.cli.commands.target.create.TargetCreateCommand._get_compiler_from_defaults">
+<code class="descname">_get_compiler_from_defaults</code><span class="sig-paren">(</span><em>kbase</em>, <em>role</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/commands/target/create.html#TargetCreateCommand._get_compiler_from_defaults"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.commands.target.create.TargetCreateCommand._get_compiler_from_defaults" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use model defaults and preferred family to fill this role.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.cli.commands.target.create.TargetCreateCommand._get_compiler_from_env">
+<code class="descname">_get_compiler_from_env</code><span class="sig-paren">(</span><em>role</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/commands/target/create.html#TargetCreateCommand._get_compiler_from_env"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.commands.target.create.TargetCreateCommand._get_compiler_from_env" title="Permalink to this definition">¶</a></dt>
+<dd><p>If compiler environment variable set (e.g. CC) use that value to fill this role.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tau.cli.commands.target.create.TargetCreateCommand._get_compiler_from_sibling">
+<code class="descname">_get_compiler_from_sibling</code><span class="sig-paren">(</span><em>role</em>, <em>sibling</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/commands/target/create.html#TargetCreateCommand._get_compiler_from_sibling"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.commands.target.create.TargetCreateCommand._get_compiler_from_sibling" title="Permalink to this definition">¶</a></dt>
+<dd><p>If we know a compiler sibling then use its family information to fill this role.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="tau.cli.commands.target.create.TargetCreateCommand.main">
 <code class="descname">main</code><span class="sig-paren">(</span><em>argv</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/commands/target/create.html#TargetCreateCommand.main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.commands.target.create.TargetCreateCommand.main" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -66,21 +84,7 @@
 <dl class="method">
 <dt id="tau.cli.commands.target.create.TargetCreateCommand.parse_compiler_flags">
 <code class="descname">parse_compiler_flags</code><span class="sig-paren">(</span><em>args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/commands/target/create.html#TargetCreateCommand.parse_compiler_flags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.commands.target.create.TargetCreateCommand.parse_compiler_flags" title="Permalink to this definition">¶</a></dt>
-<dd><p>Parses host compiler flags out of the command line arguments.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>args</strong> &#8211; Argument namespace containing command line arguments</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Dictionary of installed compilers by role keyword string.</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211;
-Invalid command line arguments specified</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
+<dd></dd></dl>
 
 </dd></dl>
 

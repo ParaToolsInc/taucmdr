@@ -21,6 +21,7 @@ Submodules
    tau.configuration
    tau.error
    tau.logger
+   tau.progress
    tau.util
 
 Module contents

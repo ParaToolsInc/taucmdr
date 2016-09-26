@@ -74,99 +74,83 @@
 <span class="c1">#</span>
 <span class="sd">&quot;&quot;&quot;``tau target edit`` subcommand.&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">util</span>
 <span class="kn">from</span> <span class="nn">tau.error</span> <span class="kn">import</span> <span class="n">ImmutableRecordError</span><span class="p">,</span> <span class="n">IncompatibleRecordError</span>
 <span class="kn">from</span> <span class="nn">tau.cli</span> <span class="kn">import</span> <span class="n">arguments</span>
 <span class="kn">from</span> <span class="nn">tau.cli.cli_view</span> <span class="kn">import</span> <span class="n">EditCommand</span>
-<span class="kn">from</span> <span class="nn">tau.cli.commands.target.copy</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">target_copy_cmd</span>
-<span class="kn">from</span> <span class="nn">tau.cli.commands.experiment.delete</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">experiment_delete_cmd</span>
+<span class="kn">from</span> <span class="nn">tau.cli.commands.target.create</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">target_create_cmd</span>
 <span class="kn">from</span> <span class="nn">tau.model.target</span> <span class="kn">import</span> <span class="n">Target</span>
 <span class="kn">from</span> <span class="nn">tau.model.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
 <span class="kn">from</span> <span class="nn">tau.model.compiler</span> <span class="kn">import</span> <span class="n">Compiler</span>
-<span class="kn">from</span> <span class="nn">tau.cf.compiler</span> <span class="kn">import</span> <span class="n">CompilerFamily</span><span class="p">,</span> <span class="n">CompilerRole</span>
-<span class="kn">from</span> <span class="nn">tau.cf.compiler.mpi</span> <span class="kn">import</span> <span class="n">MpiCompilerFamily</span>
-<span class="kn">from</span> <span class="nn">tau.cf.compiler.shmem</span> <span class="kn">import</span> <span class="n">ShmemCompilerFamily</span>
-<span class="kn">from</span> <span class="nn">tau.cf.compiler.installed</span> <span class="kn">import</span> <span class="n">InstalledCompiler</span><span class="p">,</span> <span class="n">InstalledCompilerFamily</span>
+<span class="kn">from</span> <span class="nn">tau.cf.compiler</span> <span class="kn">import</span> <span class="n">InstalledCompilerFamily</span>
+<span class="kn">from</span> <span class="nn">tau.cf.compiler.host</span> <span class="kn">import</span> <span class="n">HOST_COMPILERS</span>
+<span class="kn">from</span> <span class="nn">tau.cf.compiler.mpi</span> <span class="kn">import</span> <span class="n">MPI_COMPILERS</span>
+<span class="kn">from</span> <span class="nn">tau.cf.compiler.shmem</span> <span class="kn">import</span> <span class="n">SHMEM_COMPILERS</span>
 
 
 <div class="viewcode-block" id="TargetEditCommand"><a class="viewcode-back" href="../../../../../tau.cli.commands.target.edit.html#tau.cli.commands.target.edit.TargetEditCommand">[docs]</a><span class="k">class</span> <span class="nc">TargetEditCommand</span><span class="p">(</span><span class="n">EditCommand</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;``tau target edit`` subcommand.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="TargetEditCommand.parse_compiler_flags"><a class="viewcode-back" href="../../../../../tau.cli.commands.target.edit.html#tau.cli.commands.target.edit.TargetEditCommand.parse_compiler_flags">[docs]</a>    <span class="k">def</span> <span class="nf">parse_compiler_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Parses host compiler flags out of the command line arguments.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            args: Argument namespace containing command line arguments.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            dict: Installed compilers by role keyword string.</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            ConfigurationError: Invalid command line arguments specified</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">compilers</span> <span class="o">=</span> <span class="p">{}</span>
-
-        <span class="k">for</span> <span class="n">family_attr</span><span class="p">,</span> <span class="n">family_cls</span> <span class="ow">in</span> <span class="p">[(</span><span class="s1">&#39;host_family&#39;</span><span class="p">,</span> <span class="n">CompilerFamily</span><span class="p">),</span> 
-                                        <span class="p">(</span><span class="s1">&#39;mpi_family&#39;</span><span class="p">,</span> <span class="n">MpiCompilerFamily</span><span class="p">),</span>
-                                        <span class="p">(</span><span class="s1">&#39;shmem_family&#39;</span><span class="p">,</span> <span class="n">ShmemCompilerFamily</span><span class="p">)]:</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_compiler_flag_action_call</span><span class="p">(</span><span class="n">family_attr</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parser</span><span class="p">,</span> <span class="n">namespace</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">family_arg</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">family_attr</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">AttributeError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
-                <span class="c1"># User didn&#39;t specify that argument, but that&#39;s OK</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
-                <span class="k">continue</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="nb">delattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">family_attr</span><span class="p">)</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">family_comps</span> <span class="o">=</span> <span class="n">InstalledCompilerFamily</span><span class="p">(</span><span class="n">family_cls</span><span class="p">(</span><span class="n">family_arg</span><span class="p">))</span>
-            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Invalid compiler family: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">family_arg</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="n">family_comps</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;args.</span><span class="si">%s</span><span class="s2">=</span><span class="si">%r</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">comp</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="p">,</span> <span class="n">comp</span><span class="o">.</span><span class="n">absolute_path</span><span class="p">)</span>
-                <span class="nb">setattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">comp</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="p">,</span> <span class="n">comp</span><span class="o">.</span><span class="n">absolute_path</span><span class="p">)</span>
-                <span class="n">compilers</span><span class="p">[</span><span class="n">comp</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">role</span><span class="p">]</span> <span class="o">=</span> <span class="n">comp</span>
+                <span class="nb">delattr</span><span class="p">(</span><span class="n">namespace</span><span class="p">,</span> <span class="n">family_attr</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__action_call__</span><span class="p">(</span><span class="n">parser</span><span class="p">,</span> <span class="n">namespace</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">call</span>
 
-        <span class="n">compiler_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">CompilerRole</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-        <span class="n">all_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-        <span class="n">given_keys</span> <span class="o">=</span> <span class="n">compiler_keys</span> <span class="o">&amp;</span> <span class="n">all_keys</span>
-        <span class="n">family_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">role</span><span class="o">.</span><span class="n">keyword</span> <span class="k">for</span> <span class="n">role</span> <span class="ow">in</span> <span class="n">compilers</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Given compilers: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">given_keys</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Family compilers: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">family_keys</span><span class="p">)</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_family_flag_action</span><span class="p">(</span><span class="n">kbase</span><span class="p">,</span> <span class="n">family_attr</span><span class="p">):</span>
+        <span class="k">class</span> <span class="nc">Action</span><span class="p">(</span><span class="n">arguments</span><span class="o">.</span><span class="n">Action</span><span class="p">):</span>
+            <span class="c1"># pylint: disable=too-few-public-methods</span>
+            <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parser</span><span class="p">,</span> <span class="n">namespace</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="nb">delattr</span><span class="p">(</span><span class="n">namespace</span><span class="p">,</span> <span class="n">family_attr</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                    <span class="k">pass</span>
+                <span class="n">family</span> <span class="o">=</span> <span class="n">InstalledCompilerFamily</span><span class="p">(</span><span class="n">kbase</span><span class="o">.</span><span class="n">families</span><span class="p">[</span><span class="n">value</span><span class="p">])</span>
+                <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="n">family</span><span class="p">:</span>
+                    <span class="nb">setattr</span><span class="p">(</span><span class="n">namespace</span><span class="p">,</span> <span class="n">comp</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="p">,</span> <span class="n">comp</span><span class="o">.</span><span class="n">absolute_path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Action</span>
 
-        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">given_keys</span> <span class="o">-</span> <span class="n">family_keys</span><span class="p">:</span>
-            <span class="n">absolute_path</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">key</span><span class="p">))</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">absolute_path</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Invalid compiler command: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="n">role</span> <span class="o">=</span> <span class="n">CompilerRole</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
-            <span class="n">compilers</span><span class="p">[</span><span class="n">role</span><span class="p">]</span> <span class="o">=</span> <span class="n">InstalledCompiler</span><span class="o">.</span><span class="n">probe</span><span class="p">(</span><span class="n">absolute_path</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="n">role</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">compilers</span></div>
+    <span class="k">def</span> <span class="nf">_configure_argument_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">group</span><span class="p">,</span> <span class="n">kbase</span><span class="p">,</span> <span class="n">family_flag</span><span class="p">,</span> <span class="n">family_attr</span><span class="p">):</span>
+        <span class="c1"># Add the compiler family flag. If the knowledgebase keyword isn&#39;t all-caps then show in lower case. </span>
+        <span class="n">keyword</span> <span class="o">=</span> <span class="n">kbase</span><span class="o">.</span><span class="n">keyword</span>
+        <span class="k">if</span> <span class="n">keyword</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">!=</span> <span class="n">keyword</span><span class="p">:</span>
+            <span class="n">keyword</span> <span class="o">=</span> <span class="n">keyword</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="n">group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="n">family_flag</span><span class="p">,</span>
+                           <span class="n">help</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;select all </span><span class="si">%(kw)s</span><span class="s2"> compilers automatically from the given family, &quot;</span>
+                                 <span class="s2">&quot;ignored if at least one </span><span class="si">%(kw)s</span><span class="s2"> compiler is specified&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span><span class="s1">&#39;kw&#39;</span><span class="p">:</span> <span class="n">keyword</span><span class="p">},</span>
+                           <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;&lt;family&gt;&#39;</span><span class="p">,</span>
+                           <span class="n">dest</span><span class="o">=</span><span class="n">family_attr</span><span class="p">,</span>
+                           <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">,</span>
+                           <span class="n">choices</span><span class="o">=</span><span class="n">kbase</span><span class="o">.</span><span class="n">family_names</span><span class="p">(),</span>
+                           <span class="n">action</span><span class="o">=</span><span class="n">TargetEditCommand</span><span class="o">.</span><span class="n">_family_flag_action</span><span class="p">(</span><span class="n">kbase</span><span class="p">,</span> <span class="n">family_attr</span><span class="p">))</span>
+
+        <span class="c1"># Monkey-patch default actions for compiler arguments</span>
+        <span class="c1"># pylint: disable=protected-access</span>
+        <span class="k">for</span> <span class="n">role</span> <span class="ow">in</span> <span class="n">kbase</span><span class="o">.</span><span class="n">roles</span><span class="o">.</span><span class="n">itervalues</span><span class="p">():</span>
+            <span class="n">action</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">act</span> <span class="k">for</span> <span class="n">act</span> <span class="ow">in</span> <span class="n">group</span><span class="o">.</span><span class="n">_actions</span> <span class="k">if</span> <span class="n">act</span><span class="o">.</span><span class="n">dest</span> <span class="o">==</span> <span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="p">)</span>
+            <span class="n">action</span><span class="o">.</span><span class="n">__action_call__</span> <span class="o">=</span> <span class="n">action</span><span class="o">.</span><span class="n">__call__</span>
+            <span class="n">action</span><span class="o">.</span><span class="n">__call__</span> <span class="o">=</span> <span class="n">TargetEditCommand</span><span class="o">.</span><span class="n">_compiler_flag_action_call</span><span class="p">(</span><span class="n">family_attr</span><span class="p">)</span>
+
 
     <span class="k">def</span> <span class="nf">_construct_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">parser</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">TargetEditCommand</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_construct_parser</span><span class="p">()</span>
         <span class="n">group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s1">&#39;host arguments&#39;</span><span class="p">)</span>
-        <span class="n">group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--compilers&#39;</span><span class="p">,</span>
-                           <span class="n">help</span><span class="o">=</span><span class="s2">&quot;select all host compilers automatically from the given family&quot;</span><span class="p">,</span>
-                           <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;&lt;family&gt;&#39;</span><span class="p">,</span>
-                           <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;host_family&#39;</span><span class="p">,</span>
-                           <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">,</span>
-                           <span class="n">choices</span><span class="o">=</span><span class="n">CompilerFamily</span><span class="o">.</span><span class="n">family_names</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_configure_argument_group</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">HOST_COMPILERS</span><span class="p">,</span> <span class="s1">&#39;--compilers&#39;</span><span class="p">,</span> <span class="s1">&#39;host_family&#39;</span><span class="p">)</span>
+        
         <span class="n">group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s1">&#39;Message Passing Interface (MPI) arguments&#39;</span><span class="p">)</span>
-        <span class="n">group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--mpi-compilers&#39;</span><span class="p">,</span> 
-                           <span class="n">help</span><span class="o">=</span><span class="s2">&quot;select all MPI compilers automatically from the given family&quot;</span><span class="p">,</span>
-                           <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;&lt;family&gt;&#39;</span><span class="p">,</span>
-                           <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;mpi_family&#39;</span><span class="p">,</span>
-                           <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">,</span>
-                           <span class="n">choices</span><span class="o">=</span><span class="n">MpiCompilerFamily</span><span class="o">.</span><span class="n">family_names</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_configure_argument_group</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">MPI_COMPILERS</span><span class="p">,</span> <span class="s1">&#39;--mpi-compilers&#39;</span><span class="p">,</span> <span class="s1">&#39;mpi_family&#39;</span><span class="p">)</span>
+
         <span class="n">group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s1">&#39;Symmetric Hierarchical Memory (SHMEM) arguments&#39;</span><span class="p">)</span>
-        <span class="n">group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--shmem-compilers&#39;</span><span class="p">,</span> 
-                           <span class="n">help</span><span class="o">=</span><span class="s2">&quot;select all SHMEM compilers automatically from the given family&quot;</span><span class="p">,</span>
-                           <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;&lt;family&gt;&#39;</span><span class="p">,</span>
-                           <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;shmem_family&#39;</span><span class="p">,</span>
-                           <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">,</span>
-                           <span class="n">choices</span><span class="o">=</span><span class="n">ShmemCompilerFamily</span><span class="o">.</span><span class="n">family_names</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_configure_argument_group</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">SHMEM_COMPILERS</span><span class="p">,</span> <span class="s1">&#39;--shmem-compilers&#39;</span><span class="p">,</span> <span class="s1">&#39;shmem_family&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">parser</span>
-    
+     
     <span class="k">def</span> <span class="nf">_update_record</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">store</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">tau.cli.commands.target.copy</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">target_copy_cmd</span>
+        <span class="kn">from</span> <span class="nn">tau.cli.commands.experiment.delete</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">experiment_delete_cmd</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">retval</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">TargetEditCommand</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_update_record</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
         <span class="k">except</span> <span class="p">(</span><span class="n">ImmutableRecordError</span><span class="p">,</span> <span class="n">IncompatibleRecordError</span><span class="p">)</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
@@ -180,15 +164,15 @@
 <div class="viewcode-block" id="TargetEditCommand.main"><a class="viewcode-back" href="../../../../../tau.cli.commands.target.edit.html#tau.cli.commands.target.edit.TargetEditCommand.main">[docs]</a>    <span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">argv</span><span class="p">):</span>
         <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_args</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
         <span class="n">store</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">parse_storage_flag</span><span class="p">(</span><span class="n">args</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-        
-        <span class="n">compilers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_compiler_flags</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+        <span class="n">compilers</span> <span class="o">=</span> <span class="n">target_create_cmd</span><span class="o">.</span><span class="n">parse_compiler_flags</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Arguments after parsing compiler flags: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+        
         <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="n">attr</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span> <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">attributes</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">attr</span><span class="p">)}</span>
         <span class="k">for</span> <span class="n">keyword</span><span class="p">,</span> <span class="n">comp</span> <span class="ow">in</span> <span class="n">compilers</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">=</span><span class="si">%s</span><span class="s2"> (</span><span class="si">%s</span><span class="s2">)&quot;</span><span class="p">,</span> <span class="n">keyword</span><span class="p">,</span> <span class="n">comp</span><span class="o">.</span><span class="n">absolute_path</span><span class="p">,</span> <span class="n">comp</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">short_descr</span><span class="p">)</span>
             <span class="n">record</span> <span class="o">=</span> <span class="n">Compiler</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="n">store</span><span class="p">)</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">comp</span><span class="p">)</span>
             <span class="n">data</span><span class="p">[</span><span class="n">comp</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="p">]</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">eid</span>
-
+ 
         <span class="n">key_attr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">key_attribute</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">data</span><span class="p">[</span><span class="n">key_attr</span><span class="p">]</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">new_key</span>

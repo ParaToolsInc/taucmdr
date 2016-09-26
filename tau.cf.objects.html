@@ -1,0 +1,218 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tau.cf.objects module &mdash; TAU Commander Developer Documentation</title>
+    
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1
+',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
+    <link rel="up" title="tau.cf package" href="tau.cf.html" />
+    <link rel="next" title="tau.cli package" href="tau.cli.html" />
+    <link rel="prev" title="tau.cf.target.host module" href="tau.cf.target.host.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="index.html">
+          <span>TAU Commander Developer Documentation</span></a></h1>
+        <h2 class="heading"><span>tau.cf.objects module</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="tau.cf.target.host.html">tau.cf.target.host module</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="tau.cli.html">tau.cli package</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="module-tau.cf.objects">
+<span id="tau-cf-objects-module"></span><h1>tau.cf.objects module<a class="headerlink" href="#module-tau.cf.objects" title="Permalink to this headline">¶</a></h1>
+<p>TAU Common Framework (CF) common objects.</p>
+<dl class="class">
+<dt id="tau.cf.objects.KeyedRecord">
+<em class="property">class </em><code class="descclassname">tau.cf.objects.</code><code class="descname">KeyedRecord</code><a class="reference internal" href="_modules/tau/cf/objects.html#KeyedRecord"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.objects.KeyedRecord" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Data record with a unique key.</p>
+<p>Subclasses must declare a <code class="docutils literal"><span class="pre">__key__</span></code> member defining the attribute to be used as the key.
+The first parameter to __init__ must be the key value for the new instances. Only one
+instance of a <a class="reference internal" href="#tau.cf.objects.KeyedRecord" title="tau.cf.objects.KeyedRecord"><code class="xref any py py-class docutils literal"><span class="pre">KeyedRecord</span></code></a> subclass exists per key.  Calling the constructor with
+a previously used key will return the existing instance, unmodified.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>class Foo(KeyedRecord):
+    def __init__(self, a):
+        self.a = a
+
+potato = Foo(&#39;vegtable&#39;)
+carrot = Foo(&#39;vegtable&#39;)
+steak = Foo(&#39;meat&#39;)
+
+for inst in Foo.all():
+    print inst.a
+
+&gt;&gt;&gt; vegtable
+&gt;&gt;&gt; meat
+
+potato is carrot
+&gt;&gt;&gt; True
+
+carrot is steak
+&gt;&gt;&gt; False
+</pre></div>
+</div>
+<dl class="classmethod">
+<dt id="tau.cf.objects.KeyedRecord.all">
+<em class="property">classmethod </em><code class="descname">all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/objects.html#KeyedRecord.all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.objects.KeyedRecord.all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over class instances.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="tau.cf.objects.KeyedRecord.find">
+<em class="property">classmethod </em><code class="descname">find</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/objects.html#KeyedRecord.find"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.objects.KeyedRecord.find" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find an instance.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>key</strong> &#8211; An instance key value.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">KeyError</span></code> &#8211;
+No instance has this key value.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The instance with the matching key value.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#tau.cf.objects.KeyedRecord" title="tau.cf.objects.KeyedRecord">KeyedRecord</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="tau.cf.objects.KeyedRecord.keys">
+<em class="property">classmethod </em><code class="descname">keys</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/objects.html#KeyedRecord.keys"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.objects.KeyedRecord.keys" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the name of the key field in all instances.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">All instance keys.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="tau.cli.commands.experiment.list.html#module-tau.cli.commands.experiment.list" title="tau.cli.commands.experiment.list">list</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tau.cf.objects.KeyedRecordCreator">
+<em class="property">class </em><code class="descclassname">tau.cf.objects.</code><code class="descname">KeyedRecordCreator</code><a class="reference internal" href="_modules/tau/cf/objects.html#KeyedRecordCreator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.objects.KeyedRecordCreator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#type" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">type</span></code></a></p>
+<p>Metaclass to create a new <a class="reference internal" href="#tau.cf.objects.KeyedRecord" title="tau.cf.objects.KeyedRecord"><code class="xref any py py-class docutils literal"><span class="pre">KeyedRecord</span></code></a> instance.</p>
+<p>Change object creation proceedure so that only one instance of a <a class="reference internal" href="#tau.cf.objects.KeyedRecord" title="tau.cf.objects.KeyedRecord"><code class="xref any py py-class docutils literal"><span class="pre">KeyedRecord</span></code></a>
+exists for a given key argument.  Overridding <code class="docutils literal"><span class="pre">__new__</span></code> would be less creepy,
+but then we can&#8217;t prevent <code class="docutils literal"><span class="pre">__init__</span></code> from being called on the returned class instance,
+i.e. the instance returned is reinitialized every time the it is retrieved.  Using
+this metaclass guarantees we call <code class="docutils literal"><span class="pre">__new__</span></code> and <code class="docutils literal"><span class="pre">__init__</span></code> only once per class instance.</p>
+<p>To learn more about metaclasses:
+* <a class="reference external" href="http://docs.python.org/2/reference/datamodel.html">http://docs.python.org/2/reference/datamodel.html</a>
+* <a class="reference external" href="http://stackoverflow.com/questions/6760685/creating-a-singleton-in-python">http://stackoverflow.com/questions/6760685/creating-a-singleton-in-python</a>
+* <a class="reference external" href="http://stackoverflow.com/questions/100003/what-is-a-metaclass-in-python">http://stackoverflow.com/questions/100003/what-is-a-metaclass-in-python</a></p>
+<dl class="method">
+<dt id="tau.cf.objects.KeyedRecordCreator.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/objects.html#KeyedRecordCreator.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.objects.KeyedRecordCreator.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the new instance.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tau.cf.objects.TrackedInstance">
+<em class="property">class </em><code class="descclassname">tau.cf.objects.</code><code class="descname">TrackedInstance</code><a class="reference internal" href="_modules/tau/cf/objects.html#TrackedInstance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.objects.TrackedInstance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Base class for classes that need to keep track of their instances.</p>
+<p>Each subclass tracks of its own instances separately.  Unliked <a class="reference internal" href="#tau.cf.objects.KeyedRecordCreator" title="tau.cf.objects.KeyedRecordCreator"><code class="xref any py py-class docutils literal"><span class="pre">KeyedRecordCreator</span></code></a>
+there is no restriction on the value of the class instance attributes.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>class Foo(TrackedInstance):
+    def __init__(self, x):
+        self.x = x
+
+class Bar(Foo):
+    def __init__(self, x, y):
+        super(Bar,self).__init__(x)
+        self.y = y
+
+fish = Foo(&#39;haddock&#39;)
+chips = Foo(&#39;potatoes&#39;)
+fries = Foo(&#39;potatoes&#39;)
+drink = Bar(&#39;water&#39;, &#39;sugar&#39;)
+
+for inst in Foo.all():
+    print inst.x
+
+&gt;&gt;&gt; haddock
+&gt;&gt;&gt; potatoes
+&gt;&gt;&gt; potatoes
+
+for inst in Bar.all():
+    print inst.x
+
+&gt;&gt;&gt; water
+</pre></div>
+</div>
+<dl class="classmethod">
+<dt id="tau.cf.objects.TrackedInstance.all">
+<em class="property">classmethod </em><code class="descname">all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/objects.html#TrackedInstance.all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.objects.TrackedInstance.all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over class instances.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="tau.cf.target.host.html">tau.cf.target.host module</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="tau.cli.html">tau.cli package</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015 ParaTools, Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+    </div>
+  </body>
+</html>

@@ -55,6 +55,13 @@
 <p>TAU Commander command line interface (CLI).</p>
 <p>Extensions to <a class="reference external" href="https://docs.python.org/library/argparse.html#module-argparse" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">argparse</span></code></a> to support the TAU Commander command line interface.</p>
 <dl class="class">
+<dt id="tau.cli.arguments.Action">
+<em class="property">class </em><code class="descclassname">tau.cli.arguments.</code><code class="descname">Action</code><span class="sig-paren">(</span><em>option_strings</em>, <em>dest</em>, <em>nargs=None</em>, <em>const=None</em>, <em>default=None</em>, <em>type=None</em>, <em>choices=None</em>, <em>required=False</em>, <em>help=None</em>, <em>metavar=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argparse.html#Action"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.arguments.Action" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">argparse._AttributeHolder</span></code></p>
+<p>Action base class.</p>
+</dd></dl>
+
+<dl class="class">
 <dt id="tau.cli.arguments.ArgparseHelpFormatter">
 <em class="property">class </em><code class="descclassname">tau.cli.arguments.</code><code class="descname">ArgparseHelpFormatter</code><span class="sig-paren">(</span><em>prog</em>, <em>indent_increment=2</em>, <em>max_help_position=30</em>, <em>width=74</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/arguments.html#ArgparseHelpFormatter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.arguments.ArgparseHelpFormatter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/argparse.html#argparse.RawDescriptionHelpFormatter" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">argparse.RawDescriptionHelpFormatter</span></code></a></p>
@@ -134,7 +141,7 @@ and generates &#8220;scruffy&#8221; looking help, so we fix this problems in thi
 <li><strong>include_positional</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True, include positional arguments.</li>
 <li><strong>include_optional</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True, include optional arguments.</li>
 <li><strong>include_storage</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True, include the storage level argument, see <a class="reference internal" href="#tau.cli.arguments.STORAGE_LEVEL_FLAG" title="tau.cli.arguments.STORAGE_LEVEL_FLAG"><code class="xref any py py-data docutils literal"><span class="pre">STORAGE_LEVEL_FLAG</span></code></a>.</li>
-<li><strong>exclude</strong> (<a class="reference internal" href="tau.cli.commands.measurement.list.html#module-tau.cli.commands.measurement.list" title="tau.cli.commands.measurement.list"><em>list</em></a>) &#8211; Strings identifying arguments that should be excluded.</li>
+<li><strong>exclude</strong> (<a class="reference internal" href="tau.cli.commands.experiment.list.html#module-tau.cli.commands.experiment.list" title="tau.cli.commands.experiment.list"><em>list</em></a>) &#8211; Strings identifying arguments that should be excluded.</li>
 </ul>
 </td>
 </tr>
@@ -152,9 +159,9 @@ and generates &#8220;scruffy&#8221; looking help, so we fix this problems in thi
 <p>Essentially a wrapper around <a class="reference internal" href="tau.util.html#tau.util.parse_bool" title="tau.util.parse_bool"><code class="xref any py py-func docutils literal"><span class="pre">tau.util.parse_bool</span></code></a>.</p>
 <dl class="method">
 <dt id="tau.cli.arguments.ParseBooleanAction.__call__">
-<code class="descname">__call__</code><span class="sig-paren">(</span><em>parser</em>, <em>namespace</em>, <em>flag</em>, <em>unused_option_string=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/arguments.html#ParseBooleanAction.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.arguments.ParseBooleanAction.__call__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets the <cite>self.dest</cite> attribute in <cite>namespace</cite> to the parsed value of <cite>flag</cite>.</p>
-<p>If <cite>flag</cite> parses to a boolean via <a class="reference internal" href="tau.util.html#tau.util.parse_bool" title="tau.util.parse_bool"><code class="xref any py py-func docutils literal"><span class="pre">tau.util.parse_bool</span></code></a> then the
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>parser</em>, <em>namespace</em>, <em>value</em>, <em>unused_option_string=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/arguments.html#ParseBooleanAction.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.arguments.ParseBooleanAction.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the <cite>self.dest</cite> attribute in <cite>namespace</cite> to the parsed value of <cite>value</cite>.</p>
+<p>If <cite>value</cite> parses to a boolean via <a class="reference internal" href="tau.util.html#tau.util.parse_bool" title="tau.util.parse_bool"><code class="xref any py py-func docutils literal"><span class="pre">tau.util.parse_bool</span></code></a> then the
 attribute value is that boolean value.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -163,7 +170,7 @@ attribute value is that boolean value.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>parser</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Argument parser object this group belongs to.</li>
 <li><strong>namespace</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; Namespace to receive parsed value via setattr.</li>
-<li><strong>flag</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Value parsed from the command line/</li>
+<li><strong>value</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Value parsed from the command line/</li>
 </ul>
 </td>
 </tr>
@@ -186,11 +193,11 @@ attribute value is that boolean value.</p>
 5) A value that parses to False via <a class="reference internal" href="tau.util.html#tau.util.parse_bool" title="tau.util.parse_bool"><code class="xref any py py-func docutils literal"><span class="pre">parse_bool</span></code></a>.</p>
 <dl class="method">
 <dt id="tau.cli.arguments.ParsePackagePathAction.__call__">
-<code class="descname">__call__</code><span class="sig-paren">(</span><em>parser</em>, <em>namespace</em>, <em>flag</em>, <em>unused_option_string=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/arguments.html#ParsePackagePathAction.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.arguments.ParsePackagePathAction.__call__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets the <cite>self.dest</cite> attribute in <cite>namespace</cite> to the parsed value of <cite>flag</cite>.</p>
-<p>If <cite>flag</cite> parses to a boolean True value then the attribute value is &#8216;download&#8217;.
-If <cite>flag</cite> parses to a boolean False value then the attribute value is <code class="docutils literal"><span class="pre">None</span></code>.
-Otherwise the attribute value is the value of <cite>flag</cite>.</p>
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>parser</em>, <em>namespace</em>, <em>value</em>, <em>unused_option_string=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cli/arguments.html#ParsePackagePathAction.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cli.arguments.ParsePackagePathAction.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the <cite>self.dest</cite> attribute in <cite>namespace</cite> to the parsed value of <cite>value</cite>.</p>
+<p>If <cite>value</cite> parses to a boolean True value then the attribute value is &#8216;download&#8217;.
+If <cite>value</cite> parses to a boolean False value then the attribute value is <code class="docutils literal"><span class="pre">None</span></code>.
+Otherwise the attribute value is the value of <cite>value</cite>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -198,7 +205,7 @@ Otherwise the attribute value is the value of <cite>flag</cite>.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>parser</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Argument parser object this group belongs to.</li>
 <li><strong>namespace</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; Namespace to receive parsed value via setattr.</li>
-<li><strong>flag</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Value parsed from the command line.</li>
+<li><strong>value</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Value parsed from the command line.</li>
 </ul>
 </td>
 </tr>

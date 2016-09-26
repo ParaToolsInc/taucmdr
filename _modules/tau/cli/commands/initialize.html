@@ -196,14 +196,16 @@
         <span class="n">papi</span> <span class="o">=</span> <span class="bp">True</span>
         <span class="n">binutils</span> <span class="o">=</span> <span class="bp">True</span>
         <span class="n">sample</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">scorep</span> <span class="o">=</span> <span class="bp">True</span>
         <span class="n">comp_inst</span> <span class="o">=</span> <span class="s1">&#39;fallback&#39;</span>
         <span class="n">host_os</span> <span class="o">=</span> <span class="n">host</span><span class="o">.</span><span class="n">operating_system</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">host_os</span> <span class="ow">is</span> <span class="n">DARWIN_OS</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Darwin OS detected: disabling PAPI, binutils, &quot;</span>
-                             <span class="s2">&quot;compiler-based instrumentation, and sampling.&quot;</span><span class="p">)</span>
+                             <span class="s2">&quot;compiler-based instrumentation, sampling, and Score-P.&quot;</span><span class="p">)</span>
             <span class="n">papi</span> <span class="o">=</span> <span class="bp">False</span>
             <span class="n">binutils</span> <span class="o">=</span> <span class="bp">False</span>
             <span class="n">sample</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="n">scorep</span> <span class="o">=</span> <span class="bp">False</span>
             <span class="n">comp_inst</span> <span class="o">=</span> <span class="s1">&#39;never&#39;</span>
         <span class="k">elif</span> <span class="n">host_os</span> <span class="ow">is</span> <span class="n">IBM_CNK_OS</span><span class="p">:</span> 
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;IBM CNK OS detected: disabling sampling&quot;</span><span class="p">)</span>
@@ -228,7 +230,6 @@
         <span class="n">measurement_names</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">measurement_args</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;--</span><span class="si">%s</span><span class="s1">=True&#39;</span> <span class="o">%</span> <span class="n">attr</span> 
                             <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="s1">&#39;cuda&#39;</span><span class="p">,</span> <span class="s1">&#39;mpi&#39;</span><span class="p">,</span> <span class="s1">&#39;opencl&#39;</span> <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">application_args</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="bp">False</span><span class="p">)]</span>
-
         <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">sample</span> <span class="ow">and</span> <span class="n">sample</span><span class="p">:</span>
             <span class="n">_safe_execute</span><span class="p">(</span><span class="n">measurement_create_cmd</span><span class="p">,</span> 
                           <span class="p">[</span><span class="s1">&#39;sample&#39;</span><span class="p">,</span> <span class="s1">&#39;--profile=tau&#39;</span><span class="p">,</span> <span class="s1">&#39;--trace=none&#39;</span><span class="p">,</span> <span class="s1">&#39;--sample=True&#39;</span><span class="p">,</span>
@@ -243,8 +244,8 @@
             <span class="n">measurement_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;profile&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">trace</span><span class="p">:</span>
             <span class="n">_safe_execute</span><span class="p">(</span><span class="n">measurement_create_cmd</span><span class="p">,</span> 
-                          <span class="p">[</span><span class="s1">&#39;trace&#39;</span><span class="p">,</span> <span class="s1">&#39;--profile=none&#39;</span><span class="p">,</span> <span class="s1">&#39;--trace=otf2&#39;</span><span class="p">,</span> <span class="s1">&#39;--sample=False&#39;</span><span class="p">,</span> 
-                           <span class="s1">&#39;--source-inst=automatic&#39;</span><span class="p">,</span> <span class="s1">&#39;--compiler-inst=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">comp_inst</span><span class="p">,</span> 
+                          <span class="p">[</span><span class="s1">&#39;trace&#39;</span><span class="p">,</span> <span class="s1">&#39;--profile=none&#39;</span><span class="p">,</span> <span class="s1">&#39;--trace=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="s1">&#39;otf2&#39;</span> <span class="k">if</span> <span class="n">scorep</span> <span class="k">else</span> <span class="s1">&#39;slog2&#39;</span><span class="p">),</span> 
+                           <span class="s1">&#39;--sample=False&#39;</span><span class="p">,</span> <span class="s1">&#39;--source-inst=automatic&#39;</span><span class="p">,</span> <span class="s1">&#39;--compiler-inst=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">comp_inst</span><span class="p">,</span> 
                            <span class="s1">&#39;--link-only=False&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">measurement_args</span><span class="p">)</span>
             <span class="n">measurement_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;trace&#39;</span><span class="p">)</span>
 
