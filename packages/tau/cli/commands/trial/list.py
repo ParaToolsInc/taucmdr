@@ -34,7 +34,7 @@ from tau.model.trial import Trial
 
 DASHBOARD_COLUMNS = [{'header': 'Experiment', 'function': lambda x: x['experiment']['name']},
                      {'header': 'Number', 'value': 'number'},
-                     {'header': 'Data Size', 'function': lambda x: util.human_size(x['data_size'])},
+                     {'header': 'Data Size', 'function': lambda x: util.human_size(x.get('data_size', None))},
                      {'header': 'Command', 'value': 'command'},
                      {'header': 'In Directory', 'value': 'cwd'}]
 
