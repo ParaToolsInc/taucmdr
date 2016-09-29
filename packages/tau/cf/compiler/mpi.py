@@ -55,7 +55,8 @@ IBM = MPI_COMPILERS.add('IBM', show_wrapper_flags=['-show'],
                         FC=('mpixlf95', 'mpixlf95_r', 'mpixlf90', 'mpixlf90_r', 'mpixlf2003', 'mpixlf2003_r', 
                             'mpixlf2008', 'mpixlf2008_r', 'mpixlf77', 'mpixlf77_r'))
 
-CRAY = MPI_COMPILERS.add('Cray', show_wrapper_flags=['-craype-verbose', '--version', '-E'],
+CRAY = MPI_COMPILERS.add('Cray', family_regex=r'-I.*cray', 
+                         show_wrapper_flags=['-craype-verbose', '--version', '-E'],
                          CC='cc', CXX='CC', FC='ftn')
 
 MPI_CC = MPI_COMPILERS.roles['CC']

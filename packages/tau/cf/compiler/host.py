@@ -58,7 +58,8 @@ IBM_BG = HOST_COMPILERS.add('BlueGene',
                                 'bgxlf95', 'bgxlf95_r', 'bgf95', 'bgxlf2003', 'bgxlf2003_r', 'bgf2003', 
                                 'bgxlf2008', 'bgxlf2008_r', 'bgf2008')) 
 
-CRAY = HOST_COMPILERS.add('Cray', show_wrapper_flags=['-craype-verbose', '--version', '-E'],
+CRAY = HOST_COMPILERS.add('Cray', family_regex=r'-I.*cray', 
+                          show_wrapper_flags=['-craype-verbose', '--version', '-E'],
                           CC='cc', CXX='CC', FC='ftn', UPC='cc')
 
 APPLE_LLVM = HOST_COMPILERS.add('Apple', family_regex=r'Apple LLVM',

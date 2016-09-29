@@ -40,7 +40,8 @@ SHMEM_COMPILERS = Knowledgebase('SHMEM', 'Compilers supporting Symmetric Hierarc
 
 OPENSHMEM = SHMEM_COMPILERS.add('OpenSHMEM', CC='oshcc', CXX=('oshcxx', 'oshc++'), FC='oshfort')
 
-CRAY_SHMEM = SHMEM_COMPILERS.add('Cray', show_wrapper_flags=['-craype-verbose', '--version', '-E'],
+CRAY_SHMEM = SHMEM_COMPILERS.add('Cray', family_regex=r'-I.*cray', 
+                                 show_wrapper_flags=['-craype-verbose', '--version', '-E'],
                                  CC='cc', CXX='CC', FC='ftn')
 
 SHMEM_CC = SHMEM_COMPILERS.roles['CC']
