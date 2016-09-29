@@ -1,4 +1,4 @@
-CC = oshfort
+CC = tau oshfort
 CFLAGS =
 
 rotput: rotput.f90

@@ -1,4 +1,4 @@
-CC = oshcc
+CC = tau oshcc
 CFLAGS =
 
 simple: simple.c

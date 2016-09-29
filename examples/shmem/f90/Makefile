@@ -1,4 +1,4 @@
-CC = oshfort
+CC = tau oshfort
 CFLAGS =
 
 simple: simple.f90
