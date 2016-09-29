@@ -162,10 +162,8 @@ class TauInstallation(Installation):
                  measure_mpi,
                  measure_openmp,
                  measure_opencl,
-                 measure_pthreads,
                  measure_cuda,
                  measure_shmem,
-                 measure_mpc,
                  measure_heap_usage,
                  measure_memory_alloc,
                  measure_comm_matrix,
@@ -211,10 +209,8 @@ class TauInstallation(Installation):
             metrics (list): Metrics to measure, e.g. ['TIME', 'PAPI_FP_INS']
             measure_mpi (bool): If True then measure time spent in MPI calls. 
             measure_openmp (str): String specifying OpenMP measurement method, e.g. 'opari' or 'ompt'
-            measure_pthreads (bool): If True then measure time spent in pthread calls.
             measure_cuda (bool): If True then measure time spent in CUDA calls.
             measure_shmem (bool): If True then measure time spent in SHMEM calls.
-            measure_mpc (bool): If True then measure time spent in MPC calls.
             measure_heap_usage (bool): If True then measure memory usage.
             measure_memory_alloc (bool): If True then record memory allocation and deallocation events.
             measure_comm_matrix (bool): If True then record the point-to-point communication matrix.
@@ -256,10 +252,8 @@ class TauInstallation(Installation):
         self.measure_mpi = measure_mpi
         self.measure_openmp = measure_openmp
         self.measure_opencl = measure_opencl
-        self.measure_pthreads = measure_pthreads
         self.measure_cuda = measure_cuda
         self.measure_shmem = measure_shmem
-        self.measure_mpc = measure_mpc
         self.measure_heap_usage = measure_heap_usage
         self.measure_memory_alloc = measure_memory_alloc
         self.measure_comm_matrix = measure_comm_matrix
@@ -283,7 +277,7 @@ class TauInstallation(Installation):
         self.lib_path = os.path.join(arch_path, 'lib')
 
     def _uses_pdt(self):
-        return self.source_inst == 'automatic'
+        return self.source_inst == 'automatic' or self.shmem_support
 
     def _uses_binutils(self):
         return self.sample or self.compiler_inst != 'never' or self.measure_openmp in ('ompt', 'gomp')
@@ -596,6 +590,8 @@ class TauInstallation(Installation):
             tags.append('openmp')
         if not self._uses_scorep():
             tags.append('scorep')
+        if not self.shmem_support:
+            tags.append('shmem')
         LOGGER.debug("Incompatible tags: %s", tags)
         return set(tags)
 
@@ -771,6 +767,8 @@ class TauInstallation(Installation):
             opts.append('-io')
         if self.measure_memory_alloc:
             env['TAU_SHOW_MEMORY_FUNCTIONS'] = '1'
+        if self.measure_shmem:
+            opts.append('-shmem')
         return list(set(opts)), env
 
     def get_compiler_command(self, compiler):

@@ -35,7 +35,7 @@ from tau.model.trial import Trial
 from tau.model.project import Project
 
 
-LAUNCHERS = ['mpirun', 'mpiexec', 'ibrun', 'aprun', 'qsub', 'srun']
+LAUNCHERS = ['mpirun', 'mpiexec', 'ibrun', 'aprun', 'qsub', 'srun', 'oshrun']
 
 
 class TrialCreateCommand(CreateCommand):

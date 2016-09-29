@@ -54,7 +54,9 @@ def attributes():
     from tau.cli.arguments import ParseBooleanAction
     from tau.model import require_compiler_family
     from tau.cf.target import host, DARWIN_OS
-    from tau.cf.compiler.host import INTEL, GNU
+    from tau.cf.compiler.host import INTEL, GNU, CC, CXX, FC
+    from tau.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC
+    from tau.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
 
     ompt_intel_only = require_compiler_family(INTEL, "OMPT for OpenMP measurement only works with Intel compilers")
     gomp_gnu_only = require_compiler_family(GNU, "GOMP for OpenMP measurement only works with GNU compilers")
@@ -178,9 +180,9 @@ def attributes():
                          'const': True,
                          'action': ParseBooleanAction},
             'compat': {True:
-                       (Target.require('MPI_CC'),
-                        Target.require('MPI_CXX'),
-                        Target.require('MPI_FC'))},
+                       (Target.require(MPI_CC.keyword),
+                        Target.require(MPI_CXX.keyword),
+                        Target.require(MPI_FC.keyword))},
             'on_change': Measurement.attribute_changed
         },
         'openmp': {
@@ -194,14 +196,14 @@ def attributes():
                        Application.require('openmp', True),
                        'ompt':
                        (Application.require('openmp', True),
-                        Target.require('CC', ompt_intel_only),
-                        Target.require('CXX', ompt_intel_only),
-                        Target.require('FC', ompt_intel_only)),
+                        Target.require(CC.keyword, ompt_intel_only),
+                        Target.require(CXX.keyword, ompt_intel_only),
+                        Target.require(FC.keyword, ompt_intel_only)),
                        'gomp':
                        (Application.require('openmp', True),
-                        Target.require('CC', gomp_gnu_only),
-                        Target.require('CXX', gomp_gnu_only),
-                        Target.require('FC', gomp_gnu_only))},
+                        Target.require(CC.keyword, gomp_gnu_only),
+                        Target.require(CXX.keyword, gomp_gnu_only),
+                        Target.require(FC.keyword, gomp_gnu_only))},
             'on_change': Measurement.attribute_changed
         },
         'cuda': {
@@ -214,6 +216,21 @@ def attributes():
                          'const': True,
                          'action': ParseBooleanAction},
             'compat': {True: Target.require('cuda')}
+        },
+        'shmem': {
+            'type': 'boolean',
+            'default': False,
+            'description': 'use SHMEM library wrapper to measure time spent in SHMEM methods',
+            'argparse': {'flags': ('--shmem',),
+                         'metavar': 'T/F',
+                         'nargs': '?',
+                         'const': True,
+                         'action': ParseBooleanAction},
+            'compat': {True:
+                       (Target.require(SHMEM_CC.keyword),
+                        Target.require(SHMEM_CXX.keyword),
+                        Target.require(SHMEM_FC.keyword))},
+            'on_change': Measurement.attribute_changed
         },
         'opencl': {
             'type': 'boolean',

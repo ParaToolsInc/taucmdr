@@ -245,10 +245,8 @@ class Experiment(Model):
                     measure_mpi=measurement.get_or_default('mpi'),
                     measure_openmp=measurement.get_or_default('openmp'),
                     measure_opencl=measurement.get_or_default('opencl'),
-                    measure_pthreads=None,  # TODO
-                    measure_cuda=None,  # TODO
-                    measure_shmem=None,  # TODO
-                    measure_mpc=None,  # TODO
+                    measure_cuda=measurement.get_or_default('cuda'),
+                    measure_shmem=measurement.get_or_default('shmem'),
                     measure_heap_usage=measurement.get_or_default('heap_usage'),
                     measure_memory_alloc=measurement.get_or_default('memory_alloc'),
                     measure_comm_matrix=measurement.get_or_default('comm_matrix'),

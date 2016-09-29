@@ -36,8 +36,10 @@ DASHBOARD_COLUMNS = [{'header': 'Name', 'value': 'name', 'align': 'r'},
                      {'header': 'Sample', 'yesno': 'sample'},
                      {'header': 'Source Inst.', 'value': 'source_inst'},
                      {'header': 'Compiler Inst.', 'value': 'compiler_inst'},
-                     {'header': 'OpenMP Inst.', 'value': 'openmp'},
-                     {'header': 'I/O Inst.', 'yesno': 'io'},
-                     {'header': 'Wrap MPI', 'yesno': 'mpi'}]
+                     {'header': 'OpenMP', 'value': 'openmp'},
+                     {'header': 'CUDA', 'yesno': 'cuda'},
+                     {'header': 'I/O', 'yesno': 'io'},
+                     {'header': 'MPI', 'yesno': 'mpi'},
+                     {'header': 'SHMEM', 'yesno': 'shmem'}]
  
 COMMAND = ListCommand(Measurement, __name__, dashboard_columns=DASHBOARD_COLUMNS)
