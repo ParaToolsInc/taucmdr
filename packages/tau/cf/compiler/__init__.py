@@ -230,6 +230,23 @@ class _CompilerFamily(TrackedInstance):
     def installation(self):
         return InstalledCompilerFamily(self)
 
+    def check_command(self, absolute_path):
+        LOGGER.debug("Probing compiler '%s' to discover compiler family", absolute_path)
+        cmd = [absolute_path] + self.version_flags
+        LOGGER.debug("Creating subprocess: %s", cmd)
+        try:
+            stdout = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError as err:
+            raise ConfigurationError("%s failed with return code %d: %s", cmd, err.returncode, err.output)
+        LOGGER.debug(stdout)
+        LOGGER.debug("%s returned 0", cmd)
+        if re.search(self.family_regex, stdout):
+            LOGGER.debug("'%s' is a %s compiler", absolute_path, self.name)
+            return self
+        else:
+            LOGGER.debug("'%s' is not a %s compiler", absolute_path, self.name)
+            return _CompilerFamily.probe(absolute_path)
+    
     @classmethod
     def probe(cls, absolute_path):
         """Determine the compiler family of a given command.
@@ -463,8 +480,8 @@ class InstalledCompiler(object):
             self.compiler_flags = []
             self.libraries = []
             self.wrapped = self._probe_wrapper()
-        if not self.wrapped:
-            probed_family = _CompilerFamily.probe(absolute_path)
+        if not self.wrapped and info.family.family_regex:
+            probed_family = info.family.check_command(absolute_path) 
             if probed_family is not info.family:
                 raise ConfigurationError("Compiler '%s' is a %s compiler, not a '%s' compiler." %
                                          (absolute_path, probed_family.name, info.family.name))
