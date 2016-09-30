@@ -159,17 +159,6 @@ def attributes():
                          'action': ParseBooleanAction},
             'on_change': Measurement.attribute_changed
         },
-        'select_file': {
-            'type': 'string',
-            'description': 'specify selective instrumentation file',
-            'argparse': {'flags': ('--select-file',),
-                         'group': 'instrumentation',
-                         'metavar': 'path'},
-            'compat': {True:
-                       (Target.require('source_inst'),
-                        Target.exclude('source_inst', 'never'))},
-            'on_change': Measurement.attribute_changed
-        },
         'mpi': {
             'type': 'boolean',
             'default': False,
@@ -408,13 +397,6 @@ class Measurement(Model):
             raise ConfigurationError("At least one instrumentation method must be used",
                                      "Specify %s, %s, %s, or %s" % (source_inst_flag, compiler_inst_flag, 
                                                                     sample_flag, link_only_flag))
-        try:
-            select_file = self['select_file']
-        except KeyError:
-            pass
-        else:
-            if not os.path.exists(select_file):
-                raise ConfigurationError("Selective instrumentation file '%s' not found" % select_file)
 
     def on_update(self):
         from tau.error import ImmutableRecordError

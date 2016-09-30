@@ -27,20 +27,8 @@
 #
 """``tau measurement`` subcommand."""
 
-import os
 from tau.cli.cli_view import CreateCommand
 from tau.model.measurement import Measurement
 
 
-class MeasurementCreateCommand(CreateCommand):
-    
-    def _parse_args(self, argv):
-        args = super(MeasurementCreateCommand, self)._parse_args(argv)
-        if hasattr(args, 'select_file'):
-            absolute_path = os.path.abspath(args.select_file)
-            if not os.path.exists(absolute_path):
-                self.parser.error("Selective instrumentation file '%s' not found" % absolute_path)
-            args.select_file = absolute_path
-        return args
-
-COMMAND = MeasurementCreateCommand(Measurement, __name__)
+COMMAND = CreateCommand(Measurement, __name__)

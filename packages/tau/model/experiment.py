@@ -236,7 +236,7 @@ class Experiment(Model):
                     io_inst=measurement.get_or_default('io'),
                     keep_inst_files=measurement.get_or_default('keep_inst_files'),
                     reuse_inst_files=measurement.get_or_default('reuse_inst_files'),
-                    select_file=measurement.get('select_file', None),
+                    select_file=application.get('select_file', None),
                     # Measurement methods and options
                     profile=measurement.get_or_default('profile'),
                     trace=measurement.get_or_default('trace'),

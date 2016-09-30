@@ -27,7 +27,6 @@
 #
 """``tau measurement edit`` subcommand."""
 
-import os
 from tau.error import ImmutableRecordError, IncompatibleRecordError
 from tau.cli.cli_view import EditCommand
 from tau.cli.commands.measurement.copy import COMMAND as measurement_copy_cmd
@@ -39,15 +38,6 @@ from tau.model.experiment import Experiment
 class MeasurementEditCommand(EditCommand):
     """``tau measurement edit`` subcommand."""
     
-    def _parse_args(self, argv):
-        args = super(MeasurementEditCommand, self)._parse_args(argv)
-        if hasattr(args, 'select_file'):
-            absolute_path = os.path.abspath(args.select_file)
-            if not os.path.exists(absolute_path):
-                self.parser.error("Selective instrumentation file '%s' not found" % absolute_path)
-            args.select_file = absolute_path
-        return args
-
     def _update_record(self, store, data, key):
         try:
             retval = super(MeasurementEditCommand, self)._update_record(store, data, key)

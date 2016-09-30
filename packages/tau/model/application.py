@@ -35,6 +35,7 @@ are potentially two application records for the same application code: one
 specifying OpenMP is used and the other specifying OpenMP is not used.
 """
 
+import os
 from tau.error import IncompatibleRecordError, ConfigurationError
 from tau.mvc.model import Model
 
@@ -137,6 +138,14 @@ def attributes():
                          'const': True,
                          'action': ParseBooleanAction},
             'on_change': Application.attribute_changed
+        },
+        'select_file': {
+            'type': 'string',
+            'description': 'specify selective instrumentation file',
+            'argparse': {'flags': ('--select-file',),
+                         'metavar': 'path'},
+            'compat': {True: Measurement.exclude('source_inst', 'never')},
+            'on_change': Application.attribute_changed
         }
     }
         
@@ -151,6 +160,18 @@ class Application(Model):
         if model.is_selected():
             old_value = model.get(attr, None)
             cls.controller(model.storage).push_to_topic('rebuild_required', {attr: (old_value, new_value)})
+
+    def _check_select_file(self):
+        try:
+            select_file = self['select_file']
+        except KeyError:
+            pass
+        else:
+            if not os.path.exists(select_file):
+                raise ConfigurationError("Selective instrumentation file '%s' not found" % select_file)
+    
+    def on_create(self):
+        self._check_select_file()
 
     def on_update(self):
         from tau.error import ImmutableRecordError
@@ -168,6 +189,7 @@ class Application(Model):
                 raise ConfigurationError("Changing application '%s' in this way will create an invalid condition "
                                          "in experiment '%s':\n    %s." % (self['name'], expr['name'], err),
                                          "Delete experiment '%s' and try again." % expr['name'])
+        self._check_select_file()
 
     def is_selected(self):
         """Returns True if this target configuration is part of the selected experiment, False otherwise."""
