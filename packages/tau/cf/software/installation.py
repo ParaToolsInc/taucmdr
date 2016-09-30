@@ -482,6 +482,7 @@ class AutotoolsInstallation(Installation):
         Raises:
             SoftwarePackageError: Installation failed.
         """
+        logger.activate_debug_log()
         for pkg in self.dependencies.itervalues():
             pkg.install(force_reinstall)
         if not self.src or not force_reinstall:
