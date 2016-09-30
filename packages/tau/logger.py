@@ -333,9 +333,10 @@ def set_log_level(level):
 
 def activate_debug_log():
     """Adds an addtional logging handler to record all messages to :any:`LOG_FILE`."""
-    _ROOT_LOGGER.addHandler(_FILE_HANDLER)
-    # pylint: disable=logging-not-lazy
-    _ROOT_LOGGER.debug("""
+    if _FILE_HANDLER not in _ROOT_LOGGER.handlers:
+        _ROOT_LOGGER.addHandler(_FILE_HANDLER)
+        # pylint: disable=logging-not-lazy
+        _ROOT_LOGGER.debug("""
 %(bar)s
 TAU COMMANDER LOGGING INITIALIZED
 
