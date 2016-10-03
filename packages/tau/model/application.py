@@ -211,13 +211,11 @@ class Application(Model):
         Raises:
             ConfigurationError: The compiler or command line arguments are incompatible with this target.
         """
-        if self['mpi']:
-            if compiler.info.family not in MPI_COMPILERS.families:
-                raise ConfigurationError("Application '%s' uses MPI but %s is not an MPI compiler." % 
-                                         (self['name'], compiler.absolute_path))
-        if self['shmem']:
-            if compiler.info.family not in SHMEM_COMPILERS.families:
-                raise ConfigurationError("Application '%s' uses SHMEM but %s is not a SHMEM compiler." % 
-                                         (self['name'], compiler.absolute_path))
+        if self['mpi'] and compiler.info.family not in MPI_COMPILERS.families.values():
+            raise ConfigurationError("Application '%s' uses MPI but %s is not an MPI compiler." % 
+                                     (self['name'], compiler.absolute_path))
+        if self['shmem'] and compiler.info.family not in SHMEM_COMPILERS.families.values():
+            raise ConfigurationError("Application '%s' uses SHMEM but %s is not a SHMEM compiler." % 
+                                     (self['name'], compiler.absolute_path))
         
 
