@@ -453,7 +453,7 @@ class Target(Model):
         compiler_ctrl = Compiler.controller(self.storage)
         absolute_path = util.which(compiler_cmd)
         installed_comp = None
-        known_compilers = [comp for comp in self.compilers().iteritems()]
+        known_compilers = [comp for comp in self.compilers().itervalues()]
         # Check that this target supports the given compiler
         for role in Knowledgebase.all_roles():
             try:
