@@ -461,7 +461,9 @@ class Target(Model):
             except KeyError:
                 continue
             # Target was configured with this compiler
-            if compiler_record['path'] == absolute_path:
+            compiler_path = compiler_record['path']
+            if (absolute_path and (compiler_path == absolute_path) or 
+                    (not absolute_path and (os.path.basename(compiler_path) == compiler_cmd))):
                 installed_comp = compiler_record.installation_info(probe=True)
             else:
                 # Target was configured with a wrapper compiler so check if that wrapper wraps this compiler

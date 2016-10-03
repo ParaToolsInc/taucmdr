@@ -38,6 +38,8 @@ specifying OpenMP is used and the other specifying OpenMP is not used.
 import os
 from tau.error import IncompatibleRecordError, ConfigurationError
 from tau.mvc.model import Model
+from tau.cf.compiler.mpi import MPI_COMPILERS
+from tau.cf.compiler.shmem import SHMEM_COMPILERS
 
 
 def attributes():
@@ -199,3 +201,23 @@ class Application(Model):
         except (ProjectSelectionError, ExperimentSelectionError):
             return False
         return selected['application'] == self.eid
+    
+    def check_compiler(self, compiler):
+        """Checks a compiler for compatibility with this application configuration.
+        
+        Args:
+            compiler (InstalledCompiler): The compiler.
+            
+        Raises:
+            ConfigurationError: The compiler or command line arguments are incompatible with this target.
+        """
+        if self['mpi']:
+            if compiler.info.family not in MPI_COMPILERS.families:
+                raise ConfigurationError("Application '%s' uses MPI but %s is not an MPI compiler." % 
+                                         (self['name'], compiler.absolute_path))
+        if self['shmem']:
+            if compiler.info.family not in SHMEM_COMPILERS.families:
+                raise ConfigurationError("Application '%s' uses SHMEM but %s is not a SHMEM compiler." % 
+                                         (self['name'], compiler.absolute_path))
+        
+

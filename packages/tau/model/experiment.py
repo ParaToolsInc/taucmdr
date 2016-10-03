@@ -275,7 +275,12 @@ class Experiment(Model):
         """
         LOGGER.debug("Managed build: %s", [compiler_cmd] + compiler_args)
         target = self.populate('target')
+        application = self.populate('application')
         target_compiler = target.check_compiler(compiler_cmd, compiler_args)
+        try:
+            application.check_compiler(target_compiler)
+        except ConfigurationError as err:
+            LOGGER.warning(err)
         tau = self.configure()
         try:
             proj = self.populate('project')
