@@ -32,9 +32,7 @@ Functions used for unit tests of trial.py.
 
 
 from tau import tests
-from tau.model import trial
 
+@tests.not_implemented
 class TrialTest(tests.TestCase):
-    def test_trial(self):
-        self.reset_project_storage(project_name='proj1')
-        self.assertEqual(any(trial.attributes()), 1) 
+    pass

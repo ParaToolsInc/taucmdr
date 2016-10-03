@@ -32,8 +32,7 @@ Functions used for unit tests of application.py.
 
 
 from tau import tests
-from tau.model import application
 
+@tests.not_implemented
 class ApplicationTest(tests.TestCase):
-    def test_attributes_not_empty(self):
-        self.assertEqual(any(application.attributes()), 1) 
+    pass
