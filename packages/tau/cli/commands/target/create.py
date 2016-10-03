@@ -39,7 +39,7 @@ from tau.cf.compiler import Knowledgebase, InstalledCompiler, InstalledCompilerF
 from tau.cf.compiler.host import HOST_COMPILERS
 from tau.cf.compiler.mpi import MPI_COMPILERS
 from tau.cf.compiler.shmem import SHMEM_COMPILERS
-from tau.cf.target import TauArch
+from tau.cf.target import TauArch, host, CRAY_CNL_OS
 from tau.cf.software.tau_installation import TAU_MINIMAL_COMPILERS
 
 
@@ -250,12 +250,16 @@ class TargetCreateCommand(CreateCommand):
         parser = super(TargetCreateCommand, self)._construct_parser()
         group = parser.add_argument_group('host arguments')
         host_family_name = self._configure_argument_group(group, HOST_COMPILERS, '--compilers', 'host_family', None)
+
+        # Crays are weird. Don't use the detected host family as a hint for MPI or SHMEM compilers
+        # so that we'll always chose the Cray compiler wrappers.
+        hint = host_family_name if host.operating_system() is not CRAY_CNL_OS else None
         
         group = parser.add_argument_group('Message Passing Interface (MPI) arguments')
-        self._configure_argument_group(group, MPI_COMPILERS, '--mpi-compilers', 'mpi_family', host_family_name)
+        self._configure_argument_group(group, MPI_COMPILERS, '--mpi-compilers', 'mpi_family', hint)
 
         group = parser.add_argument_group('Symmetric Hierarchical Memory (SHMEM) arguments')
-        self._configure_argument_group(group, SHMEM_COMPILERS, '--shmem-compilers', 'shmem_family', host_family_name)
+        self._configure_argument_group(group, SHMEM_COMPILERS, '--shmem-compilers', 'shmem_family', hint)
 
         parser.add_argument('--from-tau-makefile',
                             help="Populate target configuration from a TAU Makefile",
