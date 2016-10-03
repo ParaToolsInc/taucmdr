@@ -280,7 +280,8 @@ class Experiment(Model):
         try:
             application.check_compiler(target_compiler)
         except ConfigurationError as err:
-            LOGGER.warning(err)
+            msg = err.value + "\nTAU will add the missing compiler options but this may not be what you intended."
+            LOGGER.warning(msg)
         tau = self.configure()
         try:
             proj = self.populate('project')
