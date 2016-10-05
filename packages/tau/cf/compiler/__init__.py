@@ -615,6 +615,9 @@ class InstalledCompiler(object):
         Returns:
             InstalledCompiler: A new InstalledCompiler instance describing the compiler.
         """
+        assert isinstance(command, basestring)
+        assert isinstance(family, _CompilerFamily) or family is None
+        assert isinstance(role, _CompilerRole) or role is None
         absolute_path = util.which(command)
         if not absolute_path:
             raise ConfigurationError("Compiler '%s' not found on PATH" % command)
