@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>tau.cf.software.tests.test_installation &mdash; TAU Commander Developer Documentation</title>
+    <title>tau.cli.commands.application.create &mdash; TAU Commander Developer Documentation</title>
     
     <link rel="stylesheet" href="../../../../../_static/haiku.css" type="text/css" />
     <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
@@ -27,12 +27,12 @@
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../../../../_static/favicon.ico"/>
     <link rel="top" title="TAU Commander Developer Documentation" href="../../../../../index.html" />
-    <link rel="up" title="tau.cf.software" href="../../software.html" /> 
+    <link rel="up" title="tau.cli" href="../../../cli.html" /> 
   </head>
   <body role="document">
       <div class="header" role="banner"><img class="rightlogo" src="../../../../../_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="../../../../../index.html">
           <span>TAU Commander Developer Documentation</span></a></h1>
-        <h2 class="heading"><span>tau.cf.software.tests.test_installation</span></h2>
+        <h2 class="heading"><span>tau.cli.commands.application.create</span></h2>
       </div>
       <div class="topnav" role="navigation" aria-label="top navigation">
       
@@ -44,10 +44,10 @@
       <div class="content">
         
         
-  <h1>Source code for tau.cf.software.tests.test_installation</h1><div class="highlight"><pre>
+  <h1>Source code for tau.cli.commands.application.create</h1><div class="highlight"><pre>
 <span></span><span class="c1"># -*- coding: utf-8 -*-</span>
 <span class="c1">#</span>
-<span class="c1"># Copyright (c) 2016, ParaTools, Inc.</span>
+<span class="c1"># Copyright (c) 2015, ParaTools, Inc.</span>
 <span class="c1"># All rights reserved.</span>
 <span class="c1">#</span>
 <span class="c1"># Redistribution and use in source and binary forms, with or without</span>
@@ -72,17 +72,26 @@
 <span class="c1"># OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE</span>
 <span class="c1"># OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</span>
 <span class="c1">#</span>
-<span class="sd">&quot;&quot;&quot;Test functions.</span>
+<span class="sd">&quot;&quot;&quot;``tau application`` subcommand.&quot;&quot;&quot;</span>
 
-<span class="sd">Functions used for unit tests of installation.py.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">tau.cli.cli_view</span> <span class="kn">import</span> <span class="n">CreateCommand</span>
+<span class="kn">from</span> <span class="nn">tau.model.application</span> <span class="kn">import</span> <span class="n">Application</span>
 
 
-<span class="kn">from</span> <span class="nn">tau.tests</span> <span class="kn">import</span> <span class="n">TestCase</span><span class="p">,</span> <span class="n">not_implemented</span>
+<div class="viewcode-block" id="ApplicationCreateCommand"><a class="viewcode-back" href="../../../../../tau.cli.commands.application.create.html#tau.cli.commands.application.create.ApplicationCreateCommand">[docs]</a><span class="k">class</span> <span class="nc">ApplicationCreateCommand</span><span class="p">(</span><span class="n">CreateCommand</span><span class="p">):</span>
+    
+    <span class="k">def</span> <span class="nf">_parse_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">argv</span><span class="p">):</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">ApplicationCreateCommand</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_parse_args</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s1">&#39;select_file&#39;</span><span class="p">):</span>
+            <span class="n">absolute_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">select_file</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">absolute_path</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Selective instrumentation file &#39;</span><span class="si">%s</span><span class="s2">&#39; not found&quot;</span> <span class="o">%</span> <span class="n">absolute_path</span><span class="p">)</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">select_file</span> <span class="o">=</span> <span class="n">absolute_path</span>
+        <span class="k">return</span> <span class="n">args</span></div>
 
-<span class="nd">@not_implemented</span>
-<div class="viewcode-block" id="InstallationTest"><a class="viewcode-back" href="../../../../../tau.cf.software.tests.test_installation.html#tau.cf.software.tests.test_installation.InstallationTest">[docs]</a><span class="k">class</span> <span class="nc">InstallationTest</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
-    <span class="k">pass</span></div>
+
+<span class="n">COMMAND</span> <span class="o">=</span> <span class="n">ApplicationCreateCommand</span><span class="p">(</span><span class="n">Application</span><span class="p">,</span> <span class="n">__name__</span><span class="p">)</span>
 </pre></div>
 
       </div>

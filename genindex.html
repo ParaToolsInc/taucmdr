@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.1
+        VERSION:     '1.0a
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -354,6 +354,10 @@
   <dt><a href="tau.model.application.html#tau.model.application.Application">Application (class in tau.model.application)</a>
   </dt>
 
+      
+  <dt><a href="tau.cli.commands.application.create.html#tau.cli.commands.application.create.ApplicationCreateCommand">ApplicationCreateCommand (class in tau.cli.commands.application.create)</a>
+  </dt>
+
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
@@ -555,13 +559,23 @@
   </dt>
 
       
+  <dt><a href="tau.cf.compiler.html#tau.cf.compiler._CompilerFamily.check_command">check_command() (tau.cf.compiler._CompilerFamily method)</a>
+  </dt>
+
+      
   <dt><a href="tau.mvc.model.html#tau.mvc.model.Model.check_compatibility">check_compatibility() (tau.mvc.model.Model method)</a>
   </dt>
 
       
-  <dt><a href="tau.model.target.html#tau.model.target.Target.check_compiler">check_compiler() (tau.model.target.Target method)</a>
+  <dt><a href="tau.model.application.html#tau.model.application.Application.check_compiler">check_compiler() (tau.model.application.Application method)</a>
   </dt>
 
+      <dd><dl>
+        
+  <dt><a href="tau.model.target.html#tau.model.target.Target.check_compiler">(tau.model.target.Target method)</a>
+  </dt>
+
+      </dl></dd>
       
   <dt><a href="tau.tests.html#tau.tests.cleanup">cleanup() (in module tau.tests)</a>
   </dt>
@@ -1913,10 +1927,6 @@
   </dt>
 
       
-  <dt><a href="tau.cli.commands.measurement.create.html#tau.cli.commands.measurement.create.MeasurementCreateCommand">MeasurementCreateCommand (class in tau.cli.commands.measurement.create)</a>
-  </dt>
-
-      
   <dt><a href="tau.cli.commands.measurement.edit.html#tau.cli.commands.measurement.edit.MeasurementEditCommand">MeasurementEditCommand (class in tau.cli.commands.measurement.edit)</a>
   </dt>
 
@@ -1976,12 +1986,12 @@
   </dt>
 
       </dl></dd>
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="tau.mvc.controller.html#tau.mvc.controller.Controller.messages">messages (tau.mvc.controller.Controller attribute)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="tau.model.measurement.html#tau.model.measurement.Measurement.metrics_changed">metrics_changed() (tau.model.measurement.Measurement class method)</a>
   </dt>
@@ -2119,10 +2129,14 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="tau.model.experiment.html#tau.model.experiment.Experiment.on_create">on_create() (tau.model.experiment.Experiment method)</a>
+  <dt><a href="tau.model.application.html#tau.model.application.Application.on_create">on_create() (tau.model.application.Application method)</a>
   </dt>
 
       <dd><dl>
+        
+  <dt><a href="tau.model.experiment.html#tau.model.experiment.Experiment.on_create">(tau.model.experiment.Experiment method)</a>
+  </dt>
+
         
   <dt><a href="tau.model.measurement.html#tau.model.measurement.Measurement.on_create">(tau.model.measurement.Measurement method)</a>
   </dt>
@@ -3218,6 +3232,8 @@
   <dt><a href="tau.cli.commands.tests.test_help.html#module-tau.cli.commands.tests.test_help">tau.cli.commands.tests.test_help (module)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="tau.cli.commands.tests.test_initialize.html#module-tau.cli.commands.tests.test_initialize">tau.cli.commands.tests.test_initialize (module)</a>
   </dt>
@@ -3234,8 +3250,6 @@
   <dt><a href="tau.cli.commands.trial.delete.html#module-tau.cli.commands.trial.delete">tau.cli.commands.trial.delete (module)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="tau.cli.commands.trial.export.html#module-tau.cli.commands.trial.export">tau.cli.commands.trial.export (module)</a>
   </dt>
@@ -3473,14 +3487,6 @@
   </dt>
 
       
-  <dt><a href="tau.model.tests.test_experiment.html#tau.model.tests.test_experiment.ExperimentTest.test_attribute_not_emty">test_attribute_not_emty() (tau.model.tests.test_experiment.ExperimentTest method)</a>
-  </dt>
-
-      
-  <dt><a href="tau.model.tests.test_application.html#tau.model.tests.test_application.ApplicationTest.test_attributes_not_empty">test_attributes_not_empty() (tau.model.tests.test_application.ApplicationTest method)</a>
-  </dt>
-
-      
   <dt><a href="tau.cli.commands.tests.test_initialize.html#tau.cli.commands.tests.test_initialize.InitializeTest.test_bare">test_bare() (tau.cli.commands.tests.test_initialize.InitializeTest method)</a>
   </dt>
 
@@ -3498,10 +3504,6 @@
 
       
   <dt><a href="tau.cli.tests.test_command.html#tau.cli.tests.test_command.CommandTest.test_command">test_command() (tau.cli.tests.test_command.CommandTest method)</a>
-  </dt>
-
-      
-  <dt><a href="tau.model.tests.test_compiler.html#tau.model.tests.test_compiler.CompilerTest.test_compiler">test_compiler() (tau.model.tests.test_compiler.CompilerTest method)</a>
   </dt>
 
       
@@ -3681,10 +3683,6 @@
 
       </dl></dd>
       
-  <dt><a href="tau.model.tests.test_measurement.html#tau.model.tests.test_measurement.MeasurementTest.test_measurement">test_measurement() (tau.model.tests.test_measurement.MeasurementTest method)</a>
-  </dt>
-
-      
   <dt><a href="tau.cli.commands.target.tests.test_create.html#tau.cli.commands.target.tests.test_create.CreateTest.test_no_args">test_no_args() (tau.cli.commands.target.tests.test_create.CreateTest method)</a>
   </dt>
 
@@ -3708,10 +3706,6 @@
 
       
   <dt><a href="tau.cli.commands.experiment.tests.test_create.html#tau.cli.commands.experiment.tests.test_create.CreateTest.test_pgi">test_pgi() (tau.cli.commands.experiment.tests.test_create.CreateTest method)</a>
-  </dt>
-
-      
-  <dt><a href="tau.model.tests.test_project.html#tau.model.tests.test_project.ProjectTest.test_project">test_project() (tau.model.tests.test_project.ProjectTest method)</a>
   </dt>
 
       
@@ -3747,15 +3741,7 @@
   </dt>
 
       
-  <dt><a href="tau.model.tests.test_target.html#tau.model.tests.test_target.TargetTest.test_target">test_target() (tau.model.tests.test_target.TargetTest method)</a>
-  </dt>
-
-      
   <dt><a href="tau.cf.target.tests.test_host.html#tau.cf.target.tests.test_host.HostTest.test_tau_arch_not_empty">test_tau_arch_not_empty() (tau.cf.target.tests.test_host.HostTest method)</a>
-  </dt>
-
-      
-  <dt><a href="tau.model.tests.test_trial.html#tau.model.tests.test_trial.TrialTest.test_trial">test_trial() (tau.model.tests.test_trial.TrialTest method)</a>
   </dt>
 
       
