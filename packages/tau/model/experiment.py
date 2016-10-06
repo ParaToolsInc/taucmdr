@@ -276,12 +276,16 @@ class Experiment(Model):
         LOGGER.debug("Managed build: %s", [compiler_cmd] + compiler_args)
         target = self.populate('target')
         application = self.populate('application')
-        target_compiler = target.check_compiler(compiler_cmd, compiler_args)
+        target_compilers = target.check_compiler(compiler_cmd, compiler_args)
         try:
-            application.check_compiler(target_compiler)
+            found_compiler = application.check_compiler(target_compilers)
         except ConfigurationError as err:
-            msg = err.value + "\nTAU will add the missing compiler options but this may not be what you intended."
+            msg = err.value + ("\nTAU will add additional compiler options "
+                               "and attempt to continue but this may have unexpected results.")
             LOGGER.warning(msg)
+            found_compiler = target_compilers[0]
+        # We've found a candidate compiler.  Check that this compiler record is still valid.
+        installed_compiler = found_compiler.verify()
         tau = self.configure()
         try:
             proj = self.populate('project')
@@ -291,7 +295,7 @@ class Experiment(Model):
         else:
             LOGGER.info("Project '%s' forcibly adding '%s' to TAU_OPTIONS", 
                         proj['name'], ' '.join(tau.force_tau_options))
-        return tau.compile(target_compiler, compiler_args)
+        return tau.compile(installed_compiler, compiler_args)
         
     def managed_run(self, launcher_cmd, application_cmd):
         """Uses this experiment to run an application command.

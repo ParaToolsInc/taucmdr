@@ -422,7 +422,7 @@ class Target(Model):
                     compiler_record = self.populate(role.keyword)
                 except KeyError:
                     continue
-                compilers[role.keyword] = compiler_record.installation_info()
+                compilers[role.keyword] = compiler_record.installation()
                 LOGGER.debug("compilers[%s] = '%s'", role.keyword, compilers[role.keyword].absolute_path)
                 eids.append(compiler_record.eid)
             missing = [role for role in TAU_MINIMAL_COMPILERS if role.keyword not in compilers]
@@ -434,52 +434,55 @@ class Target(Model):
     def check_compiler(self, compiler_cmd, compiler_args):
         """Checks a compiler command its arguments for compatibility with this target configuration.
         
-        Checks that the given compiler matches one of the compilers used in the target.
-        Also performs any special checkes for invalid compiler arguments, e.g. -mmic is only for native KNC.
+        Checks that the given compiler matches at least one, **but possibly more**, of the compilers 
+        used in the target. Also performs any special checkes for invalid compiler arguments, 
+        e.g. -mmic is only for native KNC.
         
         If the given compiler command and arguments are compatible with this target then information about
-        the compiler installation is returned as an :any:`InstalledCompiler` instance.
+        matching compiler installations is returned as a list of n :any:`InstalledCompiler` instances.
         
         Args:
             compiler_cmd (str): The compiler command as passed by the user.
             compiler_args (list): Compiler command line arguments.
             
         Returns:
-            InstalledCompiler: Information about the installed compiler.
+            list: Information about matching installed compilers as :any:`Compiler` instances.
             
         Raises:
             ConfigurationError: The compiler or command line arguments are incompatible with this target.
         """
+        if '-mmic' in compiler_args and self['host_arch'] != str(INTEL_KNC_ARCH):
+            raise ConfigurationError("Host architecture of target '%s' is '%s'"
+                                     " but the '-mmic' compiler argument requires '%s'" %
+                                     (self['name'], self['host_arch'], INTEL_KNC_ARCH),
+                                     "Select a different target",
+                                     "Create a new target with host architecture '%s'" % INTEL_KNC_ARCH)
         compiler_ctrl = Compiler.controller(self.storage)
         absolute_path = util.which(compiler_cmd)
-        installed_comp = None
+        compiler_cmd = os.path.basename(compiler_cmd)
+        found = []
         known_compilers = [comp for comp in self.compilers().itervalues()]
-        # Check that this target supports the given compiler
-        for role in Knowledgebase.all_roles():
+        for info in Knowledgebase.find_compiler(command=compiler_cmd):
             try:
-                compiler_record = self.populate(role.keyword)
+                compiler_record = self.populate(info.role.keyword)
             except KeyError:
+                # Target was not configured with a compiler in this role
                 continue
-            # Target was configured with this compiler
             compiler_path = compiler_record['path']
             if (absolute_path and (compiler_path == absolute_path) or 
                     (not absolute_path and (os.path.basename(compiler_path) == compiler_cmd))):
-                installed_comp = compiler_record.installation_info(probe=True)
+                found.append(compiler_record)
             else:
                 # Target was configured with a wrapper compiler so check if that wrapper wraps this compiler
                 while 'wrapped' in compiler_record:
                     compiler_record = compiler_ctrl.one(compiler_record['wrapped'])
-                    comp = compiler_record.installation_info(probe=True)
-                    known_compilers.append(comp)
+                    known_compilers.append(compiler_record.installation())
                     compiler_path = compiler_record['path']
                     if (absolute_path and (compiler_path == absolute_path) or 
                             (not absolute_path and (os.path.basename(compiler_path) == compiler_cmd))):
-                        installed_comp = comp
+                        found.append(compiler_record)
                         break
-            if installed_comp:
-                LOGGER.debug("'%s' appears to be a %s", compiler_cmd, installed_comp.info.short_descr)
-                break
-        else:
+        if not found:
             parts = ["No compiler in target '%s' matches '%s'." % (self['name'], absolute_path),
                      "The known compiler commands are:"]
             parts.extend('  %s (%s)' % (comp.absolute_path, comp.info.short_descr) for comp in known_compilers)
@@ -487,14 +490,5 @@ class Target(Model):
                      "Create and select a new target configuration that uses the '%s' compiler" % compiler_cmd,
                      "Check loaded modules and the PATH environment variable")
             raise ConfigurationError('\n'.join(parts), *hints)
-
-        # Handle special cases where a compiler flag isn't compatible with the target
-        if '-mmic' in compiler_args and self['host_arch'] != str(INTEL_KNC_ARCH):
-            raise ConfigurationError("Host architecture of target '%s' is '%s'"
-                                     " but the '-mmic' compiler argument requires '%s'" %
-                                     (self['name'], self['host_arch'], INTEL_KNC_ARCH),
-                                     "Select a different target",
-                                     "Create a new target with host architecture '%s'" % INTEL_KNC_ARCH)
-
-        return installed_comp
+        return found
 

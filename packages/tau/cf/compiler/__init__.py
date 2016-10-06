@@ -230,23 +230,6 @@ class _CompilerFamily(TrackedInstance):
     def installation(self):
         return InstalledCompilerFamily(self)
 
-    def check_command(self, absolute_path):
-        LOGGER.debug("Probing compiler '%s' to discover compiler family", absolute_path)
-        cmd = [absolute_path] + self.version_flags
-        LOGGER.debug("Creating subprocess: %s", cmd)
-        try:
-            stdout = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-        except subprocess.CalledProcessError as err:
-            raise ConfigurationError("%s failed with return code %d: %s", cmd, err.returncode, err.output)
-        LOGGER.debug(stdout)
-        LOGGER.debug("%s returned 0", cmd)
-        if re.search(self.family_regex, stdout):
-            LOGGER.debug("'%s' is a %s compiler", absolute_path, self.name)
-            return self
-        else:
-            LOGGER.debug("'%s' is not a %s compiler", absolute_path, self.name)
-            return _CompilerFamily.probe(absolute_path)
-    
     @classmethod
     def probe(cls, absolute_path):
         """Determine the compiler family of a given command.
@@ -371,35 +354,34 @@ class _CompilerInfo(TrackedInstance):
 
 
 class InstalledCompilerCreator(type):
-    """Metaclass to create a new :any:`InstalledCompiler` instance.
+    """Cache compiler probe results.
      
-    This metaclass greatly improves TAU Commander performance.
-     
-    InstalledCompiler instances are constructed with an absolute path
-    to an installed compiler command.  On initialization, the instance
-    invokes the compiler command to discover system-specific compiler
-    characteristics.  This can be very expensive, so we change the
-    instance creation procedure to only probe the compiler when the 
-    compiler command has never been seen before.  This avoids dupliate
+    InstalledCompiler invokes a compiler command to discover system-specific compiler characteristics.  
+    This can be very expensive, so this metaclass changes the instance creation procedure to only 
+    probe the compiler when the compiler command has never been seen before and avoid dupliate
     invocations in a case like::
      
         a = InstalledCompiler('/path/to/icc')
         b = InstalledCompiler('/path/to/icc')    
 
-    Without this metaclass, `a` and `b` would be different instances
-    assigned to the same compiler and `icc` would be probed twice. With
-    this metaclass, ``b is a == True`` and `icc` is only invoked once.
+    Without this metaclass, `a` and `b` would be different instances assigned to the same compiler 
+    and `icc` would be probed twice. With this metaclass, ``b is a == True`` and `icc` is only invoked once.
     """
     def __call__(cls, absolute_path, info, **kwargs):
         assert isinstance(absolute_path, basestring) and os.path.isabs(absolute_path)
         assert isinstance(info, _CompilerInfo)
-        wrapped_path = kwargs['wrapped'].unwrap().absolute_path if 'wrapped' in kwargs else None
+        # Don't allow unchecked values into the instance cache
+        if kwargs:
+            return super(InstalledCompilerCreator, cls).__call__(absolute_path, info, **kwargs)
+        LOGGER.debug('Checking (%s, %s)', absolute_path, info.role.keyword)
         try:
-            instance = cls.__instances__[absolute_path, info, wrapped_path]
+            instance = cls.__instances__[absolute_path, info]
         except KeyError: 
             instance = super(InstalledCompilerCreator, cls).__call__(absolute_path, info, **kwargs)
-            wrapped_path = instance.unwrap().absolute_path if instance.wrapped else None 
-            cls.__instances__[absolute_path, info, wrapped_path] = instance
+            cls.__instances__[absolute_path, info] = instance
+            LOGGER.debug('Added (%s, %s) to compiler cache', absolute_path, info.role.keyword)
+        else:
+            LOGGER.debug('Using cached instance')
         return instance
 
 
@@ -435,17 +417,17 @@ class InstalledCompiler(object):
         Any information not provided on the argument list may be probed from the system.
         This can be **VERY** expensive and may involve invoking the compiler, checking PATH, file permissions, 
         or other conditions in the system to determine if a compiler command is present and executable.
-        If this compiler command wraps another command, that command may also be probed.  The probes recurse
-        to the "root" compiler that doesn't wrap any other command.  In fact, the probe is so expensive we
-        emit an INFO-level message whenever it happens.
+        If this compiler command wraps another command, that command is also probed.  The probes recurse
+        to the "root" compiler that doesn't wrap any other command.
         
         :any:`uid` uniquely identifies this compiler as installed in the system.  If the compiler's installation
         changes substantially (e.g. significant version upgrades or changes in the compiler wrapper) then the UID
         will change as well.
-        
-        TAU is highly dependent on the compiler used to install TAU.  If that compiler
-        changes, or the user tries to "fake out" TAU Commander by renaming compiler
-        commands, then the user should be warned that the compiler has changed.
+               
+        These probes are necessary because TAU is highly dependent on the compiler used to install TAU.  
+        If that compiler changes, or the user tries to "fake out" TAU Commander by renaming compiler
+        commands, then the user should be warned that the compiler has changed.  If the change is severe
+        then the operation should halt before an invalid operation.
         
         Args:
             absolute_path (str): Absolute path to the compiler command.
@@ -480,28 +462,26 @@ class InstalledCompiler(object):
             self.compiler_flags = []
             self.libraries = []
             self.wrapped = self._probe_wrapper()
-        if not self.wrapped and info.family.family_regex:
-            probed_family = info.family.check_command(absolute_path) 
-            if probed_family is not info.family:
-                raise ConfigurationError("Compiler '%s' is a %s compiler, not a '%s' compiler." %
-                                         (absolute_path, probed_family.name, info.family.name))
         if uid:
             self.uid = uid
         else:
-            self.uid = self._calculate_uid()
-
-    def _calculate_uid(self):
-        LOGGER.debug("Calculating UID of '%s'", self.absolute_path)
-        uid = hashlib.md5()
-        uid.update(self.absolute_path)
-        uid.update(self.info.family.name)
-        uid.update(self.info.role.keyword)
-        if self.wrapped:
-            uid.update(self.wrapped.uid)
-            for attr in 'include_path', 'library_path', 'compiler_flags', 'libraries':
-                for value in getattr(self, attr):
-                    uid.update(str(value))
-        return uid.hexdigest()
+            md5 = hashlib.md5()
+            md5.update(self.absolute_path)
+            md5.update(self.info.family.name)
+            md5.update(self.info.role.keyword)
+            if self.wrapped:
+                md5.update(self.wrapped.uid)
+                for attr in 'include_path', 'library_path', 'compiler_flags', 'libraries':
+                    for value in getattr(self, attr):
+                        md5.update(str(sorted(value)))
+            self.uid = md5.hexdigest()
+        # Don't need to check the compiler family of compiler wrappers since the compiler
+        # the wrapper wraps has already been checked.
+        if not self.wrapped and info.family.family_regex:
+            if not re.search(info.family.family_regex, self.version_string):
+                probed_family = _CompilerFamily.probe(absolute_path)
+                raise ConfigurationError("Compiler '%s' is a %s compiler, not a '%s' compiler." %
+                                         (absolute_path, probed_family.name, info.family.name))
 
     def _probe_wrapper(self):
         if not self.info.family.show_wrapper_flags:
@@ -650,6 +630,7 @@ class InstalledCompiler(object):
             comp = comp.wrapped
         return comp
     
+    @property
     def version_string(self):
         """Get the compiler's self-reported version info.
         
@@ -666,6 +647,7 @@ class InstalledCompiler(object):
                 raise ConfigurationError("Invalid version flags %s for compiler '%s'" % 
                                          (self.info.family.version_flags, self.absolute_path))
         return self._version_string
+
 
 class InstalledCompilerFamily(object):
     """Information about an installed compiler family.

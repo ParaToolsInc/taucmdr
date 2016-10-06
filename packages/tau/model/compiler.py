@@ -57,7 +57,7 @@ def attributes():
         'family': {
             'type': 'string',
             'required': True,
-            'description': "compiler's family"
+            'description': "compiler's family name"
         },
         'role': {
             'type': 'string',
@@ -136,7 +136,16 @@ class Compiler(Model):
     __attributes__ = attributes
 
     __controller__ = CompilerController
-    
+
+    def _compiler_info(self):
+        command = os.path.basename(self['path'])
+        role = Knowledgebase.find_role(self['role'])
+        family = role.kbase.families[self['family']]
+        info_list = Knowledgebase.find_compiler(command, family, role)
+        if len(info_list) != 1:
+            raise InternalError("Zero or more than one known compilers match '%s'" % self)
+        return info_list[0]
+       
     def _verify_core_attrs(self, comp, msg_parts):
         fatal = False
         if comp.absolute_path != self['path']:
@@ -150,9 +159,21 @@ class Compiler(Model):
                              (self['role'], comp.info.role.keyword))
         return fatal
 
-    def _verify(self, comp):
+    def verify(self):
+        """Checks that the system state matches the recorded compiler information.
+        
+        May execute the compiler or other commands, check filesystem paths, and check environment variables
+        to determine if this compiler record is still valid.  This operation may be expensive.
+        
+        Returns:
+            InstalledCompiler: Information on the compiler installation matching this record.
+        
+        Raises:
+            ConfigurationError: This compiler record is no longer valid.
+        """
+        comp = InstalledCompiler(self['path'], self._compiler_info())
         if comp.uid == self['uid']:
-            return
+            return comp
         msg_parts = ["%s '%s' has changed:" % (comp.info.short_descr, comp.absolute_path)]
         fatal = self._verify_core_attrs(comp, msg_parts)
         if not fatal:
@@ -168,7 +189,7 @@ class Compiler(Model):
                 old_wrapped = self.populate('wrapped')
                 while 'wrapped' in old_wrapped:
                     old_wrapped = self.populate('wrapped')
-                # old_wrapped is a Compiler instance, hence this isn't really a protected access violation 
+                # old_wrapped is a Compiler instance so this isn't really a protected access violation 
                 # pylint: disable=protected-access
                 fatal = fatal or old_wrapped._verify_core_attrs(new_wrapped, msg_parts)
                 if not fatal:
@@ -184,43 +205,29 @@ class Compiler(Model):
         if fatal:
             raise ConfigurationError(msg, 
                                      "Check loaded environment modules", 
-                                     "Check loaded software environment", 
-                                     "Check the PATH environment variable",
+                                     "Check environment variables, especially PATH",
                                      "Contact your system administrator")
         else:
-            LOGGER.warning(msg + "\nAttempting to continue.")
+            LOGGER.warning(msg + ("\n\nCheck loaded environment modules and environment variables.\n"
+                                  "Attempting to continue.  Compilation may fail later on."))
+        return comp
     
-    def installation_info(self, probe=False):
+    def installation(self):
         """Gets information about this compiler installation.
-        
-        Args:
-            probe (bool): If True then probe the system to confirm that the installed compiler matches the
-                          data recorded in the database.  If False then use the recorded data without verification.
         
         Returns:
             InstalledCompiler: Information about the installed compiler command.
         """
-        command = os.path.basename(self['path'])
-        role = Knowledgebase.find_role(self['role'])
-        family = role.kbase.families[self['family']]
-        info_list = Knowledgebase.find_compiler(command, family, role)
-        if len(info_list) != 1:
-            raise InternalError("Zero or more than one known compilers match '%s'" % self)
-        info = info_list[0]
-        if probe:
-            comp = InstalledCompiler(self['path'], info)
-            self._verify(comp)
+        info = self._compiler_info()
+        try:
+            wrapped = self.populate('wrapped')
+        except KeyError:
+            comp = InstalledCompiler(self['path'], info, uid=self['uid'])
         else:
-            LOGGER.debug("NOT verifying compiler information for '%s'", self['path'])
-            try:
-                wrapped = self.populate('wrapped')
-            except KeyError:
-                comp = InstalledCompiler(self['path'], info, uid=self['uid'])
-            else:
-                comp = InstalledCompiler(self['path'], info, uid=self['uid'], 
-                                         wrapped=wrapped.installation_info(probe), 
-                                         include_path=self.get('include_path', None), 
-                                         library_path=self.get('library_path', None), 
-                                         compiler_flags=self.get('compiler_flags', None), 
-                                         libraries=self.get('libraries', None))
+            comp = InstalledCompiler(self['path'], info, uid=self['uid'], 
+                                     wrapped=wrapped.installation(), 
+                                     include_path=self.get('include_path'), 
+                                     library_path=self.get('library_path'), 
+                                     compiler_flags=self.get('compiler_flags'), 
+                                     libraries=self.get('libraries'))
         return comp
