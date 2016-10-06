@@ -518,8 +518,7 @@ class InstalledCompiler(object):
                 return None
             wrapped = self._probe_wrapped(wrapped_absolute_path, wrapped_args)
             if wrapped:
-                LOGGER.info("'%s' wrapped by %s '%s'", wrapped.absolute_path, 
-                            self.info.short_descr, self.absolute_path)
+                LOGGER.info("%s '%s' wraps '%s'", self.info.short_descr, self.absolute_path, wrapped.absolute_path)
                 break
         else:
             LOGGER.warning("Unable to identify compiler wrapped by wrapper '%s'."
