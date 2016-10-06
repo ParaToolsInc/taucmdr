@@ -277,6 +277,7 @@ class TauInstallation(Installation):
         self.lib_path = os.path.join(arch_path, 'lib')
 
     def _uses_pdt(self):
+        # TAU uses PDT to generate the SHMEM wrapper libraries, so PDT is required for SHMEM support
         return self.source_inst == 'automatic' or self.shmem_support
 
     def _uses_binutils(self):
