@@ -202,20 +202,26 @@ class Application(Model):
             return False
         return selected['application'] == self.eid
     
-    def check_compiler(self, compiler):
-        """Checks a compiler for compatibility with this application configuration.
+    def check_compiler(self, compilers):
+        """Checks a list of compilers for compatibility with this application configuration.
         
         Args:
-            compiler (InstalledCompiler): The compiler.
+            compilers (list): :any:`Compiler` instances that could possibly be compatible with this application.
+            
+        Returns:
+            Compiler: A compiler from `compilers` that can be used to build the application.
             
         Raises:
-            ConfigurationError: The compiler or command line arguments are incompatible with this target.
+            ConfigurationError: No compiler in `compilers` is compatible with this application.
         """
-        if self['mpi'] and compiler.info.family not in MPI_COMPILERS.families.values():
-            raise ConfigurationError("Application '%s' uses MPI but %s is not an MPI compiler." % 
-                                     (self['name'], compiler.absolute_path))
-        if self['shmem'] and compiler.info.family not in SHMEM_COMPILERS.families.values():
-            raise ConfigurationError("Application '%s' uses SHMEM but %s is not a SHMEM compiler." % 
-                                     (self['name'], compiler.absolute_path))
-        
-
+        found = []
+        for compiler in compilers:
+            is_mpi = compiler['role'].startswith(MPI_COMPILERS.keyword)
+            is_shmem = compiler['role'].startswith(SHMEM_COMPILERS.keyword)
+            if (is_mpi and self['mpi']) or (is_shmem and self['shmem']):
+                found.append(compiler)
+        if not found:
+            raise ConfigurationError("Application '%s' is not compatible with any of these compilers:\n  %s" % 
+                                     (self['name'], '\n  '.join(compiler['path'] for compiler in compilers)))
+        # If more than one compiler is compatible then choose the first one
+        return found[0]
