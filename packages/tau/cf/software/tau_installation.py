@@ -38,7 +38,7 @@ from tau import logger, util
 from tau.error import ConfigurationError, InternalError
 from tau.cf.software import SoftwarePackageError
 from tau.cf.software.installation import Installation, parallel_make_flags
-from tau.cf.compiler import host, mpi
+from tau.cf.compiler import host
 from tau.cf.compiler.host import CC, CXX, FC, UPC
 from tau.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC
 from tau.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
@@ -328,7 +328,7 @@ class TauInstallation(Installation):
                 raise SoftwarePackageError("iowrap libraries or link options not found")
         LOGGER.debug("TAU installation at '%s' is valid", self.install_prefix)
 
-    def _select_flags(self, header, libglob, user_inc, user_lib, user_libraries, wrap_cc, wrap_cxx, wrap_fc):
+    def _select_flags(self, header, libglobs, user_inc, user_lib, user_libraries, wrap_cc, wrap_cxx, wrap_fc):
         def unique(seq):
             seen = set()
             return [x for x in seq if not (x in seen or seen.add(x))]
@@ -347,15 +347,17 @@ class TauInstallation(Installation):
                                          (header, os.pathsep.join(include_path)))
         library_path = unique(user_lib + wrap_cc.library_path + wrap_cxx.library_path + wrap_fc.library_path)
         if library_path:
-            # Unfortunately, TAU's configure script can only accept one path on -mpilib
-            # and it expects the compiler's include path argument (e.g. "-L") to be omitted
-            for path in library_path:
-                if glob.glob(os.path.join(path, libglob)):
-                    selected_lib = path
-                    break
-            else:
+            selected_lib = None
+            for libglob in libglobs:
+                # Unfortunately, TAU's configure script can only accept one path on -mpilib
+                # and it expects the compiler's include path argument (e.g. "-L") to be omitted
+                for path in library_path:
+                    if glob.glob(os.path.join(path, libglob)):
+                        selected_lib = path
+                        break
+            if not selected_lib:
                 raise ConfigurationError("No files matched '%s' on library path: %s" % 
-                                         (libglob, os.pathsep.join(library_path)))
+                                         (libglobs, os.pathsep.join(library_path)))
         # Don't add autodetected Fortran or C++ libraries; C is probably OK
         libraries = unique(user_libraries + wrap_cc.libraries + wrap_cxx.libraries + wrap_fc.libraries)
         if libraries:
@@ -377,19 +379,14 @@ class TauInstallation(Installation):
         Raises:
             SoftwareConfigurationError: TAU's configure script failed.
         """
-        if self.mpi_support: 
-            # TAU's configure script does a really bad job detecting MPI wrapped compiler commands
-            # so don't even bother trying.  Pass as much of this as we can and hope for the best.
-            cc_command = self.compilers[MPI_CC].unwrap().info.command
-            cxx_command = self.compilers[MPI_CXX].unwrap().info.command
-            fc_comp = self.compilers[MPI_FC].unwrap() if FC in self.compilers else None
-        else:
-            # TAU's configure script can't cope with compiler absolute paths or compiler names that
-            # don't exactly match what it expects.  Use `info.command` instead of `command` to work
-            # around these problems e.g. 'gcc-4.9' becomes 'gcc' 
-            cc_command = self.compilers[CC].info.command
-            cxx_command = self.compilers[CXX].info.command
-            fc_comp = self.compilers[FC] if FC in self.compilers else None
+        # TAU's configure script can't cope with compiler absolute paths or compiler names that
+        # don't exactly match what it expects.  Use `info.command` instead of `command` to work
+        # around these problems e.g. 'gcc-4.9' becomes 'gcc'. 
+        # Also, TAU's configure script does a really bad job detecting wrapped compiler commands
+        # so we unwrap the wrapper here before invoking configure.
+        cc_command = self.compilers[CC].unwrap().info.command
+        cxx_command = self.compilers[CXX].unwrap().info.command
+        fc_comp = self.compilers[FC].unwrap() if FC in self.compilers else None
 
         # TAU's configure script can't detect Fortran compiler from the compiler
         # command so translate Fortran compiler command into TAU's magic words
@@ -401,10 +398,7 @@ class TauInstallation(Installation):
                             host.PGI: 'pgi',
                             host.CRAY: 'cray',
                             host.IBM: 'ibm',
-                            host.IBM_BG: 'ibm',
-                            mpi.SYSTEM: 'mpif90',
-                            mpi.INTEL: 'mpiifort',
-                            mpi.IBM: 'ibm'}
+                            host.IBM_BG: 'ibm'}
             try:
                 fortran_magic = fc_magic_map[fc_family]
             except KeyError:
@@ -415,7 +409,7 @@ class TauInstallation(Installation):
         mpiinc, mpilib, mpilibrary = None, None, None
         if self.mpi_support:
             mpiinc, mpilib, mpilibrary = \
-                self._select_flags('mpi.h', 'libmpi*', 
+                self._select_flags('mpi.h', ('libmpi*',), 
                                    self.mpi_include_path, 
                                    self.mpi_library_path, 
                                    self.mpi_libraries,
@@ -427,7 +421,7 @@ class TauInstallation(Installation):
         shmeminc, shmemlib, shmemlibrary = None, None, None
         if self.shmem_support:
             shmeminc, shmemlib, shmemlibrary = \
-                self._select_flags('shmem.h', 'lib*shmem*',
+                self._select_flags('shmem.h', ('lib*shmem*', 'lib*sma*'),
                                    self.shmem_include_path, 
                                    self.shmem_library_path, 
                                    self.shmem_libraries,
