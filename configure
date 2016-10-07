@@ -44,10 +44,14 @@ SETUP_CFG_FILE = os.path.join(PACKAGE_TOPDIR, 'setup.cfg')
 
 DEFAULTS_CFG_FILE = os.path.join(PACKAGE_TOPDIR, 'defaults.cfg')
 
-PYTHON_26_WARNING = ("IMPORTANT: This is the Python 2.6 configuration script for TAU Commander.\n"
-                     "Only a few configuration options are supported by this script.  If possible,\n"
-                     "you should put Python 2.7 in your PATH and run this command again.")
-
+FALLBACK_WARNING = ("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n"
+                    "\n"
+                    "IMPORTANT: This is the fallback configuration script for TAU Commander.\n"
+                    "A compatible Python 2.7 environment will be created before proceeding.\n"
+                    "If possible, you should run this command with Python 2.7 in your PATH and\n"
+                    "with the setuptools module installed.\n"
+                    "\n"
+                    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n")
 
 def _default_prefix():
     try:
@@ -63,19 +67,23 @@ def _default_prefix():
 
 
 def _get_prefix():
-    from optparse import OptionParser
-    parser = OptionParser(description=PYTHON_26_WARNING)
+    from optparse import OptionParser, BadOptionError, AmbiguousOptionError
+    class PassThroughOptionParser(OptionParser):
+        def _process_args(self, largs, rargs, values):
+            while rargs:
+                try:
+                    OptionParser._process_args(self,largs,rargs,values)
+                except (BadOptionError,AmbiguousOptionError), e:
+                    largs.append(e.opt_str)    
+    parser = PassThroughOptionParser(description=FALLBACK_WARNING)
     parser.add_option("--prefix", dest="prefix", help='Installation prefix.', metavar="<path>")
     options, _ = parser.parse_args()
-    prefix = options.prefix if options.prefix else _default_prefix()
-    if not os.access(prefix, os.W_OK):
-        prefix = os.path.join(PACKAGE_TOPDIR, 'build', 'tmp')
-    return prefix
+    return options.prefix if options.prefix else _default_prefix()
 
 
 def _bootstrap_conda():
     import subprocess
-    print PYTHON_26_WARNING
+    print FALLBACK_WARNING
     prefix = _get_prefix()
     cmd = ['make', 'python_check', 'INSTALLDIR=' + prefix]
     try:
@@ -161,7 +169,7 @@ def main():
     for section in defaults_cfg.sections:
         for key in defaults_cfg[section]:
             val = getattr(args, key, None)
-            if val:
+            if val is not None:
                 defaults_cfg[section][key] = val
 
     # Configure installation parameters
@@ -175,6 +183,8 @@ def main():
         setup_cfg.write(fout)
     with open(DEFAULTS_CFG_FILE, "w") as fout:
         defaults_cfg.write(fout)
+    
+    print '\nTAU Commander configured successfully!  Type `make install` to finish the installation.'
 
 
 if __name__ == '__main__':
@@ -193,10 +203,15 @@ if __name__ == '__main__':
         if not os.environ.get('__TAU_CMDR_CONFIGURE_BOOTSTRAPPED__'):
             _bootstrap_conda()
         else:
-            sys.stderr.write("ERROR: %s\n\nPython 2.7 with setuptools is required to install TAU Commander.\n" % err)
+            sys.stderr.write("ERROR: %s\n"
+                             "\n"
+                             "Python 2.7 with setuptools is required to install TAU Commander.\n"
+                             "\n"
+                             "Type `make INSTALLDIR=<install_prefix>` to install Python then\n"
+                             "add '<install_prefix>/conda/bin' to your PATH environment variable\n"
+                             "and try this command again.\n" % err)
             sys.exit(-1)
-        
-    logger.activate_debug_log()
 
+    logger.activate_debug_log()
     sys.exit(main())
     

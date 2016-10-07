@@ -110,7 +110,7 @@ CONDA_VERSION = 4.0.5
 CONDA_REPO = https://repo.continuum.io/miniconda
 CONDA_PKG = Miniconda2-$(CONDA_VERSION)-$(CONDA_OS)-$(CONDA_ARCH).sh
 CONDA_URL = $(CONDA_REPO)/$(CONDA_PKG)
-CONDA_SRC = $(BUILDDIR)/$(CONDA_PKG)
+CONDA_SRC = packages/$(CONDA_PKG)
 CONDA_DEST = $(INSTALLDIR)/conda
 CONDA = $(CONDA_DEST)/bin/python
 
@@ -137,12 +137,19 @@ build: python_check
 	$(ECHO)$(PYTHON) setup.py build
 
 install: build
+# Build python files and set system-level defaults
 	$(ECHO)$(PYTHON) setup.py install --force
-	$(ECHO)$(PYTHON) setup.py install --force --initialize
+# Build dependencies using system-level defaults we just set
+#	$(ECHO)$(PYTHON) setup.py install --force --initialize
 # Add PYTHON_FLAGS to python command line in bin/tau
 	@tail -n +2 "$(TAU)" > "$(BUILDDIR)/tau.tail"
 	@echo `head -1 "$(TAU)"` $(PYTHON_FLAGS) > "$(BUILDDIR)/tau.head"
 	@cat "$(BUILDDIR)/tau.head" "$(BUILDDIR)/tau.tail" > "$(TAU)"
+# Copy archive files to system-level src, if available
+	@mkdir -p $(INSTALLDIR)/.system/src
+	@cp -v packages/*.tgz $(INSTALLDIR)/.system/src 2>/dev/null || true
+	@cp -v packages/*.tar.* $(INSTALLDIR)/.system/src 2>/dev/null || true
+	@cp -v packages/*.zip $(INSTALLDIR)/.system/src 2>/dev/null || true
 	@chmod -R a+rX,g+w $(INSTALLDIR)
 	@echo
 	@echo "-------------------------------------------------------------------------------"
@@ -152,10 +159,7 @@ install: build
 	@echo
 
 python_check: $(PYTHON_EXE)
-	@echo "Checking '$(PYTHON_EXE)'"
-	@echo "$$LD_LIBRARY_PATH"
-	@$(PYTHON) -c "import sys; print sys.path ; import setuptools;" || (echo "ERROR: setuptools is required." && false)
-	@echo "'$(PYTHON_EXE)' appears to work."
+	@$(PYTHON) -c "import sys; import setuptools;" || (echo "ERROR: setuptools is required." && false)
 
 $(CONDA): $(CONDA_SRC)
 	$(ECHO)bash $< -b -p $(CONDA_DEST)
