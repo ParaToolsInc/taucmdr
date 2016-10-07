@@ -27,41 +27,67 @@
 #
 """TAU Commander installation configuration.
 
+**This file must be Python 2.6 compatible.** It will bootstrap a Python 2.7 environment
+if Python 2.6 is detected.
+
 Writes a configuration file used to initialize a new TAU Commander installation.
 """
 
 import os
 import sys
 
-HERE = os.path.realpath(os.path.dirname(__file__))
-
-SETUP_CFG_FILE = os.path.join(HERE, 'setup.cfg')
-
-DEFAULTS_CFG_FILE = os.path.join(HERE, 'defaults.cfg')
-
 PROG = sys.argv[0]
 
-sys.path.insert(0, os.path.join(HERE, 'packages'))
-try:
-    import setuptools
-    import tau
-    from tau import __version__ as taucmdr_version
-    from tau import logger, configuration
-    from tau.cli import arguments
-    from tau.cli.commands.target.create import COMMAND as target_create_cmd
-    from tau.cli.commands.application.create import COMMAND as application_create_cmd
-    from tau.cli.commands.measurement.create import COMMAND as measurement_create_cmd
-except (SystemExit, Exception) as err:
-    sys.stderr.write("ERROR: %s\n"
-                     "\n"
-                     "Python 2.7 with setuptools is required to install TAU Commander.\n"
-                     "\n"
-                     "Type `make INSTALLDIR=<install_prefix>` to install Python then\n"
-                     "add '<install_prefix>/conda/bin' to your PATH environment variable\n"
-                     "and try this command again.\n" % err)
-    sys.exit(-1)
+PACKAGE_TOPDIR = os.path.realpath(os.path.abspath(os.path.dirname(__file__)))
 
-logger.activate_debug_log()
+SETUP_CFG_FILE = os.path.join(PACKAGE_TOPDIR, 'setup.cfg')
+
+DEFAULTS_CFG_FILE = os.path.join(PACKAGE_TOPDIR, 'defaults.cfg')
+
+PYTHON_26_WARNING = ("IMPORTANT: This is the Python 2.6 configuration script for TAU Commander.\n"
+                     "Only a few configuration options are supported by this script.  If possible,\n"
+                     "you should put Python 2.7 in your PATH and run this command again.")
+
+
+def _default_prefix():
+    try:
+        fin = open(os.path.join(PACKAGE_TOPDIR, "VERSION"))
+    except IOError:
+        sys.stderr.writeln("ERROR: VERSION file is missing!")
+        sys.exit(-1)
+    else:
+        version = fin.readline().strip()
+    finally:
+        fin.close()
+    return '/opt/ParaTools/taucmdr-%s' % version
+
+
+def _get_prefix():
+    from optparse import OptionParser
+    parser = OptionParser(description=PYTHON_26_WARNING)
+    parser.add_option("--prefix", dest="prefix", help='Installation prefix.', metavar="<path>")
+    options, _ = parser.parse_args()
+    prefix = options.prefix if options.prefix else _default_prefix()
+    if not os.access(prefix, os.W_OK):
+        prefix = os.path.join(PACKAGE_TOPDIR, 'build', 'tmp')
+    return prefix
+
+
+def _bootstrap_conda():
+    import subprocess
+    print PYTHON_26_WARNING
+    prefix = _get_prefix()
+    cmd = ['make', 'python_check', 'INSTALLDIR=' + prefix]
+    try:
+        subprocess.check_call(cmd, cwd=PACKAGE_TOPDIR)
+    except subprocess.CalledProcessError as err:
+        sys.stderr.write("Command '%s' failed with return code '%s'\n" % (' '.join(cmd), err.returncode))
+        sys.exit(-1)
+    os.environ['PATH'] = os.path.join(prefix, 'conda', 'bin') + ":" + os.environ['PATH']
+    os.environ['__TAU_CMDR_CONFIGURE_BOOTSTRAPPED__'] = '1'
+    # Run myself again now with Python 2.7 from conda
+    os.execv(PROG, sys.argv)
+
 
 def build_parser(setup_cfg, default_cfg):
     """Builds the command line parser from tau subcommands.
@@ -87,7 +113,7 @@ def build_parser(setup_cfg, default_cfg):
                    % (SETUP_CFG_FILE, DEFAULTS_CFG_FILE))
     parser = arguments.get_parser(prog=PROG, usage='%s [arguments]' % PROG, description=description)
     parser.add_argument('--prefix', metavar='<path>', help='Installation prefix.',
-                        default=install.get('prefix', '/opt/ParaTools/taucmdr-%s' % taucmdr_version))
+                        default=install.get('prefix', _default_prefix()))
     parser.add_argument('-c', '--compile', nargs='?', const=True, metavar='T/F', 
                         action=arguments.ParseBooleanAction, help="Compile .py files to .pyc bytecode files.",
                         default=configuration.parse_config_string(install.get('compile', True)))
@@ -152,5 +178,25 @@ def main():
 
 
 if __name__ == '__main__':
+    sys.path.insert(0, os.path.join(PACKAGE_TOPDIR, 'packages'))
+    try:
+        import setuptools
+        import tau
+        from tau import __version__ as taucmdr_version
+        from tau import logger, configuration
+        from tau.cli import arguments
+        from tau.cli.commands.target.create import COMMAND as target_create_cmd
+        from tau.cli.commands.application.create import COMMAND as application_create_cmd
+        from tau.cli.commands.measurement.create import COMMAND as measurement_create_cmd
+    except (SystemExit, Exception) as err:
+        # Prevent infinite recursion: only bootstrap once
+        if not os.environ.get('__TAU_CMDR_CONFIGURE_BOOTSTRAPPED__'):
+            _bootstrap_conda()
+        else:
+            sys.stderr.write("ERROR: %s\n\nPython 2.7 with setuptools is required to install TAU Commander.\n" % err)
+            sys.exit(-1)
+        
+    logger.activate_debug_log()
+
     sys.exit(main())
     

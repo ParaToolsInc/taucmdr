@@ -35,7 +35,7 @@ and checks the Python version.  It must be kept as short and simple as possible.
 import os
 import sys
 
-__version__ = "0.1"
+__version__ = "1.0a"
 """str: TAU Commander Version"""
 
 EXIT_FAILURE = -100
