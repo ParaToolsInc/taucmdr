@@ -85,7 +85,7 @@
 <span class="kn">from</span> <span class="nn">tau.error</span> <span class="kn">import</span> <span class="n">ConfigurationError</span><span class="p">,</span> <span class="n">InternalError</span>
 <span class="kn">from</span> <span class="nn">tau.cf.software</span> <span class="kn">import</span> <span class="n">SoftwarePackageError</span>
 <span class="kn">from</span> <span class="nn">tau.cf.software.installation</span> <span class="kn">import</span> <span class="n">Installation</span><span class="p">,</span> <span class="n">parallel_make_flags</span>
-<span class="kn">from</span> <span class="nn">tau.cf.compiler</span> <span class="kn">import</span> <span class="n">host</span><span class="p">,</span> <span class="n">mpi</span>
+<span class="kn">from</span> <span class="nn">tau.cf.compiler</span> <span class="kn">import</span> <span class="n">host</span>
 <span class="kn">from</span> <span class="nn">tau.cf.compiler.host</span> <span class="kn">import</span> <span class="n">CC</span><span class="p">,</span> <span class="n">CXX</span><span class="p">,</span> <span class="n">FC</span><span class="p">,</span> <span class="n">UPC</span>
 <span class="kn">from</span> <span class="nn">tau.cf.compiler.mpi</span> <span class="kn">import</span> <span class="n">MPI_CC</span><span class="p">,</span> <span class="n">MPI_CXX</span><span class="p">,</span> <span class="n">MPI_FC</span>
 <span class="kn">from</span> <span class="nn">tau.cf.compiler.shmem</span> <span class="kn">import</span> <span class="n">SHMEM_CC</span><span class="p">,</span> <span class="n">SHMEM_CXX</span><span class="p">,</span> <span class="n">SHMEM_FC</span>
@@ -324,6 +324,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">lib_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">arch_path</span><span class="p">,</span> <span class="s1">&#39;lib&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_uses_pdt</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># TAU uses PDT to generate the SHMEM wrapper libraries, so PDT is required for SHMEM support</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_inst</span> <span class="o">==</span> <span class="s1">&#39;automatic&#39;</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">shmem_support</span>
 
     <span class="k">def</span> <span class="nf">_uses_binutils</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -375,7 +376,7 @@
                 <span class="k">raise</span> <span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s2">&quot;iowrap libraries or link options not found&quot;</span><span class="p">)</span>
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;TAU installation at &#39;</span><span class="si">%s</span><span class="s2">&#39; is valid&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">install_prefix</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">_select_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">libglob</span><span class="p">,</span> <span class="n">user_inc</span><span class="p">,</span> <span class="n">user_lib</span><span class="p">,</span> <span class="n">user_libraries</span><span class="p">,</span> <span class="n">wrap_cc</span><span class="p">,</span> <span class="n">wrap_cxx</span><span class="p">,</span> <span class="n">wrap_fc</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_select_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">libglobs</span><span class="p">,</span> <span class="n">user_inc</span><span class="p">,</span> <span class="n">user_lib</span><span class="p">,</span> <span class="n">user_libraries</span><span class="p">,</span> <span class="n">wrap_cc</span><span class="p">,</span> <span class="n">wrap_cxx</span><span class="p">,</span> <span class="n">wrap_fc</span><span class="p">):</span>
         <span class="k">def</span> <span class="nf">unique</span><span class="p">(</span><span class="n">seq</span><span class="p">):</span>
             <span class="n">seen</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
             <span class="k">return</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">seq</span> <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">x</span> <span class="ow">in</span> <span class="n">seen</span> <span class="ow">or</span> <span class="n">seen</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">x</span><span class="p">))]</span>
@@ -394,15 +395,17 @@
                                          <span class="p">(</span><span class="n">header</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">include_path</span><span class="p">)))</span>
         <span class="n">library_path</span> <span class="o">=</span> <span class="n">unique</span><span class="p">(</span><span class="n">user_lib</span> <span class="o">+</span> <span class="n">wrap_cc</span><span class="o">.</span><span class="n">library_path</span> <span class="o">+</span> <span class="n">wrap_cxx</span><span class="o">.</span><span class="n">library_path</span> <span class="o">+</span> <span class="n">wrap_fc</span><span class="o">.</span><span class="n">library_path</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">library_path</span><span class="p">:</span>
-            <span class="c1"># Unfortunately, TAU&#39;s configure script can only accept one path on -mpilib</span>
-            <span class="c1"># and it expects the compiler&#39;s include path argument (e.g. &quot;-L&quot;) to be omitted</span>
-            <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">library_path</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">libglob</span><span class="p">)):</span>
-                    <span class="n">selected_lib</span> <span class="o">=</span> <span class="n">path</span>
-                    <span class="k">break</span>
-            <span class="k">else</span><span class="p">:</span>
+            <span class="n">selected_lib</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="k">for</span> <span class="n">libglob</span> <span class="ow">in</span> <span class="n">libglobs</span><span class="p">:</span>
+                <span class="c1"># Unfortunately, TAU&#39;s configure script can only accept one path on -mpilib</span>
+                <span class="c1"># and it expects the compiler&#39;s include path argument (e.g. &quot;-L&quot;) to be omitted</span>
+                <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">library_path</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">libglob</span><span class="p">)):</span>
+                        <span class="n">selected_lib</span> <span class="o">=</span> <span class="n">path</span>
+                        <span class="k">break</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">selected_lib</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;No files matched &#39;</span><span class="si">%s</span><span class="s2">&#39; on library path: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> 
-                                         <span class="p">(</span><span class="n">libglob</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">library_path</span><span class="p">)))</span>
+                                         <span class="p">(</span><span class="n">libglobs</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">library_path</span><span class="p">)))</span>
         <span class="c1"># Don&#39;t add autodetected Fortran or C++ libraries; C is probably OK</span>
         <span class="n">libraries</span> <span class="o">=</span> <span class="n">unique</span><span class="p">(</span><span class="n">user_libraries</span> <span class="o">+</span> <span class="n">wrap_cc</span><span class="o">.</span><span class="n">libraries</span> <span class="o">+</span> <span class="n">wrap_cxx</span><span class="o">.</span><span class="n">libraries</span> <span class="o">+</span> <span class="n">wrap_fc</span><span class="o">.</span><span class="n">libraries</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">libraries</span><span class="p">:</span>
@@ -424,19 +427,14 @@
 <span class="sd">        Raises:</span>
 <span class="sd">            SoftwareConfigurationError: TAU&#39;s configure script failed.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mpi_support</span><span class="p">:</span> 
-            <span class="c1"># TAU&#39;s configure script does a really bad job detecting MPI wrapped compiler commands</span>
-            <span class="c1"># so don&#39;t even bother trying.  Pass as much of this as we can and hope for the best.</span>
-            <span class="n">cc_command</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compilers</span><span class="p">[</span><span class="n">MPI_CC</span><span class="p">]</span><span class="o">.</span><span class="n">unwrap</span><span class="p">()</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">command</span>
-            <span class="n">cxx_command</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compilers</span><span class="p">[</span><span class="n">MPI_CXX</span><span class="p">]</span><span class="o">.</span><span class="n">unwrap</span><span class="p">()</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">command</span>
-            <span class="n">fc_comp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compilers</span><span class="p">[</span><span class="n">MPI_FC</span><span class="p">]</span><span class="o">.</span><span class="n">unwrap</span><span class="p">()</span> <span class="k">if</span> <span class="n">FC</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">compilers</span> <span class="k">else</span> <span class="bp">None</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># TAU&#39;s configure script can&#39;t cope with compiler absolute paths or compiler names that</span>
-            <span class="c1"># don&#39;t exactly match what it expects.  Use `info.command` instead of `command` to work</span>
-            <span class="c1"># around these problems e.g. &#39;gcc-4.9&#39; becomes &#39;gcc&#39; </span>
-            <span class="n">cc_command</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compilers</span><span class="p">[</span><span class="n">CC</span><span class="p">]</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">command</span>
-            <span class="n">cxx_command</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compilers</span><span class="p">[</span><span class="n">CXX</span><span class="p">]</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">command</span>
-            <span class="n">fc_comp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compilers</span><span class="p">[</span><span class="n">FC</span><span class="p">]</span> <span class="k">if</span> <span class="n">FC</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">compilers</span> <span class="k">else</span> <span class="bp">None</span>
+        <span class="c1"># TAU&#39;s configure script can&#39;t cope with compiler absolute paths or compiler names that</span>
+        <span class="c1"># don&#39;t exactly match what it expects.  Use `info.command` instead of `command` to work</span>
+        <span class="c1"># around these problems e.g. &#39;gcc-4.9&#39; becomes &#39;gcc&#39;. </span>
+        <span class="c1"># Also, TAU&#39;s configure script does a really bad job detecting wrapped compiler commands</span>
+        <span class="c1"># so we unwrap the wrapper here before invoking configure.</span>
+        <span class="n">cc_command</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compilers</span><span class="p">[</span><span class="n">CC</span><span class="p">]</span><span class="o">.</span><span class="n">unwrap</span><span class="p">()</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">command</span>
+        <span class="n">cxx_command</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compilers</span><span class="p">[</span><span class="n">CXX</span><span class="p">]</span><span class="o">.</span><span class="n">unwrap</span><span class="p">()</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">command</span>
+        <span class="n">fc_comp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compilers</span><span class="p">[</span><span class="n">FC</span><span class="p">]</span><span class="o">.</span><span class="n">unwrap</span><span class="p">()</span> <span class="k">if</span> <span class="n">FC</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">compilers</span> <span class="k">else</span> <span class="bp">None</span>
 
         <span class="c1"># TAU&#39;s configure script can&#39;t detect Fortran compiler from the compiler</span>
         <span class="c1"># command so translate Fortran compiler command into TAU&#39;s magic words</span>
@@ -448,10 +446,7 @@
                             <span class="n">host</span><span class="o">.</span><span class="n">PGI</span><span class="p">:</span> <span class="s1">&#39;pgi&#39;</span><span class="p">,</span>
                             <span class="n">host</span><span class="o">.</span><span class="n">CRAY</span><span class="p">:</span> <span class="s1">&#39;cray&#39;</span><span class="p">,</span>
                             <span class="n">host</span><span class="o">.</span><span class="n">IBM</span><span class="p">:</span> <span class="s1">&#39;ibm&#39;</span><span class="p">,</span>
-                            <span class="n">host</span><span class="o">.</span><span class="n">IBM_BG</span><span class="p">:</span> <span class="s1">&#39;ibm&#39;</span><span class="p">,</span>
-                            <span class="n">mpi</span><span class="o">.</span><span class="n">SYSTEM</span><span class="p">:</span> <span class="s1">&#39;mpif90&#39;</span><span class="p">,</span>
-                            <span class="n">mpi</span><span class="o">.</span><span class="n">INTEL</span><span class="p">:</span> <span class="s1">&#39;mpiifort&#39;</span><span class="p">,</span>
-                            <span class="n">mpi</span><span class="o">.</span><span class="n">IBM</span><span class="p">:</span> <span class="s1">&#39;ibm&#39;</span><span class="p">}</span>
+                            <span class="n">host</span><span class="o">.</span><span class="n">IBM_BG</span><span class="p">:</span> <span class="s1">&#39;ibm&#39;</span><span class="p">}</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">fortran_magic</span> <span class="o">=</span> <span class="n">fc_magic_map</span><span class="p">[</span><span class="n">fc_family</span><span class="p">]</span>
             <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
@@ -462,7 +457,7 @@
         <span class="n">mpiinc</span><span class="p">,</span> <span class="n">mpilib</span><span class="p">,</span> <span class="n">mpilibrary</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mpi_support</span><span class="p">:</span>
             <span class="n">mpiinc</span><span class="p">,</span> <span class="n">mpilib</span><span class="p">,</span> <span class="n">mpilibrary</span> <span class="o">=</span> \
-                <span class="bp">self</span><span class="o">.</span><span class="n">_select_flags</span><span class="p">(</span><span class="s1">&#39;mpi.h&#39;</span><span class="p">,</span> <span class="s1">&#39;libmpi*&#39;</span><span class="p">,</span> 
+                <span class="bp">self</span><span class="o">.</span><span class="n">_select_flags</span><span class="p">(</span><span class="s1">&#39;mpi.h&#39;</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;libmpi*&#39;</span><span class="p">,),</span> 
                                    <span class="bp">self</span><span class="o">.</span><span class="n">mpi_include_path</span><span class="p">,</span> 
                                    <span class="bp">self</span><span class="o">.</span><span class="n">mpi_library_path</span><span class="p">,</span> 
                                    <span class="bp">self</span><span class="o">.</span><span class="n">mpi_libraries</span><span class="p">,</span>
@@ -474,7 +469,7 @@
         <span class="n">shmeminc</span><span class="p">,</span> <span class="n">shmemlib</span><span class="p">,</span> <span class="n">shmemlibrary</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">shmem_support</span><span class="p">:</span>
             <span class="n">shmeminc</span><span class="p">,</span> <span class="n">shmemlib</span><span class="p">,</span> <span class="n">shmemlibrary</span> <span class="o">=</span> \
-                <span class="bp">self</span><span class="o">.</span><span class="n">_select_flags</span><span class="p">(</span><span class="s1">&#39;shmem.h&#39;</span><span class="p">,</span> <span class="s1">&#39;lib*shmem*&#39;</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_select_flags</span><span class="p">(</span><span class="s1">&#39;shmem.h&#39;</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;lib*shmem*&#39;</span><span class="p">,</span> <span class="s1">&#39;lib*sma*&#39;</span><span class="p">),</span>
                                    <span class="bp">self</span><span class="o">.</span><span class="n">shmem_include_path</span><span class="p">,</span> 
                                    <span class="bp">self</span><span class="o">.</span><span class="n">shmem_library_path</span><span class="p">,</span> 
                                    <span class="bp">self</span><span class="o">.</span><span class="n">shmem_libraries</span><span class="p">,</span>

@@ -249,23 +249,29 @@
             <span class="k">return</span> <span class="bp">False</span>
         <span class="k">return</span> <span class="n">selected</span><span class="p">[</span><span class="s1">&#39;application&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">eid</span></div>
     
-<div class="viewcode-block" id="Application.check_compiler"><a class="viewcode-back" href="../../../tau.model.application.html#tau.model.application.Application.check_compiler">[docs]</a>    <span class="k">def</span> <span class="nf">check_compiler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">compiler</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Checks a compiler for compatibility with this application configuration.</span>
+<div class="viewcode-block" id="Application.check_compiler"><a class="viewcode-back" href="../../../tau.model.application.html#tau.model.application.Application.check_compiler">[docs]</a>    <span class="k">def</span> <span class="nf">check_compiler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">compilers</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Checks a list of compilers for compatibility with this application configuration.</span>
 <span class="sd">        </span>
 <span class="sd">        Args:</span>
-<span class="sd">            compiler (InstalledCompiler): The compiler.</span>
+<span class="sd">            compilers (list): :any:`Compiler` instances that could possibly be compatible with this application.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Compiler: A compiler from `compilers` that can be used to build the application.</span>
 <span class="sd">            </span>
 <span class="sd">        Raises:</span>
-<span class="sd">            ConfigurationError: The compiler or command line arguments are incompatible with this target.</span>
+<span class="sd">            ConfigurationError: No compiler in `compilers` is compatible with this application.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;mpi&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">compiler</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">family</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">MPI_COMPILERS</span><span class="o">.</span><span class="n">families</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Application &#39;</span><span class="si">%s</span><span class="s2">&#39; uses MPI but </span><span class="si">%s</span><span class="s2"> is not an MPI compiler.&quot;</span> <span class="o">%</span> 
-                                     <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">compiler</span><span class="o">.</span><span class="n">absolute_path</span><span class="p">))</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;shmem&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">compiler</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">family</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">SHMEM_COMPILERS</span><span class="o">.</span><span class="n">families</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Application &#39;</span><span class="si">%s</span><span class="s2">&#39; uses SHMEM but </span><span class="si">%s</span><span class="s2"> is not a SHMEM compiler.&quot;</span> <span class="o">%</span> 
-                                     <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">compiler</span><span class="o">.</span><span class="n">absolute_path</span><span class="p">))</span></div></div>
-        
-
+        <span class="n">found</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">compiler</span> <span class="ow">in</span> <span class="n">compilers</span><span class="p">:</span>
+            <span class="n">is_mpi</span> <span class="o">=</span> <span class="n">compiler</span><span class="p">[</span><span class="s1">&#39;role&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">MPI_COMPILERS</span><span class="o">.</span><span class="n">keyword</span><span class="p">)</span>
+            <span class="n">is_shmem</span> <span class="o">=</span> <span class="n">compiler</span><span class="p">[</span><span class="s1">&#39;role&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">SHMEM_COMPILERS</span><span class="o">.</span><span class="n">keyword</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">is_mpi</span> <span class="ow">and</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;mpi&#39;</span><span class="p">])</span> <span class="ow">or</span> <span class="p">(</span><span class="n">is_shmem</span> <span class="ow">and</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;shmem&#39;</span><span class="p">]):</span>
+                <span class="n">found</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">compiler</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">found</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Application &#39;</span><span class="si">%s</span><span class="s2">&#39; is not compatible with any of these compilers:</span><span class="se">\n</span><span class="s2">  </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> 
+                                     <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">  &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">compiler</span><span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">compiler</span> <span class="ow">in</span> <span class="n">compilers</span><span class="p">)))</span>
+        <span class="c1"># If more than one compiler is compatible then choose the first one</span>
+        <span class="k">return</span> <span class="n">found</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div></div>
 </pre></div>
 
       </div>

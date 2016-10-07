@@ -233,9 +233,9 @@ Unknown compiler command or not enough information given to perform the probe.</
 </table>
 </dd></dl>
 
-<dl class="method">
+<dl class="attribute">
 <dt id="tau.cf.compiler.InstalledCompiler.version_string">
-<code class="descname">version_string</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/compiler.html#InstalledCompiler.version_string"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.compiler.InstalledCompiler.version_string" title="Permalink to this definition">¶</a></dt>
+<code class="descname">version_string</code><a class="headerlink" href="#tau.cf.compiler.InstalledCompiler.version_string" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the compiler&#8217;s self-reported version info.</p>
 <p>Usually whatever the compiler prints when the &#8211;version flag is provided.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -256,22 +256,17 @@ Unknown compiler command or not enough information given to perform the probe.</
 <dt id="tau.cf.compiler.InstalledCompilerCreator">
 <em class="property">class </em><code class="descclassname">tau.cf.compiler.</code><code class="descname">InstalledCompilerCreator</code><a class="reference internal" href="_modules/tau/cf/compiler.html#InstalledCompilerCreator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.compiler.InstalledCompilerCreator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#type" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">type</span></code></a></p>
-<p>Metaclass to create a new <a class="reference internal" href="#tau.cf.compiler.InstalledCompiler" title="tau.cf.compiler.InstalledCompiler"><code class="xref any py py-class docutils literal"><span class="pre">InstalledCompiler</span></code></a> instance.</p>
-<p>This metaclass greatly improves TAU Commander performance.</p>
-<p>InstalledCompiler instances are constructed with an absolute path
-to an installed compiler command.  On initialization, the instance
-invokes the compiler command to discover system-specific compiler
-characteristics.  This can be very expensive, so we change the
-instance creation procedure to only probe the compiler when the
-compiler command has never been seen before.  This avoids dupliate
+<p>Cache compiler probe results.</p>
+<p>InstalledCompiler invokes a compiler command to discover system-specific compiler characteristics.
+This can be very expensive, so this metaclass changes the instance creation procedure to only
+probe the compiler when the compiler command has never been seen before and avoid dupliate
 invocations in a case like:</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="n">InstalledCompiler</span><span class="p">(</span><span class="s1">&#39;/path/to/icc&#39;</span><span class="p">)</span>
 <span class="n">b</span> <span class="o">=</span> <span class="n">InstalledCompiler</span><span class="p">(</span><span class="s1">&#39;/path/to/icc&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Without this metaclass, <cite>a</cite> and <cite>b</cite> would be different instances
-assigned to the same compiler and <cite>icc</cite> would be probed twice. With
-this metaclass, <code class="docutils literal"><span class="pre">b</span> <span class="pre">is</span> <span class="pre">a</span> <span class="pre">==</span> <span class="pre">True</span></code> and <cite>icc</cite> is only invoked once.</p>
+<p>Without this metaclass, <cite>a</cite> and <cite>b</cite> would be different instances assigned to the same compiler
+and <cite>icc</cite> would be probed twice. With this metaclass, <code class="docutils literal"><span class="pre">b</span> <span class="pre">is</span> <span class="pre">a</span> <span class="pre">==</span> <span class="pre">True</span></code> and <cite>icc</cite> is only invoked once.</p>
 </dd></dl>
 
 <dl class="class">
@@ -538,11 +533,6 @@ similar arguments, and produce compatible object files.</p>
 <dd><p><em>dict</em></p>
 <p>Compilers in this family indexed by role.</p>
 </dd></dl>
-
-<dl class="method">
-<dt id="tau.cf.compiler._CompilerFamily.check_command">
-<code class="descname">check_command</code><span class="sig-paren">(</span><em>absolute_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/compiler.html#_CompilerFamily.check_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.compiler._CompilerFamily.check_command" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 <dl class="method">
 <dt id="tau.cf.compiler._CompilerFamily.installation">

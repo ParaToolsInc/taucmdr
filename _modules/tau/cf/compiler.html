@@ -277,23 +277,6 @@
 <div class="viewcode-block" id="_CompilerFamily.installation"><a class="viewcode-back" href="../../../tau.cf.compiler.html#tau.cf.compiler._CompilerFamily.installation">[docs]</a>    <span class="k">def</span> <span class="nf">installation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">InstalledCompilerFamily</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="_CompilerFamily.check_command"><a class="viewcode-back" href="../../../tau.cf.compiler.html#tau.cf.compiler._CompilerFamily.check_command">[docs]</a>    <span class="k">def</span> <span class="nf">check_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">absolute_path</span><span class="p">):</span>
-        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Probing compiler &#39;</span><span class="si">%s</span><span class="s2">&#39; to discover compiler family&quot;</span><span class="p">,</span> <span class="n">absolute_path</span><span class="p">)</span>
-        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">absolute_path</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">version_flags</span>
-        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Creating subprocess: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">stdout</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">STDOUT</span><span class="p">)</span>
-        <span class="k">except</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">CalledProcessError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> failed with return code </span><span class="si">%d</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">err</span><span class="o">.</span><span class="n">returncode</span><span class="p">,</span> <span class="n">err</span><span class="o">.</span><span class="n">output</span><span class="p">)</span>
-        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">stdout</span><span class="p">)</span>
-        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> returned 0&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">family_regex</span><span class="p">,</span> <span class="n">stdout</span><span class="p">):</span>
-            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;&#39;</span><span class="si">%s</span><span class="s2">&#39; is a </span><span class="si">%s</span><span class="s2"> compiler&quot;</span><span class="p">,</span> <span class="n">absolute_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-            <span class="k">return</span> <span class="bp">self</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;&#39;</span><span class="si">%s</span><span class="s2">&#39; is not a </span><span class="si">%s</span><span class="s2"> compiler&quot;</span><span class="p">,</span> <span class="n">absolute_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">_CompilerFamily</span><span class="o">.</span><span class="n">probe</span><span class="p">(</span><span class="n">absolute_path</span><span class="p">)</span></div>
-    
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="_CompilerFamily.probe"><a class="viewcode-back" href="../../../tau.cf.compiler.html#tau.cf.compiler._CompilerFamily.probe">[docs]</a>    <span class="k">def</span> <span class="nf">probe</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">absolute_path</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Determine the compiler family of a given command.</span>
@@ -418,35 +401,34 @@
 
 
 <div class="viewcode-block" id="InstalledCompilerCreator"><a class="viewcode-back" href="../../../tau.cf.compiler.html#tau.cf.compiler.InstalledCompilerCreator">[docs]</a><span class="k">class</span> <span class="nc">InstalledCompilerCreator</span><span class="p">(</span><span class="nb">type</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Metaclass to create a new :any:`InstalledCompiler` instance.</span>
+    <span class="sd">&quot;&quot;&quot;Cache compiler probe results.</span>
 <span class="sd">     </span>
-<span class="sd">    This metaclass greatly improves TAU Commander performance.</span>
-<span class="sd">     </span>
-<span class="sd">    InstalledCompiler instances are constructed with an absolute path</span>
-<span class="sd">    to an installed compiler command.  On initialization, the instance</span>
-<span class="sd">    invokes the compiler command to discover system-specific compiler</span>
-<span class="sd">    characteristics.  This can be very expensive, so we change the</span>
-<span class="sd">    instance creation procedure to only probe the compiler when the </span>
-<span class="sd">    compiler command has never been seen before.  This avoids dupliate</span>
+<span class="sd">    InstalledCompiler invokes a compiler command to discover system-specific compiler characteristics.  </span>
+<span class="sd">    This can be very expensive, so this metaclass changes the instance creation procedure to only </span>
+<span class="sd">    probe the compiler when the compiler command has never been seen before and avoid dupliate</span>
 <span class="sd">    invocations in a case like::</span>
 <span class="sd">     </span>
 <span class="sd">        a = InstalledCompiler(&#39;/path/to/icc&#39;)</span>
 <span class="sd">        b = InstalledCompiler(&#39;/path/to/icc&#39;)    </span>
 
-<span class="sd">    Without this metaclass, `a` and `b` would be different instances</span>
-<span class="sd">    assigned to the same compiler and `icc` would be probed twice. With</span>
-<span class="sd">    this metaclass, ``b is a == True`` and `icc` is only invoked once.</span>
+<span class="sd">    Without this metaclass, `a` and `b` would be different instances assigned to the same compiler </span>
+<span class="sd">    and `icc` would be probed twice. With this metaclass, ``b is a == True`` and `icc` is only invoked once.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">absolute_path</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">absolute_path</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isabs</span><span class="p">(</span><span class="n">absolute_path</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">info</span><span class="p">,</span> <span class="n">_CompilerInfo</span><span class="p">)</span>
-        <span class="n">wrapped_path</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;wrapped&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unwrap</span><span class="p">()</span><span class="o">.</span><span class="n">absolute_path</span> <span class="k">if</span> <span class="s1">&#39;wrapped&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="k">else</span> <span class="bp">None</span>
+        <span class="c1"># Don&#39;t allow unchecked values into the instance cache</span>
+        <span class="k">if</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">InstalledCompilerCreator</span><span class="p">,</span> <span class="n">cls</span><span class="p">)</span><span class="o">.</span><span class="n">__call__</span><span class="p">(</span><span class="n">absolute_path</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Checking (</span><span class="si">%s</span><span class="s1">, </span><span class="si">%s</span><span class="s1">)&#39;</span><span class="p">,</span> <span class="n">absolute_path</span><span class="p">,</span> <span class="n">info</span><span class="o">.</span><span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">instance</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">__instances__</span><span class="p">[</span><span class="n">absolute_path</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">wrapped_path</span><span class="p">]</span>
+            <span class="n">instance</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">__instances__</span><span class="p">[</span><span class="n">absolute_path</span><span class="p">,</span> <span class="n">info</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span> 
             <span class="n">instance</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">InstalledCompilerCreator</span><span class="p">,</span> <span class="n">cls</span><span class="p">)</span><span class="o">.</span><span class="n">__call__</span><span class="p">(</span><span class="n">absolute_path</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-            <span class="n">wrapped_path</span> <span class="o">=</span> <span class="n">instance</span><span class="o">.</span><span class="n">unwrap</span><span class="p">()</span><span class="o">.</span><span class="n">absolute_path</span> <span class="k">if</span> <span class="n">instance</span><span class="o">.</span><span class="n">wrapped</span> <span class="k">else</span> <span class="bp">None</span> 
-            <span class="n">cls</span><span class="o">.</span><span class="n">__instances__</span><span class="p">[</span><span class="n">absolute_path</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">wrapped_path</span><span class="p">]</span> <span class="o">=</span> <span class="n">instance</span>
+            <span class="n">cls</span><span class="o">.</span><span class="n">__instances__</span><span class="p">[</span><span class="n">absolute_path</span><span class="p">,</span> <span class="n">info</span><span class="p">]</span> <span class="o">=</span> <span class="n">instance</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Added (</span><span class="si">%s</span><span class="s1">, </span><span class="si">%s</span><span class="s1">) to compiler cache&#39;</span><span class="p">,</span> <span class="n">absolute_path</span><span class="p">,</span> <span class="n">info</span><span class="o">.</span><span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Using cached instance&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">instance</span></div>
 
 
@@ -482,17 +464,17 @@
 <span class="sd">        Any information not provided on the argument list may be probed from the system.</span>
 <span class="sd">        This can be **VERY** expensive and may involve invoking the compiler, checking PATH, file permissions, </span>
 <span class="sd">        or other conditions in the system to determine if a compiler command is present and executable.</span>
-<span class="sd">        If this compiler command wraps another command, that command may also be probed.  The probes recurse</span>
-<span class="sd">        to the &quot;root&quot; compiler that doesn&#39;t wrap any other command.  In fact, the probe is so expensive we</span>
-<span class="sd">        emit an INFO-level message whenever it happens.</span>
+<span class="sd">        If this compiler command wraps another command, that command is also probed.  The probes recurse</span>
+<span class="sd">        to the &quot;root&quot; compiler that doesn&#39;t wrap any other command.</span>
 <span class="sd">        </span>
 <span class="sd">        :any:`uid` uniquely identifies this compiler as installed in the system.  If the compiler&#39;s installation</span>
 <span class="sd">        changes substantially (e.g. significant version upgrades or changes in the compiler wrapper) then the UID</span>
 <span class="sd">        will change as well.</span>
-<span class="sd">        </span>
-<span class="sd">        TAU is highly dependent on the compiler used to install TAU.  If that compiler</span>
-<span class="sd">        changes, or the user tries to &quot;fake out&quot; TAU Commander by renaming compiler</span>
-<span class="sd">        commands, then the user should be warned that the compiler has changed.</span>
+<span class="sd">               </span>
+<span class="sd">        These probes are necessary because TAU is highly dependent on the compiler used to install TAU.  </span>
+<span class="sd">        If that compiler changes, or the user tries to &quot;fake out&quot; TAU Commander by renaming compiler</span>
+<span class="sd">        commands, then the user should be warned that the compiler has changed.  If the change is severe</span>
+<span class="sd">        then the operation should halt before an invalid operation.</span>
 <span class="sd">        </span>
 <span class="sd">        Args:</span>
 <span class="sd">            absolute_path (str): Absolute path to the compiler command.</span>
@@ -527,28 +509,26 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">compiler_flags</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">libraries</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">wrapped</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_probe_wrapper</span><span class="p">()</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrapped</span> <span class="ow">and</span> <span class="n">info</span><span class="o">.</span><span class="n">family</span><span class="o">.</span><span class="n">family_regex</span><span class="p">:</span>
-            <span class="n">probed_family</span> <span class="o">=</span> <span class="n">info</span><span class="o">.</span><span class="n">family</span><span class="o">.</span><span class="n">check_command</span><span class="p">(</span><span class="n">absolute_path</span><span class="p">)</span> 
-            <span class="k">if</span> <span class="n">probed_family</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">info</span><span class="o">.</span><span class="n">family</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Compiler &#39;</span><span class="si">%s</span><span class="s2">&#39; is a </span><span class="si">%s</span><span class="s2"> compiler, not a &#39;</span><span class="si">%s</span><span class="s2">&#39; compiler.&quot;</span> <span class="o">%</span>
-                                         <span class="p">(</span><span class="n">absolute_path</span><span class="p">,</span> <span class="n">probed_family</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">info</span><span class="o">.</span><span class="n">family</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">uid</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">uid</span> <span class="o">=</span> <span class="n">uid</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">uid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_uid</span><span class="p">()</span>
-
-    <span class="k">def</span> <span class="nf">_calculate_uid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Calculating UID of &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">absolute_path</span><span class="p">)</span>
-        <span class="n">uid</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">md5</span><span class="p">()</span>
-        <span class="n">uid</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">absolute_path</span><span class="p">)</span>
-        <span class="n">uid</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">family</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-        <span class="n">uid</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrapped</span><span class="p">:</span>
-            <span class="n">uid</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wrapped</span><span class="o">.</span><span class="n">uid</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="s1">&#39;include_path&#39;</span><span class="p">,</span> <span class="s1">&#39;library_path&#39;</span><span class="p">,</span> <span class="s1">&#39;compiler_flags&#39;</span><span class="p">,</span> <span class="s1">&#39;libraries&#39;</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
-                    <span class="n">uid</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">uid</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+            <span class="n">md5</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">md5</span><span class="p">()</span>
+            <span class="n">md5</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">absolute_path</span><span class="p">)</span>
+            <span class="n">md5</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">family</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">md5</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrapped</span><span class="p">:</span>
+                <span class="n">md5</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wrapped</span><span class="o">.</span><span class="n">uid</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="s1">&#39;include_path&#39;</span><span class="p">,</span> <span class="s1">&#39;library_path&#39;</span><span class="p">,</span> <span class="s1">&#39;compiler_flags&#39;</span><span class="p">,</span> <span class="s1">&#39;libraries&#39;</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
+                        <span class="n">md5</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">value</span><span class="p">)))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">uid</span> <span class="o">=</span> <span class="n">md5</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+        <span class="c1"># Don&#39;t need to check the compiler family of compiler wrappers since the compiler</span>
+        <span class="c1"># the wrapper wraps has already been checked.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrapped</span> <span class="ow">and</span> <span class="n">info</span><span class="o">.</span><span class="n">family</span><span class="o">.</span><span class="n">family_regex</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">family</span><span class="o">.</span><span class="n">family_regex</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">version_string</span><span class="p">):</span>
+                <span class="n">probed_family</span> <span class="o">=</span> <span class="n">_CompilerFamily</span><span class="o">.</span><span class="n">probe</span><span class="p">(</span><span class="n">absolute_path</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Compiler &#39;</span><span class="si">%s</span><span class="s2">&#39; is a </span><span class="si">%s</span><span class="s2"> compiler, not a &#39;</span><span class="si">%s</span><span class="s2">&#39; compiler.&quot;</span> <span class="o">%</span>
+                                         <span class="p">(</span><span class="n">absolute_path</span><span class="p">,</span> <span class="n">probed_family</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">info</span><span class="o">.</span><span class="n">family</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="nf">_probe_wrapper</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">family</span><span class="o">.</span><span class="n">show_wrapper_flags</span><span class="p">:</span>
@@ -585,8 +565,7 @@
                 <span class="k">return</span> <span class="bp">None</span>
             <span class="n">wrapped</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_probe_wrapped</span><span class="p">(</span><span class="n">wrapped_absolute_path</span><span class="p">,</span> <span class="n">wrapped_args</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">wrapped</span><span class="p">:</span>
-                <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;&#39;</span><span class="si">%s</span><span class="s2">&#39; wrapped by </span><span class="si">%s</span><span class="s2"> &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">wrapped</span><span class="o">.</span><span class="n">absolute_path</span><span class="p">,</span> 
-                            <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">short_descr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">absolute_path</span><span class="p">)</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> &#39;</span><span class="si">%s</span><span class="s2">&#39; wraps &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">short_descr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">absolute_path</span><span class="p">,</span> <span class="n">wrapped</span><span class="o">.</span><span class="n">absolute_path</span><span class="p">)</span>
                 <span class="k">break</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Unable to identify compiler wrapped by wrapper &#39;</span><span class="si">%s</span><span class="s2">&#39;.&quot;</span>
@@ -662,6 +641,9 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            InstalledCompiler: A new InstalledCompiler instance describing the compiler.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">family</span><span class="p">,</span> <span class="n">_CompilerFamily</span><span class="p">)</span> <span class="ow">or</span> <span class="n">family</span> <span class="ow">is</span> <span class="bp">None</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">role</span><span class="p">,</span> <span class="n">_CompilerRole</span><span class="p">)</span> <span class="ow">or</span> <span class="n">role</span> <span class="ow">is</span> <span class="bp">None</span>
         <span class="n">absolute_path</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">absolute_path</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Compiler &#39;</span><span class="si">%s</span><span class="s2">&#39; not found on PATH&quot;</span> <span class="o">%</span> <span class="n">command</span><span class="p">)</span>
@@ -694,7 +676,8 @@
             <span class="n">comp</span> <span class="o">=</span> <span class="n">comp</span><span class="o">.</span><span class="n">wrapped</span>
         <span class="k">return</span> <span class="n">comp</span></div>
     
-<div class="viewcode-block" id="InstalledCompiler.version_string"><a class="viewcode-back" href="../../../tau.cf.compiler.html#tau.cf.compiler.InstalledCompiler.version_string">[docs]</a>    <span class="k">def</span> <span class="nf">version_string</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">version_string</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get the compiler&#39;s self-reported version info.</span>
 <span class="sd">        </span>
 <span class="sd">        Usually whatever the compiler prints when the --version flag is provided.</span>
@@ -709,7 +692,8 @@
             <span class="k">except</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">CalledProcessError</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Invalid version flags </span><span class="si">%s</span><span class="s2"> for compiler &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> 
                                          <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">family</span><span class="o">.</span><span class="n">version_flags</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">absolute_path</span><span class="p">))</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_version_string</span></div></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_version_string</span></div>
+
 
 <div class="viewcode-block" id="InstalledCompilerFamily"><a class="viewcode-back" href="../../../tau.cf.compiler.html#tau.cf.compiler.InstalledCompilerFamily">[docs]</a><span class="k">class</span> <span class="nc">InstalledCompilerFamily</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Information about an installed compiler family.</span>

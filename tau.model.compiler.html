@@ -68,23 +68,20 @@ This data tracks the system compilers so we can warn the user if they have chang
 
 <dl class="attribute">
 <dt id="tau.model.compiler.Compiler.attributes">
-<code class="descname">attributes</code><em class="property"> = {'libraries': {'required': False, 'type': 'array', 'description': 'extra libraries to link when compiling with this compiler'}, 'include_path': {'required': False, 'type': 'array', 'description': 'extra paths to search for include files when compiling with this compiler'}, 'role': {'required': True, 'type': 'string', 'description': 'role this command plays in the compiler family, e.g. CXX or MPI_CC'}, 'uid': {'required': True, 'type': 'string', 'description': 'compiler unique identifier'}, 'family': {'required': True, 'type': 'string', 'description': &quot;compiler's family&quot;}, 'wrapped': {'model': &lt;class 'tau.model.compiler.Compiler'&gt;, 'required': False, 'description': 'compiler wrapped by this compiler'}, 'path': {'required': True, 'type': 'string', 'description': 'absolute path to the compiler command'}, 'compiler_flags': {'required': False, 'type': 'array', 'description': 'extra flags to use when compiling with this compiler'}, 'library_path': {'required': False, 'type': 'array', 'description': 'extra paths to search for libraries when compiling with this compiler'}}</em><a class="headerlink" href="#tau.model.compiler.Compiler.attributes" title="Permalink to this definition">¶</a></dt>
+<code class="descname">attributes</code><em class="property"> = {'libraries': {'required': False, 'type': 'array', 'description': 'extra libraries to link when compiling with this compiler'}, 'include_path': {'required': False, 'type': 'array', 'description': 'extra paths to search for include files when compiling with this compiler'}, 'role': {'required': True, 'type': 'string', 'description': 'role this command plays in the compiler family, e.g. CXX or MPI_CC'}, 'uid': {'required': True, 'type': 'string', 'description': 'compiler unique identifier'}, 'family': {'required': True, 'type': 'string', 'description': &quot;compiler's family name&quot;}, 'wrapped': {'model': &lt;class 'tau.model.compiler.Compiler'&gt;, 'required': False, 'description': 'compiler wrapped by this compiler'}, 'path': {'required': True, 'type': 'string', 'description': 'absolute path to the compiler command'}, 'compiler_flags': {'required': False, 'type': 'array', 'description': 'extra flags to use when compiling with this compiler'}, 'library_path': {'required': False, 'type': 'array', 'description': 'extra paths to search for libraries when compiling with this compiler'}}</em><a class="headerlink" href="#tau.model.compiler.Compiler.attributes" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="tau.model.compiler.Compiler.installation_info">
-<code class="descname">installation_info</code><span class="sig-paren">(</span><em>probe=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/compiler.html#Compiler.installation_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.compiler.Compiler.installation_info" title="Permalink to this definition">¶</a></dt>
+<dt id="tau.model.compiler.Compiler.installation">
+<code class="descname">installation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/compiler.html#Compiler.installation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.compiler.Compiler.installation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets information about this compiler installation.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>probe</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True then probe the system to confirm that the installed compiler matches the
-data recorded in the database.  If False then use the recorded data without verification.</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Information about the installed compiler command.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Information about the installed compiler command.</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="tau.cf.compiler.html#tau.cf.compiler.InstalledCompiler" title="tau.cf.compiler.InstalledCompiler">InstalledCompiler</a></td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="tau.cf.compiler.html#tau.cf.compiler.InstalledCompiler" title="tau.cf.compiler.InstalledCompiler">InstalledCompiler</a></td>
 </tr>
 </tbody>
 </table>
@@ -97,8 +94,29 @@ data recorded in the database.  If False then use the recorded data without veri
 
 <dl class="attribute">
 <dt id="tau.model.compiler.Compiler.references">
-<code class="descname">references</code><em class="property"> = set([(&lt;class 'tau.model.compiler.Compiler'&gt;, 'wrapped'), (&lt;class 'tau.model.target.Target'&gt;, 'SHMEM_FC'), (&lt;class 'tau.model.target.Target'&gt;, 'SHMEM_CXX'), (&lt;class 'tau.model.target.Target'&gt;, 'MPI_CC'), (&lt;class 'tau.model.target.Target'&gt;, 'Host_CC'), (&lt;class 'tau.model.target.Target'&gt;, 'MPI_CXX'), (&lt;class 'tau.model.target.Target'&gt;, 'SHMEM_CC'), (&lt;class 'tau.model.target.Target'&gt;, 'Host_FC'), (&lt;class 'tau.model.target.Target'&gt;, 'MPI_FC'), (&lt;class 'tau.model.target.Target'&gt;, 'Host_CXX'), (&lt;class 'tau.model.target.Target'&gt;, 'Host_UPC')])</em><a class="headerlink" href="#tau.model.compiler.Compiler.references" title="Permalink to this definition">¶</a></dt>
+<code class="descname">references</code><em class="property"> = set([(&lt;class 'tau.model.target.Target'&gt;, 'SHMEM_FC'), (&lt;class 'tau.model.target.Target'&gt;, 'SHMEM_CXX'), (&lt;class 'tau.model.target.Target'&gt;, 'MPI_CC'), (&lt;class 'tau.model.target.Target'&gt;, 'Host_CC'), (&lt;class 'tau.model.target.Target'&gt;, 'MPI_CXX'), (&lt;class 'tau.model.target.Target'&gt;, 'SHMEM_CC'), (&lt;class 'tau.model.target.Target'&gt;, 'Host_FC'), (&lt;class 'tau.model.target.Target'&gt;, 'MPI_FC'), (&lt;class 'tau.model.target.Target'&gt;, 'Host_CXX'), (&lt;class 'tau.model.target.Target'&gt;, 'Host_UPC'), (&lt;class 'tau.model.compiler.Compiler'&gt;, 'wrapped')])</em><a class="headerlink" href="#tau.model.compiler.Compiler.references" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="method">
+<dt id="tau.model.compiler.Compiler.verify">
+<code class="descname">verify</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/compiler.html#Compiler.verify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.compiler.Compiler.verify" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks that the system state matches the recorded compiler information.</p>
+<p>May execute the compiler or other commands, check filesystem paths, and check environment variables
+to determine if this compiler record is still valid.  This operation may be expensive.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Information on the compiler installation matching this record.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="tau.cf.compiler.html#tau.cf.compiler.InstalledCompiler" title="tau.cf.compiler.InstalledCompiler">InstalledCompiler</a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211;
+This compiler record is no longer valid.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 </dd></dl>
 
