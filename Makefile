@@ -139,17 +139,17 @@ build: python_check
 install: build
 # Build python files and set system-level defaults
 	$(ECHO)$(PYTHON) setup.py install --force
-# Build dependencies using system-level defaults we just set
-	$(ECHO)$(PYTHON) setup.py install --force --initialize
-# Add PYTHON_FLAGS to python command line in bin/tau
-	@tail -n +2 "$(TAU)" > "$(BUILDDIR)/tau.tail"
-	@echo `head -1 "$(TAU)"` $(PYTHON_FLAGS) > "$(BUILDDIR)/tau.head"
-	@cat "$(BUILDDIR)/tau.head" "$(BUILDDIR)/tau.tail" > "$(TAU)"
 # Copy archive files to system-level src, if available
 	@mkdir -p $(INSTALLDIR)/.system/src
 	@cp -v packages/*.tgz $(INSTALLDIR)/.system/src 2>/dev/null || true
 	@cp -v packages/*.tar.* $(INSTALLDIR)/.system/src 2>/dev/null || true
 	@cp -v packages/*.zip $(INSTALLDIR)/.system/src 2>/dev/null || true
+# Build dependencies using archives and system-level defaults
+	$(ECHO)$(PYTHON) setup.py install --force --initialize
+# Add PYTHON_FLAGS to python command line in bin/tau
+	@tail -n +2 "$(TAU)" > "$(BUILDDIR)/tau.tail"
+	@echo `head -1 "$(TAU)"` $(PYTHON_FLAGS) > "$(BUILDDIR)/tau.head"
+	@cat "$(BUILDDIR)/tau.head" "$(BUILDDIR)/tau.tail" > "$(TAU)"
 	@chmod -R a+rX,g+w $(INSTALLDIR)
 	@echo
 	@echo "-------------------------------------------------------------------------------"
