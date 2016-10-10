@@ -50,6 +50,11 @@ Acknowledgements
 This work is supported by the United States Department of Energy under
 DoE SBIR grant DE-SC0009593.
 
+The work on extending TAU Commander for OpenSHMEM was supported by the 
+United States Department of Defense (DoD) and used resources of the 
+Computational Research and Development Programs and the Oak Ridge 
+Leadership Computing Facility (OLCF) at Oak Ridge National Laboratory.
+
 
 ---------------------------------------------------------------------------
 
