@@ -60,7 +60,8 @@ class ScorepInstallation(AutotoolsInstallation):
                 self.add_dependency(pkg, sources)
 
     def configure(self, flags, env):
-        flags.extend(['--enable-shared', '--without-otf2', '--without-opari2', '--without-cube', '--without-gui'])
+        flags.extend(['--enable-shared', '--without-otf2', '--without-opari2', '--without-cube', 
+                      '--without-gui', '--disable-gcc-plugin', '--disable-dependency-tracking'])
         if self.target_arch in (X86_64_ARCH, IBM64_ARCH):
             suite_flags = {INTEL: 'intel', IBM: 'ibm', PGI: 'pgi', GNU: 'gcc'}
             family = self.compilers[CC].info.family
@@ -83,4 +84,10 @@ class ScorepInstallation(AutotoolsInstallation):
             flags.append('--with-papi-lib=%s' % papi.lib_path)
         if pdt:
             flags.append('--with-pdt=%s' % pdt.bin_path)
+        # Score-P does strange things when PYTHON is set in the environment.
+        # From vendor/otf2/configure --help:
+        #   PYTHON      The python interpreter to use. Not a build requirement, only
+        #               needed when developing. Python version 2.5 or above, but no
+        #               support for python 3. Use PYTHON=: to disable python support.
+        env['PYTHON'] = ':'
         return super(ScorepInstallation, self).configure(flags, env)

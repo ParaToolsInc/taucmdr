@@ -140,7 +140,7 @@ install: build
 # Build python files and set system-level defaults
 	$(ECHO)$(PYTHON) setup.py install --force
 # Build dependencies using system-level defaults we just set
-#	$(ECHO)$(PYTHON) setup.py install --force --initialize
+	$(ECHO)$(PYTHON) setup.py install --force --initialize
 # Add PYTHON_FLAGS to python command line in bin/tau
 	@tail -n +2 "$(TAU)" > "$(BUILDDIR)/tau.tail"
 	@echo `head -1 "$(TAU)"` $(PYTHON_FLAGS) > "$(BUILDDIR)/tau.head"
