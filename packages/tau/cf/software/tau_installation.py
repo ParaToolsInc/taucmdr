@@ -743,7 +743,7 @@ class TauInstallation(Installation):
         env['TAU_SAMPLE'] = str(int(self.sample))
         env['TAU_TRACK_HEAP'] = str(int(self.measure_heap_usage))
         env['TAU_COMM_MATRIX'] = str(int(self.measure_comm_matrix))
-        env['TAU_METRICS'] = os.pathsep.join(self.metrics)
+        env['TAU_METRICS'] = ",".join(self.metrics)
         env['TAU_THROTTLE'] = str(int(self.throttle))
         if self.throttle:
             env['TAU_THROTTLE_PERCALL'] = str(int(self.throttle_per_call))
