@@ -409,3 +409,7 @@ class Experiment(Model):
                     os.chdir(old_cwd)
         else:
             raise ConfigurationError("Invalid profile format: %s" % profile_format)
+
+    def get_makefile(self):
+        tau = self.configure()
+        return os.path.basename(tau.get_makefile())

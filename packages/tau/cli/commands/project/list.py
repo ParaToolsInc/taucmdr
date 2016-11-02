@@ -100,6 +100,7 @@ class ProjectListCommand(ListCommand):
                        'Use `%s` to create or select an experiment.' % select_cmd)
             else:
                 print util.color_text('Selected experiment: ', 'cyan') + expr['name']
+                print util.color_text('\nTAU MAKEFILE: ', 'cyan') + expr.get_makefile()
 
         return retval
 
