@@ -510,7 +510,7 @@ class TauInstallation(Installation):
                                                "Specify source code path or URL to enable package reinstallation.")
                 elif not force_reinstall:
                     LOGGER.debug(err)
-        LOGGER.info("Installing %s at '%s' from '%s'", self.title, self.install_prefix, self.src)       
+        LOGGER.info("Installing %s at '%s'", self.title, self.install_prefix)       
         try:
             # Keep reconfiguring the same source because that's how TAU works
             if not (self.include_path and os.path.isdir(self.include_path)):
