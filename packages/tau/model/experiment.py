@@ -351,6 +351,13 @@ class Experiment(Model):
                 trials = [found]
         if not trials:
             raise ConfigurationError("No trials in experiment %s" % self['name'], "See `tau trial create --help`")
+        for t in trials:
+            try:
+                trial_size = t['data_size']
+            except:
+                trial_size = 0
+            if trial_size <= 0:
+                raise ConfigurationError("Trial %s is empty." %t['number'])
         return trials
     
     def show(self, profile_tool=None, trace_tool=None, trial_numbers=None):
