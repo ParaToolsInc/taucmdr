@@ -34,7 +34,7 @@ import os
 import hashlib
 from tau import logger, util
 from tau.error import ConfigurationError
-from tau.cf.target import TauArch, X86_64_ARCH, LINUX_OS, TAU_ARCH_APPLE, TAU_ARCH_BGQ
+from tau.cf.target import TauArch, X86_64_ARCH, LINUX_OS, DARWIN_OS, IBM_BGQ_ARCH, IBM_CNK_OS
 from tau.cf.software import SoftwarePackageError
 from tau.cf.software.installation import AutotoolsInstallation
 from tau.cf.compiler.host import CC, CXX, PGI, GNU, INTEL
@@ -73,8 +73,8 @@ COMMANDS = {None:
              'tau_instrumentor',
              'upcparse',
              'xmlgen'],
-            TAU_ARCH_APPLE.architecture: 
-            {TAU_ARCH_APPLE.operating_system: 
+            X86_64_ARCH: 
+            {DARWIN_OS: 
              ['cparse',
               'cxxparse',
               'edgcpfe',
@@ -92,8 +92,8 @@ COMMANDS = {None:
               'pdtflint',
               'taucpdisp',
               'xmlgen']},
-            TAU_ARCH_BGQ.architecture:
-            {TAU_ARCH_BGQ.operating_system:
+            IBM_BGQ_ARCH:
+            {IBM_CNK_OS:
              ['cparse',
               'cxxparse',
               'edg44-c-roseparse',
