@@ -34,7 +34,7 @@ import os
 import hashlib
 from tau import logger, util
 from tau.error import ConfigurationError
-from tau.cf.target import TauArch, X86_64_ARCH, LINUX_OS, DARWIN_OS, IBM_BGQ_ARCH, IBM_CNK_OS
+from tau.cf.target import TauArch, X86_64_ARCH, LINUX_OS, DARWIN_OS, IBM_BGQ_ARCH, IBM_CNK_OS, PPC64LE_ARCH
 from tau.cf.software import SoftwarePackageError
 from tau.cf.software.installation import AutotoolsInstallation
 from tau.cf.compiler.host import CC, CXX, PGI, GNU, INTEL
@@ -114,7 +114,31 @@ COMMANDS = {None:
               'pdtflint',
               'taucpdisp',
               'tau_instrumentor',
-              'xmlgen']}}
+              'xmlgen']},
+             PPC64LE_ARCH:
+             {LINUX_OS:
+              ['cparse',
+               'cparse4101',
+               'cxxparse',
+               'cxxparse4101',
+               'edgcpfe',
+               'edgcpfe4101',
+               'f90parse',
+               'f95parse',
+               'gfparse',
+               'gfparse48',
+               'gfparse485',
+               'pdbcomment',
+               'pdbconv',
+               'pdbhtml',
+               'pdbmerge',
+               'pdbstmt',
+               'pdbtree',
+               'pdtflint',
+               'taucpdisp',
+               'taucpdisp4101',
+               'tau_instrumentor',
+               'xmlgen']}}
 
 class PdtInstallation(AutotoolsInstallation):
     """Encapsulates a PDT installation.
