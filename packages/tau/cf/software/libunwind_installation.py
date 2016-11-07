@@ -37,7 +37,7 @@ import hashlib
 import fileinput
 from tau import logger
 from tau.error import ConfigurationError
-from tau.cf.target import IBM_BGQ_ARCH, CRAY_CNL_OS, ARM64_ARCH, LINUX_OS
+from tau.cf.target import IBM_BGQ_ARCH, CRAY_CNL_OS, ARM64_ARCH, LINUX_OS, PPC64LE_ARCH, PPC64_ARCH
 from tau.cf.software import SoftwarePackageError
 from tau.cf.software.installation import AutotoolsInstallation
 from tau.cf.compiler.host import CC, CXX, PGI, GNU
@@ -111,3 +111,7 @@ class LibunwindInstallation(AutotoolsInstallation):
             LOGGER.debug("libunwind make failed, but continuing anyway: %s", err)
 
 
+    def make_install(self, flags, env, parallel=False):
+        if self.target_arch in [PPC64_ARCH, PPC64LE_ARCH]:
+            flags.append('-i')
+        super(LibunwindInstallation, self).make_install(flags, env, parallel)
