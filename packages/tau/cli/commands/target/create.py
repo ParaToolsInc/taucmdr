@@ -84,7 +84,7 @@ class TargetCreateCommand(CreateCommand):
             raise ConfigurationError("TAU Makefile '%s' targets an unrecognized TAU architecture: %s" % 
                                      (makefile, tau_arch_name))
         self.logger.info("Parsing TAU Makefile '%s' to populate command line arguments:", makefile)
-        args.host_arch = tau_arch.architecture.name
+        args.host_arch = tau_arch.architecture[0].name
         self.logger.info("  --host-arch='%s'", args.host_arch)
         args.host_os = tau_arch.operating_system.name
         self.logger.info("  --host-os='%s'", args.host_os)
