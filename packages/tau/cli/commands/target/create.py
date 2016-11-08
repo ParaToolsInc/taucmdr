@@ -90,6 +90,7 @@ class TargetCreateCommand(CreateCommand):
         self.logger.info("  --host-os='%s'", args.host_os)
         args.tau_source = os.path.abspath(os.path.join(os.path.dirname(makefile), '..', '..'))
         self.logger.info("  --tau='%s'", args.tau_source)
+        setattr(args, 'forced_makefile', makefile)
         with open(makefile, 'r') as fin:
             compiler_parts = ("FULL_CC", "FULL_CXX", "TAU_F90")
             package_parts = {"BFDINCLUDE": ("binutils_source", lambda x: os.path.dirname(x.lstrip("-I"))), 

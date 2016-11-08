@@ -170,7 +170,8 @@ class TauInstallation(Installation):
                  callpath_depth,
                  throttle,
                  throttle_per_call,
-                 throttle_num_calls):
+                 throttle_num_calls,
+		 forced_makefile):
         """Initialize the TAU installation wrapper class.
         
         Args:
@@ -218,6 +219,7 @@ class TauInstallation(Installation):
             throttle (bool): If True then throttle lightweight events.
             throttle_per_call (int): Maximum microseconds per call of a lightweight event.
             throttle_num_calls (int): Minimum number of calls for a lightweight event.
+	    forced_makefile (str): Path to external makefile.
         """
         super(TauInstallation, self).__init__('tau', 'TAU Performance System', sources, target_arch, target_os, 
                                               compilers, REPOS, COMMANDS, None, None)
@@ -261,13 +263,23 @@ class TauInstallation(Installation):
         self.throttle = throttle
         self.throttle_per_call = throttle_per_call
         self.throttle_num_calls = throttle_num_calls
-        for pkg in 'binutils', 'libunwind', 'papi', 'pdt':
-            uses_pkg = getattr(self, '_uses_'+pkg)
-            if uses_pkg():
-                self.add_dependency(pkg, sources)
-        if self._uses_scorep():
-            self.add_dependency('scorep', sources, mpi_support, shmem_support, 
-                                self._uses_binutils(), self._uses_libunwind(), self._uses_papi(), self._uses_pdt())
+	self.forced_makefile = forced_makefile
+	if forced_makefile == None:
+            for pkg in 'binutils', 'libunwind', 'papi', 'pdt':
+                uses_pkg = getattr(self, '_uses_'+pkg)
+	        if uses_pkg():
+                    self.add_dependency(pkg, sources)
+            if self._uses_scorep():
+                self.add_dependency('scorep', sources, mpi_support, shmem_support, 
+                                    self._uses_binutils(), self._uses_libunwind(), self._uses_papi(), self._uses_pdt())
+	else:
+            for pkg in 'binutils', 'libunwind', 'papi', 'pdt':
+		if sources[pkg]:
+                    self.add_dependency(pkg, sources)
+            if sources['scorep']:
+		self.add_dependency('scorep', sources, mpi_support, shmem_support,
+				sources['binutils'], sources['libunwind'], sources['papi'], sources['pdt'])
+
 
     def _set_install_prefix(self, value):
         # PDT puts installation files (bin, lib, etc.) in a magically named subfolder
@@ -498,9 +510,9 @@ class TauInstallation(Installation):
             SoftwarePackageError: TAU failed installation or did not pass verification after it was installed.
         """
         logger.activate_debug_log()
-        for pkg in self.dependencies.itervalues():
-            pkg.install(force_reinstall)
-        if not self.src or not force_reinstall:
+	if (not self.src or not force_reinstall) and not self.forced_makefile:
+            for pkg in self.dependencies.itervalues():
+                pkg.install(force_reinstall)
             try:
                 return self.verify()
             except SoftwarePackageError as err:
@@ -510,6 +522,11 @@ class TauInstallation(Installation):
                                                "Specify source code path or URL to enable package reinstallation.")
                 elif not force_reinstall:
                     LOGGER.debug(err)
+	else:
+            super(TauInstallation, self)._set_install_prefix(os.path.abspath(os.path.join(os.path.dirname(self.forced_makefile), '..', '..')))
+	    for pkg in self.dependencies.itervalues():
+		    pkg.install(force_reinstall=False)
+	    return True
         LOGGER.info("Installing %s at '%s'", self.title, self.install_prefix)       
         try:
             # Keep reconfiguring the same source because that's how TAU works
@@ -601,6 +618,8 @@ class TauInstallation(Installation):
             str: A file path that could be used to set the TAU_MAKEFILE environment
                  variable, or None if a suitable makefile couldn't be found.
         """
+	if self.forced_makefile:
+	    return self.forced_makefile
         tau_makefiles = glob.glob(os.path.join(self.lib_path, 'Makefile.tau*'))
         LOGGER.debug("Found makefiles: '%s'", tau_makefiles)
         config_tags = self.get_tags()

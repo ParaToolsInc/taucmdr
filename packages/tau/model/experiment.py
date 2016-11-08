@@ -253,7 +253,8 @@ class Experiment(Model):
                     callpath_depth=measurement.get_or_default('callpath'),
                     throttle=measurement.get_or_default('throttle'),
                     throttle_per_call=measurement.get_or_default('throttle_per_call'),
-                    throttle_num_calls=measurement.get_or_default('throttle_num_calls'))
+                    throttle_num_calls=measurement.get_or_default('throttle_num_calls'),
+		    forced_makefile=target.get_or_default('forced_makefile'))
         tau.install()
         return tau
 

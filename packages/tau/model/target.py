@@ -359,7 +359,13 @@ def attributes():
                          'action': ParsePackagePathAction},
             'compat': {(lambda x: x is not None): Target.discourage('host_os', DARWIN_OS.name)},
             'on_change': Target.attribute_changed
-        }
+        },
+	'forced_makefile': {
+	    'type': 'string',
+	    'description': 'path to Makefile',
+	    'default': None,
+	    'on_change': Target.attribute_changed
+	}
     }
 
 
