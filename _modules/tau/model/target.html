@@ -406,7 +406,13 @@
                          <span class="s1">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParsePackagePathAction</span><span class="p">},</span>
             <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">):</span> <span class="n">Target</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;host_os&#39;</span><span class="p">,</span> <span class="n">DARWIN_OS</span><span class="o">.</span><span class="n">name</span><span class="p">)},</span>
             <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">attribute_changed</span>
-        <span class="p">}</span>
+        <span class="p">},</span>
+	<span class="s1">&#39;forced_makefile&#39;</span><span class="p">:</span> <span class="p">{</span>
+	    <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
+	    <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;path to Makefile&#39;</span><span class="p">,</span>
+	    <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span>
+	    <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">attribute_changed</span>
+	<span class="p">}</span>
     <span class="p">}</span></div>
 
 

@@ -147,6 +147,7 @@
                        <span class="s1">&#39;Use `</span><span class="si">%s</span><span class="s1">` to create or select an experiment.&#39;</span> <span class="o">%</span> <span class="n">select_cmd</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">print</span> <span class="n">util</span><span class="o">.</span><span class="n">color_text</span><span class="p">(</span><span class="s1">&#39;Selected experiment: &#39;</span><span class="p">,</span> <span class="s1">&#39;cyan&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">expr</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+                <span class="k">print</span> <span class="n">util</span><span class="o">.</span><span class="n">color_text</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">TAU MAKEFILE: &#39;</span><span class="p">,</span> <span class="s1">&#39;cyan&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">expr</span><span class="o">.</span><span class="n">get_makefile</span><span class="p">()</span>
 
         <span class="k">return</span> <span class="n">retval</span></div></div>
 

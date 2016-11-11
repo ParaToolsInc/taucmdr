@@ -159,8 +159,8 @@
                          <span class="s1">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParseBooleanAction</span><span class="p">},</span>
             <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="bp">True</span><span class="p">:</span> <span class="p">(</span><span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;binutils_source&#39;</span><span class="p">),</span>
                               <span class="n">Target</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;binutils_source&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
-                              <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;libunwind_source&#39;</span><span class="p">),</span>
-                              <span class="n">Target</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;libunwind_source&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
+                              <span class="n">Target</span><span class="o">.</span><span class="n">encourage</span><span class="p">(</span><span class="s1">&#39;libunwind_source&#39;</span><span class="p">),</span>
+                              <span class="n">Target</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;libunwind_source&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
                               <span class="n">Target</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;host_os&#39;</span><span class="p">,</span> <span class="n">DARWIN_OS</span><span class="p">))}</span>
         <span class="p">},</span>
         <span class="s1">&#39;source_inst&#39;</span><span class="p">:</span> <span class="p">{</span>

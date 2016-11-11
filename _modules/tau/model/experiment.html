@@ -300,7 +300,8 @@
                     <span class="n">callpath_depth</span><span class="o">=</span><span class="n">measurement</span><span class="o">.</span><span class="n">get_or_default</span><span class="p">(</span><span class="s1">&#39;callpath&#39;</span><span class="p">),</span>
                     <span class="n">throttle</span><span class="o">=</span><span class="n">measurement</span><span class="o">.</span><span class="n">get_or_default</span><span class="p">(</span><span class="s1">&#39;throttle&#39;</span><span class="p">),</span>
                     <span class="n">throttle_per_call</span><span class="o">=</span><span class="n">measurement</span><span class="o">.</span><span class="n">get_or_default</span><span class="p">(</span><span class="s1">&#39;throttle_per_call&#39;</span><span class="p">),</span>
-                    <span class="n">throttle_num_calls</span><span class="o">=</span><span class="n">measurement</span><span class="o">.</span><span class="n">get_or_default</span><span class="p">(</span><span class="s1">&#39;throttle_num_calls&#39;</span><span class="p">))</span>
+                    <span class="n">throttle_num_calls</span><span class="o">=</span><span class="n">measurement</span><span class="o">.</span><span class="n">get_or_default</span><span class="p">(</span><span class="s1">&#39;throttle_num_calls&#39;</span><span class="p">),</span>
+		    <span class="n">forced_makefile</span><span class="o">=</span><span class="n">target</span><span class="o">.</span><span class="n">get_or_default</span><span class="p">(</span><span class="s1">&#39;forced_makefile&#39;</span><span class="p">))</span>
         <span class="n">tau</span><span class="o">.</span><span class="n">install</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">tau</span></div>
 
@@ -398,6 +399,13 @@
                 <span class="n">trials</span> <span class="o">=</span> <span class="p">[</span><span class="n">found</span><span class="p">]</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">trials</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;No trials in experiment </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="s2">&quot;See `tau trial create --help`&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">trials</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">trial_size</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="s1">&#39;data_size&#39;</span><span class="p">]</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">trial_size</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">if</span> <span class="n">trial_size</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Trial </span><span class="si">%s</span><span class="s2"> is empty.&quot;</span> <span class="o">%</span><span class="n">t</span><span class="p">[</span><span class="s1">&#39;number&#39;</span><span class="p">])</span>
         <span class="k">return</span> <span class="n">trials</span></div>
     
 <div class="viewcode-block" id="Experiment.show"><a class="viewcode-back" href="../../../tau.model.experiment.html#tau.model.experiment.Experiment.show">[docs]</a>    <span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">profile_tool</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">trace_tool</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">trial_numbers</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
@@ -455,7 +463,11 @@
                 <span class="k">finally</span><span class="p">:</span>
                     <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">old_cwd</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Invalid profile format: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">profile_format</span><span class="p">)</span></div></div>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Invalid profile format: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">profile_format</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Experiment.get_makefile"><a class="viewcode-back" href="../../../tau.model.experiment.html#tau.model.experiment.Experiment.get_makefile">[docs]</a>    <span class="k">def</span> <span class="nf">get_makefile</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">tau</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">configure</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">tau</span><span class="o">.</span><span class="n">get_makefile</span><span class="p">())</span></div></div>
 </pre></div>
 
       </div>
