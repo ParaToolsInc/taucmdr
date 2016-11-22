@@ -852,6 +852,20 @@ class TauInstallation(Installation):
                    variables to set before running the application command.
         """
         opts, env = self.runtime_config()
+	if len(self.metrics) > 1:
+	    try:
+                env['PATH'] = os.pathsep.join([self.dependencies['papi'].bin_path, env['PATH']])
+	    except:
+	        pass
+	    if 'NATIVE' in self.metrics[1]:
+	        event_type = 'NATIVE'
+            else:
+	        event_type = 'PRESET'
+	    cmd = ['papi_event_chooser',event_type]
+	    cmd.extend(self.metrics[1:])
+	    retval = util.create_subprocess(cmd, env=env, stdout=False, show_progress=False)
+	    if retval != 0:
+	        LOGGER.warning('PAPI metrics %s are not compatible.' %self.metrics[1:])
         use_tau_exec = (self.measure_opencl or
                         (self.source_inst == 'never' and self.compiler_inst == 'never' and not self.link_only))
         if use_tau_exec:
