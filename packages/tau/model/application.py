@@ -169,7 +169,7 @@ class Application(Model):
         except KeyError:
             pass
         else:
-            if not os.path.exists(select_file):
+            if select_file and not os.path.exists(select_file):
                 raise ConfigurationError("Selective instrumentation file '%s' not found" % select_file)
     
     def on_create(self):

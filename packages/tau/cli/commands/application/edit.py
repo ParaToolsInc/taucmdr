@@ -42,7 +42,9 @@ class ApplicationEditCommand(EditCommand):
         args = super(ApplicationEditCommand, self)._parse_args(argv)
         if hasattr(args, 'select_file'):
             absolute_path = os.path.abspath(args.select_file)
-            if not os.path.exists(absolute_path):
+            if args.select_file.lower() == 'none':
+                absolute_path = None
+            elif not os.path.exists(absolute_path):
                 self.parser.error("Selective instrumentation file '%s' not found" % absolute_path)
             args.select_file = absolute_path
         return args
