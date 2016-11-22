@@ -154,7 +154,7 @@ class PdtInstallation(AutotoolsInstallation):
                 gnu_compilers = GNU.installation()
             except ConfigurationError:
                 raise SoftwarePackageError("GNU compilers (required to build PDT) could not be found.")
-            compilers = compilers.modify(CC=gnu_compilers[CC], CXX=gnu_compilers[CXX])
+            compilers = compilers.modify(Host_CC=gnu_compilers[CC], Host_CXX=gnu_compilers[CXX])
         super(PdtInstallation, self).__init__('pdt', 'PDT', sources, target_arch, target_os, 
                                               compilers, REPOS, COMMANDS, None, None)
         self.arch = TauArch.get(self.target_arch, self.target_os)
