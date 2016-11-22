@@ -215,8 +215,16 @@ class TargetCreateCommand(CreateCommand):
             for role, comp in compilers.iteritems():
                 if comp is None:
                     compilers[role] = self._get_compiler_from_sibling(role, sibling)
+        # Use the majority family as the compiler family for UPC checking on Crays.
+        family_count = Counter(comp.info.family for comp in compilers.itervalues() if comp is not None)
+        try:
+            family_default = family_count.most_common()[0][0].name
+        except IndexError:
+            family_default = arguments.SUPPRESS
         # No environment variables specify compiler defaults so use model defaults.
         for role, comp in compilers.iteritems():
+            if(role.keyword == 'Host_UPC' and (family_default == 'Intel' or family_default == 'PGI') and host.operating_system() is CRAY_CNL_OS):
+	        continue
             if comp is None:
                 compilers[role] = self._get_compiler_from_defaults(kbase, role)
         # Use the majority family as the default compiler family.
