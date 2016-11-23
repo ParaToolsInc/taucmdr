@@ -100,12 +100,28 @@ class HelpCommand(AbstractCommand):
         print '\n'.join(parts)
         return EXIT_SUCCESS
 
+    @staticmethod
+    def exit_with_fullhelp():
+        """Show a recursive help page for all commands and exit."""
+        commands = cli.get_all_commands()
+        for cmd_name in commands:
+            name = cli.command_from_module_name(cmd_name)
+            cmd_obj = cli.find_command(name.split()[1:])
+            command = cmd_obj.command
+            command = cmd_obj.command
+            parts = ["", util.hline("Usage: " + command),
+                     cmd_obj.usage,
+                     "", util.hline("Help: " + command),
+                     cmd_obj.help_page]
+            print '\n'.join(parts)
+        return EXIT_SUCCESS
+
     def _construct_parser(self):
-        usage_head = "%s <command>|<file> [arguments]" % self.command
+        usage_head = "%s <command>|<file>|all [arguments]" % self.command
         parser = arguments.get_parser(prog=self.command, usage=usage_head, description=self.summary)
         parser.add_argument('command', 
-                            help="A TAU command, system command, or file",
-                            metavar='(<command>|<file>)',
+                            help="A TAU command, system command, or file.\nUse keyword 'all' to view help for all options.",
+                            metavar='(<command>|<file>|all)',
                             nargs='+')
         return parser
 
@@ -113,6 +129,8 @@ class HelpCommand(AbstractCommand):
         args = self._parse_args(argv)
         if not args.command:
             return self.exit_with_help([])
+        if args.command[0] == 'all':
+            return self.exit_with_fullhelp()
     
         # Try to look up a Tau command's built-in help page
         cmd = args.command
