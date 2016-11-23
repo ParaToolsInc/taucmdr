@@ -208,8 +208,8 @@ def get_all_commands(package_name=COMMANDS_PACKAGE_NAME):
     for cmd, topcmd in commands:
         if cmd == 'tests':
             continue
-        for subcmd,mod in topcmd.iteritems():
-            if(subcmd != '__module__' and subcmd != 'tests'):
+        for subcmd, mod in topcmd.iteritems():
+            if subcmd != '__module__' and subcmd != 'tests':
                 all_commands.append(mod['__module__'].__name__)
     return all_commands
 

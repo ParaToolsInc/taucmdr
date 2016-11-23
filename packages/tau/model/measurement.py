@@ -33,7 +33,6 @@ the available data in a single run since overhead would be extreme.  Different
 measurements allow us to take different views of the application's performance.
 """
 
-import os
 from tau.error import ConfigurationError, IncompatibleRecordError
 from tau.mvc.model import Model
 

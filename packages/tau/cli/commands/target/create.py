@@ -223,8 +223,9 @@ class TargetCreateCommand(CreateCommand):
             family_default = arguments.SUPPRESS
         # No environment variables specify compiler defaults so use model defaults.
         for role, comp in compilers.iteritems():
-            if(role.keyword == 'Host_UPC' and (family_default == 'Intel' or family_default == 'PGI') and host.operating_system() is CRAY_CNL_OS):
-	        continue
+            if role.keyword == 'Host_UPC' and (family_default == 'Intel' or
+                                               family_default == 'PGI') and host.operating_system() is CRAY_CNL_OS:
+                continue
             if comp is None:
                 compilers[role] = self._get_compiler_from_defaults(kbase, role)
         # Use the majority family as the default compiler family.

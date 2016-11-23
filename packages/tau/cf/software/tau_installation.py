@@ -171,7 +171,7 @@ class TauInstallation(Installation):
                  throttle,
                  throttle_per_call,
                  throttle_num_calls,
-		 forced_makefile):
+                 forced_makefile):
         """Initialize the TAU installation wrapper class.
         
         Args:
@@ -263,22 +263,22 @@ class TauInstallation(Installation):
         self.throttle = throttle
         self.throttle_per_call = throttle_per_call
         self.throttle_num_calls = throttle_num_calls
-	self.forced_makefile = forced_makefile
-	if forced_makefile == None:
+        self.forced_makefile = forced_makefile
+        if forced_makefile is None:
             for pkg in 'binutils', 'libunwind', 'papi', 'pdt':
                 uses_pkg = getattr(self, '_uses_'+pkg)
-	        if uses_pkg():
+                if uses_pkg():
                     self.add_dependency(pkg, sources)
             if self._uses_scorep():
                 self.add_dependency('scorep', sources, mpi_support, shmem_support, 
                                     self._uses_binutils(), self._uses_libunwind(), self._uses_papi(), self._uses_pdt())
-	else:
+        else:
             for pkg in 'binutils', 'libunwind', 'papi', 'pdt':
-		if sources[pkg]:
+                if sources[pkg]:
                     self.add_dependency(pkg, sources)
             if sources['scorep']:
-		self.add_dependency('scorep', sources, mpi_support, shmem_support,
-				sources['binutils'], sources['libunwind'], sources['papi'], sources['pdt'])
+                self.add_dependency('scorep', sources, mpi_support, shmem_support,
+                                    sources['binutils'], sources['libunwind'], sources['papi'], sources['pdt'])
 
 
     def _set_install_prefix(self, value):
@@ -441,10 +441,10 @@ class TauInstallation(Installation):
                                    self.compilers[SHMEM_CC], 
                                    self.compilers[SHMEM_CXX], 
                                    self.compilers[SHMEM_FC])
-	    if self.arch.name == 'x86_64':
-	        cc_command=self.compilers[SHMEM_CC].command
-	        cxx_command=self.compilers[SHMEM_CXX].command
-	        fortran_magic='oshfort'
+        if self.arch.name == 'x86_64':
+            cc_command = self.compilers[SHMEM_CC].command
+            cxx_command = self.compilers[SHMEM_CXX].command
+            fortran_magic = 'oshfort'
         
         binutils = self.dependencies.get('binutils')
         libunwind = self.dependencies.get('libunwind')
@@ -514,7 +514,7 @@ class TauInstallation(Installation):
             SoftwarePackageError: TAU failed installation or did not pass verification after it was installed.
         """
         logger.activate_debug_log()
-	if (not self.src or not force_reinstall) and not self.forced_makefile:
+        if (not self.src or not force_reinstall) and not self.forced_makefile:
             for pkg in self.dependencies.itervalues():
                 pkg.install(force_reinstall)
             try:
@@ -526,11 +526,12 @@ class TauInstallation(Installation):
                                                "Specify source code path or URL to enable package reinstallation.")
                 elif not force_reinstall:
                     LOGGER.debug(err)
-	else:
-            super(TauInstallation, self)._set_install_prefix(os.path.abspath(os.path.join(os.path.dirname(self.forced_makefile), '..', '..')))
-	    for pkg in self.dependencies.itervalues():
-		    pkg.install(force_reinstall=False)
-	    return True
+        else:
+            super(TauInstallation, self)._set_install_prefix(os.path.abspath(
+                os.path.join(os.path.dirname(self.forced_makefile), '..', '..')))
+            for pkg in self.dependencies.itervalues():
+                pkg.install(force_reinstall=False)
+            return True
         LOGGER.info("Installing %s at '%s'", self.title, self.install_prefix)       
         try:
             # Keep reconfiguring the same source because that's how TAU works
@@ -622,8 +623,8 @@ class TauInstallation(Installation):
             str: A file path that could be used to set the TAU_MAKEFILE environment
                  variable, or None if a suitable makefile couldn't be found.
         """
-	if self.forced_makefile:
-	    return self.forced_makefile
+        if self.forced_makefile:
+            return self.forced_makefile
         tau_makefiles = glob.glob(os.path.join(self.lib_path, 'Makefile.tau*'))
         LOGGER.debug("Found makefiles: '%s'", tau_makefiles)
         config_tags = self.get_tags()
@@ -853,20 +854,20 @@ class TauInstallation(Installation):
         """
         opts, env = self.runtime_config()
         papi_metrics = [metric for metric in self.metrics if metric != "TIME"]
-	if len(papi_metrics) > 1:
-	    try:
+        if len(papi_metrics) > 1:
+            try:
                 env['PATH'] = os.pathsep.join([self.dependencies['papi'].bin_path, env['PATH']])
-	    except:
-	        pass
-	    if 'NATIVE' in papi_metrics[0]:
-	        event_type = 'NATIVE'
+            except:
+                pass
+            if 'NATIVE' in papi_metrics[0]:
+                event_type = 'NATIVE'
             else:
-	        event_type = 'PRESET'
-	    cmd = ['papi_event_chooser',event_type]
-	    cmd.extend(self.metrics)
-	    retval = util.create_subprocess(cmd, env=env, stdout=False, show_progress=False)
-	    if retval != 0:
-	        LOGGER.warning('PAPI metrics %s are not compatible.' %self.metrics)
+                event_type = 'PRESET'
+            cmd = ['papi_event_chooser', event_type]
+            cmd.extend(self.metrics)
+            retval = util.create_subprocess(cmd, env=env, stdout=False, show_progress=False)
+            if retval != 0:
+                LOGGER.warning("PAPI metrics %s are not compatible.", self.metrics)
         use_tau_exec = (self.measure_opencl or
                         (self.source_inst == 'never' and self.compiler_inst == 'never' and not self.link_only))
         if use_tau_exec:
