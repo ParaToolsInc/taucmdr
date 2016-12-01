@@ -46,7 +46,6 @@ class TrialExportCommand(AbstractCommand):
         parser.add_argument('--profile-format', 
                             help="specify format of profiles",
                             metavar='<format>',
-                            default=PROFILE_EXPORT_FORMATS[0],
                             choices=PROFILE_EXPORT_FORMATS)
         parser.add_argument('numbers', 
                             help="show details for specified trials",

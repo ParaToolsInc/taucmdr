@@ -383,7 +383,7 @@ class Experiment(Model):
             if meas['trace'] != 'none':
                 tau.show_trace(prefix, trace_tool)
                 
-    def export(self, profile_format=PROFILE_EXPORT_FORMATS[0], trial_numbers=None, export_location=None):
+    def export(self, profile_format=None, trial_numbers=None, export_location=None):
         """Export experiment trial data.
         
         Exports the most recent trial or all trials with given numbers.
@@ -396,6 +396,13 @@ class Experiment(Model):
         Raises:
             ConfigurationError: Invalid trial numbers or no trial data for this experiment.
         """
+        tau = self.configure()
+        if profile_format is None:
+            meas = self.populate('measurement')
+            if meas['trace'] == 'none':
+                profile_format = PROFILE_EXPORT_FORMATS[0]
+            else:
+                profile_format = PROFILE_EXPORT_FORMATS[1]
         assert profile_format in PROFILE_EXPORT_FORMATS
         if not export_location:
             export_location = os.getcwd()
@@ -409,10 +416,13 @@ class Experiment(Model):
                 trial_number = str(trial['number'])
                 archive_file = self['name'] + '.trial' + trial_number + '.' + profile_format
                 profile_files = [os.path.join(trial_number, os.path.basename(x)) for x in trial.profile_files()]
+                _, env = tau.runtime_config()
+                trace_files = [os.path.join(trial_number, x[len(trial.prefix)+1:]) for x in trial.trace_files(env,True)]
+                exportable_files = profile_files + trace_files
                 old_cwd = os.getcwd()
                 os.chdir(os.path.dirname(trial.prefix))
                 try:
-                    util.create_archive(profile_format, os.path.join(export_location, archive_file), profile_files)
+                    util.create_archive(profile_format, os.path.join(export_location, archive_file), exportable_files)
                 finally:
                     os.chdir(old_cwd)
         else:

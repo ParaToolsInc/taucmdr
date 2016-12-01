@@ -187,7 +187,7 @@ class TrialController(Controller):
                                                  "Check for instrumentation failure in the compilation log.")
         elif measurement['profile'] != 'none':
             raise TrialError("Trial did not produce any profiles.")
-        traces = trial.trace_files()
+        traces = trial.trace_files(env)
         if traces:
             LOGGER.info("Trial %s produced %s trace files.", trial['number'], len(traces))
         elif measurement['trace'] != 'none':
@@ -274,19 +274,33 @@ class Trial(Model):
         profiles.extend(glob.glob(os.path.join(self.prefix, '*.cfg')))
         return profiles
 
-    def trace_files(self):
+    def trace_files(self, env, post_process=False):
         """Get this trial's trace files.
 
-        Returns paths to trace files: *.[trc,edf,def,evt].
+        Returns paths to trace files: *.[trc,edf,slog2,def,evt,otf2].
 
         Returns:
             list: Paths to trace files.
         """
-        trc_files = glob.glob(os.path.join(self.prefix, '*.trc'))
-        edf_files = glob.glob(os.path.join(self.prefix, '*.edf'))
-        def_files = glob.glob(os.path.join(self.prefix, 'traces/*.def'))
-        evt_files = glob.glob(os.path.join(self.prefix, 'traces/*.evt'))
-        return trc_files + edf_files + def_files + evt_files
+        trc_files  = glob.glob(os.path.join(self.prefix, '*.trc'))
+        edf_files  = glob.glob(os.path.join(self.prefix, '*.edf'))
+        def_files  = glob.glob(os.path.join(self.prefix, 'traces/*.def'))
+        evt_files  = glob.glob(os.path.join(self.prefix, 'traces/*.evt'))
+        slog2_file = glob.glob(os.path.join(self.prefix, 'tau.slog2'))
+        otf2_files  = glob.glob(os.path.join(self.prefix, 'traces.otf2'))
+        if post_process and trc_files and edf_files and not slog2_file:
+            if not os.path.isfile(os.path.join(self.prefix, 'tau.trc')):
+                cmd = ['tau_treemerge.pl']
+                retval = util.create_subprocess(cmd, cwd=self.prefix, env=env, log=False)
+                if retval != 0:
+                    raise InternalError("Nonzero return code from tau_treemerge.pl")
+            cmd = ['tau2slog2', 'tau.trc', 'tau.edf', '-o', 'tau.slog2']
+            util.create_subprocess(cmd, cwd=self.prefix, env=env, log=False)
+            slog2_file = glob.glob(os.path.join(self.prefix, 'tau.slog2'))
+        if post_process:
+            return def_files + evt_files + slog2_file + otf2_files
+        else:
+            return trc_files + edf_files + def_files + evt_files + otf2_files
 
     def execute_command(self, expr, cmd, cwd, env):
         """Execute a command as part of an experiment trial.
