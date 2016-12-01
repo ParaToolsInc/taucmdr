@@ -31,9 +31,7 @@ See http://en.wikipedia.org/wiki/Model-view-controller
 """
 
 import json
-import pprint
 from texttable import Texttable
-from termcolor import termcolor
 from tau import EXIT_SUCCESS
 from tau import logger, util, cli
 from tau.error import UniqueAttributeError, InternalError
@@ -259,22 +257,22 @@ class ListCommand(AbstractCliView):
         self.logger.debug("Short format")
         return [str(model[self.model.key_attribute]) for model in models]
 
-    def dashboard_format(self, models):
+    def dashboard_format(self, records):
         """Format modeled records in dashboard format.
 
         Args:
-            models: Modeled records to format.
+            records: Modeled records to format.
  
         Returns:
             str: Record data in dashboard format.
         """
         self.logger.debug("Dashboard format")
-        title = util.hline(self.title_fmt % {'model_name': models[0].name.capitalize(), 
-                                             'storage_path': models[0].storage}, 'cyan')
+        title = util.hline(self.title_fmt % {'model_name': records[0].name.capitalize(), 
+                                             'storage_path': records[0].storage}, 'cyan')
         header_row = [col['header'] for col in self.dashboard_columns]
         rows = [header_row]
-        for model in models:
-            populated = model.populate()
+        for record in records:
+            populated = record.populate()
             row = []
             for col in self.dashboard_columns:
                 if 'value' in col:
@@ -288,12 +286,10 @@ class ListCommand(AbstractCliView):
                     cell = col['function'](populated)
                 else:
                     raise InternalError("Invalid column definition: %s" % col)
-                color_attrs = col.get('color_attrs', None)
-                if color_attrs:
-                    cell = termcolor.colored(cell, **color_attrs)
                 row.append(cell)
             rows.append(row)
         table = Texttable(logger.LINE_WIDTH)
+        table.set_deco(Texttable.HEADER | Texttable.VLINES | Texttable.BORDER)
         table.set_cols_align([col.get('align', 'c') for col in self.dashboard_columns])
         table.add_rows(rows)
         return [title, table.draw(), '']
@@ -308,7 +304,50 @@ class ListCommand(AbstractCliView):
             str: Record data in long format.
         """
         self.logger.debug("Long format")
-        return [pprint.pformat(record.populate()) for record in records]
+        title = util.hline(self.title_fmt % {'model_name': records[0].name.capitalize(), 
+                                             'storage_path': records[0].storage}, 'cyan')
+        retval = [title]
+        for record in records:
+            rows = [['Attribute', 'Value', 'Command Flag', 'Description']]
+            populated = record.populate()
+            for key, val in sorted(populated.iteritems()):
+                attrs = self.model.attributes[key]
+                if key == self.model.key_attribute:
+                    continue
+                if 'collection' in attrs:
+                    foreign_model = attrs['collection']
+                    foreign_keys = []
+                    for foreign_record in val:
+                        try:
+                            foreign_keys.append(str(foreign_record[foreign_model.key_attribute]))
+                        except AttributeError:
+                            foreign_keys.append(str(foreign_record))
+                    val = ', '.join(foreign_keys)
+                elif 'model' in attrs:
+                    foreign_model = attrs['model']
+                    try:
+                        val = str(val[foreign_model.key_attribute])
+                    except AttributeError:
+                        val = str(val)
+                elif 'type' in attrs:
+                    if attrs['type'] == 'boolean':
+                        val = str(bool(val))
+                    elif attrs['type'] == 'array':
+                        val = ', '.join(str(x) for x in val)
+                    elif attrs['type'] != 'string':
+                        val = str(val)
+                else:
+                    raise InternalError("Attribute has no type: %s, %s" % (attrs, val))
+                description = attrs.get('description', 'No description').capitalize()
+                flags = ', '.join(flag for flag in attrs.get('argparse', {'flags': ('N/A',)})['flags'])
+                rows.append([key, val, flags, description])
+            table = Texttable(logger.LINE_WIDTH)
+            table.set_cols_align(['r', 'c', 'l', 'l'])
+            table.set_deco(Texttable.HEADER | Texttable.VLINES)
+            table.add_rows(rows)
+            retval.append(util.hline(populated[self.model.key_attribute], 'cyan'))
+            retval.extend([table.draw(), ''])
+        return retval
 
     def json_format(self, records):
         """Format records in JSON format.
