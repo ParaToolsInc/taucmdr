@@ -29,13 +29,20 @@
 
 from tau import util
 from tau.cli.cli_view import ListCommand
+from tau.model.project import Project
 from tau.model.trial import Trial
 
 
-DASHBOARD_COLUMNS = [{'header': 'Experiment', 'function': lambda x: x['experiment']['name']},
-                     {'header': 'Number', 'value': 'number'},
+DASHBOARD_COLUMNS = [{'header': 'Number', 'value': 'number'},
                      {'header': 'Data Size', 'function': lambda x: util.human_size(x.get('data_size', None))},
                      {'header': 'Command', 'value': 'command'},
                      {'header': 'In Directory', 'value': 'cwd'}]
 
-COMMAND = ListCommand(Trial, __name__, dashboard_columns=DASHBOARD_COLUMNS)
+class TrialListCommand(ListCommand):
+    
+    def _retrieve_records(self, ctrl, keys):
+        expr = Project.controller().selected().experiment()
+        records = super(TrialListCommand, self)._retrieve_records(ctrl, keys)
+        return [rec for rec in records if rec['experiment'] == expr.eid]
+
+COMMAND = TrialListCommand(Trial, __name__, dashboard_columns=DASHBOARD_COLUMNS)
