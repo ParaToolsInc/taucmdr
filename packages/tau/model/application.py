@@ -38,6 +38,7 @@ specifying OpenMP is used and the other specifying OpenMP is not used.
 import os
 from tau.error import IncompatibleRecordError, ConfigurationError
 from tau.mvc.model import Model
+from tau.cf.compiler.host import HOST_COMPILERS
 from tau.cf.compiler.mpi import MPI_COMPILERS
 from tau.cf.compiler.shmem import SHMEM_COMPILERS
 
@@ -216,9 +217,12 @@ class Application(Model):
         """
         found = []
         for compiler in compilers:
+            is_host = compiler['role'].startswith(HOST_COMPILERS.keyword)
             is_mpi = compiler['role'].startswith(MPI_COMPILERS.keyword)
             is_shmem = compiler['role'].startswith(SHMEM_COMPILERS.keyword)
             if (is_mpi and self['mpi']) or (is_shmem and self['shmem']):
+                found.append(compiler)
+            elif is_host and not (self['mpi'] or self['shmem']):
                 found.append(compiler)
         if not found:
             raise ConfigurationError("Application '%s' is not compatible with any of these compilers:\n  %s" % 
