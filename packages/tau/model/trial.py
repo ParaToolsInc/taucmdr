@@ -304,6 +304,8 @@ class Trial(Model):
             int: Subprocess return code.
         """
         cmd_str = ' '.join(cmd)
+        tau_env_opts = sorted('%s=%s' % item for item in env.iteritems() if item[0].startswith('TAU_'))
+        LOGGER.info('\n'.join(tau_env_opts))
         LOGGER.info(cmd_str)
         try:
             retval = util.create_subprocess(cmd, cwd=cwd, env=env)
