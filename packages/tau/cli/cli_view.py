@@ -30,7 +30,6 @@
 See http://en.wikipedia.org/wiki/Model-view-controller
 """
 
-import json
 from texttable import Texttable
 from tau import EXIT_SUCCESS
 from tau import logger, util, cli
@@ -349,18 +348,6 @@ class ListCommand(AbstractCliView):
             retval.extend([table.draw(), ''])
         return retval
 
-    def json_format(self, records):
-        """Format records in JSON format.
-        
-        Args:
-            records: Controlled records to format.
-        
-        Returns:
-            str: Record data in JSON format.
-        """
-        self.logger.debug("JSON format")
-        return [json.dumps(record.data) for record in records]
-
     def _construct_parser(self):
         key_str = self.model_name + '_' + self.model.key_attribute
         usage_head = ("%(command)s [%(key_str)s] [%(key_str)s] ... [arguments]" % 
@@ -386,10 +373,6 @@ class ListCommand(AbstractCliView):
         style_group.add_argument('-l', '--long', 
                                  help="show all %(model_name)s data in a list" % self._format_fields,
                                  const='long', action='store_const', dest=style_dest, 
-                                 default=arguments.SUPPRESS)
-        style_group.add_argument('-j', '--json', 
-                                 help="show all %(model_name)s data as JSON" % self._format_fields,
-                                 const='json', action='store_const', dest=style_dest, 
                                  default=arguments.SUPPRESS)
         if self.include_storage_flag:
             arguments.add_storage_flag(parser, "show", self.model_name, plural=True, exclusive=False)
