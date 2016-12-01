@@ -764,7 +764,7 @@ class TauInstallation(Installation):
             env['SCOREP_ENABLE_TRACING'] = '1'
         else:
             env['TAU_TRACE'] = '0'
-        env['TAU_SAMPLE'] = str(int(self.sample))
+        env['TAU_SAMPLING'] = str(int(self.sample))
         env['TAU_TRACK_HEAP'] = str(int(self.measure_heap_usage))
         env['TAU_COMM_MATRIX'] = str(int(self.measure_comm_matrix))
         env['TAU_METRICS'] = ",".join(self.metrics)
