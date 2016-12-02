@@ -34,6 +34,7 @@ Instead, process arguments in the appropriate subcommand.
 import os
 import sys
 import tau
+from tau import __version__ as TAUCMDR_VERSION
 from tau import cli, logger, configuration, util
 from tau.cli import UnknownCommandError, arguments
 from tau.cli.command import AbstractCommand
@@ -55,7 +56,7 @@ class MainCommand(AbstractCommand):
     """Main entry point to the command line interface."""
 
     def __init__(self):
-        summary_parts = [util.color_text("TAU Commander", 'red', attrs=['bold']),
+        summary_parts = [util.color_text("TAU Commander %s" % TAUCMDR_VERSION, 'red', attrs=['bold']),
                          util.color_text(" [ ", attrs=['bold']),
                          util.color_text(tau.TAUCMDR_URL, 'cyan', attrs=['bold']),
                          util.color_text(" ]", attrs=['bold'])] 
@@ -68,23 +69,23 @@ class MainCommand(AbstractCommand):
         except KeyError:
             log_default = False
         usage = "%s [arguments] <subcommand> [options]"  % self.command
-        _yellow = lambda x: "{:<35}".format(util.color_text(x, 'yellow'))
+        _green = lambda x: "{:<35}".format(util.color_text(x, 'green'))
         epilog_parts = ["", cli.commands_description(), "",
                         util.color_text("Shortcuts:", attrs=["bold"]),
-                        _yellow("  %(command)s <compiler>") + "Execute a compiler command", 
+                        _green("  %(command)s <compiler>") + "Execute a compiler command", 
                         "                  - Example: %(command)s gcc *.c -o a.out",
                         "                  - Alias for '%(command)s build <compiler>'",
-                        _yellow("  %(command)s <program>") + "Gather data from a program",
+                        _green("  %(command)s <program>") + "Gather data from a program",
                         "                  - Example: %(command)s ./a.out",
                         "                  - Alias for '%(command)s trial create <program>'",
-                        _yellow("  %(command)s select") + "Select configuration objects to create a new experiment",
+                        _green("  %(command)s select") + "Select configuration objects to create a new experiment",
                         "                  - Alias for '%(command)s experiment create'",
-                        _yellow("  %(command)s show") + "Show data from the most recent trial",
+                        _green("  %(command)s show") + "Show data from the most recent trial",
                         "                  - Alias for '%(command)s trial show'",
                         "",
                         "See '%(command)s help <subcommand>' for more information on <subcommand>."]
-        epilog='\n'.join(epilog_parts) % {'color_command': util.color_text(self.command, 'cyan'), 
-                                          'command': self.command}
+        epilog = '\n'.join(epilog_parts) % {'color_command': util.color_text(self.command, 'cyan'), 
+                                            'command': self.command}
         parser = arguments.get_parser(prog=self.command,
                                       usage=usage,
                                       description=self.summary,

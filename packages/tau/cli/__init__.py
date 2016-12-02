@@ -181,7 +181,7 @@ def commands_description(package_name=COMMANDS_PACKAGE_NAME):
             continue 
         descr = command_obj.summary.split('\n')[0]
         group = command_obj.group
-        name = util.color_text('{:<14}'.format(cmd), 'yellow')
+        name = util.color_text('{:<14}'.format(cmd), 'green')
         groups.setdefault(group, []).append('  %s  %s' % (name, descr))
 
     parts = []
