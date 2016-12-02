@@ -289,19 +289,13 @@ class TargetCreateCommand(CreateCommand):
 
     def parse_compiler_flags(self, args):
         compilers = {}
-        for family_attr, kbase in [('host_family', HOST_COMPILERS), 
-                                   ('mpi_family', MPI_COMPILERS), 
-                                   ('shmem_family', SHMEM_COMPILERS)]:
-            try:
-                family = kbase.families[getattr(args, family_attr)]
-            except AttributeError:
-                family = None
+        for kbase in HOST_COMPILERS, MPI_COMPILERS, SHMEM_COMPILERS:
             for role in kbase.roles.itervalues():
                 try:
                     command = getattr(args, role.keyword)
                 except AttributeError:
                     continue
-                compilers[role.keyword] = InstalledCompiler.probe(command, family=family, role=role)
+                compilers[role.keyword] = InstalledCompiler.probe(command, role=role)
         return compilers
 
     def main(self, argv):
