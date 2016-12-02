@@ -50,7 +50,6 @@ class TargetListCommand(ListCommand):
     def _format_long_item(self, key, val):
         fmt_key, fmt_val, flags, description = super(TargetListCommand, self)._format_long_item(key, val)
         attrs = self.model.attributes[key]
-        print attrs
         if attrs.get('model') is Compiler:
             fmt_val = '%s (%s)' % (val['path'], val['family'])
         return fmt_key, fmt_val, flags, description
