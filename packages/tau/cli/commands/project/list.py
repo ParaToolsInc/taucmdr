@@ -28,6 +28,7 @@
 """``tau measurement`` subcommand."""
 
 from tau import util
+from tau.logger import LINE_WIDTH
 from tau.cli import arguments
 from tau.cli.cli_view import ListCommand
 from tau.cli.commands.select import COMMAND as select_cmd
@@ -99,8 +100,13 @@ class ProjectListCommand(ListCommand):
                 print (util.color_text('No selected experiment: ', 'red') + 
                        'Use `%s` to create or select an experiment.' % select_cmd)
             else:
-                print util.color_text('Selected experiment: ', 'cyan') + expr['name']
-                print util.color_text('\nTAU MAKEFILE: ', 'cyan') + expr.get_makefile()
+                makefile = expr.get_makefile()
+                makefile_colored = util.color_text('TAU Makefile: ', 'cyan') + makefile
+                expr_label = "Selected Experiment: "
+                expr_colored = util.color_text(expr_label, 'cyan') + expr['name']
+                # Adjust line width to account for control chars
+                width = LINE_WIDTH - len(expr_label) - len(expr['name']) - (len(makefile) + 14) + len(makefile_colored)  
+                print "{0}{1:>{2}}".format(expr_colored, makefile_colored, width)
 
         return retval
 
