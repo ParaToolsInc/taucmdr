@@ -288,7 +288,6 @@ class ListCommand(AbstractCliView):
                 row.append(cell)
             rows.append(row)
         table = Texttable(logger.LINE_WIDTH)
-        table.set_deco(Texttable.HEADER | Texttable.VLINES | Texttable.BORDER)
         table.set_cols_align([col.get('align', 'c') for col in self.dashboard_columns])
         table.add_rows(rows)
         return [title, table.draw(), '']
