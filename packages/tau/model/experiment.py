@@ -421,7 +421,7 @@ class Experiment(Model):
                 archive_file = self['name'] + '.trial' + trial_number + '.' + profile_format
                 profile_files = [os.path.join(trial_number, os.path.basename(x)) for x in trial.profile_files()]
                 _, env = tau.runtime_config()
-                trace_files = [os.path.join(trial_number, x[len(trial.prefix)+1:]) for x in trial.trace_files(env,True)]
+                trace_files = [os.path.join(trial_number, x[len(trial.prefix)+1:]) for x in trial.trace_files(env, True)]
                 exportable_files = profile_files + trace_files
                 old_cwd = os.getcwd()
                 os.chdir(os.path.dirname(trial.prefix))

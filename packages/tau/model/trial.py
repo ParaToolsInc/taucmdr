@@ -38,7 +38,7 @@ import errno
 from datetime import datetime
 from tau import logger, util
 from tau.cf.target import IBM_BGQ_ARCH, IBM_BGP_ARCH
-from tau.error import ConfigurationError
+from tau.error import ConfigurationError, InternalError
 from tau.mvc.controller import Controller
 from tau.mvc.model import Model
 
@@ -282,12 +282,12 @@ class Trial(Model):
         Returns:
             list: Paths to trace files.
         """
-        trc_files  = glob.glob(os.path.join(self.prefix, '*.trc'))
-        edf_files  = glob.glob(os.path.join(self.prefix, '*.edf'))
-        def_files  = glob.glob(os.path.join(self.prefix, 'traces/*.def'))
-        evt_files  = glob.glob(os.path.join(self.prefix, 'traces/*.evt'))
+        trc_files = glob.glob(os.path.join(self.prefix, '*.trc'))
+        edf_files = glob.glob(os.path.join(self.prefix, '*.edf'))
+        def_files = glob.glob(os.path.join(self.prefix, 'traces/*.def'))
+        evt_files = glob.glob(os.path.join(self.prefix, 'traces/*.evt'))
         slog2_file = glob.glob(os.path.join(self.prefix, 'tau.slog2'))
-        otf2_files  = glob.glob(os.path.join(self.prefix, 'traces.otf2'))
+        otf2_files = glob.glob(os.path.join(self.prefix, 'traces.otf2'))
         if post_process and trc_files and edf_files and not slog2_file:
             if not os.path.isfile(os.path.join(self.prefix, 'tau.trc')):
                 cmd = ['tau_treemerge.pl']
