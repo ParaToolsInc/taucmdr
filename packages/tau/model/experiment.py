@@ -84,6 +84,10 @@ def attributes():
             'collection': Trial,
             'via': 'experiment',
             'description': "Trials of this experiment"
+        },
+        'tau_makefile': {
+            'type': 'string',
+            'description': 'TAU Makefile used during this experiment, if any.'
         }
     }
 
@@ -256,6 +260,7 @@ class Experiment(Model):
                     throttle_num_calls=measurement.get_or_default('throttle_num_calls'),
                     forced_makefile=target.get_or_default('forced_makefile'))
         tau.install()
+        self.controller(self.storage).update({'tau_makefile': os.path.basename(tau.get_makefile())}, self.eid)
         return tau
 
     def managed_build(self, compiler_cmd, compiler_args):
@@ -407,7 +412,6 @@ class Experiment(Model):
         if not export_location:
             export_location = os.getcwd()
         if profile_format == 'ppk':
-            tau = self.configure()
             for trial in self._get_trials(trial_numbers):
                 ppk_file = self['name'] + '.trial' + str(trial['number']) + '.ppk'
                 tau.pack_profiles(trial.prefix, os.path.join(export_location, ppk_file))
@@ -427,7 +431,3 @@ class Experiment(Model):
                     os.chdir(old_cwd)
         else:
             raise ConfigurationError("Invalid profile format: %s" % profile_format)
-
-    def get_makefile(self):
-        tau = self.configure()
-        return os.path.basename(tau.get_makefile())
