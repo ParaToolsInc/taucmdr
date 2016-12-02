@@ -38,10 +38,22 @@ class DashboardCommand(AbstractCommand):
     
     def _construct_parser(self):
         usage = "%s [arguments]" % self.command
-        return arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
+        parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
+        style_dest = 'style'
+        style_group = parser.add_mutually_exclusive_group()
+        style_group.add_argument('-d', '--dashboard', 
+                                 help="show data in a fancy dasboard",
+                                 const='dashboard', action='store_const', dest=style_dest, 
+                                 default='dashboard')
+        style_group.add_argument('-l', '--long', 
+                                 help="show data in long format",
+                                 const='long', action='store_const', dest=style_dest, 
+                                 default=arguments.SUPPRESS)
+        return parser
 
     def main(self, argv):
-        subargs = ['--dashboard']
+        args = self._parse_args(argv)
+        subargs = ['--' + args.style]
         proj_ctrl = Project.controller()
         print
         try:
