@@ -362,8 +362,9 @@ def attributes():
         },
         'forced_makefile': {
             'type': 'string',
-            'description': 'path to Makefile',
-            'default': None,
+            'description': 'Populate target configuration from a TAU Makefile (WARNING: Overrides safety checks)',
+            'argparse': {'flags': ('--from-tau-makefile',),
+                         'metavar': '<path>'},
             'on_change': Target.attribute_changed
         }
     }

@@ -219,7 +219,7 @@ class TauInstallation(Installation):
             throttle (bool): If True then throttle lightweight events.
             throttle_per_call (int): Maximum microseconds per call of a lightweight event.
             throttle_num_calls (int): Minimum number of calls for a lightweight event.
-	    forced_makefile (str): Path to external makefile.
+	        forced_makefile (str): Path to external makefile.
         """
         super(TauInstallation, self).__init__('tau', 'TAU Performance System', sources, target_arch, target_os, 
                                               compilers, REPOS, COMMANDS, None, None)

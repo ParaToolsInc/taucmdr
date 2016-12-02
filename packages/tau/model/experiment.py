@@ -258,7 +258,7 @@ class Experiment(Model):
                     throttle=measurement.get_or_default('throttle'),
                     throttle_per_call=measurement.get_or_default('throttle_per_call'),
                     throttle_num_calls=measurement.get_or_default('throttle_num_calls'),
-                    forced_makefile=target.get_or_default('forced_makefile'))
+                    forced_makefile=target.get('forced_makefile', None))
         tau.install()
         self.controller(self.storage).update({'tau_makefile': os.path.basename(tau.get_makefile())}, self.eid)
         return tau

@@ -74,7 +74,7 @@ class TargetCreateCommand(CreateCommand):
     def _parse_tau_makefile(self, args):
         # Parsing a TAU Makefile is a really hairy operation, so let's lift the limit on statements
         # pylint: disable=too-many-statements
-        makefile = args.tau_makefile
+        makefile = args.forced_makefile
         if not util.file_accessible(makefile):
             self.parser.error("Invalid TAU makefile: %s" % makefile)
         tau_arch_name = os.path.basename(os.path.dirname(os.path.dirname(makefile)))
@@ -90,7 +90,6 @@ class TargetCreateCommand(CreateCommand):
         self.logger.info("  --host-os='%s'", args.host_os)
         args.tau_source = os.path.abspath(os.path.join(os.path.dirname(makefile), '..', '..'))
         self.logger.info("  --tau='%s'", args.tau_source)
-        setattr(args, 'forced_makefile', makefile)
         with open(makefile, 'r') as fin:
             compiler_parts = ("FULL_CC", "FULL_CXX", "TAU_F90")
             package_parts = {"BFDINCLUDE": ("binutils_source", lambda x: os.path.dirname(x.lstrip("-I"))), 
@@ -271,11 +270,6 @@ class TargetCreateCommand(CreateCommand):
         group = parser.add_argument_group('Symmetric Hierarchical Memory (SHMEM) arguments')
         self._configure_argument_group(group, SHMEM_COMPILERS, '--shmem-compilers', 'shmem_family', hint)
 
-        parser.add_argument('--from-tau-makefile',
-                            help="Populate target configuration from a TAU Makefile",
-                            metavar='<path>',
-                            dest='tau_makefile',
-                            default=arguments.SUPPRESS)
         return parser
 
     def _parse_args(self, argv):
@@ -301,7 +295,7 @@ class TargetCreateCommand(CreateCommand):
     def main(self, argv):
         args = self._parse_args(argv)
         store = arguments.parse_storage_flag(args)[0]
-        if hasattr(args, "tau_makefile"):
+        if hasattr(args, "forced_makefile"):
             self._parse_tau_makefile(args)
             self.logger.debug('Arguments after parsing TAU Makefile: %s', args)
         compilers = self.parse_compiler_flags(args)
