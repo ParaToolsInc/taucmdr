@@ -241,7 +241,7 @@ class ListCommand(AbstractCliView):
         key_attr = self.model.key_attribute
         self._format_fields = {'command': self.command, 'model_name': self.model_name, 'key_attr': key_attr}
         self.default_style = default_style
-        self.dashboard_columns = dashboard_columns or [{'header': key_attr.capitalize(), 'value': key_attr}]
+        self.dashboard_columns = dashboard_columns or [{'header': key_attr.title(), 'value': key_attr}]
         self.title_fmt = title_fmt
 
     def short_format(self, models):
@@ -336,7 +336,8 @@ class ListCommand(AbstractCliView):
                         val = str(val)
                 else:
                     raise InternalError("Attribute has no type: %s, %s" % (attrs, val))
-                description = attrs.get('description', 'No description').capitalize()
+                description = attrs.get('description', 'No description')
+                description = description[0].upper() + description[1:] + "."
                 flags = ', '.join(flag for flag in attrs.get('argparse', {'flags': ('N/A',)})['flags'])
                 rows.append([key, val, flags, description])
             table = Texttable(logger.LINE_WIDTH)

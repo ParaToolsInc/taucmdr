@@ -50,7 +50,7 @@ EXIT_SUCCESS = 0
 HELP_CONTACT = '<support@paratools.com>'
 """str: E-mail address users should contact for help."""
 
-TAUCMDR_URL = 'http://www.taucommander.com/'
+TAUCMDR_URL = 'www.taucommander.com'
 """str: URL of the TAU Commander project."""
 
 MINIMUM_PYTHON_VERSION = (2, 7)

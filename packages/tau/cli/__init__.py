@@ -181,15 +181,16 @@ def commands_description(package_name=COMMANDS_PACKAGE_NAME):
             continue 
         descr = command_obj.summary.split('\n')[0]
         group = command_obj.group
-        name = '{:<14}'.format(cmd)
+        name = util.color_text('{:<14}'.format(cmd), 'yellow')
         groups.setdefault(group, []).append('  %s  %s' % (name, descr))
 
     parts = []
     for group, members in groups.iteritems():
         if group:
-            parts.append(group + ' subcommands:')
+            title = util.color_text(group.title() + ' Subcommands:', attrs=['bold'])
         else:
-            parts.append('subcommands:')
+            title = util.color_text('Subcommands:', attrs=['bold'])
+        parts.append(title)
         parts.extend(members)
         parts.append('')
     return '\n'.join(parts)

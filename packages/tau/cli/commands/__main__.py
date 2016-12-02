@@ -34,15 +34,13 @@ Instead, process arguments in the appropriate subcommand.
 import os
 import sys
 import tau
-from tau import cli, logger, configuration
+from tau import cli, logger, configuration, util
 from tau.cli import UnknownCommandError, arguments
 from tau.cli.command import AbstractCommand
 from tau.cli.commands.build import COMMAND as build_command
 from tau.cli.commands.trial.create import COMMAND as trial_create_command
 
 LOGGER = logger.get_logger(__name__)
-
-SUMMARY_FMT = "TAU Commander [ %s ]" % tau.TAUCMDR_URL
 
 HELP_PAGE_FMT = """'%(command)s' page to be written.
 
@@ -57,7 +55,11 @@ class MainCommand(AbstractCommand):
     """Main entry point to the command line interface."""
 
     def __init__(self):
-        super(MainCommand, self).__init__(__name__, summary_fmt=SUMMARY_FMT, help_page_fmt=HELP_PAGE_FMT)
+        summary_parts = [util.color_text("TAU Commander", 'red', attrs=['bold']),
+                         util.color_text(" [ ", attrs=['bold']),
+                         util.color_text(tau.TAUCMDR_URL, 'cyan', attrs=['bold']),
+                         util.color_text(" ]", attrs=['bold'])] 
+        super(MainCommand, self).__init__(__name__, summary_fmt=''.join(summary_parts), help_page_fmt=HELP_PAGE_FMT)
         self.command = os.path.basename(tau.TAU_SCRIPT)
     
     def _construct_parser(self):
@@ -66,24 +68,27 @@ class MainCommand(AbstractCommand):
         except KeyError:
             log_default = False
         usage = "%s [arguments] <subcommand> [options]"  % self.command
-        epilog = ["", cli.commands_description(), "",
-                  "shortcuts:",
-                  "  %(command)s <compiler>  Execute a compiler command", 
-                  "                  - Example: %(command)s gcc *.c -o a.out",
-                  "                  - Alias for '%(command)s build <compiler>'",
-                  "  %(command)s <program>   Gather data from a program",
-                  "                  - Example: %(command)s ./a.out",
-                  "                  - Alias for '%(command)s trial create <program>'",
-                  "  %(command)s select      Select configuration objects to create a new experiment",
-                  "                  - Alias for '%(command)s experiment create'",
-                  "  %(command)s show        Show data from the most recent trial",
-                  "                  - Alias for '%(command)s trial show'",
-                  "",
-                  "See '%(command)s help <subcommand>' for more information on <subcommand>."]
+        _yellow = lambda x: "{:<35}".format(util.color_text(x, 'yellow'))
+        epilog_parts = ["", cli.commands_description(), "",
+                        util.color_text("Shortcuts:", attrs=["bold"]),
+                        _yellow("  %(command)s <compiler>") + "Execute a compiler command", 
+                        "                  - Example: %(command)s gcc *.c -o a.out",
+                        "                  - Alias for '%(command)s build <compiler>'",
+                        _yellow("  %(command)s <program>") + "Gather data from a program",
+                        "                  - Example: %(command)s ./a.out",
+                        "                  - Alias for '%(command)s trial create <program>'",
+                        _yellow("  %(command)s select") + "Select configuration objects to create a new experiment",
+                        "                  - Alias for '%(command)s experiment create'",
+                        _yellow("  %(command)s show") + "Show data from the most recent trial",
+                        "                  - Alias for '%(command)s trial show'",
+                        "",
+                        "See '%(command)s help <subcommand>' for more information on <subcommand>."]
+        epilog='\n'.join(epilog_parts) % {'color_command': util.color_text(self.command, 'cyan'), 
+                                          'command': self.command}
         parser = arguments.get_parser(prog=self.command,
                                       usage=usage,
                                       description=self.summary,
-                                      epilog='\n'.join(epilog) % {'command': self.command})
+                                      epilog=epilog)
         parser.add_argument('command',
                             help="See subcommand descriptions below",
                             metavar='<subcommand>')

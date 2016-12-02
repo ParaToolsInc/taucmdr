@@ -516,6 +516,14 @@ def color_text(text, *args, **kwargs):
     return termcolor.colored(text, *args, **kwargs)
 
 
+def uncolor_text(text):
+    nocolor = text.replace(termcolor.RESET, '')
+    for codes in termcolor.ATTRIBUTES, termcolor.HIGHLIGHTS, termcolor.COLORS:
+        for code in codes.itervalues():
+            nocolor = nocolor.replace('\033[%dm' % code, '')
+    return nocolor
+
+
 def walk_packages(path, prefix):
     """Fix :any:`pkgutil.walk_packages` to work with Python zip files.
     
