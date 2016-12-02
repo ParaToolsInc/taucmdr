@@ -33,7 +33,7 @@ See http://en.wikipedia.org/wiki/Model-view-controller
 from texttable import Texttable
 from tau import EXIT_SUCCESS
 from tau import logger, util, cli
-from tau.error import UniqueAttributeError, InternalError
+from tau.error import UniqueAttributeError, InternalError, ModelError
 from tau.cf.storage import StorageError
 from tau.cf.storage.levels import SYSTEM_STORAGE, USER_STORAGE, PROJECT_STORAGE
 from tau.model.project import Project, ProjectSelectionError
@@ -318,14 +318,14 @@ class ListCommand(AbstractCliView):
                     for foreign_record in val:
                         try:
                             foreign_keys.append(str(foreign_record[foreign_model.key_attribute]))
-                        except AttributeError:
+                        except (AttributeError, ModelError):
                             foreign_keys.append(str(foreign_record))
                     val = ', '.join(foreign_keys)
                 elif 'model' in attrs:
                     foreign_model = attrs['model']
                     try:
                         val = str(val[foreign_model.key_attribute])
-                    except AttributeError:
+                    except (AttributeError, ModelError):
                         val = str(val)
                 elif 'type' in attrs:
                     if attrs['type'] == 'boolean':
