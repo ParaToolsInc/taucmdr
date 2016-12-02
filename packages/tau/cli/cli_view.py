@@ -291,6 +291,37 @@ class ListCommand(AbstractCliView):
         table.set_cols_align([col.get('align', 'c') for col in self.dashboard_columns])
         table.add_rows(rows)
         return [title, table.draw(), '']
+    
+    def _format_long_item(self, key, val):
+        attrs = self.model.attributes[key]
+        if 'collection' in attrs:
+            foreign_model = attrs['collection']
+            foreign_keys = []
+            for foreign_record in val:
+                try:
+                    foreign_keys.append(str(foreign_record[foreign_model.key_attribute]))
+                except (AttributeError, ModelError):
+                    foreign_keys.append(str(foreign_record))
+            val = ', '.join(foreign_keys)
+        elif 'model' in attrs:
+            foreign_model = attrs['model']
+            try:
+                val = str(val[foreign_model.key_attribute])
+            except (AttributeError, ModelError):
+                val = str(val)
+        elif 'type' in attrs:
+            if attrs['type'] == 'boolean':
+                val = str(bool(val))
+            elif attrs['type'] == 'array':
+                val = ', '.join(str(x) for x in val)
+            elif attrs['type'] != 'string':
+                val = str(val)
+        else:
+            raise InternalError("Attribute has no type: %s, %s" % (attrs, val))
+        description = attrs.get('description', 'No description')
+        description = description[0].upper() + description[1:] + "."
+        flags = ', '.join(flag for flag in attrs.get('argparse', {'flags': ('N/A',)})['flags'])
+        return [key, val, flags, description]
 
     def long_format(self, records):
         """Format records in long format.
@@ -309,37 +340,8 @@ class ListCommand(AbstractCliView):
             rows = [['Attribute', 'Value', 'Command Flag', 'Description']]
             populated = record.populate()
             for key, val in sorted(populated.iteritems()):
-                attrs = self.model.attributes[key]
-                if key == self.model.key_attribute:
-                    continue
-                if 'collection' in attrs:
-                    foreign_model = attrs['collection']
-                    foreign_keys = []
-                    for foreign_record in val:
-                        try:
-                            foreign_keys.append(str(foreign_record[foreign_model.key_attribute]))
-                        except (AttributeError, ModelError):
-                            foreign_keys.append(str(foreign_record))
-                    val = ', '.join(foreign_keys)
-                elif 'model' in attrs:
-                    foreign_model = attrs['model']
-                    try:
-                        val = str(val[foreign_model.key_attribute])
-                    except (AttributeError, ModelError):
-                        val = str(val)
-                elif 'type' in attrs:
-                    if attrs['type'] == 'boolean':
-                        val = str(bool(val))
-                    elif attrs['type'] == 'array':
-                        val = ', '.join(str(x) for x in val)
-                    elif attrs['type'] != 'string':
-                        val = str(val)
-                else:
-                    raise InternalError("Attribute has no type: %s, %s" % (attrs, val))
-                description = attrs.get('description', 'No description')
-                description = description[0].upper() + description[1:] + "."
-                flags = ', '.join(flag for flag in attrs.get('argparse', {'flags': ('N/A',)})['flags'])
-                rows.append([key, val, flags, description])
+                if key != self.model.key_attribute:
+                    rows.append(self._format_long_item(key, val))
             table = Texttable(logger.LINE_WIDTH)
             table.set_cols_align(['r', 'c', 'l', 'l'])
             table.set_deco(Texttable.HEADER | Texttable.VLINES)
