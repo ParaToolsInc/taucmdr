@@ -51,3 +51,15 @@ class CreateTest(tests.TestCase):
         argv = ['proj1', 'test_targ', 'meas_PGI']
         _, stderr = self.assertCommandReturnValue(0, experiment_create_cmd, argv)
         self.assertFalse(stderr)
+        
+    def test_h_arg(self):
+        self.reset_project_storage(project_name='proj1')
+        stdout, _ = self.assertCommandReturnValue(0, experiment_create_cmd, ['-h'])
+        self.assertIn('Create target configurations.', stdout)
+        self.assertIn('Show this help message and exit', stdout)
+
+    def test_help_arg(self):
+        self.reset_project_storage(project_name='proj1')
+        stdout, _ = self.assertCommandReturnValue(0, experiment_create_cmd, ['--help'])
+        self.assertIn('Create target configurations.', stdout)
+        self.assertIn('Show this help message and exit', stdout)

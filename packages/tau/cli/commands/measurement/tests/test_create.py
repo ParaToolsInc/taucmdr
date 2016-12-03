@@ -32,21 +32,33 @@ Functions used for unit tests of create.py.
 
 
 from tau import tests
-from tau.cli.commands.measurement import create
+from tau.cli.commands.measurement.create import COMMAND as create_cmd
 
 class CreateTest(tests.TestCase):
     """Tests for :any:`measurement.create`."""
 
     def test_create(self):
         self.reset_project_storage(project_name='proj1')
-        stdout, stderr = self.assertCommandReturnValue(0, create.COMMAND, ['meas01'])
+        stdout, stderr = self.assertCommandReturnValue(0, create_cmd, ['meas01'])
         self.assertIn('Added measurement \'meas01\' to project configuration', stdout)
         self.assertFalse(stderr)
         
     def test_duplicatename(self):
         self.reset_project_storage(project_name='proj1')
-        self.assertCommandReturnValue(0, create.COMMAND, ['meas01'])
-        _, _, stderr = self.exec_command(create.COMMAND, ['meas01'])
+        self.assertCommandReturnValue(0, create_cmd, ['meas01'])
+        _, _, stderr = self.exec_command(create_cmd, ['meas01'])
         self.assertIn('measurement create <measurement_name> [arguments]', stderr)
         self.assertIn('measurement create: error: A measurement with name', stderr)
         self.assertIn('already exists', stderr)
+
+    def test_h_arg(self):
+        self.reset_project_storage(project_name='proj1')
+        stdout, _ = self.assertCommandReturnValue(0, create_cmd, ['-h'])
+        self.assertIn('Create target configurations.', stdout)
+        self.assertIn('Show this help message and exit', stdout)
+
+    def test_help_arg(self):
+        self.reset_project_storage(project_name='proj1')
+        stdout, _ = self.assertCommandReturnValue(0, create_cmd, ['--help'])
+        self.assertIn('Create target configurations.', stdout)
+        self.assertIn('Show this help message and exit', stdout)

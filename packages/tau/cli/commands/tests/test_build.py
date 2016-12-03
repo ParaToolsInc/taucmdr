@@ -50,3 +50,14 @@ class BuildTest(tests.TestCase):
         cc_cmd = self.get_compiler(CC)
         self.assertTrue(build_command.is_compatible(cc_cmd))
 
+    def test_h_arg(self):
+        self.reset_project_storage(project_name='proj1')
+        stdout, _ = self.assertCommandReturnValue(0, build_command, ['-h'])
+        self.assertIn('Create target configurations.', stdout)
+        self.assertIn('Show this help message and exit', stdout)
+
+    def test_help_arg(self):
+        self.reset_project_storage(project_name='proj1')
+        stdout, _ = self.assertCommandReturnValue(0, build_command, ['--help'])
+        self.assertIn('Create target configurations.', stdout)
+        self.assertIn('Show this help message and exit', stdout)
