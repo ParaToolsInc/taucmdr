@@ -130,13 +130,20 @@ class Experiment(Model):
         Returns:
             str: String indicating why an application rebuild is required.
         """
+        def _fmt(val):
+            if isinstance(val, list):
+                return "[%s]" % ", ".join(val)
+            elif isinstance(val, basestring):
+                return "'%s'" % val
+            else:
+                return str(val)
         rebuild_required = cls.controller().pop_topic('rebuild_required')
         if not rebuild_required:
             return ''
         parts = ["Application rebuild required:"]
         for changed in rebuild_required:
             for attr, change in changed.iteritems():
-                old, new = change
+                old, new = (_fmt(x) for x in change)
                 if old is None:
                     parts.append("  - %s is now set to %s" % (attr, new))
                 elif new is None:
@@ -358,10 +365,7 @@ class Experiment(Model):
         if not trials:
             raise ConfigurationError("No trials in experiment %s" % self['name'], "See `tau trial create --help`")
         for trial in trials:
-            try:
-                trial_size = trial['data_size']
-            except:
-                trial_size = 0
+            trial_size = trial.get('data_size', 0)
             if trial_size <= 0:
                 raise ConfigurationError("Trial %s is empty." %trial['number'])
         return trials
@@ -419,9 +423,11 @@ class Experiment(Model):
             for trial in self._get_trials(trial_numbers):
                 trial_number = str(trial['number'])
                 archive_file = self['name'] + '.trial' + trial_number + '.' + profile_format
-                profile_files = [os.path.join(trial_number, os.path.basename(x)) for x in trial.profile_files()]
+                profile_files = [os.path.join(trial_number, os.path.basename(x)) 
+                                 for x in trial.profile_files()]
                 _, env = tau.runtime_config()
-                trace_files = [os.path.join(trial_number, x[len(trial.prefix)+1:]) for x in trial.trace_files(env, True)]
+                trace_files = [os.path.join(trial_number, x[len(trial.prefix)+1:]) 
+                               for x in trial.trace_files(env, True)]
                 exportable_files = profile_files + trace_files
                 old_cwd = os.getcwd()
                 os.chdir(os.path.dirname(trial.prefix))
