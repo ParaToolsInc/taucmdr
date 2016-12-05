@@ -195,8 +195,28 @@ class ArgparseHelpFormatter(argparse.RawDescriptionHelpFormatter):
                     helpstr += '\n%s' % indent + '- default: %s' % default_str
         return helpstr
     
+
     def _format_args(self, action, default_metavar):
-        return util.color_text(super(ArgparseHelpFormatter, self)._format_args(action, default_metavar), 'cyan')
+        _reqired = lambda x: util.color_text(x, 'blue')
+        _optional = lambda x: util.color_text(x, 'cyan')
+        get_metavar = self._metavar_formatter(action, default_metavar)
+        if action.nargs is None:
+            result = _reqired('%s' % get_metavar(1))
+        elif action.nargs == argparse.OPTIONAL:
+            result = _optional('[%s]' % get_metavar(1))
+        elif action.nargs == argparse.ZERO_OR_MORE:
+            result = _optional('[%s [%s ...]]' % get_metavar(2))
+        elif action.nargs == argparse.ONE_OR_MORE:
+            tpl = get_metavar(2)
+            result = _reqired('%s' % tpl[0]) + _optional(' [%s ...]' % tpl[1])  
+        elif action.nargs == argparse.REMAINDER:
+            result = _reqired('...')
+        elif action.nargs == argparse.PARSER:
+            result = _reqired('%s ...' % get_metavar(1))
+        else:
+            formats = ['%s' for _ in range(action.nargs)]
+            result = ' '.join(formats) % get_metavar(action.nargs)
+        return result
 
     def _format_action_invocation(self, action):
         _red = lambda x: util.color_text(x, 'red')
@@ -232,7 +252,9 @@ class ArgparseHelpFormatter(argparse.RawDescriptionHelpFormatter):
 
         # short action name; start on the same line and pad two spaces
         elif len(action_header_nocolor) <= action_width:
-            tup = self._current_indent, '', action_width+len(action_header)-len(action_header_nocolor), action_header
+            # Adjust length to account for color control chars
+            length = action_width+len(action_header)-len(action_header_nocolor)
+            tup = self._current_indent, '', length, action_header
             action_header = '%*s%-*s  ' % tup
             indent_first = 0
 
