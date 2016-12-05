@@ -1001,4 +1001,8 @@ class TauInstallation(Installation):
             event_type = 'NATIVE' if 'NATIVE' in papi_metrics[0] else 'PRESET'
             cmd = [event_chooser_cmd, event_type] + papi_metrics
             if util.create_subprocess(cmd, stdout=False, show_progress=False):
-                raise ConfigurationError("PAPI metrics [%s] are not compatible on this target." % ', '.join(papi_metrics))
+                raise ConfigurationError("PAPI metrics [%s] are not compatible on this target." % 
+                                         ', '.join(papi_metrics),
+                                         "Use papi_avail to check metric availability.",
+                                         "Spread the desired metrics over multiple measurements.",
+                                         "Choose fewer metrics.")
