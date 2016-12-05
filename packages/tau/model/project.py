@@ -146,7 +146,8 @@ class ProjectController(Controller):
                 if experiment[attr] not in project[attr+'s']:
                     raise InternalError("Experiment contains %s not in project" % attr)
             self.update({'experiment': experiment.eid}, project.eid)
-            experiment.configure()
+            tau = experiment.configure()
+            tau.check_metrics()
     
     def unselect(self):
         del self.storage['selected_project']

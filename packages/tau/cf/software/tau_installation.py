@@ -853,23 +853,9 @@ class TauInstallation(Installation):
                    variables to set before running the application command.
         """
         opts, env = self.runtime_config()
-        papi_metrics = [metric for metric in self.metrics if metric != "TIME"]
-        if len(papi_metrics) > 1:
-            try:
-                env['PATH'] = os.pathsep.join([self.dependencies['papi'].bin_path, env['PATH']])
-            except:
-                pass
-            if 'NATIVE' in papi_metrics[0]:
-                event_type = 'NATIVE'
-            else:
-                event_type = 'PRESET'
-            cmd = ['papi_event_chooser', event_type]
-            cmd.extend(self.metrics)
-            retval = util.create_subprocess(cmd, env=env, stdout=False, show_progress=False)
-            if retval != 0:
-                LOGGER.warning("PAPI metrics %s are not compatible.", self.metrics)
-        use_tau_exec = (self.measure_opencl or
-                        (self.source_inst == 'never' and self.compiler_inst == 'never' and not self.link_only))
+        use_tau_exec = (self.measure_opencl or (self.source_inst == 'never' and 
+                                                self.compiler_inst == 'never' and 
+                                                not self.link_only))
         if use_tau_exec:
             tau_exec_opts = opts
             tags = self.get_tags()
@@ -1000,3 +986,19 @@ class TauInstallation(Installation):
             raise ConfigurationError("ParaProf command '%s' failed in '%s'" % (' '.join(cmd), prefix),
                                      "Make sure Java is installed and working",
                                      "Install the most recent Java from http://java.com")
+
+    def check_metrics(self):
+        """Checks metrics for compatibility.
+        
+        Raises:
+            ConfigurationError if there are incompatible metrics.
+        """
+        if not self._uses_papi():
+            return
+        papi_metrics = [metric for metric in self.metrics if "PAPI" in metric]
+        if len(papi_metrics) > 1:
+            event_chooser_cmd = os.path.join(self.dependencies['papi'].bin_path, 'papi_event_chooser')
+            event_type = 'NATIVE' if 'NATIVE' in papi_metrics[0] else 'PRESET'
+            cmd = [event_chooser_cmd, event_type] + papi_metrics
+            if util.create_subprocess(cmd, stdout=False, show_progress=False):
+                raise ConfigurationError("PAPI metrics [%s] are not compatible on this target." % ', '.join(papi_metrics))
