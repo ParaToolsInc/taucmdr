@@ -49,3 +49,13 @@ class CreateTest(tests.TestCase):
         self.assertIn('application create <application_name> [arguments]', stderr)
         self.assertIn('application create: error: A application with name', stderr)
         self.assertIn('already exists', stderr)
+        
+    def test_h_arg(self):
+        self.reset_project_storage(project_name='proj1')
+        stdout, _ = self.assertCommandReturnValue(0, create_cmd, ['-h'])
+        self.assertIn('Show this help message and exit', stdout)
+
+    def test_help_arg(self):
+        self.reset_project_storage(project_name='proj1')
+        stdout, _ = self.assertCommandReturnValue(0, create_cmd, ['--help'])
+        self.assertIn('Show this help message and exit', stdout)
