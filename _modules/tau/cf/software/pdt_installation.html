@@ -162,30 +162,30 @@
               <span class="s1">&#39;taucpdisp&#39;</span><span class="p">,</span>
               <span class="s1">&#39;tau_instrumentor&#39;</span><span class="p">,</span>
               <span class="s1">&#39;xmlgen&#39;</span><span class="p">]},</span>
-             <span class="n">PPC64LE_ARCH</span><span class="p">:</span>
-             <span class="p">{</span><span class="n">LINUX_OS</span><span class="p">:</span>
-              <span class="p">[</span><span class="s1">&#39;cparse&#39;</span><span class="p">,</span>
-               <span class="s1">&#39;cparse4101&#39;</span><span class="p">,</span>
-               <span class="s1">&#39;cxxparse&#39;</span><span class="p">,</span>
-               <span class="s1">&#39;cxxparse4101&#39;</span><span class="p">,</span>
-               <span class="s1">&#39;edgcpfe&#39;</span><span class="p">,</span>
-               <span class="s1">&#39;edgcpfe4101&#39;</span><span class="p">,</span>
-               <span class="s1">&#39;f90parse&#39;</span><span class="p">,</span>
-               <span class="s1">&#39;f95parse&#39;</span><span class="p">,</span>
-               <span class="s1">&#39;gfparse&#39;</span><span class="p">,</span>
-               <span class="s1">&#39;gfparse48&#39;</span><span class="p">,</span>
-               <span class="s1">&#39;gfparse485&#39;</span><span class="p">,</span>
-               <span class="s1">&#39;pdbcomment&#39;</span><span class="p">,</span>
-               <span class="s1">&#39;pdbconv&#39;</span><span class="p">,</span>
-               <span class="s1">&#39;pdbhtml&#39;</span><span class="p">,</span>
-               <span class="s1">&#39;pdbmerge&#39;</span><span class="p">,</span>
-               <span class="s1">&#39;pdbstmt&#39;</span><span class="p">,</span>
-               <span class="s1">&#39;pdbtree&#39;</span><span class="p">,</span>
-               <span class="s1">&#39;pdtflint&#39;</span><span class="p">,</span>
-               <span class="s1">&#39;taucpdisp&#39;</span><span class="p">,</span>
-               <span class="s1">&#39;taucpdisp4101&#39;</span><span class="p">,</span>
-               <span class="s1">&#39;tau_instrumentor&#39;</span><span class="p">,</span>
-               <span class="s1">&#39;xmlgen&#39;</span><span class="p">]}}</span>
+            <span class="n">PPC64LE_ARCH</span><span class="p">:</span>
+            <span class="p">{</span><span class="n">LINUX_OS</span><span class="p">:</span>
+             <span class="p">[</span><span class="s1">&#39;cparse&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;cparse4101&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;cxxparse&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;cxxparse4101&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;edgcpfe&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;edgcpfe4101&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;f90parse&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;f95parse&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;gfparse&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;gfparse48&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;gfparse485&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;pdbcomment&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;pdbconv&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;pdbhtml&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;pdbmerge&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;pdbstmt&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;pdbtree&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;pdtflint&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;taucpdisp&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;taucpdisp4101&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;tau_instrumentor&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;xmlgen&#39;</span><span class="p">]}}</span>
 
 <div class="viewcode-block" id="PdtInstallation"><a class="viewcode-back" href="../../../../tau.cf.software.pdt_installation.html#tau.cf.software.pdt_installation.PdtInstallation">[docs]</a><span class="k">class</span> <span class="nc">PdtInstallation</span><span class="p">(</span><span class="n">AutotoolsInstallation</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Encapsulates a PDT installation.</span>
@@ -201,7 +201,7 @@
                 <span class="n">gnu_compilers</span> <span class="o">=</span> <span class="n">GNU</span><span class="o">.</span><span class="n">installation</span><span class="p">()</span>
             <span class="k">except</span> <span class="n">ConfigurationError</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s2">&quot;GNU compilers (required to build PDT) could not be found.&quot;</span><span class="p">)</span>
-            <span class="n">compilers</span> <span class="o">=</span> <span class="n">compilers</span><span class="o">.</span><span class="n">modify</span><span class="p">(</span><span class="n">CC</span><span class="o">=</span><span class="n">gnu_compilers</span><span class="p">[</span><span class="n">CC</span><span class="p">],</span> <span class="n">CXX</span><span class="o">=</span><span class="n">gnu_compilers</span><span class="p">[</span><span class="n">CXX</span><span class="p">])</span>
+            <span class="n">compilers</span> <span class="o">=</span> <span class="n">compilers</span><span class="o">.</span><span class="n">modify</span><span class="p">(</span><span class="n">Host_CC</span><span class="o">=</span><span class="n">gnu_compilers</span><span class="p">[</span><span class="n">CC</span><span class="p">],</span> <span class="n">Host_CXX</span><span class="o">=</span><span class="n">gnu_compilers</span><span class="p">[</span><span class="n">CXX</span><span class="p">])</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">PdtInstallation</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="s1">&#39;pdt&#39;</span><span class="p">,</span> <span class="s1">&#39;PDT&#39;</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">target_arch</span><span class="p">,</span> <span class="n">target_os</span><span class="p">,</span> 
                                               <span class="n">compilers</span><span class="p">,</span> <span class="n">REPOS</span><span class="p">,</span> <span class="n">COMMANDS</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">arch</span> <span class="o">=</span> <span class="n">TauArch</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_arch</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_os</span><span class="p">)</span>

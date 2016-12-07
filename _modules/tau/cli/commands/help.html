@@ -147,12 +147,28 @@
         <span class="k">print</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">EXIT_SUCCESS</span></div>
 
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="HelpCommand.exit_with_fullhelp"><a class="viewcode-back" href="../../../../tau.cli.commands.help.html#tau.cli.commands.help.HelpCommand.exit_with_fullhelp">[docs]</a>    <span class="k">def</span> <span class="nf">exit_with_fullhelp</span><span class="p">():</span>
+        <span class="sd">&quot;&quot;&quot;Show a recursive help page for all commands and exit.&quot;&quot;&quot;</span>
+        <span class="n">commands</span> <span class="o">=</span> <span class="n">cli</span><span class="o">.</span><span class="n">get_all_commands</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">cmd_name</span> <span class="ow">in</span> <span class="n">commands</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">cli</span><span class="o">.</span><span class="n">command_from_module_name</span><span class="p">(</span><span class="n">cmd_name</span><span class="p">)</span>
+            <span class="n">cmd_obj</span> <span class="o">=</span> <span class="n">cli</span><span class="o">.</span><span class="n">find_command</span><span class="p">(</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">1</span><span class="p">:])</span>
+            <span class="n">command</span> <span class="o">=</span> <span class="n">cmd_obj</span><span class="o">.</span><span class="n">command</span>
+            <span class="n">command</span> <span class="o">=</span> <span class="n">cmd_obj</span><span class="o">.</span><span class="n">command</span>
+            <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">util</span><span class="o">.</span><span class="n">hline</span><span class="p">(</span><span class="s2">&quot;Usage: &quot;</span> <span class="o">+</span> <span class="n">command</span><span class="p">),</span>
+                     <span class="n">cmd_obj</span><span class="o">.</span><span class="n">usage</span><span class="p">,</span>
+                     <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">util</span><span class="o">.</span><span class="n">hline</span><span class="p">(</span><span class="s2">&quot;Help: &quot;</span> <span class="o">+</span> <span class="n">command</span><span class="p">),</span>
+                     <span class="n">cmd_obj</span><span class="o">.</span><span class="n">help_page</span><span class="p">]</span>
+            <span class="k">print</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">EXIT_SUCCESS</span></div>
+
     <span class="k">def</span> <span class="nf">_construct_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">usage_head</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> &lt;command&gt;|&lt;file&gt; [arguments]&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span>
+        <span class="n">usage_head</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> &lt;command&gt;|&lt;file&gt;|all [arguments]&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span>
         <span class="n">parser</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">get_parser</span><span class="p">(</span><span class="n">prog</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">,</span> <span class="n">usage</span><span class="o">=</span><span class="n">usage_head</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">summary</span><span class="p">)</span>
         <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;command&#39;</span><span class="p">,</span> 
-                            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;A TAU command, system command, or file&quot;</span><span class="p">,</span>
-                            <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;(&lt;command&gt;|&lt;file&gt;)&#39;</span><span class="p">,</span>
+                            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;A TAU command, system command, or file.</span><span class="se">\n</span><span class="s2">Use keyword &#39;all&#39; to view help for all options.&quot;</span><span class="p">,</span>
+                            <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;(&lt;command&gt;|&lt;file&gt;|all)&#39;</span><span class="p">,</span>
                             <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;+&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">parser</span>
 
@@ -160,6 +176,8 @@
         <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_args</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">command</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">exit_with_help</span><span class="p">([])</span>
+        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">command</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">exit_with_fullhelp</span><span class="p">()</span>
     
         <span class="c1"># Try to look up a Tau command&#39;s built-in help page</span>
         <span class="n">cmd</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">command</span>

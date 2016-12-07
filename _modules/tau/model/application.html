@@ -85,6 +85,7 @@
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">tau.error</span> <span class="kn">import</span> <span class="n">IncompatibleRecordError</span><span class="p">,</span> <span class="n">ConfigurationError</span>
 <span class="kn">from</span> <span class="nn">tau.mvc.model</span> <span class="kn">import</span> <span class="n">Model</span>
+<span class="kn">from</span> <span class="nn">tau.cf.compiler.host</span> <span class="kn">import</span> <span class="n">HOST_COMPILERS</span>
 <span class="kn">from</span> <span class="nn">tau.cf.compiler.mpi</span> <span class="kn">import</span> <span class="n">MPI_COMPILERS</span>
 <span class="kn">from</span> <span class="nn">tau.cf.compiler.shmem</span> <span class="kn">import</span> <span class="n">SHMEM_COMPILERS</span>
 
@@ -111,7 +112,7 @@
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span> 
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;application uses OpenMP&#39;</span><span class="p">,</span>
             <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
-            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--use-openmp&#39;</span><span class="p">,),</span>
+            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--openmp&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;T/F&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;?&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;const&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
@@ -122,7 +123,7 @@
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;application uses pthreads&#39;</span><span class="p">,</span>
             <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
-            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--use-pthreads&#39;</span><span class="p">,),</span>
+            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--pthreads&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;T/F&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;?&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;const&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
@@ -133,7 +134,7 @@
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
             <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;application uses MPI&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--use-mpi&#39;</span><span class="p">,),</span>
+            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--mpi&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;T/F&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;?&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;const&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
@@ -145,7 +146,7 @@
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
             <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;application uses NVIDIA CUDA&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--use-cuda&#39;</span><span class="p">,),</span>
+            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--cuda&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;T/F&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;?&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;const&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
@@ -157,7 +158,7 @@
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
             <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;application uses OpenCL&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--use-opencl&#39;</span><span class="p">,),</span>
+            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--opencl&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;T/F&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;?&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;const&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
@@ -170,7 +171,7 @@
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
             <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;application uses SHMEM&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--use-shmem&#39;</span><span class="p">,),</span>
+            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--shmem&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;T/F&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;?&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;const&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
@@ -181,7 +182,7 @@
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
             <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;application uses MPC&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--use-mpc&#39;</span><span class="p">,),</span>
+            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--mpc&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;T/F&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;?&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;const&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
@@ -216,7 +217,7 @@
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
             <span class="k">pass</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">select_file</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">select_file</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">select_file</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Selective instrumentation file &#39;</span><span class="si">%s</span><span class="s2">&#39; not found&quot;</span> <span class="o">%</span> <span class="n">select_file</span><span class="p">)</span>
     
 <div class="viewcode-block" id="Application.on_create"><a class="viewcode-back" href="../../../tau.model.application.html#tau.model.application.Application.on_create">[docs]</a>    <span class="k">def</span> <span class="nf">on_create</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -263,9 +264,12 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">found</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">compiler</span> <span class="ow">in</span> <span class="n">compilers</span><span class="p">:</span>
+            <span class="n">is_host</span> <span class="o">=</span> <span class="n">compiler</span><span class="p">[</span><span class="s1">&#39;role&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">HOST_COMPILERS</span><span class="o">.</span><span class="n">keyword</span><span class="p">)</span>
             <span class="n">is_mpi</span> <span class="o">=</span> <span class="n">compiler</span><span class="p">[</span><span class="s1">&#39;role&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">MPI_COMPILERS</span><span class="o">.</span><span class="n">keyword</span><span class="p">)</span>
             <span class="n">is_shmem</span> <span class="o">=</span> <span class="n">compiler</span><span class="p">[</span><span class="s1">&#39;role&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">SHMEM_COMPILERS</span><span class="o">.</span><span class="n">keyword</span><span class="p">)</span>
             <span class="k">if</span> <span class="p">(</span><span class="n">is_mpi</span> <span class="ow">and</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;mpi&#39;</span><span class="p">])</span> <span class="ow">or</span> <span class="p">(</span><span class="n">is_shmem</span> <span class="ow">and</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;shmem&#39;</span><span class="p">]):</span>
+                <span class="n">found</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">compiler</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">is_host</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;mpi&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;shmem&#39;</span><span class="p">]):</span>
                 <span class="n">found</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">compiler</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">found</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Application &#39;</span><span class="si">%s</span><span class="s2">&#39; is not compatible with any of these compilers:</span><span class="se">\n</span><span class="s2">  </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> 

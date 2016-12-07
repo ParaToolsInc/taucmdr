@@ -90,7 +90,7 @@ Invalid trial number or no trials in this experiment.</td>
 
 <dl class="attribute">
 <dt id="tau.model.experiment.Experiment.attributes">
-<code class="descname">attributes</code><em class="property"> = {'name': {'argparse': {'flags': ('--name',), 'metavar': '&lt;name&gt;'}, 'unique': True, 'type': 'string', 'primary_key': True, 'description': 'human-readable experiment name'}, 'trials': {'via': 'experiment', 'description': 'Trials of this experiment', 'collection': &lt;class 'tau.model.trial.Trial'&gt;}, 'project': {'model': &lt;class 'tau.model.project.Project'&gt;, 'required': True, 'description': 'Project this experiment belongs to'}, 'application': {'model': &lt;class 'tau.model.application.Application'&gt;, 'required': True, 'description': 'Application this experiment uses'}, 'measurement': {'model': &lt;class 'tau.model.measurement.Measurement'&gt;, 'required': True, 'description': 'Measurement parameters for this experiment'}, 'target': {'model': &lt;class 'tau.model.target.Target'&gt;, 'required': True, 'description': 'Target this experiment runs on'}}</em><a class="headerlink" href="#tau.model.experiment.Experiment.attributes" title="Permalink to this definition">¶</a></dt>
+<code class="descname">attributes</code><em class="property"> = {'name': {'argparse': {'flags': ('--name',), 'metavar': '&lt;name&gt;'}, 'unique': True, 'type': 'string', 'primary_key': True, 'description': 'human-readable experiment name'}, 'trials': {'via': 'experiment', 'description': 'Trials of this experiment', 'collection': &lt;class 'tau.model.trial.Trial'&gt;}, 'project': {'model': &lt;class 'tau.model.project.Project'&gt;, 'required': True, 'description': 'Project this experiment belongs to'}, 'application': {'model': &lt;class 'tau.model.application.Application'&gt;, 'required': True, 'description': 'Application this experiment uses'}, 'measurement': {'model': &lt;class 'tau.model.measurement.Measurement'&gt;, 'required': True, 'description': 'Measurement parameters for this experiment'}, 'tau_makefile': {'type': 'string', 'description': 'TAU Makefile used during this experiment, if any.'}, 'target': {'model': &lt;class 'tau.model.target.Target'&gt;, 'required': True, 'description': 'Target this experiment runs on'}}</em><a class="headerlink" href="#tau.model.experiment.Experiment.attributes" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -123,7 +123,7 @@ function, the experiment is ready to operate on the user&#8217;s application.</p
 
 <dl class="method">
 <dt id="tau.model.experiment.Experiment.export">
-<code class="descname">export</code><span class="sig-paren">(</span><em>profile_format='ppk'</em>, <em>trial_numbers=None</em>, <em>export_location=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.export"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.export" title="Permalink to this definition">¶</a></dt>
+<code class="descname">export</code><span class="sig-paren">(</span><em>profile_format=None</em>, <em>trial_numbers=None</em>, <em>export_location=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.export"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.export" title="Permalink to this definition">¶</a></dt>
 <dd><p>Export experiment trial data.</p>
 <p>Exports the most recent trial or all trials with given numbers.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -144,11 +144,6 @@ Invalid trial numbers or no trial data for this experiment.</p>
 </tbody>
 </table>
 </dd></dl>
-
-<dl class="method">
-<dt id="tau.model.experiment.Experiment.get_makefile">
-<code class="descname">get_makefile</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/model/experiment.html#Experiment.get_makefile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.model.experiment.Experiment.get_makefile" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 <dl class="attribute">
 <dt id="tau.model.experiment.Experiment.key_attribute">

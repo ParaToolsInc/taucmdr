@@ -228,19 +228,38 @@
             <span class="k">continue</span> 
         <span class="n">descr</span> <span class="o">=</span> <span class="n">command_obj</span><span class="o">.</span><span class="n">summary</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">group</span> <span class="o">=</span> <span class="n">command_obj</span><span class="o">.</span><span class="n">group</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;{:&lt;14}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">color_text</span><span class="p">(</span><span class="s1">&#39;{:&lt;14}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cmd</span><span class="p">),</span> <span class="s1">&#39;green&#39;</span><span class="p">)</span>
         <span class="n">groups</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;  </span><span class="si">%s</span><span class="s1">  </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">descr</span><span class="p">))</span>
 
     <span class="n">parts</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">group</span><span class="p">,</span> <span class="n">members</span> <span class="ow">in</span> <span class="n">groups</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
         <span class="k">if</span> <span class="n">group</span><span class="p">:</span>
-            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">group</span> <span class="o">+</span> <span class="s1">&#39; subcommands:&#39;</span><span class="p">)</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">color_text</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">title</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39; Subcommands:&#39;</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;bold&#39;</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;subcommands:&#39;</span><span class="p">)</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">color_text</span><span class="p">(</span><span class="s1">&#39;Subcommands:&#39;</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;bold&#39;</span><span class="p">])</span>
+        <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
         <span class="n">parts</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">members</span><span class="p">)</span>
         <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
     <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span></div>
 
+<div class="viewcode-block" id="get_all_commands"><a class="viewcode-back" href="../../tau.cli.html#tau.cli.get_all_commands">[docs]</a><span class="k">def</span> <span class="nf">get_all_commands</span><span class="p">(</span><span class="n">package_name</span><span class="o">=</span><span class="n">COMMANDS_PACKAGE_NAME</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Builds a list of all commands and subcommands.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        package_name (str): A dot-separated string naming the module to search for cli.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list: List of modules corresponding to all commands and subcommands.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">all_commands</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">commands</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">_get_commands</span><span class="p">(</span><span class="n">package_name</span><span class="p">)</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()</span> <span class="k">if</span> <span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;__module__&#39;</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">topcmd</span> <span class="ow">in</span> <span class="n">commands</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">cmd</span> <span class="o">==</span> <span class="s1">&#39;tests&#39;</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">for</span> <span class="n">subcmd</span><span class="p">,</span> <span class="n">mod</span> <span class="ow">in</span> <span class="n">topcmd</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">subcmd</span> <span class="o">!=</span> <span class="s1">&#39;__module__&#39;</span> <span class="ow">and</span> <span class="n">subcmd</span> <span class="o">!=</span> <span class="s1">&#39;tests&#39;</span><span class="p">:</span>
+                <span class="n">all_commands</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mod</span><span class="p">[</span><span class="s1">&#39;__module__&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">all_commands</span></div>
 
 <div class="viewcode-block" id="find_command"><a class="viewcode-back" href="../../tau.cli.html#tau.cli.find_command">[docs]</a><span class="k">def</span> <span class="nf">find_command</span><span class="p">(</span><span class="n">cmd</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Import the command module and return its COMMAND member.</span>

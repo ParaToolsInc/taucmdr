@@ -563,6 +563,14 @@
     <span class="k">return</span> <span class="n">termcolor</span><span class="o">.</span><span class="n">colored</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
+<div class="viewcode-block" id="uncolor_text"><a class="viewcode-back" href="../../tau.util.html#tau.util.uncolor_text">[docs]</a><span class="k">def</span> <span class="nf">uncolor_text</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+    <span class="n">nocolor</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">termcolor</span><span class="o">.</span><span class="n">RESET</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">codes</span> <span class="ow">in</span> <span class="n">termcolor</span><span class="o">.</span><span class="n">ATTRIBUTES</span><span class="p">,</span> <span class="n">termcolor</span><span class="o">.</span><span class="n">HIGHLIGHTS</span><span class="p">,</span> <span class="n">termcolor</span><span class="o">.</span><span class="n">COLORS</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">code</span> <span class="ow">in</span> <span class="n">codes</span><span class="o">.</span><span class="n">itervalues</span><span class="p">():</span>
+            <span class="n">nocolor</span> <span class="o">=</span> <span class="n">nocolor</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[</span><span class="si">%d</span><span class="s1">m&#39;</span> <span class="o">%</span> <span class="n">code</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">nocolor</span></div>
+
+
 <div class="viewcode-block" id="walk_packages"><a class="viewcode-back" href="../../tau.util.html#tau.util.walk_packages">[docs]</a><span class="k">def</span> <span class="nf">walk_packages</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Fix :any:`pkgutil.walk_packages` to work with Python zip files.</span>
 <span class="sd">    </span>

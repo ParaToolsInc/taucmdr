@@ -79,13 +79,25 @@
 
 
 <span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">tests</span>
-<span class="kn">from</span> <span class="nn">tau.cli.commands.help</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">HELP_COMMAND</span>
+<span class="kn">from</span> <span class="nn">tau.cli.commands.help</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">help_command</span>
 
 <div class="viewcode-block" id="HelpTest"><a class="viewcode-back" href="../../../../../tau.cli.commands.tests.test_help.html#tau.cli.commands.tests.test_help.HelpTest">[docs]</a><span class="k">class</span> <span class="nc">HelpTest</span><span class="p">(</span><span class="n">tests</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Unit tests for `tau help`&quot;&quot;&quot;</span>
+    
 <div class="viewcode-block" id="HelpTest.test_help"><a class="viewcode-back" href="../../../../../tau.cli.commands.tests.test_help.html#tau.cli.commands.tests.test_help.HelpTest.test_help">[docs]</a>    <span class="k">def</span> <span class="nf">test_help</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">(</span><span class="n">project_name</span><span class="o">=</span><span class="s1">&#39;proj1&#39;</span><span class="p">)</span>
         <span class="n">argv</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;build&#39;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">HELP_COMMAND</span><span class="p">,</span> <span class="n">argv</span><span class="p">)</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">help_command</span><span class="p">,</span> <span class="n">argv</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="HelpTest.test_h_arg"><a class="viewcode-back" href="../../../../../tau.cli.commands.tests.test_help.html#tau.cli.commands.tests.test_help.HelpTest.test_h_arg">[docs]</a>    <span class="k">def</span> <span class="nf">test_h_arg</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">(</span><span class="n">project_name</span><span class="o">=</span><span class="s1">&#39;proj1&#39;</span><span class="p">)</span>
+        <span class="n">stdout</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">help_command</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;-h&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;Show this help message and exit&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="HelpTest.test_help_arg"><a class="viewcode-back" href="../../../../../tau.cli.commands.tests.test_help.html#tau.cli.commands.tests.test_help.HelpTest.test_help_arg">[docs]</a>    <span class="k">def</span> <span class="nf">test_help_arg</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">(</span><span class="n">project_name</span><span class="o">=</span><span class="s1">&#39;proj1&#39;</span><span class="p">)</span>
+        <span class="n">stdout</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">help_command</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;--help&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;Show this help message and exit&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span></div></div>
 </pre></div>
 
       </div>
