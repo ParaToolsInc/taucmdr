@@ -110,10 +110,13 @@ class ProjectSelectionError(ConfigurationError):
 class ExperimentSelectionError(ConfigurationError):
     
     def __init__(self, value, *hints):
+        from tau.cli.commands.select import COMMAND as select_cmd
         from tau.cli.commands.experiment.create import COMMAND as experiment_create_cmd
+        from tau.cli.commands.dashboard import COMMAND as dashboard_cmd
         from tau.cli.commands.project.list import COMMAND as project_list_cmd
         if not hints:
-            hints = ("Use `%s` to create a new experiment." % experiment_create_cmd,
+            hints = ("Use `%s` or `%s` to create a new experiment." % (select_cmd, experiment_create_cmd),
+                     "Use `%s` to see current project configuration." % dashboard_cmd,
                      "Use `%s` to see available project configurations." % project_list_cmd)    
         super(ExperimentSelectionError, self).__init__(value, *hints)
 
@@ -143,7 +146,8 @@ class ProjectController(Controller):
                 if experiment[attr] not in project[attr+'s']:
                     raise InternalError("Experiment contains %s not in project" % attr)
             self.update({'experiment': experiment.eid}, project.eid)
-            experiment.configure()
+            tau = experiment.configure()
+            tau.check_metrics()
     
     def unselect(self):
         del self.storage['selected_project']

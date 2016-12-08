@@ -55,3 +55,12 @@ class ConfigureTest(tests.TestCase):
         self.assertFalse(stdout)
         self.assertIn("Invalid key: invalid_key", stderr)
 
+    def test_h_arg(self):
+        self.reset_project_storage(project_name='proj1')
+        stdout, _ = self.assertCommandReturnValue(0, configure_cmd, ['-h'])
+        self.assertIn('Show this help message and exit', stdout)
+
+    def test_help_arg(self):
+        self.reset_project_storage(project_name='proj1')
+        stdout, _ = self.assertCommandReturnValue(0, configure_cmd, ['--help'])
+        self.assertIn('Show this help message and exit', stdout)

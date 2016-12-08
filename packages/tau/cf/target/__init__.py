@@ -205,19 +205,21 @@ class TauArch(KeyedRecord):
         if isinstance(targ_os, basestring):
             targ_os = OperatingSystem.find(targ_os)
         for tau_arch in cls.all():
-            if tau_arch.architecture == targ_arch and tau_arch.operating_system == targ_os:
-                return tau_arch
+            for arch in tau_arch.architecture:
+                if arch == targ_arch and tau_arch.operating_system == targ_os:
+                    return tau_arch
         raise KeyError
 
 
 X86_64_ARCH = Architecture('x86_64', 'x86_64')
 INTEL_KNC_ARCH = Architecture('knc', 'Intel Knights Corner')
-INTEL_KNL_ARCH = Architecture('knl', 'Intel Knights Landing')
 IBM_BGP_ARCH = Architecture('BGP', 'IBM BlueGene/P')
 IBM_BGQ_ARCH = Architecture('BGQ', 'IBM BlueGene/Q')
 IBM64_ARCH = Architecture('ibm64', 'IBM 64-bit Power')
 ARM32_ARCH = Architecture('arm32', '32-bit ARM')
 ARM64_ARCH = Architecture('arm64', '64-bit ARM')
+PPC64_ARCH = Architecture('ppc64', '64-bit PPC')
+PPC64LE_ARCH = Architecture('ppc64le', '64-bit PPC little endian')
 
 DARWIN_OS = OperatingSystem('Darwin', 'Darwin')
 LINUX_OS = OperatingSystem('Linux', 'Linux')
@@ -227,57 +229,53 @@ ANDROID_OS = OperatingSystem('Android', 'Android')
 
 
 
-TAU_ARCH_APPLE = TauArch('apple', X86_64_ARCH, DARWIN_OS,
+TAU_ARCH_APPLE = TauArch('apple', [X86_64_ARCH], DARWIN_OS,
                          {HOST_COMPILERS: compiler.host.APPLE_LLVM, 
                           MPI_COMPILERS: compiler.mpi.SYSTEM, 
                           SHMEM_COMPILERS: compiler.shmem.OPENSHMEM})
 
-TAU_ARCH_X86_64 = TauArch('x86_64', X86_64_ARCH, LINUX_OS,
+TAU_ARCH_X86_64 = TauArch('x86_64', [X86_64_ARCH], LINUX_OS,
                           {HOST_COMPILERS: compiler.host.GNU, 
                            MPI_COMPILERS: compiler.mpi.SYSTEM, 
                            SHMEM_COMPILERS: compiler.shmem.OPENSHMEM})
 
-TAU_ARCH_CRAYCNL = TauArch('craycnl', X86_64_ARCH, CRAY_CNL_OS,
+TAU_ARCH_CRAYCNL = TauArch('craycnl', [X86_64_ARCH], CRAY_CNL_OS,
                            {HOST_COMPILERS: compiler.host.CRAY, 
                             MPI_COMPILERS: compiler.mpi.CRAY, 
                             SHMEM_COMPILERS: compiler.shmem.CRAY_SHMEM})
 
-TAU_ARCH_MIC_LINUX = TauArch('mic_linux', INTEL_KNC_ARCH, LINUX_OS,
+TAU_ARCH_MIC_LINUX = TauArch('mic_linux', [INTEL_KNC_ARCH], LINUX_OS,
                              {HOST_COMPILERS: compiler.host.INTEL, 
                               MPI_COMPILERS: compiler.mpi.INTEL, 
                               SHMEM_COMPILERS: compiler.shmem.OPENSHMEM})
 
-TAU_ARCH_KNL = TauArch('x86_64', INTEL_KNL_ARCH, LINUX_OS,
-                       {HOST_COMPILERS: compiler.host.INTEL, 
-                        MPI_COMPILERS: compiler.mpi.INTEL, 
-                        SHMEM_COMPILERS: compiler.shmem.OPENSHMEM})
-
-TAU_ARCH_BGP = TauArch('bgp', IBM_BGP_ARCH, IBM_CNK_OS,
+TAU_ARCH_BGP = TauArch('bgp', [IBM_BGP_ARCH], IBM_CNK_OS,
                        {HOST_COMPILERS: compiler.host.IBM_BG, 
                         MPI_COMPILERS: compiler.mpi.IBM, 
                         SHMEM_COMPILERS: compiler.shmem.OPENSHMEM})
 
-TAU_ARCH_BGQ = TauArch('bgq', IBM_BGQ_ARCH, IBM_CNK_OS,
+TAU_ARCH_BGQ = TauArch('bgq', [IBM_BGQ_ARCH], IBM_CNK_OS,
                        {HOST_COMPILERS: compiler.host.IBM_BG, 
                         MPI_COMPILERS: compiler.mpi.IBM, 
                         SHMEM_COMPILERS: compiler.shmem.OPENSHMEM})
 
-TAU_ARCH_IBM64_LINUX = TauArch('ibm64linux', IBM64_ARCH, LINUX_OS,
+TAU_ARCH_IBM64_LINUX = TauArch('ibm64linux', [IBM64_ARCH, PPC64_ARCH, PPC64LE_ARCH],
+                               LINUX_OS,
                                {HOST_COMPILERS: compiler.host.IBM, 
                                 MPI_COMPILERS: compiler.mpi.IBM, 
                                 SHMEM_COMPILERS: compiler.shmem.OPENSHMEM})
 
-TAU_ARCH_ARM32_LINUX = TauArch('arm_linux', ARM32_ARCH, LINUX_OS,
+TAU_ARCH_ARM32_LINUX = TauArch('arm_linux', [ARM32_ARCH], LINUX_OS,
                                {HOST_COMPILERS: compiler.host.GNU, 
                                 MPI_COMPILERS: compiler.mpi.SYSTEM, 
                                 SHMEM_COMPILERS: compiler.shmem.OPENSHMEM})
 
-TAU_ARCH_ARM64_LINUX = TauArch('arm64_linux', ARM64_ARCH, LINUX_OS,
+TAU_ARCH_ARM64_LINUX = TauArch('arm64_linux', [ARM64_ARCH], LINUX_OS,
                                {HOST_COMPILERS: compiler.host.GNU, 
                                 MPI_COMPILERS: compiler.mpi.SYSTEM, 
                                 SHMEM_COMPILERS: compiler.shmem.OPENSHMEM})
 
-TAU_ARCH_ARM_ANDROID = TauArch('arm_android', ARM32_ARCH, ANDROID_OS,
+TAU_ARCH_ARM_ANDROID = TauArch('arm_android', [ARM32_ARCH], ANDROID_OS,
                                {HOST_COMPILERS: compiler.host.GNU, 
                                 MPI_COMPILERS: compiler.mpi.SYSTEM, 
                                 SHMEM_COMPILERS: compiler.shmem.OPENSHMEM})

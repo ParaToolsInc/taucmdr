@@ -35,7 +35,7 @@ and checks the Python version.  It must be kept as short and simple as possible.
 import os
 import sys
 
-__version__ = "0.1"
+__version__ = "1.0a"
 """str: TAU Commander Version"""
 
 EXIT_FAILURE = -100
@@ -50,7 +50,7 @@ EXIT_SUCCESS = 0
 HELP_CONTACT = '<support@paratools.com>'
 """str: E-mail address users should contact for help."""
 
-TAUCMDR_URL = 'http://www.taucommander.com/'
+TAUCMDR_URL = 'www.taucommander.com'
 """str: URL of the TAU Commander project."""
 
 MINIMUM_PYTHON_VERSION = (2, 7)

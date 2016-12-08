@@ -34,7 +34,7 @@ import os
 import hashlib
 from tau import logger, util
 from tau.error import ConfigurationError
-from tau.cf.target import TauArch, X86_64_ARCH, LINUX_OS, TAU_ARCH_APPLE, TAU_ARCH_BGQ
+from tau.cf.target import TauArch, X86_64_ARCH, LINUX_OS, DARWIN_OS, IBM_BGQ_ARCH, IBM_CNK_OS, PPC64LE_ARCH
 from tau.cf.software import SoftwarePackageError
 from tau.cf.software.installation import AutotoolsInstallation
 from tau.cf.compiler.host import CC, CXX, PGI, GNU, INTEL
@@ -73,8 +73,8 @@ COMMANDS = {None:
              'tau_instrumentor',
              'upcparse',
              'xmlgen'],
-            TAU_ARCH_APPLE.architecture: 
-            {TAU_ARCH_APPLE.operating_system: 
+            X86_64_ARCH: 
+            {DARWIN_OS: 
              ['cparse',
               'cxxparse',
               'edgcpfe',
@@ -92,8 +92,8 @@ COMMANDS = {None:
               'pdtflint',
               'taucpdisp',
               'xmlgen']},
-            TAU_ARCH_BGQ.architecture:
-            {TAU_ARCH_BGQ.operating_system:
+            IBM_BGQ_ARCH:
+            {IBM_CNK_OS:
              ['cparse',
               'cxxparse',
               'edg44-c-roseparse',
@@ -114,6 +114,30 @@ COMMANDS = {None:
               'pdtflint',
               'taucpdisp',
               'tau_instrumentor',
+              'xmlgen']},
+            PPC64LE_ARCH:
+            {LINUX_OS:
+             ['cparse',
+              'cparse4101',
+              'cxxparse',
+              'cxxparse4101',
+              'edgcpfe',
+              'edgcpfe4101',
+              'f90parse',
+              'f95parse',
+              'gfparse',
+              'gfparse48',
+              'gfparse485',
+              'pdbcomment',
+              'pdbconv',
+              'pdbhtml',
+              'pdbmerge',
+              'pdbstmt',
+              'pdbtree',
+              'pdtflint',
+              'taucpdisp',
+              'taucpdisp4101',
+              'tau_instrumentor',
               'xmlgen']}}
 
 class PdtInstallation(AutotoolsInstallation):
@@ -125,12 +149,12 @@ class PdtInstallation(AutotoolsInstallation):
 
     def __init__(self, sources, target_arch, target_os, compilers):
         # PDT 3.22 can't be built with PGI compilers so substitute GNU compilers instead
-        if compilers[CC].info.family is PGI:
+        if compilers[CC].unwrap().info.family is PGI:
             try:
                 gnu_compilers = GNU.installation()
             except ConfigurationError:
                 raise SoftwarePackageError("GNU compilers (required to build PDT) could not be found.")
-            compilers = compilers.modify(CC=gnu_compilers[CC], CXX=gnu_compilers[CXX])
+            compilers = compilers.modify(Host_CC=gnu_compilers[CC], Host_CXX=gnu_compilers[CXX])
         super(PdtInstallation, self).__init__('pdt', 'PDT', sources, target_arch, target_os, 
                                               compilers, REPOS, COMMANDS, None, None)
         self.arch = TauArch.get(self.target_arch, self.target_os)

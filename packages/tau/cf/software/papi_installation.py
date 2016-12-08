@@ -40,7 +40,7 @@ from tau.cf.software.installation import AutotoolsInstallation
 
 LOGGER = logger.get_logger(__name__)
 
-REPOS = {None: 'http://icl.cs.utk.edu/projects/papi/downloads/papi-5.4.3.tar.gz'}
+REPOS = {None: 'http://icl.utk.edu/projects/papi/downloads/papi-5.5.1.tar.gz'}
 
 LIBRARIES = {None: ['libpapi.a']}
 

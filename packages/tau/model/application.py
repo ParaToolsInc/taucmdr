@@ -38,6 +38,7 @@ specifying OpenMP is used and the other specifying OpenMP is not used.
 import os
 from tau.error import IncompatibleRecordError, ConfigurationError
 from tau.mvc.model import Model
+from tau.cf.compiler.host import HOST_COMPILERS
 from tau.cf.compiler.mpi import MPI_COMPILERS
 from tau.cf.compiler.shmem import SHMEM_COMPILERS
 
@@ -64,7 +65,7 @@ def attributes():
             'type': 'boolean', 
             'description': 'application uses OpenMP',
             'default': False,
-            'argparse': {'flags': ('--use-openmp',),
+            'argparse': {'flags': ('--openmp',),
                          'metavar': 'T/F',
                          'nargs': '?',
                          'const': True,
@@ -75,7 +76,7 @@ def attributes():
             'type': 'boolean',
             'description': 'application uses pthreads',
             'default': False,
-            'argparse': {'flags': ('--use-pthreads',),
+            'argparse': {'flags': ('--pthreads',),
                          'metavar': 'T/F',
                          'nargs': '?',
                          'const': True,
@@ -86,7 +87,7 @@ def attributes():
             'type': 'boolean',
             'default': False,
             'description': 'application uses MPI',
-            'argparse': {'flags': ('--use-mpi',),
+            'argparse': {'flags': ('--mpi',),
                          'metavar': 'T/F',
                          'nargs': '?',
                          'const': True,
@@ -98,7 +99,7 @@ def attributes():
             'type': 'boolean',
             'default': False,
             'description': 'application uses NVIDIA CUDA',
-            'argparse': {'flags': ('--use-cuda',),
+            'argparse': {'flags': ('--cuda',),
                          'metavar': 'T/F',
                          'nargs': '?',
                          'const': True,
@@ -110,7 +111,7 @@ def attributes():
             'type': 'boolean',
             'default': False,
             'description': 'application uses OpenCL',
-            'argparse': {'flags': ('--use-opencl',),
+            'argparse': {'flags': ('--opencl',),
                          'metavar': 'T/F',
                          'nargs': '?',
                          'const': True,
@@ -123,7 +124,7 @@ def attributes():
             'type': 'boolean',
             'default': False,
             'description': 'application uses SHMEM',
-            'argparse': {'flags': ('--use-shmem',),
+            'argparse': {'flags': ('--shmem',),
                          'metavar': 'T/F',
                          'nargs': '?',
                          'const': True,
@@ -134,7 +135,7 @@ def attributes():
             'type': 'boolean',
             'default': False,
             'description': 'application uses MPC',
-            'argparse': {'flags': ('--use-mpc',),
+            'argparse': {'flags': ('--mpc',),
                          'metavar': 'T/F',
                          'nargs': '?',
                          'const': True,
@@ -169,7 +170,7 @@ class Application(Model):
         except KeyError:
             pass
         else:
-            if not os.path.exists(select_file):
+            if select_file and not os.path.exists(select_file):
                 raise ConfigurationError("Selective instrumentation file '%s' not found" % select_file)
     
     def on_create(self):
@@ -202,20 +203,29 @@ class Application(Model):
             return False
         return selected['application'] == self.eid
     
-    def check_compiler(self, compiler):
-        """Checks a compiler for compatibility with this application configuration.
+    def check_compiler(self, compilers):
+        """Checks a list of compilers for compatibility with this application configuration.
         
         Args:
-            compiler (InstalledCompiler): The compiler.
+            compilers (list): :any:`Compiler` instances that could possibly be compatible with this application.
+            
+        Returns:
+            Compiler: A compiler from `compilers` that can be used to build the application.
             
         Raises:
-            ConfigurationError: The compiler or command line arguments are incompatible with this target.
+            ConfigurationError: No compiler in `compilers` is compatible with this application.
         """
-        if self['mpi'] and compiler.info.family not in MPI_COMPILERS.families.values():
-            raise ConfigurationError("Application '%s' uses MPI but %s is not an MPI compiler." % 
-                                     (self['name'], compiler.absolute_path))
-        if self['shmem'] and compiler.info.family not in SHMEM_COMPILERS.families.values():
-            raise ConfigurationError("Application '%s' uses SHMEM but %s is not a SHMEM compiler." % 
-                                     (self['name'], compiler.absolute_path))
-        
-
+        found = []
+        for compiler in compilers:
+            is_host = compiler['role'].startswith(HOST_COMPILERS.keyword)
+            is_mpi = compiler['role'].startswith(MPI_COMPILERS.keyword)
+            is_shmem = compiler['role'].startswith(SHMEM_COMPILERS.keyword)
+            if (is_mpi and self['mpi']) or (is_shmem and self['shmem']):
+                found.append(compiler)
+            elif is_host and not (self['mpi'] or self['shmem']):
+                found.append(compiler)
+        if not found:
+            raise ConfigurationError("Application '%s' is not compatible with any of these compilers:\n  %s" % 
+                                     (self['name'], '\n  '.join(compiler['path'] for compiler in compilers)))
+        # If more than one compiler is compatible then choose the first one
+        return found[0]

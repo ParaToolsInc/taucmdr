@@ -30,13 +30,10 @@
 See http://en.wikipedia.org/wiki/Model-view-controller
 """
 
-import json
-import pprint
 from texttable import Texttable
-from termcolor import termcolor
 from tau import EXIT_SUCCESS
 from tau import logger, util, cli
-from tau.error import UniqueAttributeError, InternalError
+from tau.error import UniqueAttributeError, InternalError, ModelError
 from tau.cf.storage import StorageError
 from tau.cf.storage.levels import SYSTEM_STORAGE, USER_STORAGE, PROJECT_STORAGE
 from tau.model.project import Project, ProjectSelectionError
@@ -244,7 +241,7 @@ class ListCommand(AbstractCliView):
         key_attr = self.model.key_attribute
         self._format_fields = {'command': self.command, 'model_name': self.model_name, 'key_attr': key_attr}
         self.default_style = default_style
-        self.dashboard_columns = dashboard_columns or [{'header': key_attr.capitalize(), 'value': key_attr}]
+        self.dashboard_columns = dashboard_columns or [{'header': key_attr.title(), 'value': key_attr}]
         self.title_fmt = title_fmt
 
     def short_format(self, models):
@@ -259,22 +256,22 @@ class ListCommand(AbstractCliView):
         self.logger.debug("Short format")
         return [str(model[self.model.key_attribute]) for model in models]
 
-    def dashboard_format(self, models):
+    def dashboard_format(self, records):
         """Format modeled records in dashboard format.
 
         Args:
-            models: Modeled records to format.
+            records: Modeled records to format.
  
         Returns:
             str: Record data in dashboard format.
         """
         self.logger.debug("Dashboard format")
-        title = util.hline(self.title_fmt % {'model_name': models[0].name.capitalize(), 
-                                             'storage_path': models[0].storage}, 'cyan')
+        title = util.hline(self.title_fmt % {'model_name': records[0].name.capitalize(), 
+                                             'storage_path': records[0].storage}, 'cyan')
         header_row = [col['header'] for col in self.dashboard_columns]
         rows = [header_row]
-        for model in models:
-            populated = model.populate()
+        for record in records:
+            populated = record.populate()
             row = []
             for col in self.dashboard_columns:
                 if 'value' in col:
@@ -288,15 +285,43 @@ class ListCommand(AbstractCliView):
                     cell = col['function'](populated)
                 else:
                     raise InternalError("Invalid column definition: %s" % col)
-                color_attrs = col.get('color_attrs', None)
-                if color_attrs:
-                    cell = termcolor.colored(cell, **color_attrs)
                 row.append(cell)
             rows.append(row)
         table = Texttable(logger.LINE_WIDTH)
         table.set_cols_align([col.get('align', 'c') for col in self.dashboard_columns])
         table.add_rows(rows)
         return [title, table.draw(), '']
+    
+    def _format_long_item(self, key, val):
+        attrs = self.model.attributes[key]
+        if 'collection' in attrs:
+            foreign_model = attrs['collection']
+            foreign_keys = []
+            for foreign_record in val:
+                try:
+                    foreign_keys.append(str(foreign_record[foreign_model.key_attribute]))
+                except (AttributeError, ModelError):
+                    foreign_keys.append(str(foreign_record))
+            val = ', '.join(foreign_keys)
+        elif 'model' in attrs:
+            foreign_model = attrs['model']
+            try:
+                val = str(val[foreign_model.key_attribute])
+            except (AttributeError, ModelError):
+                val = str(val)
+        elif 'type' in attrs:
+            if attrs['type'] == 'boolean':
+                val = str(bool(val))
+            elif attrs['type'] == 'array':
+                val = ', '.join(str(x) for x in val)
+            elif attrs['type'] != 'string':
+                val = str(val)
+        else:
+            raise InternalError("Attribute has no type: %s, %s" % (attrs, val))
+        description = attrs.get('description', 'No description')
+        description = description[0].upper() + description[1:] + "."
+        flags = ', '.join(flag for flag in attrs.get('argparse', {'flags': ('N/A',)})['flags'])
+        return [key, val, flags, description]
 
     def long_format(self, records):
         """Format records in long format.
@@ -308,19 +333,22 @@ class ListCommand(AbstractCliView):
             str: Record data in long format.
         """
         self.logger.debug("Long format")
-        return [pprint.pformat(record.populate()) for record in records]
-
-    def json_format(self, records):
-        """Format records in JSON format.
-        
-        Args:
-            records: Controlled records to format.
-        
-        Returns:
-            str: Record data in JSON format.
-        """
-        self.logger.debug("JSON format")
-        return [json.dumps(record.data) for record in records]
+        title = util.hline(self.title_fmt % {'model_name': records[0].name.capitalize(), 
+                                             'storage_path': records[0].storage}, 'cyan')
+        retval = [title]
+        for record in records:
+            rows = [['Attribute', 'Value', 'Command Flag', 'Description']]
+            populated = record.populate()
+            for key, val in sorted(populated.iteritems()):
+                if key != self.model.key_attribute:
+                    rows.append(self._format_long_item(key, val))
+            table = Texttable(logger.LINE_WIDTH)
+            table.set_cols_align(['r', 'c', 'l', 'l'])
+            table.set_deco(Texttable.HEADER | Texttable.VLINES)
+            table.add_rows(rows)
+            retval.append(util.hline(populated[self.model.key_attribute], 'cyan'))
+            retval.extend([table.draw(), ''])
+        return retval
 
     def _construct_parser(self):
         key_str = self.model_name + '_' + self.model.key_attribute
@@ -347,10 +375,6 @@ class ListCommand(AbstractCliView):
         style_group.add_argument('-l', '--long', 
                                  help="show all %(model_name)s data in a list" % self._format_fields,
                                  const='long', action='store_const', dest=style_dest, 
-                                 default=arguments.SUPPRESS)
-        style_group.add_argument('-j', '--json', 
-                                 help="show all %(model_name)s data as JSON" % self._format_fields,
-                                 const='json', action='store_const', dest=style_dest, 
                                  default=arguments.SUPPRESS)
         if self.include_storage_flag:
             arguments.add_storage_flag(parser, "show", self.model_name, plural=True, exclusive=False)

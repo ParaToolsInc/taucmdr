@@ -85,7 +85,8 @@ class MutableGroupArgumentParser(argparse.ArgumentParser):
         formatter.add_usage(self.usage, self._actions, self._mutually_exclusive_groups)
         formatter.add_text(self.description)
         for action_group in self._sorted_groups():
-            formatter.start_section(action_group.title)
+            title = ' '.join(x[0].upper() + x[1:] for x in action_group.title.split())
+            formatter.start_section(util.color_text(title, attrs=['bold']))
             formatter.add_text(action_group.description)
             formatter.add_arguments(sorted(action_group._group_actions, key=attrgetter('option_strings')))
             formatter.end_section()
@@ -158,7 +159,18 @@ class ArgparseHelpFormatter(argparse.RawDescriptionHelpFormatter):
 
     def __init__(self, prog, indent_increment=2, max_help_position=30, width=logger.LINE_WIDTH):
         super(ArgparseHelpFormatter, self).__init__(prog, indent_increment, max_help_position, width)
-
+        
+    def add_argument(self, action):
+        if action.help is not SUPPRESS:
+            get_invocation = self._format_action_invocation
+            invocations = [get_invocation(action)]
+            for subaction in self._iter_indented_subactions(action):
+                invocations.append(get_invocation(subaction))
+            invocation_length = max([len(util.uncolor_text(s)) for s in invocations])
+            action_length = invocation_length + self._current_indent
+            self._action_max_length = max(self._action_max_length, action_length)
+            self._add_item(self._format_action, [action])
+            
     def _split_lines(self, text, width):
         parts = []
         for line in text.splitlines():
@@ -168,6 +180,7 @@ class ArgparseHelpFormatter(argparse.RawDescriptionHelpFormatter):
     def _get_help_string(self, action):
         indent = ' ' * self._indent_increment
         helpstr = action.help
+        helpstr = helpstr[0].upper() + helpstr[1:] + "."
         choices = getattr(action, 'choices', None)
         if choices:
             helpstr += '\n%s- %s: %s' % (indent, action.metavar, ', '.join(choices))
@@ -181,6 +194,97 @@ class ArgparseHelpFormatter(argparse.RawDescriptionHelpFormatter):
                         default_str = str(action.default)
                     helpstr += '\n%s' % indent + '- default: %s' % default_str
         return helpstr
+    
+
+    def _format_args(self, action, default_metavar):
+        _reqired = lambda x: util.color_text(x, 'blue')
+        _optional = lambda x: util.color_text(x, 'cyan')
+        get_metavar = self._metavar_formatter(action, default_metavar)
+        if action.nargs is None:
+            result = _reqired('%s' % get_metavar(1))
+        elif action.nargs == argparse.OPTIONAL:
+            result = _optional('[%s]' % get_metavar(1))
+        elif action.nargs == argparse.ZERO_OR_MORE:
+            result = _optional('[%s [%s ...]]' % get_metavar(2))
+        elif action.nargs == argparse.ONE_OR_MORE:
+            tpl = get_metavar(2)
+            result = _reqired('%s' % tpl[0]) + _optional(' [%s ...]' % tpl[1])  
+        elif action.nargs == argparse.REMAINDER:
+            result = _reqired('...')
+        elif action.nargs == argparse.PARSER:
+            result = _reqired('%s ...' % get_metavar(1))
+        else:
+            formats = ['%s' for _ in range(action.nargs)]
+            result = ' '.join(formats) % get_metavar(action.nargs)
+        return result
+
+    def _format_action_invocation(self, action):
+        _red = lambda x: util.color_text(x, 'red')
+        if not action.option_strings:
+            metavar, = self._metavar_formatter(action, action.dest)(1)
+            return _red(metavar)
+
+        else:
+            parts = []
+            if action.nargs == 0:
+                parts.extend(_red(x) for x in action.option_strings)
+            else:
+                default = action.dest.upper()
+                args_string = self._format_args(action, default)
+                for option_string in action.option_strings:
+                    parts.append('%s %s' % (_red(option_string), args_string))
+
+            return ', '.join(parts)
+
+    def _format_action(self, action):
+        # determine the required width and the entry label
+        help_position = min(self._action_max_length + 2,
+                            self._max_help_position)
+        help_width = max(self._width - help_position, 11)
+        action_width = help_position - self._current_indent - 2
+        action_header = self._format_action_invocation(action)
+        action_header_nocolor = util.uncolor_text(action_header)
+
+        # ho nelp; start on same line and add a final newline
+        if not action.help:
+            tup = self._current_indent, '', action_header
+            action_header = '%*s%s\n' % tup
+
+        # short action name; start on the same line and pad two spaces
+        elif len(action_header_nocolor) <= action_width:
+            # Adjust length to account for color control chars
+            length = action_width+len(action_header)-len(action_header_nocolor)
+            tup = self._current_indent, '', length, action_header
+            action_header = '%*s%-*s  ' % tup
+            indent_first = 0
+
+        # long action name; start on the next line
+        else:
+            tup = self._current_indent, '', action_header
+            action_header = '%*s%s\n' % tup
+            indent_first = help_position
+
+        # collect the pieces of the action help
+        parts = [action_header]
+
+        # if there was help for the action, add lines of help text
+        if action.help:
+            help_text = self._expand_help(action)
+            help_lines = self._split_lines(help_text, help_width)
+            parts.append('%*s%s\n' % (indent_first, '', help_lines[0]))
+            for line in help_lines[1:]:
+                parts.append('%*s%s\n' % (help_position, '', line))
+
+        # or add a newline if the description doesn't end with one
+        elif not action_header.endswith('\n'):
+            parts.append('\n')
+
+        # if there are any sub-actions, add their help as well
+        for subaction in self._iter_indented_subactions(action):
+            parts.append(self._format_action(subaction))
+
+        # return a single string
+        return self._join_parts(parts)
 
 
 class ParsePackagePathAction(argparse.Action):

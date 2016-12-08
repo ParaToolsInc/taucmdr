@@ -47,7 +47,7 @@ INTEL = HOST_COMPILERS.add('Intel', family_regex=r'Intel Corporation',
                            CC='icc', CXX='icpc', FC='ifort')
 
 PGI = HOST_COMPILERS.add('PGI', family_regex=r'The Portland Group',
-                         CC='pgcc', CXX=('pgc++', 'pgcxx', 'pgCC'), FC=('pgfortran', 'pgf90', 'pgf77'))
+                         CC='pgcc', CXX=('pgCC', 'pgc++', 'pgcxx'), FC=('pgfortran', 'pgf90', 'pgf77'))
 
 IBM = HOST_COMPILERS.add('IBM', CC='xlc', CXX=('xlc++', 'xlC'), FC='xlf')
 
@@ -59,6 +59,7 @@ IBM_BG = HOST_COMPILERS.add('BlueGene',
                                 'bgxlf2008', 'bgxlf2008_r', 'bgf2008')) 
 
 CRAY = HOST_COMPILERS.add('Cray', family_regex=r'-I.*cray', 
+                          version_flags=['-craype-verbose', '--version', '-E'],
                           show_wrapper_flags=['-craype-verbose', '--version', '-E'],
                           CC='cc', CXX='CC', FC='ftn', UPC='cc')
 

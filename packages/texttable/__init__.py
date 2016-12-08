@@ -95,6 +95,7 @@ Frank Sachsenheim:
 
 import sys
 import string
+from termcolor import termcolor
 
 try:
     if sys.version >= '2.3':
@@ -174,7 +175,7 @@ class Texttable:
         self._header = []
         self._rows = []
 
-    def set_chars(self, array):
+    def set_chars(self, array, char_color='white'):
         """Set the characters used to draw lines between rows and columns
 
         - the array should contain 4 fields:
@@ -188,7 +189,7 @@ class Texttable:
 
         if len(array) != 4:
             raise ArraySizeError("array should contain 4 characters")
-        array = [x[:1] for x in [str(s) for s in array]]
+        array = [termcolor.colored(x[:1], char_color) for x in [str(s) for s in array]]
         (self._char_horiz, self._char_vert,
             self._char_corner, self._char_header) = array
 
@@ -530,6 +531,7 @@ class Texttable:
                 fill = width - len(cell_line)
                 if isheader:
                     align = "c"
+                    cell_line = termcolor.colored(cell_line, attrs=["bold"])
                 if align == "r":
                     out += "%s " % (fill * space + cell_line)
                 elif align == "c":

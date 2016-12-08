@@ -61,6 +61,7 @@ class ProjectListCommand(ListCommand):
             int: Process return code: non-zero if a problem occurred, 0 otherwise
         """
         args = self._parse_args(argv)
+        style_args = ['--' + args.style] if hasattr(args, 'style') else []
         levels = arguments.parse_storage_flag(args)
         keys = getattr(args, 'keys', [])
         single = (len(keys) == 1 and len(levels) == 1)
@@ -86,7 +87,7 @@ class ProjectListCommand(ListCommand):
                 primary_key = proj.attributes[prop]['collection'].key_attribute
                 records = proj.populate(prop)
                 if records:
-                    cmd.main([record[primary_key] for record in records])
+                    cmd.main([record[primary_key] for record in records] + style_args)
                 else:
                     label = util.color_text('%s: No %s' % (proj['name'], prop), color='red', attrs=['bold'])
                     print "%s.  Use `%s` to view available %s.\n" % (label, cmd, prop)
@@ -99,7 +100,7 @@ class ProjectListCommand(ListCommand):
                 print (util.color_text('No selected experiment: ', 'red') + 
                        'Use `%s` to create or select an experiment.' % select_cmd)
             else:
-                print util.color_text('Selected experiment: ', 'cyan') + expr['name']
+                print util.color_text("Selected Experiment: ", 'cyan') + expr['name']
 
         return retval
 

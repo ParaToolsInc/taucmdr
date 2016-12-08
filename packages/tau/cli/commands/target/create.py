@@ -39,7 +39,7 @@ from tau.cf.compiler import Knowledgebase, InstalledCompiler, InstalledCompilerF
 from tau.cf.compiler.host import HOST_COMPILERS
 from tau.cf.compiler.mpi import MPI_COMPILERS
 from tau.cf.compiler.shmem import SHMEM_COMPILERS
-from tau.cf.target import TauArch
+from tau.cf.target import TauArch, host, CRAY_CNL_OS
 from tau.cf.software.tau_installation import TAU_MINIMAL_COMPILERS
 
 
@@ -74,7 +74,7 @@ class TargetCreateCommand(CreateCommand):
     def _parse_tau_makefile(self, args):
         # Parsing a TAU Makefile is a really hairy operation, so let's lift the limit on statements
         # pylint: disable=too-many-statements
-        makefile = args.tau_makefile
+        makefile = args.forced_makefile
         if not util.file_accessible(makefile):
             self.parser.error("Invalid TAU makefile: %s" % makefile)
         tau_arch_name = os.path.basename(os.path.dirname(os.path.dirname(makefile)))
@@ -84,7 +84,7 @@ class TargetCreateCommand(CreateCommand):
             raise ConfigurationError("TAU Makefile '%s' targets an unrecognized TAU architecture: %s" % 
                                      (makefile, tau_arch_name))
         self.logger.info("Parsing TAU Makefile '%s' to populate command line arguments:", makefile)
-        args.host_arch = tau_arch.architecture.name
+        args.host_arch = tau_arch.architecture[0].name
         self.logger.info("  --host-arch='%s'", args.host_arch)
         args.host_os = tau_arch.operating_system.name
         self.logger.info("  --host-os='%s'", args.host_os)
@@ -214,8 +214,17 @@ class TargetCreateCommand(CreateCommand):
             for role, comp in compilers.iteritems():
                 if comp is None:
                     compilers[role] = self._get_compiler_from_sibling(role, sibling)
+        # Use the majority family as the compiler family for UPC checking on Crays.
+        family_count = Counter(comp.info.family for comp in compilers.itervalues() if comp is not None)
+        try:
+            family_default = family_count.most_common()[0][0].name
+        except IndexError:
+            family_default = arguments.SUPPRESS
         # No environment variables specify compiler defaults so use model defaults.
         for role, comp in compilers.iteritems():
+            if role.keyword == 'Host_UPC' and (family_default == 'Intel' or
+                                               family_default == 'PGI') and host.operating_system() is CRAY_CNL_OS:
+                continue
             if comp is None:
                 compilers[role] = self._get_compiler_from_defaults(kbase, role)
         # Use the majority family as the default compiler family.
@@ -250,18 +259,17 @@ class TargetCreateCommand(CreateCommand):
         parser = super(TargetCreateCommand, self)._construct_parser()
         group = parser.add_argument_group('host arguments')
         host_family_name = self._configure_argument_group(group, HOST_COMPILERS, '--compilers', 'host_family', None)
+
+        # Crays are weird. Don't use the detected host family as a hint for MPI or SHMEM compilers
+        # so that we'll always chose the Cray compiler wrappers.
+        hint = host_family_name if host.operating_system() is not CRAY_CNL_OS else None
         
         group = parser.add_argument_group('Message Passing Interface (MPI) arguments')
-        self._configure_argument_group(group, MPI_COMPILERS, '--mpi-compilers', 'mpi_family', host_family_name)
+        self._configure_argument_group(group, MPI_COMPILERS, '--mpi-compilers', 'mpi_family', hint)
 
         group = parser.add_argument_group('Symmetric Hierarchical Memory (SHMEM) arguments')
-        self._configure_argument_group(group, SHMEM_COMPILERS, '--shmem-compilers', 'shmem_family', host_family_name)
+        self._configure_argument_group(group, SHMEM_COMPILERS, '--shmem-compilers', 'shmem_family', hint)
 
-        parser.add_argument('--from-tau-makefile',
-                            help="Populate target configuration from a TAU Makefile",
-                            metavar='<path>',
-                            dest='tau_makefile',
-                            default=arguments.SUPPRESS)
         return parser
 
     def _parse_args(self, argv):
@@ -275,17 +283,19 @@ class TargetCreateCommand(CreateCommand):
 
     def parse_compiler_flags(self, args):
         compilers = {}
-        for role in Knowledgebase.all_roles():
-            try:
-                compilers[role.keyword] = InstalledCompiler.probe(getattr(args, role.keyword), role=role)
-            except AttributeError:
-                pass
+        for kbase in HOST_COMPILERS, MPI_COMPILERS, SHMEM_COMPILERS:
+            for role in kbase.roles.itervalues():
+                try:
+                    command = getattr(args, role.keyword)
+                except AttributeError:
+                    continue
+                compilers[role.keyword] = InstalledCompiler.probe(command, role=role)
         return compilers
 
     def main(self, argv):
         args = self._parse_args(argv)
         store = arguments.parse_storage_flag(args)[0]
-        if hasattr(args, "tau_makefile"):
+        if hasattr(args, "forced_makefile"):
             self._parse_tau_makefile(args)
             self.logger.debug('Arguments after parsing TAU Makefile: %s', args)
         compilers = self.parse_compiler_flags(args)

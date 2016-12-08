@@ -58,6 +58,6 @@ class EditTest(tests.TestCase):
         self.reset_project_storage(project_name='proj1')
         name = 'meas01'
         self.assertCommandReturnValue(0, CREATE_COMMAND, [name])
-        _, _, stderr = self.exec_command(EDIT_COMMAND, ['meas01', '--use-mpi', 'T'])
+        _, _, stderr = self.exec_command(EDIT_COMMAND, ['meas01', '--track-mpi', 'T'])
         self.assertIn('measurement edit <measurement_name> [arguments]', stderr)
         self.assertIn('measurement edit: error: unrecognized arguments', stderr)

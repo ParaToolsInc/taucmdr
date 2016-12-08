@@ -181,19 +181,38 @@ def commands_description(package_name=COMMANDS_PACKAGE_NAME):
             continue 
         descr = command_obj.summary.split('\n')[0]
         group = command_obj.group
-        name = '{:<14}'.format(cmd)
+        name = util.color_text('{:<14}'.format(cmd), 'green')
         groups.setdefault(group, []).append('  %s  %s' % (name, descr))
 
     parts = []
     for group, members in groups.iteritems():
         if group:
-            parts.append(group + ' subcommands:')
+            title = util.color_text(group.title() + ' Subcommands:', attrs=['bold'])
         else:
-            parts.append('subcommands:')
+            title = util.color_text('Subcommands:', attrs=['bold'])
+        parts.append(title)
         parts.extend(members)
         parts.append('')
     return '\n'.join(parts)
 
+def get_all_commands(package_name=COMMANDS_PACKAGE_NAME):
+    """Builds a list of all commands and subcommands.
+
+    Args:
+        package_name (str): A dot-separated string naming the module to search for cli.
+
+    Returns:
+        list: List of modules corresponding to all commands and subcommands.
+    """
+    all_commands = []
+    commands = sorted([i for i in _get_commands(package_name).iteritems() if i[0] != '__module__'])
+    for cmd, topcmd in commands:
+        if cmd == 'tests':
+            continue
+        for subcmd, mod in topcmd.iteritems():
+            if subcmd != '__module__' and subcmd != 'tests':
+                all_commands.append(mod['__module__'].__name__)
+    return all_commands
 
 def find_command(cmd):
     """Import the command module and return its COMMAND member.

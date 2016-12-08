@@ -84,6 +84,10 @@ def attributes():
             'collection': Trial,
             'via': 'experiment',
             'description': "Trials of this experiment"
+        },
+        'tau_makefile': {
+            'type': 'string',
+            'description': 'TAU Makefile used during this experiment, if any.'
         }
     }
 
@@ -126,13 +130,20 @@ class Experiment(Model):
         Returns:
             str: String indicating why an application rebuild is required.
         """
+        def _fmt(val):
+            if isinstance(val, list):
+                return "[%s]" % ", ".join(val)
+            elif isinstance(val, basestring):
+                return "'%s'" % val
+            else:
+                return str(val)
         rebuild_required = cls.controller().pop_topic('rebuild_required')
         if not rebuild_required:
             return ''
         parts = ["Application rebuild required:"]
         for changed in rebuild_required:
             for attr, change in changed.iteritems():
-                old, new = change
+                old, new = (_fmt(x) for x in change)
                 if old is None:
                     parts.append("  - %s is now set to %s" % (attr, new))
                 elif new is None:
@@ -253,8 +264,10 @@ class Experiment(Model):
                     callpath_depth=measurement.get_or_default('callpath'),
                     throttle=measurement.get_or_default('throttle'),
                     throttle_per_call=measurement.get_or_default('throttle_per_call'),
-                    throttle_num_calls=measurement.get_or_default('throttle_num_calls'))
+                    throttle_num_calls=measurement.get_or_default('throttle_num_calls'),
+                    forced_makefile=target.get('forced_makefile', None))
         tau.install()
+        self.controller(self.storage).update({'tau_makefile': os.path.basename(tau.get_makefile())}, self.eid)
         return tau
 
     def managed_build(self, compiler_cmd, compiler_args):
@@ -276,12 +289,16 @@ class Experiment(Model):
         LOGGER.debug("Managed build: %s", [compiler_cmd] + compiler_args)
         target = self.populate('target')
         application = self.populate('application')
-        target_compiler = target.check_compiler(compiler_cmd, compiler_args)
+        target_compilers = target.check_compiler(compiler_cmd, compiler_args)
         try:
-            application.check_compiler(target_compiler)
+            found_compiler = application.check_compiler(target_compilers)
         except ConfigurationError as err:
-            msg = err.value + "\nTAU will add the missing compiler options but this may not be what you intended."
+            msg = err.value + ("\nTAU will add additional compiler options "
+                               "and attempt to continue but this may have unexpected results.")
             LOGGER.warning(msg)
+            found_compiler = target_compilers[0]
+        # We've found a candidate compiler.  Check that this compiler record is still valid.
+        installed_compiler = found_compiler.verify()
         tau = self.configure()
         try:
             proj = self.populate('project')
@@ -291,7 +308,7 @@ class Experiment(Model):
         else:
             LOGGER.info("Project '%s' forcibly adding '%s' to TAU_OPTIONS", 
                         proj['name'], ' '.join(tau.force_tau_options))
-        return tau.compile(target_compiler, compiler_args)
+        return tau.compile(installed_compiler, compiler_args)
         
     def managed_run(self, launcher_cmd, application_cmd):
         """Uses this experiment to run an application command.
@@ -347,6 +364,10 @@ class Experiment(Model):
                 trials = [found]
         if not trials:
             raise ConfigurationError("No trials in experiment %s" % self['name'], "See `tau trial create --help`")
+        for trial in trials:
+            trial_size = trial.get('data_size', 0)
+            if trial_size <= 0:
+                raise ConfigurationError("Trial %s is empty." %trial['number'])
         return trials
     
     def show(self, profile_tool=None, trace_tool=None, trial_numbers=None):
@@ -371,7 +392,7 @@ class Experiment(Model):
             if meas['trace'] != 'none':
                 tau.show_trace(prefix, trace_tool)
                 
-    def export(self, profile_format=PROFILE_EXPORT_FORMATS[0], trial_numbers=None, export_location=None):
+    def export(self, profile_format=None, trial_numbers=None, export_location=None):
         """Export experiment trial data.
         
         Exports the most recent trial or all trials with given numbers.
@@ -384,11 +405,17 @@ class Experiment(Model):
         Raises:
             ConfigurationError: Invalid trial numbers or no trial data for this experiment.
         """
+        tau = self.configure()
+        if profile_format is None:
+            meas = self.populate('measurement')
+            if meas['trace'] == 'none':
+                profile_format = PROFILE_EXPORT_FORMATS[0]
+            else:
+                profile_format = PROFILE_EXPORT_FORMATS[1]
         assert profile_format in PROFILE_EXPORT_FORMATS
         if not export_location:
             export_location = os.getcwd()
         if profile_format == 'ppk':
-            tau = self.configure()
             for trial in self._get_trials(trial_numbers):
                 ppk_file = self['name'] + '.trial' + str(trial['number']) + '.ppk'
                 tau.pack_profiles(trial.prefix, os.path.join(export_location, ppk_file))
@@ -396,11 +423,16 @@ class Experiment(Model):
             for trial in self._get_trials(trial_numbers):
                 trial_number = str(trial['number'])
                 archive_file = self['name'] + '.trial' + trial_number + '.' + profile_format
-                profile_files = [os.path.join(trial_number, os.path.basename(x)) for x in trial.profile_files()]
+                profile_files = [os.path.join(trial_number, os.path.basename(x)) 
+                                 for x in trial.profile_files()]
+                _, env = tau.runtime_config()
+                trace_files = [os.path.join(trial_number, x[len(trial.prefix)+1:]) 
+                               for x in trial.trace_files(env, True)]
+                exportable_files = profile_files + trace_files
                 old_cwd = os.getcwd()
                 os.chdir(os.path.dirname(trial.prefix))
                 try:
-                    util.create_archive(profile_format, os.path.join(export_location, archive_file), profile_files)
+                    util.create_archive(profile_format, os.path.join(export_location, archive_file), exportable_files)
                 finally:
                     os.chdir(old_cwd)
         else:

@@ -84,6 +84,10 @@ benchmarks
 # general things to ignore
 build/
 dist/
+packages/*.sh
+packages/*.tgz
+packages/*.tar.*
+packages/*.zip
 *.egg-info/
 *.egg
 *.py[cod]

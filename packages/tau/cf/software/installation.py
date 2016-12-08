@@ -459,7 +459,7 @@ class AutotoolsInstallation(Installation):
             SoftwarePackageError: Configuration failed.
         """
         assert self.src_prefix
-        LOGGER.debug("Installing %s from '%s' to '%s'", self.name, self.src_prefix, self.install_prefix)
+        LOGGER.debug("Installing %s to '%s'", self.name, self.install_prefix)
         flags = list(flags)
         if parallel:
             flags += parallel_make_flags()
@@ -495,7 +495,7 @@ class AutotoolsInstallation(Installation):
                                                "Specify source code path or URL to enable package reinstallation.")
                 elif not force_reinstall:
                     LOGGER.debug(err)
-        LOGGER.info("Installing %s from '%s' to '%s'", self.title, self.src, self.install_prefix)
+        LOGGER.info("Installing %s to '%s'", self.title, self.install_prefix)
         if os.path.isdir(self.install_prefix):
             LOGGER.info("Cleaning %s installation prefix '%s'", self.title, self.install_prefix)
             util.rmtree(self.install_prefix, ignore_errors=True)

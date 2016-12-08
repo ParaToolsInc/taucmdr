@@ -33,7 +33,6 @@ the available data in a single run since overhead would be extreme.  Different
 measurements allow us to take different views of the application's performance.
 """
 
-import os
 from tau.error import ConfigurationError, IncompatibleRecordError
 from tau.mvc.model import Model
 
@@ -112,8 +111,8 @@ def attributes():
                          'action': ParseBooleanAction},
             'compat': {True: (Target.require('binutils_source'),
                               Target.exclude('binutils_source', None),
-                              Target.require('libunwind_source'),
-                              Target.exclude('libunwind_source', None),
+                              Target.encourage('libunwind_source'),
+                              Target.discourage('libunwind_source', None),
                               Target.exclude('host_os', DARWIN_OS))}
         },
         'source_inst': {

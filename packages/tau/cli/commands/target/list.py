@@ -32,6 +32,7 @@ from tau.cf.compiler.mpi import MPI_CC
 from tau.cf.compiler.shmem import SHMEM_CC
 from tau.cli.cli_view import ListCommand
 from tau.model.target import Target
+from tau.model.compiler import Compiler
 
 
 DASHBOARD_COLUMNS = [{'header': 'Name', 'value': 'name', 'align': 'r'},
@@ -44,4 +45,14 @@ DASHBOARD_COLUMNS = [{'header': 'Name', 'value': 'name', 'align': 'r'},
                      {'header': 'SHMEM Compilers', 'function': 
                       lambda data: data.get(SHMEM_CC.keyword, {'family': 'None'})['family']}]
 
-COMMAND = ListCommand(Target, __name__, dashboard_columns=DASHBOARD_COLUMNS)
+class TargetListCommand(ListCommand):
+    
+    def _format_long_item(self, key, val):
+        fmt_key, fmt_val, flags, description = super(TargetListCommand, self)._format_long_item(key, val)
+        attrs = self.model.attributes[key]
+        if attrs.get('model') is Compiler:
+            fmt_val = '%s (%s)' % (val['path'], val['family'])
+        return fmt_key, fmt_val, flags, description
+
+
+COMMAND = TargetListCommand(Target, __name__, dashboard_columns=DASHBOARD_COLUMNS)

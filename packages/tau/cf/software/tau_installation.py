@@ -38,7 +38,7 @@ from tau import logger, util
 from tau.error import ConfigurationError, InternalError
 from tau.cf.software import SoftwarePackageError
 from tau.cf.software.installation import Installation, parallel_make_flags
-from tau.cf.compiler import host, mpi
+from tau.cf.compiler import host
 from tau.cf.compiler.host import CC, CXX, FC, UPC
 from tau.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC
 from tau.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
@@ -170,7 +170,8 @@ class TauInstallation(Installation):
                  callpath_depth,
                  throttle,
                  throttle_per_call,
-                 throttle_num_calls):
+                 throttle_num_calls,
+                 forced_makefile):
         """Initialize the TAU installation wrapper class.
         
         Args:
@@ -218,6 +219,7 @@ class TauInstallation(Installation):
             throttle (bool): If True then throttle lightweight events.
             throttle_per_call (int): Maximum microseconds per call of a lightweight event.
             throttle_num_calls (int): Minimum number of calls for a lightweight event.
+	        forced_makefile (str): Path to external makefile.
         """
         super(TauInstallation, self).__init__('tau', 'TAU Performance System', sources, target_arch, target_os, 
                                               compilers, REPOS, COMMANDS, None, None)
@@ -261,13 +263,23 @@ class TauInstallation(Installation):
         self.throttle = throttle
         self.throttle_per_call = throttle_per_call
         self.throttle_num_calls = throttle_num_calls
-        for pkg in 'binutils', 'libunwind', 'papi', 'pdt':
-            uses_pkg = getattr(self, '_uses_'+pkg)
-            if uses_pkg():
-                self.add_dependency(pkg, sources)
-        if self._uses_scorep():
-            self.add_dependency('scorep', sources, mpi_support, shmem_support, 
-                                self._uses_binutils(), self._uses_libunwind(), self._uses_papi(), self._uses_pdt())
+        self.forced_makefile = forced_makefile
+        if forced_makefile is None:
+            for pkg in 'binutils', 'libunwind', 'papi', 'pdt':
+                uses_pkg = getattr(self, '_uses_'+pkg)
+                if uses_pkg():
+                    self.add_dependency(pkg, sources)
+            if self._uses_scorep():
+                self.add_dependency('scorep', sources, mpi_support, shmem_support, 
+                                    self._uses_binutils(), self._uses_libunwind(), self._uses_papi(), self._uses_pdt())
+        else:
+            for pkg in 'binutils', 'libunwind', 'papi', 'pdt':
+                if sources[pkg]:
+                    self.add_dependency(pkg, sources)
+            if sources['scorep']:
+                self.add_dependency('scorep', sources, mpi_support, shmem_support,
+                                    sources['binutils'], sources['libunwind'], sources['papi'], sources['pdt'])
+
 
     def _set_install_prefix(self, value):
         # PDT puts installation files (bin, lib, etc.) in a magically named subfolder
@@ -277,6 +289,7 @@ class TauInstallation(Installation):
         self.lib_path = os.path.join(arch_path, 'lib')
 
     def _uses_pdt(self):
+        # TAU uses PDT to generate the SHMEM wrapper libraries, so PDT is required for SHMEM support
         return self.source_inst == 'automatic' or self.shmem_support
 
     def _uses_binutils(self):
@@ -332,7 +345,7 @@ class TauInstallation(Installation):
                 raise SoftwarePackageError("iowrap libraries or link options not found")
         LOGGER.debug("TAU installation at '%s' is valid", self.install_prefix)
 
-    def _select_flags(self, header, libglob, user_inc, user_lib, user_libraries, wrap_cc, wrap_cxx, wrap_fc):
+    def _select_flags(self, header, libglobs, user_inc, user_lib, user_libraries, wrap_cc, wrap_cxx, wrap_fc):
         def unique(seq):
             seen = set()
             return [x for x in seq if not (x in seen or seen.add(x))]
@@ -351,15 +364,17 @@ class TauInstallation(Installation):
                                          (header, os.pathsep.join(include_path)))
         library_path = unique(user_lib + wrap_cc.library_path + wrap_cxx.library_path + wrap_fc.library_path)
         if library_path:
-            # Unfortunately, TAU's configure script can only accept one path on -mpilib
-            # and it expects the compiler's include path argument (e.g. "-L") to be omitted
-            for path in library_path:
-                if glob.glob(os.path.join(path, libglob)):
-                    selected_lib = path
-                    break
-            else:
+            selected_lib = None
+            for libglob in libglobs:
+                # Unfortunately, TAU's configure script can only accept one path on -mpilib
+                # and it expects the compiler's include path argument (e.g. "-L") to be omitted
+                for path in library_path:
+                    if glob.glob(os.path.join(path, libglob)):
+                        selected_lib = path
+                        break
+            if not selected_lib:
                 raise ConfigurationError("No files matched '%s' on library path: %s" % 
-                                         (libglob, os.pathsep.join(library_path)))
+                                         (libglobs, os.pathsep.join(library_path)))
         # Don't add autodetected Fortran or C++ libraries; C is probably OK
         libraries = unique(user_libraries + wrap_cc.libraries + wrap_cxx.libraries + wrap_fc.libraries)
         if libraries:
@@ -381,19 +396,14 @@ class TauInstallation(Installation):
         Raises:
             SoftwareConfigurationError: TAU's configure script failed.
         """
-        if self.mpi_support: 
-            # TAU's configure script does a really bad job detecting MPI wrapped compiler commands
-            # so don't even bother trying.  Pass as much of this as we can and hope for the best.
-            cc_command = self.compilers[MPI_CC].unwrap().info.command
-            cxx_command = self.compilers[MPI_CXX].unwrap().info.command
-            fc_comp = self.compilers[MPI_FC].unwrap() if FC in self.compilers else None
-        else:
-            # TAU's configure script can't cope with compiler absolute paths or compiler names that
-            # don't exactly match what it expects.  Use `info.command` instead of `command` to work
-            # around these problems e.g. 'gcc-4.9' becomes 'gcc' 
-            cc_command = self.compilers[CC].info.command
-            cxx_command = self.compilers[CXX].info.command
-            fc_comp = self.compilers[FC] if FC in self.compilers else None
+        # TAU's configure script can't cope with compiler absolute paths or compiler names that
+        # don't exactly match what it expects.  Use `info.command` instead of `command` to work
+        # around these problems e.g. 'gcc-4.9' becomes 'gcc'. 
+        # Also, TAU's configure script does a really bad job detecting wrapped compiler commands
+        # so we unwrap the wrapper here before invoking configure.
+        cc_command = self.compilers[CC].unwrap().info.command
+        cxx_command = self.compilers[CXX].unwrap().info.command
+        fc_comp = self.compilers[FC].unwrap() if FC in self.compilers else None
 
         # TAU's configure script can't detect Fortran compiler from the compiler
         # command so translate Fortran compiler command into TAU's magic words
@@ -405,10 +415,7 @@ class TauInstallation(Installation):
                             host.PGI: 'pgi',
                             host.CRAY: 'cray',
                             host.IBM: 'ibm',
-                            host.IBM_BG: 'ibm',
-                            mpi.SYSTEM: 'mpif90',
-                            mpi.INTEL: 'mpiifort',
-                            mpi.IBM: 'ibm'}
+                            host.IBM_BG: 'ibm'}
             try:
                 fortran_magic = fc_magic_map[fc_family]
             except KeyError:
@@ -419,7 +426,7 @@ class TauInstallation(Installation):
         mpiinc, mpilib, mpilibrary = None, None, None
         if self.mpi_support:
             mpiinc, mpilib, mpilibrary = \
-                self._select_flags('mpi.h', 'libmpi*', 
+                self._select_flags('mpi.h', ('libmpi*',), 
                                    self.mpi_include_path, 
                                    self.mpi_library_path, 
                                    self.mpi_libraries,
@@ -431,13 +438,17 @@ class TauInstallation(Installation):
         shmeminc, shmemlib, shmemlibrary = None, None, None
         if self.shmem_support:
             shmeminc, shmemlib, shmemlibrary = \
-                self._select_flags('shmem.h', 'lib*shmem*',
+                self._select_flags('shmem.h', ('lib*shmem*', 'lib*sma*'),
                                    self.shmem_include_path, 
                                    self.shmem_library_path, 
                                    self.shmem_libraries,
                                    self.compilers[SHMEM_CC], 
                                    self.compilers[SHMEM_CXX], 
                                    self.compilers[SHMEM_FC])
+            if self.arch.name == 'x86_64':
+                cc_command = self.compilers[SHMEM_CC].command
+                cxx_command = self.compilers[SHMEM_CXX].command
+                fortran_magic = 'oshfort'
         
         binutils = self.dependencies.get('binutils')
         libunwind = self.dependencies.get('libunwind')
@@ -507,9 +518,9 @@ class TauInstallation(Installation):
             SoftwarePackageError: TAU failed installation or did not pass verification after it was installed.
         """
         logger.activate_debug_log()
-        for pkg in self.dependencies.itervalues():
-            pkg.install(force_reinstall)
-        if not self.src or not force_reinstall:
+        if (not self.src or not force_reinstall) and not self.forced_makefile:
+            for pkg in self.dependencies.itervalues():
+                pkg.install(force_reinstall)
             try:
                 return self.verify()
             except SoftwarePackageError as err:
@@ -519,7 +530,13 @@ class TauInstallation(Installation):
                                                "Specify source code path or URL to enable package reinstallation.")
                 elif not force_reinstall:
                     LOGGER.debug(err)
-        LOGGER.info("Installing %s at '%s' from '%s'", self.title, self.install_prefix, self.src)       
+        else:
+            super(TauInstallation, self)._set_install_prefix(os.path.abspath(
+                os.path.join(os.path.dirname(self.forced_makefile), '..', '..')))
+            for pkg in self.dependencies.itervalues():
+                pkg.install(force_reinstall=False)
+            return True
+        LOGGER.info("Installing %s at '%s'", self.title, self.install_prefix)       
         try:
             # Keep reconfiguring the same source because that's how TAU works
             if not (self.include_path and os.path.isdir(self.include_path)):
@@ -610,6 +627,8 @@ class TauInstallation(Installation):
             str: A file path that could be used to set the TAU_MAKEFILE environment
                  variable, or None if a suitable makefile couldn't be found.
         """
+        if self.forced_makefile:
+            return self.forced_makefile
         tau_makefiles = glob.glob(os.path.join(self.lib_path, 'Makefile.tau*'))
         LOGGER.debug("Found makefiles: '%s'", tau_makefiles)
         config_tags = self.get_tags()
@@ -749,10 +768,10 @@ class TauInstallation(Installation):
             env['SCOREP_ENABLE_TRACING'] = '1'
         else:
             env['TAU_TRACE'] = '0'
-        env['TAU_SAMPLE'] = str(int(self.sample))
+        env['TAU_SAMPLING'] = str(int(self.sample))
         env['TAU_TRACK_HEAP'] = str(int(self.measure_heap_usage))
         env['TAU_COMM_MATRIX'] = str(int(self.measure_comm_matrix))
-        env['TAU_METRICS'] = os.pathsep.join(self.metrics)
+        env['TAU_METRICS'] = ",".join(self.metrics)
         env['TAU_THROTTLE'] = str(int(self.throttle))
         if self.throttle:
             env['TAU_THROTTLE_PERCALL'] = str(int(self.throttle_per_call))
@@ -813,7 +832,7 @@ class TauInstallation(Installation):
         opts, env = self.compiletime_config()
         compiler_cmd = self.get_compiler_command(compiler)
         cmd = [compiler_cmd] + opts + compiler_args
-        tau_env_opts = ['%s=%s' % item for item in env.iteritems() if item[0].startswith('TAU_')]
+        tau_env_opts = sorted('%s=%s' % item for item in env.iteritems() if item[0].startswith('TAU_'))
         LOGGER.info('\n'.join(tau_env_opts))
         LOGGER.info(' '.join(cmd))
         retval = util.create_subprocess(cmd, env=env, stdout=True)
@@ -838,8 +857,9 @@ class TauInstallation(Installation):
                    variables to set before running the application command.
         """
         opts, env = self.runtime_config()
-        use_tau_exec = (self.measure_opencl or
-                        (self.source_inst == 'never' and self.compiler_inst == 'never' and not self.link_only))
+        use_tau_exec = (self.measure_opencl or (self.source_inst == 'never' and 
+                                                self.compiler_inst == 'never' and 
+                                                not self.link_only))
         if use_tau_exec:
             tau_exec_opts = opts
             tags = self.get_tags()
@@ -970,3 +990,23 @@ class TauInstallation(Installation):
             raise ConfigurationError("ParaProf command '%s' failed in '%s'" % (' '.join(cmd), prefix),
                                      "Make sure Java is installed and working",
                                      "Install the most recent Java from http://java.com")
+
+    def check_metrics(self):
+        """Checks metrics for compatibility.
+        
+        Raises:
+            ConfigurationError if there are incompatible metrics.
+        """
+        if not self._uses_papi():
+            return
+        papi_metrics = [metric for metric in self.metrics if "PAPI" in metric]
+        if len(papi_metrics) > 1:
+            event_chooser_cmd = os.path.join(self.dependencies['papi'].bin_path, 'papi_event_chooser')
+            event_type = 'NATIVE' if 'NATIVE' in papi_metrics[0] else 'PRESET'
+            cmd = [event_chooser_cmd, event_type] + papi_metrics
+            if util.create_subprocess(cmd, stdout=False, show_progress=False):
+                raise ConfigurationError("PAPI metrics [%s] are not compatible on this target." % 
+                                         ', '.join(papi_metrics),
+                                         "Use papi_avail to check metric availability.",
+                                         "Spread the desired metrics over multiple measurements.",
+                                         "Choose fewer metrics.")

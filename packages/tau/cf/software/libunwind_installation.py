@@ -37,7 +37,7 @@ import hashlib
 import fileinput
 from tau import logger
 from tau.error import ConfigurationError
-from tau.cf.target import IBM_BGQ_ARCH, CRAY_CNL_OS, ARM64_ARCH, LINUX_OS
+from tau.cf.target import IBM_BGQ_ARCH, CRAY_CNL_OS, ARM64_ARCH, LINUX_OS, PPC64LE_ARCH, PPC64_ARCH
 from tau.cf.software import SoftwarePackageError
 from tau.cf.software.installation import AutotoolsInstallation
 from tau.cf.compiler.host import CC, CXX, PGI, GNU
@@ -60,12 +60,12 @@ class LibunwindInstallation(AutotoolsInstallation):
 
     def __init__(self, sources, target_arch, target_os, compilers):
         # libunwind can't be built with PGI compilers so substitute GNU compilers instead
-        if compilers[CC].info.family is PGI:
+        if compilers[CC].unwrap().info.family is PGI:
             try:
                 gnu_compilers = GNU.installation()
             except ConfigurationError:
                 raise SoftwarePackageError("GNU compilers (required to build libunwind) could not be found.")
-            compilers = compilers.modify(CC=gnu_compilers[CC], CXX=gnu_compilers[CXX])
+            compilers = compilers.modify(Host_CC=gnu_compilers[CC], Host_CXX=gnu_compilers[CXX])
         super(LibunwindInstallation, self).__init__('libunwind', 'libunwind', sources, target_arch, target_os, 
                                                     compilers, REPOS, None, LIBRARIES, HEADERS)
 
@@ -111,3 +111,7 @@ class LibunwindInstallation(AutotoolsInstallation):
             LOGGER.debug("libunwind make failed, but continuing anyway: %s", err)
 
 
+    def make_install(self, flags, env, parallel=False):
+        if self.target_arch in [PPC64_ARCH, PPC64LE_ARCH]:
+            flags.append('-i')
+        super(LibunwindInstallation, self).make_install(flags, env, parallel)

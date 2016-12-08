@@ -77,6 +77,8 @@ class ProjectStorage(LocalFileStorage):
             project_prefix = self.prefix
         except ProjectStorageError:
             project_prefix = os.path.join(os.getcwd(), PROJECT_DIR)
+            if project_prefix == USER_PREFIX:
+                raise StorageError("Cannot create project in home directory. Use '-@ user' option for user level storage.")
             try:
                 util.mkdirp(project_prefix)
             except Exception as err:
