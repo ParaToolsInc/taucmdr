@@ -186,6 +186,8 @@ class _CompilerRole(KeyedRecord):
         self.envars = envars
         self.kbase = kbase
 
+    def __str__(self):
+        return self.keyword
 
 class _CompilerFamily(TrackedInstance):
     """Information about a compiler family.
@@ -230,8 +232,11 @@ class _CompilerFamily(TrackedInstance):
     def installation(self):
         return InstalledCompilerFamily(self)
 
+    def __str__(self):
+        return self.name
+
     @classmethod
-    def probe(cls, absolute_path):
+    def probe(cls, absolute_path, candidates=None):
         """Determine the compiler family of a given command.
 
         Executes the command with :any:`version_flags` from all families
@@ -239,6 +244,7 @@ class _CompilerFamily(TrackedInstance):
 
         Args:
             absolute_path (str): Absolute path to a compiler command.
+            candidates (list): If present, a list of families that are most likely.
 
         Raises:
             ConfigurationError: Compiler family could not be determined.
@@ -250,18 +256,21 @@ class _CompilerFamily(TrackedInstance):
             return cls._probe_cache[absolute_path]
         except KeyError:
             pass
-        LOGGER.debug("Probing '%s' to discover compiler family.", absolute_path)
+        LOGGER.debug("Probing compiler '%s' to discover compiler family", absolute_path)
         messages = []
         last_version_flags = None
         stdout = None
         # Settle down pylint... the __instances__ member is created by the metaclass
         # pylint: disable=no-member
-        for family in cls.__instances__:
+        if candidates:
+            families = candidates + [inst for inst in cls.__instances__ if inst not in candidates]
+        else:
+            families = cls.__instances__
+        for family in families:
             if not family.family_regex:
                 continue
             if family.version_flags != last_version_flags:
                 last_version_flags = family.version_flags
-                LOGGER.debug("Probing compiler '%s' to discover compiler family", absolute_path)
                 cmd = [absolute_path] + family.version_flags
                 LOGGER.debug("Creating subprocess: %s", cmd)
                 try:
@@ -304,6 +313,9 @@ class _CompilerInfo(TrackedInstance):
         self.command = command
         self.role = role
         self.short_descr = "%s %s compiler" % (family.name, role.language)
+
+    def __str__(self):
+        return "(%s, %s, %s)" % (self.command, self.family, self.role)
         
     @classmethod
     def _find(cls, command, family, role):
@@ -350,6 +362,8 @@ class _CompilerInfo(TrackedInstance):
                         break
                 else:
                     found = []
+        LOGGER.debug("_CompilerInfo.find(command='%s', family='%s', role='%s'): %s", 
+                     command, family, role, [str(x) for x in found])
         return found
 
 
@@ -486,7 +500,7 @@ class InstalledCompiler(object):
     def _probe_wrapper(self):
         if not self.info.family.show_wrapper_flags:
             return None
-        LOGGER.debug("Probing %s '%s'", self.info.short_descr, self.absolute_path)
+        LOGGER.debug("Probing %s wrapper '%s'", self.info.short_descr, self.absolute_path)
         cmd = [self.absolute_path] + self.info.family.show_wrapper_flags
         LOGGER.debug("Creating subprocess: %s", cmd)
         try:
@@ -578,7 +592,7 @@ class InstalledCompiler(object):
         LOGGER.debug("Wrapper include path: %s", self.include_path)
         LOGGER.debug("Wrapper library path: %s", self.library_path)
         LOGGER.debug("Wrapper libraries: %s", self.libraries)
-        
+
     @classmethod
     def probe(cls, command, family=None, role=None):
         """Probe the system to discover information about an installed compiler.
@@ -601,22 +615,19 @@ class InstalledCompiler(object):
         if not absolute_path:
             raise ConfigurationError("Compiler '%s' not found on PATH" % command)
         command = os.path.basename(absolute_path)
-        # Try to identify the compiler with minimal information
+        LOGGER.debug("Probe: command='%s', abspath='%s', family='%s', role='%s'",
+                     command, absolute_path, family, role)
+        # Try to identify without probing
         info_list = _CompilerInfo.find(command, family, role)
         if len(info_list) == 1:
             return InstalledCompiler(absolute_path, info_list[0])
-        # If that didn't work then identify the compiler's family and try again
-        if not family:
-            family = _CompilerFamily.probe(absolute_path)
-            info_list = _CompilerInfo.find(command, family, role)
+        # Probe and try again
+        family = _CompilerFamily.probe(absolute_path, [info.family for info in info_list])
+        info_list = _CompilerInfo.find(command, family, role)
         if len(info_list) == 1:
             return InstalledCompiler(absolute_path, info_list[0])
-        elif len(info_list) > 1:
-            raise ConfigurationError("%s compiler '%s' is ambiguous: could be any of %s"  % 
-                                     (family.name, absolute_path, [info.short_descr for info in info_list]))
-        elif len(info_list) == 0:
-            raise ConfigurationError("Unknown %s compiler '%s'" % (family.name, absolute_path))
-        return InstalledCompiler(absolute_path, info_list[0])
+        raise ConfigurationError("Unable to identify compiler '%s'" % absolute_path)
+
 
     def unwrap(self):
         """Iterate through layers of compiler wrappers to find the true compiler.
