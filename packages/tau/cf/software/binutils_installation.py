@@ -57,7 +57,7 @@ class BinutilsInstallation(AutotoolsInstallation):
     
     def __init__(self, sources, target_arch, target_os, compilers):
         # binutils can't be built with PGI compilers so substitute GNU compilers instead
-        if compilers[CC].info.family is PGI:
+        if compilers[CC].unwrap().info.family is PGI:
             try:
                 gnu_compilers = GNU.installation()
             except ConfigurationError:

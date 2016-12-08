@@ -64,7 +64,7 @@ class ScorepInstallation(AutotoolsInstallation):
                       '--without-gui', '--disable-gcc-plugin', '--disable-dependency-tracking'])
         if self.target_arch in (X86_64_ARCH, IBM64_ARCH):
             suite_flags = {INTEL: 'intel', IBM: 'ibm', PGI: 'pgi', GNU: 'gcc'}
-            family = self.compilers[CC].info.family
+            family = self.compilers[CC].unwrap().info.family
             flags.append('--with-nocross-compiler-suite=%s' % suite_flags[family])
         if not self.use_mpi:
             flags.append('--without-mpi')
