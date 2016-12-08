@@ -35,7 +35,7 @@ from tau.model.trial import Trial
 from tau.model.project import Project
 
 
-LAUNCHERS = ['mpirun', 'mpiexec', 'ibrun', 'aprun', 'qsub', 'srun', 'oshrun']
+_LAUNCHERS = 'mpirun', 'mpiexec', 'ibrun', 'aprun', 'qsub', 'srun', 'oshrun'
 
 
 class TrialCreateCommand(CreateCommand):
@@ -72,25 +72,27 @@ class TrialCreateCommand(CreateCommand):
     
     def _detect_launcher(self, application_cmd):
         cmd = application_cmd[0]
-        launcher_cmd = [] 
-        if cmd in LAUNCHERS:
-            try:
-                idx = application_cmd.index('--')
-            except ValueError:
-                exes = [item for item in enumerate(application_cmd[1:], 1) if util.which(item[1])]
-                self.logger.debug("Executables on command line: %s", exes)
-                if len(exes) == 1:
-                    idx = exes[0][0]
-                    launcher_cmd = application_cmd[:idx]
-                    application_cmd = application_cmd[idx:]
+        launcher_cmd = []
+        for launcher in _LAUNCHERS: 
+            if cmd.startswith(launcher):
+                try:
+                    idx = application_cmd.index('--')
+                except ValueError:
+                    exes = [item for item in enumerate(application_cmd[1:], 1) if util.which(item[1])]
+                    self.logger.debug("Executables on command line: %s", exes)
+                    if len(exes) == 1:
+                        idx = exes[0][0]
+                        launcher_cmd = application_cmd[:idx]
+                        application_cmd = application_cmd[idx:]
+                    else:
+                        raise ConfigurationError("TAU is having trouble parsing the command line arguments",
+                                                 "Check that the command is correct, i.e. does it work without TAU?",
+                                                 ("Use '--' to seperate %s and its arguments from the application"
+                                                  " command, e.g. `mpirun -np 4 -- ./a.out -l hello`" % cmd))
                 else:
-                    raise ConfigurationError("TAU is having trouble parsing the command line arguments",
-                                             "Check that the command is correct, i.e. does it work without TAU?",
-                                             ("Use '--' to seperate %s and its arguments from the application"
-                                              " command, e.g. `mpirun -np 4 -- ./a.out -l hello`" % cmd))
-            else:
-                launcher_cmd = application_cmd[:idx]
-                application_cmd = application_cmd[idx+1:]
+                    launcher_cmd = application_cmd[:idx]
+                    application_cmd = application_cmd[idx+1:]
+                break
         self.logger.debug('Launcher: %s', launcher_cmd)
         self.logger.debug('Application: %s', application_cmd)
         return launcher_cmd, application_cmd
