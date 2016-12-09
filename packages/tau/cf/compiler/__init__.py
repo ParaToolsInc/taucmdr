@@ -482,6 +482,14 @@ class InstalledCompiler(object):
                     for value in getattr(self, attr):
                         md5.update(str(sorted(value)))
             self.uid = md5.hexdigest()
+        # TODO: Determine why we're doing this extra check. When/why was this needed?
+        # Don't need to check the compiler family of compiler wrappers since the compiler
+        # the wrapper wraps has already been checked.
+#        if not self.wrapped and info.family.family_regex:
+#            if not re.search(info.family.family_regex, self.version_string):
+#                probed_family = _CompilerFamily.probe(absolute_path)
+#                raise ConfigurationError("Compiler '%s' is a %s compiler, not a '%s' compiler." %
+#                                         (absolute_path, probed_family.name, info.family.name))
 
     def _probe_wrapper(self):
         if not self.info.family.show_wrapper_flags:
