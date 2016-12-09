@@ -41,14 +41,14 @@ class CreateTest(tests.TestCase):
     
     @unittest.skipUnless(util.which('pgcc'), "PGI compilers required for this test")
     def test_pgi(self):
-        self.reset_project_storage(project_name="proj1")
+        self.reset_project_storage()
         stdout, stderr = self.assertCommandReturnValue(0, target_create_cmd, ['test_targ', '--compilers', 'PGI'])
         self.assertIn('Added target \'test_targ\' to project configuration', stdout)
         self.assertFalse(stderr)
         stdout, stderr = self.assertCommandReturnValue(0, measurement_create_cmd, ['meas_PGI'])
         self.assertIn('Added measurement \'meas_PGI\' to project configuration', stdout)
         self.assertFalse(stderr)
-        argv = ['proj1', 'test_targ', 'meas_PGI']
+        argv = ['test_targ', 'meas_PGI']
         _, stderr = self.assertCommandReturnValue(0, experiment_create_cmd, argv)
         self.assertFalse(stderr)
         
