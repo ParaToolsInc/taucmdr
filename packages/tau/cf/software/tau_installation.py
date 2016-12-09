@@ -308,7 +308,7 @@ class TauInstallation(Installation):
 
     def _prepare_src(self, reuse_archive=True):
         if self.src == NIGHTLY:
-            reuse_archve = False
+            reuse_archive = False
         return super(TauInstallation, self)._prepare_src(reuse_archive)
 
     def verify(self):
