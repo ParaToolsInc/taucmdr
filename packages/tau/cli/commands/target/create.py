@@ -289,7 +289,10 @@ class TargetCreateCommand(CreateCommand):
                     command = getattr(args, role.keyword)
                 except AttributeError:
                     continue
-                compilers[role.keyword] = InstalledCompiler.probe(command, role=role)
+                try:
+                    compilers[role.keyword] = InstalledCompiler.probe(command, role=role)
+                except ConfigurationError as err:
+                    self.logger.debug(err)
         return compilers
 
     def main(self, argv):
