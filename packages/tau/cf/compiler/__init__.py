@@ -524,7 +524,15 @@ class InstalledCompiler(object):
             try:
                 wrapped = InstalledCompiler.probe(wrapped_command)
             except ConfigurationError:
+                # wrapped_command might not be a real compiler command so keep trying
                 continue
+            # The wrapper must be able to perform the same role as the wrapped compiler
+            role = self.info.role.keyword.split('_')[1:]
+            wrapped_role = wrapped.info.role.keyword.split('_')[1:]
+            if role != wrapped_role:
+                raise ConfigurationError("Cannot use '%s' as a %s: wrapped compiler '%s' is a %s" %
+                                         (self.command, self.info.short_descr, 
+                                          wrapped.command, wrapped.info.short_descr))
             LOGGER.info("%s '%s' wraps '%s'", self.info.short_descr, self.absolute_path, wrapped.absolute_path)
             try:
                 self._parse_wrapped_args(wrapped_args)
