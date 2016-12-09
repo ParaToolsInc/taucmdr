@@ -308,8 +308,18 @@ class TauInstallation(Installation):
     def verify(self):
         super(TauInstallation, self).verify()
 
-        # Open TAU makefile and check BFDINCLUDE, UNWIND_INC, PAPIDIR, etc.
+        # Check for TAU libraries
         tau_makefile = self.get_makefile()
+        makefile_tags = os.path.basename(tau_makefile).replace("Makefile.tau-", "")
+        static_lib = "libtau-%s.*" % makefile_tags
+        shared_lib = "libTAUsh-%s.*" % makefile_tags
+        for pattern in static_lib, shared_lib:
+            if glob.glob(os.path.join(self.lib_path, pattern)):
+                break
+        else:
+            raise SoftwarePackageError("TAU libraries for makefile '%s' not found" % tau_makefile)
+
+        # Open TAU makefile and check BFDINCLUDE, UNWIND_INC, PAPIDIR, etc.
         with open(tau_makefile, 'r') as fin:
             for line in fin:
                 if self._uses_binutils() and 'BFDINCLUDE=' in line:
@@ -336,12 +346,13 @@ class TauInstallation(Installation):
                     if scorep.install_prefix != scorep_dir:
                         LOGGER.debug("SCOREPDIR='%s' != '%s'", scorep_dir, scorep.install_prefix)
                         raise SoftwarePackageError("SCOREPDIR in '%s' is invalid" % tau_makefile)
+
         # Check for iowrapper
         if self.io_inst:
             iowrap_libs = glob.glob(os.path.join(self.lib_path, 'shared', 'libTAU-iowrap*'))
             LOGGER.debug("Found iowrap shared libraries: %s", iowrap_libs)
             iowrap_link_options = os.path.join(self.lib_path, 'wrappers', 'io_wrapper', 'link_options.tau')
-            if not iowrap_libs and not os.path.exists(iowrap_link_options):
+            if not (iowrap_libs and os.path.exists(iowrap_link_options)):
                 raise SoftwarePackageError("iowrap libraries or link options not found")
         LOGGER.debug("TAU installation at '%s' is valid", self.install_prefix)
 
