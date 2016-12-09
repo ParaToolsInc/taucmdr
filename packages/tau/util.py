@@ -424,16 +424,16 @@ def get_command_output(cmd, cwd=None, env=None):
     """
     key = repr((cmd, cwd, env))
     try:
-        return get_command_output._cache[key]
+        return get_command_output.cache[key]
     except AttributeError:
-        get_command_output._cache = {}
+        get_command_output.cache = {}
     except KeyError:
         pass
     else:
         LOGGER.debug("Using cached output for command: %s", cmd)
     LOGGER.debug("Checking subprocess output: %s", cmd)
     stdout = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-    get_command_output._cache[key] = stdout
+    get_command_output.cache[key] = stdout
     LOGGER.debug(stdout)
     LOGGER.debug("%s returned 0", cmd)
     return stdout
