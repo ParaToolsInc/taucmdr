@@ -316,9 +316,9 @@ class TauInstallation(Installation):
 
         # Check for TAU libraries
         tau_makefile = self.get_makefile()
-        makefile_tags = os.path.basename(tau_makefile).replace("Makefile.tau-", "")
-        static_lib = "libtau-%s.*" % makefile_tags
-        shared_lib = "libTAUsh-%s.*" % makefile_tags
+        makefile_tags = os.path.basename(tau_makefile).replace("Makefile.tau", "")
+        static_lib = "libtau%s.*" % makefile_tags
+        shared_lib = "libTAUsh%s.*" % makefile_tags
         for pattern in static_lib, shared_lib:
             if glob.glob(os.path.join(self.lib_path, pattern)):
                 break
