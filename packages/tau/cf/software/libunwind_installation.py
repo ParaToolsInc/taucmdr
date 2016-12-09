@@ -33,7 +33,6 @@ instrumentation, and other measurement approaches.
 
 import os
 import sys
-import hashlib
 import fileinput
 from tau import logger
 from tau.error import ConfigurationError
@@ -71,7 +70,7 @@ class LibunwindInstallation(AutotoolsInstallation):
 
     def _calculate_uid(self):
         # libunwind only cares about changes in C/C++ compilers
-        uid = hashlib.md5()
+        uid = util.new_uid()
         uid.update(self.src)
         uid.update(self.target_arch.name)
         uid.update(self.target_os.name)

@@ -42,6 +42,7 @@ import pkgutil
 import tarfile
 import tempfile
 import urlparse
+import hashlib
 from contextlib import contextmanager
 from zipimport import zipimporter
 from zipfile import ZipFile
@@ -62,6 +63,11 @@ def _cleanup_dtemp():
         for path in _DTEMP_STACK:
             rmtree(path, ignore_errors=True)
 atexit.register(_cleanup_dtemp)
+
+
+def new_uid():
+    """Create a new unique identifier object."""
+    return hashlib.sha1()
 
 
 def mkdtemp(*args, **kwargs):
@@ -618,4 +624,3 @@ def _iter_modules(paths, prefix):
                 yielded[name] = True
                 yield importer, name, ispkg
  
-

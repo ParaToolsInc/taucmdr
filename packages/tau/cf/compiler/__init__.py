@@ -65,7 +65,6 @@ change from system to system.
 
 import os
 import re
-import hashlib
 from subprocess import CalledProcessError
 from tau import logger, util
 from tau.error import ConfigurationError
@@ -472,16 +471,16 @@ class InstalledCompiler(object):
         if uid:
             self.uid = uid
         else:
-            md5 = hashlib.md5()
-            md5.update(self.absolute_path)
-            md5.update(self.info.family.name)
-            md5.update(self.info.role.keyword)
+            uid = util.new_uid()
+            uid.update(self.absolute_path)
+            uid.update(self.info.family.name)
+            uid.update(self.info.role.keyword)
             if self.wrapped:
-                md5.update(self.wrapped.uid)
+                uid.update(self.wrapped.uid)
                 for attr in 'include_path', 'library_path', 'compiler_flags', 'libraries':
                     for value in getattr(self, attr):
-                        md5.update(str(sorted(value)))
-            self.uid = md5.hexdigest()
+                        uid.update(str(sorted(value)))
+            self.uid = uid.hexdigest()
         # Check that the compiler is executable and of the expected family/role.
         # Prevents compilers with the same command (e.g. Cray cc and GNU cc) from crossing.
         # Don't need to check the compiler family of compiler wrappers since the compiler
@@ -749,10 +748,10 @@ class InstalledCompilerSet(KeyedRecord):
     def modify(self, **kwargs):
         """Build a modified copy of this object."""
         # pylint: disable=protected-access 
-        new_uid = hashlib.md5()
-        new_uid.update(self.uid)
-        new_uid.update(str(sorted(kwargs)))
+        uid = util.new_uid()
+        uid.update(self.uid)
+        uid.update(str(sorted(kwargs)))
         compilers = {role.keyword: comp for role, comp in self.members.iteritems()}
-        modified = InstalledCompilerSet(new_uid.hexdigest(), **compilers)
+        modified = InstalledCompilerSet(uid.hexdigest(), **compilers)
         modified._add_members(**kwargs)
         return modified

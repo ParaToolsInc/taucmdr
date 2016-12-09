@@ -35,7 +35,6 @@ import os
 import sys
 import glob
 import shutil
-import hashlib
 import fileinput
 from tau import logger, util
 from tau.error import ConfigurationError
@@ -68,7 +67,7 @@ class BinutilsInstallation(AutotoolsInstallation):
 
     def _calculate_uid(self):
         # Binutils only cares about changes in C/C++ compilers
-        uid = hashlib.md5()
+        uid = util.new_uid()
         uid.update(self.src)
         uid.update(self.target_arch.name)
         uid.update(self.target_os.name)

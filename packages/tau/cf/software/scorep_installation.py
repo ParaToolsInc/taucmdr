@@ -31,7 +31,6 @@ Score-P is a tool suite for profiling, event tracing, and online analysis of HPC
 """
 
 import os
-import hashlib
 from subprocess import CalledProcessError
 from tau import logger, util
 from tau.cf.software import SoftwarePackageError
@@ -114,7 +113,7 @@ class ScorepInstallation(AutotoolsInstallation):
 
     def _calculate_uid(self):
         # Score-P installations have different symbols depending on what flags were used.
-        uid = hashlib.md5()
+        uid = util.new_uid()
         uid.update(self.src)
         uid.update(self.target_arch.name)
         uid.update(self.target_os.name)
