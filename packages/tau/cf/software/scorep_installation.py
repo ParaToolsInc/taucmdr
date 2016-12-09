@@ -32,8 +32,8 @@ Score-P is a tool suite for profiling, event tracing, and online analysis of HPC
 
 import os
 import hashlib
-import subprocess
-from tau import logger
+from subprocess import CalledProcessError
+from tau import logger, util
 from tau.cf.software import SoftwarePackageError
 from tau.cf.software.installation import AutotoolsInstallation
 from tau.cf.compiler import host, mpi, shmem
@@ -162,11 +162,11 @@ class ScorepInstallation(AutotoolsInstallation):
         super(ScorepInstallation, self).verify()
         # Use Score-P's `scorep-info` command to check if this Score-P installation
         # was configured with the flags we need.
-        scorep_info = [os.path.join(self.bin_path, 'scorep-info'), 'config-summary']
+        cmd = [os.path.join(self.bin_path, 'scorep-info'), 'config-summary']
         try:
-            stdout = subprocess.check_output(scorep_info, stderr=subprocess.STDOUT)
-        except subprocess.CalledProcessError as err:
-            raise SoftwarePackageError("%s failed with return code %d: %s", cmd, err.returncode, err.output)
+            stdout = util.get_command_output(cmd)
+        except CalledProcessError as err:
+            raise SoftwarePackageError("%s failed with return code %d: %s" % (cmd, err.returncode, err.output))
         flags = self._get_flags()
         found_flags = set()
         extra_flags = set()
