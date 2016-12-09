@@ -312,16 +312,14 @@ class ParsePackagePathAction(argparse.Action):
             value (str): Value parsed from the command line.
         """
         try:
-            value_as_bool = util.parse_bool(value, additional_true=['download'])
+            value_as_bool = util.parse_bool(value, additional_true=['download', 'nightly'])
         except TypeError:
-            if util.is_url(value):
-                value = value
-            else:
+            if not util.is_url(value):
                 value = os.path.abspath(os.path.expanduser(value))
                 if not (os.path.isdir(value) or util.file_accessible(value)):
-                    raise argparse.ArgumentError(self, "Boolean, 'download', valid path, or URL required: %s" % value)
+                    raise argparse.ArgumentError(self, "Keyword, valid path, or URL required: %s" % value)
         else:
-            value = 'download' if value_as_bool else None
+            value = value.lower() if value_as_bool else None
         setattr(namespace, self.dest, value)
 
 

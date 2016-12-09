@@ -49,6 +49,8 @@ LOGGER = logger.get_logger(__name__)
 
 REPOS = {None: 'http://tau.uoregon.edu/tau.tgz'}
 
+NIGHTLY = 'http://fs.paratools.com/tau-nightly.tgz'
+
 COMMANDS = {None: 
             ['jumpshot',
              'paraprof',
@@ -175,15 +177,12 @@ class TauInstallation(Installation):
         """Initialize the TAU installation wrapper class.
         
         Args:
-            src (str): Path to a directory where a software package has already been 
-                       installed, or a path to a source archive file, or the special keyword 'download'.
+            sources (dict): Packages sources as strings indexed by package names as strings.  A source may be a 
+                            path to a directory where the software has already been installed, or a path to a source
+                            archive file, or the special keywords 'download' or 'nightly'.
             target_arch (Architecture): Target architecture description.
             target_os (OperatingSystem): Target operating system description.
             compilers (InstalledCompilerSet): Compilers to use if software must be compiled.
-            pdt_source (str): Path to PDT source, installation, or None.
-            binutils_source (str): Path to GNU binutils source, installation, or None.
-            libunwind_source (str): Path to libunwind source, installation, or None.
-            papi_source (str): Path to PAPI source, installation, or None.
             openmp_support (bool): Enable or disable OpenMP support in TAU.
             pthreads_support (bool): Enable or disable pthreads support in TAU.
             mpi_support (bool): Enable or disable MPI support in TAU.
@@ -219,10 +218,12 @@ class TauInstallation(Installation):
             throttle (bool): If True then throttle lightweight events.
             throttle_per_call (int): Maximum microseconds per call of a lightweight event.
             throttle_num_calls (int): Minimum number of calls for a lightweight event.
-	        forced_makefile (str): Path to external makefile.
+	          forced_makefile (str): Path to external makefile if forcing TAU_MAKEFILE or None.
         """
         super(TauInstallation, self).__init__('tau', 'TAU Performance System', sources, target_arch, target_os, 
                                               compilers, REPOS, COMMANDS, None, None)
+        if self.src == 'nightly':
+            self.src = NIGHTLY
         self.arch = TauArch.get(self.target_arch, self.target_os)
         self.verbose = (logger.LOG_LEVEL == 'DEBUG')
         self.openmp_support = openmp_support
@@ -304,6 +305,11 @@ class TauInstallation(Installation):
 
     def _uses_scorep(self):
         return self.profile == 'cubex' or self.trace == 'otf2'
+
+    def _prepare_src(self, reuse_archive=True):
+        if self.src == NIGHTLY:
+            reuse_archve = False
+        return super(TauInstallation, self)._prepare_src(reuse_archive)
 
     def verify(self):
         super(TauInstallation, self).verify()
