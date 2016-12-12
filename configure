@@ -73,8 +73,8 @@ def _get_prefix():
             while rargs:
                 try:
                     OptionParser._process_args(self,largs,rargs,values)
-                except (BadOptionError,AmbiguousOptionError), e:
-                    largs.append(e.opt_str)    
+                except (BadOptionError, AmbiguousOptionError) as e:
+                    largs.append(e.opt_str)
     parser = PassThroughOptionParser(description=FALLBACK_WARNING)
     parser.add_option("--prefix", dest="prefix", help='Installation prefix.', metavar="<path>")
     options, _ = parser.parse_args()
