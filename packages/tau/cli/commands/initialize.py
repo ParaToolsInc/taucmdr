@@ -46,6 +46,7 @@ from tau.cli.commands.project.select import COMMAND as project_select_cmd
 from tau.cli.commands.select import COMMAND as select_cmd
 from tau.cli.commands.dashboard import COMMAND as dashboard_cmd
 from tau.cf.target import host, DARWIN_OS, IBM_CNK_OS
+from tau.cf.compiler.host import FC
 
 
 class InitializeCommand(AbstractCommand):
@@ -163,6 +164,8 @@ class InitializeCommand(AbstractCommand):
         elif host_os is IBM_CNK_OS: 
             self.logger.info("IBM CNK OS detected: disabling sampling")
             sample = False
+        if not getattr(args, FC.keyword, None):
+            scorep = False
         target_name = args.target_name
         application_name = args.application_name
 
