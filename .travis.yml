@@ -12,16 +12,22 @@ os:
   - linux
 
 env:
-  - PYENV_VERSION='2.7.9' OS='Ubuntu Precise' # Add more python versions to this array to expand test matrix
+  - INSTALLDIR="$HOME/taucmdr-test"
+  - OS='Ubuntu Precise' # Add more python versions to this array to expand test matrix
 
 install:
-  - source .travis/install.sh
+  - ./configure --prefix=$INSTALLDIR
+  - make python_check
+  - export PATH=$INSTALLDIR/conda/bin:$PATH
+  - which python
+  - which pip
+  - pip install -r requirements.txt
 
 script:
   - coverage run setup.py test
 
 after_success:
-  - codecov --env PYENV_VERSION OS
+  - codecov --env OS
 
 deploy:
   provider: script
@@ -29,7 +35,7 @@ deploy:
   skip_cleanup: true
   on:
     branch: master
-    condition: $TRAVIS_OS_NAME = linux &&  $PYENV_VERSION = '2.7.9'
+    condition: $TRAVIS_OS_NAME = linux
     repo: ParaToolsInc/taucmdr # Don't try to deploy on private forks
 
 notifications:
