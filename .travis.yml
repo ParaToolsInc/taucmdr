@@ -17,18 +17,15 @@ env:
   matrix:
     - OS='Ubuntu Precise' # Add more python versions to this array to expand test matrix
 
-# Use `make python_check` instead of `make install` and let `setup.py test` 
-# install TAU and dependencies quietly so we don't exceed the logfile limit.
+# Boostrap Python 2.7 environment and required packages.
 install:
-  - ./configure --prefix="$INSTALLDIR"
-  - make python_check
+  - make python_check INSTALLDIR="$INSTALLDIR"
   - source "$INSTALLDIR/conda/bin/activate"
-  - which python
-  - which pip
-  - pip install -r requirements.txt
-  - ls -l "$INSTALLDIR/conda/bin"
+  - pip install --prefix "$INSTALLDIR/conda" -r requirements.txt
 
 script:
+  - coverage run ./configure --prefix="$INSTALLDIR"
+  - make install PYTHON_EXE="coverage run"
   - coverage run setup.py test
 
 after_success:
