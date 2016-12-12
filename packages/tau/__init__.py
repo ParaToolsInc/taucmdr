@@ -53,20 +53,20 @@ HELP_CONTACT = '<support@paratools.com>'
 TAUCMDR_URL = 'www.taucommander.com'
 """str: URL of the TAU Commander project."""
 
-MINIMUM_PYTHON_VERSION = (2, 7)
-"""tuple: Minimum required Python version for TAU Comamnder.
+REQUIRED_PYTHON_VERSION = (2, 7)
+"""tuple: Required Python version for TAU Comamnder.
 
 A tuple of at least (MAJOR, MINOR) directly comparible to :any:`sys.version_info`
 """
 
-if sys.version_info < MINIMUM_PYTHON_VERSION:
+if sys.version_info[0:2] != REQUIRED_PYTHON_VERSION:
     VERSION = '.'.join([str(x) for x in sys.version_info[0:3]])
-    EXPECTED = '.'.join([str(x) for x in MINIMUM_PYTHON_VERSION])
+    EXPECTED = '.'.join([str(x) for x in REQUIRED_PYTHON_VERSION])
     sys.stderr.write("""%s
 %s
 %s
-Your Python version is %s but Python %s or later is required.
-Please update Python or contact %s for support.
+Your Python version is %s but Python %s is required.
+Please install the required Python version or contact %s for support.
 """ % (TAUCMDR_URL, sys.executable, sys.version, VERSION, EXPECTED, HELP_CONTACT))
     sys.exit(EXIT_FAILURE)
 
