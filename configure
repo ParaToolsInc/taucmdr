@@ -168,7 +168,7 @@ def main():
     compilers = target_create_cmd.parse_compiler_flags(args)
     
     # Disable Score-P if Fortran compiler not specifieid
-    if not FC.keyword not in compilers:
+    if FC.keyword not in compilers:
         args.scorep_source = 'None'
 
     # Merge new values into configuration.
