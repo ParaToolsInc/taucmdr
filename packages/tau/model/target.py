@@ -126,13 +126,13 @@ def attributes():
                          'metavar': '<arch>',
                          'choices': Architecture.keys()},
             'compat': {str(INTEL_KNC_ARCH): 
-                       (Target.require('CC', knc_intel_only),
-                        Target.require('CXX', knc_intel_only),
-                        Target.require('FC', knc_intel_only),
-                        Target.require('host_arch', knc_require_k1om),
-                        Target.require('MPI_CC', knc_intel_mpi_only),
-                        Target.require('MPI_CXX', knc_intel_mpi_only),
-                        Target.require('MPI_FC', knc_intel_mpi_only))},
+                       (Target.require('host_arch', knc_require_k1om),
+                        Target.require(CC.keyword, knc_intel_only),
+                        Target.require(CXX.keyword, knc_intel_only),
+                        Target.require(FC.keyword, knc_intel_only),
+                        Target.require(MPI_CC.keyword, knc_intel_mpi_only),
+                        Target.require(MPI_CXX.keyword, knc_intel_mpi_only),
+                        Target.require(MPI_FC.keyword, knc_intel_mpi_only))},
             'on_change': Target.attribute_changed
         },
         CC.keyword: {
@@ -205,9 +205,9 @@ def attributes():
                          'group': 'Message Passing Interface (MPI)',
                          'metavar': '<path>',
                          'nargs': '+'},
-            'compat': {bool: (Target.require("MPI_CC"),
-                              Target.require("MPI_CXX"),
-                              Target.require("MPI_FC"))},
+            'compat': {bool: (Target.require(MPI_CC.keyword),
+                              Target.require(MPI_CXX.keyword),
+                              Target.require(MPI_FC.keyword))},
             'on_change': Target.attribute_changed
         },
         'mpi_library_path': {
@@ -217,9 +217,9 @@ def attributes():
                          'group': 'Message Passing Interface (MPI)',
                          'metavar': '<path>',
                          'nargs': '+'},
-            'compat': {bool: (Target.require("MPI_CC"),
-                              Target.require("MPI_CXX"),
-                              Target.require("MPI_FC"))},
+            'compat': {bool: (Target.require(MPI_CC.keyword),
+                              Target.require(MPI_CXX.keyword),
+                              Target.require(MPI_FC.keyword))},
             'on_change': Target.attribute_changed
         },
         'mpi_libraries': {
@@ -229,9 +229,9 @@ def attributes():
                          'group': 'Message Passing Interface (MPI)',
                          'metavar': '<flag>',
                          'nargs': '+'},
-            'compat': {bool: (Target.require("MPI_CC"),
-                              Target.require("MPI_CXX"),
-                              Target.require("MPI_FC"))},
+            'compat': {bool: (Target.require(MPI_CC.keyword),
+                              Target.require(MPI_CXX.keyword),
+                              Target.require(MPI_FC.keyword))},
             'on_change': Target.attribute_changed
         },
         SHMEM_CC.keyword: {
@@ -357,7 +357,10 @@ def attributes():
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction},
-            'compat': {(lambda x: x is not None): Target.discourage('host_os', DARWIN_OS.name)},
+            'compat': {(lambda x: x is not None): (Target.discourage('host_os', DARWIN_OS.name),
+                                                   Target.require(CC.keyword),
+                                                   Target.require(CXX.keyword),
+                                                   Target.require(FC.keyword))},
             'on_change': Target.attribute_changed
         },
         'forced_makefile': {
