@@ -100,20 +100,20 @@
 <span class="n">TAUCMDR_URL</span> <span class="o">=</span> <span class="s1">&#39;www.taucommander.com&#39;</span>
 <span class="sd">&quot;&quot;&quot;str: URL of the TAU Commander project.&quot;&quot;&quot;</span>
 
-<span class="n">MINIMUM_PYTHON_VERSION</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
-<span class="sd">&quot;&quot;&quot;tuple: Minimum required Python version for TAU Comamnder.</span>
+<span class="n">REQUIRED_PYTHON_VERSION</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
+<span class="sd">&quot;&quot;&quot;tuple: Required Python version for TAU Comamnder.</span>
 
 <span class="sd">A tuple of at least (MAJOR, MINOR) directly comparible to :any:`sys.version_info`</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&lt;</span> <span class="n">MINIMUM_PYTHON_VERSION</span><span class="p">:</span>
+<span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">!=</span> <span class="n">REQUIRED_PYTHON_VERSION</span><span class="p">:</span>
     <span class="n">VERSION</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]])</span>
-    <span class="n">EXPECTED</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">MINIMUM_PYTHON_VERSION</span><span class="p">])</span>
+    <span class="n">EXPECTED</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">REQUIRED_PYTHON_VERSION</span><span class="p">])</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span><span class="si">%s</span><span class="s2"></span>
 <span class="si">%s</span><span class="s2"></span>
 <span class="si">%s</span><span class="s2"></span>
-<span class="s2">Your Python version is </span><span class="si">%s</span><span class="s2"> but Python </span><span class="si">%s</span><span class="s2"> or later is required.</span>
-<span class="s2">Please update Python or contact </span><span class="si">%s</span><span class="s2"> for support.</span>
+<span class="s2">Your Python version is </span><span class="si">%s</span><span class="s2"> but Python </span><span class="si">%s</span><span class="s2"> is required.</span>
+<span class="s2">Please install the required Python version or contact </span><span class="si">%s</span><span class="s2"> for support.</span>
 <span class="s2">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">TAUCMDR_URL</span><span class="p">,</span> <span class="n">sys</span><span class="o">.</span><span class="n">executable</span><span class="p">,</span> <span class="n">sys</span><span class="o">.</span><span class="n">version</span><span class="p">,</span> <span class="n">VERSION</span><span class="p">,</span> <span class="n">EXPECTED</span><span class="p">,</span> <span class="n">HELP_CONTACT</span><span class="p">))</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">EXIT_FAILURE</span><span class="p">)</span>
 

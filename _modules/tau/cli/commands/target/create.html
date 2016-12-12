@@ -83,7 +83,7 @@
 <span class="kn">from</span> <span class="nn">tau.model.target</span> <span class="kn">import</span> <span class="n">Target</span>
 <span class="kn">from</span> <span class="nn">tau.model.compiler</span> <span class="kn">import</span> <span class="n">Compiler</span>
 <span class="kn">from</span> <span class="nn">tau.cf.compiler</span> <span class="kn">import</span> <span class="n">Knowledgebase</span><span class="p">,</span> <span class="n">InstalledCompiler</span><span class="p">,</span> <span class="n">InstalledCompilerFamily</span>
-<span class="kn">from</span> <span class="nn">tau.cf.compiler.host</span> <span class="kn">import</span> <span class="n">HOST_COMPILERS</span>
+<span class="kn">from</span> <span class="nn">tau.cf.compiler.host</span> <span class="kn">import</span> <span class="n">HOST_COMPILERS</span><span class="p">,</span> <span class="n">FC</span>
 <span class="kn">from</span> <span class="nn">tau.cf.compiler.mpi</span> <span class="kn">import</span> <span class="n">MPI_COMPILERS</span>
 <span class="kn">from</span> <span class="nn">tau.cf.compiler.shmem</span> <span class="kn">import</span> <span class="n">SHMEM_COMPILERS</span>
 <span class="kn">from</span> <span class="nn">tau.cf.target</span> <span class="kn">import</span> <span class="n">TauArch</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">CRAY_CNL_OS</span>
@@ -316,6 +316,8 @@
             <span class="k">if</span> <span class="n">role</span><span class="o">.</span><span class="n">keyword</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> compiler is required but could not be found&quot;</span> <span class="o">%</span> <span class="n">role</span><span class="o">.</span><span class="n">language</span><span class="p">,</span>
                                          <span class="s2">&quot;See &#39;compiler arguments&#39; under `</span><span class="si">%s</span><span class="s2"> --help`&quot;</span> <span class="o">%</span> <span class="n">COMMAND</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">FC</span><span class="o">.</span><span class="n">keyword</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">scorep_source</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="k">return</span> <span class="n">args</span>
 
 <div class="viewcode-block" id="TargetCreateCommand.parse_compiler_flags"><a class="viewcode-back" href="../../../../../tau.cli.commands.target.create.html#tau.cli.commands.target.create.TargetCreateCommand.parse_compiler_flags">[docs]</a>    <span class="k">def</span> <span class="nf">parse_compiler_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
