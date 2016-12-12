@@ -36,8 +36,24 @@ TAU Commander are:
 Getting Started
 ===============
 
-- Add TAU Commander to your PATH: `export PATH=/path/to/taucmdr/bin:$PATH`
-- Type `tau --help`.
+Install in the usual way:
+  - `./configure [options] [--help]`
+  - `make install`
+  
+Add TAU Commander to your PATH:
+  - Nearly everyone: `export PATH=/path/to/taucmdr/bin:$PATH`
+  - Everyone else: `set path=(/path/to/taucmdr/bin $path)` 
+  
+Initialize a new TAU project:
+  - cd `/path/to/your/code`
+  - `tau initialize`
+
+Need help?
+==========
+
+- Add `--help` to any TAU Commander command line to see command line usage.
+- Use `tau help` to view online documentation.  (Very incomplete at the moment.)
+- Contact support@paratools.com with questions or feedback.
 
 Developers
 ==========
