@@ -26,11 +26,11 @@ env:
 # Test ./configure && make install while boostraping Python 2.7 environment and required packages.
 install:
   - ./configure --prefix="$INSTALLDIR"
-  - make install
+  - make install >/dev/null 2>&1 || tail -10000 "$HOME/.tau/debug_log"
   - pip install --prefix "$INSTALLDIR/conda" -r requirements.txt
 
 script:
-  - coverage run setup.py test
+  - coverage run setup.py test || tail -10000 "$HOME/.tau/debug_log"
 
 after_success:
   - codecov --env OS
