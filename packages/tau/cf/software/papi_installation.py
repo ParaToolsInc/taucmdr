@@ -33,7 +33,7 @@ PAPI is used to measure hardware performance counters.
 import os
 import sys
 import fileinput
-from tau import logger
+from tau import logger, util
 from tau.cf.compiler.host import CC, CXX
 from tau.cf.software.installation import AutotoolsInstallation
 

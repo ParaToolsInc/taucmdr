@@ -34,7 +34,7 @@ instrumentation, and other measurement approaches.
 import os
 import sys
 import fileinput
-from tau import logger
+from tau import logger, util
 from tau.error import ConfigurationError
 from tau.cf.target import IBM_BGQ_ARCH, CRAY_CNL_OS, ARM64_ARCH, LINUX_OS, PPC64LE_ARCH, PPC64_ARCH
 from tau.cf.software import SoftwarePackageError
