@@ -13,20 +13,18 @@ git:
   depth: 9999
 
 sudo: false
-os:
-  - linux
 
 env:
   global:
     - INSTALLDIR="$HOME/taucmdr-test"
-    - PATH="$INSTALLDIR/conda/bin:$PATH"
   matrix:
     - OS='Ubuntu Precise' # Add more python versions to this array to expand test matrix
 
 # Test ./configure && make install while boostraping Python 2.7 environment and required packages.
 install:
   - ./configure --prefix="$INSTALLDIR"
-  - make install >/dev/null 2>&1 || (tail -1000 "$HOME/.tau/debug_log" && false)
+  - make install || (tail -1000 "$HOME/.tau/debug_log" && false)
+  - export PATH="$INSTALLDIR/conda/bin:$PATH"
   - which python
   - which pip
   - pip install --prefix "$INSTALLDIR/conda" -r requirements.txt

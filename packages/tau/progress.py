@@ -30,6 +30,7 @@
 Show bars or spinners, possibly with instantaneous CPU load average.
 """
 
+import os
 import sys
 import threading
 import logging
@@ -104,6 +105,12 @@ def progress_spinner(show_cpu=True, stream=None):
 class ProgressIndicator(object):
     """Display a progress bar or spinner on a stream."""
 
+    class NullStream(object):
+        def write(self, *_): 
+            pass
+        def flush(self, *_): 
+            pass
+
     def __init__(self, total_size=0, block_size=1, show_cpu=True, stream=None):
         """ Initialize the ProgressBar object.
 
@@ -114,7 +121,10 @@ class ProgressIndicator(object):
             stream (file): Stream object to write progress indication to.
         """
         if stream is None:
-            stream = sys.stdout
+            if os.environ.get('TAU_DISABLE_PROGRESS_BARS', False):
+                stream = ProgressIndicator.NullStream()
+            else:    
+                stream = sys.stdout
         self._spinner = itertools.cycle(['-', '/', '|', '\\'])
         self.count = 0
         self.total_size = total_size
