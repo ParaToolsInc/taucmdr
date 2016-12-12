@@ -26,7 +26,7 @@ env:
 # Test ./configure && make install while boostraping Python 2.7 environment and required packages.
 install:
   - ./configure --prefix="$INSTALLDIR"
-  - make install >/dev/null 2>&1
+  - make install >/dev/null 2>&1 || (tail -1000 "$HOME/.tau/debug_log" && false)
   - which python
   - which pip
   - pip install --prefix "$INSTALLDIR/conda" -r requirements.txt
