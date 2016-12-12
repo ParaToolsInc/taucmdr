@@ -7,5 +7,5 @@ INSTALLDIR=$HOME/taucmdr-test
 export PATH=$INSTALLDIR/conda/bin:$PATH
 
 # Install development requirements enumerated in requirements.txt
-conda install -y --file requirements.txt
+pip install -r requirements.txt
 
