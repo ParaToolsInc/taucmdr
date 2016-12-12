@@ -183,6 +183,8 @@ class InitializeCommand(AbstractCommand):
             target_argv.append('--binutils=False')
         if not papi:
             target_argv.append('--papi=False')
+        if not scorep:
+            target_argv.append('--scorep=None')
         _safe_execute(target_create_cmd, target_argv)
 
         measurement_names = []
