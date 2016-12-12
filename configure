@@ -67,6 +67,7 @@ def _default_prefix():
 
 
 def _get_prefix():
+    # This routine must be Python 2.6 and Python3 compatible
     from optparse import OptionParser, BadOptionError, AmbiguousOptionError
     class PassThroughOptionParser(OptionParser):
         def _process_args(self, largs, rargs, values):
@@ -82,8 +83,9 @@ def _get_prefix():
 
 
 def _bootstrap_conda():
+    # This routine must be Python 2.6 and Python3 compatible
     import subprocess
-    print FALLBACK_WARNING
+    print(FALLBACK_WARNING)
     prefix = _get_prefix()
     cmd = ['make', 'python_check', 'INSTALLDIR=' + prefix]
     try:
