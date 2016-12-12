@@ -106,7 +106,7 @@ else
     USE_MINICONDA = false
   endif
 endif
-CONDA_VERSION = 4.0.5
+CONDA_VERSION = 4.2.12
 CONDA_REPO = https://repo.continuum.io/miniconda
 CONDA_PKG = Miniconda2-$(CONDA_VERSION)-$(CONDA_OS)-$(CONDA_ARCH).sh
 CONDA_URL = $(CONDA_REPO)/$(CONDA_PKG)
