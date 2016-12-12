@@ -304,7 +304,7 @@ def update_version():
     try:
         fin = open(os.path.join(PACKAGE_TOPDIR, "VERSION"))
     except IOError:
-        sys.stderr.writeln("ERROR: VERSION file is missing!")
+        sys.stderr.write("ERROR: VERSION file is missing!\n")
         sys.exit(-1)
     else:
         version = fin.readline().strip()
