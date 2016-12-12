@@ -20,6 +20,10 @@ env:
   matrix:
     - OS='Ubuntu Precise' # Add more python versions to this array to expand test matrix
 
+before_install:
+  - env
+  - mount
+
 # Test ./configure && make install while boostraping Python 2.7 environment and required packages.
 install:
   - ./configure --prefix="$INSTALLDIR"
@@ -44,7 +48,7 @@ deploy:
   skip_cleanup: true
   on:
     branch: master
-    condition: $TRAVIS_OS_NAME = linux
+    condition: $TRAVIS_OS_NAME = linux && $TRAVIS_PYTHON_VERSION = 2.7
     repo: ParaToolsInc/taucmdr # Don't try to deploy on private forks
 
 notifications:
