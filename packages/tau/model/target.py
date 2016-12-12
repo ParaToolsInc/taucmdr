@@ -305,6 +305,7 @@ def attributes():
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|nightly)',
                          'action': ParsePackagePathAction},
+            'compat': {True: Target.require('tau_source')},
             'on_change': Target.attribute_changed
         },
         'pdt_source': {
@@ -387,10 +388,6 @@ class Target(Model):
         if model.is_selected():
             old_value = model.get(attr, None)
             Target.controller(model.storage).push_to_topic('rebuild_required', {attr: (old_value, new_value)})
-    
-    def on_create(self):
-        if not self['tau_source']:
-            raise ConfigurationError("A TAU installation or source code must be provided.")
     
     def on_update(self):
         from tau.error import ImmutableRecordError
