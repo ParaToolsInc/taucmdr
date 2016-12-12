@@ -14,18 +14,17 @@ os:
 env:
   global:
     - INSTALLDIR="$HOME/taucmdr-test"
+    - PATH="$INSTALLDIR/conda/bin:$PATH"
   matrix:
     - OS='Ubuntu Precise' # Add more python versions to this array to expand test matrix
 
-# Boostrap Python 2.7 environment and required packages.
+# Test ./configure && make install while boostraping Python 2.7 environment and required packages.
 install:
-  - make python_check INSTALLDIR="$INSTALLDIR"
-  - source "$INSTALLDIR/conda/bin/activate"
+  - ./configure --prefix="$INSTALLDIR"
+  - make install
   - pip install --prefix "$INSTALLDIR/conda" -r requirements.txt
 
 script:
-  - coverage run ./configure --prefix="$INSTALLDIR"
-  - make install PYTHON_EXE="coverage run"
   - coverage run setup.py test
 
 after_success:
