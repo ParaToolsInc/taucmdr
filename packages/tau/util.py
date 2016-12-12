@@ -42,6 +42,7 @@ import pkgutil
 import tarfile
 import tempfile
 import urlparse
+import hashlib
 from contextlib import contextmanager
 from zipimport import zipimporter
 from zipfile import ZipFile
@@ -62,6 +63,11 @@ def _cleanup_dtemp():
         for path in _DTEMP_STACK:
             rmtree(path, ignore_errors=True)
 atexit.register(_cleanup_dtemp)
+
+
+def new_uid():
+    """Create a new unique identifier object."""
+    return hashlib.sha1()
 
 
 def mkdtemp(*args, **kwargs):
@@ -356,6 +362,7 @@ def file_accessible(filepath, mode='r'):
 def _null_context():
     yield
 
+
 def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True, show_progress=False):
     """Create a subprocess.
     
@@ -402,6 +409,40 @@ def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True, show_progr
     retval = proc.returncode
     LOGGER.debug("%s returned %d", cmd, retval)
     return retval
+
+
+def get_command_output(cmd, cwd=None, env=None):
+    """Return the possibly cached output of a command.
+    
+    Just :any:`subprocess.check_output` with a cache.
+    Subprocess stderr is always sent to subprocess stdout.
+    
+    Args:
+        cmd (list): Command and its command line arguments.
+        cwd (str): Change directory to `cwd` if given, otherwise use :any:`os.getcwd`.
+        env (dict): Environment variables to set before launching cmd.
+
+    Raises:
+        subprocess.CalledProcessError: return code was non-zero.
+        
+    Returns:
+        str: Subprocess output.
+    """
+    key = repr((cmd, cwd, env))
+    try:
+        return get_command_output.cache[key]
+    except AttributeError:
+        get_command_output.cache = {}
+    except KeyError:
+        pass
+    else:
+        LOGGER.debug("Using cached output for command: %s", cmd)
+    LOGGER.debug("Checking subprocess output: %s", cmd)
+    stdout = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+    get_command_output.cache[key] = stdout
+    LOGGER.debug(stdout)
+    LOGGER.debug("%s returned 0", cmd)
+    return stdout
 
 
 def human_size(num, suffix='B'):
@@ -583,4 +624,3 @@ def _iter_modules(paths, prefix):
                 yielded[name] = True
                 yield importer, name, ispkg
  
-

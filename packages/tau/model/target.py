@@ -303,7 +303,7 @@ def attributes():
             'default': 'download',
             'argparse': {'flags': ('--tau',),
                          'group': 'software package',
-                         'metavar': '(<path>|<url>|download)',
+                         'metavar': '(<path>|<url>|download|nightly)',
                          'action': ParsePackagePathAction},
             'on_change': Target.attribute_changed
         },

@@ -29,7 +29,6 @@
 
 import os
 import sys
-import hashlib
 import multiprocessing
 from tau import logger, util, configuration
 from tau.error import ConfigurationError
@@ -172,7 +171,7 @@ class Installation(object):
         self._install_prefix = None
 
     def _calculate_uid(self):
-        uid = hashlib.md5()
+        uid = util.new_uid()
         uid.update(self.src)
         uid.update(self.target_arch.name)
         uid.update(self.target_os.name)

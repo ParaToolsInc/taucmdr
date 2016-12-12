@@ -49,6 +49,8 @@ LOGGER = logger.get_logger(__name__)
 
 REPOS = {None: 'http://tau.uoregon.edu/tau.tgz'}
 
+NIGHTLY = 'http://fs.paratools.com/tau-nightly.tgz'
+
 COMMANDS = {None: 
             ['jumpshot',
              'paraprof',
@@ -175,15 +177,12 @@ class TauInstallation(Installation):
         """Initialize the TAU installation wrapper class.
         
         Args:
-            src (str): Path to a directory where a software package has already been 
-                       installed, or a path to a source archive file, or the special keyword 'download'.
+            sources (dict): Packages sources as strings indexed by package names as strings.  A source may be a 
+                            path to a directory where the software has already been installed, or a path to a source
+                            archive file, or the special keywords 'download' or 'nightly'.
             target_arch (Architecture): Target architecture description.
             target_os (OperatingSystem): Target operating system description.
             compilers (InstalledCompilerSet): Compilers to use if software must be compiled.
-            pdt_source (str): Path to PDT source, installation, or None.
-            binutils_source (str): Path to GNU binutils source, installation, or None.
-            libunwind_source (str): Path to libunwind source, installation, or None.
-            papi_source (str): Path to PAPI source, installation, or None.
             openmp_support (bool): Enable or disable OpenMP support in TAU.
             pthreads_support (bool): Enable or disable pthreads support in TAU.
             mpi_support (bool): Enable or disable MPI support in TAU.
@@ -219,10 +218,12 @@ class TauInstallation(Installation):
             throttle (bool): If True then throttle lightweight events.
             throttle_per_call (int): Maximum microseconds per call of a lightweight event.
             throttle_num_calls (int): Minimum number of calls for a lightweight event.
-	        forced_makefile (str): Path to external makefile.
+	          forced_makefile (str): Path to external makefile if forcing TAU_MAKEFILE or None.
         """
         super(TauInstallation, self).__init__('tau', 'TAU Performance System', sources, target_arch, target_os, 
                                               compilers, REPOS, COMMANDS, None, None)
+        if self.src == 'nightly':
+            self.src = NIGHTLY
         self.arch = TauArch.get(self.target_arch, self.target_os)
         self.verbose = (logger.LOG_LEVEL == 'DEBUG')
         self.openmp_support = openmp_support
@@ -305,39 +306,59 @@ class TauInstallation(Installation):
     def _uses_scorep(self):
         return self.profile == 'cubex' or self.trace == 'otf2'
 
+    def _prepare_src(self, reuse_archive=True):
+        if self.src == NIGHTLY:
+            reuse_archive = False
+        return super(TauInstallation, self)._prepare_src(reuse_archive)
+
     def verify(self):
         super(TauInstallation, self).verify()
 
+        # Check for TAU libraries
+        tau_makefile = self.get_makefile()
+        makefile_tags = os.path.basename(tau_makefile).replace("Makefile.tau", "")
+        static_lib = "libtau%s.*" % makefile_tags
+        shared_lib = "libTAUsh%s.*" % makefile_tags
+        for pattern in static_lib, shared_lib:
+            if glob.glob(os.path.join(self.lib_path, pattern)):
+                break
+        else:
+            raise SoftwarePackageError("TAU libraries for makefile '%s' not found" % tau_makefile)
+
         # Open TAU makefile and check BFDINCLUDE, UNWIND_INC, PAPIDIR, etc.
-        with open(self.get_makefile(), 'r') as fin:
+        with open(tau_makefile, 'r') as fin:
             for line in fin:
                 if self._uses_binutils() and 'BFDINCLUDE=' in line:
                     binutils = self.dependencies['binutils']
                     bfd_inc = line.split('=')[1].strip().strip("-I")
                     if binutils.include_path != bfd_inc:
                         LOGGER.debug("BFDINCLUDE='%s' != '%s'", bfd_inc, binutils.include_path)
-                        raise SoftwarePackageError("BFDINCLUDE in TAU Makefile "
-                                                   "doesn't match target BFD installation")
+                        raise SoftwarePackageError("BFDINCLUDE in '%s' is invalid" % tau_makefile)
                 if self._uses_libunwind() and 'UNWIND_INC=' in line:
                     libunwind = self.dependencies['libunwind']
                     libunwind_inc = line.split('=')[1].strip().strip("-I")
                     if libunwind.include_path != libunwind_inc:
                         LOGGER.debug("UNWIND_INC='%s' != '%s'", libunwind_inc, libunwind.include_path)
-                        raise SoftwarePackageError("UNWIND_INC in TAU Makefile "
-                                                   "doesn't match target libunwind installation")
+                        raise SoftwarePackageError("UNWIND_INC in '%s' is invalid" % tau_makefile)
                 if self._uses_papi() and 'PAPIDIR=' in line:
                     papi = self.dependencies['papi']
                     papi_dir = line.split('=')[1].strip()
                     if papi.install_prefix != papi_dir:
                         LOGGER.debug("PAPI_DIR='%s' != '%s'", papi_dir, papi.install_prefix)
-                        raise SoftwarePackageError("PAPI_DIR in TAU Makefile "
-                                                   "doesn't match target PAPI installation")
+                        raise SoftwarePackageError("PAPI_DIR in '%s' is invalid" % tau_makefile)
+                if self._uses_scorep() and 'SCOREPDIR=' in line:
+                    scorep = self.dependencies['scorep']
+                    scorep_dir = line.split('=')[1].strip()
+                    if scorep.install_prefix != scorep_dir:
+                        LOGGER.debug("SCOREPDIR='%s' != '%s'", scorep_dir, scorep.install_prefix)
+                        raise SoftwarePackageError("SCOREPDIR in '%s' is invalid" % tau_makefile)
+
         # Check for iowrapper
         if self.io_inst:
             iowrap_libs = glob.glob(os.path.join(self.lib_path, 'shared', 'libTAU-iowrap*'))
             LOGGER.debug("Found iowrap shared libraries: %s", iowrap_libs)
             iowrap_link_options = os.path.join(self.lib_path, 'wrappers', 'io_wrapper', 'link_options.tau')
-            if not iowrap_libs and not os.path.exists(iowrap_link_options):
+            if not (iowrap_libs and os.path.exists(iowrap_link_options)):
                 raise SoftwarePackageError("iowrap libraries or link options not found")
         LOGGER.debug("TAU installation at '%s' is valid", self.install_prefix)
 

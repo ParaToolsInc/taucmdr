@@ -35,7 +35,6 @@ import os
 import sys
 import glob
 import shutil
-import hashlib
 import fileinput
 from tau import logger, util
 from tau.error import ConfigurationError
@@ -57,7 +56,7 @@ class BinutilsInstallation(AutotoolsInstallation):
     
     def __init__(self, sources, target_arch, target_os, compilers):
         # binutils can't be built with PGI compilers so substitute GNU compilers instead
-        if compilers[CC].info.family is PGI:
+        if compilers[CC].unwrap().info.family is PGI:
             try:
                 gnu_compilers = GNU.installation()
             except ConfigurationError:
@@ -68,7 +67,7 @@ class BinutilsInstallation(AutotoolsInstallation):
 
     def _calculate_uid(self):
         # Binutils only cares about changes in C/C++ compilers
-        uid = hashlib.md5()
+        uid = util.new_uid()
         uid.update(self.src)
         uid.update(self.target_arch.name)
         uid.update(self.target_os.name)

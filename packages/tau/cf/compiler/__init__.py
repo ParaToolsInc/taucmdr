@@ -65,8 +65,7 @@ change from system to system.
 
 import os
 import re
-import hashlib
-import subprocess
+from subprocess import CalledProcessError
 from tau import logger, util
 from tau.error import ConfigurationError
 from tau.cf.objects import TrackedInstance, KeyedRecord
@@ -186,6 +185,8 @@ class _CompilerRole(KeyedRecord):
         self.envars = envars
         self.kbase = kbase
 
+    def __str__(self):
+        return self.keyword
 
 class _CompilerFamily(TrackedInstance):
     """Information about a compiler family.
@@ -230,8 +231,11 @@ class _CompilerFamily(TrackedInstance):
     def installation(self):
         return InstalledCompilerFamily(self)
 
+    def __str__(self):
+        return self.name
+
     @classmethod
-    def probe(cls, absolute_path):
+    def probe(cls, absolute_path, candidates=None):
         """Determine the compiler family of a given command.
 
         Executes the command with :any:`version_flags` from all families
@@ -239,6 +243,7 @@ class _CompilerFamily(TrackedInstance):
 
         Args:
             absolute_path (str): Absolute path to a compiler command.
+            candidates (list): If present, a list of families that are most likely.
 
         Raises:
             ConfigurationError: Compiler family could not be determined.
@@ -250,29 +255,25 @@ class _CompilerFamily(TrackedInstance):
             return cls._probe_cache[absolute_path]
         except KeyError:
             pass
-        LOGGER.debug("Probing '%s' to discover compiler family.", absolute_path)
+        LOGGER.debug("Probing compiler '%s' to discover compiler family", absolute_path)
         messages = []
-        last_version_flags = None
         stdout = None
         # Settle down pylint... the __instances__ member is created by the metaclass
         # pylint: disable=no-member
-        for family in cls.__instances__:
+        if candidates:
+            families = candidates + [inst for inst in cls.__instances__ if inst not in candidates]
+        else:
+            families = cls.__instances__
+        for family in families:
             if not family.family_regex:
                 continue
-            if family.version_flags != last_version_flags:
-                last_version_flags = family.version_flags
-                LOGGER.debug("Probing compiler '%s' to discover compiler family", absolute_path)
-                cmd = [absolute_path] + family.version_flags
-                LOGGER.debug("Creating subprocess: %s", cmd)
-                try:
-                    stdout = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-                except subprocess.CalledProcessError as err:
-                    messages.append(err.output)
-                    LOGGER.debug("%s failed with return code %d: %s", cmd, err.returncode, err.output)
-                    continue
-                else:
-                    LOGGER.debug(stdout)
-                    LOGGER.debug("%s returned 0", cmd)
+            cmd = [absolute_path] + family.version_flags
+            try:
+                stdout = util.get_command_output(cmd)
+            except CalledProcessError as err:
+                messages.append(err.output)
+                LOGGER.debug("%s returned %d: %s", cmd, err.returncode, err.output)
+                # Keep going: Cray compilers return nonzero on version flag
             if stdout:
                 if re.search(family.family_regex, stdout):
                     LOGGER.debug("'%s' is a %s compiler", absolute_path, family.name)
@@ -304,6 +305,9 @@ class _CompilerInfo(TrackedInstance):
         self.command = command
         self.role = role
         self.short_descr = "%s %s compiler" % (family.name, role.language)
+
+    def __str__(self):
+        return "(%s, %s, %s)" % (self.command, self.family, self.role)
         
     @classmethod
     def _find(cls, command, family, role):
@@ -350,6 +354,8 @@ class _CompilerInfo(TrackedInstance):
                         break
                 else:
                     found = []
+        LOGGER.debug("_CompilerInfo.find(command='%s', family='%s', role='%s'): %s", 
+                     command, family, role, [str(x) for x in found])
         return found
 
 
@@ -373,15 +379,15 @@ class InstalledCompilerCreator(type):
         # Don't allow unchecked values into the instance cache
         if kwargs:
             return super(InstalledCompilerCreator, cls).__call__(absolute_path, info, **kwargs)
-        LOGGER.debug('Checking (%s, %s)', absolute_path, info.role.keyword)
         try:
             instance = cls.__instances__[absolute_path, info]
         except KeyError: 
+            LOGGER.debug('(%s, %s) not in compiler cache', absolute_path, info.role.keyword)
             instance = super(InstalledCompilerCreator, cls).__call__(absolute_path, info, **kwargs)
             cls.__instances__[absolute_path, info] = instance
             LOGGER.debug('Added (%s, %s) to compiler cache', absolute_path, info.role.keyword)
         else:
-            LOGGER.debug('Using cached instance')
+            LOGGER.debug('Found (%s, %s) in compiler cache', absolute_path, info.role.keyword)
         return instance
 
 
@@ -465,42 +471,40 @@ class InstalledCompiler(object):
         if uid:
             self.uid = uid
         else:
-            md5 = hashlib.md5()
-            md5.update(self.absolute_path)
-            md5.update(self.info.family.name)
-            md5.update(self.info.role.keyword)
+            uid = util.new_uid()
+            uid.update(self.absolute_path)
+            uid.update(self.info.family.name)
+            uid.update(self.info.role.keyword)
             if self.wrapped:
-                md5.update(self.wrapped.uid)
+                uid.update(self.wrapped.uid)
                 for attr in 'include_path', 'library_path', 'compiler_flags', 'libraries':
                     for value in getattr(self, attr):
-                        md5.update(str(sorted(value)))
-            self.uid = md5.hexdigest()
+                        uid.update(str(sorted(value)))
+            self.uid = uid.hexdigest()
+        # Check that the compiler is executable and of the expected family/role.
+        # Prevents compilers with the same command (e.g. Cray cc and GNU cc) from crossing.
         # Don't need to check the compiler family of compiler wrappers since the compiler
         # the wrapper wraps has already been checked.
         if not self.wrapped and info.family.family_regex:
             if not re.search(info.family.family_regex, self.version_string):
                 probed_family = _CompilerFamily.probe(absolute_path)
-                raise ConfigurationError("Compiler '%s' is a %s compiler, not a '%s' compiler." %
+                raise ConfigurationError("Compiler '%s' is a %s compiler, not a %s compiler." %
                                          (absolute_path, probed_family.name, info.family.name))
 
     def _probe_wrapper(self):
         if not self.info.family.show_wrapper_flags:
             return None
-        LOGGER.debug("Probing %s '%s'", self.info.short_descr, self.absolute_path)
+        LOGGER.debug("Probing %s wrapper '%s'", self.info.short_descr, self.absolute_path)
         cmd = [self.absolute_path] + self.info.family.show_wrapper_flags
-        LOGGER.debug("Creating subprocess: %s", cmd)
         try:
-            stdout = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-        except subprocess.CalledProcessError:
+            stdout = util.get_command_output(cmd)
+        except CalledProcessError:
             # If this command didn't accept show_wrapper_flags then it's not a compiler wrapper to begin with,
             # i.e. another command just happens to be the same as a known compiler command.
             raise ConfigurationError("'%s' isn't actually a %s since it doesn't accept arguments %s." % 
                                      (self.absolute_path, self.info.short_descr, self.info.family.show_wrapper_flags))
-        LOGGER.debug(stdout)
-        LOGGER.debug("%s returned 0", cmd)
         # Assume the longest line starting with a known compiler command is the wrapped compiler followed by arguments.
         known_commands = set(info.command for info in _CompilerInfo.all())
-        wrapped = None
         for line in sorted(stdout.split('\n'), key=len, reverse=True):
             if not line:
                 continue
@@ -516,40 +520,28 @@ class InstalledCompiler(object):
                 # A wrapper that wraps itself isn't a wrapper, e.g. compilers that ignore invalid arguments
                 # when version flags are present.
                 return None
-            wrapped = self._probe_wrapped(wrapped_absolute_path, wrapped_args)
-            if wrapped:
-                LOGGER.info("%s '%s' wraps '%s'", self.info.short_descr, self.absolute_path, wrapped.absolute_path)
-                break
-        else:
-            LOGGER.warning("Unable to identify compiler wrapped by wrapper '%s'."
-                           " TAU will attempt to continue but may fail later on.", self.absolute_path)
-        return wrapped
-
-    def _probe_wrapped(self, wrapped_absolute_path, wrapped_args):
-        wrapped_family = _CompilerFamily.probe(wrapped_absolute_path)
-        wrapped_command = os.path.basename(wrapped_absolute_path)
-        found_info = _CompilerInfo.find(command=wrapped_command, family=wrapped_family)
-        if len(found_info) == 1:
-            wrapped_info = found_info[0]
-            LOGGER.debug("Identified '%s': %s", wrapped_absolute_path, wrapped_info.short_descr)
-        elif len(found_info) > 1:
-            wrapped_info = found_info[0]
-            LOGGER.warning("TAU could not recognize the compiler command '%s',"
-                           " but it looks like it might be a %s.", 
-                           wrapped_absolute_path, wrapped_info.short_descr)
-        else:
-            LOGGER.warning("'%s' wraps an unrecognized compiler command '%s'."
-                           " TAU will attempt to continue but may fail later on.", 
-                           self.absolute_path, wrapped_absolute_path)
-            return None
-        wrapped = InstalledCompiler(wrapped_absolute_path, wrapped_info)
-        try:
-            self._parse_wrapped_args(wrapped_args)
-        except IndexError:
-            LOGGER.warning("Unexpected output from compiler wrapper '%s'."
-                           " TAU will attempt to continue but may fail later on.", self.absolute_path)
-            return None
-        return wrapped
+            try:
+                wrapped = InstalledCompiler.probe(wrapped_command)
+            except ConfigurationError:
+                # wrapped_command might not be a real compiler command so keep trying
+                continue
+            # The wrapper must be able to perform the same role as the wrapped compiler
+            role = self.info.role.keyword.split('_')[1:]
+            wrapped_role = wrapped.info.role.keyword.split('_')[1:]
+            if role != wrapped_role:
+                raise ConfigurationError("Cannot use '%s' as a %s: wrapped compiler '%s' is a %s" %
+                                         (self.command, self.info.short_descr, 
+                                          wrapped.command, wrapped.info.short_descr))
+            LOGGER.info("%s '%s' wraps '%s'", self.info.short_descr, self.absolute_path, wrapped.absolute_path)
+            try:
+                self._parse_wrapped_args(wrapped_args)
+            except IndexError:
+                LOGGER.warning("Unexpected output from compiler wrapper '%s'."
+                               " TAU will attempt to continue but may fail later on.", self.absolute_path)
+            return wrapped
+        LOGGER.warning("Unable to identify compiler wrapped by wrapper '%s'."
+                       " TAU will attempt to continue but may fail later on.", self.absolute_path)
+        return None
 
     def _parse_wrapped_args(self, args):
         def parse_flags(idx, flags, acc):
@@ -578,7 +570,7 @@ class InstalledCompiler(object):
         LOGGER.debug("Wrapper include path: %s", self.include_path)
         LOGGER.debug("Wrapper library path: %s", self.library_path)
         LOGGER.debug("Wrapper libraries: %s", self.libraries)
-        
+
     @classmethod
     def probe(cls, command, family=None, role=None):
         """Probe the system to discover information about an installed compiler.
@@ -601,22 +593,19 @@ class InstalledCompiler(object):
         if not absolute_path:
             raise ConfigurationError("Compiler '%s' not found on PATH" % command)
         command = os.path.basename(absolute_path)
-        # Try to identify the compiler with minimal information
+        LOGGER.debug("Probe: command='%s', abspath='%s', family='%s', role='%s'",
+                     command, absolute_path, family, role)
+        # Try to identify without probing
         info_list = _CompilerInfo.find(command, family, role)
         if len(info_list) == 1:
             return InstalledCompiler(absolute_path, info_list[0])
-        # If that didn't work then identify the compiler's family and try again
-        if not family:
-            family = _CompilerFamily.probe(absolute_path)
-            info_list = _CompilerInfo.find(command, family, role)
+        # Probe and try again
+        family = _CompilerFamily.probe(absolute_path, [info.family for info in info_list])
+        info_list = _CompilerInfo.find(command, family, role)
         if len(info_list) == 1:
             return InstalledCompiler(absolute_path, info_list[0])
-        elif len(info_list) > 1:
-            raise ConfigurationError("%s compiler '%s' is ambiguous: could be any of %s"  % 
-                                     (family.name, absolute_path, [info.short_descr for info in info_list]))
-        elif len(info_list) == 0:
-            raise ConfigurationError("Unknown %s compiler '%s'" % (family.name, absolute_path))
-        return InstalledCompiler(absolute_path, info_list[0])
+        raise ConfigurationError("Unable to identify compiler '%s'" % absolute_path)
+
 
     def unwrap(self):
         """Iterate through layers of compiler wrappers to find the true compiler.
@@ -641,8 +630,8 @@ class InstalledCompiler(object):
         if self._version_string is None:
             cmd = [self.absolute_path] + self.info.family.version_flags
             try:
-                self._version_string = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-            except subprocess.CalledProcessError:
+                self._version_string = util.get_command_output(cmd)
+            except CalledProcessError:
                 raise ConfigurationError("Invalid version flags %s for compiler '%s'" % 
                                          (self.info.family.version_flags, self.absolute_path))
         return self._version_string
@@ -759,10 +748,10 @@ class InstalledCompilerSet(KeyedRecord):
     def modify(self, **kwargs):
         """Build a modified copy of this object."""
         # pylint: disable=protected-access 
-        new_uid = hashlib.md5()
-        new_uid.update(self.uid)
-        new_uid.update(str(sorted(kwargs)))
+        uid = util.new_uid()
+        uid.update(self.uid)
+        uid.update(str(sorted(kwargs)))
         compilers = {role.keyword: comp for role, comp in self.members.iteritems()}
-        modified = InstalledCompilerSet(new_uid.hexdigest(), **compilers)
+        modified = InstalledCompilerSet(uid.hexdigest(), **compilers)
         modified._add_members(**kwargs)
         return modified

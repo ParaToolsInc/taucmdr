@@ -31,7 +31,6 @@ TAU uses PDT for source instrumentation.
 """
 
 import os
-import hashlib
 from tau import logger, util
 from tau.error import ConfigurationError
 from tau.cf.target import TauArch, X86_64_ARCH, LINUX_OS, DARWIN_OS, IBM_BGQ_ARCH, IBM_CNK_OS, PPC64LE_ARCH
@@ -149,7 +148,7 @@ class PdtInstallation(AutotoolsInstallation):
 
     def __init__(self, sources, target_arch, target_os, compilers):
         # PDT 3.22 can't be built with PGI compilers so substitute GNU compilers instead
-        if compilers[CC].info.family is PGI:
+        if compilers[CC].unwrap().info.family is PGI:
             try:
                 gnu_compilers = GNU.installation()
             except ConfigurationError:
@@ -161,7 +160,7 @@ class PdtInstallation(AutotoolsInstallation):
         
     def _calculate_uid(self):
         # PDT only cares about changes in C/C++ compilers
-        uid = hashlib.md5()
+        uid = util.new_uid()
         uid.update(self.src)
         uid.update(self.target_arch.name)
         uid.update(self.target_os.name)

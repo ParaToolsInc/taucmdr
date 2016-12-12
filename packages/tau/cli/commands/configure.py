@@ -84,7 +84,7 @@ class ConfigureCommand(AbstractCommand):
             return EXIT_SUCCESS
         
         if not hasattr(args, 'key'):
-            for key, val in configuration.get(storage=storage).iteritems():
+            for key, val in sorted(configuration.get(storage=storage).iteritems()):
                 print '%s : %r' % (key, val)       
         elif not (hasattr(args, 'value') or hasattr(args, 'unset')):
             try:

@@ -32,7 +32,6 @@ PAPI is used to measure hardware performance counters.
 
 import os
 import sys
-import hashlib
 import fileinput
 from tau import logger
 from tau.cf.compiler.host import CC, CXX
@@ -54,7 +53,7 @@ class PapiInstallation(AutotoolsInstallation):
 
     def _calculate_uid(self):
         # PAPI only cares about changes in C/C++ compilers
-        uid = hashlib.md5()
+        uid = util.new_uid()
         uid.update(self.src)
         uid.update(self.target_arch.name)
         uid.update(self.target_os.name)

@@ -30,15 +30,67 @@
 Score-P is a tool suite for profiling, event tracing, and online analysis of HPC applications.
 """
 
-from tau import logger
+import os
+from subprocess import CalledProcessError
+from tau import logger, util
+from tau.cf.software import SoftwarePackageError
 from tau.cf.software.installation import AutotoolsInstallation
-from tau.cf.compiler.host import CC, INTEL, IBM, PGI, GNU
+from tau.cf.compiler import host, mpi, shmem
 from tau.cf.target import X86_64_ARCH, IBM64_ARCH
 
 
 LOGGER = logger.get_logger(__name__)
 
 REPOS = {None: 'http://www.cs.uoregon.edu/research/tau/scorep.tgz'}
+
+COMMANDS = {None:
+            ['cube3to4',
+             'cube4to3',
+             'cube_calltree',
+             'cube_canonize',
+             'cube_clean',
+             'cube_cmp',
+             'cube_commoncalltree',
+             'cube-config',
+             'cube-config-backend',
+             'cube-config-frontend',
+             'cube_cut',
+             'cube_derive',
+             'cube_diff',
+             'cube_dump',
+             'cube_exclusify',
+             'cube_inclusify',
+             'cube_info',
+             'cube_is_empty',
+             'cube_mean',
+             'cube_merge',
+             'cube_nodeview',
+             'cube_part',
+             'cube_rank',
+             'cube_regioninfo',
+             'cube_remap2',
+             'cube_sanity',
+             'cube_score',
+             'cube_stat',
+             'cube_test',
+             'cube_topoassist',
+             'opari2',
+             'opari2-config',
+             'otf2-config',
+             'otf2-estimator',
+             'otf2-marker',
+             'otf2-print',
+             'otf2-snapshots',
+             'otf2-template',
+             'scorep',
+             'scorep-backend-info',
+             'scorep-config',
+             'scorep-score',
+             'scorep-wrapper',
+             'tau2cube']}
+
+HEADERS = {None: ['otf2/otf2.h']}
+
 
 LIBRARIES = {None: ['libcube4.a']}
 
@@ -51,7 +103,7 @@ class ScorepInstallation(AutotoolsInstallation):
     def __init__(self, sources, target_arch, target_os, compilers, 
                  use_mpi, use_shmem, use_binutils, use_libunwind, use_papi, use_pdt):
         super(ScorepInstallation, self).__init__('scorep', 'Score-P', sources, target_arch, target_os, 
-                                                 compilers, REPOS, None, LIBRARIES, None)
+                                                 compilers, REPOS, COMMANDS, LIBRARIES, HEADERS)
         self.use_mpi = use_mpi
         self.use_shmem = use_shmem
         for pkg, used in (('binutils', use_binutils), ('libunwind', use_libunwind), 
@@ -59,16 +111,35 @@ class ScorepInstallation(AutotoolsInstallation):
             if used:
                 self.add_dependency(pkg, sources)
 
-    def configure(self, flags, env):
-        flags.extend(['--enable-shared', '--without-otf2', '--without-opari2', '--without-cube', 
-                      '--without-gui', '--disable-gcc-plugin', '--disable-dependency-tracking'])
+    def _calculate_uid(self):
+        # Score-P installations have different symbols depending on what flags were used.
+        uid = util.new_uid()
+        uid.update(self.src)
+        uid.update(self.target_arch.name)
+        uid.update(self.target_os.name)
+        for compiler_uid in sorted(comp.uid for comp in self.compilers.itervalues()):
+            uid.update(compiler_uid)
+        uid.update(str(self._get_flags()))
+        return uid.hexdigest()
+
+    def _get_flags(self):
+        flags = ['--enable-shared', '--without-otf2', '--without-opari2', '--without-cube', 
+                 '--without-gui', '--disable-gcc-plugin', '--disable-dependency-tracking']
         if self.target_arch in (X86_64_ARCH, IBM64_ARCH):
-            suite_flags = {INTEL: 'intel', IBM: 'ibm', PGI: 'pgi', GNU: 'gcc'}
-            family = self.compilers[CC].info.family
-            flags.append('--with-nocross-compiler-suite=%s' % suite_flags[family])
-        if not self.use_mpi:
+            suites = {host.INTEL: 'intel', host.IBM: 'ibm', host.PGI: 'pgi', host.GNU: 'gcc'}
+            suite = suites.get(self.compilers[host.CC].unwrap().info.family)
+            flags.append('--with-nocross-compiler-suite' + ('='+suite if suite else ''))
+        if self.use_mpi:
+            suites = {mpi.INTEL: 'intel2'}
+            suite = suites.get(self.compilers[mpi.MPI_CC].info.family)
+            flags.append('--with-mpi' + ('='+suite if suite else ''))
+        else:
             flags.append('--without-mpi')
-        if not self.use_shmem:
+        if self.use_shmem:
+            suites = {shmem.OPENSHMEM: 'openshmem'}
+            suite = suites.get(self.compilers[shmem.SHMEM_CC].info.family)
+            flags.append('--with-shmem' + ('='+suite if suite else ''))
+        else:
             flags.append('--without-shmem')
         binutils = self.dependencies.get('binutils')
         libunwind = self.dependencies.get('libunwind')
@@ -84,6 +155,48 @@ class ScorepInstallation(AutotoolsInstallation):
             flags.append('--with-papi-lib=%s' % papi.lib_path)
         if pdt:
             flags.append('--with-pdt=%s' % pdt.bin_path)
+        return flags
+
+    def verify(self):
+        super(ScorepInstallation, self).verify()
+        # Use Score-P's `scorep-info` command to check if this Score-P installation
+        # was configured with the flags we need.
+        cmd = [os.path.join(self.bin_path, 'scorep-info'), 'config-summary']
+        try:
+            stdout = util.get_command_output(cmd)
+        except CalledProcessError as err:
+            raise SoftwarePackageError("%s failed with return code %d: %s" % (cmd, err.returncode, err.output))
+        flags = self._get_flags()
+        found_flags = set()
+        extra_flags = set()
+        in_section = False
+        for line in stdout.splitlines():
+            if line.startswith('Configure command:'):
+                in_section = True
+                continue
+            elif in_section:
+                line = line.replace('./configure', '')
+                if not line.startswith(' '):
+                    break
+                for flag in flags:
+                    if ("'%s'" % flag) in line:
+                        found_flags.add(flag)
+                        break
+                else:
+                    extra_flags.add(line.replace('\\', '').strip())
+        # Some extra flags are harmless
+        for flag in list(extra_flags):
+            if flag.startswith("'--prefix="):
+                extra_flags.remove(flag)
+        if found_flags != set(flags):
+            raise SoftwarePackageError("Score-P installation at '%s' was not configured with flags %s" % 
+                                       (self.install_prefix, ' '.join(flags)))
+        if extra_flags:
+            raise SoftwarePackageError("Score-P installation at '%s' was configured with extra flags %s" % 
+                                       (self.install_prefix, ' '.join(extra_flags)))
+
+    def configure(self, flags, env):
+        flags.extend(self._get_flags())
         # Score-P does strange things when PYTHON is set in the environment.
         # From vendor/otf2/configure --help:
         #   PYTHON      The python interpreter to use. Not a build requirement, only
@@ -91,3 +204,4 @@ class ScorepInstallation(AutotoolsInstallation):
         #               support for python 3. Use PYTHON=: to disable python support.
         env['PYTHON'] = ':'
         return super(ScorepInstallation, self).configure(flags, env)
+
