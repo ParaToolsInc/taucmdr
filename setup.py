@@ -349,7 +349,6 @@ setuptools.setup(
 
     # Testing
     test_suite='tau',
-    tests_require=['pylint'], # Because we run pylint as a unit test
 
     # Metadata for upload to PyPI
     author=AUTHOR,

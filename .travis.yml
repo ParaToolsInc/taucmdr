@@ -14,13 +14,17 @@ os:
 env:
   global:
     - INSTALLDIR="$HOME/taucmdr-test"
-    - PATH="$INSTALLDIR/conda/bin:$PATH"
   matrix:
     - OS='Ubuntu Precise' # Add more python versions to this array to expand test matrix
 
+# Use `make python_check` instead of `make install` and let `setup.py test` 
+# install TAU and dependencies quietly so we don't exceed the logfile limit.
 install:
   - ./configure --prefix="$INSTALLDIR"
   - make python_check
+  - source "$INSTALLDIR/conda/bin/activate"
+  - which python
+  - which pip
   - pip install -r requirements.txt
   - ls -l "$INSTALLDIR/conda/bin"
 
@@ -32,7 +36,12 @@ after_success:
 
 deploy:
   provider: script
-  script: .travis/deploy-docs.sh
+  script: python setup.py build_sphinx \
+              --update-gh-pages \
+              --gh-origin-url "https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git" \
+              --gh-user-name "Travis-CI-bot" \
+              --gh-user-email "info@paratools.com" \
+              --gh-commit-msg "Updated documentation on Travis-CI job $TRAVIS_JOB_NUMBER at commit $TRAVIS_COMMIT"
   skip_cleanup: true
   on:
     branch: master
