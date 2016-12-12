@@ -186,7 +186,7 @@ def main():
     with open(DEFAULTS_CFG_FILE, "w") as fout:
         defaults_cfg.write(fout)
     
-    print '\nTAU Commander configured successfully!  Type `make install` to finish the installation.'
+    print('\nTAU Commander configured successfully!  Type `make install` to finish the installation.')
 
 
 if __name__ == '__main__':
