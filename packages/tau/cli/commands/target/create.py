@@ -36,7 +36,7 @@ from tau.cli.cli_view import CreateCommand
 from tau.model.target import Target
 from tau.model.compiler import Compiler
 from tau.cf.compiler import Knowledgebase, InstalledCompiler, InstalledCompilerFamily
-from tau.cf.compiler.host import HOST_COMPILERS
+from tau.cf.compiler.host import HOST_COMPILERS, FC
 from tau.cf.compiler.mpi import MPI_COMPILERS
 from tau.cf.compiler.shmem import SHMEM_COMPILERS
 from tau.cf.target import TauArch, host, CRAY_CNL_OS
@@ -269,6 +269,8 @@ class TargetCreateCommand(CreateCommand):
             if role.keyword not in args:
                 raise ConfigurationError("%s compiler is required but could not be found" % role.language,
                                          "See 'compiler arguments' under `%s --help`" % COMMAND)
+        if FC.keyword not in args:
+            args.scorep_source = None
         return args
 
     def parse_compiler_flags(self, args):
