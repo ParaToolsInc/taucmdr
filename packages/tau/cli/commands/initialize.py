@@ -180,9 +180,9 @@ class InitializeCommand(AbstractCommand):
         _, unknown = target_create_cmd.parser.parse_known_args(args=target_argv)
         target_argv = [target_name] + [arg for arg in argv if arg not in unknown]
         if not binutils:
-            target_argv.append('--binutils=False')
+            target_argv.append('--binutils=None')
         if not papi:
-            target_argv.append('--papi=False')
+            target_argv.append('--papi=None')
         if not scorep:
             target_argv.append('--scorep=None')
         _safe_execute(target_create_cmd, target_argv)

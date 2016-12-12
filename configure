@@ -166,8 +166,12 @@ def main():
     parser = build_parser(setup_cfg, defaults_cfg)
     args = parser.parse_args()
     compilers = target_create_cmd.parse_compiler_flags(args)
+    
+    # Disable Score-P if Fortran compiler not specifieid
+    if not FC.keyword not in compilers:
+        args.scorep_source = 'None'
 
-    # Merge new values into configuration.  Non-model values are added to the 'install' section.
+    # Merge new values into configuration.
     for section in defaults_cfg.sections:
         for key in defaults_cfg[section]:
             val = getattr(args, key, None)
@@ -200,6 +204,7 @@ if __name__ == '__main__':
         from tau.cli.commands.target.create import COMMAND as target_create_cmd
         from tau.cli.commands.application.create import COMMAND as application_create_cmd
         from tau.cli.commands.measurement.create import COMMAND as measurement_create_cmd
+        from tau.cf.compiler.host import FC
     except (SystemExit, Exception) as err:
         # Prevent infinite recursion: only bootstrap once
         if not os.environ.get('__TAU_CMDR_CONFIGURE_BOOTSTRAPPED__'):

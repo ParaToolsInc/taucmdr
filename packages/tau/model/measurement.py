@@ -52,7 +52,7 @@ def attributes():
     from tau.model.application import Application
     from tau.cli.arguments import ParseBooleanAction
     from tau.model import require_compiler_family
-    from tau.cf.target import host, DARWIN_OS
+    from tau.cf.target import host, DARWIN_OS, IBM_CNK_OS
     from tau.cf.compiler.host import INTEL, GNU, CC, CXX, FC
     from tau.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC
     from tau.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
@@ -101,7 +101,7 @@ def attributes():
         },
         'sample': {
             'type': 'boolean',
-            'default': host.operating_system() is not DARWIN_OS,
+            'default': host.operating_system() not in (DARWIN_OS, IBM_CNK_OS),
             'description': "use event-based sampling to gather performance data",
             'argparse': {'flags': ('--sample',),
                          'group': 'instrumentation',
