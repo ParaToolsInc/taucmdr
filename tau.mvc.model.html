@@ -170,21 +170,15 @@ the above expressions do nothing.</p>
 <dd><p>Constructs a compatibility condition, see <a class="reference internal" href="#tau.mvc.model.Model.check_compatibility" title="tau.mvc.model.Model.check_compatibility"><code class="xref any py py-meth docutils literal"><span class="pre">check_compatibility</span></code></a>.</p>
 <dl class="docutils">
 <dt>The returned condition is a callable that accepts five or six arguments:</dt>
-<dd><ul class="first last">
-<li><p class="first">lhs (Model): The left-hand side of the <cite>check_compatibility</cite> operation.</p>
-</li>
-<li><p class="first">lhs_attr (str): Name of the attribute that defines the &#8216;compat&#8217; property.</p>
-</li>
-<li><p class="first">lhs_value: The value of the attribute that defines the &#8216;compat&#8217; property.</p>
-</li>
-<li><p class="first">rhs (Model): Controller of the data record we are checking against.</p>
-</li>
-<li><p class="first">rhs_attr (str): The attribute we are checking for compatibility.</p>
-</li>
+<dd><ul class="first last simple">
+<li>lhs (Model): The left-hand side of the <cite>check_compatibility</cite> operation.</li>
+<li>lhs_attr (str): Name of the attribute that defines the &#8216;compat&#8217; property.</li>
+<li>lhs_value: The value of the attribute that defines the &#8216;compat&#8217; property.</li>
+<li>rhs (Model): Controller of the data record we are checking against.</li>
+<li>rhs_attr (str): The attribute we are checking for compatibility.</li>
 <li><dl class="first docutils">
 <dt>checked_value (str): The required or desired value of the attribute we are checking for compatibility.</dt>
-<dd><p class="first last">Only used by <cite>attr_eq</cite> and <cite>attr_ne</cite>.</p>
-</dd>
+<dd>Only used by <cite>attr_eq</cite> and <cite>attr_ne</cite>.</dd>
 </dl>
 </li>
 </ul>
