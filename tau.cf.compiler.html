@@ -541,7 +541,7 @@ similar arguments, and produce compatible object files.</p>
 
 <dl class="classmethod">
 <dt id="tau.cf.compiler._CompilerFamily.probe">
-<em class="property">classmethod </em><code class="descname">probe</code><span class="sig-paren">(</span><em>absolute_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/compiler.html#_CompilerFamily.probe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.compiler._CompilerFamily.probe" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="descname">probe</code><span class="sig-paren">(</span><em>absolute_path</em>, <em>candidates=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/cf/compiler.html#_CompilerFamily.probe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.cf.compiler._CompilerFamily.probe" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine the compiler family of a given command.</p>
 <p>Executes the command with <a class="reference internal" href="#tau.cf.compiler._CompilerFamily.version_flags" title="tau.cf.compiler._CompilerFamily.version_flags"><code class="xref any py py-attr docutils literal"><span class="pre">version_flags</span></code></a> from all families
 and compares the output against <a class="reference internal" href="#tau.cf.compiler._CompilerFamily.family_regex" title="tau.cf.compiler._CompilerFamily.family_regex"><code class="xref any py py-attr docutils literal"><span class="pre">family_regex</span></code></a>.</p>
@@ -549,14 +549,21 @@ and compares the output against <a class="reference internal" href="#tau.cf.comp
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>absolute_path</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Absolute path to a compiler command.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>absolute_path</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Absolute path to a compiler command.</li>
+<li><strong>candidates</strong> (<a class="reference internal" href="tau.cli.commands.experiment.list.html#module-tau.cli.commands.experiment.list" title="tau.cli.commands.experiment.list"><em>list</em></a>) &#8211; If present, a list of families that are most likely.</li>
+</ul>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211;
-Compiler family could not be determined.</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211;
+Compiler family could not be determined.</p>
+</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The compiler&#8217;s family.</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The compiler&#8217;s family.</p>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#tau.cf.compiler._CompilerFamily" title="tau.cf.compiler._CompilerFamily">_CompilerFamily</a></td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#tau.cf.compiler._CompilerFamily" title="tau.cf.compiler._CompilerFamily">_CompilerFamily</a></p>
+</td>
 </tr>
 </tbody>
 </table>

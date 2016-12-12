@@ -82,7 +82,7 @@
 <span class="kn">from</span> <span class="nn">tau.model.project</span> <span class="kn">import</span> <span class="n">Project</span>
 
 
-<span class="n">LAUNCHERS</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;mpirun&#39;</span><span class="p">,</span> <span class="s1">&#39;mpiexec&#39;</span><span class="p">,</span> <span class="s1">&#39;ibrun&#39;</span><span class="p">,</span> <span class="s1">&#39;aprun&#39;</span><span class="p">,</span> <span class="s1">&#39;qsub&#39;</span><span class="p">,</span> <span class="s1">&#39;srun&#39;</span><span class="p">,</span> <span class="s1">&#39;oshrun&#39;</span><span class="p">]</span>
+<span class="n">_LAUNCHERS</span> <span class="o">=</span> <span class="s1">&#39;mpirun&#39;</span><span class="p">,</span> <span class="s1">&#39;mpiexec&#39;</span><span class="p">,</span> <span class="s1">&#39;ibrun&#39;</span><span class="p">,</span> <span class="s1">&#39;aprun&#39;</span><span class="p">,</span> <span class="s1">&#39;qsub&#39;</span><span class="p">,</span> <span class="s1">&#39;srun&#39;</span><span class="p">,</span> <span class="s1">&#39;oshrun&#39;</span>
 
 
 <div class="viewcode-block" id="TrialCreateCommand"><a class="viewcode-back" href="../../../../../tau.cli.commands.trial.create.html#tau.cli.commands.trial.create.TrialCreateCommand">[docs]</a><span class="k">class</span> <span class="nc">TrialCreateCommand</span><span class="p">(</span><span class="n">CreateCommand</span><span class="p">):</span>
@@ -119,25 +119,27 @@
     
     <span class="k">def</span> <span class="nf">_detect_launcher</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">application_cmd</span><span class="p">):</span>
         <span class="n">cmd</span> <span class="o">=</span> <span class="n">application_cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">launcher_cmd</span> <span class="o">=</span> <span class="p">[]</span> 
-        <span class="k">if</span> <span class="n">cmd</span> <span class="ow">in</span> <span class="n">LAUNCHERS</span><span class="p">:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">idx</span> <span class="o">=</span> <span class="n">application_cmd</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-                <span class="n">exes</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">application_cmd</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Executables on command line: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exes</span><span class="p">)</span>
-                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">exes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                    <span class="n">idx</span> <span class="o">=</span> <span class="n">exes</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-                    <span class="n">launcher_cmd</span> <span class="o">=</span> <span class="n">application_cmd</span><span class="p">[:</span><span class="n">idx</span><span class="p">]</span>
-                    <span class="n">application_cmd</span> <span class="o">=</span> <span class="n">application_cmd</span><span class="p">[</span><span class="n">idx</span><span class="p">:]</span>
+        <span class="n">launcher_cmd</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">launcher</span> <span class="ow">in</span> <span class="n">_LAUNCHERS</span><span class="p">:</span> 
+            <span class="k">if</span> <span class="n">cmd</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">launcher</span><span class="p">):</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">idx</span> <span class="o">=</span> <span class="n">application_cmd</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                    <span class="n">exes</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">application_cmd</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Executables on command line: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exes</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">exes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">idx</span> <span class="o">=</span> <span class="n">exes</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="n">launcher_cmd</span> <span class="o">=</span> <span class="n">application_cmd</span><span class="p">[:</span><span class="n">idx</span><span class="p">]</span>
+                        <span class="n">application_cmd</span> <span class="o">=</span> <span class="n">application_cmd</span><span class="p">[</span><span class="n">idx</span><span class="p">:]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;TAU is having trouble parsing the command line arguments&quot;</span><span class="p">,</span>
+                                                 <span class="s2">&quot;Check that the command is correct, i.e. does it work without TAU?&quot;</span><span class="p">,</span>
+                                                 <span class="p">(</span><span class="s2">&quot;Use &#39;--&#39; to seperate </span><span class="si">%s</span><span class="s2"> and its arguments from the application&quot;</span>
+                                                  <span class="s2">&quot; command, e.g. `mpirun -np 4 -- ./a.out -l hello`&quot;</span> <span class="o">%</span> <span class="n">cmd</span><span class="p">))</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;TAU is having trouble parsing the command line arguments&quot;</span><span class="p">,</span>
-                                             <span class="s2">&quot;Check that the command is correct, i.e. does it work without TAU?&quot;</span><span class="p">,</span>
-                                             <span class="p">(</span><span class="s2">&quot;Use &#39;--&#39; to seperate </span><span class="si">%s</span><span class="s2"> and its arguments from the application&quot;</span>
-                                              <span class="s2">&quot; command, e.g. `mpirun -np 4 -- ./a.out -l hello`&quot;</span> <span class="o">%</span> <span class="n">cmd</span><span class="p">))</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">launcher_cmd</span> <span class="o">=</span> <span class="n">application_cmd</span><span class="p">[:</span><span class="n">idx</span><span class="p">]</span>
-                <span class="n">application_cmd</span> <span class="o">=</span> <span class="n">application_cmd</span><span class="p">[</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">:]</span>
+                    <span class="n">launcher_cmd</span> <span class="o">=</span> <span class="n">application_cmd</span><span class="p">[:</span><span class="n">idx</span><span class="p">]</span>
+                    <span class="n">application_cmd</span> <span class="o">=</span> <span class="n">application_cmd</span><span class="p">[</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">:]</span>
+                <span class="k">break</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Launcher: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">launcher_cmd</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Application: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">application_cmd</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">launcher_cmd</span><span class="p">,</span> <span class="n">application_cmd</span>

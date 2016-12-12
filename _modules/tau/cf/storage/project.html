@@ -125,7 +125,8 @@
         <span class="k">except</span> <span class="n">ProjectStorageError</span><span class="p">:</span>
             <span class="n">project_prefix</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="n">PROJECT_DIR</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">project_prefix</span> <span class="o">==</span> <span class="n">USER_PREFIX</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">StorageError</span><span class="p">(</span><span class="s2">&quot;Cannot create project in home directory. Use &#39;-@ user&#39; option for user level storage.&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">StorageError</span><span class="p">(</span><span class="s2">&quot;Cannot create project in home directory. &quot;</span>
+                                   <span class="s2">&quot;Use &#39;-@ user&#39; option for user level storage.&quot;</span><span class="p">)</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">util</span><span class="o">.</span><span class="n">mkdirp</span><span class="p">(</span><span class="n">project_prefix</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
