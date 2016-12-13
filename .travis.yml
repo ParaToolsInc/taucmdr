@@ -17,11 +17,12 @@ sudo: false
 env:
   global:
     - INSTALLDIR="$HOME/taucmdr-test"
+    - secure: j/lpsD5kBJvzzLziSOjzGunUw7EkAqVvfqYVy71TdQLYviFdmcoFYmyh6SFVIWBB2CvBSPlKY9gY2zdzOJK7d4dZ651DmT7DKWeBHLSv1ydLIS/nCOOLbKQggTyzGhaFMnDpC1H5pBOWtueuE6KqxgdGNDUrGXHZefhoPROhqU3OfTEB1Krta04nMNWh2UdcL1PgOZ85DwonQvQDIXsddsSdWKMpNMuOR6WKl2K2eCbuIAUvMimti7k+qO7a/Qhxq2xKrbGsNoi+rlnx25/ab+snAxLGMO5g1CMi4SwA5dfnhiSkJv8FCZC+HcdW6i3+OfgPBwjVOZARuvtOy3pRmnKvG/EcYGzGSI1mL2ZSRT7fNmpK5GINzvG1v7kcz8TVNVPPADgoevce0mfLAnKNQEbkG2K4vMo6e68U/S0HRZgLTveiFKaI3EoT2Y/OAY4kH5Foz89QV1h8AZesm4v2qk4BtcI3Ga+w5JS6KU6ST8uOQRdo02ZRWaRKelk1mkd3L5Ykh1tFr6p99jrbI786hjBGbcQLnerPR5jTCpd/GhHrvRLZoG5lG6AWc1MOcQlwc+S/jyeO4QITraOgNHYgcydC6tKuNDkEn/SmPmWw2Znrt0A0MUb8OOn17jhZHl6BZ+Xd6bhekHkjFWHWWqld4bYvlhWbv87TuJfQi3LyK+Y=
   matrix:
     - OS='Ubuntu Precise' # Add more python versions to this array to expand test matrix
 
 before_install:
-  - env
+  - env | grep -iv 'token' # scrub tokens from output
   - mount
 
 # Test ./configure && make install while boostraping Python 2.7 environment and required packages.
