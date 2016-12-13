@@ -43,6 +43,13 @@ before_install:
   - git --version
   - env | grep -iv 'token\|key\|encrypt' | sort # scrub tokens from output & sort
   - mount
+  - ls -l $(which gcc) && gcc --version
+  - ls -l $(which g++) && g++ --version
+  - if which gfortran; then ls -l $(which gfortran) && gfortran --version ; fi
+  - echo "\$CC=${CC}, \$CXX=\${CXX}, \$FC=${FC}"
+  - if which gcc-$GCC; then ls -l $(which gcc-$GCC); fi
+  - if which g++-$GCC; then ls -l $(which g++-$GCC); fi
+  - if which gfortran-$GCC; then ls -l $(which gfortran-$GCC); fi
 
 # Test ./configure && make install while boostraping Python 2.7 environment and required packages.
 install:
