@@ -14,11 +14,20 @@ git:
 
 sudo: false
 
+
 env:
   global:
     - INSTALLDIR="$HOME/taucmdr-test"
-  matrix:
-    - OS='Ubuntu Precise' # Add more python versions to this array to expand test matrix
+
+matrix:
+  include:
+    - addons: &gcc44
+        apt:
+          packages: ['gcc-4.4', 'g++-4.4', 'gfortran-4.4']
+      env: GCC=4.4 MPI=none
+    - addons:
+        *gcc44
+      env: GCC=4.4 MPI=MPICH
 
 before_install:
   - openssl aes-256-cbc -K $encrypted_c48b4c75cf28_key -iv $encrypted_c48b4c75cf28_iv -in id_rsa_Travis2GH.enc -out id_rsa_Travis2GH -d # encrypted with `travis encrypt-file`
@@ -49,7 +58,7 @@ after_failure:
   - tail -1000 "$HOME/.tau/debug_log"
 
 after_script:
-  - codecov --env OS
+  - codecov --env GCC MPI
 
 deploy:
   provider: script
