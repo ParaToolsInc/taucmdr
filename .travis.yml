@@ -21,12 +21,14 @@ env:
 
 matrix:
   include:
-    - addons: &gcc44
+    - &baseconf # define an anchor and use the <<: YAML merge operator to avoid repitition
+      python: 2.7
+      addons: &gcc44
         apt:
           packages: ['gcc-4.4', 'g++-4.4', 'gfortran-4.4']
       env: GCC=4.4 MPI=none
-    - addons:
-        *gcc44
+    -
+      <<: *baseconf
       env: GCC=4.4 MPI=MPICH
 
 before_install:
