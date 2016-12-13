@@ -132,7 +132,8 @@ class ScorepInstallation(AutotoolsInstallation):
         if self.use_mpi:
             suites = {mpi.INTEL: 'intel2'}
             suite = suites.get(self.compilers[mpi.MPI_CC].info.family)
-            flags.append('--with-mpi' + ('='+suite if suite else ''))
+            if suite:
+                flags.append('--with-mpi=%s' % suite)
         else:
             flags.append('--without-mpi')
         if self.use_shmem:
