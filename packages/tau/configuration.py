@@ -36,7 +36,7 @@ from configobj import ConfigObj
 from tau import util
 from tau.cf.storage import AbstractStorage, StorageError
 from tau.cf.storage.levels import ORDERED_LEVELS
-from tau.cf.storage.project import ProjectStorageError
+from tau.cf.storage import StorageError
 
 
 def parse_config_string(val):
@@ -97,7 +97,7 @@ def get(key=None, storage=None):
             for storage in ORDERED_LEVELS:
                 try:
                     return storage[key]
-                except (ProjectStorageError, KeyError):
+                except (StorageError, KeyError):
                     # Project storage hasn't been initialized yet, or default isn't set
                     continue
             raise KeyError
