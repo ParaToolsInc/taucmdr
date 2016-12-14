@@ -236,29 +236,19 @@ class Install(InstallCommand):
         SYSTEM_STORAGE.connect_filesystem()
         configuration.import_from_file(os.path.join(PACKAGE_TOPDIR, 'defaults.cfg'), SYSTEM_STORAGE)
 
-    def _configure_new_installation(self):
-        sys.path.insert(0, os.path.join(self.prefix, 'packages'))
-        import tau
-        from tau import configuration, util, logger
-        from tau import EXIT_SUCCESS
-        from tau.cf.storage.levels import SYSTEM_STORAGE
+    def _configure_project(self, init_args):
+        from tau import EXIT_SUCCESS 
         from tau.cf.software import SoftwarePackageError
+        from tau.cf.storage.levels import PROJECT_STORAGE
         from tau.cli.commands.initialize import COMMAND as init_command
         from tau.cli.commands.select import COMMAND as select_command
-        from tau.cli.commands.configure import COMMAND as configure_command
         from tau.model.project import Project
-        logger.activate_debug_log()
-
-        # Show system-level configuration
-        configure_command.main(['-@', 'system'])
 
         # Call `tau initialize` to configure system-level packages supporting default experiments
-        os.chdir(self.build_base)
-        util.rmtree('.tau', ignore_errors=True)
-        if init_command.main([]) != EXIT_SUCCESS:
-            raise SoftwarePackageError("`tau initialize` failed in the simplist case.",
+        print os.getcwd()
+        if init_command.main(init_args) != EXIT_SUCCESS:
+            raise SoftwarePackageError("`tau initialize` failed with arguments %s." % init_args,
                                        "Check that the values specified in 'defaults.cfg' are valid.")
-        
         # Iterate through default configurations and configure system-level packages for each
         proj_ctrl = Project.controller()
         proj = proj_ctrl.selected().populate()
@@ -269,6 +259,38 @@ class Install(InstallCommand):
                     if select_command.main(argv) != EXIT_SUCCESS:
                         raise SoftwarePackageError("`%s %s` failed." % (select_command, ' '.join(argv)),
                                                    "Check that the values specified in 'defaults.cfg' are valid.")
+        # Clean up
+        PROJECT_STORAGE.destroy()
+
+    def _configure_new_installation(self):
+        sys.path.insert(0, os.path.join(self.prefix, 'packages'))
+        import tau
+        from tau import logger, util, configuration
+        from tau.cli.commands.configure import COMMAND as configure_command
+        logger.activate_debug_log()
+
+        # Clean up the build directory
+        os.chdir(self.build_base)
+        util.rmtree('.tau', ignore_errors=True)
+
+        # Show system-level configuration
+        configure_command.main(['-@', 'system'])
+
+        # Get configuration
+        defaults_cfg = configuration.default_config('defaults.cfg')
+        target_cfg = defaults_cfg['Target']
+        have_mpi = (target_cfg['MPI_CC'] and target_cfg['MPI_CXX'] and target_cfg['MPI_FC'])
+        have_shmem = (target_cfg['SHMEM_CC'] and target_cfg['SHMEM_CXX'] and target_cfg['SHMEM_FC'])
+
+        # Configure TAU and all dependencies in various combinations
+        self._configure_project([])
+        if have_mpi:
+            self._configure_project(['--mpi=True'])
+        if have_shmem:
+            self._configure_project(['--shmem=True'])
+        if have_mpi and have_shmem:
+            self._configure_project(['--mpi=True --shmem=True'])
+
         # Indicate success
         print tau.version_banner()
     
