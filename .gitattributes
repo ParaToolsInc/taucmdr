@@ -1,0 +1,30 @@
+# Set the default behavior, in case people don't have core.autocrlf set.
+* text=auto
+
+# Explicitly declare text files you want to always be normalized and converted
+# to native line endings on checkout.
+*.py
+*.rst
+*.c text
+*.h text
+*.f90 text
+*.F90 text
+*.md text
+*.txt text
+*.sh text
+prerequisites/build text
+*.cu text
+*.x64 text
+
+# dont add dev-ops files to release archives
+.gitignore export-ignore
+.gitattributes export-ignore
+.travis.yml export-ignore
+.coveragerc export-ignore
+codecov.yml export-ignore
+id_rsa_Travis2GH.enc export-ignore
+
+# Tell git explicitly about binary files
+id_rsa_Travis2GH.enc binary
+*.png binary
+*.ico binary
