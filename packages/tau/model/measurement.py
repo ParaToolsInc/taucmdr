@@ -96,7 +96,7 @@ def attributes():
                          'metavar': '<format>',
                          'nargs': '?',
                          'choices':('slog2', 'otf2', 'none'),
-                         'const': 'otf2'},
+                         'const': 'slog2'},
             'compat': {'otf2': Target.exclude('scorep_source', None)}
         },
         'sample': {
