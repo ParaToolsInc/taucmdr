@@ -138,7 +138,7 @@ if HAVE_SPHINX:
         def _shell(self, cmd, cwd=None):
             try:
                 FNULL = open(os.devnull, 'w')
-                subprocess.check_call(cmd, cwd=cwd or self.builder_target_dir, stderr=FNULL, stdout=subprocess.STDERR)
+                subprocess.check_call(cmd, cwd=cwd or self.builder_target_dir, stderr=FNULL, stdout=FNULL)
             except subprocess.CalledProcessError as err:
                 sys.stderr.write('%s\nFAILURE: Return code %s' % (' '.join(cmd[:2]) + ' ...', err.returncode))
                 sys.exit(err.returncode)
