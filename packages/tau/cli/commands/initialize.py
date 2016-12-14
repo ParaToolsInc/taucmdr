@@ -117,7 +117,7 @@ class InitializeCommand(AbstractCommand):
                                        metavar='<format>',
                                        nargs='?',
                                        const=True,
-                                       default='otf2')
+                                       default='slog2')
         measurement_group.add_argument('--sample',
                                        help="Create measurement configurations for event-based sampling",
                                        metavar='T/F',
@@ -204,7 +204,7 @@ class InitializeCommand(AbstractCommand):
             measurement_names.append('profile')
         if args.trace:
             _safe_execute(measurement_create_cmd, 
-                          ['trace', '--profile=none', '--trace=%s' % ('otf2' if scorep else 'slog2'), 
+                          ['trace', '--profile=none', '--trace=slog2',
                            '--sample=False', '--source-inst=automatic', '--compiler-inst=%s' % comp_inst, 
                            '--link-only=False'] + measurement_args)
             measurement_names.append('trace')
