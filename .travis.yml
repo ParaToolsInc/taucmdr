@@ -110,10 +110,10 @@ before_install:
   - ls -l $(which g++) && g++ --version
   - if which gfortran; then ls -l $(which gfortran) && gfortran --version ; fi
   - echo "\$CC=${CC}, \$CXX=${CXX}, \$FC=${FC}"
-  - if which gcc-$GCC; then ls -l "$(which gcc-$GCC)" && ln -s "${HOME}/bin/gcc" "$(which gcc-$GCC)" ; fi
-  - if which g++-$GCC; then ls -l "$(which g++-$GCC)" && ln -s "${HOME}/bin/g++" "$(which g++-$GCC)" ; fi
-  - if which gfortran-$GCC; then ls -l "$(which gfortran-$GCC)" && ln -s "${HOME}/bin/gfortran" "$(which gfortran-$GCC)"; fi
-  - gcc --version && g++ --version && gfortran --version
+  - if which gcc-$GCC; then ls -l "$(which gcc-$GCC)" && ln -s "$(which gcc-$GCC)" "${HOME}/bin/gcc" ; fi
+  - if which g++-$GCC; then ls -l "$(which g++-$GCC)" && ln -s "$(which g++-$GCC)" "${HOME}/bin/g++" ; fi
+  - if which gfortran-$GCC; then ls -l "$(which gfortran-$GCC)" && ln -s "$(which gfortran-$GCC)" "${HOME}/bin/gfortran"; fi
+  - gcc --version && g++ --version && gfortran --version || true # allow missing gfortran
 
 # Test ./configure && make install while boostraping Python 2.7 environment and required packages.
 install:
