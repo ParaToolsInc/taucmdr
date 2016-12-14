@@ -86,12 +86,15 @@ def mkdirp(*args):
         *args: Paths to create.
     """
     for path in args:
-        try:
-            os.makedirs(path)
-            LOGGER.debug("Created directory '%s'", path)
-        except OSError as exc:
-            if not (exc.errno == errno.EEXIST and os.path.isdir(path)):
-                raise
+        # Avoid errno.EACCES if a parent directory is not writable and the directory exists
+        if not os.path.isdir(path):
+            try:
+                os.makedirs(path)
+                LOGGER.debug("Created directory '%s'", path)
+            except OSError as exc:
+                # Only raise if another process didn't already create the directory
+                if not (exc.errno == errno.EEXIST and os.path.isdir(path)):
+                    raise
 
 
 def rmtree(path, ignore_errors=False, onerror=None, attempts=5):
