@@ -137,9 +137,10 @@ if HAVE_SPHINX:
     
         def _shell(self, cmd, cwd=None):
             try:
-                subprocess.check_call(cmd, cwd=cwd or self.builder_target_dir)
+                FNULL = open(os.devnull, 'w')
+                subprocess.check_call(cmd, cwd=cwd or self.builder_target_dir, stderr=FNULL, stdout=subprocess.STDERR)
             except subprocess.CalledProcessError as err:
-                sys.stderr.write('%s\nFAILURE: Return code %s' % (' '.join(cmd), err.returncode))
+                sys.stderr.write('%s\nFAILURE: Return code %s' % (' '.join(cmd[:2]) + ' ...', err.returncode))
                 sys.exit(err.returncode)
     
         def _clone_gh_pages(self):

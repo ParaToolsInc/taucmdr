@@ -30,7 +30,7 @@ before_install:
   - export GIT_SSH="${HOME}/bin/ssh_to_GH"
   - echo "Testing ssh to github.com" && ($GIT_SSH -T "git@github.com" || true)
   - git --version
-  - env | grep -iv 'token\|key' | sort # scrub tokens from output & sort
+  - env | grep -iv 'token\|key\|encrypt' | sort # scrub tokens from output & sort
   - mount
 
 # Test ./configure && make install while boostraping Python 2.7 environment and required packages.
