@@ -18,6 +18,7 @@ cache:
   ccache: true
   directories:
     - "${HOME}/mpich"
+    - "${HOME}/.ccache"
 
 env:
   global:
@@ -30,7 +31,7 @@ matrix:
       python: 2.7
       addons:
         apt:
-          packages: ['gcc-4.4', 'g++-4.4', 'gfortran-4.4']
+          packages: ['gcc-4.4', 'g++-4.4', 'gfortran-4.4', 'ccache']
       env: GCC=-4.4 MPI=none
     -
       <<: *baseconf
@@ -39,7 +40,7 @@ matrix:
       <<: *baseconf
       addons:
         apt:
-          packages: ['gcc-4.5', 'g++-4.5', 'gfortran-4.5']
+          packages: ['gcc-4.5', 'g++-4.5', 'gfortran-4.5', 'ccache']
       env: GCC=-4.5 MPI=none
     -
       <<: *fourfive
@@ -48,7 +49,7 @@ matrix:
       <<: *baseconf
       addons:
         apt:
-          packages: ['gcc-4.6', 'g++-4.6', 'gfortran-4.6']
+          packages: ['gcc-4.6', 'g++-4.6', 'gfortran-4.6', 'ccache']
       env: GCC=-4.6 MPI=none
     -
       <<: *foursix
@@ -58,7 +59,7 @@ matrix:
       addons:
         apt:
           sources: ['ubuntu-toolchain-r-test']
-          packages: ['gcc-4.7', 'g++-4.7', 'gfortran-4.7']
+          packages: ['gcc-4.7', 'g++-4.7', 'gfortran-4.7', 'ccache']
       env: GCC=-4.7 MPI=none
     -
       <<: *fourseven
@@ -68,7 +69,7 @@ matrix:
       addons:
         apt:
           sources: ['ubuntu-toolchain-r-test']
-          packages: ['gcc-4.8', 'g++-4.8', 'gfortran-4.8']
+          packages: ['gcc-4.8', 'g++-4.8', 'gfortran-4.8', 'ccache']
       env: GCC=-4.8 MPI=none
     -
       <<: *foureight
@@ -78,7 +79,7 @@ matrix:
       addons:
         apt:
           sources: ['ubuntu-toolchain-r-test']
-          packages: ['gcc-4.9', 'g++-4.9', 'gfortran-4.9']
+          packages: ['gcc-4.9', 'g++-4.9', 'gfortran-4.9', 'ccache']
       env: GCC=-4.9 MPI=none
     -
       <<: *fournine
@@ -88,7 +89,7 @@ matrix:
       addons:
         apt:
           sources: ['ubuntu-toolchain-r-test']
-          packages: ['gcc-5', 'g++-5', 'gfortran-5']
+          packages: ['gcc-5', 'g++-5', 'gfortran-5', 'ccache']
       env: GCC=-5 MPI=none
 
     -
@@ -99,14 +100,14 @@ matrix:
       addons:
         apt:
           sources: ['ubuntu-toolchain-r-test']
-          packages: ['gcc-6', 'g++-6', 'gfortran-6']
+          packages: ['gcc-6', 'g++-6', 'gfortran-6', 'ccache']
       env: GCC=-6 MPI=none
     -
       <<: *six
       env: GCC=-6 MPI=MPICH
 
 before_install:
-  - ls -a "${HOME}/.ccache"
+  - if [[ ! -d "${HOME}/.ccache" ]] ; then mkdir "${HOME}/.ccache" ; else ls -a "${HOME}/.ccache" ; fi
   - if [[ ! -d "${HOME}/bin" ]] ; then mkdir "${HOME}/bin" && export PATH="${HOME}/bin:${PATH}"; fi
   - if [[ ! -d "${HOME}/mpich/build" ]] ; then mkdir -p "${HOME}/mpich/build" ; fi
   - if [[ ! -d "${HOME}/usr" ]] ; then mkdir -p "${HOME}/usr/{bin,lib,share,include,lib64,libexec}" && export PATH="${HOME}/usr/bin:${PATH}"; fi
@@ -128,11 +129,11 @@ before_install:
   - if which gfortran; then ls -l $(which gfortran) && gfortran --version ; fi
   - if ((RANDOM % 2 == 0)); then SUF="${GCC:-}" ; else SUF="" ; fi # randomize keeping suffix on links
   - export CC="ccache gcc${SUF}" && export CXX="ccache g++${SUF}" && export FC="ccache gfortran${SUF}" && export F77="ccache gfortran${SUF}" || true
-  - echo "\$CC=${CC}, \$CXX=${CXX}, \$FC=${FC} \$F77=${F77}"
+  - echo "\$SUF=${SUF}, \$CC=${CC}, \$CXX=${CXX}, \$FC=${FC} \$F77=${F77}"
   - if [[ -n "${GCC}" ]]; then ls -l "$(which gcc$GCC)"  && ln -s "$(which gcc$GCC)" "${HOME}/bin/gcc${SUF}" ; fi
   - if [[ -n "${GCC}" ]]; then ls -l "$(which g++$GCC)"  && ln -s "$(which g++$GCC)" "${HOME}/bin/g++${SUF}" ; fi
   - if [[ -n "${GCC}" ]]; then ls -l "$(which gfortran$GCC)" && ln -s "$(which gfortran$GCC)" "${HOME}/bin/gfortran${SUF}"; fi
-  - gcc${SUF} --version && g++${SUF} --version && gfortran${SUF} --version || true # allow missing gfortran
+  - $CC --version && $CXX --version && $FC --version || true # allow missing gfortran
   - |
     if [[ "${MPI:-}" == "MPICH" ]]; then
       cd "${HOME}/mpich" \
