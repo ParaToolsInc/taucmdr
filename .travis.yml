@@ -39,61 +39,61 @@ matrix:
       env: GCC=4.5 MPI=none
     -
       <<: *fourfive
-      env: GCC=4.5 CC=gcc-$GCC CXX=g++-$GCC FC=gfortran-$GCC MPI=MPICH
-    # - &foursix
-    #   <<: *basconf
-    #   addons:
-    #     apt:
-    #       packages: ['gcc-4.6', 'g++-4.6', 'gfortran-4.6']
-    #   env: GCC=4.6 CC=gcc-$GCC CXX=g++-$GCC FC=gfortran-$GCC MPI=none
-    # -
-    #   <<: *foursix
-    #   env: GCC=4.6 CC=gcc-$GCC CXX=g++-$GCC FC=gfortran-$GCC MPI=MPICH
-    # - &fourseven
-    #   <<: *baseconf
-    #   addons:
-    #     apt:
-    #       packages: ['gcc-4.7', 'g++-4.7', 'gfortran-4.7']
-    #   env: GCC=4.7 CC=gcc-$GCC CXX=g++-$GCC FC=gfortran-$GCC MPI=none
-    # -
-    #   <<: *fourseven
-    #   env: GCC=4.7 CC=gcc-$GCC CXX=g++-$GCC FC=gfortran-$GCC MPI=MPICH
-    # - &foureight
-    #   <<: *baseconf
-    #   addons:
-    #     apt:
-    #       packages: ['gcc-4.8', 'g++-4.8', 'gfortran-4.8']
-    #   env: GCC=4.8 CC=gcc-$GCC CXX=g++-$GCC FC=gfortran-$GCC MPI=none
-    # -
-    #   <<: *foureight
-    #   env: GCC=4.8 CC=gcc-$GCC CXX=g++-$GCC FC=gfortran-$GCC MPI=MPICH
-    # - &fournine
-    #   <<: *baseconf
-    #   addons:
-    #     apt:
-    #       packages: ['gcc-4.9', 'g++-4.9', 'gfortran-4.9']
-    #   env: GCC=4.9 CC=gcc-$GCC CXX=g++_$GCC FC=gfortran-$GCC MPI=none
-    # -
-    #   <<: *fournine
-    #   env: GCC=4.9 CC=gcc-$GCC CXX=g++_$GCC FC=gfortran-$GCC MPI=MPICH
-    # - &five
-    #   <<: *baseconf
-    #   addons:
-    #     apt:
-    #       packages: ['gcc-5', 'g++-5', 'gfortran-5']
-    #   env: GCC=5 CC=gcc-5 CXX=g++-5 FC=gfortran-5 MPI=none
-    # -
-    #   <<: *five
-    #   env: GCC=5 CC=gcc-5 CXX=g++-5 FC=gfortran-5 MPI=MPICH
-    # - &six
-    #   <<: *baseconf
-    #   addons:
-    #     apt:
-    #       packages: ['gcc-6', 'g++-6', 'gfortran-6']
-    #   env: GCC=6 CC=gcc-6 CXX=g++-6 FC=gfortran-6 MPI=none
-    # -
-    #   <<: *six
-    #   env: GCC=6 CC=gcc-6 CXX=g++-6 FC=gfortran-6 MPI=MPICH
+      env: GCC=4.5 MPI=MPICH
+    - &foursix
+      <<: *baseconf
+      addons:
+        apt:
+          packages: ['gcc-4.6', 'g++-4.6', 'gfortran-4.6']
+      env: GCC=4.6 MPI=none
+    -
+      <<: *foursix
+      env: GCC=4.6 MPI=MPICH
+    - &fourseven
+      <<: *baseconf
+      addons:
+        apt:
+          packages: ['gcc-4.7', 'g++-4.7', 'gfortran-4.7']
+      env: GCC=4.7 MPI=none
+    -
+      <<: *fourseven
+      env: GCC=4.7 MPI=MPICH
+    - &foureight
+      <<: *baseconf
+      addons:
+        apt:
+          packages: ['gcc-4.8', 'g++-4.8', 'gfortran-4.8']
+      env: GCC=4.8 MPI=none
+    -
+      <<: *foureight
+      env: GCC=4.8 MPI=MPICH
+    - &fournine
+      <<: *baseconf
+      addons:
+        apt:
+          packages: ['gcc-4.9', 'g++-4.9', 'gfortran-4.9']
+      env: GCC=4.9 MPI=none
+    -
+      <<: *fournine
+      env: GCC=4.9 MPI=MPICH
+    - &five
+      <<: *baseconf
+      addons:
+        apt:
+          packages: ['gcc-5', 'g++-5', 'gfortran-5']
+      env: GCC=5 MPI=none
+    -
+      <<: *five
+      env: GCC=5 MPI=MPICH
+    - &six
+      <<: *baseconf
+      addons:
+        apt:
+          packages: ['gcc-6', 'g++-6', 'gfortran-6']
+      env: GCC=6 MPI=none
+    -
+      <<: *six
+      env: GCC=6 MPI=MPICH
 
 before_install:
   - openssl aes-256-cbc -K $encrypted_c48b4c75cf28_key -iv $encrypted_c48b4c75cf28_iv -in id_rsa_Travis2GH.enc -out id_rsa_Travis2GH -d # encrypted with `travis encrypt-file`
