@@ -16,6 +16,7 @@ sudo: false
 
 cache:
   ccache: true
+  apt: true
   directories:
     - "${HOME}/mpich"
     - "${HOME}/.ccache"
@@ -29,6 +30,12 @@ matrix:
   include:
     - &baseconf # define an anchor and use the <<: YAML merge operator to avoid repitition
       python: 2.7
+      cache:
+        ccache: true
+        apt: true
+        directories:
+          - "${HOME}/mpich"
+          - "${HOME}/.ccache"
       addons:
         apt:
           packages: ['gcc-4.4', 'g++-4.4', 'gfortran-4.4', 'ccache']
@@ -160,6 +167,9 @@ script:
 
 after_failure:
   - tail -1000 "$HOME/.tau/debug_log"
+
+after_success:
+  - ls -l "${HOME}/.ccache"
 
 after_script:
   - codecov --env GCC MPI
