@@ -26,7 +26,6 @@ matrix:
       python: 2.7
       addons:
         apt:
-          sources: ['ubuntu-toolchain-r-test']
           packages: ['gcc-4.4', 'g++-4.4', 'gfortran-4.4']
       env: GCC=-4.4 MPI=none
     -
@@ -54,13 +53,14 @@ matrix:
       <<: *baseconf
       addons:
         apt:
+          sources: ['ubuntu-toolchain-r-test']
           packages: ['gcc-4.7', 'g++-4.7', 'gfortran-4.7']
       env: GCC=-4.7 MPI=none
     -
       <<: *fourseven
       env: GCC=-4.7 MPI=MPICH
     - &foureight
-      <<: *baseconf
+      <<: *fourseven
       addons:
         apt:
           packages: ['gcc-4.8', 'g++-4.8', 'gfortran-4.8']
@@ -69,7 +69,7 @@ matrix:
       <<: *foureight
       env: GCC=-4.8 MPI=MPICH
     - &fournine
-      <<: *baseconf
+      <<: *fourseven
       addons:
         apt:
           packages: ['gcc-4.9', 'g++-4.9', 'gfortran-4.9']
@@ -78,7 +78,7 @@ matrix:
       <<: *fournine
       env: GCC=-4.9 MPI=MPICH
     - &five
-      <<: *baseconf
+      <<: *fourseven
       addons:
         apt:
           packages: ['gcc-5', 'g++-5', 'gfortran-5']
@@ -88,7 +88,7 @@ matrix:
       <<: *five
       env: GCC=-5 MPI=MPICH
     - &six
-      <<: *baseconf
+      <<: *fourseven
       addons:
         apt:
           packages: ['gcc-6', 'g++-6', 'gfortran-6']
