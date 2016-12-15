@@ -14,6 +14,9 @@ git:
 
 sudo: false
 
+cache:
+  directories:
+    - "${HOME}/mpich"
 
 env:
   global:
@@ -103,6 +106,8 @@ matrix:
 
 before_install:
   - if [[ ! -d "${HOME}/bin" ]] ; then mkdir "${HOME}/bin" && export PATH="${HOME}/bin:${PATH}"; fi
+  - if [[ ! -d "${HOME}/mpich/build" ]] ; then mkdir -p "${HOME}/mpich/build" ; fi
+  - if [[ ! -d "${HOME}/usr" ]] ; then mkdir -p "${HOME}/usr/{bin,lib,share,include,lib64,libexec}" && export PATH="${HOME}/usr/bin:${PATH}"; fi
   - |
     if [[ -n "${encrypted_c48b4c75cf28_key}" ]] ; then # not a PR or someone else's repo
       openssl aes-256-cbc -K $encrypted_c48b4c75cf28_key -iv $encrypted_c48b4c75cf28_iv -in id_rsa_Travis2GH.enc -out id_rsa_Travis2GH -d # encrypted with `travis encrypt-file`
@@ -126,6 +131,10 @@ before_install:
   - if [[ -n "${GCC}" ]]; then ls -l "$(which g++$GCC)"  && ln -s "$(which g++$GCC)" "${HOME}/bin/g++${SUF}" ; fi
   - if [[ -n "${GCC}" ]]; then ls -l "$(which gfortran$GCC)" && ln -s "$(which gfortran$GCC)" "${HOME}/bin/gfortran${SUF}"; fi
   - gcc${SUF} --version && g++${SUF} --version && gfortran${SUF} --version || true # allow missing gfortran
+  - (cd "${HOME}/mpich" && ([[ -f "mpich-3.2.tar.gz" ]] || wget --continue --no-clobber 'http://www.mpich.org/static/downloads/3.2/mpich-3.2.tar.gz')) # use cache
+  - (cd "${HOME}/mpich" && ([[ -f "mpich-3.2" ]] || tar -xzvmf mpich-3.2.tar.gz --keep-newer-files || true)) # use cache
+  - (cd "${HOME}/mpich/build" && ( [[ -f Makefile ]] || ../mpich-3.2/configure --prefix="${HOME}/usr" ) )
+  - (cd "${HOME}/mpich/build" && make -j && make install )
 
 # Test ./configure && make install while boostraping Python 2.7 environment and required packages.
 install:
