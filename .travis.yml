@@ -106,6 +106,7 @@ matrix:
       env: GCC=-6 MPI=MPICH
 
 before_install:
+  - ls -a "${HOME}/.ccache"
   - if [[ ! -d "${HOME}/bin" ]] ; then mkdir "${HOME}/bin" && export PATH="${HOME}/bin:${PATH}"; fi
   - if [[ ! -d "${HOME}/mpich/build" ]] ; then mkdir -p "${HOME}/mpich/build" ; fi
   - if [[ ! -d "${HOME}/usr" ]] ; then mkdir -p "${HOME}/usr/{bin,lib,share,include,lib64,libexec}" && export PATH="${HOME}/usr/bin:${PATH}"; fi
