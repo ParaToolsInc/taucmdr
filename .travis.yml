@@ -18,7 +18,7 @@ sudo: false
 env:
   global:
     - INSTALLDIR="$HOME/taucmdr-test"
-    - CC=gcc${GCC:-} CXX=g++${GCC:-} FC=gfortran${GCC:-}
+    - CC=gcc${SUF:-} CXX=g++${SUF:-} FC=gfortran${SUF:-}
 
 matrix:
   include:
