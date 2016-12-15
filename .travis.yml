@@ -97,14 +97,17 @@ matrix:
       env: GCC=-6 MPI=MPICH
 
 before_install:
-  - if [[ -n "${encrypted_c48b4c75cf28_key}" ]] ; then openssl aes-256-cbc -K $encrypted_c48b4c75cf28_key -iv $encrypted_c48b4c75cf28_iv -in id_rsa_Travis2GH.enc -out id_rsa_Travis2GH -d ; fi # encrypted with `travis encrypt-file`
-  - unset -v ${!encrypted_@} # unset secret encrypted variables
-  - chmod 600 id_rsa_Travis2GH # ssh is picky about key perms
   - if [[ ! -d "${HOME}/bin" ]] ; then mkdir "${HOME}/bin" && export PATH="${HOME}/bin:${PATH}"; fi
-  - printf '#!/usr/bin/env bash\nssh -i %s/id_rsa_Travis2GH "$@"\n' "$(pwd)" > "${HOME}/bin/ssh_to_GH" # wrap ssh
-  - chmod +x "${HOME}/bin/ssh_to_GH"
-  - export GIT_SSH="${HOME}/bin/ssh_to_GH"
-  - echo "Testing ssh to github.com" && ($GIT_SSH -T "git@github.com" || true)
+  - |
+    if [[ -n "${encrypted_c48b4c75cf28_key}" ]] ; then # not a PR or someone else's repo
+      openssl aes-256-cbc -K $encrypted_c48b4c75cf28_key -iv $encrypted_c48b4c75cf28_iv -in id_rsa_Travis2GH.enc -out id_rsa_Travis2GH -d # encrypted with `travis encrypt-file`
+      chmod 600 id_rsa_Travis2GH # ssh is picky about key perms
+      printf '#!/usr/bin/env bash\nssh -i %s/id_rsa_Travis2GH "$@"\n' "$(pwd)" > "${HOME}/bin/ssh_to_GH" # wrap ssh
+      chmod +x "${HOME}/bin/ssh_to_GH"
+      export GIT_SSH="${HOME}/bin/ssh_to_GH"
+      echo "Testing ssh to github.com" && ($GIT_SSH -T "git@github.com" || true)
+    fi
+  - unset -v ${!encrypted_@} # unset secret encrypted variables
   - git --version
   - env | grep -iv 'token\|key\|encrypt' | sort # scrub tokens from output & sort
   - mount
