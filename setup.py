@@ -246,7 +246,6 @@ class Install(InstallCommand):
         from tau.model.project import Project
 
         # Call `tau initialize` to configure system-level packages supporting default experiments
-        print os.getcwd()
         if init_command.main(init_args) != EXIT_SUCCESS:
             raise SoftwarePackageError("`tau initialize` failed with arguments %s." % init_args,
                                        "Check that the values specified in 'defaults.cfg' are valid.")
@@ -301,7 +300,6 @@ class Install(InstallCommand):
                    "Calling it directly can (probably will) break things.\n"
                    "Try this instead:\n"
                    "  ./configure\n"
-                   "  make\n"
                    "  make install")
         elif self.initialize:
             self._configure_new_installation()

@@ -476,7 +476,6 @@ class InstalledCompiler(object):
                 uid_parts.append(self.wrapped.uid)
                 for attr in 'include_path', 'library_path', 'compiler_flags', 'libraries':
                     uid_parts.extend(sorted(getattr(self, attr)))
-            print uid_parts
             self.uid = util.calculate_uid(uid_parts)
         # Check that the compiler is executable and of the expected family/role.
         # Prevents compilers with the same command (e.g. Cray cc and GNU cc) from crossing.
