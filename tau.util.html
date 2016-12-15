@@ -90,6 +90,24 @@ This routine will return stupid results for archives with multiple top-level ele
 </dd></dl>
 
 <dl class="function">
+<dt id="tau.util.calculate_uid">
+<code class="descclassname">tau.util.</code><code class="descname">calculate_uid</code><span class="sig-paren">(</span><em>parts</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#calculate_uid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.calculate_uid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new unique identifier.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>parts</strong> (<a class="reference internal" href="tau.cli.commands.experiment.list.html#module-tau.cli.commands.experiment.list" title="tau.cli.commands.experiment.list"><em>list</em></a>) &#8211; <strong>Ordered</strong> list of strings to include in the UID calcuation.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A string of hexidecimal digits uniquely calculated from <cite>parts</cite>.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)">str</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="tau.util.camelcase">
 <code class="descclassname">tau.util.</code><code class="descname">camelcase</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#camelcase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.camelcase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts a string to CamelCase.</p>
@@ -374,12 +392,6 @@ left of the horizontal line.</p>
 <dt id="tau.util.mkdtemp">
 <code class="descclassname">tau.util.</code><code class="descname">mkdtemp</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#mkdtemp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.mkdtemp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Like tempfile.mkdtemp but directory will be recursively deleted when program exits.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="tau.util.new_uid">
-<code class="descclassname">tau.util.</code><code class="descname">new_uid</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#new_uid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.new_uid" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a new unique identifier object.</p>
 </dd></dl>
 
 <dl class="function">
