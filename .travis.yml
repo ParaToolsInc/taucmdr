@@ -137,8 +137,8 @@ before_install:
     if [[ "${MPI:-}" == "MPICH" ]]; then
       cd "${HOME}/mpich" \
       && ([[ -f "mpich-3.2.tar.gz" ]] || wget --continue --no-clobber 'http://www.mpich.org/static/downloads/3.2/mpich-3.2.tar.gz') \
-      && ([[ -d "mpich-3.2" ]] || tar -xzvmf mpich-3.2.tar.gz --keep-newer-files || true) \
-      && cd mpich-3.2 && touch aclocal.m4 Makefile.in Makefile.am \
+      && ([[ -d "mpich-3.2" ]] || tar -xzvf mpich-3.2.tar.gz --keep-newer-files || true) \
+      && cd mpich-3.2 \
       && cd ../build \
       && ([[ -f Makefile ]] || ../mpich-3.2/configure --prefix="${HOME}/usr") \
       && make -j && make install \
