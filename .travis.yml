@@ -15,13 +15,14 @@ git:
 sudo: false
 
 cache:
+  ccache: true
   directories:
     - "${HOME}/mpich"
 
 env:
   global:
     - INSTALLDIR="$HOME/taucmdr-test"
-    - CC=gcc${SUF:-} CXX=g++${SUF:-} FC=gfortran${SUF:-}
+    - CC="ccache gcc${SUF:-}" CXX="ccache g++${SUF:-}" FC="ccache gfortran${SUF:-}" F77="ccache gfortran${SUF:-}"
 
 matrix:
   include:
@@ -125,8 +126,8 @@ before_install:
   - ls -l $(which g++) && g++ --version
   - if which gfortran; then ls -l $(which gfortran) && gfortran --version ; fi
   - if ((RANDOM % 2 == 0)); then SUF="${GCC:-}" ; else SUF="" ; fi # randomize keeping suffix on links
-  - export CC=gcc${SUF} && export CXX=g++${SUF} && export FC=gfortran${SUF} || true
-  - echo "\$CC=${CC}, \$CXX=${CXX}, \$FC=${FC}"
+  - export CC="ccache gcc${SUF}" && export CXX="ccache g++${SUF}" && export FC="ccache gfortran${SUF}" && export F77="ccache gfortran${SUF}" || true
+  - echo "\$CC=${CC}, \$CXX=${CXX}, \$FC=${FC} \$F77=${F77}"
   - if [[ -n "${GCC}" ]]; then ls -l "$(which gcc$GCC)"  && ln -s "$(which gcc$GCC)" "${HOME}/bin/gcc${SUF}" ; fi
   - if [[ -n "${GCC}" ]]; then ls -l "$(which g++$GCC)"  && ln -s "$(which g++$GCC)" "${HOME}/bin/g++${SUF}" ; fi
   - if [[ -n "${GCC}" ]]; then ls -l "$(which gfortran$GCC)" && ln -s "$(which gfortran$GCC)" "${HOME}/bin/gfortran${SUF}"; fi
