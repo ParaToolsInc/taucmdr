@@ -118,7 +118,7 @@ before_install:
   - ccache --zero-stats
   - if [[ ! -d "${HOME}/bin" ]] ; then mkdir "${HOME}/bin" && export PATH="${HOME}/bin:${PATH}"; fi
   - if [[ ! -d "${HOME}/mpich/build" ]] ; then mkdir -p "${HOME}/mpich/build" ; fi
-  - if [[ ! -d "${HOME}/usr" ]] ; then mkdir -p "${HOME}/usr/{bin,lib,share,include,lib64,libexec}" && export PATH="${HOME}/usr/bin:${PATH}"; fi
+  - if [[ ! -d "${HOME}/usr" ]] ; then mkdir -p "${HOME}/usr/bin" && export PATH="${HOME}/usr/bin:${PATH}"; fi
   - |
     if [[ -n "${encrypted_c48b4c75cf28_key}" ]] ; then # not a PR or someone else's repo
       openssl aes-256-cbc -K $encrypted_c48b4c75cf28_key -iv $encrypted_c48b4c75cf28_iv -in id_rsa_Travis2GH.enc -out id_rsa_Travis2GH -d \
@@ -150,7 +150,7 @@ before_install:
       && cd build \
       && ls -a \
       && if [[ ! -f Makefile ]]; then ../mpich-3.2/configure --prefix="${HOME}/usr" 2>&1 | tee >(head) | tail -500 ; else echo "Using cached MPICH configuration, not reconfiguring"; fi \
-      && make -j 2>&1 | tee >(head) | tail -500 ; make install 2>&1 | tee >(head) | tail -500 \
+      && make -j 2>&1 | tee >(head) | tail -500 ; make install \
       && ls -a "${HOME}/usr/" \
       && cd "${TRAVIS_BUILD_DIR}" \
       && which mpicc && mpicc --version && which mpif90 && mpif90 --version || true \
