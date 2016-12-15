@@ -18,6 +18,7 @@ sudo: false
 env:
   global:
     - INSTALLDIR="$HOME/taucmdr-test"
+    - CC=gcc-${GCC:-4.6} CXX=g++-${GCC:-4.6} FC=gfortran-${GCC:-4.6}
 
 matrix:
   include:
@@ -26,19 +27,19 @@ matrix:
       addons:
         apt:
           packages: ['gcc-4.4', 'g++-4.4', 'gfortran-4.4']
-      env: GCC=4.4 CC=gcc-$GCC CXX=g++-$GCC FC=gfortran-$GCC MPI=none
+      env: GCC=4.4 MPI=none
     -
       <<: *baseconf
-      env: GCC=4.4 CC=gcc-$GCC CXX=g++-$GCC FC=gfortran-$GCC MPI=MPICH
-    # - &fourfive
-    #   <<: *baseconf
-    #   addons:
-    #     apt:
-    #       packages: ['gcc-4.5', 'g++-4.5', 'gfprtran-4.5']
-    #   env: GCC=4.5 CC=gcc-$GCC CXX=g++-$GCC FC=gfortran-$GCC MPI=none
-    # -
-    #   <<: *fourfive
-    #   env: GCC=4.5 CC=gcc-$GCC CXX=g++-$GCC FC=gfortran-$GCC MPI=MPICH
+      env: GCC=4.4 MPI=MPICH
+    - &fourfive
+      <<: *baseconf
+      addons:
+        apt:
+          packages: ['gcc-4.5', 'g++-4.5', 'gfprtran-4.5']
+      env: GCC=4.5 MPI=none
+    -
+      <<: *fourfive
+      env: GCC=4.5 CC=gcc-$GCC CXX=g++-$GCC FC=gfortran-$GCC MPI=MPICH
     # - &foursix
     #   <<: *basconf
     #   addons:
