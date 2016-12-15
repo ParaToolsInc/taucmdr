@@ -151,7 +151,7 @@ before_install:
       && ls -a \
       && if [[ ! -f Makefile ]]; then ../mpich-3.2/configure --prefix="${HOME}/usr" 2>&1 | tee >(head) | tail -500 ; else echo "Using cached MPICH configuration, not reconfiguring"; fi \
       && make -j 2>&1 | tee >(head) | tail -500 ; make install 2>&1 | tee >(head) | tail -500 \
-      && ls -a \
+      && ls -a "${HOME}/usr/" \
       && cd "${TRAVIS_BUILD_DIR}" \
       && which mpicc && mpicc --version && which mpif90 && mpif90 --version || true \
       && mpicc -show && mpif90 -show || true
