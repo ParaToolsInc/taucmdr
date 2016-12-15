@@ -119,7 +119,7 @@ before_install:
   - echo "\$CC=${CC}, \$CXX=${CXX}, \$FC=${FC}"
   - if [[ -n "${GCC}" ]]; then ls -l "$(which gcc$GCC)"  && ln -s "$(which gcc$GCC)" "${HOME}/bin/gcc${SUF}" ; fi
   - if [[ -n "${GCC}" ]]; then ls -l "$(which g++$GCC)"  && ln -s "$(which g++$GCC)" "${HOME}/bin/g++${SUF}" ; fi
-  - if [[ -n "${GCC}" ]]; then ls -l "$(which gfortran$GCC)" && [[ -n "${GCC}"]] && ln -s "$(which gfortran$GCC)" "${HOME}/bin/gfortran${SUF}"; fi
+  - if [[ -n "${GCC}" ]]; then ls -l "$(which gfortran$GCC)" && ln -s "$(which gfortran$GCC)" "${HOME}/bin/gfortran${SUF}"; fi
   - gcc${SUF} --version && g++${SUF} --version && gfortran${SUF} --version || true # allow missing gfortran
 
 # Test ./configure && make install while boostraping Python 2.7 environment and required packages.
