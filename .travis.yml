@@ -26,6 +26,7 @@ matrix:
       python: 2.7
       addons:
         apt:
+          sources: ['ubuntu-toolchain-r-test']
           packages: ['gcc-4.4', 'g++-4.4', 'gfortran-4.4']
       env: GCC=-4.4 MPI=none
     -
@@ -35,7 +36,7 @@ matrix:
       <<: *baseconf
       addons:
         apt:
-          packages: ['gcc-4.5', 'g++-4.5', 'gfprtran-4.5']
+          packages: ['gcc-4.5', 'g++-4.5', 'gfortran-4.5']
       env: GCC=-4.5 MPI=none
     -
       <<: *fourfive
