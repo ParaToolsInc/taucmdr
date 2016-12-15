@@ -154,7 +154,8 @@ before_install:
       && which mpicc && mpicc --version && which mpif90 && mpif90 --version || true \
       && mpicc -show && mpif90 -show || true
     fi
-    - export CC="gcc${SUF}" && export CXX="g++${SUF}" && export FC="gfortran${SUF}" && export F77="gfortran${SUF}" || true
+  - export CC="gcc${SUF}" && export CXX="g++${SUF}" && export FC="gfortran${SUF}" && export F77="gfortran${SUF}" || true
+  - echo "\$CC=$CC, \$CXX=$CXX, \$FC=$FC, \$F77=$F77" && $CC --version && $FC --version
 
 # Test ./configure && make install while boostraping Python 2.7 environment and required packages.
 install:
