@@ -115,6 +115,7 @@ matrix:
 
 before_install:
   - if [[ ! -d "${HOME}/.ccache" ]] ; then mkdir "${HOME}/.ccache" ; else ls -a "${HOME}/.ccache" ; fi
+  - ccache --zero-stats
   - if [[ ! -d "${HOME}/bin" ]] ; then mkdir "${HOME}/bin" && export PATH="${HOME}/bin:${PATH}"; fi
   - if [[ ! -d "${HOME}/mpich/build" ]] ; then mkdir -p "${HOME}/mpich/build" ; fi
   - if [[ ! -d "${HOME}/usr" ]] ; then mkdir -p "${HOME}/usr/{bin,lib,share,include,lib64,libexec}" && export PATH="${HOME}/usr/bin:${PATH}"; fi
@@ -143,15 +144,17 @@ before_install:
   - $CC --version && $CXX --version && $FC --version || true # allow missing gfortran
   - |
     if [[ "${MPI:-}" == "MPICH" ]]; then
-      cd "${HOME}/mpich" \
-      && ([[ -f "mpich-3.2.tar.gz" ]] || wget --continue --no-clobber 'http://www.mpich.org/static/downloads/3.2/mpich-3.2.tar.gz') \
-      && ([[ -d "mpich-3.2" ]] || tar -xzvf mpich-3.2.tar.gz --keep-newer-files || true) \
+      cd "${HOME}/mpich" && ls -a \
+      && if [[ ! -f "./mpich-3.2.tar.gz" ]]; then wget --continue --no-clobber 'http://www.mpich.org/static/downloads/3.2/mpich-3.2.tar.gz' ; else echo "Using cached MPICH tarball"; fi \
+      && if [[ ! -d "./mpich-3.2" ]]; then tar -xzvf mpich-3.2.tar.gz --keep-newer-files 2>&1 | tee >(head) | tail || true ; else echo "Using cached MPICH source dir"; fi \
       && cd build \
-      && ([[ -f Makefile ]] || ../mpich-3.2/configure --prefix="${HOME}/usr") \
-      && make -j && make install \
+      && if [[ ! -f Makefile ]]; then ../mpich-3.2/configure --prefix="${HOME}/usr" 2>&1 | tee >(head) | tail -500 ; else echo "Using cached MPICH configuration, not reconfiguring"; fi \
+      && make -j 2>&1 | tee >(head) | tail -500 && make install 2>&1 | tee >(head) | tail -500 \
       && cd "${TRAVIS_BUILD_DIR}" \
-      && which mpicc && mpicc --version && which mpif90 && mpif90 --version || true
+      && which mpicc && mpicc --version && which mpif90 && mpif90 --version || true \
+      && mpicc -show && mpif90 -show || true
     fi
+    - export CC="gcc${SUF}" && export CXX="g++${SUF}" && export FC="gfortran${SUF}" && export F77="gfortran${SUF}" || true
 
 # Test ./configure && make install while boostraping Python 2.7 environment and required packages.
 install:
@@ -167,9 +170,12 @@ script:
 
 after_failure:
   - tail -1000 "$HOME/.tau/debug_log"
+  - ls -l "${HOME}/.ccache"
+  - ccache --show-stats
 
 after_success:
   - ls -l "${HOME}/.ccache"
+  - ccache --show-stats
 
 after_script:
   - codecov --env GCC MPI
