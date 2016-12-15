@@ -35,7 +35,7 @@ where :any:`USER_PREFIX` is not accessible from cluster compute nodes.
 
 import os
 from tau import logger, util
-from tau import SYSTEM_PREFIX, USER_PREFIX, PROJECT_DIR
+from tau import PROJECT_DIR
 from tau.cf.storage import StorageError
 from tau.cf.storage.local_file import LocalFileStorage
 
@@ -73,11 +73,12 @@ class ProjectStorage(LocalFileStorage):
     
     def connect_filesystem(self, *args, **kwargs):
         """Prepares the store filesystem for reading and writing."""
+        from tau.cf.storage.levels import USER_STORAGE
         try:
             project_prefix = self.prefix
         except ProjectStorageError:
             project_prefix = os.path.join(os.getcwd(), PROJECT_DIR)
-            if project_prefix == USER_PREFIX:
+            if os.path.exists(os.path.join(project_prefix, USER_STORAGE.name + ".json")):
                 raise StorageError("Cannot create project in home directory. "
                                    "Use '-@ user' option for user level storage.")
             try:
@@ -118,18 +119,22 @@ class ProjectStorage(LocalFileStorage):
             ProjectStorageError: Neither the current directory nor any of its parent directories contain
                                  a TAU Commander project directory.
         """
+        from tau.cf.storage.levels import USER_STORAGE, SYSTEM_STORAGE
         if not self._prefix:
-            exclude_path = [os.path.realpath(x) for x in USER_PREFIX, SYSTEM_PREFIX]
             cwd = os.getcwd()
             LOGGER.debug("Searching upwards from '%s' for '%s'", cwd, PROJECT_DIR)
             root = cwd
             lastroot = None
             while root and root != lastroot:
-                project_prefix = os.path.realpath(os.path.join(root, PROJECT_DIR))
-                if project_prefix not in exclude_path and os.path.isdir(project_prefix):
-                    LOGGER.debug("Located project storage prefix '%s'", project_prefix)
-                    self._prefix = project_prefix
-                    break
+                prefix = os.path.realpath(os.path.join(root, PROJECT_DIR))
+                if os.path.isdir(prefix):
+                    for exclude_storage in USER_STORAGE, SYSTEM_STORAGE:
+                        if os.path.exists(os.path.join(prefix, exclude_storage.name + ".json")):
+                            break
+                    else:
+                        LOGGER.debug("Located project storage prefix '%s'", prefix)
+                        self._prefix = prefix
+                        break
                 lastroot = root
                 root = os.path.dirname(root)
             else:
