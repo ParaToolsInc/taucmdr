@@ -65,16 +65,6 @@ class BinutilsInstallation(AutotoolsInstallation):
         super(BinutilsInstallation, self).__init__('binutils', 'GNU Binutils', sources, 
                                                    target_arch, target_os, compilers, REPOS, None, LIBRARIES, None)
 
-    def _calculate_uid(self):
-        # Binutils only cares about changes in C/C++ compilers
-        uid = util.new_uid()
-        uid.update(self.src)
-        uid.update(self.target_arch.name)
-        uid.update(self.target_os.name)
-        for role in CC, CXX:
-            uid.update(self.compilers[role].uid)
-        return uid.hexdigest()
-
     def configure(self, flags, env):
         flags.extend(['--disable-nls', '--disable-werror'])
         for var in 'CPP', 'CC', 'CXX', 'FC', 'F77', 'F90':

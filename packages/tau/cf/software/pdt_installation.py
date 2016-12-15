@@ -158,17 +158,6 @@ class PdtInstallation(AutotoolsInstallation):
                                               compilers, REPOS, COMMANDS, None, None)
         self.arch = TauArch.get(self.target_arch, self.target_os)
         
-    def _calculate_uid(self):
-        # PDT only cares about changes in C/C++ compilers
-        uid = util.new_uid()
-        uid.update(self.src)
-        uid.update(self.target_arch.name)
-        uid.update(self.target_os.name)
-        for role in CC, CXX:
-            if role in self.compilers:
-                uid.update(self.compilers[role].uid)
-        return uid.hexdigest()
-
     def _set_install_prefix(self, value):
         # PDT puts installation files (bin, lib, etc.) in a magically named subfolder
         super(PdtInstallation, self)._set_install_prefix(value)

@@ -36,6 +36,7 @@ from tau.cf.storage.levels import ORDERED_LEVELS
 from tau.cf.storage.levels import highest_writable_storage 
 from tau.cf.software import SoftwarePackageError
 from tau.cf.target import Architecture, OperatingSystem
+from tau.cf.compiler.host import CC, CXX
 
 LOGGER = logger.get_logger(__name__)
 
@@ -171,13 +172,10 @@ class Installation(object):
         self._install_prefix = None
 
     def _calculate_uid(self):
-        uid = util.new_uid()
-        uid.update(self.src)
-        uid.update(self.target_arch.name)
-        uid.update(self.target_os.name)
-        for compiler_uid in sorted(comp.uid for comp in self.compilers.itervalues()):
-            uid.update(compiler_uid)
-        return uid.hexdigest()
+        # Most packages only care about changes in C/C++ compilers
+        uid_parts = [self.src, self.target_arch.name, self.target_os.name,
+                     self.compilers[CC].uid, self.compilers[CXX].uid]
+        return util.calculate_uid(uid_parts)
 
     def _get_install_prefix(self):
         if not self._install_prefix:

@@ -471,16 +471,13 @@ class InstalledCompiler(object):
         if uid:
             self.uid = uid
         else:
-            uid = util.new_uid()
-            uid.update(self.absolute_path)
-            uid.update(self.info.family.name)
-            uid.update(self.info.role.keyword)
+            uid_parts = [self.absolute_path, self.info.family.name, self.info.role.keyword]
             if self.wrapped:
-                uid.update(self.wrapped.uid)
+                uid_parts.append(self.wrapped.uid)
                 for attr in 'include_path', 'library_path', 'compiler_flags', 'libraries':
-                    for value in getattr(self, attr):
-                        uid.update(str(sorted(value)))
-            self.uid = uid.hexdigest()
+                    uid_parts.extend(sorted(getattr(self, attr)))
+            print uid_parts
+            self.uid = util.calculate_uid(uid_parts)
         # Check that the compiler is executable and of the expected family/role.
         # Prevents compilers with the same command (e.g. Cray cc and GNU cc) from crossing.
         # Don't need to check the compiler family of compiler wrappers since the compiler
@@ -748,10 +745,8 @@ class InstalledCompilerSet(KeyedRecord):
     def modify(self, **kwargs):
         """Build a modified copy of this object."""
         # pylint: disable=protected-access 
-        uid = util.new_uid()
-        uid.update(self.uid)
-        uid.update(str(sorted(kwargs)))
+        uid_parts = [self.uid, str(sorted(kwargs))]
         compilers = {role.keyword: comp for role, comp in self.members.iteritems()}
-        modified = InstalledCompilerSet(uid.hexdigest(), **compilers)
+        modified = InstalledCompilerSet(util.calculate_uid(uid_parts), **compilers)
         modified._add_members(**kwargs)
         return modified

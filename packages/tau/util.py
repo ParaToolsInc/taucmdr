@@ -65,10 +65,21 @@ def _cleanup_dtemp():
 atexit.register(_cleanup_dtemp)
 
 
-def new_uid():
-    """Create a new unique identifier object."""
-    return hashlib.sha1()
+def calculate_uid(parts):
+    """Create a new unique identifier.
 
+    Args:
+        parts (list): **Ordered** list of strings to include in the UID calcuation.
+
+    Returns:
+        str: A string of hexidecimal digits uniquely calculated from `parts`.
+    """
+    uid = hashlib.sha1()
+    for part in parts:
+        uid.update(part)
+    digest = uid.hexdigest()
+    LOGGER.debug("UID: (%s): %s", digest, parts)
+    return digest
 
 def mkdtemp(*args, **kwargs):
     """Like tempfile.mkdtemp but directory will be recursively deleted when program exits."""

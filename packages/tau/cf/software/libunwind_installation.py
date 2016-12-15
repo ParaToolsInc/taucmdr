@@ -68,16 +68,6 @@ class LibunwindInstallation(AutotoolsInstallation):
         super(LibunwindInstallation, self).__init__('libunwind', 'libunwind', sources, target_arch, target_os, 
                                                     compilers, REPOS, None, LIBRARIES, HEADERS)
 
-    def _calculate_uid(self):
-        # libunwind only cares about changes in C/C++ compilers
-        uid = util.new_uid()
-        uid.update(self.src)
-        uid.update(self.target_arch.name)
-        uid.update(self.target_os.name)
-        for role in CC, CXX:
-            uid.update(self.compilers[role].uid)
-        return uid.hexdigest()
-
     def configure(self, flags, env):
         env['CC'] = self.compilers[CC].unwrap().absolute_path
         env['CXX'] = self.compilers[CXX].unwrap().absolute_path

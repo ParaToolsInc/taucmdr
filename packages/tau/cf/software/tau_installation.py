@@ -281,6 +281,11 @@ class TauInstallation(Installation):
                 self.add_dependency('scorep', sources, mpi_support, shmem_support,
                                     sources['binutils'], sources['libunwind'], sources['papi'], sources['pdt'])
 
+    def _calculate_uid(self):
+        uid_parts = [self.src, self.target_arch.name, self.target_os.name]
+        # TAU changes if any compiler changes.
+        uid_parts.extend(sorted(comp.uid for comp in self.compilers.itervalues()))
+        return util.calculate_uid(uid_parts)
 
     def _set_install_prefix(self, value):
         # PDT puts installation files (bin, lib, etc.) in a magically named subfolder
