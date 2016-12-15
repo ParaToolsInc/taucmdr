@@ -133,10 +133,13 @@ before_install:
   - gcc${SUF} --version && g++${SUF} --version && gfortran${SUF} --version || true # allow missing gfortran
   - |
     if [[ "${MPI:-}" == "MPICH" ]]; then
-      (cd "${HOME}/mpich" && ([[ -f "mpich-3.2.tar.gz" ]] || wget --continue --no-clobber 'http://www.mpich.org/static/downloads/3.2/mpich-3.2.tar.gz') && \
-      ([[ -f "mpich-3.2" ]] || tar -xzvmf mpich-3.2.tar.gz --keep-newer-files || true) && \
-      (cd build && ( [[ -f Makefile ]] || ../mpich-3.2/configure --prefix="${HOME}/usr" ) && \
-      make -j && make install ) )
+      cd "${HOME}/mpich"
+      [[ -f "mpich-3.2.tar.gz" ]] || wget --continue --no-clobber 'http://www.mpich.org/static/downloads/3.2/mpich-3.2.tar.gz'
+      [[ -d "mpich-3.2" ]] || tar -xzvmf mpich-3.2.tar.gz --keep-newer-files || true
+      cd build
+      [[ -f Makefile ]] || ../mpich-3.2/configure --prefix="${HOME}/usr"
+      make -j && make install
+      cd "${TRAVIS_BUILD_DIR}" # back to default build dir
     fi
 
 # Test ./configure && make install while boostraping Python 2.7 environment and required packages.
