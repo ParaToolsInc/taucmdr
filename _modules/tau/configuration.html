@@ -83,7 +83,7 @@
 <span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">util</span>
 <span class="kn">from</span> <span class="nn">tau.cf.storage</span> <span class="kn">import</span> <span class="n">AbstractStorage</span><span class="p">,</span> <span class="n">StorageError</span>
 <span class="kn">from</span> <span class="nn">tau.cf.storage.levels</span> <span class="kn">import</span> <span class="n">ORDERED_LEVELS</span>
-<span class="kn">from</span> <span class="nn">tau.cf.storage.project</span> <span class="kn">import</span> <span class="n">ProjectStorageError</span>
+<span class="kn">from</span> <span class="nn">tau.cf.storage</span> <span class="kn">import</span> <span class="n">StorageError</span>
 
 
 <div class="viewcode-block" id="parse_config_string"><a class="viewcode-back" href="../../tau.configuration.html#tau.configuration.parse_config_string">[docs]</a><span class="k">def</span> <span class="nf">parse_config_string</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
@@ -144,7 +144,7 @@
             <span class="k">for</span> <span class="n">storage</span> <span class="ow">in</span> <span class="n">ORDERED_LEVELS</span><span class="p">:</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="k">return</span> <span class="n">storage</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-                <span class="k">except</span> <span class="p">(</span><span class="n">ProjectStorageError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">):</span>
+                <span class="k">except</span> <span class="p">(</span><span class="n">StorageError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">):</span>
                     <span class="c1"># Project storage hasn&#39;t been initialized yet, or default isn&#39;t set</span>
                     <span class="k">continue</span>
             <span class="k">raise</span> <span class="ne">KeyError</span>
