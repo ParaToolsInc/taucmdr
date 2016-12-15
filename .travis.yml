@@ -148,8 +148,10 @@ before_install:
       && if [[ ! -f "./mpich-3.2.tar.gz" ]]; then wget --continue --no-clobber 'http://www.mpich.org/static/downloads/3.2/mpich-3.2.tar.gz' ; else echo "Using cached MPICH tarball"; fi \
       && if [[ ! -d "./mpich-3.2" ]]; then tar -xzvf mpich-3.2.tar.gz --keep-newer-files 2>&1 | tee >(head) | tail || true ; else echo "Using cached MPICH source dir"; fi \
       && cd build \
+      && ls -a \
       && if [[ ! -f Makefile ]]; then ../mpich-3.2/configure --prefix="${HOME}/usr" 2>&1 | tee >(head) | tail -500 ; else echo "Using cached MPICH configuration, not reconfiguring"; fi \
-      && make -j 2>&1 | tee >(head) | tail -500 && make install 2>&1 | tee >(head) | tail -500 \
+      && make -j 2>&1 | tee >(head) | tail -500 ; make install 2>&1 | tee >(head) | tail -500 \
+      && ls -a \
       && cd "${TRAVIS_BUILD_DIR}" \
       && which mpicc && mpicc --version && which mpif90 && mpif90 --version || true \
       && mpicc -show && mpif90 -show || true
