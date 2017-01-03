@@ -222,6 +222,7 @@ class TauInstallation(Installation):
         """
         super(TauInstallation, self).__init__('tau', 'TAU Performance System', sources, target_arch, target_os, 
                                               compilers, REPOS, COMMANDS, None, None)
+        self._tau_makefile = None
         if self.src == 'nightly':
             self.src = NIGHTLY
         self.arch = TauArch.get(self.target_arch, self.target_os)
@@ -358,13 +359,22 @@ class TauInstallation(Installation):
                         LOGGER.debug("SCOREPDIR='%s' != '%s'", scorep_dir, scorep.install_prefix)
                         raise SoftwarePackageError("SCOREPDIR in '%s' is invalid" % tau_makefile)
 
-        # Check for iowrapper
+        # Check for iowrapper libraries and link options
         if self.io_inst:
-            iowrap_libs = glob.glob(os.path.join(self.lib_path, 'shared', 'libTAU-iowrap*'))
+            # Replace right-most occurance of 'Makefile.tau' with 'shared'
+            tagged_shared_dir = 'shared'.join(self.get_makefile().rsplit('Makefile.tau', 1))
+            for shared_dir in tagged_shared_dir, 'shared':
+                iowrap_libs = glob.glob(os.path.join(shared_dir, 'libTAU-iowrap*'))
+                if iowrap_libs:
+                    break
+            else:
+                raise SoftwarePackageError("TAU I/O wrapper libraries not found in '%s'" % shared_dir)
             LOGGER.debug("Found iowrap shared libraries: %s", iowrap_libs)
-            iowrap_link_options = os.path.join(self.lib_path, 'wrappers', 'io_wrapper', 'link_options.tau')
-            if not (iowrap_libs and os.path.exists(iowrap_link_options)):
-                raise SoftwarePackageError("iowrap libraries or link options not found")
+            io_wrapper_dir = os.path.join(self.lib_path, 'wrappers', 'io_wrapper')
+            iowrap_link_options = os.path.join(io_wrapper_dir, 'link_options.tau')
+            if not os.path.exists(iowrap_link_options):
+                raise SoftwarePackageError("TAU I/O wrapper link options not found in '%s'" % io_wrapper_dir)
+            LOGGER.debug("Found iowrap link options: %s", iowrap_link_options)
         LOGGER.debug("TAU installation at '%s' is valid", self.install_prefix)
 
     def _select_flags(self, header, libglobs, user_inc, user_lib, user_libraries, wrap_cc, wrap_cxx, wrap_fc):
@@ -649,7 +659,10 @@ class TauInstallation(Installation):
             str: A file path that could be used to set the TAU_MAKEFILE environment
                  variable, or None if a suitable makefile couldn't be found.
         """
+        if self._tau_makefile:
+            return self._tau_makefile
         if self.forced_makefile:
+            self._tau_makefile = self.forced_makefile
             return self.forced_makefile
         tau_makefiles = glob.glob(os.path.join(self.lib_path, 'Makefile.tau*'))
         LOGGER.debug("Found makefiles: '%s'", tau_makefiles)
@@ -667,6 +680,7 @@ class TauInstallation(Installation):
                 if tags <= config_tags:
                     makefile = os.path.join(self.lib_path, makefile) 
                     LOGGER.debug("Found TAU makefile %s", makefile)
+                    self._tau_makefile = makefile
                     return makefile
                 elif not tags & dangerous_tags:
                     if not approx_tags or tags < approx_tags:
@@ -677,6 +691,7 @@ class TauInstallation(Installation):
         if approx_makefile:
             makefile = os.path.join(self.lib_path, approx_makefile) 
             LOGGER.debug("Found approximate match with TAU makefile %s", makefile)
+            self._tau_makefile = makefile
             return makefile
         LOGGER.debug("No TAU makefile approximately matches tags '%s'", config_tags)
         raise SoftwarePackageError("TAU Makefile not found for tags '%s' in '%s'" % 
