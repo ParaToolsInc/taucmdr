@@ -711,9 +711,8 @@ class TauInstallation(Installation):
         Returns:
             dict: `env` without TAU environment variables.
         """
-        def is_tau_var(key):
-            return key.startswith('TAU_') or key.startswith('SCOREP_') or key in ('PROFILEDIR', 'TRACEDIR')
-        dirt = dict([item for item in env.iteritems() if is_tau_var(item[0])])
+        is_tau_var = lambda x: x.startswith('TAU_') or x.startswith('SCOREP_') or x in ('PROFILEDIR', 'TRACEDIR')
+        dirt = {key: val for key, val in env.iteritems() if is_tau_var(key)}
         if dirt:
             LOGGER.info("\nIgnoring TAU environment variables set in user's environment:\n%s\n",
                         '\n'.join(["%s=%s" % item for item in dirt.iteritems()]))
@@ -740,7 +739,10 @@ class TauInstallation(Installation):
             tau_opts = set(env['TAU_OPTIONS'].split(' '))
         except KeyError:
             tau_opts = set()
-        tau_opts.add('-optRevert')
+        if self.source_inst == 'never' and self.compiler_inst == 'never':
+            tau_opts.add('-optLinkOnly')
+        else:
+            tau_opts.add('-optRevert')
         if self.verbose:
             tau_opts.add('-optVerbose')
         if self.compiler_inst == 'always':
@@ -894,9 +896,11 @@ class TauInstallation(Installation):
                    variables to set before running the application command.
         """
         opts, env = self.runtime_config()
-        use_tau_exec = (self.measure_opencl or (self.source_inst == 'never' and 
-                                                self.compiler_inst == 'never' and 
-                                                not self.link_only))
+        use_tau_exec = (self.measure_opencl or
+                        self.target_os is not CRAY_CNL_OS or
+                        (self.source_inst == 'never' and 
+                         self.compiler_inst == 'never' and 
+                         not self.link_only))
         if use_tau_exec:
             tau_exec_opts = opts
             tags = self.get_tags()
