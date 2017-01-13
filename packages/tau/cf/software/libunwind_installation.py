@@ -80,6 +80,7 @@ class LibunwindInstallation(AutotoolsInstallation):
             env['CFLAGS'] = '-fPIC'
             env['CXXFLAGS'] = '-fPIC'
             flags.append('--disable-shared')
+	    flags.append('--disable-minidebuginfo')
         # Fix test so `make install` succeeds more frequently 
         for line in fileinput.input(os.path.join(self.src_prefix, 'tests', 'crasher.c'), inplace=1):
             # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
