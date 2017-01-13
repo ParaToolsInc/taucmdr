@@ -44,7 +44,7 @@ MPI_COMPILERS = Knowledgebase('MPI', 'Compilers supporting the Message Passing I
                               FC=('MPI Fortran', ('MPI_FC', 'MPI_F77', 'MPI_F90')))
 
 SYSTEM = MPI_COMPILERS.add('System', show_wrapper_flags=['-show'],
-                           CC='mpicc', CXX=('mpic++', 'mpicxx', 'mpiCC'), FC=('mpiftn', 'mpif90', 'mpif77'))
+                           CC='mpicc', CXX=('mpic++', 'mpicxx', 'mpiCC'), FC=('mpiftn', 'mpif90', 'mpif77', 'mpifort'))
 
 INTEL = MPI_COMPILERS.add('Intel', show_wrapper_flags=['-show'],
                           CC='mpiicc', CXX='mpiicpc', FC='mpiifort')
