@@ -810,7 +810,7 @@ class TauInstallation(Installation):
         env['TAU_SAMPLING'] = str(int(self.sample))
         env['TAU_TRACK_HEAP'] = str(int(self.measure_heap_usage))
         env['TAU_COMM_MATRIX'] = str(int(self.measure_comm_matrix))
-        env['TAU_METRICS'] = ",".join(self.metrics)
+        env['TAU_METRICS'] = ",".join(self.metrics) + ","
         env['TAU_THROTTLE'] = str(int(self.throttle))
         if self.throttle:
             env['TAU_THROTTLE_PERCALL'] = str(int(self.throttle_per_call))
@@ -1040,11 +1040,10 @@ class TauInstallation(Installation):
         """
         if not self._uses_papi():
             return
-        papi_metrics = [metric for metric in self.metrics if "PAPI" in metric]
-        if len(papi_metrics) > 1:
+        papi_metrics = [metric.replace('PAPI_NATIVE:', '') for metric in self.metrics if metric.startswith("PAPI")]
+        if papi_metrics:
             event_chooser_cmd = os.path.join(self.dependencies['papi'].bin_path, 'papi_event_chooser')
-            event_type = 'NATIVE' if 'NATIVE' in papi_metrics[0] else 'PRESET'
-            cmd = [event_chooser_cmd, event_type] + papi_metrics
+            cmd = [event_chooser_cmd, 'PRESET'] + papi_metrics
             if util.create_subprocess(cmd, stdout=False, show_progress=False):
                 raise ConfigurationError("PAPI metrics [%s] are not compatible on this target." % 
                                          ', '.join(papi_metrics),
