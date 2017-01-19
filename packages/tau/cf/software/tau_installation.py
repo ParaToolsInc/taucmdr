@@ -1044,6 +1044,8 @@ class TauInstallation(Installation):
         if len(papi_metrics) > 1:
             event_chooser_cmd = os.path.join(self.dependencies['papi'].bin_path, 'papi_event_chooser')
             event_type = 'NATIVE' if 'NATIVE' in papi_metrics[0] else 'PRESET'
+            # strip 'PAPI_NATIVE:' because it confuses papi_event_chooser
+            papi_metrics = [pm.replace('PAPI_NATIVE:','') for pm in papi_metrics]
             cmd = [event_chooser_cmd, event_type] + papi_metrics
             if util.create_subprocess(cmd, stdout=False, show_progress=False):
                 raise ConfigurationError("PAPI metrics [%s] are not compatible on this target." % 
