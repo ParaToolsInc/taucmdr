@@ -33,6 +33,7 @@ PAPI is used to measure hardware performance counters.
 import os
 import sys
 import fileinput
+from xml.etree import ElementTree as etree
 from tau import logger, util
 from tau.cf.software.installation import AutotoolsInstallation
 
@@ -49,6 +50,7 @@ class PapiInstallation(AutotoolsInstallation):
     def __init__(self, sources, target_arch, target_os, compilers):
         super(PapiInstallation, self).__init__('papi', 'PAPI', sources, target_arch, target_os, 
                                                compilers, REPOS, None, LIBRARIES, None)
+        self._xml_event_info = None
 
     def _prepare_src(self, *args, **kwargs):
         # PAPI's source lives in a 'src' directory instead of the usual top level location
@@ -64,4 +66,10 @@ class PapiInstallation(AutotoolsInstallation):
             sys.stdout.write(line.replace('TESTS =', '#TESTS ='))
         super(PapiInstallation, self).make(flags, env, parallel)
 
-
+    def xml_event_info(self):
+        if not self._xml_event_info:
+            self.install()
+            xml_event_info = util.get_command_output(os.path.join(self.bin_path, 'papi_xml_event_info'))
+            self._xml_event_info = etree.fromstring(xml_event_info)
+        return self._xml_event_info
+    

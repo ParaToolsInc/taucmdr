@@ -40,6 +40,7 @@ from tau.cli import UnknownCommandError, arguments
 from tau.cli.command import AbstractCommand
 from tau.cli.commands.build import COMMAND as build_command
 from tau.cli.commands.trial.create import COMMAND as trial_create_command
+from tau.model.project import Project
 
 LOGGER = logger.get_logger(__name__)
 
@@ -78,6 +79,8 @@ class MainCommand(AbstractCommand):
                         _green("  %(command)s <program>") + "Gather data from a program",
                         "                  - Example: %(command)s ./a.out",
                         "                  - Alias for '%(command)s trial create <program>'",
+                        _green("  %(command)s metrics") + "Show metrics available in the current experiment",
+                        "                  - Alias for '%(command)s target metrics'",                       
                         _green("  %(command)s select") + "Select configuration objects to create a new experiment",
                         "                  - Alias for '%(command)s experiment create'",
                         _green("  %(command)s show") + "Show data from the most recent trial",
@@ -153,6 +156,11 @@ class MainCommand(AbstractCommand):
             cmd_args = [cmd] + cmd_args
         elif 'show'.startswith(cmd):
             shortcut = ['trial', 'show']
+        elif 'metrics'.startswith(cmd):
+            expr = Project.controller().selected().experiment()
+            targ_name = expr.populate('target')['name']
+            shortcut = ['target', 'metrics']
+            cmd_args = [targ_name]
         if shortcut:
             LOGGER.debug('Trying shortcut: %s', shortcut)
             return cli.execute_command(shortcut, cmd_args)
