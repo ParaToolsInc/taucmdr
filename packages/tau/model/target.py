@@ -414,7 +414,28 @@ class Target(Model):
         except (ProjectSelectionError, ExperimentSelectionError):
             return False
         return selected['target'] == self.eid
+
+    def architecture(self):
+        from tau.cf.target import Architecture
+        return Architecture.find(self['host_arch'])
     
+    def operating_system(self):
+        from tau.cf.target import OperatingSystem
+        return OperatingSystem.find(self['host_os'])
+    
+    def sources(self):
+        """Get paths to all source packages known to this target.
+        
+        Returns:
+            dict: Software package paths indexed by package name.
+        """ 
+        sources = {}
+        for attr in self.attributes:
+            if attr.endswith('_source'):
+                key = attr.replace('_source', '')
+                sources[key] = self.get(attr)
+        return sources
+
     def compilers(self):
         """Get information about the compilers used by this target configuration.
         

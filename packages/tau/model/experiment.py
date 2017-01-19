@@ -206,23 +206,16 @@ class Experiment(Model):
         Returns:
             TauInstallation: Object handle for the TAU installation. 
         """
-        from tau.cf.target import Architecture, OperatingSystem
         from tau.cf.software.tau_installation import TauInstallation
         LOGGER.debug("Configuring experiment %s", self['name'])
         populated = self.populate(defaults=True)
         target = populated['target']
         application = populated['application']
         measurement = populated['measurement']
-        sources = {'tau': target.get('tau_source', None),
-                   'binutils': target.get('binutils_source', None),
-                   'libunwind': target.get('libunwind_source', None),
-                   'papi': target.get('papi_source', None),
-                   'pdt': target.get('pdt_source', None),
-                   'scorep': target.get('scorep_source', None)}
         tau = TauInstallation(\
-                    sources,
-                    target_arch=Architecture.find(target['host_arch']),
-                    target_os=OperatingSystem.find(target['host_os']),
+                    target.sources(),
+                    target_arch=target.architecture(),
+                    target_os=target.operating_system(),
                     compilers=target.compilers(),
                     # TAU feature suppport
                     openmp_support=application.get_or_default('openmp'),
