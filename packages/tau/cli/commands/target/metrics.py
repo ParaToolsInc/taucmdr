@@ -28,43 +28,62 @@
 """``tau target`` subcommand."""
 
 
-from HTMLParser import HTMLParser
 from texttable import Texttable
 from tau import EXIT_SUCCESS
 from tau import logger, util
 from tau.cli import arguments
 from tau.cli.command import AbstractCommand
 from tau.model.target import Target
-from tau.cf.software.papi_installation import PapiInstallation
-
 
 class TargetMetricsCommand(AbstractCommand):
     """`tau target metrics` command."""
     
+    _measurement_systems = ['TAU', 'PAPI_PRESET', 'PAPI_NATIVE', 'CUPTI']
+    
     def _construct_parser(self):
-        usage_head = "%s <target_name>" % self.command 
+        usage_head = "%s <target_name> [arguments]" % self.command 
         parser = arguments.get_parser(prog=self.command,
                                       usage=usage_head,
                                       description=self.summary)
-        arguments.add_storage_flag(parser, "list", "target")
+        arguments.add_storage_flag(parser, "use", "target")
         parser.add_argument('target_name', help="Target name", metavar='<target_name>')
+        parser.add_argument('--systems', help="List metrics from these measurement systems", 
+                            metavar='system', 
+                            nargs="+", 
+                            choices=self._measurement_systems,
+                            default=['TAU', 'PAPI_PRESET'])
+        parser.add_argument('--all', help="Show all metrics and their modifiers", default=False,
+                            const=True, action="store_const")
+        parser.add_argument('--modifiers', help="Show metric modifiers", default=False,
+                            const=True, action="store_const")
+       
         return parser
        
-    def _format_tau_metrics(self, _, rows):
-        rows.append(['TIME', 'Wallclock time'])
+    def _draw_table(self, targ, metric, rows):
+        parts = [util.hline("%s Metrics on Target '%s'" % (metric, targ['name']), 'cyan')]
+        table = Texttable(logger.LINE_WIDTH)
+        table.set_cols_align(['r', 'l'])
+        name_width = max([len(row[0]) for row in rows])
+        table.set_cols_width([name_width+1, logger.LINE_WIDTH-name_width-4])
+        table.set_deco(Texttable.HEADER | Texttable.VLINES)
+        table.add_rows(rows)
+        parts.extend([table.draw(), ''])
+        return parts
     
-    def _format_papi_metrics(self, targ, rows):
-        html_parser = HTMLParser()
-        papi = PapiInstallation(targ.sources(), targ.architecture(), targ.operating_system(), targ.compilers())
-        def _parse(item):
-            name = item.attrib['name']
-            desc = html_parser.unescape(item.attrib['desc'])
-            desc = desc[0].capitalize() + desc[1:] + "."
-            return [name, desc]
-        for event in papi.xml_event_info().iter('event'):
-            for modifier in event.iter('modifier'):
-                rows.append(_parse(modifier))
-            rows.append(_parse(event))
+    def _format_tau_metrics(self, targ):
+        rows = [['Name', 'Description']]
+        rows.extend(list(metric) for metric in targ.tau_metrics())
+        return self._draw_table(targ, 'TAU', rows)
+        
+    def _format_cupti_metrics(self, targ):
+        rows = [['Name', 'Description']]
+        rows.extend(list(metric) for metric in targ.cupti_metrics())
+        return self._draw_table(targ, 'CUPTI', rows)
+    
+    def _format_papi_metrics(self, targ, event_type, include_modifiers):
+        rows = [['Name', 'Description']]
+        rows.extend(list(metric) for metric in targ.papi_metrics(event_type, include_modifiers))
+        return self._draw_table(targ, 'PAPI ' + event_type.capitalize(), rows)
     
     def main(self, argv):
         args = self._parse_args(argv)
@@ -73,18 +92,19 @@ class TargetMetricsCommand(AbstractCommand):
         targ = Target.controller(storage).one({'name': targ_name})
         if not targ:
             self.parser.error("No %s-level target named '%s'." % (storage.name, targ_name))
-        rows = [['Name', 'Description']]
-        self._format_tau_metrics(targ, rows)
-        self._format_papi_metrics(targ, rows)
-        table = Texttable(logger.LINE_WIDTH)
-        table.set_cols_align(['r', 'l'])
-        name_width = max([len(row[0]) for row in rows])
-        table.set_cols_width([name_width, logger.LINE_WIDTH-name_width-3])
-        table.set_deco(Texttable.HEADER | Texttable.VLINES)
-        table.add_rows(rows)
-        print util.hline("Metrics on target '%s'" % targ['name'], 'cyan')
-        print table.draw()
-        print
+        if args.all:
+            args.systems = self._measurement_systems
+            args.modifiers = True
+        parts = []
+        if 'CUPTI' in args.systems:
+            parts.extend(self._format_cupti_metrics(targ))
+        if 'PAPI_PRESET' in args.systems:
+            parts.extend(self._format_papi_metrics(targ, 'PRESET', args.modifiers))
+        if 'PAPI_NATIVE' in args.systems:
+            parts.extend(self._format_papi_metrics(targ, 'NATIVE', args.modifiers))
+        if 'TAU' in args.systems:
+            parts.extend(self._format_tau_metrics(targ))
+        print '\n'.join(parts)
         return EXIT_SUCCESS
    
 

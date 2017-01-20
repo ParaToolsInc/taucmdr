@@ -160,7 +160,7 @@ class MainCommand(AbstractCommand):
             expr = Project.controller().selected().experiment()
             targ_name = expr.populate('target')['name']
             shortcut = ['target', 'metrics']
-            cmd_args = [targ_name]
+            cmd_args.insert(0, targ_name)
         if shortcut:
             LOGGER.debug('Trying shortcut: %s', shortcut)
             return cli.execute_command(shortcut, cmd_args)
