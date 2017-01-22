@@ -14,24 +14,150 @@ git:
 
 sudo: false
 
+cache:
+  ccache: true
+  apt: true
+  directories:
+    - "${HOME}/mpich"
+    - "${HOME}/.ccache"
+
 env:
   global:
     - INSTALLDIR="$HOME/taucmdr-test"
-  matrix:
-    - OS='Ubuntu Precise' # Add more python versions to this array to expand test matrix
+    - CC="ccache gcc${SUF:-}" CXX="ccache g++${SUF:-}" FC="ccache gfortran${SUF:-}" F77="ccache gfortran${SUF:-}"
+
+matrix:
+  include:
+    - &baseconf # define an anchor and use the <<: YAML merge operator to avoid repitition
+      python: 2.7
+      cache:
+        ccache: true
+        apt: true
+        directories:
+          - "${HOME}/mpich"
+          - "${HOME}/.ccache"
+      addons:
+        apt:
+          packages: ['gcc-4.4', 'g++-4.4', 'gfortran-4.4', 'ccache']
+      env: GCC=-4.4 MPI=none
+    -
+      <<: *baseconf
+      env: GCC=-4.4 MPI=MPICH
+    - &fourfive
+      <<: *baseconf
+      addons:
+        apt:
+          packages: ['gcc-4.5', 'g++-4.5', 'gfortran-4.5', 'ccache']
+      env: GCC=-4.5 MPI=none
+    -
+      <<: *fourfive
+      env: GCC=-4.5 MPI=MPICH
+    - &foursix
+      <<: *baseconf
+      addons:
+        apt:
+          packages: ['gcc-4.6', 'g++-4.6', 'gfortran-4.6', 'ccache']
+      env: GCC=-4.6 MPI=none
+    -
+      <<: *foursix
+      env: GCC=-4.6 MPI=MPICH
+    - &fourseven
+      <<: *baseconf
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test']
+          packages: ['gcc-4.7', 'g++-4.7', 'gfortran-4.7', 'ccache']
+      env: GCC=-4.7 MPI=none
+    -
+      <<: *fourseven
+      env: GCC=-4.7 MPI=MPICH
+    - &foureight
+      <<: *baseconf
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test']
+          packages: ['gcc-4.8', 'g++-4.8', 'gfortran-4.8', 'ccache']
+      env: GCC=-4.8 MPI=none
+    -
+      <<: *foureight
+      env: GCC=-4.8 MPI=MPICH
+    - &fournine
+      <<: *baseconf
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test']
+          packages: ['gcc-4.9', 'g++-4.9', 'gfortran-4.9', 'ccache']
+      env: GCC=-4.9 MPI=none
+    -
+      <<: *fournine
+      env: GCC=-4.9 MPI=MPICH
+    - &five
+      <<: *baseconf
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test']
+          packages: ['gcc-5', 'g++-5', 'gfortran-5', 'ccache']
+      env: GCC=-5 MPI=none
+
+    -
+      <<: *five
+      env: GCC=-5 MPI=MPICH
+    - &six
+      <<: *baseconf
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test']
+          packages: ['gcc-6', 'g++-6', 'gfortran-6', 'ccache']
+      env: GCC=-6 MPI=none
+    -
+      <<: *six
+      env: GCC=-6 MPI=MPICH
 
 before_install:
-  - openssl aes-256-cbc -K $encrypted_c48b4c75cf28_key -iv $encrypted_c48b4c75cf28_iv -in id_rsa_Travis2GH.enc -out id_rsa_Travis2GH -d # encrypted with `travis encrypt-file`
-  - unset -v ${!encrypted_@} # unset secret encrypted variables
-  - chmod 600 id_rsa_Travis2GH
+  - if [[ ! -d "${HOME}/.ccache" ]] ; then mkdir "${HOME}/.ccache" ; else ls -a "${HOME}/.ccache" ; fi
+  - ccache --zero-stats
   - if [[ ! -d "${HOME}/bin" ]] ; then mkdir "${HOME}/bin" && export PATH="${HOME}/bin:${PATH}"; fi
-  - printf '#!/usr/bin/env bash\nssh -i %s/id_rsa_Travis2GH "$@"\n' "$(pwd)" > "${HOME}/bin/ssh_to_GH"
-  - chmod +x "${HOME}/bin/ssh_to_GH"
-  - export GIT_SSH="${HOME}/bin/ssh_to_GH"
-  - echo "Testing ssh to github.com" && ($GIT_SSH -T "git@github.com" || true)
+  - if [[ ! -d "${HOME}/mpich/build" ]] ; then mkdir -p "${HOME}/mpich/build" ; fi
+  - if [[ ! -d "${HOME}/usr" ]] ; then mkdir -p "${HOME}/usr/bin" && export PATH="${HOME}/usr/bin:${PATH}"; fi
+  - |
+    if [[ -n "${encrypted_c48b4c75cf28_key}" ]] ; then # not a PR or someone else's repo
+      openssl aes-256-cbc -K $encrypted_c48b4c75cf28_key -iv $encrypted_c48b4c75cf28_iv -in id_rsa_Travis2GH.enc -out id_rsa_Travis2GH -d \
+      && chmod 600 id_rsa_Travis2GH \
+      && printf '#!/usr/bin/env bash\nssh -i %s/id_rsa_Travis2GH "$@"\n' "$(pwd)" > "${HOME}/bin/ssh_to_GH" \
+      && chmod +x "${HOME}/bin/ssh_to_GH" \
+      && export GIT_SSH="${HOME}/bin/ssh_to_GH" \
+      && echo "Testing ssh to github.com" && ($GIT_SSH -T "git@github.com" || true)
+    fi
+  - unset -v ${!encrypted_@} # unset secret encrypted variables
   - git --version
   - env | grep -iv 'token\|key\|encrypt' | sort # scrub tokens from output & sort
   - mount
+  - ls -l $(which gcc) && gcc --version # dump info about compilers
+  - ls -l $(which g++) && g++ --version
+  - if which gfortran; then ls -l $(which gfortran) && gfortran --version ; fi
+  - if ((RANDOM % 2 == 0)); then SUF="${GCC:-}" ; else SUF="" ; fi # randomize keeping suffix on links
+  - export CC="ccache gcc${SUF}" && export CXX="ccache g++${SUF}" && export FC="ccache gfortran${SUF}" && export F77="ccache gfortran${SUF}" || true
+  - echo "\$SUF=${SUF}, \$CC=${CC}, \$CXX=${CXX}, \$FC=${FC} \$F77=${F77}"
+  - if [[ -n "${GCC}" ]]; then ls -l "$(which gcc$GCC)"  && ln -s "$(which gcc$GCC)" "${HOME}/bin/gcc${SUF}" ; fi
+  - if [[ -n "${GCC}" ]]; then ls -l "$(which g++$GCC)"  && ln -s "$(which g++$GCC)" "${HOME}/bin/g++${SUF}" ; fi
+  - if [[ -n "${GCC}" ]]; then ls -l "$(which gfortran$GCC)" && ln -s "$(which gfortran$GCC)" "${HOME}/bin/gfortran${SUF}"; fi
+  - $CC --version && $CXX --version && $FC --version || true # allow missing gfortran
+  - |
+    if [[ "${MPI:-}" == "MPICH" ]]; then
+      cd "${HOME}/mpich" && ls -a \
+      && if [[ ! -f "./mpich-3.2.tar.gz" ]]; then wget --continue --no-clobber 'http://www.mpich.org/static/downloads/3.2/mpich-3.2.tar.gz' ; else echo "Using cached MPICH tarball"; fi \
+      && if [[ ! -d "./mpich-3.2" ]]; then tar -xzvf mpich-3.2.tar.gz --keep-newer-files 2>&1 | tee >(head) | tail || true ; else echo "Using cached MPICH source dir"; fi \
+      && cd build \
+      && ls -a \
+      && if [[ ! -f Makefile ]]; then ../mpich-3.2/configure --prefix="${HOME}/usr" 2>&1 | tee >(head) | tail -500 ; else echo "Using cached MPICH configuration, not reconfiguring"; fi \
+      && make -j 2>&1 | tee >(head) | tail -500 ; make install \
+      && ls -a "${HOME}/usr/" \
+      && cd "${TRAVIS_BUILD_DIR}" \
+      && which mpicc && mpicc --version && which mpif90 && mpif90 --version || true \
+      && mpicc -show && mpif90 -show || true
+    fi
+  - export CC="gcc${SUF}" && export CXX="g++${SUF}" && export FC="gfortran${SUF}" && export F77="gfortran${SUF}" || true
+  - echo "\$CC=$CC, \$CXX=$CXX, \$FC=$FC, \$F77=$F77" && $CC --version && $FC --version || true
 
 # Test ./configure && make install while boostraping Python 2.7 environment and required packages.
 install:
@@ -47,9 +173,15 @@ script:
 
 after_failure:
   - tail -1000 "$HOME/.tau/debug_log"
+  - ls -l "${HOME}/.ccache"
+  - ccache --show-stats
+
+after_success:
+  - ls -l "${HOME}/.ccache"
+  - ccache --show-stats
 
 after_script:
-  - codecov --env OS
+  - codecov --env GCC MPI
 
 deploy:
   provider: script
@@ -73,4 +205,3 @@ notifications:
     on_success: always  # options: [always|never|change]
     on_failure: always
     on_start: always
-
