@@ -135,7 +135,7 @@ class TauInstallation(Installation):
                  # Application support features
                  openmp_support,
                  pthreads_support,
-                 tbb_support, 
+                 tbb_support,
                  mpi_support,
                  mpi_include_path,
                  mpi_library_path,
@@ -186,6 +186,7 @@ class TauInstallation(Installation):
             compilers (InstalledCompilerSet): Compilers to use if software must be compiled.
             openmp_support (bool): Enable or disable OpenMP support in TAU.
             pthreads_support (bool): Enable or disable pthreads support in TAU.
+            tbb_support (bool): Enable or disable tbb support in TAU.
             mpi_support (bool): Enable or disable MPI support in TAU.
             mpi_include_path (list):  Paths to search for MPI header files.
             mpi_library_path (list): Paths to search for MPI library files.
@@ -232,6 +233,7 @@ class TauInstallation(Installation):
         self.opencl_support = opencl_support
         self.opencl_prefix = opencl_prefix
         self.pthreads_support = pthreads_support
+        self.tbb= tbb_support
         self.mpi_support = mpi_support
         self.mpi_include_path = mpi_include_path
         self.mpi_library_path = mpi_library_path
@@ -499,6 +501,7 @@ class TauInstallation(Installation):
                   '-unwind=%s' % libunwind.install_prefix if libunwind else None,
                   '-scorep=%s' % scorep.install_prefix if scorep else None,
                   '-pthread' if self.pthreads_support else None,
+                  '-tbb' if self.tbb_support else None,
                   '-mpi' if self.mpi_support else None,
                   '-mpiinc=%s' % mpiinc if mpiinc else None,
                   '-mpilib=%s' % mpilib if mpilib else None,
@@ -618,6 +621,8 @@ class TauInstallation(Installation):
                 pass
         if self.pthreads_support:
             tags.append('pthread')
+        if self.tbb_support:
+            tags.append('tbb')
         if self.mpi_support:
             tags.append('mpi')
         if self.cuda_support:
