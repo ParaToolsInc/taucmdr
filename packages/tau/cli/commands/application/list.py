@@ -34,6 +34,7 @@ from tau.model.application import Application
 DASHBOARD_COLUMNS = [{'header': 'Name', 'value': 'name', 'align': 'r'},
                      {'header': 'OpenMP', 'yesno': 'openmp'},
                      {'header': 'Pthreads', 'yesno': 'pthreads'},
+                     {'header': 'TBB', 'yesno': 'tbb'},
                      {'header': 'MPI', 'yesno': 'mpi'},
                      {'header': 'CUDA', 'yesno': 'cuda'},
                      {'header': 'OpenCL', 'yesno': 'opencl'},
