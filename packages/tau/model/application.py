@@ -27,11 +27,11 @@
 #
 """Application data model.
 
-:any:`Application` fully describes the application configuration to be profiled, 
+:any:`Application` fully describes the application configuration to be profiled,
 including the features the application uses, e.g. OpenMP, MPI, CUDA, etc.
-Each specific application **configuration** has its own application record.  
-For example, if an application can operate with or without OpenMP then there 
-are potentially two application records for the same application code: one 
+Each specific application **configuration** has its own application record.
+For example, if an application can operate with or without OpenMP then there
+are potentially two application records for the same application code: one
 specifying OpenMP is used and the other specifying OpenMP is not used.
 """
 
@@ -49,7 +49,7 @@ def attributes():
     from tau.model.measurement import Measurement
     from tau.cli.arguments import ParseBooleanAction
     return {
-        'projects': { 
+        'projects': {
             'collection': Project,
             'via': 'applications',
             'description': 'projects using this application'
@@ -62,7 +62,7 @@ def attributes():
             'argparse': {'metavar': '<application_name>'}
         },
         'openmp': {
-            'type': 'boolean', 
+            'type': 'boolean',
             'description': 'application uses OpenMP',
             'default': False,
             'argparse': {'flags': ('--openmp',),
@@ -82,6 +82,17 @@ def attributes():
                          'const': True,
                          'action': ParseBooleanAction},
             'on_change': Application.attribute_changed
+        },
+        'tbb': {
+            'type': 'boolean',
+            'description': 'application uses TBB',
+            'default': False,
+            'argparse': {'flags': ('--tbb',),
+                         'metavar': 'T/F',
+                         'nargs': '?',
+                         'const': True,
+                         'action': ParseBooleanAction},
+            'on_change': Application.attribute_changed}
         },
         'mpi': {
             'type': 'boolean',
@@ -151,13 +162,13 @@ def attributes():
             'on_change': Application.attribute_changed
         }
     }
-        
+
 
 class Application(Model):
     """Application data model."""
-    
+
     __attributes__ = attributes
-    
+
     @classmethod
     def attribute_changed(cls, model, attr, new_value):
         if model.is_selected():
@@ -172,7 +183,7 @@ class Application(Model):
         else:
             if select_file and not os.path.exists(select_file):
                 raise ConfigurationError("Selective instrumentation file '%s' not found" % select_file)
-    
+
     def on_create(self):
         self._check_select_file()
 
@@ -202,16 +213,16 @@ class Application(Model):
         except (ProjectSelectionError, ExperimentSelectionError):
             return False
         return selected['application'] == self.eid
-    
+
     def check_compiler(self, compilers):
         """Checks a list of compilers for compatibility with this application configuration.
-        
+
         Args:
             compilers (list): :any:`Compiler` instances that could possibly be compatible with this application.
-            
+
         Returns:
             Compiler: A compiler from `compilers` that can be used to build the application.
-            
+
         Raises:
             ConfigurationError: No compiler in `compilers` is compatible with this application.
         """
@@ -225,7 +236,7 @@ class Application(Model):
             elif is_host and not (self['mpi'] or self['shmem']):
                 found.append(compiler)
         if not found:
-            raise ConfigurationError("Application '%s' is not compatible with any of these compilers:\n  %s" % 
+            raise ConfigurationError("Application '%s' is not compatible with any of these compilers:\n  %s" %
                                      (self['name'], '\n  '.join(compiler['path'] for compiler in compilers)))
         # If more than one compiler is compatible then choose the first one
         return found[0]
