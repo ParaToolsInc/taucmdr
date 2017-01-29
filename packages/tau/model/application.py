@@ -92,7 +92,7 @@ def attributes():
                          'nargs': '?',
                          'const': True,
                          'action': ParseBooleanAction},
-            'on_change': Application.attribute_changed}
+            'on_change': Application.attribute_changed
         },
         'mpi': {
             'type': 'boolean',
