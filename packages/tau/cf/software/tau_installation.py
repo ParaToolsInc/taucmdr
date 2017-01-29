@@ -233,7 +233,7 @@ class TauInstallation(Installation):
         self.opencl_support = opencl_support
         self.opencl_prefix = opencl_prefix
         self.pthreads_support = pthreads_support
-        self.tbb= tbb_support
+        self.tbb_support = tbb_support
         self.mpi_support = mpi_support
         self.mpi_include_path = mpi_include_path
         self.mpi_library_path = mpi_library_path
