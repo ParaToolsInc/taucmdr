@@ -81,11 +81,6 @@ else
   endif
 endif
 
-# If running under Travis-CI disable progress bars to keep logs short and clean
-ifneq ($(TRAVIS),)
-  export TAU_DISABLE_PROGRESS_BARS=1
-endif
-
 # Miniconda configuration
 USE_MINICONDA = true
 ifeq ($(OS),Darwin)

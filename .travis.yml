@@ -17,6 +17,7 @@ sudo: false
 env:
   global:
     - INSTALLDIR="$HOME/taucmdr-test"
+    - __TAU_PROGRESS_BARS__="minimal"
   matrix:
     - OS='Ubuntu Precise' # Add more python versions to this array to expand test matrix
 

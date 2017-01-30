@@ -39,6 +39,7 @@ from contextlib import contextmanager
 from datetime import datetime
 from termcolor import termcolor
 from tau import logger
+from tau.error import ConfigurationError
 
 
 LOGGER = logger.get_logger(__name__)
@@ -83,11 +84,11 @@ def load_average():
 
 
 @contextmanager
-def progress_spinner(show_cpu=True, stream=None):
+def progress_spinner(show_cpu=True):
     """Show a progress spinner until the wrapped object returns."""
     flag = threading.Event()
     def show_progress():
-        with ProgressIndicator(show_cpu=show_cpu, stream=stream) as spinner:
+        with ProgressIndicator(show_cpu=show_cpu) as spinner:
             while not flag.wait(0.25):
                 spinner.update()
     thread = threading.Thread(target=show_progress)
@@ -105,32 +106,31 @@ def progress_spinner(show_cpu=True, stream=None):
 class ProgressIndicator(object):
     """Display a progress bar or spinner on a stream."""
 
-    class NullStream(object):
-        def write(self, *_): 
-            pass
-        def flush(self, *_): 
-            pass
-
-    def __init__(self, total_size=0, block_size=1, show_cpu=True, stream=None):
+    def __init__(self, total_size=0, block_size=1, show_cpu=True, mode=None):
         """ Initialize the ProgressBar object.
 
         Args:
             total_size (int): Total amount of work to be completed.
             block_size (int): Size of a work block.
             show_cpu (bool): If True, show CPU load average as well as progress.
-            stream (file): Stream object to write progress indication to.
+            mode (str): One of 'full', 'minimal', 'disabled', or None.
+                        If ``mode == None`` then the default value for ``mode`` is taken from the __TAU_PROGRESS_BARS__
+                        environment variable.  If that variable is not set then the default is 'full'.
+                        If ``mode == 'full'`` then all output is written to :any:`sys.stdout`.
+                        If ``mode == 'minimal'`` then a single '.' character is written to sys.stdout approximately
+                        every five seconds without erasing the line (best for Travis regression test).
+                        If ``mode == 'disabled'`` then no output is written to stdout.
         """
-        if stream is None:
-            if os.environ.get('TAU_DISABLE_PROGRESS_BARS', False):
-                stream = ProgressIndicator.NullStream()
-            else:    
-                stream = sys.stdout
-        self._spinner = itertools.cycle(['-', '/', '|', '\\'])
+        if mode is None:
+            mode = os.environ.get('__TAU_PROGRESS_BARS__', 'full').lower()
+        if mode not in ('none', 'disabled', 'minimal', 'full'):
+            raise ConfigurationError('Invalid value for __TAU_PROGRESS_BARS__ environment variable: %s' % mode)               
         self.count = 0
         self.total_size = total_size
         self.block_size = block_size
         self.show_cpu = show_cpu
-        self.stream = stream
+        self.mode = mode
+        self._spinner = itertools.cycle(['-', '/', '|', '\\'])
         self._start_time = None
         self._line_marker = logger.LINE_MARKER
         self._color_line_marker = termcolor.colored(logger.LINE_MARKER, 'red')
@@ -153,7 +153,17 @@ class ProgressIndicator(object):
             block_size (int): Size of a work block.
             total_size (int): Total amount of work to be completed.
         """
-        if getattr(logging, logger.LOG_LEVEL) < logging.ERROR: 
+        if self.mode == 'disabled':
+            return
+        elif self.mode == 'minimal':
+            if self._start_time is None:
+                self._start_time = datetime.now()
+                sys.stdout.write(self._color_line_marker)
+            tdelta = datetime.now() - self._start_time
+            if tdelta.total_seconds() >= 5:
+                sys.stdout.write('.')
+                sys.stdout.flush()
+        elif getattr(logging, logger.LOG_LEVEL) < logging.ERROR: 
             if count is not None:
                 self.count = count
             if block_size is not None:
@@ -187,16 +197,20 @@ class ProgressIndicator(object):
                 progress = "[{:-<{width}}] {: 6.1%}".format(colored_bar_fill, percent, width=width)
             else:
                 progress = '[%s]' % self._spinner.next()
-            self.stream.write('\r')
-            self.stream.write(self._color_line_marker)
-            self.stream.write(elapsed)
-            self.stream.write(cpu_avg)
-            self.stream.write(progress)
-            self.stream.flush()
+            sys.stdout.write('\r')
+            sys.stdout.write(self._color_line_marker)
+            sys.stdout.write(elapsed)
+            sys.stdout.write(cpu_avg)
+            sys.stdout.write(progress)
+            sys.stdout.flush()
 
     def complete(self):
-        tdelta = datetime.now() - self._start_time
-        elapsed = "Completed in %s seconds" % tdelta.total_seconds()
-        self.stream.write("\r{}{:{width}}\n".format(self._color_line_marker, elapsed, width=logger.LINE_WIDTH))
-        self.stream.flush()
-
+        if self.mode != 'disabled':
+            tdelta = datetime.now() - self._start_time
+            elapsed = "Completed in %s seconds" % tdelta.total_seconds()
+            if self.mode == 'minimal':
+                sys.stdout.write(' %s\n' % elapsed)
+            elif self.mode == 'full':
+                sys.stdout.write("\r{}{:{width}}\n".format(self._color_line_marker, elapsed, width=logger.LINE_WIDTH))
+            sys.stdout.flush()
+            self._start_time = None
