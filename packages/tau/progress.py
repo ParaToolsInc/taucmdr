@@ -131,10 +131,11 @@ class ProgressIndicator(object):
         self.show_cpu = show_cpu
         self.mode = mode
         self._spinner = itertools.cycle(['-', '/', '|', '\\'])
-        self._start_time = None
         self._line_marker = logger.LINE_MARKER
         self._color_line_marker = termcolor.colored(logger.LINE_MARKER, 'red')
-
+        self._last_time = datetime.now()
+        self._start_time = None
+        
     def __enter__(self):
         self.update(0)
         return self
@@ -142,6 +143,57 @@ class ProgressIndicator(object):
     def __exit__(self, exc_type, exc_value, traceback):
         self.complete()
         return False
+    
+    def _update_minimal(self):
+        if self._start_time is None:
+            self._start_time = datetime.now()
+            sys.stdout.write(self._color_line_marker)
+        tdelta = datetime.now() - self._last_time
+        if tdelta.total_seconds() >= 5:
+            self._last_time = datetime.now()
+            sys.stdout.write('.')
+            sys.stdout.flush()
+            
+    def _update_full(self, count, block_size, total_size):
+        if count is not None:
+            self.count = count
+        if block_size is not None:
+            self.block_size = block_size
+        if total_size is not None:
+            self.total_size = total_size
+        if self._start_time is None:
+            self._start_time = datetime.now()
+        show_bar = self.total_size > 0
+        tdelta = datetime.now() - self._start_time
+        elapsed = "% 6.1f seconds " % tdelta.total_seconds()
+        line_width = logger.LINE_WIDTH - len(self._line_marker) - len(elapsed) - 5
+        if self.show_cpu:
+            cpu_load = min(load_average(), 1.0)
+            cpu_width = 10 if show_bar else line_width - 5
+            cpu_fill = '|'*min(max(int(cpu_load*cpu_width), 1), cpu_width)
+            colored_cpu_fill = termcolor.colored(cpu_fill, 'white', 'on_white')
+            hidden_chars = len(colored_cpu_fill) - len(cpu_fill)
+            width = cpu_width + (hidden_chars if show_bar else 0)
+            cpu_avg = "[CPU: {: 6.1%} {:<{width}}] ".format(cpu_load, colored_cpu_fill, width=width)
+            line_width -= len(cpu_avg) - hidden_chars
+        else:
+            cpu_avg = ''
+        if show_bar:
+            percent = min(float(self.count*self.block_size) / self.total_size, 1.0)
+            bar_width = line_width - 5
+            bar_fill = '>'*min(max(int(percent*bar_width), 1), bar_width)
+            colored_bar_fill = termcolor.colored(bar_fill, 'green', 'on_green')
+            hidden_chars = len(colored_bar_fill) - len(bar_fill)
+            width = bar_width + hidden_chars
+            progress = "[{:-<{width}}] {: 6.1%}".format(colored_bar_fill, percent, width=width)
+        else:
+            progress = '[%s]' % self._spinner.next()
+        sys.stdout.write('\r')
+        sys.stdout.write(self._color_line_marker)
+        sys.stdout.write(elapsed)
+        sys.stdout.write(cpu_avg)
+        sys.stdout.write(progress)
+        sys.stdout.flush()
 
     def update(self, count=None, block_size=None, total_size=None):
         """Show progress.
@@ -153,56 +205,12 @@ class ProgressIndicator(object):
             block_size (int): Size of a work block.
             total_size (int): Total amount of work to be completed.
         """
-        if self.mode == 'disabled':
+        if self.mode == 'disabled' or getattr(logging, logger.LOG_LEVEL) >= logging.ERROR:
             return
         elif self.mode == 'minimal':
-            if self._start_time is None:
-                self._start_time = datetime.now()
-                sys.stdout.write(self._color_line_marker)
-            tdelta = datetime.now() - self._start_time
-            if tdelta.total_seconds() >= 5:
-                sys.stdout.write('.')
-                sys.stdout.flush()
-        elif getattr(logging, logger.LOG_LEVEL) < logging.ERROR: 
-            if count is not None:
-                self.count = count
-            if block_size is not None:
-                self.block_size = block_size
-            if total_size is not None:
-                self.total_size = total_size
-            if self._start_time is None:
-                self._start_time = datetime.now()
-            show_bar = self.total_size > 0
-            tdelta = datetime.now() - self._start_time
-            elapsed = "% 6.1f seconds " % tdelta.total_seconds()
-            line_width = logger.LINE_WIDTH - len(self._line_marker) - len(elapsed) - 5
-            if self.show_cpu:
-                cpu_load = min(load_average(), 1.0)
-                cpu_width = 10 if show_bar else line_width - 5
-                cpu_fill = '|'*min(max(int(cpu_load*cpu_width), 1), cpu_width)
-                colored_cpu_fill = termcolor.colored(cpu_fill, 'white', 'on_white')
-                hidden_chars = len(colored_cpu_fill) - len(cpu_fill)
-                width = cpu_width + (hidden_chars if show_bar else 0)
-                cpu_avg = "[CPU: {: 6.1%} {:<{width}}] ".format(cpu_load, colored_cpu_fill, width=width)
-                line_width -= len(cpu_avg) - hidden_chars
-            else:
-                cpu_avg = ''
-            if show_bar:
-                percent = min(float(self.count*self.block_size) / self.total_size, 1.0)
-                bar_width = line_width - 5
-                bar_fill = '>'*min(max(int(percent*bar_width), 1), bar_width)
-                colored_bar_fill = termcolor.colored(bar_fill, 'green', 'on_green')
-                hidden_chars = len(colored_bar_fill) - len(bar_fill)
-                width = bar_width + hidden_chars
-                progress = "[{:-<{width}}] {: 6.1%}".format(colored_bar_fill, percent, width=width)
-            else:
-                progress = '[%s]' % self._spinner.next()
-            sys.stdout.write('\r')
-            sys.stdout.write(self._color_line_marker)
-            sys.stdout.write(elapsed)
-            sys.stdout.write(cpu_avg)
-            sys.stdout.write(progress)
-            sys.stdout.flush()
+            self._update_minimal()
+        elif self.mode == 'full':
+            self._update_full(count, block_size, total_size)
 
     def complete(self):
         if self.mode != 'disabled':
