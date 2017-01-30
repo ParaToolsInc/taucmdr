@@ -414,7 +414,28 @@ class Target(Model):
         except (ProjectSelectionError, ExperimentSelectionError):
             return False
         return selected['target'] == self.eid
+
+    def architecture(self):
+        from tau.cf.target import Architecture
+        return Architecture.find(self['host_arch'])
     
+    def operating_system(self):
+        from tau.cf.target import OperatingSystem
+        return OperatingSystem.find(self['host_os'])
+    
+    def sources(self):
+        """Get paths to all source packages known to this target.
+        
+        Returns:
+            dict: Software package paths indexed by package name.
+        """ 
+        sources = {}
+        for attr in self.attributes:
+            if attr.endswith('_source'):
+                key = attr.replace('_source', '')
+                sources[key] = self.get(attr)
+        return sources
+
     def compilers(self):
         """Get information about the compilers used by this target configuration.
         
@@ -499,3 +520,43 @@ class Target(Model):
             raise ConfigurationError('\n'.join(parts), *hints)
         return found
 
+    def papi_metrics(self, event_type="PRESET", include_modifiers=False):
+        """List PAPI metrics available on this target.
+        
+        Returns a list of (name, description) tuples corresponding to the
+        requested PAPI event type and possibly the event modifiers.
+        
+        Args:
+            event_type (str): Either "PRESET" or "NATIVE".
+            include_modifiers (bool): If True include event modifiers, 
+                                      e.g. BR_INST_EXEC:NONTAKEN_COND as well as BR_INST_EXEC.
+        
+        Returns:
+            list: List of event name/description tuples.
+        """
+        assert event_type == "PRESET" or event_type == "NATIVE"
+        from HTMLParser import HTMLParser
+        from tau.cf.software.papi_installation import PapiInstallation
+        metrics = []
+        html_parser = HTMLParser()
+        papi = PapiInstallation(self.sources(), self.architecture(), self.operating_system(), self.compilers())
+        def _format(item):
+            name = item.attrib['name']
+            desc = html_parser.unescape(item.attrib['desc'])
+            desc = desc[0].capitalize() + desc[1:] + "."
+            return name, desc
+        xml_event_info = papi.xml_event_info()
+        for eventset in xml_event_info.iter('eventset'):
+            if eventset.attrib['type'] == event_type:
+                for event in eventset.iter('event'):
+                    if include_modifiers:
+                        for modifier in event.iter('modifier'):
+                            metrics.append(_format(modifier))
+                    metrics.append(_format(event))
+        return metrics
+
+    def tau_metrics(self):
+        return [("TIME", "Wallclock time.")]
+    
+    def cupti_metrics(self):
+        return []

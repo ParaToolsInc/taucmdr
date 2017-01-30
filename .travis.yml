@@ -17,6 +17,7 @@ sudo: false
 env:
   global:
     - INSTALLDIR="$HOME/taucmdr-test"
+    - __TAU_PROGRESS_BARS__="minimal"
   matrix:
     - OS='Ubuntu Precise' # Add more python versions to this array to expand test matrix
 
@@ -42,8 +43,9 @@ install:
   - which pip
   - pip install --prefix "$INSTALLDIR/conda" -r requirements.txt
 
+# Use travis_wait to extend the expected runtime of the command.
 script:
-  - coverage run setup.py test
+  - travis_wait 30 coverage run setup.py test
 
 after_failure:
   - tail -1000 "$HOME/.tau/debug_log"
@@ -64,9 +66,9 @@ notifications:
   email:
     recipients:
       - taucmdr-notify@paratools.com
-    on_success: always  # options: [always|never|change]
-    on_failure: always
-    on_start: always
+    on_success: change  # options: [always|never|change]
+    on_failure: change
+    on_start: never
   webhooks:
     urls: # gitter.im announcement
       secure: TQIzGX9yWDc+ayKNpWmNjCCucaGCwt9CYeThbzdmGsA30hJkRRuDNdx5ZDvknRktV+h+QYgLGLR3ueVUuGL0/kf23vPUZD6kTTY0c3ZJ4fonDx5Ydr+zhc1iJzO/Ord1tnY5xxfvKpfWEUekFQT5SSJMt61CQoNmVSDdTDpFcMC4GEzeQD6fdP0BxgiFvw4UOnfU/poM9OmjaVdKoFyax1+gub4mC/GG9faxK6IdtOAtPsGcUOpzBypwj3NRGgDuq+jErnvm3tLitVJz8h1ab5eQMgTAlCK8q3w7x/WaWxsVXnErjDqJIGs9mpxmyOJERoRv7hQdlAZtKlIZsdGpE7O9B9ooBE/zAfRqGHee5CsA/UKx6XDt9h0rYt/zNJ5RcIrbHRZMilwdC4PXXjN7FNNkpDp0LhhpzM19tZx9+Zb/QAGOTwIDq5adQfiF9ctE7OAlvqnSbvhTL0bzLmYthIURc9nBks4uqUAKq/LEnHz2CgiL8fGaJbUXqGSBc/prKYREa9ckfBdjFfngSnLBJB6oLKQBGRA/Y8thi7etu8TZD9CsWcBJhXFJTPkFArFkJVRpURNpQ0OIS54q0bmTW+dPbSJ95v2GEttCuAIyqDgffuwqqVYx0KmaMHKvxUGx0Mu8uC9Mo5FLEDiM05mE/lAgkK9wgwbgFW+A5g2t7x8=

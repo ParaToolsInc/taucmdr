@@ -52,5 +52,5 @@ class ExperimentSelectCommand(AbstractCommand):
 
 
 COMMAND = ExperimentSelectCommand(__name__, 
-                                  summary_fmt=("Select a project configuration.\n"
-                                               "Use `project list` to see all project configurations."))
+                                  summary_fmt=("Select an experiment.\n"
+                                               "Use `experiment list` to see all experiments."))
