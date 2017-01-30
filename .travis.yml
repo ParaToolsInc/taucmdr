@@ -43,8 +43,9 @@ install:
   - which pip
   - pip install --prefix "$INSTALLDIR/conda" -r requirements.txt
 
+# Use travis_wait to extend the expected runtime of the command.
 script:
-  - coverage run setup.py test
+  - travis_wait 30 coverage run setup.py test
 
 after_failure:
   - tail -1000 "$HOME/.tau/debug_log"
