@@ -80,10 +80,11 @@
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">fileinput</span>
+<span class="kn">from</span> <span class="nn">xml.etree</span> <span class="kn">import</span> <span class="n">ElementTree</span> <span class="k">as</span> <span class="n">etree</span>
 <span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">util</span>
 <span class="kn">from</span> <span class="nn">tau.cf.software.installation</span> <span class="kn">import</span> <span class="n">AutotoolsInstallation</span>
 
-<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 <span class="n">REPOS</span> <span class="o">=</span> <span class="p">{</span><span class="bp">None</span><span class="p">:</span> <span class="s1">&#39;http://icl.utk.edu/projects/papi/downloads/papi-5.5.1.tar.gz&#39;</span><span class="p">}</span>
 
@@ -93,9 +94,10 @@
 <div class="viewcode-block" id="PapiInstallation"><a class="viewcode-back" href="../../../../tau.cf.software.papi_installation.html#tau.cf.software.papi_installation.PapiInstallation">[docs]</a><span class="k">class</span> <span class="nc">PapiInstallation</span><span class="p">(</span><span class="n">AutotoolsInstallation</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Encapsulates a PAPI installation.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">target_arch</span><span class="p">,</span> <span class="n">target_os</span><span class="p">,</span> <span class="n">compilers</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">PapiInstallation</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="s1">&#39;papi&#39;</span><span class="p">,</span> <span class="s1">&#39;PAPI&#39;</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">target_arch</span><span class="p">,</span> <span class="n">target_os</span><span class="p">,</span> 
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">target_arch</span><span class="p">,</span> <span class="n">target_os</span><span class="p">,</span> <span class="n">compilers</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">PapiInstallation</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s1">&#39;papi&#39;</span><span class="p">,</span> <span class="s1">&#39;PAPI&#39;</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">target_arch</span><span class="p">,</span> <span class="n">target_os</span><span class="p">,</span> 
                                                <span class="n">compilers</span><span class="p">,</span> <span class="n">REPOS</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="n">LIBRARIES</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xml_event_info</span> <span class="o">=</span> <span class="bp">None</span>
 
     <span class="k">def</span> <span class="nf">_prepare_src</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="c1"># PAPI&#39;s source lives in a &#39;src&#39; directory instead of the usual top level location</span>
@@ -109,9 +111,15 @@
         <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fileinput</span><span class="o">.</span><span class="n">input</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src_prefix</span><span class="p">,</span> <span class="s1">&#39;Makefile&#39;</span><span class="p">),</span> <span class="n">inplace</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
             <span class="c1"># fileinput.input with inplace=1 redirects stdout to the input file ... freaky</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;TESTS =&#39;</span><span class="p">,</span> <span class="s1">&#39;#TESTS =&#39;</span><span class="p">))</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">PapiInstallation</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="n">flags</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">parallel</span><span class="p">)</span></div></div>
+        <span class="nb">super</span><span class="p">(</span><span class="n">PapiInstallation</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="n">flags</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">parallel</span><span class="p">)</span></div>
 
-
+<div class="viewcode-block" id="PapiInstallation.xml_event_info"><a class="viewcode-back" href="../../../../tau.cf.software.papi_installation.html#tau.cf.software.papi_installation.PapiInstallation.xml_event_info">[docs]</a>    <span class="k">def</span> <span class="nf">xml_event_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xml_event_info</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">install</span><span class="p">()</span>
+            <span class="n">xml_event_info</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">get_command_output</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bin_path</span><span class="p">,</span> <span class="s1">&#39;papi_xml_event_info&#39;</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_xml_event_info</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">xml_event_info</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xml_event_info</span></div></div>
+    
 </pre></div>
 
       </div>

@@ -18,6 +18,7 @@ Submodules
    tau.cli.commands.target.delete
    tau.cli.commands.target.edit
    tau.cli.commands.target.list
+   tau.cli.commands.target.metrics
 
 Module contents
 ---------------

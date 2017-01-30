@@ -86,7 +86,7 @@
 <span class="kn">from</span> <span class="nn">tau.cf.storage</span> <span class="kn">import</span> <span class="n">StorageError</span>
 <span class="kn">from</span> <span class="nn">tau.cf.storage.local_file</span> <span class="kn">import</span> <span class="n">LocalFileStorage</span>
 
-<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 <div class="viewcode-block" id="ProjectStorageError"><a class="viewcode-back" href="../../../../tau.cf.storage.project.html#tau.cf.storage.levels.ProjectStorageError">[docs]</a><span class="k">class</span> <span class="nc">ProjectStorageError</span><span class="p">(</span><span class="n">StorageError</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Indicates that the project storage has not been initialized.&quot;&quot;&quot;</span>
@@ -96,14 +96,14 @@
                    <span class="s2">&quot;</span><span class="si">%(hints)s</span><span class="se">\n</span><span class="s2">&quot;</span>
                    <span class="s2">&quot;Please contact </span><span class="si">%(contact)s</span><span class="s2"> for assistance.&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">search_root</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">search_root</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Initialize the error object.</span>
 <span class="sd">        </span>
 <span class="sd">        Args:</span>
 <span class="sd">            search_root (str): Directory in which the search for a project directory was initiated.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;Project directory not found in &#39;</span><span class="si">%s</span><span class="s2">&#39; or any of its parent directories.&quot;</span> <span class="o">%</span> <span class="n">search_root</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">ProjectStorageError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ProjectStorageError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">search_root</span> <span class="o">=</span> <span class="n">search_root</span></div>
         
 
@@ -115,8 +115,8 @@
 <span class="sd">    (i.e. performance data) and the project configuration.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">ProjectStorage</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="s1">&#39;project&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ProjectStorage</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s1">&#39;project&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
     
 <div class="viewcode-block" id="ProjectStorage.connect_filesystem"><a class="viewcode-back" href="../../../../tau.cf.storage.project.html#tau.cf.storage.levels.ProjectStorage.connect_filesystem">[docs]</a>    <span class="k">def</span> <span class="nf">connect_filesystem</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Prepares the store filesystem for reading and writing.&quot;&quot;&quot;</span>

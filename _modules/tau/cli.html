@@ -94,11 +94,11 @@
 <span class="kn">from</span> <span class="nn">tau.error</span> <span class="kn">import</span> <span class="n">ConfigurationError</span><span class="p">,</span> <span class="n">InternalError</span>
 
 
-<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 <span class="n">SCRIPT_COMMAND</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">TAU_SCRIPT</span><span class="p">)</span>
 
-<span class="n">COMMANDS_PACKAGE_NAME</span> <span class="o">=</span> <span class="n">__name__</span> <span class="o">+</span> <span class="s1">&#39;.commands&#39;</span>
+<span class="n">COMMANDS_PACKAGE_NAME</span> <span class="o">=</span> <span class="vm">__name__</span> <span class="o">+</span> <span class="s1">&#39;.commands&#39;</span>
 
 <span class="n">_COMMANDS</span> <span class="o">=</span> <span class="p">{</span><span class="n">SCRIPT_COMMAND</span><span class="p">:</span> <span class="p">{}}</span>
 
@@ -115,10 +115,10 @@
     <span class="n">message_fmt</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Command &#39;</span><span class="si">%(value)s</span><span class="s2">&#39; is ambiguous.</span><span class="se">\n</span><span class="s2">&quot;</span>
                    <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
                    <span class="s2">&quot;</span><span class="si">%(hints)s</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">matches</span><span class="p">,</span> <span class="o">*</span><span class="n">hints</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">matches</span><span class="p">,</span> <span class="o">*</span><span class="n">hints</span><span class="p">):</span>
         <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Did you mean `</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">`?&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">SCRIPT_COMMAND</span><span class="p">,</span> <span class="n">match</span><span class="p">)</span> <span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">matches</span><span class="p">]</span>
         <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Try `</span><span class="si">%s</span><span class="s2"> --help`&quot;</span> <span class="o">%</span> <span class="n">SCRIPT_COMMAND</span><span class="p">)</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">AmbiguousCommandError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="o">*</span><span class="n">hints</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">parts</span><span class="p">))</span></div>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AmbiguousCommandError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="o">*</span><span class="n">hints</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">parts</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="_command_as_list"><a class="viewcode-back" href="../../tau.cli.html#tau.cli._command_as_list">[docs]</a><span class="k">def</span> <span class="nf">_command_as_list</span><span class="p">(</span><span class="n">module_name</span><span class="p">):</span>
@@ -182,7 +182,7 @@
             <span class="n">dct</span><span class="p">[</span><span class="n">car</span><span class="p">][</span><span class="s1">&#39;__module__&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">module</span><span class="p">]</span>
 
     <span class="n">command_module</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">COMMANDS_PACKAGE_NAME</span><span class="p">]</span>
-    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">util</span><span class="o">.</span><span class="n">walk_packages</span><span class="p">(</span><span class="n">command_module</span><span class="o">.</span><span class="n">__path__</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="n">command_module</span><span class="o">.</span><span class="n">__name__</span><span class="o">+</span><span class="s1">&#39;.&#39;</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">util</span><span class="o">.</span><span class="n">walk_packages</span><span class="p">(</span><span class="n">command_module</span><span class="o">.</span><span class="n">__path__</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="n">command_module</span><span class="o">.</span><span class="vm">__name__</span><span class="o">+</span><span class="s1">&#39;.&#39;</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">module</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;__main__&#39;</span><span class="p">):</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">lookup</span><span class="p">(</span><span class="n">_command_as_list</span><span class="p">(</span><span class="n">module</span><span class="p">),</span> <span class="n">_COMMANDS</span><span class="p">)</span>
@@ -258,7 +258,7 @@
             <span class="k">continue</span>
         <span class="k">for</span> <span class="n">subcmd</span><span class="p">,</span> <span class="n">mod</span> <span class="ow">in</span> <span class="n">topcmd</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">subcmd</span> <span class="o">!=</span> <span class="s1">&#39;__module__&#39;</span> <span class="ow">and</span> <span class="n">subcmd</span> <span class="o">!=</span> <span class="s1">&#39;tests&#39;</span><span class="p">:</span>
-                <span class="n">all_commands</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mod</span><span class="p">[</span><span class="s1">&#39;__module__&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
+                <span class="n">all_commands</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mod</span><span class="p">[</span><span class="s1">&#39;__module__&#39;</span><span class="p">]</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">all_commands</span></div>
 
 <div class="viewcode-block" id="find_command"><a class="viewcode-back" href="../../tau.cli.html#tau.cli.find_command">[docs]</a><span class="k">def</span> <span class="nf">find_command</span><span class="p">(</span><span class="n">cmd</span><span class="p">):</span>

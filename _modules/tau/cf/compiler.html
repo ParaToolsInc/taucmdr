@@ -117,14 +117,14 @@
 <span class="kn">from</span> <span class="nn">tau.error</span> <span class="kn">import</span> <span class="n">ConfigurationError</span>
 <span class="kn">from</span> <span class="nn">tau.cf.objects</span> <span class="kn">import</span> <span class="n">TrackedInstance</span><span class="p">,</span> <span class="n">KeyedRecord</span>
 
-<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
 
 <div class="viewcode-block" id="Knowledgebase"><a class="viewcode-back" href="../../../tau.cf.compiler.html#tau.cf.compiler.Knowledgebase">[docs]</a><span class="k">class</span> <span class="nc">Knowledgebase</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;TAU compiler knowledgebase front-end.&quot;&quot;&quot;</span>
     
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keyword</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keyword</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">keyword</span> <span class="o">=</span> <span class="n">keyword</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">description</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_families</span> <span class="o">=</span> <span class="p">{}</span>
@@ -136,21 +136,21 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_roles</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">_CompilerRole</span><span class="p">(</span><span class="n">keyword</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="o">+</span><span class="n">key</span><span class="p">,</span> <span class="n">language</span><span class="p">,</span> <span class="n">envars</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
 
     <span class="nd">@classmethod</span>
-<div class="viewcode-block" id="Knowledgebase.all_roles"><a class="viewcode-back" href="../../../tau.cf.compiler.html#tau.cf.compiler.Knowledgebase.all_roles">[docs]</a>    <span class="k">def</span> <span class="nf">all_roles</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+<div class="viewcode-block" id="Knowledgebase.all_roles"><a class="viewcode-back" href="../../../tau.cf.compiler.html#tau.cf.compiler.Knowledgebase.all_roles">[docs]</a>    <span class="k">def</span> <span class="nf">all_roles</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return all known compiler roles.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_CompilerRole</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> </div>
     
     <span class="nd">@classmethod</span>
-<div class="viewcode-block" id="Knowledgebase.find_role"><a class="viewcode-back" href="../../../tau.cf.compiler.html#tau.cf.compiler.Knowledgebase.find_role">[docs]</a>    <span class="k">def</span> <span class="nf">find_role</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">keyword</span><span class="p">):</span>
+<div class="viewcode-block" id="Knowledgebase.find_role"><a class="viewcode-back" href="../../../tau.cf.compiler.html#tau.cf.compiler.Knowledgebase.find_role">[docs]</a>    <span class="k">def</span> <span class="nf">find_role</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">keyword</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Find a compiler role with the given keyword.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_CompilerRole</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">keyword</span><span class="p">)</span></div>
     
     <span class="nd">@classmethod</span>
-<div class="viewcode-block" id="Knowledgebase.all_compilers"><a class="viewcode-back" href="../../../tau.cf.compiler.html#tau.cf.compiler.Knowledgebase.all_compilers">[docs]</a>    <span class="k">def</span> <span class="nf">all_compilers</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+<div class="viewcode-block" id="Knowledgebase.all_compilers"><a class="viewcode-back" href="../../../tau.cf.compiler.html#tau.cf.compiler.Knowledgebase.all_compilers">[docs]</a>    <span class="k">def</span> <span class="nf">all_compilers</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">_CompilerInfo</span><span class="o">.</span><span class="n">all</span><span class="p">()</span></div>
     
     <span class="nd">@classmethod</span>
-<div class="viewcode-block" id="Knowledgebase.find_compiler"><a class="viewcode-back" href="../../../tau.cf.compiler.html#tau.cf.compiler.Knowledgebase.find_compiler">[docs]</a>    <span class="k">def</span> <span class="nf">find_compiler</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">family</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Knowledgebase.find_compiler"><a class="viewcode-back" href="../../../tau.cf.compiler.html#tau.cf.compiler.Knowledgebase.find_compiler">[docs]</a>    <span class="k">def</span> <span class="nf">find_compiler</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">family</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">_CompilerInfo</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">family</span><span class="p">,</span> <span class="n">role</span><span class="p">)</span></div>
 
     <span class="nd">@property</span>
@@ -226,13 +226,13 @@
     
     <span class="n">__key__</span> <span class="o">=</span> <span class="s2">&quot;keyword&quot;</span>
     
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keyword</span><span class="p">,</span> <span class="n">language</span><span class="p">,</span> <span class="n">envars</span><span class="p">,</span> <span class="n">kbase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keyword</span><span class="p">,</span> <span class="n">language</span><span class="p">,</span> <span class="n">envars</span><span class="p">,</span> <span class="n">kbase</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">keyword</span> <span class="o">=</span> <span class="n">keyword</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">language</span> <span class="o">=</span> <span class="n">language</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">envars</span> <span class="o">=</span> <span class="n">envars</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">kbase</span> <span class="o">=</span> <span class="n">kbase</span>
 
-    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">keyword</span></div>
 
 <div class="viewcode-block" id="_CompilerFamily"><a class="viewcode-back" href="../../../tau.cf.compiler.html#tau.cf.compiler._CompilerFamily">[docs]</a><span class="k">class</span> <span class="nc">_CompilerFamily</span><span class="p">(</span><span class="n">TrackedInstance</span><span class="p">):</span>
@@ -256,7 +256,7 @@
     
     <span class="n">_probe_cache</span> <span class="o">=</span> <span class="p">{}</span>
     
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kbase</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">members</span><span class="p">,</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kbase</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">members</span><span class="p">,</span>
                  <span class="n">version_flags</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                  <span class="n">include_path_flags</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> 
                  <span class="n">library_path_flags</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> 
@@ -278,11 +278,11 @@
 <div class="viewcode-block" id="_CompilerFamily.installation"><a class="viewcode-back" href="../../../tau.cf.compiler.html#tau.cf.compiler._CompilerFamily.installation">[docs]</a>    <span class="k">def</span> <span class="nf">installation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">InstalledCompilerFamily</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
 
     <span class="nd">@classmethod</span>
-<div class="viewcode-block" id="_CompilerFamily.probe"><a class="viewcode-back" href="../../../tau.cf.compiler.html#tau.cf.compiler._CompilerFamily.probe">[docs]</a>    <span class="k">def</span> <span class="nf">probe</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">absolute_path</span><span class="p">,</span> <span class="n">candidates</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="_CompilerFamily.probe"><a class="viewcode-back" href="../../../tau.cf.compiler.html#tau.cf.compiler._CompilerFamily.probe">[docs]</a>    <span class="k">def</span> <span class="nf">probe</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">absolute_path</span><span class="p">,</span> <span class="n">candidates</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Determine the compiler family of a given command.</span>
 
 <span class="sd">        Executes the command with :any:`version_flags` from all families</span>
@@ -299,7 +299,7 @@
 <span class="sd">            _CompilerFamily: The compiler&#39;s family.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">_probe_cache</span><span class="p">[</span><span class="n">absolute_path</span><span class="p">]</span>
+            <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_probe_cache</span><span class="p">[</span><span class="n">absolute_path</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
             <span class="k">pass</span>
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Probing compiler &#39;</span><span class="si">%s</span><span class="s2">&#39; to discover compiler family&quot;</span><span class="p">,</span> <span class="n">absolute_path</span><span class="p">)</span>
@@ -308,9 +308,9 @@
         <span class="c1"># Settle down pylint... the __instances__ member is created by the metaclass</span>
         <span class="c1"># pylint: disable=no-member</span>
         <span class="k">if</span> <span class="n">candidates</span><span class="p">:</span>
-            <span class="n">families</span> <span class="o">=</span> <span class="n">candidates</span> <span class="o">+</span> <span class="p">[</span><span class="n">inst</span> <span class="k">for</span> <span class="n">inst</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">__instances__</span> <span class="k">if</span> <span class="n">inst</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">candidates</span><span class="p">]</span>
+            <span class="n">families</span> <span class="o">=</span> <span class="n">candidates</span> <span class="o">+</span> <span class="p">[</span><span class="n">inst</span> <span class="k">for</span> <span class="n">inst</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__instances__</span> <span class="k">if</span> <span class="n">inst</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">candidates</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">families</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">__instances__</span>
+            <span class="n">families</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__instances__</span>
         <span class="k">for</span> <span class="n">family</span> <span class="ow">in</span> <span class="n">families</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">family</span><span class="o">.</span><span class="n">family_regex</span><span class="p">:</span>
                 <span class="k">continue</span>
@@ -324,7 +324,7 @@
             <span class="k">if</span> <span class="n">stdout</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">family</span><span class="o">.</span><span class="n">family_regex</span><span class="p">,</span> <span class="n">stdout</span><span class="p">):</span>
                     <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;&#39;</span><span class="si">%s</span><span class="s2">&#39; is a </span><span class="si">%s</span><span class="s2"> compiler&quot;</span><span class="p">,</span> <span class="n">absolute_path</span><span class="p">,</span> <span class="n">family</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-                    <span class="n">cls</span><span class="o">.</span><span class="n">_probe_cache</span><span class="p">[</span><span class="n">absolute_path</span><span class="p">]</span> <span class="o">=</span> <span class="n">family</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">_probe_cache</span><span class="p">[</span><span class="n">absolute_path</span><span class="p">]</span> <span class="o">=</span> <span class="n">family</span>
                     <span class="k">return</span> <span class="n">family</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;&#39;</span><span class="si">%s</span><span class="s2">&#39; is not a </span><span class="si">%s</span><span class="s2"> compiler&quot;</span><span class="p">,</span> <span class="n">absolute_path</span><span class="p">,</span> <span class="n">family</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
@@ -344,7 +344,7 @@
 <span class="sd">        short_descr (str): A short description for command line help.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">family</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="n">role</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">family</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="n">role</span><span class="p">):</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">family</span><span class="p">,</span> <span class="n">_CompilerFamily</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">role</span><span class="p">,</span> <span class="n">_CompilerRole</span><span class="p">)</span>
@@ -353,31 +353,31 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">role</span> <span class="o">=</span> <span class="n">role</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">short_descr</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> compiler&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">family</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">role</span><span class="o">.</span><span class="n">language</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="s2">&quot;(</span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">family</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">role</span><span class="p">)</span>
         
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">_find</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="n">family</span><span class="p">,</span> <span class="n">role</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_find</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="n">family</span><span class="p">,</span> <span class="n">role</span><span class="p">):</span>
         <span class="c1"># pylint: disable=too-many-return-statements</span>
         <span class="k">if</span> <span class="n">command</span> <span class="ow">and</span> <span class="n">family</span> <span class="ow">and</span> <span class="n">role</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">[</span><span class="n">info</span> <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">family</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">role</span><span class="p">,</span> <span class="p">[])</span> <span class="k">if</span> <span class="n">info</span><span class="o">.</span><span class="n">command</span> <span class="o">==</span> <span class="n">command</span><span class="p">]</span>
         <span class="k">elif</span> <span class="n">command</span> <span class="ow">and</span> <span class="n">family</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">[</span><span class="n">info</span> <span class="k">for</span> <span class="n">info_list</span> <span class="ow">in</span> <span class="n">family</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">itervalues</span><span class="p">()</span> <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">info_list</span> <span class="k">if</span> <span class="n">info</span><span class="o">.</span><span class="n">command</span> <span class="o">==</span> <span class="n">command</span><span class="p">]</span>
         <span class="k">elif</span> <span class="n">command</span> <span class="ow">and</span> <span class="n">role</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">[</span><span class="n">info</span> <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="k">if</span> <span class="n">info</span><span class="o">.</span><span class="n">role</span> <span class="ow">is</span> <span class="n">role</span> <span class="ow">and</span> <span class="n">info</span><span class="o">.</span><span class="n">command</span> <span class="o">==</span> <span class="n">command</span><span class="p">]</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">info</span> <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="k">if</span> <span class="n">info</span><span class="o">.</span><span class="n">role</span> <span class="ow">is</span> <span class="n">role</span> <span class="ow">and</span> <span class="n">info</span><span class="o">.</span><span class="n">command</span> <span class="o">==</span> <span class="n">command</span><span class="p">]</span>
         <span class="k">elif</span> <span class="n">family</span> <span class="ow">and</span> <span class="n">role</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">family</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">role</span><span class="p">,</span> <span class="p">[])</span>
         <span class="k">elif</span> <span class="n">command</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">[</span><span class="n">info</span> <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="k">if</span> <span class="n">info</span><span class="o">.</span><span class="n">command</span> <span class="o">==</span> <span class="n">command</span><span class="p">]</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">info</span> <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="k">if</span> <span class="n">info</span><span class="o">.</span><span class="n">command</span> <span class="o">==</span> <span class="n">command</span><span class="p">]</span>
         <span class="k">elif</span> <span class="n">family</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">[</span><span class="n">info</span> <span class="k">for</span> <span class="n">info_list</span> <span class="ow">in</span> <span class="n">family</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">itervalues</span><span class="p">()</span> <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">info_list</span><span class="p">]</span>
         <span class="k">elif</span> <span class="n">role</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">[</span><span class="n">info</span> <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="k">if</span> <span class="n">info</span><span class="o">.</span><span class="n">role</span> <span class="ow">is</span> <span class="n">role</span><span class="p">]</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">info</span> <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="k">if</span> <span class="n">info</span><span class="o">.</span><span class="n">role</span> <span class="ow">is</span> <span class="n">role</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">[]</span>
 
     <span class="nd">@classmethod</span>
-<div class="viewcode-block" id="_CompilerInfo.find"><a class="viewcode-back" href="../../../tau.cf.compiler.html#tau.cf.compiler._CompilerInfo.find">[docs]</a>    <span class="k">def</span> <span class="nf">find</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">family</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="_CompilerInfo.find"><a class="viewcode-back" href="../../../tau.cf.compiler.html#tau.cf.compiler._CompilerInfo.find">[docs]</a>    <span class="k">def</span> <span class="nf">find</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">family</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Find _CompilerInfo instances that matches the given command and/or family and/or role.</span>
 <span class="sd">        </span>
 <span class="sd">        Args:</span>
@@ -391,12 +391,12 @@
         <span class="k">assert</span> <span class="n">command</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">)</span>
         <span class="k">assert</span> <span class="n">family</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">family</span><span class="p">,</span> <span class="n">_CompilerFamily</span><span class="p">)</span>
         <span class="k">assert</span> <span class="n">role</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">role</span><span class="p">,</span> <span class="n">_CompilerRole</span><span class="p">)</span>
-        <span class="n">found</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">_find</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">family</span><span class="p">,</span> <span class="n">role</span><span class="p">)</span>
+        <span class="n">found</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_find</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">family</span><span class="p">,</span> <span class="n">role</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">found</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">command</span><span class="p">:</span>
                 <span class="c1"># Strip version info and try again</span>
                 <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">command</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">):</span>
-                    <span class="n">found</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">_find</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="n">family</span><span class="p">,</span> <span class="n">role</span><span class="p">)</span>
+                    <span class="n">found</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_find</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="n">family</span><span class="p">,</span> <span class="n">role</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">found</span><span class="p">:</span>
                         <span class="k">break</span>
                 <span class="k">else</span><span class="p">:</span>
@@ -420,18 +420,18 @@
 <span class="sd">    Without this metaclass, `a` and `b` would be different instances assigned to the same compiler </span>
 <span class="sd">    and `icc` would be probed twice. With this metaclass, ``b is a == True`` and `icc` is only invoked once.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">absolute_path</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">absolute_path</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">absolute_path</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isabs</span><span class="p">(</span><span class="n">absolute_path</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">info</span><span class="p">,</span> <span class="n">_CompilerInfo</span><span class="p">)</span>
         <span class="c1"># Don&#39;t allow unchecked values into the instance cache</span>
         <span class="k">if</span> <span class="n">kwargs</span><span class="p">:</span>
-            <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">InstalledCompilerCreator</span><span class="p">,</span> <span class="n">cls</span><span class="p">)</span><span class="o">.</span><span class="n">__call__</span><span class="p">(</span><span class="n">absolute_path</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">InstalledCompilerCreator</span><span class="p">,</span> <span class="bp">cls</span><span class="p">)</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="n">absolute_path</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">instance</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">__instances__</span><span class="p">[</span><span class="n">absolute_path</span><span class="p">,</span> <span class="n">info</span><span class="p">]</span>
+            <span class="n">instance</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__instances__</span><span class="p">[</span><span class="n">absolute_path</span><span class="p">,</span> <span class="n">info</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span> 
             <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;(</span><span class="si">%s</span><span class="s1">, </span><span class="si">%s</span><span class="s1">) not in compiler cache&#39;</span><span class="p">,</span> <span class="n">absolute_path</span><span class="p">,</span> <span class="n">info</span><span class="o">.</span><span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="p">)</span>
-            <span class="n">instance</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">InstalledCompilerCreator</span><span class="p">,</span> <span class="n">cls</span><span class="p">)</span><span class="o">.</span><span class="n">__call__</span><span class="p">(</span><span class="n">absolute_path</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-            <span class="n">cls</span><span class="o">.</span><span class="n">__instances__</span><span class="p">[</span><span class="n">absolute_path</span><span class="p">,</span> <span class="n">info</span><span class="p">]</span> <span class="o">=</span> <span class="n">instance</span>
+            <span class="n">instance</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">InstalledCompilerCreator</span><span class="p">,</span> <span class="bp">cls</span><span class="p">)</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="n">absolute_path</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">__instances__</span><span class="p">[</span><span class="n">absolute_path</span><span class="p">,</span> <span class="n">info</span><span class="p">]</span> <span class="o">=</span> <span class="n">instance</span>
             <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Added (</span><span class="si">%s</span><span class="s1">, </span><span class="si">%s</span><span class="s1">) to compiler cache&#39;</span><span class="p">,</span> <span class="n">absolute_path</span><span class="p">,</span> <span class="n">info</span><span class="o">.</span><span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Found (</span><span class="si">%s</span><span class="s1">, </span><span class="si">%s</span><span class="s1">) in compiler cache&#39;</span><span class="p">,</span> <span class="n">absolute_path</span><span class="p">,</span> <span class="n">info</span><span class="o">.</span><span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="p">)</span>
@@ -459,11 +459,11 @@
 <span class="sd">        libraries (list): Additional libraries to link when linking with the wrapped compiler.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     
-    <span class="n">__metaclass__</span> <span class="o">=</span> <span class="n">InstalledCompilerCreator</span>
+    <span class="vm">__metaclass__</span> <span class="o">=</span> <span class="n">InstalledCompilerCreator</span>
     
     <span class="n">__instances__</span> <span class="o">=</span> <span class="p">{}</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">absolute_path</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">uid</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> 
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">absolute_path</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">uid</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> 
                  <span class="n">wrapped</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">include_path</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">library_path</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">compiler_flags</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">libraries</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Initializes the InstalledCompiler instance.</span>
 <span class="sd">        </span>
@@ -615,7 +615,7 @@
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Wrapper libraries: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">libraries</span><span class="p">)</span>
 
     <span class="nd">@classmethod</span>
-<div class="viewcode-block" id="InstalledCompiler.probe"><a class="viewcode-back" href="../../../tau.cf.compiler.html#tau.cf.compiler.InstalledCompiler.probe">[docs]</a>    <span class="k">def</span> <span class="nf">probe</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="n">family</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="InstalledCompiler.probe"><a class="viewcode-back" href="../../../tau.cf.compiler.html#tau.cf.compiler.InstalledCompiler.probe">[docs]</a>    <span class="k">def</span> <span class="nf">probe</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="n">family</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Probe the system to discover information about an installed compiler.</span>
 <span class="sd">        </span>
 <span class="sd">        Args:</span>
@@ -694,7 +694,7 @@
 <span class="sd">        FIXME: members </span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">family</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">family</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">family</span> <span class="o">=</span> <span class="n">family</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">members</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Detecting </span><span class="si">%s</span><span class="s2"> compiler installation&quot;</span><span class="p">,</span> <span class="n">family</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
@@ -714,7 +714,7 @@
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">default</span> </div>
 
-<div class="viewcode-block" id="InstalledCompilerFamily.__getitem__"><a class="viewcode-back" href="../../../tau.cf.compiler.html#tau.cf.compiler.InstalledCompilerFamily.__getitem__">[docs]</a>    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">role</span><span class="p">):</span>
+<div class="viewcode-block" id="InstalledCompilerFamily.__getitem__"><a class="viewcode-back" href="../../../tau.cf.compiler.html#tau.cf.compiler.InstalledCompilerFamily.__getitem__">[docs]</a>    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">role</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return the preferred installed compiler for a given role.</span>
 <span class="sd">        </span>
 <span class="sd">        Since compiler can perform multiple roles we often have many commands</span>
@@ -737,7 +737,7 @@
         <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">KeyError</span></div>
 
-<div class="viewcode-block" id="InstalledCompilerFamily.__iter__"><a class="viewcode-back" href="../../../tau.cf.compiler.html#tau.cf.compiler.InstalledCompilerFamily.__iter__">[docs]</a>    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="InstalledCompilerFamily.__iter__"><a class="viewcode-back" href="../../../tau.cf.compiler.html#tau.cf.compiler.InstalledCompilerFamily.__iter__">[docs]</a>    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Yield one InstalledCompiler for each role filled by any compiler in this installation.&quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">role</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">family</span><span class="o">.</span><span class="n">kbase</span><span class="o">.</span><span class="n">roles</span><span class="o">.</span><span class="n">itervalues</span><span class="p">():</span>
             <span class="k">try</span><span class="p">:</span>
@@ -759,18 +759,18 @@
     
     <span class="n">__key__</span> <span class="o">=</span> <span class="s1">&#39;uid&#39;</span>
     
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uid</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uid</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">uid</span> <span class="o">=</span> <span class="n">uid</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">members</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_add_members</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             
-    <span class="k">def</span> <span class="nf">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span>
 
-    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">__iter__</span><span class="p">()</span>
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="fm">__iter__</span><span class="p">()</span>
     
-    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
 
 <div class="viewcode-block" id="InstalledCompilerSet.iterkeys"><a class="viewcode-back" href="../../../tau.cf.compiler.html#tau.cf.compiler.InstalledCompilerSet.iterkeys">[docs]</a>    <span class="k">def</span> <span class="nf">iterkeys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>

@@ -56,33 +56,17 @@
 <p>Show bars or spinners, possibly with instantaneous CPU load average.</p>
 <dl class="class">
 <dt id="tau.progress.ProgressIndicator">
-<em class="property">class </em><code class="descclassname">tau.progress.</code><code class="descname">ProgressIndicator</code><span class="sig-paren">(</span><em>total_size=0</em>, <em>block_size=1</em>, <em>show_cpu=True</em>, <em>stream=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/progress.html#ProgressIndicator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.progress.ProgressIndicator" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">tau.progress.</code><code class="descname">ProgressIndicator</code><span class="sig-paren">(</span><em>total_size=0</em>, <em>block_size=1</em>, <em>show_cpu=True</em>, <em>mode=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/progress.html#ProgressIndicator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.progress.ProgressIndicator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
 <p>Display a progress bar or spinner on a stream.</p>
-<dl class="class">
-<dt id="tau.progress.ProgressIndicator.NullStream">
-<em class="property">class </em><code class="descname">NullStream</code><a class="reference internal" href="_modules/tau/progress.html#ProgressIndicator.NullStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.progress.ProgressIndicator.NullStream" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
-<dl class="method">
-<dt id="tau.progress.ProgressIndicator.NullStream.flush">
-<code class="descname">flush</code><span class="sig-paren">(</span><em>*_</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/progress.html#ProgressIndicator.NullStream.flush"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.progress.ProgressIndicator.NullStream.flush" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="tau.progress.ProgressIndicator.NullStream.write">
-<code class="descname">write</code><span class="sig-paren">(</span><em>*_</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/progress.html#ProgressIndicator.NullStream.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.progress.ProgressIndicator.NullStream.write" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
 <dl class="method">
 <dt id="tau.progress.ProgressIndicator.complete">
-<code class="descclassname">ProgressIndicator.</code><code class="descname">complete</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/progress.html#ProgressIndicator.complete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.progress.ProgressIndicator.complete" title="Permalink to this definition">¶</a></dt>
+<code class="descname">complete</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/progress.html#ProgressIndicator.complete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.progress.ProgressIndicator.complete" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="tau.progress.ProgressIndicator.update">
-<code class="descclassname">ProgressIndicator.</code><code class="descname">update</code><span class="sig-paren">(</span><em>count=None</em>, <em>block_size=None</em>, <em>total_size=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/progress.html#ProgressIndicator.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.progress.ProgressIndicator.update" title="Permalink to this definition">¶</a></dt>
+<code class="descname">update</code><span class="sig-paren">(</span><em>count=None</em>, <em>block_size=None</em>, <em>total_size=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/progress.html#ProgressIndicator.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.progress.ProgressIndicator.update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Show progress.</p>
 <p>Updates <cite>block_size</cite> or <cite>total_size</cite> if given for compatibility with <a class="reference external" href="https://docs.python.org/library/urllib.html#urllib.urlretrieve" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">urllib.urlretrieve</span></code></a>.</p>
 <table class="docutils field-list" frame="void" rules="none">

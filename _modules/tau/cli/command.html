@@ -89,9 +89,9 @@
 <span class="sd">        group (str): If not None, commands will be grouped together by group name in help messages.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     
-    <span class="n">__metaclass__</span> <span class="o">=</span> <span class="n">ABCMeta</span>
+    <span class="vm">__metaclass__</span> <span class="o">=</span> <span class="n">ABCMeta</span>
     
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module_name</span><span class="p">,</span> <span class="n">format_fields</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">summary_fmt</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">help_page_fmt</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module_name</span><span class="p">,</span> <span class="n">format_fields</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">summary_fmt</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">help_page_fmt</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">summary_fmt</span><span class="p">:</span>
             <span class="n">summary_fmt</span> <span class="o">=</span> <span class="s2">&quot;No summary for &#39;</span><span class="si">%(command)s</span><span class="s2">&#39;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">help_page_fmt</span><span class="p">:</span>
@@ -106,7 +106,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">group</span> <span class="o">=</span> <span class="n">group</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_parser</span> <span class="o">=</span> <span class="bp">None</span>
         
-    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span>
 
     <span class="nd">@property</span>

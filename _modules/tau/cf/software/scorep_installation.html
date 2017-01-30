@@ -86,7 +86,7 @@
 <span class="kn">from</span> <span class="nn">tau.cf.target</span> <span class="kn">import</span> <span class="n">X86_64_ARCH</span><span class="p">,</span> <span class="n">IBM64_ARCH</span>
 
 
-<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 <span class="n">REPOS</span> <span class="o">=</span> <span class="p">{</span><span class="bp">None</span><span class="p">:</span> <span class="s1">&#39;http://www.cs.uoregon.edu/research/tau/scorep.tgz&#39;</span><span class="p">}</span>
 
@@ -147,9 +147,9 @@
     <span class="c1"># Settle down pylint.  Score-P is complex so we need a few extra arguments.</span>
     <span class="c1"># pylint: disable=too-many-arguments</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">target_arch</span><span class="p">,</span> <span class="n">target_os</span><span class="p">,</span> <span class="n">compilers</span><span class="p">,</span> 
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">target_arch</span><span class="p">,</span> <span class="n">target_os</span><span class="p">,</span> <span class="n">compilers</span><span class="p">,</span> 
                  <span class="n">use_mpi</span><span class="p">,</span> <span class="n">use_shmem</span><span class="p">,</span> <span class="n">use_binutils</span><span class="p">,</span> <span class="n">use_libunwind</span><span class="p">,</span> <span class="n">use_papi</span><span class="p">,</span> <span class="n">use_pdt</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">ScorepInstallation</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="s1">&#39;scorep&#39;</span><span class="p">,</span> <span class="s1">&#39;Score-P&#39;</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">target_arch</span><span class="p">,</span> <span class="n">target_os</span><span class="p">,</span> 
+        <span class="nb">super</span><span class="p">(</span><span class="n">ScorepInstallation</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s1">&#39;scorep&#39;</span><span class="p">,</span> <span class="s1">&#39;Score-P&#39;</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">target_arch</span><span class="p">,</span> <span class="n">target_os</span><span class="p">,</span> 
                                                  <span class="n">compilers</span><span class="p">,</span> <span class="n">REPOS</span><span class="p">,</span> <span class="n">COMMANDS</span><span class="p">,</span> <span class="n">LIBRARIES</span><span class="p">,</span> <span class="n">HEADERS</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">use_mpi</span> <span class="o">=</span> <span class="n">use_mpi</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">use_shmem</span> <span class="o">=</span> <span class="n">use_shmem</span>

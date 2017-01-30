@@ -92,7 +92,7 @@
 <span class="kn">from</span> <span class="nn">tau.cf.target</span> <span class="kn">import</span> <span class="n">host</span><span class="p">,</span> <span class="n">DARWIN_OS</span><span class="p">,</span> <span class="n">INTEL_KNC_ARCH</span>
 <span class="kn">from</span> <span class="nn">tau.cf.software.tau_installation</span> <span class="kn">import</span> <span class="n">TAU_MINIMAL_COMPILERS</span>
 
-<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="knc_require_k1om"><a class="viewcode-back" href="../../../tau.model.target.html#tau.model.target.knc_require_k1om">[docs]</a><span class="k">def</span> <span class="nf">knc_require_k1om</span><span class="p">(</span><span class="o">*</span><span class="n">_</span><span class="p">):</span>
@@ -426,12 +426,12 @@
     
     <span class="n">__attributes__</span> <span class="o">=</span> <span class="n">attributes</span>
     
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">Target</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Target</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_compilers</span> <span class="o">=</span> <span class="bp">None</span>
         
     <span class="nd">@classmethod</span>
-<div class="viewcode-block" id="Target.attribute_changed"><a class="viewcode-back" href="../../../tau.model.target.html#tau.model.target.Target.attribute_changed">[docs]</a>    <span class="k">def</span> <span class="nf">attribute_changed</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">new_value</span><span class="p">):</span>
+<div class="viewcode-block" id="Target.attribute_changed"><a class="viewcode-back" href="../../../tau.model.target.html#tau.model.target.Target.attribute_changed">[docs]</a>    <span class="k">def</span> <span class="nf">attribute_changed</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">new_value</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">is_selected</span><span class="p">():</span>
             <span class="n">old_value</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
             <span class="n">Target</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">storage</span><span class="p">)</span><span class="o">.</span><span class="n">push_to_topic</span><span class="p">(</span><span class="s1">&#39;rebuild_required&#39;</span><span class="p">,</span> <span class="p">{</span><span class="n">attr</span><span class="p">:</span> <span class="p">(</span><span class="n">old_value</span><span class="p">,</span> <span class="n">new_value</span><span class="p">)})</span></div>
@@ -461,7 +461,28 @@
         <span class="k">except</span> <span class="p">(</span><span class="n">ProjectSelectionError</span><span class="p">,</span> <span class="n">ExperimentSelectionError</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">False</span>
         <span class="k">return</span> <span class="n">selected</span><span class="p">[</span><span class="s1">&#39;target&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">eid</span></div>
+
+<div class="viewcode-block" id="Target.architecture"><a class="viewcode-back" href="../../../tau.model.target.html#tau.model.target.Target.architecture">[docs]</a>    <span class="k">def</span> <span class="nf">architecture</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">tau.cf.target</span> <span class="kn">import</span> <span class="n">Architecture</span>
+        <span class="k">return</span> <span class="n">Architecture</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;host_arch&#39;</span><span class="p">])</span></div>
     
+<div class="viewcode-block" id="Target.operating_system"><a class="viewcode-back" href="../../../tau.model.target.html#tau.model.target.Target.operating_system">[docs]</a>    <span class="k">def</span> <span class="nf">operating_system</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">tau.cf.target</span> <span class="kn">import</span> <span class="n">OperatingSystem</span>
+        <span class="k">return</span> <span class="n">OperatingSystem</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;host_os&#39;</span><span class="p">])</span></div>
+    
+<div class="viewcode-block" id="Target.sources"><a class="viewcode-back" href="../../../tau.model.target.html#tau.model.target.Target.sources">[docs]</a>    <span class="k">def</span> <span class="nf">sources</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get paths to all source packages known to this target.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Software package paths indexed by package name.</span>
+<span class="sd">        &quot;&quot;&quot;</span> 
+        <span class="n">sources</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">attr</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;_source&#39;</span><span class="p">):</span>
+                <span class="n">key</span> <span class="o">=</span> <span class="n">attr</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_source&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                <span class="n">sources</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attr</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">sources</span></div>
+
 <div class="viewcode-block" id="Target.compilers"><a class="viewcode-back" href="../../../tau.model.target.html#tau.model.target.Target.compilers">[docs]</a>    <span class="k">def</span> <span class="nf">compilers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get information about the compilers used by this target configuration.</span>
 <span class="sd">        </span>
@@ -544,8 +565,48 @@
                      <span class="s2">&quot;Create and select a new target configuration that uses the &#39;</span><span class="si">%s</span><span class="s2">&#39; compiler&quot;</span> <span class="o">%</span> <span class="n">absolute_path</span><span class="p">,</span>
                      <span class="s2">&quot;Check loaded modules and the PATH environment variable&quot;</span><span class="p">)</span>
             <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">),</span> <span class="o">*</span><span class="n">hints</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">found</span></div></div>
+        <span class="k">return</span> <span class="n">found</span></div>
 
+<div class="viewcode-block" id="Target.papi_metrics"><a class="viewcode-back" href="../../../tau.model.target.html#tau.model.target.Target.papi_metrics">[docs]</a>    <span class="k">def</span> <span class="nf">papi_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_type</span><span class="o">=</span><span class="s2">&quot;PRESET&quot;</span><span class="p">,</span> <span class="n">include_modifiers</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List PAPI metrics available on this target.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns a list of (name, description) tuples corresponding to the</span>
+<span class="sd">        requested PAPI event type and possibly the event modifiers.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            event_type (str): Either &quot;PRESET&quot; or &quot;NATIVE&quot;.</span>
+<span class="sd">            include_modifiers (bool): If True include event modifiers, </span>
+<span class="sd">                                      e.g. BR_INST_EXEC:NONTAKEN_COND as well as BR_INST_EXEC.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            list: List of event name/description tuples.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s2">&quot;PRESET&quot;</span> <span class="ow">or</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s2">&quot;NATIVE&quot;</span>
+        <span class="kn">from</span> <span class="nn">HTMLParser</span> <span class="kn">import</span> <span class="n">HTMLParser</span>
+        <span class="kn">from</span> <span class="nn">tau.cf.software.papi_installation</span> <span class="kn">import</span> <span class="n">PapiInstallation</span>
+        <span class="n">metrics</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">html_parser</span> <span class="o">=</span> <span class="n">HTMLParser</span><span class="p">()</span>
+        <span class="n">papi</span> <span class="o">=</span> <span class="n">PapiInstallation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sources</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">architecture</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">operating_system</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">compilers</span><span class="p">())</span>
+        <span class="k">def</span> <span class="nf">_format</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+            <span class="n">desc</span> <span class="o">=</span> <span class="n">html_parser</span><span class="o">.</span><span class="n">unescape</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;desc&#39;</span><span class="p">])</span>
+            <span class="n">desc</span> <span class="o">=</span> <span class="n">desc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span> <span class="o">+</span> <span class="n">desc</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span>
+            <span class="k">return</span> <span class="n">name</span><span class="p">,</span> <span class="n">desc</span>
+        <span class="n">xml_event_info</span> <span class="o">=</span> <span class="n">papi</span><span class="o">.</span><span class="n">xml_event_info</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">eventset</span> <span class="ow">in</span> <span class="n">xml_event_info</span><span class="o">.</span><span class="n">iter</span><span class="p">(</span><span class="s1">&#39;eventset&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">eventset</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">event_type</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">eventset</span><span class="o">.</span><span class="n">iter</span><span class="p">(</span><span class="s1">&#39;event&#39;</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">include_modifiers</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">modifier</span> <span class="ow">in</span> <span class="n">event</span><span class="o">.</span><span class="n">iter</span><span class="p">(</span><span class="s1">&#39;modifier&#39;</span><span class="p">):</span>
+                            <span class="n">metrics</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_format</span><span class="p">(</span><span class="n">modifier</span><span class="p">))</span>
+                    <span class="n">metrics</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_format</span><span class="p">(</span><span class="n">event</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">metrics</span></div>
+
+<div class="viewcode-block" id="Target.tau_metrics"><a class="viewcode-back" href="../../../tau.model.target.html#tau.model.target.Target.tau_metrics">[docs]</a>    <span class="k">def</span> <span class="nf">tau_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[(</span><span class="s2">&quot;TIME&quot;</span><span class="p">,</span> <span class="s2">&quot;Wallclock time.&quot;</span><span class="p">)]</span></div>
+    
+<div class="viewcode-block" id="Target.cupti_metrics"><a class="viewcode-back" href="../../../tau.model.target.html#tau.model.target.Target.cupti_metrics">[docs]</a>    <span class="k">def</span> <span class="nf">cupti_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[]</span></div></div>
 </pre></div>
 
       </div>

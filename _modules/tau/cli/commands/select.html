@@ -91,7 +91,7 @@
     
 <div class="viewcode-block" id="SelectCommand.main"><a class="viewcode-back" href="../../../../tau.cli.commands.select.html#tau.cli.commands.select.SelectCommand.main">[docs]</a>    <span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">argv</span><span class="p">):</span>
         <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_args</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
-        <span class="n">arg_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">__dict__</span><span class="p">)</span>
+        <span class="n">arg_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
         
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">arg_dict</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">name</span> <span class="o">=</span> <span class="n">arg_dict</span><span class="p">[</span><span class="n">arg_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()[</span><span class="mi">0</span><span class="p">]]</span>
@@ -109,7 +109,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">experiment_select_cmd</span><span class="o">.</span><span class="n">main</span><span class="p">([</span><span class="n">name</span><span class="p">])</span></div></div>
 
-<span class="n">COMMAND</span> <span class="o">=</span> <span class="n">SelectCommand</span><span class="p">(</span><span class="n">__name__</span><span class="p">,</span> <span class="n">summary_fmt</span><span class="o">=</span><span class="s2">&quot;Create a new experiment or select an existing experiment.&quot;</span><span class="p">)</span>
+<span class="n">COMMAND</span> <span class="o">=</span> <span class="n">SelectCommand</span><span class="p">(</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">summary_fmt</span><span class="o">=</span><span class="s2">&quot;Create a new experiment or select an existing experiment.&quot;</span><span class="p">)</span>
 </pre></div>
 
       </div>
