@@ -904,7 +904,7 @@ class TauInstallation(Installation):
         opts, env = self.runtime_config()
         use_tau_exec = (self.measure_opencl or
                         self.tbb_support or
-                        self.pthread_support or
+                        self.pthreads_support or
                         self.target_os is not CRAY_CNL_OS or
                         (self.source_inst == 'never' and
                          self.compiler_inst == 'never' and
