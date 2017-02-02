@@ -28,8 +28,8 @@
 """Experiment data model.
 
 An Experiment uniquely groups a :any:`Target`, :any:`Application`, and :any:`Measurement`
-and will have zero or more :any:`Trial`. There is one selected experiment per project.  
-The selected experiment will be used for application compilation and trial visualization. 
+and will have zero or more :any:`Trial`. There is one selected experiment per project.
+The selected experiment will be used for application compilation and trial visualization.
 """
 
 import os
@@ -94,17 +94,17 @@ def attributes():
 
 class Experiment(Model):
     """Experiment data model."""
-    
+
     __attributes__ = attributes
-    
+
     @classmethod
     def controller(cls, storage=PROJECT_STORAGE):
         return cls.__controller__(cls, storage)
-    
+
     @classmethod
     def select(cls, name):
         """Changes the selected experiment in the current project.
-        
+
         Args:
             name (str): Name of the experiment to select.
         """
@@ -118,15 +118,15 @@ class Experiment(Model):
         elif len(matching) > 1:
             raise InternalError("More than one experiment with data %r exists!" % data)
         else:
-            expr = matching[0]            
+            expr = matching[0]
         proj_ctrl.select(proj, expr)
 
     @classmethod
     def rebuild_required(cls):
         """Builds a string indicating if an application rebuild is required.
-        
+
         Rebuild information is taken from the 'rebuild_required' topic.
-        
+
         Returns:
             str: String indicating why an application rebuild is required.
         """
@@ -151,11 +151,11 @@ class Experiment(Model):
                 else:
                     parts.append("  - %s changed from %s to %s" % (attr, old, new))
         return '\n'.join(parts)
-    
+
     @property
     def prefix(self):
         return os.path.join(self.populate('project').prefix, self['name'])
-    
+
     def verify(self):
         """Checks all components of the experiment for mutual compatibility."""
         populated = self.populate()
@@ -165,7 +165,7 @@ class Experiment(Model):
         meas = populated['measurement']
         for model in targ, app, meas:
             if proj.eid not in model['projects']:
-                raise IncompatibleRecordError("%s '%s' is not a member of project configuration '%s'." % 
+                raise IncompatibleRecordError("%s '%s' is not a member of project configuration '%s'." %
                                               (model.name, model['name'], proj['name']))
         for lhs in [targ, app, meas]:
             for rhs in [targ, app, meas]:
@@ -176,7 +176,7 @@ class Experiment(Model):
         try:
             util.mkdirp(self.prefix)
         except:
-            raise ConfigurationError('Cannot create directory %r' % self.prefix, 
+            raise ConfigurationError('Cannot create directory %r' % self.prefix,
                                      'Check that you have `write` access')
 
     def on_delete(self):
@@ -195,16 +195,16 @@ class Experiment(Model):
             if i != j:
                 return i
         return len(trials)
-    
+
     @fasteners.interprocess_locked(os.path.join(highest_writable_storage().prefix, '.lock'))
     def configure(self):
         """Sets up the Experiment for a new trial.
-        
-        Installs or configures TAU and all its dependencies.  After calling this 
+
+        Installs or configures TAU and all its dependencies.  After calling this
         function, the experiment is ready to operate on the user's application.
-        
+
         Returns:
-            TauInstallation: Object handle for the TAU installation. 
+            TauInstallation: Object handle for the TAU installation.
         """
         from tau.cf.software.tau_installation import TauInstallation
         LOGGER.debug("Configuring experiment %s", self['name'])
@@ -220,6 +220,7 @@ class Experiment(Model):
                     # TAU feature suppport
                     openmp_support=application.get_or_default('openmp'),
                     pthreads_support=application.get_or_default('pthreads'),
+                    tbb_support=application.get_or_default('tbb'),
                     mpi_support=application.get_or_default('mpi'),
                     mpi_include_path=target.get('mpi_include_path', []),
                     mpi_library_path=target.get('mpi_library_path', []),
@@ -233,7 +234,7 @@ class Experiment(Model):
                     shmem_library_path=target.get('shmem_library_path', []),
                     shmem_libraries=target.get('shmem_libraries', []),
                     mpc_support=application.get_or_default('mpc'),
-                    # Instrumentation methods and options          
+                    # Instrumentation methods and options
                     source_inst=measurement.get_or_default('source_inst'),
                     compiler_inst=measurement.get_or_default('compiler_inst'),
                     link_only=measurement.get_or_default('link_only'),
@@ -265,17 +266,17 @@ class Experiment(Model):
 
     def managed_build(self, compiler_cmd, compiler_args):
         """Uses this experiment to perform a build operation.
-        
+
         Checks that this experiment is compatible with the desired build operation,
         prepares the experiment, and performs the operation.
-        
+
         Args:
             compiler_cmd (str): The compiler command intercepted by TAU Commander.
             compiler_args (list): Compiler command line arguments intercepted by TAU Commander.
-            
+
         Raises:
             ConfigurationError: The experiment is not configured to perform the desired build.
-        
+
         Returns:
             int: Build subprocess return code.
         """
@@ -299,23 +300,23 @@ class Experiment(Model):
         except KeyError:
             pass
         else:
-            LOGGER.info("Project '%s' forcibly adding '%s' to TAU_OPTIONS", 
+            LOGGER.info("Project '%s' forcibly adding '%s' to TAU_OPTIONS",
                         proj['name'], ' '.join(tau.force_tau_options))
         return tau.compile(installed_compiler, compiler_args)
-        
+
     def managed_run(self, launcher_cmd, application_cmd):
         """Uses this experiment to run an application command.
-        
+
         Performs all relevent system preparation tasks to run the user's application
         under the specified experimental configuration.
-        
+
         Args:
             launcher_cmd (list): Application launcher with command line arguments.
             application_cmd (list): Application executable with command line arguments.
 
         Raises:
             ConfigurationError: The experiment is not configured to perform the desired run.
-            
+
         Returns:
             int: Application subprocess return code.
         """
@@ -327,16 +328,16 @@ class Experiment(Model):
         return Trial.controller(self.storage).perform(self, cmd, os.getcwd(), env)
 
     def _get_trials(self, trial_numbers=None):
-        """Returns trial data for the given trial numbers.  
-        
+        """Returns trial data for the given trial numbers.
+
         If no trial numbers are given, return the most recent trial.
-        
+
         Args:
             trial_numbers (list): List of numbers of trials to retrieve or None.
-            
+
         Returns:
             list: Trial data.
-            
+
         Raises:
             ConfigurationError: Invalid trial number or no trials in this experiment.
         """
@@ -362,17 +363,17 @@ class Experiment(Model):
             if trial_size <= 0:
                 raise ConfigurationError("Trial %s is empty." %trial['number'])
         return trials
-    
+
     def show(self, profile_tool=None, trace_tool=None, trial_numbers=None):
         """Show experiment trial data.
-        
+
         Shows the most recent trial or all trials with given numbers.
-        
+
         Args:
             profile_tool (str): Name of the visualization or data processing tool for profiles, e.g. `pprof`.
             trace_tool (str): Name of the visualization or data processing tool for traces, e.g. `vampir`.
             trial_numbers (list): Numbers of trials to show.
-            
+
         Raises:
             ConfigurationError: Invalid trial numbers or no trial data for this experiment.
         """
@@ -384,17 +385,17 @@ class Experiment(Model):
                 tau.show_profile(prefix, profile_tool)
             if meas['trace'] != 'none':
                 tau.show_trace(prefix, trace_tool)
-                
+
     def export(self, profile_format=None, trial_numbers=None, export_location=None):
         """Export experiment trial data.
-        
+
         Exports the most recent trial or all trials with given numbers.
-        
+
         Args:
-            profile_format (str): File format for exported profiles, see :any:`PROFILE_EXPORT_FORMATS` 
+            profile_format (str): File format for exported profiles, see :any:`PROFILE_EXPORT_FORMATS`
             export_location (str): Directory to contain exported profiles.
             trial_numbers (list): Numbers of trials to show.
-            
+
         Raises:
             ConfigurationError: Invalid trial numbers or no trial data for this experiment.
         """
@@ -416,10 +417,10 @@ class Experiment(Model):
             for trial in self._get_trials(trial_numbers):
                 trial_number = str(trial['number'])
                 archive_file = self['name'] + '.trial' + trial_number + '.' + profile_format
-                profile_files = [os.path.join(trial_number, os.path.basename(x)) 
+                profile_files = [os.path.join(trial_number, os.path.basename(x))
                                  for x in trial.profile_files()]
                 _, env = tau.runtime_config()
-                trace_files = [os.path.join(trial_number, x[len(trial.prefix)+1:]) 
+                trace_files = [os.path.join(trial_number, x[len(trial.prefix)+1:])
                                for x in trial.trace_files(env, True)]
                 exportable_files = profile_files + trace_files
                 old_cwd = os.getcwd()
