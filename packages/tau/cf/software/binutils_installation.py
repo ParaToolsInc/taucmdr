@@ -46,7 +46,7 @@ from tau.cf.compiler.host import CC, CXX, PGI, GNU
 
 LOGGER = logger.get_logger(__name__)
  
-REPOS = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/binutils-2.23.2.tar.gz'}
+REPOS = {None: 'http://ftp.gnu.org/gnu/binutils/binutils-2.27.tar.gz'}
 
 LIBRARIES = {None: ['libbfd.a']}
 
