@@ -48,6 +48,7 @@ from zipimport import zipimporter
 from zipfile import ZipFile
 from termcolor import termcolor
 from tau import logger
+from tau.error import InternalError
 from tau.progress import ProgressIndicator, progress_spinner
 
 
@@ -178,7 +179,7 @@ def which(program, use_cached=True):
     return None
 
 
-def download(src, dest, connect_timeout=8):
+def download(src, dest, timeout=8):
     """Downloads or copies files.
     
     `src` may be a file path or URL.  The destination folder will be created 
@@ -187,12 +188,12 @@ def download(src, dest, connect_timeout=8):
     Args:
         src (str): Path or URL to source file.
         dest (str): Path to file copy or download destination.
-        connect_timeout (int): Maximum time in seconds for the connection to the server.
+        timeout (int): Maximum time in seconds for the connection to the server.
         
     Raises:
         IOError: File copy or download failed.
     """
-    assert isinstance(connect_timeout, int)
+    assert isinstance(timeout, int)
     if src.startswith('file://'):
         src = src[6:]
     if os.path.isfile(src):
@@ -203,22 +204,11 @@ def download(src, dest, connect_timeout=8):
         LOGGER.debug("Downloading '%s' to '%s'", src, dest)
         LOGGER.info("Downloading '%s'", src)
         mkdirp(os.path.dirname(dest))
-        curl = which('curl')
-        wget = which('wget')
-        if curl:
-            curl_cmd = [curl, '-s', '-L', src, '-o', dest, '--connect-timeout', connect_timeout]
-        else:
-            curl_cmd = None
-        if wget:
-            wget_cmd = [wget, '-q', src, '-O', dest, '--dns-timeout=%d' % connect_timeout, 
-                        '--connect-timeout=%d' % connect_timeout]
-        else:
-            wget_cmd = None
-        for cmd in curl_cmd, wget_cmd:
-            if cmd:
-                if _create_dl_subprocess(cmd, src) == 0:
-                    return
-                LOGGER.warning("%s failed to download '%s'. Retrying with a different method...", cmd[0], src)                    
+        for cmd in "curl", "wget":
+            abs_cmd = which(cmd)
+            if abs_cmd and _create_dl_subprocess(abs_cmd, src, dest, timeout) == 0:
+                return
+            LOGGER.warning("%s failed to download '%s'. Retrying with a different method...", cmd, src)                    
         # Fallback: this is usually **much** slower than curl or wget
         with ProgressIndicator() as progress_bar:
             try:
@@ -228,13 +218,22 @@ def download(src, dest, connect_timeout=8):
                 raise IOError("Failed to download '%s'" % src)
 
 
-def _create_dl_subprocess(cmd, src):
-    LOGGER.debug("Creating subprocess: cmd=%s\n", cmd)
-    # Get remote file size for progress bar
-    if cmd[0].endswith('curl'):
-        proc_output = get_command_output([cmd[0], '-sI', src, '--location'])
-    elif cmd[0].endswith('wget'):
-        proc_output = get_command_output([cmd[0], src, '--spider', '--server-response'])
+def _create_dl_subprocess(abs_cmd, src, dest, timeout):
+    if abs_cmd.endswith("curl"):
+        size_cmd = [abs_cmd, '-sI', src, '--location', '--connect-timeout', timeout]
+        get_cmd = [abs_cmd, '-s', '-L', src, '-o', dest, '--connect-timeout', timeout]
+    elif abs_cmd.endswith("wget"):
+        size_cmd = [abs_cmd, src, '--spider', '--server-response', 
+                    '--dns-timeout=%d' % timeout, '--connect-timeout=%d' % timeout]
+        get_cmd = [abs_cmd, '-q', src, '-O', dest, 
+                   '--dns-timeout=%d' % timeout, '--connect-timeout=%d' % timeout]
+    else:
+        raise InternalError("Invalid command parameter: %s" % abs_cmd)
+    LOGGER.debug("Creating subprocess: %s\n", size_cmd)
+    try:
+        proc_output = get_command_output(size_cmd)
+    except subprocess.CalledProcessError as err:
+        return err.returncode
     LOGGER.debug(proc_output)
     try:
         file_size = int(proc_output.partition('Content-Length')[2].split()[1])
@@ -243,10 +242,10 @@ def _create_dl_subprocess(cmd, src):
         file_size = -1
     with ProgressIndicator(file_size) as progress_bar:
         with open(os.devnull, 'wb') as devnull:
-            proc = subprocess.Popen(cmd, stdout=devnull, stderr=subprocess.STDOUT)
+            proc = subprocess.Popen(get_cmd, stdout=devnull, stderr=subprocess.STDOUT)
             while proc.poll() is None:
                 try:
-                    current_size = os.stat(cmd[-1]).st_size
+                    current_size = os.stat(dest).st_size
                 except OSError:
                     pass
                 else:
@@ -254,7 +253,7 @@ def _create_dl_subprocess(cmd, src):
                 time.sleep(0.1)
             proc.wait()
             retval = proc.returncode
-            LOGGER.debug("%s returned %d", cmd, retval)
+            LOGGER.debug("%s returned %d", get_cmd, retval)
             return retval
 
 def archive_toplevel(archive):
