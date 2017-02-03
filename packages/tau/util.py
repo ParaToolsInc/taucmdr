@@ -178,7 +178,7 @@ def which(program, use_cached=True):
     return None
 
 
-def download(src, dest):
+def download(src, dest, connect_timeout=8):
     """Downloads or copies files.
     
     `src` may be a file path or URL.  The destination folder will be created 
@@ -187,10 +187,12 @@ def download(src, dest):
     Args:
         src (str): Path or URL to source file.
         dest (str): Path to file copy or download destination.
+        connect_timeout (int): Maximum time in seconds for the connection to the server.
         
     Raises:
         IOError: File copy or download failed.
     """
+    assert isinstance(connect_timeout, int)
     if src.startswith('file://'):
         src = src[6:]
     if os.path.isfile(src):
@@ -203,9 +205,16 @@ def download(src, dest):
         mkdirp(os.path.dirname(dest))
         curl = which('curl')
         wget = which('wget')
-        curl_cmd = [curl, '-L', src, '-o', dest] if curl else None
-        wget_cmd = [wget, src, '-O', dest] if wget else None
-        for cmd in [curl_cmd, wget_cmd]:
+        if curl:
+            curl_cmd = [curl, '-s', '-L', src, '-o', dest, '--connect-timeout', connect_timeout]
+        else:
+            curl_cmd = None
+        if wget:
+            wget_cmd = [wget, '-q', src, '-O', dest, '--dns-timeout=%d' % connect_timeout, 
+                        '--connect-timeout=%d' % connect_timeout]
+        else:
+            wget_cmd = None
+        for cmd in curl_cmd, wget_cmd:
             if cmd:
                 if _create_dl_subprocess(cmd, src) == 0:
                     return
@@ -221,12 +230,11 @@ def download(src, dest):
 
 def _create_dl_subprocess(cmd, src):
     LOGGER.debug("Creating subprocess: cmd=%s\n", cmd)
+    # Get remote file size for progress bar
     if cmd[0].endswith('curl'):
-        proc_output = subprocess.Popen(['curl', '-sI', src, '--location'],
-                                       stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
+        proc_output = get_command_output([cmd[0], '-sI', src, '--location'])
     elif cmd[0].endswith('wget'):
-        proc_output = subprocess.Popen(['wget', src, '--spider', '--server-response'],
-                                       stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[1]
+        proc_output = get_command_output([cmd[0], src, '--spider', '--server-response'])
     LOGGER.debug(proc_output)
     try:
         file_size = int(proc_output.partition('Content-Length')[2].split()[1])
@@ -240,8 +248,9 @@ def _create_dl_subprocess(cmd, src):
                 try:
                     current_size = os.stat(cmd[-1]).st_size
                 except OSError:
-                    current_size = 0
-                progress_bar.update(current_size)
+                    pass
+                else:
+                    progress_bar.update(current_size)
                 time.sleep(0.1)
             proc.wait()
             retval = proc.returncode
