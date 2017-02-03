@@ -199,7 +199,7 @@ This routine will return stupid results for archives with multiple top-level ele
 
 <dl class="function">
 <dt id="tau.util.download">
-<code class="descclassname">tau.util.</code><code class="descname">download</code><span class="sig-paren">(</span><em>src</em>, <em>dest</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#download"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.download" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">tau.util.</code><code class="descname">download</code><span class="sig-paren">(</span><em>src</em>, <em>dest</em>, <em>timeout=8</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tau/util.html#download"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tau.util.download" title="Permalink to this definition">¶</a></dt>
 <dd><p>Downloads or copies files.</p>
 <p><cite>src</cite> may be a file path or URL.  The destination folder will be created
 if it doesn&#8217;t exist.  Download is via curl, wget, or Python&#8217;s urllib as appropriate.</p>
@@ -210,6 +210,7 @@ if it doesn&#8217;t exist.  Download is via curl, wget, or Python&#8217;s urllib
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>src</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Path or URL to source file.</li>
 <li><strong>dest</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Path to file copy or download destination.</li>
+<li><strong>timeout</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Maximum time in seconds for the connection to the server.  0 for no timeout.</li>
 </ul>
 </td>
 </tr>
