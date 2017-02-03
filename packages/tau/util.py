@@ -220,8 +220,8 @@ def download(src, dest, timeout=8):
 
 def _create_dl_subprocess(abs_cmd, src, dest, timeout):
     if abs_cmd.endswith("curl"):
-        size_cmd = [abs_cmd, '-sI', src, '--location', '--connect-timeout', timeout]
-        get_cmd = [abs_cmd, '-s', '-L', src, '-o', dest, '--connect-timeout', timeout]
+        size_cmd = [abs_cmd, '-sI', src, '--location', '--connect-timeout', str(timeout)]
+        get_cmd = [abs_cmd, '-s', '-L', src, '-o', dest, '--connect-timeout', str(timeout)]
     elif abs_cmd.endswith("wget"):
         size_cmd = [abs_cmd, src, '--spider', '--server-response', 
                     '--dns-timeout=%d' % timeout, '--connect-timeout=%d' % timeout]
