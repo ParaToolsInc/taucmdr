@@ -188,12 +188,12 @@ def download(src, dest, timeout=8):
     Args:
         src (str): Path or URL to source file.
         dest (str): Path to file copy or download destination.
-        timeout (int): Maximum time in seconds for the connection to the server.
+        timeout (int): Maximum time in seconds for the connection to the server.  0 for no timeout.
         
     Raises:
         IOError: File copy or download failed.
     """
-    assert isinstance(timeout, int)
+    assert isinstance(timeout, int) and timeout >= 0
     if src.startswith('file://'):
         src = src[6:]
     if os.path.isfile(src):
@@ -209,7 +209,9 @@ def download(src, dest, timeout=8):
             if abs_cmd and _create_dl_subprocess(abs_cmd, src, dest, timeout) == 0:
                 return
             LOGGER.warning("%s failed to download '%s'. Retrying with a different method...", cmd, src)                    
-        # Fallback: this is usually **much** slower than curl or wget
+        # Fallback: urllib is usually **much** slower than curl or wget and doesn't support timeout
+        if timeout:
+            raise IOError("Failed to download '%s'" % src)
         with ProgressIndicator() as progress_bar:
             try:
                 urllib.urlretrieve(src, dest, reporthook=progress_bar.update)
