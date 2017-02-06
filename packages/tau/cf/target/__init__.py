@@ -171,7 +171,7 @@ class OperatingSystem(KeyedRecord):
         self.description = description
 
 
-class TauArch(KeyedRecord):
+class TauArch(TrackedInstance):
     """Maps (operating system, architecture pairs) to TAU's magic words.
     
     Attributes:
@@ -180,8 +180,6 @@ class TauArch(KeyedRecord):
         operating_system (OperatingSystem): OperatingSystem object for this TAU architecture.
         preferred_families (dict): Preferred compiler families indexed by :any:`Knowledgebase`.
     """
-    
-    __key__ = 'name'
     
     def __init__(self, name, architecture, operating_system, preferred_families):
         self.name = name
@@ -213,6 +211,7 @@ class TauArch(KeyedRecord):
 
 X86_64_ARCH = Architecture('x86_64', 'x86_64')
 INTEL_KNC_ARCH = Architecture('knc', 'Intel Knights Corner')
+INTEL_KNL_ARCH = Architecture('knl', 'Intel Knights Landing')
 IBM_BGP_ARCH = Architecture('BGP', 'IBM BlueGene/P')
 IBM_BGQ_ARCH = Architecture('BGQ', 'IBM BlueGene/Q')
 IBM64_ARCH = Architecture('ibm64', 'IBM 64-bit Power')
@@ -248,6 +247,11 @@ TAU_ARCH_MIC_LINUX = TauArch('mic_linux', [INTEL_KNC_ARCH], LINUX_OS,
                              {HOST_COMPILERS: compiler.host.INTEL, 
                               MPI_COMPILERS: compiler.mpi.INTEL, 
                               SHMEM_COMPILERS: compiler.shmem.OPENSHMEM})
+
+TAU_ARCH_KNL = TauArch('x86_64', [INTEL_KNL_ARCH], LINUX_OS,
+                       {HOST_COMPILERS: compiler.host.INTEL, 
+                        MPI_COMPILERS: compiler.mpi.INTEL, 
+                        SHMEM_COMPILERS: compiler.shmem.OPENSHMEM})
 
 TAU_ARCH_BGP = TauArch('bgp', [IBM_BGP_ARCH], IBM_CNK_OS,
                        {HOST_COMPILERS: compiler.host.IBM_BG, 
