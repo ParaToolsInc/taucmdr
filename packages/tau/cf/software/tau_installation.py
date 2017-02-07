@@ -512,6 +512,7 @@ class TauInstallation(Installation):
                   '-shmeminc=%s' % shmeminc if shmeminc else None,
                   '-shmemlib=%s' % shmemlib if shmemlib else None,
                   '-shmemlibrary=%s' % shmemlibrary if shmemlibrary else None,
+                  '-useropt=-g',
                  ] if flag]
         if pdt:
             flags.append('-pdt=%s' % pdt.install_prefix)
@@ -770,6 +771,8 @@ class TauInstallation(Installation):
             tau_opts.add('-optTrackIO')
         if self.measure_memory_alloc:
             tau_opts.add('-optMemDbg')
+        if self.openmp_support and self.source_inst != 'never':
+            tau_opts.add('-optContinueBeforeOMP')
         try:
             tau_opts.update(self.force_tau_options)
         except AttributeError:
