@@ -220,7 +220,7 @@ class TauInstallation(Installation):
             throttle (bool): If True then throttle lightweight events.
             throttle_per_call (int): Maximum microseconds per call of a lightweight event.
             throttle_num_calls (int): Minimum number of calls for a lightweight event.
-	          forced_makefile (str): Path to external makefile if forcing TAU_MAKEFILE or None.
+            forced_makefile (str): Path to external makefile if forcing TAU_MAKEFILE or None.
         """
         super(TauInstallation, self).__init__('tau', 'TAU Performance System', sources, target_arch, target_os,
                                               compilers, REPOS, COMMANDS, None, None)
@@ -292,7 +292,7 @@ class TauInstallation(Installation):
         return util.calculate_uid(uid_parts)
 
     def _set_install_prefix(self, value):
-        # PDT puts installation files (bin, lib, etc.) in a magically named subfolder
+        # TAU puts installation files (bin, lib, etc.) in a magically named subfolder
         super(TauInstallation, self)._set_install_prefix(value)
         arch_path = os.path.join(self.install_prefix, self.arch.name)
         self.bin_path = os.path.join(arch_path, 'bin')
@@ -554,7 +554,14 @@ class TauInstallation(Installation):
             SoftwarePackageError: TAU failed installation or did not pass verification after it was installed.
         """
         logger.activate_debug_log()
-        if (not self.src or not force_reinstall) and not self.forced_makefile:
+        if self.forced_makefile:
+            forced_install_prefix = os.path.abspath(os.path.join(os.path.dirname(self.forced_makefile), '..', '..'))
+            self._set_install_prefix(forced_install_prefix)
+            for pkg in self.dependencies.itervalues():
+                pkg.install(force_reinstall=False)
+            LOGGER.warning("TAU makefile was forced! Not verifying TAU installation")
+            return 
+        if not self.src or not force_reinstall:
             for pkg in self.dependencies.itervalues():
                 pkg.install(force_reinstall)
             try:
@@ -566,12 +573,6 @@ class TauInstallation(Installation):
                                                "Specify source code path or URL to enable package reinstallation.")
                 elif not force_reinstall:
                     LOGGER.debug(err)
-        else:
-            super(TauInstallation, self)._set_install_prefix(os.path.abspath(
-                os.path.join(os.path.dirname(self.forced_makefile), '..', '..')))
-            for pkg in self.dependencies.itervalues():
-                pkg.install(force_reinstall=False)
-            return True
         LOGGER.info("Installing %s at '%s'", self.title, self.install_prefix)
         try:
             # Keep reconfiguring the same source because that's how TAU works
@@ -583,7 +584,6 @@ class TauInstallation(Installation):
         except Exception as err:
             LOGGER.info("%s installation failed: %s ", self.title, err)
             raise
-
         # Verify the new installation
         LOGGER.info("Verifying %s installation...", self.title)
         return self.verify()
@@ -934,28 +934,22 @@ class TauInstallation(Installation):
         """
         LOGGER.debug("Showing profile files at '%s'", path)
         _, env = self.runtime_config()
-        if tool_name:
-            tools = [tool_name]
-        else:
-            tools = ['paraprof', 'pprof']
-        for tool in tools:
-            for pfile in ['tauprofile.xml', 'profile.cubex']:
-                ppath = os.path.join(path, pfile)
-                if os.path.isfile(ppath):
-                    break
+        tools = (tool_name,) if tool_name else ('paraprof', 'pprof')
+        for tool in (os.path.join(self.bin_path, x) for x in tools):
+            if not os.path.isdir(path):
+                cmd = [tool, path]
+            else:
+                profiles = 'tauprofile.xml', 'profile.cubex'
+                for profile in (os.path.join(path, x) for x in profiles):
+                    if os.path.isfile(profile):
+                        cmd = [tool, profile]
+                        break
                 else:
-                    ppath = path
-            if os.path.isfile(ppath):
-                cmd = [tool, ppath]
-            else:
-                cmd = [tool]
-            LOGGER.info("Opening %s in %s", ppath, tool)
-            retval = util.create_subprocess(cmd, cwd=path, env=env, log=False)
-            if retval == 0:
-                return
-            else:
-                LOGGER.warning("%s failed", tool)
-        if retval != 0:
+                    cmd = [tool]
+            if util.create_subprocess(cmd, cwd=path, env=env) == 0:
+                break
+	    LOGGER.warning("%s failed", tool)
+        else:
             raise ConfigurationError("All visualization or reporting tools failed to open '%s'" % path,
                                      "Check Java installation, X11 installation,"
                                      " network connectivity, and file permissions")
