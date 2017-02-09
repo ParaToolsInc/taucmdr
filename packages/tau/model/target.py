@@ -41,8 +41,9 @@ from tau import logger, util
 from tau.error import InternalError, ConfigurationError, IncompatibleRecordError
 from tau.mvc.model import Model
 from tau.model.compiler import Compiler
+from tau.cf.platforms import Architecture, OperatingSystem 
+from tau.cf.platforms import HOST_ARCH, INTEL_KNC, HOST_OS, DARWIN
 from tau.cf.compiler import Knowledgebase, InstalledCompilerSet
-from tau.cf.target import host, DARWIN_OS, INTEL_KNC_ARCH
 from tau.cf.software.tau_installation import TAU_MINIMAL_COMPILERS
 
 LOGGER = logger.get_logger(__name__)
@@ -77,7 +78,6 @@ def attributes():
     """
     from tau.model.project import Project
     from tau.cli.arguments import ParsePackagePathAction
-    from tau.cf.target import Architecture, OperatingSystem
     from tau.cf.compiler.host import CC, CXX, FC, UPC, INTEL
     from tau.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC, INTEL as INTEL_MPI
     from tau.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
@@ -89,8 +89,6 @@ def attributes():
     knc_intel_mpi_only = require_compiler_family(INTEL_MPI,
                                                  "You must use Intel MPI compilers to target the Xeon Phi",
                                                  "Try adding `--mpi-compilers=Intel` to the command line")
-
-    host_os = host.operating_system()
     
     return {
         'projects': {
@@ -109,7 +107,7 @@ def attributes():
             'type': 'string',
             'required': True,
             'description': 'host operating system',
-            'default': host_os.name,
+            'default': HOST_OS.name,
             'argparse': {'flags': ('--os',),
                          'group': 'host',
                          'metavar': '<os>',
@@ -120,12 +118,12 @@ def attributes():
             'type': 'string',
             'required': True,
             'description': 'host architecture',
-            'default': host.architecture().name,
+            'default': HOST_ARCH.name,
             'argparse': {'flags': ('--arch',),
                          'group': 'host',
                          'metavar': '<arch>',
                          'choices': Architecture.keys()},
-            'compat': {str(INTEL_KNC_ARCH): 
+            'compat': {str(INTEL_KNC): 
                        (Target.require('host_arch', knc_require_k1om),
                         Target.require(CC.keyword, knc_intel_only),
                         Target.require(CXX.keyword, knc_intel_only),
@@ -321,12 +319,12 @@ def attributes():
         'binutils_source': {
             'type': 'string',
             'description': 'path or URL to a GNU binutils installation or archive file',
-            'default': 'download' if host_os is not DARWIN_OS else None,
+            'default': 'download' if HOST_OS is not DARWIN else None,
             'argparse': {'flags': ('--binutils',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction},
-            'compat': {(lambda x: x is not None): Target.discourage('host_os', DARWIN_OS.name)},
+            'compat': {(lambda x: x is not None): Target.discourage('host_os', DARWIN.name)},
             'on_change': Target.attribute_changed
         },
         'libunwind_source': {
@@ -342,23 +340,23 @@ def attributes():
         'papi_source': {
             'type': 'string',
             'description': 'path or URL to a PAPI installation or archive file',
-            'default': 'download' if host_os is not DARWIN_OS else None,
+            'default': 'download' if HOST_OS is not DARWIN else None,
             'argparse': {'flags': ('--papi',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction},
-            'compat': {(lambda x: x is not None): Target.discourage('host_os', DARWIN_OS.name)},
+            'compat': {(lambda x: x is not None): Target.discourage('host_os', DARWIN.name)},
             'on_change': Target.attribute_changed
         },
         'scorep_source': {
             'type': 'string',
             'description': 'path or URL to a Score-P installation or archive file',
-            'default': 'download' if host_os is not DARWIN_OS else None,
+            'default': 'download' if HOST_OS is not DARWIN else None,
             'argparse': {'flags': ('--scorep',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction},
-            'compat': {(lambda x: x is not None): (Target.discourage('host_os', DARWIN_OS.name),
+            'compat': {(lambda x: x is not None): (Target.discourage('host_os', DARWIN.name),
                                                    Target.require(CC.keyword),
                                                    Target.require(CXX.keyword),
                                                    Target.require(FC.keyword))},
@@ -416,11 +414,9 @@ class Target(Model):
         return selected['target'] == self.eid
 
     def architecture(self):
-        from tau.cf.target import Architecture
         return Architecture.find(self['host_arch'])
     
     def operating_system(self):
-        from tau.cf.target import OperatingSystem
         return OperatingSystem.find(self['host_os'])
     
     def sources(self):
@@ -479,12 +475,12 @@ class Target(Model):
         Raises:
             ConfigurationError: The compiler or command line arguments are incompatible with this target.
         """
-        if '-mmic' in compiler_args and self['host_arch'] != str(INTEL_KNC_ARCH):
+        if '-mmic' in compiler_args and self['host_arch'] != str(INTEL_KNC):
             raise ConfigurationError("Host architecture of target '%s' is '%s'"
                                      " but the '-mmic' compiler argument requires '%s'" %
-                                     (self['name'], self['host_arch'], INTEL_KNC_ARCH),
+                                     (self['name'], self['host_arch'], INTEL_KNC),
                                      "Select a different target",
-                                     "Create a new target with host architecture '%s'" % INTEL_KNC_ARCH)
+                                     "Create a new target with host architecture '%s'" % INTEL_KNC)
         compiler_ctrl = Compiler.controller(self.storage)
         absolute_path = util.which(compiler_cmd)
         compiler_cmd = os.path.basename(compiler_cmd)

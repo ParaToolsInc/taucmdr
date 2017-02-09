@@ -120,7 +120,7 @@ class HelpCommand(AbstractCommand):
         usage_head = "%s <command>|<file>|all [arguments]" % self.command
         parser = arguments.get_parser(prog=self.command, usage=usage_head, description=self.summary)
         parser.add_argument('command', 
-                            help="A TAU command, system command, or file.\nUse keyword 'all' to view help for all options.",
+                            help="A TAU command, system command, or file.",
                             metavar='(<command>|<file>|all)',
                             nargs='+')
         return parser

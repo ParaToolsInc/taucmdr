@@ -36,7 +36,6 @@ from configobj import ConfigObj
 from tau import util
 from tau.cf.storage import AbstractStorage, StorageError
 from tau.cf.storage.levels import ORDERED_LEVELS
-from tau.cf.storage import StorageError
 
 
 def parse_config_string(val):

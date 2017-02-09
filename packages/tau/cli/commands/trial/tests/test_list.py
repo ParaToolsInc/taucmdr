@@ -34,17 +34,17 @@ Functions used for unit tests of list.py.
 import shutil
 import unittest
 from tau import tests, TAU_HOME
+from tau.cf.platforms import HOST_ARCH
+from tau.cf.compiler.host import CC
 from tau.cli.commands import build
 from tau.cli.commands.trial.list import COMMAND as LIST_COMMAND
 from tau.cli.commands.trial.create import COMMAND as CREATE_COMMAND
-from tau.cf.compiler.host import CC
-from tau.cf.target import IBM_BGP_ARCH, IBM_BGQ_ARCH
-from tau.cf.target import host
+
 
 class ListTest(tests.TestCase):
     """Tests for :any:`trial.list`."""
     
-    @unittest.skipIf(host.architecture() in (IBM_BGP_ARCH, IBM_BGQ_ARCH), "Test skipped on BlueGene")
+    @unittest.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
     def test_list(self):
         self.reset_project_storage(project_name='proj1')
         shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests.get_test_workdir()+'/hello.c')

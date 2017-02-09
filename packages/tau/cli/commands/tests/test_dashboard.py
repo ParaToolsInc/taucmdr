@@ -35,6 +35,7 @@ from tau import tests
 from tau.cli.commands.dashboard import COMMAND as dashboard_cmd
 
 class DashboardTest(tests.TestCase):
+    """Unit tests for `tau dashboard`"""
     
     def test_dashboard(self):
         self.reset_project_storage(project_name='proj1')

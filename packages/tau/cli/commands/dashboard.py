@@ -35,6 +35,7 @@ from tau.model.project import Project, ProjectSelectionError
 
 
 class DashboardCommand(AbstractCommand):
+    """A command line dashboard for TAU Commander."""
     
     def _construct_parser(self):
         usage = "%s [arguments]" % self.command

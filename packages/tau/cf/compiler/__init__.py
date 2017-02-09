@@ -120,9 +120,8 @@ class Knowledgebase(object):
         The first family yielded is the host's preferred compiler family.
         All other families may be yielded in any order.
         """
-        from tau.cf import target
-        host_tau_arch = target.host.tau_arch()
-        preferred = host_tau_arch.preferred_families[self]
+        from tau.cf.platforms import HOST_TAU_MAGIC
+        preferred = HOST_TAU_MAGIC.preferred_families[self]
         yield preferred
         for family in self._families.itervalues():
             if family is not preferred:

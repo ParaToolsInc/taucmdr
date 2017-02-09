@@ -33,17 +33,17 @@ TAU uses PDT for source instrumentation.
 import os
 from tau import logger, util
 from tau.error import ConfigurationError
-from tau.cf.target import TauArch, X86_64_ARCH, LINUX_OS, DARWIN_OS, IBM_BGQ_ARCH, IBM_CNK_OS, PPC64LE_ARCH
 from tau.cf.software import SoftwarePackageError
 from tau.cf.software.installation import AutotoolsInstallation
+from tau.cf.platforms import TauMagic, X86_64, IBM_BGQ, PPC64LE, LINUX, DARWIN, IBM_CNK
 from tau.cf.compiler.host import CC, CXX, PGI, GNU, INTEL
 
 
 LOGGER = logger.get_logger(__name__)
 
 REPOS = {None: 'http://tau.uoregon.edu/pdt.tgz',
-         X86_64_ARCH: {None: 'http://tau.uoregon.edu/pdt.tgz', 
-                       LINUX_OS:  'http://tau.uoregon.edu/pdt_lite.tgz'}}
+         X86_64: {None: 'http://tau.uoregon.edu/pdt.tgz', 
+                  LINUX:  'http://tau.uoregon.edu/pdt_lite.tgz'}}
 
 COMMANDS = {None:
             ['cparse',
@@ -72,8 +72,8 @@ COMMANDS = {None:
              'tau_instrumentor',
              'upcparse',
              'xmlgen'],
-            X86_64_ARCH: 
-            {DARWIN_OS: 
+            X86_64: 
+            {DARWIN: 
              ['cparse',
               'cxxparse',
               'edgcpfe',
@@ -91,8 +91,8 @@ COMMANDS = {None:
               'pdtflint',
               'taucpdisp',
               'xmlgen']},
-            IBM_BGQ_ARCH:
-            {IBM_CNK_OS:
+            IBM_BGQ:
+            {IBM_CNK:
              ['cparse',
               'cxxparse',
               'edg44-c-roseparse',
@@ -114,8 +114,8 @@ COMMANDS = {None:
               'taucpdisp',
               'tau_instrumentor',
               'xmlgen']},
-            PPC64LE_ARCH:
-            {LINUX_OS:
+            PPC64LE:
+            {LINUX:
              ['cparse',
               'cparse4101',
               'cxxparse',
@@ -156,12 +156,12 @@ class PdtInstallation(AutotoolsInstallation):
             compilers = compilers.modify(Host_CC=gnu_compilers[CC], Host_CXX=gnu_compilers[CXX])
         super(PdtInstallation, self).__init__('pdt', 'PDT', sources, target_arch, target_os, 
                                               compilers, REPOS, COMMANDS, None, None)
-        self.arch = TauArch.get(self.target_arch, self.target_os)
+        self.tau_magic = TauMagic.find((self.target_arch, self.target_os))
         
     def _set_install_prefix(self, value):
         # PDT puts installation files (bin, lib, etc.) in a magically named subfolder
         super(PdtInstallation, self)._set_install_prefix(value)
-        arch_path = os.path.join(self.install_prefix, self.arch.name)
+        arch_path = os.path.join(self.install_prefix, self.tau_magic.name)
         self.bin_path = os.path.join(arch_path, 'bin')
         self.lib_path = os.path.join(arch_path, 'lib')
     

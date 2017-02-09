@@ -37,6 +37,7 @@ from tau.cli.commands.build import COMMAND as build_command
 from tau.cf.compiler.host import CC
 
 class BuildTest(tests.TestCase):
+    """Unit tests for `tau build`"""
 
     def test_build(self):
         self.reset_project_storage()

@@ -45,7 +45,7 @@ from tau.cli.commands.project.create import COMMAND as project_create_cmd
 from tau.cli.commands.project.select import COMMAND as project_select_cmd
 from tau.cli.commands.select import COMMAND as select_cmd
 from tau.cli.commands.dashboard import COMMAND as dashboard_cmd
-from tau.cf.target import host, DARWIN_OS, IBM_CNK_OS
+from tau.cf.platforms import HOST_OS, DARWIN, IBM_CNK
 from tau.cf.compiler.host import FC
 
 
@@ -152,8 +152,7 @@ class InitializeCommand(AbstractCommand):
         sample = True
         scorep = True
         comp_inst = 'fallback'
-        host_os = host.operating_system()
-        if host_os is DARWIN_OS:
+        if HOST_OS is DARWIN:
             self.logger.info("Darwin OS detected: disabling PAPI, binutils, "
                              "compiler-based instrumentation, sampling, and Score-P.")
             papi = False
@@ -161,7 +160,7 @@ class InitializeCommand(AbstractCommand):
             sample = False
             scorep = False
             comp_inst = 'never'
-        elif host_os is IBM_CNK_OS: 
+        elif HOST_OS is IBM_CNK: 
             self.logger.info("IBM CNK OS detected: disabling sampling")
             sample = False
         if not getattr(args, FC.keyword, None):

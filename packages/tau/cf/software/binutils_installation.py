@@ -38,7 +38,6 @@ import shutil
 import fileinput
 from tau import logger, util
 from tau.error import ConfigurationError
-from tau.cf.target import DARWIN_OS, IBM_BGP_ARCH, IBM_BGQ_ARCH, IBM64_ARCH, INTEL_KNC_ARCH
 from tau.cf.software import SoftwarePackageError
 from tau.cf.software.installation import AutotoolsInstallation
 from tau.cf.compiler.host import CC, CXX, PGI, GNU
@@ -66,24 +65,25 @@ class BinutilsInstallation(AutotoolsInstallation):
                                                    target_arch, target_os, compilers, REPOS, None, LIBRARIES, None)
 
     def configure(self, flags, env):
+        from tau.cf.platforms import DARWIN, IBM_BGP, IBM_BGQ, INTEL_KNC
         flags.extend(['--disable-nls', '--disable-werror'])
         for var in 'CPP', 'CC', 'CXX', 'FC', 'F77', 'F90':
             env[var] = None
-        if self.target_os is DARWIN_OS:
+        if self.target_os is DARWIN:
             flags.append('CFLAGS=-Wno-error=unused-value -Wno-error=deprecated-declarations -fPIC')
             flags.append('CXXFLAGS=-Wno-error=unused-value -Wno-error=deprecated-declarations -fPIC')
         else:
             flags.append('CFLAGS=-fPIC')
             flags.append('CXXFLAGS=-fPIC')
-        if self.target_arch is IBM_BGP_ARCH:
+        if self.target_arch is IBM_BGP:
             flags.append('CC=/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc-bgp-linux-gcc')
             flags.append('CXX=/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc-bgp-linux-g++')
-        elif self.target_arch is IBM_BGQ_ARCH:
+        elif self.target_arch is IBM_BGQ:
             flags.append('CC=/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc64-bgq-linux-gcc')
             flags.append('CXX=/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc64-bgq-linux-g++')
-        elif self.target_arch is IBM64_ARCH:
+        elif self.target_arch.is_ibm():
             flags.append('--disable-largefile')
-        elif self.target_arch is INTEL_KNC_ARCH:
+        elif self.target_arch is INTEL_KNC:
             k1om_ar = util.which('x86_64-k1om-linux-ar')
             if not k1om_ar:
                 for path in glob.glob('/usr/linux-k1om-*'):

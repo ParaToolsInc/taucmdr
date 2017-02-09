@@ -25,23 +25,19 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""Test functions.
-
-Functions used for unit tests of host.py.
-"""
+"""Unit tests for tau.cf.platforms"""
 
 from tau.tests import TestCase
-from tau.cf.target import host
+from tau.cf.platforms import Architecture, OperatingSystem, TauMagic
 
-class HostTest(TestCase):
-    """Unit tests for tau.cf.target.host"""
-    # pylint: disable=invalid-name
+class PlatformsTest(TestCase):
+    """Unit tests for tau.cf.platforms"""
     
-    def test_architecture_not_empty(self):
-        self.assertNotEqual(host.architecture(), '')
+    def test_architecture_detect(self):
+        self.assertTrue(Architecture.detect())
 
-    def test_os_not_empty(self):
-        self.assertNotEqual(host.operating_system(), '')
-    
-    def test_tau_arch_not_empty(self):
-        self.assertNotEqual(host.tau_arch(), '')
+    def test_operating_system_detect(self):
+        self.assertTrue(OperatingSystem.detect())
+
+    def test_tau_magic_detect(self):
+        self.assertTrue(TauMagic.detect())

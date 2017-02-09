@@ -37,7 +37,6 @@ import glob
 import errno
 from datetime import datetime
 from tau import logger, util
-from tau.cf.target import IBM_BGQ_ARCH, IBM_BGP_ARCH
 from tau.error import ConfigurationError, InternalError
 from tau.mvc.controller import Controller
 from tau.mvc.model import Model
@@ -218,10 +217,9 @@ class TrialController(Controller):
         measurement = expr.populate('measurement')
         if measurement['trace'] == 'otf2' or measurement['profile'] == 'cubex':
             env['SCOREP_EXPERIMENT_DIRECTORY'] = trial.prefix
-
+        
         targ = expr.populate('target')
-        is_bluegene = targ['host_arch'] in [str(x) for x in IBM_BGQ_ARCH, IBM_BGP_ARCH]
-        if is_bluegene:
+        if targ.architecture().is_bluegene():
             return self._perform_bluegene(expr, trial, cmd, cwd, env)
         else:
             return self._perform_interactive(expr, trial, cmd, cwd, env)

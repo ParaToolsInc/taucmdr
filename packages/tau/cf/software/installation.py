@@ -35,8 +35,7 @@ from tau.error import ConfigurationError
 from tau.cf.storage.levels import ORDERED_LEVELS
 from tau.cf.storage.levels import highest_writable_storage 
 from tau.cf.software import SoftwarePackageError
-from tau.cf.target import Architecture, OperatingSystem
-from tau.cf.compiler.host import CC, CXX
+from tau.cf import compiler
 
 LOGGER = logger.get_logger(__name__)
 
@@ -53,7 +52,7 @@ def parallel_make_flags(nprocs=None):
     """
     if not nprocs:
         try:
-            nprocs = configuration.get('build.max_make_jobs')
+            nprocs = int(configuration.get('build.max_make_jobs'))
         except KeyError:
             nprocs = max(1, multiprocessing.cpu_count() - 1)
         try:
@@ -148,8 +147,6 @@ class Installation(object):
             headers (dict): Dictionary of headers, indexed by architecture and OS, that must be installed.
         """
         # pylint: disable=too-many-arguments
-        assert isinstance(target_arch, Architecture)
-        assert isinstance(target_os, OperatingSystem)
         self.dependencies = {}
         self.name = name
         self.title = title
@@ -174,7 +171,7 @@ class Installation(object):
     def _calculate_uid(self):
         # Most packages only care about changes in C/C++ compilers
         uid_parts = [self.src, self.target_arch.name, self.target_os.name,
-                     self.compilers[CC].uid, self.compilers[CXX].uid]
+                     self.compilers[compiler.host.CC].uid, self.compilers[compiler.host.CXX].uid]
         return util.calculate_uid(uid_parts)
 
     def _get_install_prefix(self):

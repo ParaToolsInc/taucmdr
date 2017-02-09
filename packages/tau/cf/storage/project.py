@@ -120,23 +120,23 @@ class ProjectStorage(LocalFileStorage):
                                  a TAU Commander project directory.
         """
         from tau.cf.storage.levels import USER_STORAGE, SYSTEM_STORAGE
-        if not self._prefix:
-            cwd = os.getcwd()
-            LOGGER.debug("Searching upwards from '%s' for '%s'", cwd, PROJECT_DIR)
-            root = cwd
-            lastroot = None
-            while root and root != lastroot:
-                prefix = os.path.realpath(os.path.join(root, PROJECT_DIR))
-                if os.path.isdir(prefix):
-                    for exclude_storage in USER_STORAGE, SYSTEM_STORAGE:
-                        if os.path.exists(os.path.join(prefix, exclude_storage.name + ".json")):
-                            break
-                    else:
-                        LOGGER.debug("Located project storage prefix '%s'", prefix)
-                        self._prefix = prefix
+        if self._prefix:
+            return self._prefix
+        cwd = os.getcwd()
+        LOGGER.debug("Searching upwards from '%s' for '%s'", cwd, PROJECT_DIR)
+        root = cwd
+        lastroot = None
+        while root and root != lastroot:
+            prefix = os.path.realpath(os.path.join(root, PROJECT_DIR))
+            if os.path.isdir(prefix):
+                for exclude_storage in USER_STORAGE, SYSTEM_STORAGE:
+                    if os.path.exists(os.path.join(prefix, exclude_storage.name + ".json")):
                         break
-                lastroot = root
-                root = os.path.dirname(root)
-            else:
-                raise ProjectStorageError(cwd)
-        return self._prefix
+                else:
+                    LOGGER.debug("Located project storage prefix '%s'", prefix)
+                    self._prefix = prefix
+                    return prefix
+            lastroot = root
+            root = os.path.dirname(root)
+        raise ProjectStorageError(cwd)
+        

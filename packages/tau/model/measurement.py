@@ -52,7 +52,7 @@ def attributes():
     from tau.model.application import Application
     from tau.cli.arguments import ParseBooleanAction
     from tau.model import require_compiler_family
-    from tau.cf.target import host, DARWIN_OS, IBM_CNK_OS
+    from tau.cf.platforms import HOST_OS, DARWIN, IBM_CNK
     from tau.cf.compiler.host import INTEL, GNU, CC, CXX, FC
     from tau.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC
     from tau.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
@@ -101,7 +101,7 @@ def attributes():
         },
         'sample': {
             'type': 'boolean',
-            'default': host.operating_system() not in (DARWIN_OS, IBM_CNK_OS),
+            'default': HOST_OS not in (DARWIN, IBM_CNK),
             'description': "use event-based sampling to gather performance data",
             'argparse': {'flags': ('--sample',),
                          'group': 'instrumentation',
@@ -113,11 +113,11 @@ def attributes():
                               Target.exclude('binutils_source', None),
                               Target.encourage('libunwind_source'),
                               Target.discourage('libunwind_source', None),
-                              Target.exclude('host_os', DARWIN_OS))}
+                              Target.exclude('host_os', DARWIN))}
         },
         'source_inst': {
             'type': 'string',
-            'default': 'never' if host.operating_system() is not DARWIN_OS else 'automatic',
+            'default': 'never' if HOST_OS is not DARWIN else 'automatic',
             'description': "use hooks inserted into the application source code to gather performance data",
             'argparse': {'flags': ('--source-inst',),
                          'group': 'instrumentation',
@@ -143,7 +143,7 @@ def attributes():
                         Target.exclude('binutils_source', None),
                         Target.require('libunwind_source'),
                         Target.exclude('libunwind_source', None),
-                        Target.exclude('host_os', DARWIN_OS))},
+                        Target.exclude('host_os', DARWIN))},
             'on_change': Measurement.attribute_changed
         },
         'link_only': {

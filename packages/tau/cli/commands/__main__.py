@@ -35,7 +35,7 @@ import os
 import sys
 import tau
 from tau import __version__ as TAUCMDR_VERSION
-from tau import cli, logger, configuration, util
+from tau import cli, logger, util
 from tau.cli import UnknownCommandError, arguments
 from tau.cli.command import AbstractCommand
 from tau.cli.commands.build import COMMAND as build_command
@@ -65,10 +65,6 @@ class MainCommand(AbstractCommand):
         self.command = os.path.basename(tau.TAU_SCRIPT)
     
     def _construct_parser(self):
-        try:
-            log_default = configuration.get('logging.debug_log')
-        except KeyError:
-            log_default = False
         usage = "%s [arguments] <subcommand> [options]"  % self.command
         _green = lambda x: "{:<35}".format(util.color_text(x, 'green'))
         epilog_parts = ["", cli.commands_description(), "",

@@ -33,7 +33,6 @@ TAU is the core software package of TAU Commander.
 import os
 import glob
 import shutil
-import resource
 from tau import logger, util
 from tau.error import ConfigurationError, InternalError
 from tau.cf.software import SoftwarePackageError
@@ -42,7 +41,7 @@ from tau.cf.compiler import host
 from tau.cf.compiler.host import CC, CXX, FC, UPC
 from tau.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC
 from tau.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
-from tau.cf.target import TauArch, CRAY_CNL_OS, DARWIN_OS
+from tau.cf.platforms import TauMagic, INTEL_KNL, CRAY_CNL, DARWIN
 
 
 LOGGER = logger.get_logger(__name__)
@@ -227,7 +226,7 @@ class TauInstallation(Installation):
         self._tau_makefile = None
         if self.src == 'nightly':
             self.src = NIGHTLY
-        self.arch = TauArch.get(self.target_arch, self.target_os)
+        self.tau_magic = TauMagic.find((self.target_arch, self.target_os))
         self.verbose = (logger.LOG_LEVEL == 'DEBUG')
         self.openmp_support = openmp_support
         self.opencl_support = opencl_support
@@ -294,7 +293,7 @@ class TauInstallation(Installation):
     def _set_install_prefix(self, value):
         # TAU puts installation files (bin, lib, etc.) in a magically named subfolder
         super(TauInstallation, self)._set_install_prefix(value)
-        arch_path = os.path.join(self.install_prefix, self.arch.name)
+        arch_path = os.path.join(self.install_prefix, self.tau_magic.name)
         self.bin_path = os.path.join(arch_path, 'bin')
         self.lib_path = os.path.join(arch_path, 'lib')
 
@@ -306,7 +305,7 @@ class TauInstallation(Installation):
         return self.sample or self.compiler_inst != 'never' or self.measure_openmp in ('ompt', 'gomp')
 
     def _uses_libunwind(self):
-        return (self.target_os is not DARWIN_OS and
+        return (self.target_os is not DARWIN and
                 (self.sample or self.compiler_inst != 'never' or self.openmp_support))
 
     def _uses_papi(self):
@@ -480,7 +479,8 @@ class TauInstallation(Installation):
                                    self.compilers[SHMEM_CC],
                                    self.compilers[SHMEM_CXX],
                                    self.compilers[SHMEM_FC])
-            if self.arch.name == 'x86_64':
+            # FIXME: A hack to for OpenSHMEM? 
+            if self.tau_magic.name == 'x86_64':
                 cc_command = self.compilers[SHMEM_CC].command
                 cxx_command = self.compilers[SHMEM_CXX].command
                 fortran_magic = 'oshfort'
@@ -492,7 +492,7 @@ class TauInstallation(Installation):
         scorep = self.dependencies.get('scorep')
 
         flags = [flag for flag in
-                 ['-arch=%s' % self.arch,
+                 ['-arch=%s' % self.tau_magic.name,
                   '-cc=%s' % cc_command,
                   '-c++=%s' % cxx_command,
                   '-fortran=%s' % fortran_magic if fortran_magic else None,
@@ -512,8 +512,10 @@ class TauInstallation(Installation):
                   '-shmeminc=%s' % shmeminc if shmeminc else None,
                   '-shmemlib=%s' % shmemlib if shmemlib else None,
                   '-shmemlibrary=%s' % shmemlibrary if shmemlibrary else None,
-                  '-useropt=-g',
                  ] if flag]
+        useropts = ['-g']
+        if self.target_arch is INTEL_KNL:
+            useropts.append('-DTAU_MAX_THREADS=512')
         if pdt:
             flags.append('-pdt=%s' % pdt.install_prefix)
             flags.append('-pdt_c++=%s' % pdt.compilers[CXX].info.command)
@@ -600,7 +602,7 @@ class TauInstallation(Installation):
         """
         tags = []
         cxx_compiler = self.compilers[CXX].unwrap()
-        compiler_tags = {host.INTEL: 'intel' if self.target_os == CRAY_CNL_OS else 'icpc',
+        compiler_tags = {host.INTEL: 'intel' if self.target_os == CRAY_CNL else 'icpc',
                          host.PGI: 'pgi'}
         try:
             tags.append(compiler_tags[cxx_compiler.info.family])
@@ -638,7 +640,7 @@ class TauInstallation(Installation):
         """Returns a set of makefile tags incompatible with the specified config."""
         tags = []
         cxx_compiler = self.compilers[CXX].unwrap()
-        compiler_tags = {host.INTEL: 'intel' if self.target_os == CRAY_CNL_OS else 'icpc',
+        compiler_tags = {host.INTEL: 'intel' if self.target_os == CRAY_CNL else 'icpc',
                          host.PGI: 'pgi'}
         compiler_tag = compiler_tags.get(cxx_compiler.info.family, None)
         tags.extend(tag for tag in compiler_tags.itervalues() if tag != compiler_tag)
@@ -853,7 +855,7 @@ class TauInstallation(Installation):
         """
         use_wrapper = (self.source_inst != 'never' or
                        self.compiler_inst != 'never' or
-                       self.target_os is CRAY_CNL_OS)
+                       self.target_os is CRAY_CNL)
         if use_wrapper:
             return TAU_COMPILER_WRAPPERS[compiler.info.role]
         else:
@@ -907,7 +909,7 @@ class TauInstallation(Installation):
         use_tau_exec = (self.measure_opencl or
                         self.tbb_support or
                         self.pthreads_support or
-                        self.target_os is not CRAY_CNL_OS or
+                        self.target_os is not CRAY_CNL or
                         (self.source_inst == 'never' and
                          self.compiler_inst == 'never' and
                          not self.link_only))
@@ -950,7 +952,7 @@ class TauInstallation(Installation):
                     cmd = [tool]
             if util.create_subprocess(cmd, cwd=path, env=env) == 0:
                 break
-	    LOGGER.warning("%s failed", tool)
+            LOGGER.warning("%s failed", tool)
         else:
             raise ConfigurationError("All visualization or reporting tools failed to open '%s'" % path,
                                      "Check Java installation, X11 installation,"
@@ -997,6 +999,7 @@ class TauInstallation(Installation):
             cmd = [tool_name, tau_slog2]
             retval = util.create_subprocess(cmd, cwd=path, env=env, log=False)
         elif tool_name == 'vampir' or tool_name == 'vampirserver':
+            import resource
             tau_otf2 = os.path.join(path, 'traces.otf2')
             if not os.path.isfile(tau_otf2):
                 raise ConfigurationError("otf2 trace files not found.")

@@ -222,7 +222,7 @@ class Controller(object):
             keys: Fields or element identifiers to match.
         """
         for attr in data:
-            if not attr in self.model.attributes:
+            if attr not in self.model.attributes:
                 raise ModelError(self.model, "no attribute named '%s'" % attr)
         with self.storage as database:
             # Get the list of affected records **before** updating the data so foreign keys are correct
@@ -283,7 +283,7 @@ class Controller(object):
             keys: Fields or element identifiers to match.
         """
         for attr in fields:
-            if not attr in self.model.attributes:
+            if attr not in self.model.attributes:
                 raise ModelError(self.model, "no attribute named '%s'" % attr)
         with self.storage as database:
             # Get the list of affected records **before** updating the data so foreign keys are correct

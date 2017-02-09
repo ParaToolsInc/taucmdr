@@ -129,7 +129,7 @@ def _get_commands(package_name):
         car, cdr = cmd[0], cmd[1:]
         if cdr:
             walking_import(module, cdr, dct[car])
-        elif not car in dct:
+        elif car not in dct:
             dct[car] = {}
             __import__(module)
             dct[car]['__module__'] = sys.modules[module]

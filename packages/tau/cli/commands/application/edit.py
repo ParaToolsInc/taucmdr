@@ -37,6 +37,7 @@ from tau.model.experiment import Experiment
 
 
 class ApplicationEditCommand(EditCommand):
+    """``tau application edit`` subcommand."""
     
     def _parse_args(self, argv):
         args = super(ApplicationEditCommand, self)._parse_args(argv)

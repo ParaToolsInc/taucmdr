@@ -34,9 +34,9 @@ instrumentation, and other measurement approaches.
 import os
 import sys
 import fileinput
-from tau import logger, util
+from tau import logger
 from tau.error import ConfigurationError
-from tau.cf.target import IBM_BGQ_ARCH, CRAY_CNL_OS, ARM64_ARCH, LINUX_OS, PPC64LE_ARCH, PPC64_ARCH
+from tau.cf.platforms import IBM_BGQ, ARM64, PPC64LE, PPC64, CRAY_CNL, LINUX
 from tau.cf.software import SoftwarePackageError
 from tau.cf.software.installation import AutotoolsInstallation
 from tau.cf.compiler.host import CC, CXX, PGI, GNU
@@ -46,8 +46,7 @@ from tau.cf.compiler.host import CC, CXX, PGI, GNU
 LOGGER = logger.get_logger(__name__)
 
 REPOS = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-1.1.tar.gz',
-         ARM64_ARCH: {LINUX_OS: 
-                      ('http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-arm64-1.1.tgz')}}
+         ARM64: {LINUX: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-arm64-1.1.tgz'}}
 
 LIBRARIES = {None: ['libunwind.a']}
 
@@ -71,16 +70,16 @@ class LibunwindInstallation(AutotoolsInstallation):
     def configure(self, flags, env):
         env['CC'] = self.compilers[CC].unwrap().absolute_path
         env['CXX'] = self.compilers[CXX].unwrap().absolute_path
-        if self.target_arch is IBM_BGQ_ARCH:
+        if self.target_arch is IBM_BGQ:
             flags.append('--disable-shared')
             for line in fileinput.input(os.path.join(self.src_prefix, 'src', 'unwind', 'Resume.c'), inplace=1):
                 # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
                 sys.stdout.write(line.replace('_Unwind_Resume', '_Unwind_Resume_other'))
-        elif self.target_os is CRAY_CNL_OS:
+        elif self.target_os is CRAY_CNL:
             env['CFLAGS'] = '-fPIC'
             env['CXXFLAGS'] = '-fPIC'
             flags.append('--disable-shared')
-	    flags.append('--disable-minidebuginfo')
+            flags.append('--disable-minidebuginfo')
         # Fix test so `make install` succeeds more frequently 
         for line in fileinput.input(os.path.join(self.src_prefix, 'tests', 'crasher.c'), inplace=1):
             # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
@@ -102,6 +101,6 @@ class LibunwindInstallation(AutotoolsInstallation):
 
 
     def make_install(self, flags, env, parallel=False):
-        if self.target_arch in [PPC64_ARCH, PPC64LE_ARCH]:
+        if self.target_arch in [PPC64, PPC64LE]:
             flags.append('-i')
         super(LibunwindInstallation, self).make_install(flags, env, parallel)

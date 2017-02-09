@@ -39,7 +39,7 @@ from tau.cf.compiler import Knowledgebase, InstalledCompiler, InstalledCompilerF
 from tau.cf.compiler.host import HOST_COMPILERS, FC
 from tau.cf.compiler.mpi import MPI_COMPILERS
 from tau.cf.compiler.shmem import SHMEM_COMPILERS
-from tau.cf.target import TauArch, host, CRAY_CNL_OS
+from tau.cf.platforms import TauMagic, HOST_ARCH, HOST_OS, CRAY_CNL
 from tau.cf.software.tau_installation import TAU_MINIMAL_COMPILERS
 
 
@@ -72,19 +72,31 @@ class TargetCreateCommand(CreateCommand):
         return Action
 
     def _parse_tau_makefile(self, args):
-        # Parsing a TAU Makefile is a really hairy operation, so let's lift the limit on statements
-        # pylint: disable=too-many-statements
+        # Parsing a TAU Makefile is a really hairy operation, so let's lift the limits
+        # pylint: disable=too-many-statements,too-many-locals
         makefile = args.forced_makefile
         if not util.file_accessible(makefile):
             self.parser.error("Invalid TAU makefile: %s" % makefile)
         tau_arch_name = os.path.basename(os.path.dirname(os.path.dirname(makefile)))
-        try:
-            tau_arch = TauArch.find(tau_arch_name)
-        except KeyError:
+        matches = [arch for arch in TauMagic.all() if arch.name == tau_arch_name]
+        if len(matches) == 1:
+            tau_arch = matches[0]
+        elif len(matches) == 0:
             raise ConfigurationError("TAU Makefile '%s' targets an unrecognized TAU architecture: %s" % 
                                      (makefile, tau_arch_name))
+        else:
+            for arch in matches:
+                if arch.architecture == HOST_ARCH and arch.operating_system == HOST_OS:
+                    tau_arch = arch
+                    break
+            else:
+                parts = ["TAU Makefile '%s' targets an ambiguous TAU architecture: %s" % (makefile, tau_arch_name),
+                         "It could be any of these:"]
+                parts.extend(["  - %s on %s" % (arch.operating_system.name, arch.architecture.name) 
+                              for arch in matches])
+                raise ConfigurationError("\n".join(parts))
         self.logger.info("Parsing TAU Makefile '%s' to populate command line arguments:", makefile)
-        args.host_arch = tau_arch.architecture[0].name
+        args.host_arch = tau_arch.architecture.name
         self.logger.info("  --host-arch='%s'", args.host_arch)
         args.host_os = tau_arch.operating_system.name
         self.logger.info("  --host-os='%s'", args.host_os)
@@ -252,7 +264,7 @@ class TargetCreateCommand(CreateCommand):
 
         # Crays are weird. Don't use the detected host family as a hint for MPI or SHMEM compilers
         # so that we'll always chose the Cray compiler wrappers.
-        hint = host_family_name if host.operating_system() is not CRAY_CNL_OS else None
+        hint = host_family_name if HOST_OS is not CRAY_CNL else None
         
         group = parser.add_argument_group('Message Passing Interface (MPI) arguments')
         self._configure_argument_group(group, MPI_COMPILERS, '--mpi-compilers', 'mpi_family', hint)
@@ -274,6 +286,14 @@ class TargetCreateCommand(CreateCommand):
         return args
 
     def parse_compiler_flags(self, args):
+        """Create a dictionary of :any:`InstalledCompiler` instances from commandl line arguments.
+        
+        Args:
+            args: A namespace of parsed command line arguments.
+            
+        Returns:
+            dict: InstalledCompiler instances indexed by role keyword.
+        """
         compilers = {}
         for kbase in HOST_COMPILERS, MPI_COMPILERS, SHMEM_COMPILERS:
             for role in kbase.roles.itervalues():
