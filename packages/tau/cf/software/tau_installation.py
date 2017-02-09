@@ -513,9 +513,10 @@ class TauInstallation(Installation):
                   '-shmemlib=%s' % shmemlib if shmemlib else None,
                   '-shmemlibrary=%s' % shmemlibrary if shmemlibrary else None,
                  ] if flag]
-        useropts = ['-g']
+        useropts = ['-O2', '-g']
         if self.target_arch is INTEL_KNL:
             useropts.append('-DTAU_MAX_THREADS=512')
+        flags.append('-useropt="%s"' % '#'.join(useropts))
         if pdt:
             flags.append('-pdt=%s' % pdt.install_prefix)
             flags.append('-pdt_c++=%s' % pdt.compilers[CXX].info.command)
