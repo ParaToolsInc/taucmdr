@@ -267,13 +267,13 @@ class LocalFileStorage(AbstractStorage):
         if keys is None:
             return None
         elif isinstance(keys, self.Record.eid_type):
-            LOGGER.debug("%s: get(eid=%r)", table_name, keys)
+            #LOGGER.debug("%s: get(eid=%r)", table_name, keys)
             element = table.get(eid=keys)
         elif isinstance(keys, dict) and keys:
-            LOGGER.debug("%s: get(keys=%r)", table_name, keys)
+            #LOGGER.debug("%s: get(keys=%r)", table_name, keys)
             element = table.get(self._query(keys, match_any))
         elif isinstance(keys, (list, tuple)):
-            LOGGER.debug("%s: get(keys=%r)", table_name, keys)
+            #LOGGER.debug("%s: get(keys=%r)", table_name, keys)
             return [self.get(key, table_name=table_name, match_any=match_any) for key in keys]
         else:
             raise ValueError(keys)
@@ -302,20 +302,20 @@ class LocalFileStorage(AbstractStorage):
         Raises:
             ValueError: Invalid value for `keys`.
         """
-        LOGGER.debug("Search '%s' for '%s'", table_name, keys)
+        #LOGGER.debug("Search '%s' for '%s'", table_name, keys)
         table = self.table(table_name)
         if keys is None:
-            LOGGER.debug("%s: all()", table_name)
+            #LOGGER.debug("%s: all()", table_name)
             return [self.Record(self, element=element) for element in table.all()]
         elif isinstance(keys, self.Record.eid_type):
-            LOGGER.debug("%s: search(eid=%r)", table_name, keys)
+            #LOGGER.debug("%s: search(eid=%r)", table_name, keys)
             element = table.get(eid=keys)
             return [self.Record(self, element=element)] if element else []
         elif isinstance(keys, dict) and keys:
-            LOGGER.debug("%s: search(keys=%r)", table_name, keys)
+            #LOGGER.debug("%s: search(keys=%r)", table_name, keys)
             return [self.Record(self, element=element) for element in table.search(self._query(keys, match_any))]
         elif isinstance(keys, (list, tuple)):
-            LOGGER.debug("%s: search(keys=%r)", table_name, keys)
+            #LOGGER.debug("%s: search(keys=%r)", table_name, keys)
             result = []
             for key in keys:
                 result.extend(self.search(keys=key, table_name=table_name, match_any=match_any))
@@ -345,13 +345,13 @@ class LocalFileStorage(AbstractStorage):
         """
         table = self.table(table_name)
         if test is not None:
-            LOGGER.debug('%s: search(where(%s).test(%r))', table_name, field, test)
+            #LOGGER.debug('%s: search(where(%s).test(%r))', table_name, field, test)
             return [self.Record(self, element=elem) for elem in table.search(tinydb.where(field).test(test))]
         elif regex is not None:
-            LOGGER.debug('%s: search(where(%s).matches(%r))', table_name, field, regex)
+            #LOGGER.debug('%s: search(where(%s).matches(%r))', table_name, field, regex)
             return [self.Record(self, element=elem) for elem in table.search(tinydb.where(field).matches(regex))]
         else:
-            LOGGER.debug("%s: search(where(%s).matches('.*'))", table_name, field)
+            #LOGGER.debug("%s: search(where(%s).matches('.*'))", table_name, field)
             return [self.Record(self, element=elem) for elem in table.search(tinydb.where(field).matches(".*"))]
 
     def contains(self, keys, table_name=None, match_any=False):
@@ -379,10 +379,10 @@ class LocalFileStorage(AbstractStorage):
         if keys is None:
             return False
         elif isinstance(keys, self.Record.eid_type):
-            LOGGER.debug("%s: contains(eid=%r)", table_name, keys)
+            #LOGGER.debug("%s: contains(eid=%r)", table_name, keys)
             return table.contains(eid=keys)
         elif isinstance(keys, dict) and keys:
-            LOGGER.debug("%s: contains(keys=%r)", table_name, keys)
+            #LOGGER.debug("%s: contains(keys=%r)", table_name, keys)
             return table.contains(self._query(keys, match_any))
         elif isinstance(keys, (list, tuple)):
             return [self.contains(keys=key, table_name=table_name, match_any=match_any) for key in keys]
@@ -425,13 +425,13 @@ class LocalFileStorage(AbstractStorage):
         """
         table = self.table(table_name)
         if isinstance(keys, self.Record.eid_type):
-            LOGGER.debug("%s: update(%r, eid=%r)", table_name, fields, keys)
+            #LOGGER.debug("%s: update(%r, eid=%r)", table_name, fields, keys)
             table.update(fields, eids=[keys])
         elif isinstance(keys, dict):
-            LOGGER.debug("%s: update(%r, keys=%r)", table_name, fields, keys)
+            #LOGGER.debug("%s: update(%r, keys=%r)", table_name, fields, keys)
             table.update(fields, self._query(keys, match_any))
         elif isinstance(keys, (list, tuple)):
-            LOGGER.debug("%s: update(%r, eids=%r)", table_name, fields, keys)
+            #LOGGER.debug("%s: update(%r, eids=%r)", table_name, fields, keys)
             table.update(fields, eids=keys)
         else:
             raise ValueError(keys)
@@ -460,15 +460,15 @@ class LocalFileStorage(AbstractStorage):
         table = self.table(table_name)
         if isinstance(keys, self.Record.eid_type):
             for field in fields:
-                LOGGER.debug("%s: unset(%s, eid=%r)", table_name, field, keys)
+                #LOGGER.debug("%s: unset(%s, eid=%r)", table_name, field, keys)
                 table.update(operations.delete(field), eids=[keys])
         elif isinstance(keys, dict):
             for field in fields:
-                LOGGER.debug("%s: unset(%s, keys=%r)", table_name, field, keys)
+                #LOGGER.debug("%s: unset(%s, keys=%r)", table_name, field, keys)
                 table.update(operations.delete(field), self._query(keys, match_any))
         elif isinstance(keys, (list, tuple)):
             for field in fields:
-                LOGGER.debug("%s: unset(%s, eids=%r)", table_name, field, keys)
+                #LOGGER.debug("%s: unset(%s, eids=%r)", table_name, field, keys)
                 table.update(operations.delete(field), eids=keys)
         else:
             raise ValueError(keys)
@@ -492,13 +492,13 @@ class LocalFileStorage(AbstractStorage):
         """
         table = self.table(table_name)
         if isinstance(keys, self.Record.eid_type):
-            LOGGER.debug("%s: remove(eid=%r)", table_name, keys)
+            #LOGGER.debug("%s: remove(eid=%r)", table_name, keys)
             table.remove(eids=[keys])
         elif isinstance(keys, dict):
-            LOGGER.debug("%s: remove(keys=%r)", table_name, keys)
+            #LOGGER.debug("%s: remove(keys=%r)", table_name, keys)
             table.remove(self._query(keys, match_any))
         elif isinstance(keys, (list, tuple)):
-            LOGGER.debug("%s: remove(eids=%r)", table_name, keys)
+            #LOGGER.debug("%s: remove(eids=%r)", table_name, keys)
             table.remove(eids=keys)
         else:
             raise ValueError(keys)
