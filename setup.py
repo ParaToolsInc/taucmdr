@@ -267,7 +267,6 @@ class Install(InstallCommand):
         import tau
         from tau import logger, util, configuration
         from tau.cli.commands.configure import COMMAND as configure_command
-        logger.activate_debug_log()
 
         # Clean up the build directory
         os.chdir(self.build_base)
