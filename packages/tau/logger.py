@@ -48,7 +48,7 @@ import logging
 from logging import handlers
 from datetime import datetime
 from termcolor import termcolor
-from tau import USER_PREFIX
+from tau import USER_PREFIX, __version__ as TAUCMDR_VERSION
 
 
 def get_terminal_size():
@@ -330,34 +330,6 @@ def set_log_level(level):
     LOG_LEVEL = level.upper()
     _STDOUT_HANDLER.setLevel(LOG_LEVEL)
     
-
-def activate_debug_log():
-    """Adds an addtional logging handler to record all messages to :any:`LOG_FILE`."""
-    if _FILE_HANDLER not in _ROOT_LOGGER.handlers:
-        _ROOT_LOGGER.addHandler(_FILE_HANDLER)
-        # pylint: disable=logging-not-lazy
-        _ROOT_LOGGER.debug("""
-%(bar)s
-TAU COMMANDER LOGGING INITIALIZED
-
-Timestamp         : %(timestamp)s
-Hostname          : %(hostname)s
-Platform          : %(platform)s
-Python Version    : %(pyversion)s
-Working Directory : %(cwd)s
-Terminal Size     : %(termsize)s
-Frozen            : %(frozen)s
-%(bar)s
-""" % {'bar': '#' * LINE_WIDTH,
-       'timestamp': str(datetime.now()),
-       'hostname': socket.gethostname(),
-       'platform': platform.platform(),
-       'pyversion': platform.python_version(),
-       'cwd': os.getcwd(),
-       'termsize': 'x'.join([str(_) for _ in TERM_SIZE]),
-       'frozen': getattr(sys, 'frozen', False)})
-
-
 LOG_LEVEL = 'INFO'
 """str: The global logging level for stdout loggers and software packages.
 
@@ -387,15 +359,34 @@ if not len(_ROOT_LOGGER.handlers):
     try:
         os.makedirs(_LOG_FILE_PREFIX)
     except OSError as exc:
-        if exc.errno == errno.EEXIST and os.path.isdir(_LOG_FILE_PREFIX):
-            pass
-        else:
+        if not (exc.errno == errno.EEXIST and os.path.isdir(_LOG_FILE_PREFIX)):
             raise
-    _FILE_HANDLER = handlers.TimedRotatingFileHandler(LOG_FILE, when='D', interval=1, backupCount=3)
-    _FILE_HANDLER.setFormatter(LogFormatter(line_width=120, line_marker=LINE_MARKER, allow_colors=False))
-    _FILE_HANDLER.setLevel(logging.DEBUG)
-    
     _STDOUT_HANDLER = logging.StreamHandler(sys.stdout)
     _STDOUT_HANDLER.setFormatter(LogFormatter(line_width=LINE_WIDTH, line_marker=LINE_MARKER, printable_only=True))
     _STDOUT_HANDLER.setLevel(LOG_LEVEL)
     _ROOT_LOGGER.addHandler(_STDOUT_HANDLER)
+    _FILE_HANDLER = handlers.TimedRotatingFileHandler(LOG_FILE, when='D', interval=1, backupCount=3)
+    _FILE_HANDLER.setFormatter(LogFormatter(line_width=120, line_marker=LINE_MARKER, allow_colors=False))
+    _FILE_HANDLER.setLevel(logging.DEBUG)
+    _ROOT_LOGGER.addHandler(_FILE_HANDLER)
+    # pylint: disable=logging-not-lazy
+    _ROOT_LOGGER.debug(("\n%(bar)s\n"
+                        "TAU COMMANDER LOGGING INITIALIZED\n"
+                        "\n"
+                        "Timestamp         : %(timestamp)s\n"
+                        "Hostname          : %(hostname)s\n"
+                        "Platform          : %(platform)s\n"
+                        "Version           : %(version)s\n"
+                        "Python Version    : %(pyversion)s\n"
+                        "Working Directory : %(cwd)s\n"
+                        "Terminal Size     : %(termsize)s\n"
+                        "Frozen            : %(frozen)s\n"
+                        "%(bar)s\n") % {'bar': '#' * LINE_WIDTH,
+                                        'timestamp': str(datetime.now()),
+                                        'hostname': socket.gethostname(),
+                                        'platform': platform.platform(),
+                                        'version': TAUCMDR_VERSION,
+                                        'pyversion': platform.python_version(),
+                                        'cwd': os.getcwd(),
+                                        'termsize': 'x'.join([str(_) for _ in TERM_SIZE]),
+                                        'frozen': getattr(sys, 'frozen', False)})
