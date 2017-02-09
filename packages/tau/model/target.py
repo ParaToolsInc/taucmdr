@@ -42,7 +42,7 @@ from tau.error import InternalError, ConfigurationError, IncompatibleRecordError
 from tau.mvc.model import Model
 from tau.model.compiler import Compiler
 from tau.cf.platforms import Architecture, OperatingSystem 
-from tau.cf.platforms import HOST_ARCH, INTEL_KNC, HOST_OS, DARWIN
+from tau.cf.platforms import HOST_ARCH, INTEL_KNC, IBM_BGL, IBM_BGP, IBM_BGQ, HOST_OS, DARWIN, CRAY_CNL
 from tau.cf.compiler import Knowledgebase, InstalledCompilerSet
 from tau.cf.software.tau_installation import TAU_MINIMAL_COMPILERS
 
@@ -531,6 +531,8 @@ class Target(Model):
             list: List of event name/description tuples.
         """
         assert event_type == "PRESET" or event_type == "NATIVE"
+        if not self.get('papi_source'):
+            return []
         from HTMLParser import HTMLParser
         from tau.cf.software.papi_installation import PapiInstallation
         metrics = []
@@ -552,7 +554,45 @@ class Target(Model):
         return metrics
 
     def tau_metrics(self):
-        return [("TIME", "Wallclock time.")]
+        """List TAU metrics available on this target.
+        
+        Returns a list of (name, description) tuples.
+        
+        Returns:
+            list: List of event name/description tuples.
+        """
+        metrics = [("LOGICAL_CLOCK", "Logical clock that increments on each request."),
+                   ("USER_CLOCK", ("User-defined clock. Implement "
+                                   "'void metric_write_userClock(int tid, double value)'  to set the clock value.")),
+                   ("GET_TIME_OF_DAY", "Wall clock that calls gettimeofday."),
+                   ("TIME", "Alias for GET_TIME_OF_DAY. Wall clock that calls gettimeofday."),
+                   ("CLOCK_GET_TIME", "Wall clock that calls clock_gettime."),
+                   ("P_WALL_CLOCK_TIME", "Wall clock that calls PAPI_get_real_usec."),
+                   ("PAPI_TIME", "Alias for P_WALL_CLOCK_TIME.  Wall clock that calls PAPI_get_real_usec."),
+                   ("P_VIRTUAL_TIME", "PAPI virtual clock that calls PAPI_get_virt_usec."),
+                   ("PAPI_VIRTUAL_TIME", ("Alias for P_VIRTUAL_TIME.  "
+                                          "PAPI virtual clock that calls PAPI_get_virt_usec.")),
+                   ("CPU_TIME", "CPU timer that calls getrusage."),
+                   ("LINUX_TIMERS", "Linux high resolution wall clock."),
+                   ("TAU_MPI_MESSAGE_SIZE", "Running sum of all MPI messsage sizes."),
+                   ("MEMORY_DELTA", "Instantaneous resident set size (RSS)")]
+        if self.get('cuda'):
+            metrics.append(("TAUGPU_TIME", "Wall clock that uses TAU's GPU timestamps."))
+        target_arch = self.architecture()
+        target_os = self.operating_system()
+        if target_os is CRAY_CNL:
+            metrics.extend([("CRAY_TIMERS", "Cray high resolution clock."),
+                            ("ENERGY", "Cray Power Monitoring: /sys/cray/pm_counters/energy"),
+                            ("ACCEL_ENERGY", "Cray Power Monitoring: /sys/cray/pm_counters/accel_energy")])
+        if target_arch is IBM_BGL:
+            metrics.append(("BGL_TIMERS", "BlueGene/L high resolution clock."))
+        elif target_arch is IBM_BGP:
+            metrics.append(("BGP_TIMERS", "BlueGene/P high resolution clock."))
+        elif target_arch is IBM_BGQ:
+            metrics.append(("BGQ_TIMERS", "BlueGene/Q high resolution clock."))
+        return metrics
     
     def cupti_metrics(self):
-        return []
+        if not self.get('cuda'):
+            return []
+        

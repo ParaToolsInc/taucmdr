@@ -234,6 +234,7 @@ class TauMagic(KeyedRecord):
 X86_64 = Architecture('x86_64', 'x86_64')
 INTEL_KNC = Architecture('KNC', 'Intel Knights Corner')
 INTEL_KNL = Architecture('KNL', 'Intel Knights Landing')
+IBM_BGL = Architecture('BGL', 'IBM BlueGene/L')
 IBM_BGP = Architecture('BGP', 'IBM BlueGene/P')
 IBM_BGQ = Architecture('BGQ', 'IBM BlueGene/Q')
 IBM64 = Architecture('ibm64', 'IBM 64-bit Power')

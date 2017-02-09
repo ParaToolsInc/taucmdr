@@ -72,17 +72,17 @@ class TargetMetricsCommand(AbstractCommand):
     
     def _format_tau_metrics(self, targ):
         rows = [['Name', 'Description']]
-        rows.extend(list(metric) for metric in targ.tau_metrics())
+        rows.extend(list(metric) for metric in sorted(targ.tau_metrics()))
         return self._draw_table(targ, 'TAU', rows)
         
     def _format_cupti_metrics(self, targ):
         rows = [['Name', 'Description']]
-        rows.extend(list(metric) for metric in targ.cupti_metrics())
+        rows.extend(list(metric) for metric in sorted(targ.cupti_metrics()))
         return self._draw_table(targ, 'CUPTI', rows)
     
     def _format_papi_metrics(self, targ, event_type, include_modifiers):
         rows = [['Name', 'Description']]
-        rows.extend(list(metric) for metric in targ.papi_metrics(event_type, include_modifiers))
+        rows.extend(list(metric) for metric in sorted(targ.papi_metrics(event_type, include_modifiers)))
         return self._draw_table(targ, 'PAPI ' + event_type.capitalize(), rows)
     
     def main(self, argv):
