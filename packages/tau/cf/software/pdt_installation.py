@@ -35,7 +35,7 @@ from tau import logger, util
 from tau.error import ConfigurationError
 from tau.cf.software import SoftwarePackageError
 from tau.cf.software.installation import AutotoolsInstallation
-from tau.cf.platforms import TauMagic, X86_64, IBM_BGQ, PPC64LE, LINUX, DARWIN, IBM_CNK
+from tau.cf.platforms import TauMagic, X86_64, INTEL_KNL, IBM_BGQ, PPC64LE, LINUX, DARWIN, IBM_CNK
 from tau.cf.compiler.host import CC, CXX, PGI, GNU, INTEL
 
 
@@ -43,7 +43,9 @@ LOGGER = logger.get_logger(__name__)
 
 REPOS = {None: 'http://tau.uoregon.edu/pdt.tgz',
          X86_64: {None: 'http://tau.uoregon.edu/pdt.tgz', 
-                  LINUX:  'http://tau.uoregon.edu/pdt_lite.tgz'}}
+                  LINUX:  'http://tau.uoregon.edu/pdt_lite.tgz'},
+         INTEL_KNL: {None: 'http://tau.uoregon.edu/pdt.tgz', 
+                     LINUX:  'http://tau.uoregon.edu/pdt_lite.tgz'}}
 
 COMMANDS = {None:
             ['cparse',
