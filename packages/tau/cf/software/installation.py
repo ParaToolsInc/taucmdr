@@ -248,8 +248,10 @@ class Installation(object):
             try:
                 util.download(self.src, archive)
             except IOError:
-                raise ConfigurationError("Cannot acquire source archive '%s'" % self.src,
-                                         "Check that the file or directory is accessable")
+                hints = ("If a firewall is blocking access to this server, use another method to download "
+                         "'%s' and copy that file to '%s' before trying this operation." % (self.src, archive_prefix),
+                         "Check that the file or directory is accessable")
+                raise ConfigurationError("Cannot acquire source archive '%s'." % self.src, *hints)
         # Locate archive file
         for storage in ORDERED_LEVELS:
             archive_prefix = os.path.join(storage.prefix, "src")
