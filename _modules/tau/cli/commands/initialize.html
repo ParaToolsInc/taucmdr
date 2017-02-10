@@ -92,7 +92,7 @@
 <span class="kn">from</span> <span class="nn">tau.cli.commands.project.select</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">project_select_cmd</span>
 <span class="kn">from</span> <span class="nn">tau.cli.commands.select</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">select_cmd</span>
 <span class="kn">from</span> <span class="nn">tau.cli.commands.dashboard</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">dashboard_cmd</span>
-<span class="kn">from</span> <span class="nn">tau.cf.target</span> <span class="kn">import</span> <span class="n">host</span><span class="p">,</span> <span class="n">DARWIN_OS</span><span class="p">,</span> <span class="n">IBM_CNK_OS</span>
+<span class="kn">from</span> <span class="nn">tau.cf.platforms</span> <span class="kn">import</span> <span class="n">HOST_OS</span><span class="p">,</span> <span class="n">DARWIN</span><span class="p">,</span> <span class="n">IBM_CNK</span>
 <span class="kn">from</span> <span class="nn">tau.cf.compiler.host</span> <span class="kn">import</span> <span class="n">FC</span>
 
 
@@ -199,8 +199,7 @@
         <span class="n">sample</span> <span class="o">=</span> <span class="bp">True</span>
         <span class="n">scorep</span> <span class="o">=</span> <span class="bp">True</span>
         <span class="n">comp_inst</span> <span class="o">=</span> <span class="s1">&#39;fallback&#39;</span>
-        <span class="n">host_os</span> <span class="o">=</span> <span class="n">host</span><span class="o">.</span><span class="n">operating_system</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">host_os</span> <span class="ow">is</span> <span class="n">DARWIN_OS</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">HOST_OS</span> <span class="ow">is</span> <span class="n">DARWIN</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Darwin OS detected: disabling PAPI, binutils, &quot;</span>
                              <span class="s2">&quot;compiler-based instrumentation, sampling, and Score-P.&quot;</span><span class="p">)</span>
             <span class="n">papi</span> <span class="o">=</span> <span class="bp">False</span>
@@ -208,7 +207,7 @@
             <span class="n">sample</span> <span class="o">=</span> <span class="bp">False</span>
             <span class="n">scorep</span> <span class="o">=</span> <span class="bp">False</span>
             <span class="n">comp_inst</span> <span class="o">=</span> <span class="s1">&#39;never&#39;</span>
-        <span class="k">elif</span> <span class="n">host_os</span> <span class="ow">is</span> <span class="n">IBM_CNK_OS</span><span class="p">:</span> 
+        <span class="k">elif</span> <span class="n">HOST_OS</span> <span class="ow">is</span> <span class="n">IBM_CNK</span><span class="p">:</span> 
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;IBM CNK OS detected: disabling sampling&quot;</span><span class="p">)</span>
             <span class="n">sample</span> <span class="o">=</span> <span class="bp">False</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">FC</span><span class="o">.</span><span class="n">keyword</span><span class="p">,</span> <span class="bp">None</span><span class="p">):</span>

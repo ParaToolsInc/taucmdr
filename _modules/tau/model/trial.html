@@ -84,7 +84,6 @@
 <span class="kn">import</span> <span class="nn">errno</span>
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
 <span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">util</span>
-<span class="kn">from</span> <span class="nn">tau.cf.target</span> <span class="kn">import</span> <span class="n">IBM_BGQ_ARCH</span><span class="p">,</span> <span class="n">IBM_BGP_ARCH</span>
 <span class="kn">from</span> <span class="nn">tau.error</span> <span class="kn">import</span> <span class="n">ConfigurationError</span><span class="p">,</span> <span class="n">InternalError</span>
 <span class="kn">from</span> <span class="nn">tau.mvc.controller</span> <span class="kn">import</span> <span class="n">Controller</span>
 <span class="kn">from</span> <span class="nn">tau.mvc.model</span> <span class="kn">import</span> <span class="n">Model</span>
@@ -265,10 +264,9 @@
         <span class="n">measurement</span> <span class="o">=</span> <span class="n">expr</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="s1">&#39;measurement&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">measurement</span><span class="p">[</span><span class="s1">&#39;trace&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;otf2&#39;</span> <span class="ow">or</span> <span class="n">measurement</span><span class="p">[</span><span class="s1">&#39;profile&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;cubex&#39;</span><span class="p">:</span>
             <span class="n">env</span><span class="p">[</span><span class="s1">&#39;SCOREP_EXPERIMENT_DIRECTORY&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">trial</span><span class="o">.</span><span class="n">prefix</span>
-
+        
         <span class="n">targ</span> <span class="o">=</span> <span class="n">expr</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="s1">&#39;target&#39;</span><span class="p">)</span>
-        <span class="n">is_bluegene</span> <span class="o">=</span> <span class="n">targ</span><span class="p">[</span><span class="s1">&#39;host_arch&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">IBM_BGQ_ARCH</span><span class="p">,</span> <span class="n">IBM_BGP_ARCH</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">is_bluegene</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">targ</span><span class="o">.</span><span class="n">architecture</span><span class="p">()</span><span class="o">.</span><span class="n">is_bluegene</span><span class="p">():</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_perform_bluegene</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">trial</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="p">,</span> <span class="n">env</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_perform_interactive</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">trial</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="p">,</span> <span class="n">env</span><span class="p">)</span></div></div>

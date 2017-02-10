@@ -9,7 +9,7 @@ Subpackages
     tau.cf.compiler
     tau.cf.software
     tau.cf.storage
-    tau.cf.target
+    tau.cf.tests
 
 Submodules
 ----------
@@ -17,6 +17,7 @@ Submodules
 .. toctree::
 
    tau.cf.objects
+   tau.cf.platforms
 
 Module contents
 ---------------

@@ -88,8 +88,9 @@
 <span class="kn">from</span> <span class="nn">tau.error</span> <span class="kn">import</span> <span class="n">InternalError</span><span class="p">,</span> <span class="n">ConfigurationError</span><span class="p">,</span> <span class="n">IncompatibleRecordError</span>
 <span class="kn">from</span> <span class="nn">tau.mvc.model</span> <span class="kn">import</span> <span class="n">Model</span>
 <span class="kn">from</span> <span class="nn">tau.model.compiler</span> <span class="kn">import</span> <span class="n">Compiler</span>
+<span class="kn">from</span> <span class="nn">tau.cf.platforms</span> <span class="kn">import</span> <span class="n">Architecture</span><span class="p">,</span> <span class="n">OperatingSystem</span> 
+<span class="kn">from</span> <span class="nn">tau.cf.platforms</span> <span class="kn">import</span> <span class="n">HOST_ARCH</span><span class="p">,</span> <span class="n">INTEL_KNC</span><span class="p">,</span> <span class="n">IBM_BGL</span><span class="p">,</span> <span class="n">IBM_BGP</span><span class="p">,</span> <span class="n">IBM_BGQ</span><span class="p">,</span> <span class="n">HOST_OS</span><span class="p">,</span> <span class="n">DARWIN</span><span class="p">,</span> <span class="n">CRAY_CNL</span>
 <span class="kn">from</span> <span class="nn">tau.cf.compiler</span> <span class="kn">import</span> <span class="n">Knowledgebase</span><span class="p">,</span> <span class="n">InstalledCompilerSet</span>
-<span class="kn">from</span> <span class="nn">tau.cf.target</span> <span class="kn">import</span> <span class="n">host</span><span class="p">,</span> <span class="n">DARWIN_OS</span><span class="p">,</span> <span class="n">INTEL_KNC_ARCH</span>
 <span class="kn">from</span> <span class="nn">tau.cf.software.tau_installation</span> <span class="kn">import</span> <span class="n">TAU_MINIMAL_COMPILERS</span>
 
 <span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
@@ -124,7 +125,6 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">from</span> <span class="nn">tau.model.project</span> <span class="kn">import</span> <span class="n">Project</span>
     <span class="kn">from</span> <span class="nn">tau.cli.arguments</span> <span class="kn">import</span> <span class="n">ParsePackagePathAction</span>
-    <span class="kn">from</span> <span class="nn">tau.cf.target</span> <span class="kn">import</span> <span class="n">Architecture</span><span class="p">,</span> <span class="n">OperatingSystem</span>
     <span class="kn">from</span> <span class="nn">tau.cf.compiler.host</span> <span class="kn">import</span> <span class="n">CC</span><span class="p">,</span> <span class="n">CXX</span><span class="p">,</span> <span class="n">FC</span><span class="p">,</span> <span class="n">UPC</span><span class="p">,</span> <span class="n">INTEL</span>
     <span class="kn">from</span> <span class="nn">tau.cf.compiler.mpi</span> <span class="kn">import</span> <span class="n">MPI_CC</span><span class="p">,</span> <span class="n">MPI_CXX</span><span class="p">,</span> <span class="n">MPI_FC</span><span class="p">,</span> <span class="n">INTEL</span> <span class="k">as</span> <span class="n">INTEL_MPI</span>
     <span class="kn">from</span> <span class="nn">tau.cf.compiler.shmem</span> <span class="kn">import</span> <span class="n">SHMEM_CC</span><span class="p">,</span> <span class="n">SHMEM_CXX</span><span class="p">,</span> <span class="n">SHMEM_FC</span>
@@ -136,8 +136,6 @@
     <span class="n">knc_intel_mpi_only</span> <span class="o">=</span> <span class="n">require_compiler_family</span><span class="p">(</span><span class="n">INTEL_MPI</span><span class="p">,</span>
                                                  <span class="s2">&quot;You must use Intel MPI compilers to target the Xeon Phi&quot;</span><span class="p">,</span>
                                                  <span class="s2">&quot;Try adding `--mpi-compilers=Intel` to the command line&quot;</span><span class="p">)</span>
-
-    <span class="n">host_os</span> <span class="o">=</span> <span class="n">host</span><span class="o">.</span><span class="n">operating_system</span><span class="p">()</span>
     
     <span class="k">return</span> <span class="p">{</span>
         <span class="s1">&#39;projects&#39;</span><span class="p">:</span> <span class="p">{</span>
@@ -156,7 +154,7 @@
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
             <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;host operating system&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="n">host_os</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="n">HOST_OS</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--os&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;host&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;os&gt;&#39;</span><span class="p">,</span>
@@ -167,12 +165,12 @@
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
             <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;host architecture&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="n">host</span><span class="o">.</span><span class="n">architecture</span><span class="p">()</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="n">HOST_ARCH</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--arch&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;host&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;arch&gt;&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;choices&#39;</span><span class="p">:</span> <span class="n">Architecture</span><span class="o">.</span><span class="n">keys</span><span class="p">()},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="nb">str</span><span class="p">(</span><span class="n">INTEL_KNC_ARCH</span><span class="p">):</span> 
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="nb">str</span><span class="p">(</span><span class="n">INTEL_KNC</span><span class="p">):</span> 
                        <span class="p">(</span><span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;host_arch&#39;</span><span class="p">,</span> <span class="n">knc_require_k1om</span><span class="p">),</span>
                         <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="n">CC</span><span class="o">.</span><span class="n">keyword</span><span class="p">,</span> <span class="n">knc_intel_only</span><span class="p">),</span>
                         <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="n">CXX</span><span class="o">.</span><span class="n">keyword</span><span class="p">,</span> <span class="n">knc_intel_only</span><span class="p">),</span>
@@ -368,12 +366,12 @@
         <span class="s1">&#39;binutils_source&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;path or URL to a GNU binutils installation or archive file&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="s1">&#39;download&#39;</span> <span class="k">if</span> <span class="n">host_os</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">DARWIN_OS</span> <span class="k">else</span> <span class="bp">None</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="s1">&#39;download&#39;</span> <span class="k">if</span> <span class="n">HOST_OS</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">DARWIN</span> <span class="k">else</span> <span class="bp">None</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--binutils&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;software package&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;(&lt;path&gt;|&lt;url&gt;|download|None)&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParsePackagePathAction</span><span class="p">},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">):</span> <span class="n">Target</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;host_os&#39;</span><span class="p">,</span> <span class="n">DARWIN_OS</span><span class="o">.</span><span class="n">name</span><span class="p">)},</span>
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">):</span> <span class="n">Target</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;host_os&#39;</span><span class="p">,</span> <span class="n">DARWIN</span><span class="o">.</span><span class="n">name</span><span class="p">)},</span>
             <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">},</span>
         <span class="s1">&#39;libunwind_source&#39;</span><span class="p">:</span> <span class="p">{</span>
@@ -389,23 +387,23 @@
         <span class="s1">&#39;papi_source&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;path or URL to a PAPI installation or archive file&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="s1">&#39;download&#39;</span> <span class="k">if</span> <span class="n">host_os</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">DARWIN_OS</span> <span class="k">else</span> <span class="bp">None</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="s1">&#39;download&#39;</span> <span class="k">if</span> <span class="n">HOST_OS</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">DARWIN</span> <span class="k">else</span> <span class="bp">None</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--papi&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;software package&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;(&lt;path&gt;|&lt;url&gt;|download|None)&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParsePackagePathAction</span><span class="p">},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">):</span> <span class="n">Target</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;host_os&#39;</span><span class="p">,</span> <span class="n">DARWIN_OS</span><span class="o">.</span><span class="n">name</span><span class="p">)},</span>
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">):</span> <span class="n">Target</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;host_os&#39;</span><span class="p">,</span> <span class="n">DARWIN</span><span class="o">.</span><span class="n">name</span><span class="p">)},</span>
             <span class="s1">&#39;on_change&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">attribute_changed</span>
         <span class="p">},</span>
         <span class="s1">&#39;scorep_source&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;path or URL to a Score-P installation or archive file&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="s1">&#39;download&#39;</span> <span class="k">if</span> <span class="n">host_os</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">DARWIN_OS</span> <span class="k">else</span> <span class="bp">None</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="s1">&#39;download&#39;</span> <span class="k">if</span> <span class="n">HOST_OS</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">DARWIN</span> <span class="k">else</span> <span class="bp">None</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--scorep&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;software package&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;(&lt;path&gt;|&lt;url&gt;|download|None)&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParsePackagePathAction</span><span class="p">},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">):</span> <span class="p">(</span><span class="n">Target</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;host_os&#39;</span><span class="p">,</span> <span class="n">DARWIN_OS</span><span class="o">.</span><span class="n">name</span><span class="p">),</span>
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">):</span> <span class="p">(</span><span class="n">Target</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;host_os&#39;</span><span class="p">,</span> <span class="n">DARWIN</span><span class="o">.</span><span class="n">name</span><span class="p">),</span>
                                                    <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="n">CC</span><span class="o">.</span><span class="n">keyword</span><span class="p">),</span>
                                                    <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="n">CXX</span><span class="o">.</span><span class="n">keyword</span><span class="p">),</span>
                                                    <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="n">FC</span><span class="o">.</span><span class="n">keyword</span><span class="p">))},</span>
@@ -463,11 +461,9 @@
         <span class="k">return</span> <span class="n">selected</span><span class="p">[</span><span class="s1">&#39;target&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">eid</span></div>
 
 <div class="viewcode-block" id="Target.architecture"><a class="viewcode-back" href="../../../tau.model.target.html#tau.model.target.Target.architecture">[docs]</a>    <span class="k">def</span> <span class="nf">architecture</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="kn">from</span> <span class="nn">tau.cf.target</span> <span class="kn">import</span> <span class="n">Architecture</span>
         <span class="k">return</span> <span class="n">Architecture</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;host_arch&#39;</span><span class="p">])</span></div>
     
 <div class="viewcode-block" id="Target.operating_system"><a class="viewcode-back" href="../../../tau.model.target.html#tau.model.target.Target.operating_system">[docs]</a>    <span class="k">def</span> <span class="nf">operating_system</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="kn">from</span> <span class="nn">tau.cf.target</span> <span class="kn">import</span> <span class="n">OperatingSystem</span>
         <span class="k">return</span> <span class="n">OperatingSystem</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;host_os&#39;</span><span class="p">])</span></div>
     
 <div class="viewcode-block" id="Target.sources"><a class="viewcode-back" href="../../../tau.model.target.html#tau.model.target.Target.sources">[docs]</a>    <span class="k">def</span> <span class="nf">sources</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -526,12 +522,12 @@
 <span class="sd">        Raises:</span>
 <span class="sd">            ConfigurationError: The compiler or command line arguments are incompatible with this target.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="s1">&#39;-mmic&#39;</span> <span class="ow">in</span> <span class="n">compiler_args</span> <span class="ow">and</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;host_arch&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="nb">str</span><span class="p">(</span><span class="n">INTEL_KNC_ARCH</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s1">&#39;-mmic&#39;</span> <span class="ow">in</span> <span class="n">compiler_args</span> <span class="ow">and</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;host_arch&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="nb">str</span><span class="p">(</span><span class="n">INTEL_KNC</span><span class="p">):</span>
             <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Host architecture of target &#39;</span><span class="si">%s</span><span class="s2">&#39; is &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span>
                                      <span class="s2">&quot; but the &#39;-mmic&#39; compiler argument requires &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span>
-                                     <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;host_arch&#39;</span><span class="p">],</span> <span class="n">INTEL_KNC_ARCH</span><span class="p">),</span>
+                                     <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;host_arch&#39;</span><span class="p">],</span> <span class="n">INTEL_KNC</span><span class="p">),</span>
                                      <span class="s2">&quot;Select a different target&quot;</span><span class="p">,</span>
-                                     <span class="s2">&quot;Create a new target with host architecture &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">INTEL_KNC_ARCH</span><span class="p">)</span>
+                                     <span class="s2">&quot;Create a new target with host architecture &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">INTEL_KNC</span><span class="p">)</span>
         <span class="n">compiler_ctrl</span> <span class="o">=</span> <span class="n">Compiler</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="p">)</span>
         <span class="n">absolute_path</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="n">compiler_cmd</span><span class="p">)</span>
         <span class="n">compiler_cmd</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">compiler_cmd</span><span class="p">)</span>
@@ -582,6 +578,8 @@
 <span class="sd">            list: List of event name/description tuples.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s2">&quot;PRESET&quot;</span> <span class="ow">or</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s2">&quot;NATIVE&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;papi_source&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">[]</span>
         <span class="kn">from</span> <span class="nn">HTMLParser</span> <span class="kn">import</span> <span class="n">HTMLParser</span>
         <span class="kn">from</span> <span class="nn">tau.cf.software.papi_installation</span> <span class="kn">import</span> <span class="n">PapiInstallation</span>
         <span class="n">metrics</span> <span class="o">=</span> <span class="p">[]</span>
@@ -603,10 +601,48 @@
         <span class="k">return</span> <span class="n">metrics</span></div>
 
 <div class="viewcode-block" id="Target.tau_metrics"><a class="viewcode-back" href="../../../tau.model.target.html#tau.model.target.Target.tau_metrics">[docs]</a>    <span class="k">def</span> <span class="nf">tau_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">[(</span><span class="s2">&quot;TIME&quot;</span><span class="p">,</span> <span class="s2">&quot;Wallclock time.&quot;</span><span class="p">)]</span></div>
+        <span class="sd">&quot;&quot;&quot;List TAU metrics available on this target.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns a list of (name, description) tuples.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            list: List of event name/description tuples.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">metrics</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;LOGICAL_CLOCK&quot;</span><span class="p">,</span> <span class="s2">&quot;Logical clock that increments on each request.&quot;</span><span class="p">),</span>
+                   <span class="p">(</span><span class="s2">&quot;USER_CLOCK&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;User-defined clock. Implement &quot;</span>
+                                   <span class="s2">&quot;&#39;void metric_write_userClock(int tid, double value)&#39;  to set the clock value.&quot;</span><span class="p">)),</span>
+                   <span class="p">(</span><span class="s2">&quot;GET_TIME_OF_DAY&quot;</span><span class="p">,</span> <span class="s2">&quot;Wall clock that calls gettimeofday.&quot;</span><span class="p">),</span>
+                   <span class="p">(</span><span class="s2">&quot;TIME&quot;</span><span class="p">,</span> <span class="s2">&quot;Alias for GET_TIME_OF_DAY. Wall clock that calls gettimeofday.&quot;</span><span class="p">),</span>
+                   <span class="p">(</span><span class="s2">&quot;CLOCK_GET_TIME&quot;</span><span class="p">,</span> <span class="s2">&quot;Wall clock that calls clock_gettime.&quot;</span><span class="p">),</span>
+                   <span class="p">(</span><span class="s2">&quot;P_WALL_CLOCK_TIME&quot;</span><span class="p">,</span> <span class="s2">&quot;Wall clock that calls PAPI_get_real_usec.&quot;</span><span class="p">),</span>
+                   <span class="p">(</span><span class="s2">&quot;PAPI_TIME&quot;</span><span class="p">,</span> <span class="s2">&quot;Alias for P_WALL_CLOCK_TIME.  Wall clock that calls PAPI_get_real_usec.&quot;</span><span class="p">),</span>
+                   <span class="p">(</span><span class="s2">&quot;P_VIRTUAL_TIME&quot;</span><span class="p">,</span> <span class="s2">&quot;PAPI virtual clock that calls PAPI_get_virt_usec.&quot;</span><span class="p">),</span>
+                   <span class="p">(</span><span class="s2">&quot;PAPI_VIRTUAL_TIME&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;Alias for P_VIRTUAL_TIME.  &quot;</span>
+                                          <span class="s2">&quot;PAPI virtual clock that calls PAPI_get_virt_usec.&quot;</span><span class="p">)),</span>
+                   <span class="p">(</span><span class="s2">&quot;CPU_TIME&quot;</span><span class="p">,</span> <span class="s2">&quot;CPU timer that calls getrusage.&quot;</span><span class="p">),</span>
+                   <span class="p">(</span><span class="s2">&quot;LINUX_TIMERS&quot;</span><span class="p">,</span> <span class="s2">&quot;Linux high resolution wall clock.&quot;</span><span class="p">),</span>
+                   <span class="p">(</span><span class="s2">&quot;TAU_MPI_MESSAGE_SIZE&quot;</span><span class="p">,</span> <span class="s2">&quot;Running sum of all MPI messsage sizes.&quot;</span><span class="p">),</span>
+                   <span class="p">(</span><span class="s2">&quot;MEMORY_DELTA&quot;</span><span class="p">,</span> <span class="s2">&quot;Instantaneous resident set size (RSS)&quot;</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;cuda&#39;</span><span class="p">):</span>
+            <span class="n">metrics</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">&quot;TAUGPU_TIME&quot;</span><span class="p">,</span> <span class="s2">&quot;Wall clock that uses TAU&#39;s GPU timestamps.&quot;</span><span class="p">))</span>
+        <span class="n">target_arch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">architecture</span><span class="p">()</span>
+        <span class="n">target_os</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">operating_system</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">target_os</span> <span class="ow">is</span> <span class="n">CRAY_CNL</span><span class="p">:</span>
+            <span class="n">metrics</span><span class="o">.</span><span class="n">extend</span><span class="p">([(</span><span class="s2">&quot;CRAY_TIMERS&quot;</span><span class="p">,</span> <span class="s2">&quot;Cray high resolution clock.&quot;</span><span class="p">),</span>
+                            <span class="p">(</span><span class="s2">&quot;ENERGY&quot;</span><span class="p">,</span> <span class="s2">&quot;Cray Power Monitoring: /sys/cray/pm_counters/energy&quot;</span><span class="p">),</span>
+                            <span class="p">(</span><span class="s2">&quot;ACCEL_ENERGY&quot;</span><span class="p">,</span> <span class="s2">&quot;Cray Power Monitoring: /sys/cray/pm_counters/accel_energy&quot;</span><span class="p">)])</span>
+        <span class="k">if</span> <span class="n">target_arch</span> <span class="ow">is</span> <span class="n">IBM_BGL</span><span class="p">:</span>
+            <span class="n">metrics</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">&quot;BGL_TIMERS&quot;</span><span class="p">,</span> <span class="s2">&quot;BlueGene/L high resolution clock.&quot;</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">target_arch</span> <span class="ow">is</span> <span class="n">IBM_BGP</span><span class="p">:</span>
+            <span class="n">metrics</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">&quot;BGP_TIMERS&quot;</span><span class="p">,</span> <span class="s2">&quot;BlueGene/P high resolution clock.&quot;</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">target_arch</span> <span class="ow">is</span> <span class="n">IBM_BGQ</span><span class="p">:</span>
+            <span class="n">metrics</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">&quot;BGQ_TIMERS&quot;</span><span class="p">,</span> <span class="s2">&quot;BlueGene/Q high resolution clock.&quot;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">metrics</span></div>
     
 <div class="viewcode-block" id="Target.cupti_metrics"><a class="viewcode-back" href="../../../tau.model.target.html#tau.model.target.Target.cupti_metrics">[docs]</a>    <span class="k">def</span> <span class="nf">cupti_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">[]</span></div></div>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;cuda&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">[]</span></div></div>
+        
 </pre></div>
 
       </div>

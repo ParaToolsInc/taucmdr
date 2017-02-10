@@ -86,7 +86,7 @@
 <span class="kn">from</span> <span class="nn">tau.cf.compiler.host</span> <span class="kn">import</span> <span class="n">HOST_COMPILERS</span><span class="p">,</span> <span class="n">FC</span>
 <span class="kn">from</span> <span class="nn">tau.cf.compiler.mpi</span> <span class="kn">import</span> <span class="n">MPI_COMPILERS</span>
 <span class="kn">from</span> <span class="nn">tau.cf.compiler.shmem</span> <span class="kn">import</span> <span class="n">SHMEM_COMPILERS</span>
-<span class="kn">from</span> <span class="nn">tau.cf.target</span> <span class="kn">import</span> <span class="n">TauArch</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">CRAY_CNL_OS</span>
+<span class="kn">from</span> <span class="nn">tau.cf.platforms</span> <span class="kn">import</span> <span class="n">TauMagic</span><span class="p">,</span> <span class="n">HOST_ARCH</span><span class="p">,</span> <span class="n">HOST_OS</span><span class="p">,</span> <span class="n">CRAY_CNL</span>
 <span class="kn">from</span> <span class="nn">tau.cf.software.tau_installation</span> <span class="kn">import</span> <span class="n">TAU_MINIMAL_COMPILERS</span>
 
 
@@ -119,19 +119,31 @@
         <span class="k">return</span> <span class="n">Action</span>
 
     <span class="k">def</span> <span class="nf">_parse_tau_makefile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
-        <span class="c1"># Parsing a TAU Makefile is a really hairy operation, so let&#39;s lift the limit on statements</span>
-        <span class="c1"># pylint: disable=too-many-statements</span>
+        <span class="c1"># Parsing a TAU Makefile is a really hairy operation, so let&#39;s lift the limits</span>
+        <span class="c1"># pylint: disable=too-many-statements,too-many-locals</span>
         <span class="n">makefile</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">forced_makefile</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">util</span><span class="o">.</span><span class="n">file_accessible</span><span class="p">(</span><span class="n">makefile</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Invalid TAU makefile: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">makefile</span><span class="p">)</span>
         <span class="n">tau_arch_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">makefile</span><span class="p">)))</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">tau_arch</span> <span class="o">=</span> <span class="n">TauArch</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">tau_arch_name</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="n">matches</span> <span class="o">=</span> <span class="p">[</span><span class="n">arch</span> <span class="k">for</span> <span class="n">arch</span> <span class="ow">in</span> <span class="n">TauMagic</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="k">if</span> <span class="n">arch</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">tau_arch_name</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">tau_arch</span> <span class="o">=</span> <span class="n">matches</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;TAU Makefile &#39;</span><span class="si">%s</span><span class="s2">&#39; targets an unrecognized TAU architecture: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> 
                                      <span class="p">(</span><span class="n">makefile</span><span class="p">,</span> <span class="n">tau_arch_name</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">arch</span> <span class="ow">in</span> <span class="n">matches</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">arch</span><span class="o">.</span><span class="n">architecture</span> <span class="o">==</span> <span class="n">HOST_ARCH</span> <span class="ow">and</span> <span class="n">arch</span><span class="o">.</span><span class="n">operating_system</span> <span class="o">==</span> <span class="n">HOST_OS</span><span class="p">:</span>
+                    <span class="n">tau_arch</span> <span class="o">=</span> <span class="n">arch</span>
+                    <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;TAU Makefile &#39;</span><span class="si">%s</span><span class="s2">&#39; targets an ambiguous TAU architecture: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">makefile</span><span class="p">,</span> <span class="n">tau_arch_name</span><span class="p">),</span>
+                         <span class="s2">&quot;It could be any of these:&quot;</span><span class="p">]</span>
+                <span class="n">parts</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">&quot;  - </span><span class="si">%s</span><span class="s2"> on </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">arch</span><span class="o">.</span><span class="n">operating_system</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">arch</span><span class="o">.</span><span class="n">architecture</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> 
+                              <span class="k">for</span> <span class="n">arch</span> <span class="ow">in</span> <span class="n">matches</span><span class="p">])</span>
+                <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Parsing TAU Makefile &#39;</span><span class="si">%s</span><span class="s2">&#39; to populate command line arguments:&quot;</span><span class="p">,</span> <span class="n">makefile</span><span class="p">)</span>
-        <span class="n">args</span><span class="o">.</span><span class="n">host_arch</span> <span class="o">=</span> <span class="n">tau_arch</span><span class="o">.</span><span class="n">architecture</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">args</span><span class="o">.</span><span class="n">host_arch</span> <span class="o">=</span> <span class="n">tau_arch</span><span class="o">.</span><span class="n">architecture</span><span class="o">.</span><span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;  --host-arch=&#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">host_arch</span><span class="p">)</span>
         <span class="n">args</span><span class="o">.</span><span class="n">host_os</span> <span class="o">=</span> <span class="n">tau_arch</span><span class="o">.</span><span class="n">operating_system</span><span class="o">.</span><span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;  --host-os=&#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">host_os</span><span class="p">)</span>
@@ -299,7 +311,7 @@
 
         <span class="c1"># Crays are weird. Don&#39;t use the detected host family as a hint for MPI or SHMEM compilers</span>
         <span class="c1"># so that we&#39;ll always chose the Cray compiler wrappers.</span>
-        <span class="n">hint</span> <span class="o">=</span> <span class="n">host_family_name</span> <span class="k">if</span> <span class="n">host</span><span class="o">.</span><span class="n">operating_system</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">CRAY_CNL_OS</span> <span class="k">else</span> <span class="bp">None</span>
+        <span class="n">hint</span> <span class="o">=</span> <span class="n">host_family_name</span> <span class="k">if</span> <span class="n">HOST_OS</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">CRAY_CNL</span> <span class="k">else</span> <span class="bp">None</span>
         
         <span class="n">group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s1">&#39;Message Passing Interface (MPI) arguments&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_configure_argument_group</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">MPI_COMPILERS</span><span class="p">,</span> <span class="s1">&#39;--mpi-compilers&#39;</span><span class="p">,</span> <span class="s1">&#39;mpi_family&#39;</span><span class="p">,</span> <span class="n">hint</span><span class="p">)</span>
@@ -321,6 +333,14 @@
         <span class="k">return</span> <span class="n">args</span>
 
 <div class="viewcode-block" id="TargetCreateCommand.parse_compiler_flags"><a class="viewcode-back" href="../../../../../tau.cli.commands.target.create.html#tau.cli.commands.target.create.TargetCreateCommand.parse_compiler_flags">[docs]</a>    <span class="k">def</span> <span class="nf">parse_compiler_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a dictionary of :any:`InstalledCompiler` instances from commandl line arguments.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            args: A namespace of parsed command line arguments.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: InstalledCompiler instances indexed by role keyword.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">compilers</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">kbase</span> <span class="ow">in</span> <span class="n">HOST_COMPILERS</span><span class="p">,</span> <span class="n">MPI_COMPILERS</span><span class="p">,</span> <span class="n">SHMEM_COMPILERS</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">role</span> <span class="ow">in</span> <span class="n">kbase</span><span class="o">.</span><span class="n">roles</span><span class="o">.</span><span class="n">itervalues</span><span class="p">():</span>

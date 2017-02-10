@@ -167,9 +167,8 @@
 <span class="sd">        The first family yielded is the host&#39;s preferred compiler family.</span>
 <span class="sd">        All other families may be yielded in any order.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">tau.cf</span> <span class="kn">import</span> <span class="n">target</span>
-        <span class="n">host_tau_arch</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">host</span><span class="o">.</span><span class="n">tau_arch</span><span class="p">()</span>
-        <span class="n">preferred</span> <span class="o">=</span> <span class="n">host_tau_arch</span><span class="o">.</span><span class="n">preferred_families</span><span class="p">[</span><span class="bp">self</span><span class="p">]</span>
+        <span class="kn">from</span> <span class="nn">tau.cf.platforms</span> <span class="kn">import</span> <span class="n">HOST_TAU_MAGIC</span>
+        <span class="n">preferred</span> <span class="o">=</span> <span class="n">HOST_TAU_MAGIC</span><span class="o">.</span><span class="n">preferred_families</span><span class="p">[</span><span class="bp">self</span><span class="p">]</span>
         <span class="k">yield</span> <span class="n">preferred</span>
         <span class="k">for</span> <span class="n">family</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_families</span><span class="o">.</span><span class="n">itervalues</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">family</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">preferred</span><span class="p">:</span>

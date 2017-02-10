@@ -82,7 +82,7 @@
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">tau</span>
 <span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">__version__</span> <span class="k">as</span> <span class="n">TAUCMDR_VERSION</span>
-<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">cli</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="n">configuration</span><span class="p">,</span> <span class="n">util</span>
+<span class="kn">from</span> <span class="nn">tau</span> <span class="kn">import</span> <span class="n">cli</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="n">util</span>
 <span class="kn">from</span> <span class="nn">tau.cli</span> <span class="kn">import</span> <span class="n">UnknownCommandError</span><span class="p">,</span> <span class="n">arguments</span>
 <span class="kn">from</span> <span class="nn">tau.cli.command</span> <span class="kn">import</span> <span class="n">AbstractCommand</span>
 <span class="kn">from</span> <span class="nn">tau.cli.commands.build</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">build_command</span>
@@ -112,10 +112,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">command</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">tau</span><span class="o">.</span><span class="n">TAU_SCRIPT</span><span class="p">)</span>
     
     <span class="k">def</span> <span class="nf">_construct_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">log_default</span> <span class="o">=</span> <span class="n">configuration</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;logging.debug_log&#39;</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-            <span class="n">log_default</span> <span class="o">=</span> <span class="bp">False</span>
         <span class="n">usage</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> [arguments] &lt;subcommand&gt; [options]&quot;</span>  <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span>
         <span class="n">_green</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s2">&quot;{:&lt;35}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">color_text</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">))</span>
         <span class="n">epilog_parts</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">cli</span><span class="o">.</span><span class="n">commands_description</span><span class="p">(),</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
@@ -148,11 +144,6 @@
                             <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;[options]&#39;</span><span class="p">,</span>
                             <span class="n">nargs</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">REMAINDER</span><span class="p">)</span>
         <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-V&#39;</span><span class="p">,</span> <span class="s1">&#39;--version&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;version&#39;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="n">tau</span><span class="o">.</span><span class="n">version_banner</span><span class="p">())</span>
-        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-l&#39;</span><span class="p">,</span> <span class="s1">&#39;--log&#39;</span><span class="p">,</span>
-                            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;record all actions to &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">logger</span><span class="o">.</span><span class="n">LOG_FILE</span><span class="p">,</span>
-                            <span class="n">const</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                            <span class="n">default</span><span class="o">=</span><span class="n">log_default</span><span class="p">,</span>
-                            <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_const&#39;</span><span class="p">)</span>
         <span class="n">group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_mutually_exclusive_group</span><span class="p">()</span>
         <span class="n">group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-v&#39;</span><span class="p">,</span> <span class="s1">&#39;--verbose&#39;</span><span class="p">,</span>
                            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;show debugging messages&quot;</span><span class="p">,</span>
@@ -179,9 +170,6 @@
         <span class="n">cmd</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">command</span>
         <span class="n">cmd_args</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">options</span>
         
-        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">activate_debug_log</span><span class="p">()</span>
-
         <span class="n">log_level</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s1">&#39;verbose&#39;</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s1">&#39;quiet&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="o">.</span><span class="n">LOG_LEVEL</span><span class="p">))</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">set_log_level</span><span class="p">(</span><span class="n">log_level</span><span class="p">)</span>
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Arguments: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
