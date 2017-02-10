@@ -629,6 +629,9 @@ class InstalledCompiler(object):
             except CalledProcessError:
                 raise ConfigurationError("Invalid version flags %s for compiler '%s'" % 
                                          (self.info.family.version_flags, self.absolute_path))
+            except OSError:
+                raise ConfigurationError("Compiler '%s' no longer exists or is not executable" % 
+                                         self.absolute_path)
         return self._version_string
 
 
