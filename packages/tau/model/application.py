@@ -85,7 +85,7 @@ def attributes():
         },
         'tbb': {
             'type': 'boolean',
-            'description': 'application uses TBB',
+            'description': 'application uses Thread Building Blocks (TBB)',
             'default': False,
             'argparse': {'flags': ('--tbb',),
                          'metavar': 'T/F',
