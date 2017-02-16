@@ -748,7 +748,7 @@ class TauInstallation(Installation):
             tau_opts = set(env['TAU_OPTIONS'].split(' '))
         except KeyError:
             tau_opts = set()
-        if self.source_inst == 'never' and self.compiler_inst == 'never':
+        if self.source_inst == 'manual' or (self.source_inst == 'never' and self.compiler_inst == 'never'):
             tau_opts.add('-optLinkOnly')
         else:
             tau_opts.add('-optRevert')
@@ -773,7 +773,7 @@ class TauInstallation(Installation):
             tau_opts.add('-optTrackIO')
         if self.measure_memory_alloc:
             tau_opts.add('-optMemDbg')
-        if self.openmp_support and self.source_inst != 'never':
+        if self.openmp_support and self.source_inst == 'automatic':
             tau_opts.add('-optContinueBeforeOMP')
         try:
             tau_opts.update(self.force_tau_options)
@@ -781,6 +781,8 @@ class TauInstallation(Installation):
             pass
         if self.sample or self.compiler_inst != 'never':
             opts.append('-g')
+        if self.source_inst == 'manual':
+            opts.append('-DTAU_ENABLED=1')
         env['TAU_MAKEFILE'] = self.get_makefile()
         env['TAU_OPTIONS'] = ' '.join(tau_opts)
         return list(set(opts)), env
