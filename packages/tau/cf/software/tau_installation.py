@@ -302,7 +302,10 @@ class TauInstallation(Installation):
         return self.source_inst == 'automatic' or self.shmem_support
 
     def _uses_binutils(self):
-        return self.sample or self.compiler_inst != 'never' or self.measure_openmp in ('ompt', 'gomp')
+        return (self.sample or 
+                self.compiler_inst != 'never' or 
+                self.openmp_support or 
+                self.measure_openmp in ('ompt', 'gomp'))
 
     def _uses_libunwind(self):
         return (self.target_os is not DARWIN and
