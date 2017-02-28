@@ -116,7 +116,7 @@ if HAVE_SPHINX:
         """Customize the build_sphinx command.
         
         Copy source files into the build directory to prevent generated files from mixing
-        with content files, run sphinx-apidoc to auto-document the "tau" package, then
+        with content files, run sphinx-apidoc to auto-document the "taucmdr" package, then
         proceed with normal build_sphinx behavior.
         """
         
@@ -165,7 +165,7 @@ if HAVE_SPHINX:
             self.source_dir = copy_source_dir
     
         def _generate_api_docs(self):
-            package_source_dir = os.path.join(PACKAGE_TOPDIR,  self.distribution.package_dir[''], 'tau')
+            package_source_dir = os.path.join(PACKAGE_TOPDIR,  self.distribution.package_dir[''], 'taucmdr')
             sphinx_apidoc.main(['-M', # Put module documentation before submodule documentation
                                 '-P', # Include "_private" modules
                                 '-f', # Overwrite existing files
@@ -232,18 +232,18 @@ class Install(InstallCommand):
 
     def _import_system_config(self):
         sys.path.insert(0, os.path.join(self.prefix, 'packages'))
-        from tau import configuration
-        from tau.cf.storage.levels import SYSTEM_STORAGE
+        from taucmdr import configuration
+        from taucmdr.cf.storage.levels import SYSTEM_STORAGE
         SYSTEM_STORAGE.connect_filesystem()
         configuration.import_from_file(os.path.join(PACKAGE_TOPDIR, 'defaults.cfg'), SYSTEM_STORAGE)
 
     def _configure_project(self, init_args):
-        from tau import EXIT_SUCCESS 
-        from tau.cf.software import SoftwarePackageError
-        from tau.cf.storage.levels import PROJECT_STORAGE
-        from tau.cli.commands.initialize import COMMAND as init_command
-        from tau.cli.commands.select import COMMAND as select_command
-        from tau.model.project import Project
+        from taucmdr import EXIT_SUCCESS 
+        from taucmdr.cf.software import SoftwarePackageError
+        from taucmdr.cf.storage.levels import PROJECT_STORAGE
+        from taucmdr.cli.commands.initialize import COMMAND as init_command
+        from taucmdr.cli.commands.select import COMMAND as select_command
+        from taucmdr.model.project import Project
 
         # Call `tau initialize` to configure system-level packages supporting default experiments
         if init_command.main(init_args) != EXIT_SUCCESS:
@@ -264,9 +264,9 @@ class Install(InstallCommand):
 
     def _configure_new_installation(self):
         sys.path.insert(0, os.path.join(self.prefix, 'packages'))
-        import tau
-        from tau import logger, util, configuration
-        from tau.cli.commands.configure import COMMAND as configure_command
+        import taucmdr
+        from taucmdr import logger, util, configuration
+        from taucmdr.cli.commands.configure import COMMAND as configure_command
 
         # Clean up the build directory
         os.chdir(self.build_base)
@@ -291,7 +291,7 @@ class Install(InstallCommand):
             self._configure_project(['--mpi=True --shmem=True'])
 
         # Indicate success
-        print tau.version_banner()
+        print taucmdr.version_banner()
     
     def run(self):
         if not self.force:
@@ -312,10 +312,10 @@ class Install(InstallCommand):
                 
 
 def update_version():
-    """Rewrite packages/tau/__init__.py to update __version__.
+    """Rewrite packages/taucmdr/__init__.py to update __version__.
 
     Reads the version number from a file named VERSION in the top-level directory,
-    then uses :any:`fileinput` to update __version__ in packages/tau/__init__.py.
+    then uses :any:`fileinput` to update __version__ in packages/taucmdr/__init__.py.
 
     Returns:
         str: The version string to be passed to :any:`setuptools.setup`.
@@ -330,8 +330,8 @@ def update_version():
         version = fin.readline().strip()
     finally:
         fin.close()
-    # Set tau.__version__ to match VERSION file
-    for line in fileinput.input(os.path.join(PACKAGE_TOPDIR, "packages", "tau", "__init__.py"), inplace=1):
+    # Set taucmdr.__version__ to match VERSION file
+    for line in fileinput.input(os.path.join(PACKAGE_TOPDIR, "packages", "taucmdr", "__init__.py"), inplace=1):
         # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
         if line.startswith("__version__"):
             sys.stdout.write('__version__ = "%s"\n' % version)
@@ -368,7 +368,7 @@ setuptools.setup(
     data_files=get_data_files(),
 
     # Testing
-    test_suite='tau',
+    test_suite='taucmdr',
 
     # Metadata for upload to PyPI
     author=AUTHOR,

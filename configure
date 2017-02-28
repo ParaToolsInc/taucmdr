@@ -150,7 +150,7 @@ def build_parser(setup_cfg, default_cfg):
 def main():
     comment = configuration.config_file_comment
     setup_cfg = configuration.open_config_file('setup.cfg')
-    setup_cfg.initial_comment = comment(tau.version_banner())
+    setup_cfg.initial_comment = comment(taucmdr.version_banner())
     if 'build' not in setup_cfg:
         setup_cfg['build'] = {}
         setup_cfg['build']['build-base'] = "build"
@@ -197,14 +197,14 @@ if __name__ == '__main__':
     sys.path.insert(0, os.path.join(PACKAGE_TOPDIR, 'packages'))
     try:
         import setuptools
-        import tau
-        from tau import __version__ as taucmdr_version
-        from tau import logger, configuration
-        from tau.cli import arguments
-        from tau.cli.commands.target.create import COMMAND as target_create_cmd
-        from tau.cli.commands.application.create import COMMAND as application_create_cmd
-        from tau.cli.commands.measurement.create import COMMAND as measurement_create_cmd
-        from tau.cf.compiler.host import FC
+        import taucmdr
+        from taucmdr import __version__ as taucmdr_version
+        from taucmdr import logger, configuration
+        from taucmdr.cli import arguments
+        from taucmdr.cli.commands.target.create import COMMAND as target_create_cmd
+        from taucmdr.cli.commands.application.create import COMMAND as application_create_cmd
+        from taucmdr.cli.commands.measurement.create import COMMAND as measurement_create_cmd
+        from taucmdr.cf.compiler.host import FC
     except (SystemExit, Exception) as err:
         # Prevent infinite recursion: only bootstrap once
         if not os.environ.get('__TAUCMDR_CONFIGURE_BOOTSTRAPPED__'):
