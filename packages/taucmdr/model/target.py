@@ -324,7 +324,7 @@ def attributes():
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction},
-            'compat': {(lambda x: x is not None): Target.discourage('host_os', DARWIN.name)},
+            'compat': {(lambda x: x is not None): Target.discourage('host_os', DARWIN)},
             'on_change': Target.attribute_changed
         },
         'libunwind_source': {
@@ -345,7 +345,7 @@ def attributes():
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction},
-            'compat': {(lambda x: x is not None): Target.discourage('host_os', DARWIN.name)},
+            'compat': {(lambda x: x is not None): Target.discourage('host_os', DARWIN)},
             'on_change': Target.attribute_changed
         },
         'scorep_source': {
@@ -356,7 +356,7 @@ def attributes():
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction},
-            'compat': {(lambda x: x is not None): (Target.discourage('host_os', DARWIN.name),
+            'compat': {(lambda x: x is not None): (Target.discourage('host_os', DARWIN),
                                                    Target.require(CC.keyword),
                                                    Target.require(CXX.keyword),
                                                    Target.require(FC.keyword))},
