@@ -44,6 +44,6 @@ if __name__ == '__main__':
     packages = os.path.join(here, '..', 'packages')
     sys.path.insert(0, packages)
 
-    from tau.cli.commands.__main__ import COMMAND as cli_main_cmd
+    from taucmdr.cli.commands.__main__ import COMMAND as cli_main_cmd
     sys.exit(cli_main_cmd.main(sys.argv[1:]))
 
