@@ -114,17 +114,18 @@ class ProgressIndicator(object):
             block_size (int): Size of a work block.
             show_cpu (bool): If True, show CPU load average as well as progress.
             mode (str): One of 'full', 'minimal', 'disabled', or None.
-                        If ``mode == None`` then the default value for ``mode`` is taken from the __TAU_PROGRESS_BARS__
-                        environment variable.  If that variable is not set then the default is 'full'.
+                        If ``mode == None`` then the default value for ``mode`` is taken from  
+                            the __TAUCMDR_PROGRESS_BARS__ environment variable. If that variable is not set 
+                            then the default is 'full'.
                         If ``mode == 'full'`` then all output is written to :any:`sys.stdout`.
                         If ``mode == 'minimal'`` then a single '.' character is written to sys.stdout approximately
-                        every five seconds without erasing the line (best for Travis regression test).
+                            every five seconds without erasing the line (best for Travis regression test).
                         If ``mode == 'disabled'`` then no output is written to stdout.
         """
         if mode is None:
-            mode = os.environ.get('__TAU_PROGRESS_BARS__', 'full').lower()
+            mode = os.environ.get('__TAUCMDR_PROGRESS_BARS__', 'full').lower()
         if mode not in ('none', 'disabled', 'minimal', 'full'):
-            raise ConfigurationError('Invalid value for __TAU_PROGRESS_BARS__ environment variable: %s' % mode)               
+            raise ConfigurationError('Invalid value for __TAUCMDR_PROGRESS_BARS__ environment variable: %s' % mode)               
         self.count = 0
         self.total_size = total_size
         self.block_size = block_size

@@ -197,11 +197,11 @@ class Test(TestCommand):
     def run_tests(self):
         if self.system_sandbox:
             tmp_system_prefix = tempfile.mkdtemp()
-            os.environ['__TAU_SYSTEM_PREFIX__'] = tmp_system_prefix
+            os.environ['__TAUCMDR_SYSTEM_PREFIX__'] = tmp_system_prefix
             print "Sandboxing system storage: %s" % tmp_system_prefix
         if self.user_sandbox:
             tmp_user_prefix = tempfile.mkdtemp()
-            os.environ['__TAU_USER_PREFIX__'] = tmp_user_prefix
+            os.environ['__TAUCMDR_USER_PREFIX__'] = tmp_user_prefix
             print "Sandboxing user storage: %s" % tmp_user_prefix
         args = ['--buffer']
         self.test_args = args + self.test_args

@@ -94,7 +94,7 @@ def _bootstrap_conda():
         sys.stderr.write("Command '%s' failed with return code '%s'\n" % (' '.join(cmd), err.returncode))
         sys.exit(-1)
     os.environ['PATH'] = os.path.join(prefix, 'conda', 'bin') + ":" + os.environ['PATH']
-    os.environ['__TAU_CMDR_CONFIGURE_BOOTSTRAPPED__'] = '1'
+    os.environ['__TAUCMDR_CONFIGURE_BOOTSTRAPPED__'] = '1'
     # Run myself again now with Python 2.7 from conda
     os.execv(PROG, sys.argv)
 
@@ -207,7 +207,7 @@ if __name__ == '__main__':
         from tau.cf.compiler.host import FC
     except (SystemExit, Exception) as err:
         # Prevent infinite recursion: only bootstrap once
-        if not os.environ.get('__TAU_CMDR_CONFIGURE_BOOTSTRAPPED__'):
+        if not os.environ.get('__TAUCMDR_CONFIGURE_BOOTSTRAPPED__'):
             _bootstrap_conda()
         else:
             sys.stderr.write("ERROR: %s\n"

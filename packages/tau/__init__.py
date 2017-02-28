@@ -70,7 +70,7 @@ Please install the required Python version or contact %s for support.
 """ % (TAUCMDR_URL, sys.executable, sys.version, VERSION, EXPECTED, HELP_CONTACT))
     sys.exit(EXIT_FAILURE)
 
-TAU_HOME = os.path.realpath(os.path.abspath(os.environ.get('__TAU_HOME__', 
+TAU_HOME = os.path.realpath(os.path.abspath(os.environ.get('__TAUCMDR_HOME__', 
                                                            os.path.join(os.path.dirname(__file__), '..', '..'))))
 """str: Absolute path to the top-level TAU Commander directory.
 
@@ -78,17 +78,17 @@ This directory contains at least `bin`, `docs`, and `packages` directories and i
 for system-level package installation paths. **Do not** change it once it is set.
 """
 
-TAU_SCRIPT = os.environ.get('__TAU_SCRIPT__', 'tau')
+TAU_SCRIPT = os.environ.get('__TAUCMDR_SCRIPT__', 'tau')
 """str: Script that launched TAU Commander.
 
 Mainly used for help messages. **Do not** change it once it is set.
 """
 
-SYSTEM_PREFIX = os.path.realpath(os.path.abspath(os.environ.get('__TAU_SYSTEM_PREFIX__', 
+SYSTEM_PREFIX = os.path.realpath(os.path.abspath(os.environ.get('__TAUCMDR_SYSTEM_PREFIX__', 
                                                                 os.path.join(TAU_HOME, '.system'))))
 """str: System-level TAU Commander files."""
 
-USER_PREFIX = os.path.realpath(os.path.abspath(os.environ.get('__TAU_USER_PREFIX__', 
+USER_PREFIX = os.path.realpath(os.path.abspath(os.environ.get('__TAUCMDR_USER_PREFIX__', 
                                                               os.path.join(os.path.expanduser('~'), '.tau'))))
 """str: User-level TAU Commander files."""
 
