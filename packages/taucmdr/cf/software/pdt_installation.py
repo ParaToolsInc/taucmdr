@@ -41,11 +41,11 @@ from taucmdr.cf.compiler.host import CC, CXX, PGI, GNU, INTEL
 
 LOGGER = logger.get_logger(__name__)
 
-REPOS = {None: 'http://taucmdr.uoregon.edu/pdt.tgz',
-         X86_64: {None: 'http://taucmdr.uoregon.edu/pdt.tgz', 
-                  LINUX:  'http://taucmdr.uoregon.edu/pdt_lite.tgz'},
-         INTEL_KNL: {None: 'http://taucmdr.uoregon.edu/pdt.tgz', 
-                     LINUX:  'http://taucmdr.uoregon.edu/pdt_lite.tgz'}}
+REPOS = {None: 'http://tau.uoregon.edu/pdt.tgz',
+         X86_64: {None: 'http://tau.uoregon.edu/pdt.tgz', 
+                  LINUX:  'http://tau.uoregon.edu/pdt_lite.tgz'},
+         INTEL_KNL: {None: 'http://tau.uoregon.edu/pdt.tgz', 
+                     LINUX:  'http://tau.uoregon.edu/pdt_lite.tgz'}}
 
 COMMANDS = {None:
             ['cparse',
