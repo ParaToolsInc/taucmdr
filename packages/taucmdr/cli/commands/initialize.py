@@ -35,6 +35,7 @@ from taucmdr.error import InternalError, ConfigurationError
 from taucmdr.cli import arguments
 from taucmdr.cli.command import AbstractCommand
 from taucmdr.model.project import Project, ProjectSelectionError
+from taucmdr.model.target import Target
 from taucmdr.cf.storage.project import ProjectStorageError
 from taucmdr.cf.storage.levels import PROJECT_STORAGE, STORAGE_LEVELS
 from taucmdr.cli.arguments import ParseBooleanAction
@@ -185,6 +186,11 @@ class InitializeCommand(AbstractCommand):
         if not scorep:
             target_argv.append('--scorep=None')
         _safe_execute(target_create_cmd, target_argv)
+        
+        targ = Target.controller(PROJECT_STORAGE).one({'name': target_name})
+        if not targ['binutils_source']:
+            sample = False
+            comp_inst = 'never'
 
         measurement_names = []
         measurement_args = ['--%s=True' % attr 
