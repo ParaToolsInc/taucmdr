@@ -48,6 +48,7 @@ def attributes():
     from taucmdr.model.target import Target
     from taucmdr.model.measurement import Measurement
     from taucmdr.cli.arguments import ParseBooleanAction
+    from taucmdr.cf.platforms import DARWIN
     return {
         'projects': {
             'collection': Project,
@@ -160,7 +161,16 @@ def attributes():
                          'metavar': 'path'},
             'compat': {True: Measurement.exclude('source_inst', 'never')},
             'on_change': Application.attribute_changed
-        }
+        },
+        'linkage': {
+            'type': 'string',
+            'default': 'dynamic',
+            'description': "application linkage",
+            'argparse': {'flags': ('--linkage',),
+                         'metavar': '<linkage>',
+                         'choices': ('static', 'dynamic')},
+            'compat': {'static': Target.exclude('host_os', DARWIN)},
+        },
     }
 
 

@@ -37,11 +37,11 @@ from taucmdr import logger, util
 from taucmdr.error import ConfigurationError, InternalError
 from taucmdr.cf.software import SoftwarePackageError
 from taucmdr.cf.software.installation import Installation, parallel_make_flags
-from taucmdr.cf.compiler import host
+from taucmdr.cf.compiler import host as host_compilers
 from taucmdr.cf.compiler.host import CC, CXX, FC, UPC
 from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC
 from taucmdr.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
-from taucmdr.cf.platforms import TauMagic, INTEL_KNL, CRAY_CNL, DARWIN
+from taucmdr.cf.platforms import TauMagic, INTEL_KNL, DARWIN, TAU_CRAYCNL
 
 
 LOGGER = logger.get_logger(__name__)
@@ -132,6 +132,7 @@ class TauInstallation(Installation):
 
     def __init__(self, sources, target_arch, target_os, compilers,
                  # Application support features
+                 application_linkage,
                  openmp_support,
                  pthreads_support,
                  tbb_support,
@@ -183,6 +184,7 @@ class TauInstallation(Installation):
             target_arch (Architecture): Target architecture description.
             target_os (OperatingSystem): Target operating system description.
             compilers (InstalledCompilerSet): Compilers to use if software must be compiled.
+            application_linkage (str): Either "static" or "dynamic". 
             openmp_support (bool): Enable or disable OpenMP support in TAU.
             pthreads_support (bool): Enable or disable pthreads support in TAU.
             tbb_support (bool): Enable or disable tbb support in TAU.
@@ -228,6 +230,7 @@ class TauInstallation(Installation):
             self.src = NIGHTLY
         self.tau_magic = TauMagic.find((self.target_arch, self.target_os))
         self.verbose = (logger.LOG_LEVEL == 'DEBUG')
+        self.application_linkage = application_linkage
         self.openmp_support = openmp_support
         self.opencl_support = opencl_support
         self.opencl_prefix = opencl_prefix
@@ -447,12 +450,12 @@ class TauInstallation(Installation):
         fortran_magic = None
         if fc_comp:
             fc_family = fc_comp.info.family
-            fc_magic_map = {host.GNU: 'gfortran',
-                            host.INTEL: 'intel',
-                            host.PGI: 'pgi',
-                            host.CRAY: 'cray',
-                            host.IBM: 'ibm',
-                            host.IBM_BG: 'ibm'}
+            fc_magic_map = {host_compilers.GNU: 'gfortran',
+                            host_compilers.INTEL: 'intel',
+                            host_compilers.PGI: 'pgi',
+                            host_compilers.CRAY: 'cray',
+                            host_compilers.IBM: 'ibm',
+                            host_compilers.IBM_BG: 'ibm'}
             try:
                 fortran_magic = fc_magic_map[fc_family]
             except KeyError:
@@ -608,8 +611,8 @@ class TauInstallation(Installation):
         """
         tags = []
         cxx_compiler = self.compilers[CXX].unwrap()
-        compiler_tags = {host.INTEL: 'intel' if self.target_os == CRAY_CNL else 'icpc',
-                         host.PGI: 'pgi'}
+        compiler_tags = {host_compilers.INTEL: 'intel' if self.tau_magic is TAU_CRAYCNL else 'icpc',
+                         host_compilers.PGI: 'pgi'}
         try:
             tags.append(compiler_tags[cxx_compiler.info.family])
         except KeyError:
@@ -646,8 +649,8 @@ class TauInstallation(Installation):
         """Returns a set of makefile tags incompatible with the specified config."""
         tags = []
         cxx_compiler = self.compilers[CXX].unwrap()
-        compiler_tags = {host.INTEL: 'intel' if self.target_os == CRAY_CNL else 'icpc',
-                         host.PGI: 'pgi'}
+        compiler_tags = {host_compilers.INTEL: 'intel' if self.tau_magic is TAU_CRAYCNL else 'icpc',
+                         host_compilers.PGI: 'pgi'}
         compiler_tag = compiler_tags.get(cxx_compiler.info.family, None)
         tags.extend(tag for tag in compiler_tags.itervalues() if tag != compiler_tag)
         if not self.mpi_support:
@@ -863,7 +866,7 @@ class TauInstallation(Installation):
         """
         use_wrapper = (self.source_inst != 'never' or
                        self.compiler_inst != 'never' or
-                       self.target_os is CRAY_CNL)
+                       self.application_linkage == 'static')
         if use_wrapper:
             return TAU_COMPILER_WRAPPERS[compiler.info.role]
         else:
@@ -895,7 +898,7 @@ class TauInstallation(Installation):
         retval = util.create_subprocess(cmd, env=env, stdout=True)
         if retval != 0:
             raise ConfigurationError("TAU was unable to build the application.",
-                                     "Check that the application builds with its normal compilers, i.e. without TAU."
+                                     "Check that the application builds with its normal compilers, i.e. without TAU.",
                                      "Use taucmdr --log and see detailed output at the end of '%s'" % logger.LOG_FILE)
         return retval
 
@@ -917,7 +920,7 @@ class TauInstallation(Installation):
         use_tau_exec = (self.measure_opencl or
                         self.tbb_support or
                         self.pthreads_support or
-                        self.target_os is not CRAY_CNL or
+                        self.application_linkage == 'dynamic' or
                         (self.source_inst == 'never' and
                          self.compiler_inst == 'never' and
                          not self.link_only))

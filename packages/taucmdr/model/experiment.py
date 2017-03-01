@@ -218,6 +218,7 @@ class Experiment(Model):
                     target_os=target.operating_system(),
                     compilers=target.compilers(),
                     # TAU feature suppport
+                    application_linkage=application.get_or_default('linkage'),
                     openmp_support=application.get_or_default('openmp'),
                     pthreads_support=application.get_or_default('pthreads'),
                     tbb_support=application.get_or_default('tbb'),
