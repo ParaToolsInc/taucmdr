@@ -167,12 +167,19 @@ class Installation(object):
         self.lib_path = None
         self._build_prefix = None
         self._install_prefix = None
+        self._uid = None
 
-    def _calculate_uid(self):
+    def _get_uid(self):
         # Most packages only care about changes in C/C++ compilers
         uid_parts = [self.src, self.target_arch.name, self.target_os.name,
                      self.compilers[compiler.host.CC].uid, self.compilers[compiler.host.CXX].uid]
         return util.calculate_uid(uid_parts)
+    
+    @property
+    def uid(self):
+        if self._uid is None:
+            self._uid = self._get_uid()
+        return self._uid
 
     def _get_install_prefix(self):
         if not self._install_prefix:
@@ -180,10 +187,9 @@ class Installation(object):
                 self._set_install_prefix(self.src)
                 self.src = None
             else:
-                uid = self._calculate_uid()
                 # Search the storage hierarchy for an existing installation
                 for storage in reversed(ORDERED_LEVELS):
-                    self._set_install_prefix(os.path.join(storage.prefix, self.name, uid))
+                    self._set_install_prefix(os.path.join(storage.prefix, self.name, self.uid))
                     try:
                         self.verify()
                     except SoftwarePackageError as err:
@@ -193,7 +199,7 @@ class Installation(object):
                         break
                 else:
                     # No existing installation found, install at highest writable storage level
-                    self._set_install_prefix(os.path.join(highest_writable_storage().prefix, self.name, uid))
+                    self._set_install_prefix(os.path.join(highest_writable_storage().prefix, self.name, self.uid))
                 LOGGER.debug("%s installation prefix is %s", self.name, self._install_prefix)
         return self._install_prefix
     

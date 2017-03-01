@@ -111,7 +111,7 @@ class ScorepInstallation(AutotoolsInstallation):
             if used:
                 self.add_dependency(pkg, sources)
 
-    def _calculate_uid(self):
+    def _get_uid(self):
         uid_parts = [self.src, self.target_arch.name, self.target_os.name]
         # Score-P changes if any compiler changes.
         uid_parts.extend(sorted(comp.uid for comp in self.compilers.itervalues()))
