@@ -175,11 +175,11 @@ def attributes():
         },
         'openmp': {
             'type': 'string',
-            'default': 'none',
+            'default': 'ignore',
             'description': 'use specified library to measure time spent in OpenMP directives',
             'argparse': {'flags': ('--openmp',),
                          'metavar': 'library',
-                         'choices': ('none', 'opari', 'ompt', 'gomp')},
+                         'choices': ('ignore', 'opari', 'ompt', 'gomp')},
             'compat': {'opari':
                        Application.require('openmp', True),
                        'ompt':

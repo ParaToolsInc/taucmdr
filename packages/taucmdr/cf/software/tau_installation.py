@@ -305,14 +305,16 @@ class TauInstallation(Installation):
         return self.source_inst == 'automatic' or self.shmem_support
 
     def _uses_binutils(self):
-        return (self.sample or 
-                self.compiler_inst != 'never' or 
-                self.openmp_support or 
-                self.measure_openmp in ('ompt', 'gomp'))
+        return (self.target_os is not DARWIN and
+                (self.sample or 
+                 self.compiler_inst != 'never' or 
+                 self.measure_openmp != 'ignore'))
 
     def _uses_libunwind(self):
         return (self.target_os is not DARWIN and
-                (self.sample or self.compiler_inst != 'never' or self.openmp_support))
+                (self.sample or 
+                 self.compiler_inst != 'never' or 
+                 self.measure_openmp != 'ignore'))
 
     def _uses_papi(self):
         return bool(len([met for met in self.metrics if 'PAPI' in met]))
@@ -506,7 +508,6 @@ class TauInstallation(Installation):
                   '-papi=%s' % papi.install_prefix if papi else None,
                   '-unwind=%s' % libunwind.install_prefix if libunwind else None,
                   '-scorep=%s' % scorep.install_prefix if scorep else None,
-                  '-pthread' if self.pthreads_support else None,
                   '-tbb' if self.tbb_support else None,
                   '-mpi' if self.mpi_support else None,
                   '-mpiinc=%s' % mpiinc if mpiinc else None,
@@ -528,9 +529,14 @@ class TauInstallation(Installation):
         if pdt:
             flags.append('-pdt=%s' % pdt.install_prefix)
             flags.append('-pdt_c++=%s' % pdt.compilers[CXX].info.command)
-        if self.openmp_support:
+        if self.pthreads_support or self.openmp_support:
+            flags.append('-pthread')
+        if self.measure_openmp != 'ignore':
             flags.append('-openmp')
-            if self.measure_openmp == 'ompt':
+            if self.measure_openmp == 'gomp':
+                # If you configure with -openmp but without -ompt you get the GOMP API wrapper.
+                pass
+            elif self.measure_openmp == 'ompt':
                 flags.append('-ompt=download')
             elif self.measure_openmp == 'opari':
                 flags.append('-opari')
@@ -607,64 +613,66 @@ class TauInstallation(Installation):
         function will likely not match the order they appear in the makefile name or tau_exec command line.
 
         Returns:
-            list: Makefile tags, e.g. ['papi', 'pdt', 'icpc']
+            set: Makefile tags, e.g. set('papi', 'pdt', 'icpc')
         """
-        tags = []
+        tags = set()
         cxx_compiler = self.compilers[CXX].unwrap()
         compiler_tags = {host_compilers.INTEL: 'intel' if self.tau_magic is TAU_CRAYCNL else 'icpc',
                          host_compilers.PGI: 'pgi'}
         try:
-            tags.append(compiler_tags[cxx_compiler.info.family])
+            tags.add(compiler_tags[cxx_compiler.info.family])
         except KeyError:
             pass
         if self._uses_pdt():
-            tags.append('pdt')
+            tags.add('pdt')
         if self._uses_papi():
-            tags.append('papi')
+            tags.add('papi')
         if self._uses_scorep():
-            tags.append('scorep')
-        if self.openmp_support:
-            tags.append('openmp')
-            openmp_tags = {'ompt': 'ompt', 'opari': 'opari'}
-            try:
-                tags.append(openmp_tags[self.measure_openmp])
-            except KeyError:
+            tags.add('scorep')
+        if self.pthreads_support or self.openmp_support:
+            tags.add('pthread')
+        if self.measure_openmp != 'ignore':
+            tags.add('openmp')
+            if self.measure_openmp == 'gomp':
+                # If you configure with -openmp but without -ompt you get the GOMP API wrapper.
                 pass
-        if self.pthreads_support:
-            tags.append('pthread')
+            if self.measure_openmp == 'ompt':
+                tags.add('ompt')
+            elif self.measure_openmp == 'opari':
+                tags.add('opari')
         if self.tbb_support:
-            tags.append('tbb')
+            tags.add('tbb')
         if self.mpi_support:
-            tags.append('mpi')
+            tags.add('mpi')
         if self.cuda_support:
-            tags.append('cupti')
+            tags.add('cupti')
         if self.shmem_support:
-            tags.append('shmem')
+            tags.add('shmem')
         if self.mpc_support:
-            tags.append('mpc')
+            tags.add('mpc')
         LOGGER.debug("TAU tags: %s", tags)
-        return set(tags)
+        return tags
 
     def _incompatible_tags(self):
         """Returns a set of makefile tags incompatible with the specified config."""
-        tags = []
+        tags = set()
         cxx_compiler = self.compilers[CXX].unwrap()
         compiler_tags = {host_compilers.INTEL: 'intel' if self.tau_magic is TAU_CRAYCNL else 'icpc',
                          host_compilers.PGI: 'pgi'}
         compiler_tag = compiler_tags.get(cxx_compiler.info.family, None)
-        tags.extend(tag for tag in compiler_tags.itervalues() if tag != compiler_tag)
+        tags.update(tag for tag in compiler_tags.itervalues() if tag != compiler_tag)
         if not self.mpi_support:
-            tags.append('mpi')
-        if self.measure_openmp != 'opari':
-            tags.append('opari')
-        if not self.openmp_support:
-            tags.append('openmp')
+            tags.add('mpi')
+        if self.measure_openmp == 'ignore':
+            tags.add('openmp')
+            tags.add('opari')
+            tags.add('ompt')
         if not self._uses_scorep():
-            tags.append('scorep')
+            tags.add('scorep')
         if not self.shmem_support:
-            tags.append('shmem')
+            tags.add('shmem')
         LOGGER.debug("Incompatible tags: %s", tags)
-        return set(tags)
+        return tags
 
     def get_makefile(self):
         """Returns an absolute path to a TAU_MAKEFILE.
@@ -917,13 +925,15 @@ class TauInstallation(Installation):
                    variables to set before running the application command.
         """
         opts, env = self.runtime_config()
-        use_tau_exec = (self.measure_opencl or
-                        self.tbb_support or
-                        self.pthreads_support or
-                        self.application_linkage == 'dynamic' or
-                        (self.source_inst == 'never' and
-                         self.compiler_inst == 'never' and
-                         not self.link_only))
+        if self.application_linkage == 'static':
+            use_tau_exec = False
+        else:
+            use_tau_exec = (self.measure_opencl or
+                            self.tbb_support or
+                            self.pthreads_support or
+                            (self.source_inst == 'never' and
+                             self.compiler_inst == 'never' and
+                             not self.link_only))
         if use_tau_exec:
             tau_exec_opts = opts
             tags = self.get_tags()
