@@ -67,6 +67,19 @@ def knc_require_k1om(*_):
             raise ConfigurationError('k1om tools not found', 'Try installing on compute node', 'Install MIC SDK')
 
 
+def papi_source_default():
+    """Choose the best default PAPI source."""
+    if HOST_OS is DARWIN:
+        return None
+    elif HOST_OS is CRAY_CNL:
+        if os.path.exists('/opt/cray/papi/default'):
+            return '/opt/cray/papi/default'
+        else:
+            return 'download'
+    else:
+        return 'download'
+
+
 def attributes():
     """Construct attributes dictionary for the target model.
     
@@ -340,7 +353,7 @@ def attributes():
         'papi_source': {
             'type': 'string',
             'description': 'path or URL to a PAPI installation or archive file',
-            'default': 'download' if HOST_OS is not DARWIN else None,
+            'default': papi_source_default(),
             'argparse': {'flags': ('--papi',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
