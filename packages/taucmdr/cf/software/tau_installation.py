@@ -287,7 +287,7 @@ class TauInstallation(Installation):
                 self.add_dependency('scorep', sources, mpi_support, shmem_support,
                                     sources['binutils'], sources['libunwind'], sources['papi'], sources['pdt'])
 
-    def _get_uid(self):
+    def uid_items(self):
         uid_parts = [self.src, self.target_arch.name, self.target_os.name]
         # TAU changes if any compiler changes.
         uid_parts.extend(sorted(comp.uid for comp in self.compilers.itervalues()))
@@ -296,7 +296,7 @@ class TauInstallation(Installation):
             uses_pkg = getattr(self, '_uses_'+pkg)
             if uses_pkg():
                 uid_parts.append(self.dependencies[pkg].uid)
-        return util.calculate_uid(uid_parts)
+        return uid_parts
 
     def _set_install_prefix(self, value):
         # TAU puts installation files (bin, lib, etc.) in a magically named subfolder
@@ -549,7 +549,7 @@ class TauInstallation(Installation):
             flags.append('-iowrapper')
         cmd = ['./configure'] + flags
         LOGGER.info("Configuring TAU...")
-        if util.create_subprocess(cmd, cwd=self.src_prefix, stdout=False, show_progress=True):
+        if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
             raise SoftwarePackageError('TAU configure failed')
 
     def make_install(self):
@@ -562,7 +562,7 @@ class TauInstallation(Installation):
         """
         cmd = ['make', 'install'] + parallel_make_flags()
         LOGGER.info('Compiling and installing TAU...')
-        if util.create_subprocess(cmd, cwd=self.src_prefix, stdout=False, show_progress=True):
+        if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
             raise SoftwarePackageError('TAU compilation/installation failed')
 
     def install(self, force_reinstall=False):
@@ -600,7 +600,7 @@ class TauInstallation(Installation):
             # Keep reconfiguring the same source because that's how TAU works
             if not (self.include_path and os.path.isdir(self.include_path)):
                 shutil.move(self._prepare_src(), self.install_prefix)
-            self.src_prefix = self.install_prefix
+            self._src_prefix = self.install_prefix
             self.configure()
             self.make_install()
         except Exception as err:

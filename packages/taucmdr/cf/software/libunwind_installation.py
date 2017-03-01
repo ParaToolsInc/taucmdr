@@ -72,7 +72,7 @@ class LibunwindInstallation(AutotoolsInstallation):
         env['CXX'] = self.compilers[CXX].unwrap().absolute_path
         if self.target_arch is IBM_BGQ:
             flags.append('--disable-shared')
-            for line in fileinput.input(os.path.join(self.src_prefix, 'src', 'unwind', 'Resume.c'), inplace=1):
+            for line in fileinput.input(os.path.join(self._src_prefix, 'src', 'unwind', 'Resume.c'), inplace=1):
                 # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
                 sys.stdout.write(line.replace('_Unwind_Resume', '_Unwind_Resume_other'))
         elif self.target_os is CRAY_CNL:
@@ -81,7 +81,7 @@ class LibunwindInstallation(AutotoolsInstallation):
             flags.append('--disable-shared')
             flags.append('--disable-minidebuginfo')
         # Fix test so `make install` succeeds more frequently 
-        for line in fileinput.input(os.path.join(self.src_prefix, 'tests', 'crasher.c'), inplace=1):
+        for line in fileinput.input(os.path.join(self._src_prefix, 'tests', 'crasher.c'), inplace=1):
             # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
             sys.stdout.write(line.replace('r = c(1);', 'r = 1;'))
         return super(LibunwindInstallation, self).configure(flags, env)

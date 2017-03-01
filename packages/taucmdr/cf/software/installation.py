@@ -108,27 +108,26 @@ class Installation(object):
     """Encapsulates a software package installation.
     
     Attributes:
-        name (str): Human readable name of the software package, e.g. 'TAU'.
-        src (str): Path to a directory where the software has already been installed, 
-                   or path to a source archive file or directory, or the special keyword 'download'.
+        name (str): The package name, lowercase, alphanumeric with underscores.  All packages have a
+                    corresponding ``taucmdr.cf.software.<name>_installation`` module. 
+        title (str): Human readable name of the software package, e.g. 'TAU Performance System' or 'Score-P'.
+        src (str): Path or URL to a source archive file, 
+                   or a path to a directory where the software is installed, 
+                   or the special keyword 'download'.
         target_arch (str): Target architecture name.
         target_os (str): Target operating system name.
         compilers (InstalledCompilerSet): Compilers to use if software must be compiled.
         verify_commands (list): List of commands that are present in a valid installation.
         verify_libraries (list): List of libraries that are present in a valid installation.
         verify_headers (list): List of header files that are present in a valid installation.
-        src_prefix (str): Directory containing package source code.
     """
     
     def __init__(self, name, title, sources, target_arch, target_os, compilers, 
                  repos, commands, libraries, headers):
         """Initializes the installation object.
         
-        To set up a new installation, pass `src` as a URL, file path, or the special keyword 'download'.
-        Attributes `src` and `src_prefix` will be set to the appropriate paths.
-        
-        To set up an interface to an existing installation, pass ``src=/path/to/existing/installation``. 
-        Attributes `src` and `src_prefix` will be set to None.
+        To set up a new installation, pass a URL, file path, or the special keyword 'download' as the package source.       
+        To set up an interface to an existing installation, pass the path to that installation as the package source. 
         
         Args:
             name (str): The package name, lowercase, alphanumeric with underscores.  All packages have a
@@ -161,31 +160,36 @@ class Installation(object):
             self.src = self._lookup_target_os_list(repos)
         else:
             self.src = src
-        self.src_prefix = None
         self.include_path = None
         self.bin_path = None
         self.lib_path = None
-        self._build_prefix = None
+        self._src_prefix = None
         self._install_prefix = None
         self._uid = None
 
-    def _get_uid(self):
-        # Most packages only care about changes in C/C++ compilers
-        uid_parts = [self.src, self.target_arch.name, self.target_os.name,
-                     self.compilers[compiler.host.CC].uid, self.compilers[compiler.host.CXX].uid]
-        return util.calculate_uid(uid_parts)
+    def uid_items(self):
+        """List items affecting this installation's UID.
+        
+        Most packages only care about changes in source archive, target, or C/C++ compilers.
+        More sensitive packages (e.g. Score-P or TAU) can override this function.
+        
+        Returns:
+            list: An **ordered** list of items affecting this installation's UID.
+                  Changing the order of this list will change the UID.
+        """
+        return [self.src, self.target_arch.name, self.target_os.name,
+                self.compilers[compiler.host.CC].uid, self.compilers[compiler.host.CXX].uid]
     
     @property
     def uid(self):
         if self._uid is None:
-            self._uid = self._get_uid()
+            self._uid = util.calculate_uid(self.uid_items())
         return self._uid
 
     def _get_install_prefix(self):
         if not self._install_prefix:
             if os.path.isdir(self.src):
                 self._set_install_prefix(self.src)
-                self.src = None
             else:
                 # Search the storage hierarchy for an existing installation
                 for storage in reversed(ORDERED_LEVELS):
@@ -410,14 +414,14 @@ class AutotoolsInstallation(Installation):
         Raises:
             SoftwarePackageError: Configuration failed.
         """
-        assert self.src_prefix
-        LOGGER.debug("Configuring %s at '%s'", self.name, self.src_prefix)
+        assert self._src_prefix
+        LOGGER.debug("Configuring %s at '%s'", self.name, self._src_prefix)
         flags = list(flags)
         # Prepare configuration flags
         flags += ['--prefix=%s' % self.install_prefix]
         cmd = ['./configure'] + flags
         LOGGER.info("Configuring %s...", self.title)
-        if util.create_subprocess(cmd, cwd=self.src_prefix, env=env, stdout=False, show_progress=True):
+        if util.create_subprocess(cmd, cwd=self._src_prefix, env=env, stdout=False, show_progress=True):
             raise SoftwarePackageError('%s configure failed' % self.title)   
     
     def make(self, flags, env, parallel=True):
@@ -434,15 +438,15 @@ class AutotoolsInstallation(Installation):
         Raises:
             SoftwarePackageError: Compilation failed.
         """
-        assert self.src_prefix
-        LOGGER.debug("Making %s at '%s'", self.name, self.src_prefix)
+        assert self._src_prefix
+        LOGGER.debug("Making %s at '%s'", self.name, self._src_prefix)
         flags = list(flags)
         par_flags = parallel_make_flags() if parallel else []
         cmd = ['make'] + par_flags + flags
         LOGGER.info("Compiling %s...", self.title)
-        if util.create_subprocess(cmd, cwd=self.src_prefix, env=env, stdout=False, show_progress=True):
+        if util.create_subprocess(cmd, cwd=self._src_prefix, env=env, stdout=False, show_progress=True):
             cmd = ['make'] + flags
-            if util.create_subprocess(cmd, cwd=self.src_prefix, env=env, stdout=False, show_progress=True):
+            if util.create_subprocess(cmd, cwd=self._src_prefix, env=env, stdout=False, show_progress=True):
                 raise SoftwarePackageError('%s compilation failed' % self.title)
 
     def make_install(self, flags, env, parallel=False):
@@ -460,14 +464,14 @@ class AutotoolsInstallation(Installation):
         Raises:
             SoftwarePackageError: Configuration failed.
         """
-        assert self.src_prefix
+        assert self._src_prefix
         LOGGER.debug("Installing %s to '%s'", self.name, self.install_prefix)
         flags = list(flags)
         if parallel:
             flags += parallel_make_flags()
         cmd = ['make', 'install'] + flags
         LOGGER.info("Installing %s...", self.title)
-        if util.create_subprocess(cmd, cwd=self.src_prefix, env=env, stdout=False, show_progress=True):
+        if util.create_subprocess(cmd, cwd=self._src_prefix, env=env, stdout=False, show_progress=True):
             raise SoftwarePackageError('%s installation failed' % self.title)
         # Some systems use lib64 instead of lib
         if os.path.isdir(self.lib_path+'64') and not os.path.isdir(self.lib_path):
@@ -486,11 +490,11 @@ class AutotoolsInstallation(Installation):
         """
         for pkg in self.dependencies.itervalues():
             pkg.install(force_reinstall)
-        if not self.src or not force_reinstall:
+        if os.path.isdir(self.src) or not force_reinstall:
             try:
                 return self.verify()
             except SoftwarePackageError as err:
-                if not self.src:
+                if os.path.isdir(self.src):
                     raise SoftwarePackageError("%s source package is unavailable and the installation at '%s' "
                                                "is invalid: %s" % (self.title, self.install_prefix, err),
                                                "Specify source code path or URL to enable package reinstallation.")
@@ -504,7 +508,7 @@ class AutotoolsInstallation(Installation):
         # created for `configure` ; `make` ; `make install`
         env = {}
         try:
-            self.src_prefix = self._prepare_src()
+            self._src_prefix = self._prepare_src()
             self.configure([], env)
             self.make([], env)
             self.make_install([], env)
@@ -514,9 +518,9 @@ class AutotoolsInstallation(Installation):
         else:
             # Delete the decompressed source code to save space and clean up in preperation for
             # future reconfigurations.  The compressed source archive is retained.
-            LOGGER.debug("Deleting '%s'", self.src_prefix)
-            util.rmtree(self.src_prefix, ignore_errors=True)
-            self.src_prefix = None
+            LOGGER.debug("Deleting '%s'", self._src_prefix)
+            util.rmtree(self._src_prefix, ignore_errors=True)
+            self._src_prefix = None
 
         # Verify the new installation
         LOGGER.info("Verifying %s installation...", self.title)

@@ -111,13 +111,13 @@ class ScorepInstallation(AutotoolsInstallation):
             if used:
                 self.add_dependency(pkg, sources)
 
-    def _get_uid(self):
+    def uid_items(self):
         uid_parts = [self.src, self.target_arch.name, self.target_os.name]
         # Score-P changes if any compiler changes.
         uid_parts.extend(sorted(comp.uid for comp in self.compilers.itervalues()))
         # Score-P installations have different symbols depending on what flags were used.
         uid_parts.append(str(self._get_flags()))
-        return util.calculate_uid(uid_parts)
+        return uid_parts
 
     def _get_flags(self):
         flags = ['--enable-shared', '--without-otf2', '--without-opari2', '--without-cube', 
