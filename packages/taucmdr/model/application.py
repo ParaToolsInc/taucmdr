@@ -48,7 +48,7 @@ def attributes():
     from taucmdr.model.target import Target
     from taucmdr.model.measurement import Measurement
     from taucmdr.cli.arguments import ParseBooleanAction
-    from taucmdr.cf.platforms import DARWIN
+    from taucmdr.cf.platforms import DARWIN, HOST_OS, CRAY_CNL
     return {
         'projects': {
             'collection': Project,
@@ -164,7 +164,7 @@ def attributes():
         },
         'linkage': {
             'type': 'string',
-            'default': 'dynamic',
+            'default': 'static' if HOST_OS is CRAY_CNL else 'dynamic',
             'description': "application linkage",
             'argparse': {'flags': ('--linkage',),
                          'metavar': '<linkage>',
