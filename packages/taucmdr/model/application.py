@@ -47,7 +47,6 @@ def attributes():
     from taucmdr.model.project import Project
     from taucmdr.model.target import Target
     from taucmdr.model.measurement import Measurement
-    from taucmdr.cli.arguments import ParseBooleanAction
     from taucmdr.cf.platforms import DARWIN, HOST_OS, CRAY_CNL
     return {
         'projects': {
@@ -66,44 +65,28 @@ def attributes():
             'type': 'boolean',
             'description': 'application uses OpenMP',
             'default': False,
-            'argparse': {'flags': ('--openmp',),
-                         'metavar': 'T/F',
-                         'nargs': '?',
-                         'const': True,
-                         'action': ParseBooleanAction},
+            'argparse': {'flags': ('--openmp',)},
             'on_change': Application.attribute_changed
         },
         'pthreads': {
             'type': 'boolean',
             'description': 'application uses pthreads',
             'default': False,
-            'argparse': {'flags': ('--pthreads',),
-                         'metavar': 'T/F',
-                         'nargs': '?',
-                         'const': True,
-                         'action': ParseBooleanAction},
+            'argparse': {'flags': ('--pthreads',)},
             'on_change': Application.attribute_changed
         },
         'tbb': {
             'type': 'boolean',
             'description': 'application uses Thread Building Blocks (TBB)',
             'default': False,
-            'argparse': {'flags': ('--tbb',),
-                         'metavar': 'T/F',
-                         'nargs': '?',
-                         'const': True,
-                         'action': ParseBooleanAction},
+            'argparse': {'flags': ('--tbb',)},
             'on_change': Application.attribute_changed
         },
         'mpi': {
             'type': 'boolean',
             'default': False,
             'description': 'application uses MPI',
-            'argparse': {'flags': ('--mpi',),
-                         'metavar': 'T/F',
-                         'nargs': '?',
-                         'const': True,
-                         'action': ParseBooleanAction},
+            'argparse': {'flags': ('--mpi',)},
             'compat': {True: Measurement.require('mpi', True)},
             'on_change': Application.attribute_changed
         },
@@ -111,11 +94,7 @@ def attributes():
             'type': 'boolean',
             'default': False,
             'description': 'application uses NVIDIA CUDA',
-            'argparse': {'flags': ('--cuda',),
-                         'metavar': 'T/F',
-                         'nargs': '?',
-                         'const': True,
-                         'action': ParseBooleanAction},
+            'argparse': {'flags': ('--cuda',)},
             'compat': {True: Target.require('cuda')},
             'on_change': Application.attribute_changed
         },
@@ -123,11 +102,7 @@ def attributes():
             'type': 'boolean',
             'default': False,
             'description': 'application uses OpenCL',
-            'argparse': {'flags': ('--opencl',),
-                         'metavar': 'T/F',
-                         'nargs': '?',
-                         'const': True,
-                         'action': ParseBooleanAction},
+            'argparse': {'flags': ('--opencl',)},
             'compat': {True: (Target.require('cuda'),
                               Measurement.encourage('opencl', True))},
             'on_change': Application.attribute_changed
@@ -136,22 +111,14 @@ def attributes():
             'type': 'boolean',
             'default': False,
             'description': 'application uses SHMEM',
-            'argparse': {'flags': ('--shmem',),
-                         'metavar': 'T/F',
-                         'nargs': '?',
-                         'const': True,
-                         'action': ParseBooleanAction},
+            'argparse': {'flags': ('--shmem',)},
             'on_change': Application.attribute_changed
         },
         'mpc': {
             'type': 'boolean',
             'default': False,
             'description': 'application uses MPC',
-            'argparse': {'flags': ('--mpc',),
-                         'metavar': 'T/F',
-                         'nargs': '?',
-                         'const': True,
-                         'action': ParseBooleanAction},
+            'argparse': {'flags': ('--mpc',)},
             'on_change': Application.attribute_changed
         },
         'select_file': {
@@ -170,6 +137,7 @@ def attributes():
                          'metavar': '<linkage>',
                          'choices': ('static', 'dynamic')},
             'compat': {'static': Target.exclude('host_os', DARWIN)},
+            'on_change': Application.attribute_changed
         },
     }
 

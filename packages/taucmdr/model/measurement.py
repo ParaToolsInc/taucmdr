@@ -50,7 +50,6 @@ def attributes():
     from taucmdr.model.project import Project
     from taucmdr.model.target import Target
     from taucmdr.model.application import Application
-    from taucmdr.cli.arguments import ParseBooleanAction
     from taucmdr.model import require_compiler_family
     from taucmdr.cf.platforms import HOST_OS, DARWIN, IBM_CNK
     from taucmdr.cf.compiler.host import INTEL, GNU, CC, CXX, FC
@@ -104,11 +103,7 @@ def attributes():
             'default': HOST_OS not in (DARWIN, IBM_CNK),
             'description': "use event-based sampling to gather performance data",
             'argparse': {'flags': ('--sample',),
-                         'group': 'instrumentation',
-                         'metavar': 'T/F',
-                         'nargs': '?',
-                         'const': True,
-                         'action': ParseBooleanAction},
+                         'group': 'instrumentation'},
             'compat': {True: (Target.require('binutils_source'),
                               Target.exclude('binutils_source', None),
                               Target.encourage('libunwind_source'),
@@ -151,22 +146,14 @@ def attributes():
             'default': False,
             'description': "don't instrument, only link the TAU library to the application",
             'argparse': {'flags': ('--link-only',),
-                         'group': 'instrumentation',
-                         'metavar': 'T/F',
-                         'nargs': '?',
-                         'const': True,
-                         'action': ParseBooleanAction},
+                         'group': 'instrumentation'},
             'on_change': Measurement.attribute_changed
         },
         'mpi': {
             'type': 'boolean',
             'default': False,
             'description': 'use MPI library wrapper to measure time spent in MPI methods',
-            'argparse': {'flags': ('--mpi',),
-                         'metavar': 'T/F',
-                         'nargs': '?',
-                         'const': True,
-                         'action': ParseBooleanAction},
+            'argparse': {'flags': ('--mpi',)},
             'compat': {True:
                        (Target.require(MPI_CC.keyword),
                         Target.require(MPI_CXX.keyword),
@@ -198,22 +185,14 @@ def attributes():
             'type': 'boolean',
             'default': False,
             'description': 'measure cuda events via the CUPTI interface',
-            'argparse': {'flags': ('--cuda',),
-                         'metavar': 'T/F',
-                         'nargs': '?',
-                         'const': True,
-                         'action': ParseBooleanAction},
+            'argparse': {'flags': ('--cuda',)},
             'compat': {True: Target.require('cuda')}
         },
         'shmem': {
             'type': 'boolean',
             'default': False,
             'description': 'use SHMEM library wrapper to measure time spent in SHMEM methods',
-            'argparse': {'flags': ('--shmem',),
-                         'metavar': 'T/F',
-                         'nargs': '?',
-                         'const': True,
-                         'action': ParseBooleanAction},
+            'argparse': {'flags': ('--shmem',)},
             'compat': {True:
                        (Target.require(SHMEM_CC.keyword),
                         Target.require(SHMEM_CXX.keyword),
@@ -224,11 +203,7 @@ def attributes():
             'type': 'boolean',
             'default': False,
             'description': 'measure OpenCL events',
-            'argparse': {'flags': ('--opencl',),
-                         'metavar': 'T/F',
-                         'nargs': '?',
-                         'const': True,
-                         'action': ParseBooleanAction},
+            'argparse': {'flags': ('--opencl',)},
             'compat': {True: (Target.require('cuda'),
                               Application.require('opencl'))}
         },
@@ -240,18 +215,13 @@ def attributes():
                          'group': 'data',
                          'metavar': 'depth',
                          'nargs': '?',
-                         'const': 100,
-                         'type': int},
+                         'const': 100},
         },
         'io': {
             'type': 'boolean',
             'default': False,
             'description': 'measure time spent in POSIX I/O calls',
-            'argparse': {'flags': ('--io',),
-                         'metavar': 'T/F',
-                         'nargs': '?',
-                         'const': True,
-                         'action': ParseBooleanAction},
+            'argparse': {'flags': ('--io',)},
             'on_change': Measurement.attribute_changed
         },
         'heap_usage': {
@@ -259,22 +229,14 @@ def attributes():
             'default': False,
             'description': 'measure heap memory usage',
             'argparse': {'flags': ('--heap-usage',),
-                         'group': 'memory',
-                         'metavar': 'T/F',
-                         'nargs': '?',
-                         'const': True,
-                         'action': ParseBooleanAction},
+                         'group': 'memory'},
         },
         'memory_alloc': {
             'type': 'boolean',
             'default': False,
             'description': 'record memory allocation and deallocation events',
             'argparse': {'flags': ('--memory-alloc',),
-                         'group': 'memory',
-                         'metavar': 'T/F',
-                         'nargs': '?',
-                         'const': True,
-                         'action': ParseBooleanAction},
+                         'group': 'memory'},
             'on_change': Measurement.attribute_changed
         },
         'metrics': {
@@ -283,8 +245,7 @@ def attributes():
             'description': 'performance metrics to gather, e.g. TIME, PAPI_FP_INS',
             'argparse': {'flags': ('--metrics',),
                          'group': 'data',
-                         'metavar': '<metric>',
-                         'nargs': '+'},
+                         'metavar': '<metric>'},
             'compat': {lambda metrics: bool(len([met for met in metrics if 'PAPI' in met])):
                        (Target.require('papi_source'), 
                         Target.exclude('papi_source', None))},
@@ -295,11 +256,7 @@ def attributes():
             'default': False,
             'description': "don't remove instrumented files after compilation",
             'argparse': {'flags': ('--keep-inst-files',),
-                         'group': 'instrumentation',
-                         'metavar': 'T/F',
-                         'nargs': '?',
-                         'const': True,
-                         'action': ParseBooleanAction},
+                         'group': 'instrumentation'},
             'compat': {True: Measurement.exclude('source_inst', 'never')}
         },
         'reuse_inst_files': {
@@ -307,32 +264,20 @@ def attributes():
             'default': False,
             'description': 'reuse and preserve instrumented files after compilation',
             'argparse': {'flags': ('--reuse-inst-files',),
-                         'group': 'instrumentation',
-                         'metavar': 'T/F',
-                         'nargs': '?',
-                         'const': True,
-                         'action': ParseBooleanAction},
+                         'group': 'instrumentation'},
             'compat': {True: Measurement.exclude('source_inst', 'never')}
         },
         'comm_matrix': {
             'type': 'boolean',
             'default': False,
             'description': 'record the point-to-point communication matrix',
-            'argparse': {'flags': ('--comm-matrix',),
-                         'metavar': 'T/F',
-                         'nargs': '?',
-                         'const': True,
-                         'action': ParseBooleanAction}
+            'argparse': {'flags': ('--comm-matrix',)}
         },
         'throttle': {
             'type': 'boolean',
             'default': True,
             'description': 'throttle lightweight events to reduce overhead',
-            'argparse': {'flags': ('--throttle',),
-                         'metavar': 'T/F',
-                         'nargs': '?',
-                         'const': True,
-                         'action': ParseBooleanAction},
+            'argparse': {'flags': ('--throttle',)},
         },
         'throttle_per_call': {
             'type': 'integer',
@@ -341,8 +286,7 @@ def attributes():
             'argparse': {'flags': ('--throttle-per-call',),
                          'metavar': 'us',
                          'nargs': '?',
-                         'const': 10,
-                         'type': int},
+                         'const': 10},
         },
         'throttle_num_calls': {
             'type': 'integer',
@@ -351,8 +295,7 @@ def attributes():
             'argparse': {'flags': ('--throttle-num-calls',),
                          'metavar': 'count',
                          'nargs': '?',
-                         'const': 100000,
-                         'type': int},
+                         'const': 100000},
         }
     }
 

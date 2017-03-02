@@ -87,8 +87,7 @@ def attributes():
             'description': "forcibly add options to TAU_OPTIONS environment variable (not recommended)",
             'rebuild_on_change': True,
             'argparse': {'flags': ('--force-tau-options',),
-                         'metavar': '<option>',
-                         'nargs': '+'},
+                         'metavar': '<option>'},
             'compat': {True: Project.discourage('force_tau_options')}
         }
     }

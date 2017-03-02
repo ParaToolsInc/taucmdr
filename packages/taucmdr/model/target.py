@@ -214,8 +214,7 @@ def attributes():
             'description': 'paths to search for MPI header files when building MPI applications',
             'argparse': {'flags': ('--mpi-include-path',),
                          'group': 'Message Passing Interface (MPI)',
-                         'metavar': '<path>',
-                         'nargs': '+'},
+                         'metavar': '<path>'},
             'compat': {bool: (Target.require(MPI_CC.keyword),
                               Target.require(MPI_CXX.keyword),
                               Target.require(MPI_FC.keyword))},
@@ -226,8 +225,7 @@ def attributes():
             'description': 'paths to search for MPI library files when building MPI applications',
             'argparse': {'flags': ('--mpi-library-path',),
                          'group': 'Message Passing Interface (MPI)',
-                         'metavar': '<path>',
-                         'nargs': '+'},
+                         'metavar': '<path>'},
             'compat': {bool: (Target.require(MPI_CC.keyword),
                               Target.require(MPI_CXX.keyword),
                               Target.require(MPI_FC.keyword))},
@@ -238,8 +236,7 @@ def attributes():
             'description': 'libraries to link to when building MPI applications',
             'argparse': {'flags': ('--mpi-libraries',),
                          'group': 'Message Passing Interface (MPI)',
-                         'metavar': '<flag>',
-                         'nargs': '+'},
+                         'metavar': '<flag>'},
             'compat': {bool: (Target.require(MPI_CC.keyword),
                               Target.require(MPI_CXX.keyword),
                               Target.require(MPI_FC.keyword))},
@@ -277,8 +274,7 @@ def attributes():
             'description': 'paths to search for SHMEM header files when building SHMEM applications',
             'argparse': {'flags': ('--shmem-include-path',),
                          'group': 'Symmetric Hierarchical Memory (SHMEM)',
-                         'metavar': '<path>',
-                         'nargs': '+'},
+                         'metavar': '<path>'},
             'on_change': Target.attribute_changed
         },
         'shmem_library_path': {
@@ -286,8 +282,7 @@ def attributes():
             'description': 'paths to search for SHMEM library files when building SHMEM applications',
             'argparse': {'flags': ('--shmem-library-path',),
                          'group': 'Symmetric Hierarchical Memory (SHMEM)',
-                         'metavar': '<path>',
-                         'nargs': '+'},
+                         'metavar': '<path>'},
             'on_change': Target.attribute_changed
         },
         'shmem_libraries': {
@@ -295,8 +290,7 @@ def attributes():
             'description': 'libraries to link to when building SHMEM applications',
             'argparse': {'flags': ('--shmem-libraries',),
                          'group': 'Symmetric Hierarchical Memory (SHMEM)',
-                         'metavar': '<flag>',
-                         'nargs': '+'},
+                         'metavar': '<flag>'},
             'on_change': Target.attribute_changed
         },
         'cuda': {

@@ -443,6 +443,25 @@ def get_parser_from_model(model, use_defaults=True, prog=None, usage=None, descr
         else:
             del options['flags']
             options['dest'] = attr
+        prop_type = props.get('type', 'string')
+        if prop_type == 'array':
+            if 'nargs' not in options:
+                options['nargs'] = '+'
+        elif prop_type == 'boolean':
+            if 'action' not in options:
+                options['action'] = ParseBooleanAction
+            if 'nargs' not in options:
+                options['nargs'] = '?'
+            if 'const' not in options:
+                options['const'] = True
+            if 'metavar' not in options:
+                options['metavar'] = 'T/F'
+        else:
+            if 'type' not in options:
+                options['type'] = {'integer': int,
+                                   'float': float,
+                                   'boolean': str,
+                                   'string': str}[prop_type]
         group.add_argument(*flags, **options)
     return parser
 
