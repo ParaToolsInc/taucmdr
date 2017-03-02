@@ -289,7 +289,7 @@ def execute_command(cmd, cmd_args=None, parent_module=None):
         if not parent_module:
             parent = cmd[:-1]
         LOGGER.debug('Getting help from parent command %r', parent)
-        parent_usage = find_command(parent).usage
+        parent_usage = util.uncolor_text(find_command(parent).usage)
         LOGGER.error("Invalid %s subcommand: %s\n\n%s", parent[0], cmd[-1], parent_usage)
         return EXIT_FAILURE
     else:

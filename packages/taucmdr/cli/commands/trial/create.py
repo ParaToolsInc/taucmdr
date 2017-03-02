@@ -87,7 +87,7 @@ class TrialCreateCommand(CreateCommand):
                         application_cmd = application_cmd[idx:]
                     else:
                         raise ConfigurationError("TAU is having trouble parsing the command line arguments",
-                                                 "Check that the command is correct, i.e. does it work without TAU?",
+                                                 "Check that the command is correct. Does it work without TAU?",
                                                  ("Use '--' to seperate %s and its arguments from the application"
                                                   " command, e.g. `mpirun -np 4 -- ./a.out -l hello`" % cmd))
                 else:
