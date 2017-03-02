@@ -38,6 +38,12 @@ from taucmdr.cli.commands.measurement.edit import COMMAND as EDIT_COMMAND
 class EditTest(tests.TestCase):
     """Tests for :any:`measurement.edit`."""
 
+    def test_noargs(self):
+        self.reset_project_storage()
+        stdout, stderr = self.assertNotCommandReturnValue(0, EDIT_COMMAND, [])
+        self.assertIn('too few arguments', stderr)
+        self.assertFalse(stdout)
+
     def test_edit(self):
         self.reset_project_storage(project_name='proj1')
         old_name = 'meas01'

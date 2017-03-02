@@ -38,6 +38,12 @@ from taucmdr.model.project import Project
 class EditTest(tests.TestCase):
     """Tests for :any:`project.edit`."""
 
+    def test_noargs(self):
+        self.reset_project_storage()
+        stdout, stderr = self.assertNotCommandReturnValue(0, edit.COMMAND, [])
+        self.assertIn('too few arguments', stderr)
+        self.assertFalse(stdout)
+
     def test_rename(self):
         self.reset_project_storage(project_name='proj1')
         argv = ['proj1', '--new-name', 'proj2']

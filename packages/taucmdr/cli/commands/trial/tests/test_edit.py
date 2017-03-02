@@ -29,44 +29,16 @@
 
 Functions used for unit tests of edit.py.
 """
-
+#pylint: disable=missing-docstring
 
 from taucmdr import tests
-from taucmdr.cli.commands.target import edit
+from taucmdr.cli.commands.trial.edit import COMMAND as EDIT_COMMAND
 
 class EditTest(tests.TestCase):
-    """Tests for :any:`target.delete`."""
+    """Tests for :any:`trial.edit`."""
 
     def test_noargs(self):
         self.reset_project_storage()
-        stdout, stderr = self.assertNotCommandReturnValue(0, edit.COMMAND, [])
+        stdout, stderr = self.assertNotCommandReturnValue(0, EDIT_COMMAND, [])
         self.assertIn('too few arguments', stderr)
         self.assertFalse(stdout)
-
-    def test_edit(self):
-        self.reset_project_storage(project_name='proj1')
-        argv = ['targ1', '--new-name', 'targ2']
-        stdout, stderr = self.assertCommandReturnValue(0, edit.COMMAND, argv)
-        self.assertIn('Updated target \'targ1\'', stdout)
-        self.assertFalse(stderr)
-
-    def test_wrongname(self):
-        self.reset_project_storage(project_name='proj1')
-        argv = ['targ2', '--new-name', 'targ3']
-        _, _, stderr = self.exec_command(edit.COMMAND, argv)
-        self.assertIn('target edit <target_name> [arguments]', stderr)
-        self.assertIn('target edit: error: No project-level target with name', stderr)
-
-    def test_wrongarg(self):
-        self.reset_project_storage(project_name='proj1')
-        argv = ['app1', '--arg', 'T']
-        _, _, stderr = self.exec_command(edit.COMMAND, argv)
-        self.assertIn('target edit <target_name> [arguments]', stderr)
-        self.assertIn('target edit: error: unrecognized arguments: --arg', stderr)
-        
-    def test_ambiguousarg(self):
-        self.reset_project_storage(project_name='proj1')
-        argv = ['targ1', '--mpi', 'T']
-        _, _, stderr = self.exec_command(edit.COMMAND, argv)
-        self.assertIn('target edit <target_name> [arguments]', stderr)
-        self.assertIn('target edit: error: ambiguous option: --mpi could match --mpi-', stderr)

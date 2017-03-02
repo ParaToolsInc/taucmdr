@@ -32,7 +32,14 @@ Functions used for unit tests of edit.py.
 
 
 from taucmdr import tests
+from taucmdr.cli.commands.experiment.edit import COMMAND as EDIT_COMMAND
 
-@tests.not_implemented
 class EditTest(tests.TestCase):
     """Tests for :any:`experiment.edit`."""
+
+    def test_noargs(self):
+        self.reset_project_storage()
+        stdout, stderr = self.assertNotCommandReturnValue(0, EDIT_COMMAND, [])
+        self.assertIn('too few arguments', stderr)
+        self.assertFalse(stdout)
+
