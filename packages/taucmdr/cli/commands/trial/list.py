@@ -50,4 +50,5 @@ class TrialListCommand(ListCommand):
         records = super(TrialListCommand, self)._retrieve_records(ctrl, keys)
         return [rec for rec in records if rec['experiment'] == expr.eid]
 
-COMMAND = TrialListCommand(Trial, __name__, dashboard_columns=DASHBOARD_COLUMNS)
+COMMAND = TrialListCommand(Trial, __name__, dashboard_columns=DASHBOARD_COLUMNS,
+                           summary_fmt="Show trial data.")

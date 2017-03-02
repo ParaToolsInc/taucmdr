@@ -31,4 +31,5 @@ from taucmdr.cli.cli_view import EditCommand
 from taucmdr.model.trial import Trial
 
 
-COMMAND = EditCommand(Trial, __name__, include_storage_flag=False, include_new_key_flag=False)
+COMMAND = EditCommand(Trial, __name__, summary_fmt="Edit experiment trials.",
+                      include_storage_flag=False, include_new_key_flag=False)
