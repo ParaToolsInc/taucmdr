@@ -58,7 +58,9 @@ class ApplicationEditCommand(EditCommand):
                          "Use `%s` to delete the experiments." % experiment_delete_cmd]
             raise err
         if not retval:
-            self.logger.info(Experiment.rebuild_required())
+            rebuild_required = Experiment.rebuild_required()
+            if rebuild_required: 
+                self.logger.info(rebuild_required)
         return retval       
 
 

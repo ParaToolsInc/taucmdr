@@ -177,6 +177,9 @@ class SelectCommand(AbstractCommand):
                 return retval
             Experiment.select(name)
         self.logger.info("Selected experiment '%s'.", name)
+        rebuild_required = Experiment.rebuild_required()
+        if rebuild_required: 
+            self.logger.info(rebuild_required)
         return EXIT_SUCCESS
 
 

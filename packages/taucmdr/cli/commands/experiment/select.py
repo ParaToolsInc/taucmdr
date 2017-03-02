@@ -47,7 +47,9 @@ class ExperimentSelectCommand(AbstractCommand):
         name = args.name
         Experiment.select(name)
         self.logger.info("Selected experiment '%s'.", name)
-        self.logger.info(Experiment.rebuild_required())   
+        rebuild_required = Experiment.rebuild_required()
+        if rebuild_required: 
+            self.logger.info(rebuild_required)
         return EXIT_SUCCESS
 
 
