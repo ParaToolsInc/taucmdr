@@ -25,29 +25,10 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""``trial list`` subcommand."""
+"""``trial edit`` subcommand."""
 
-from taucmdr import util
-from taucmdr.cli.cli_view import ListCommand
-from taucmdr.model.project import Project
+from taucmdr.cli.cli_view import EditCommand
 from taucmdr.model.trial import Trial
 
 
-DASHBOARD_COLUMNS = [{'header': 'Number', 'value': 'number'},
-                     {'header': 'Data Size', 'function': lambda x: util.human_size(x.get('data_size', None))},
-                     {'header': 'Command', 'value': 'command'},
-                     {'header': 'Description', 'value': 'description'}]
-
-class TrialListCommand(ListCommand):
-    
-    def _retrieve_records(self, ctrl, keys):
-        if keys:
-            try:
-                keys = [int(key) for key in keys]
-            except ValueError:
-                self.parser.error("Invalid trial number '%s'.  Trial numbers are positive integers starting from 0.")
-        expr = Project.controller().selected().experiment()
-        records = super(TrialListCommand, self)._retrieve_records(ctrl, keys)
-        return [rec for rec in records if rec['experiment'] == expr.eid]
-
-COMMAND = TrialListCommand(Trial, __name__, dashboard_columns=DASHBOARD_COLUMNS)
+COMMAND = EditCommand(Trial, __name__, include_storage_flag=False, include_new_key_flag=False)

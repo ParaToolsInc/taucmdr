@@ -88,7 +88,13 @@ def attributes():
         'data_size': {
             'type': 'integer',
             'description': "the size in bytes of the trial data"
-        }
+        },
+        'description': {
+            'type': 'string',
+            'argparse': {'flags': ('--description',),
+                         'metavar': '<text>'},
+            'description': "description of this trial"
+        },
     }
 
 

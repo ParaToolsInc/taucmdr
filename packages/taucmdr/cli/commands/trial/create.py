@@ -55,7 +55,7 @@ class TrialCreateCommand(CreateCommand):
 
     def _construct_parser(self):
         usage = "%s [arguments] [--] <command> [command_arguments]" % self.command
-        parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
+        parser = arguments.get_parser_from_model(Trial, prog=self.command, usage=usage, description=self.summary)
         parser.add_argument('cmd',
                             help="Executable command, e.g. './a.out'",
                             metavar='<command>')
