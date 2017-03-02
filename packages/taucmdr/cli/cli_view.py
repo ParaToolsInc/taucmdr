@@ -154,7 +154,8 @@ class DeleteCommand(AbstractCliView):
     def _construct_parser(self):
         key_attr = self.model.key_attribute
         usage = "%s <%s_%s> [arguments]" % (self.command, self.model_name, key_attr)       
-        epilog = "WARNING: This cannot be undone."
+        epilog = util.color_text("WARNING: THIS OPERATION IS NOT REVERSABLE!",
+                                 'yellow', attrs=['bold', 'blink'])
         parser = arguments.get_parser(prog=self.command,
                                       usage=usage,
                                       description=self.summary,
