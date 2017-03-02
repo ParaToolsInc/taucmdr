@@ -301,10 +301,7 @@ class TargetCreateCommand(CreateCommand):
                     command = getattr(args, role.keyword)
                 except AttributeError:
                     continue
-                try:
-                    compilers[role.keyword] = InstalledCompiler.probe(command, role=role)
-                except ConfigurationError as err:
-                    self.logger.debug(err)
+                compilers[role.keyword] = InstalledCompiler.probe(command, role=role)
         return compilers
 
     def main(self, argv):
@@ -321,5 +318,6 @@ class TargetCreateCommand(CreateCommand):
             data[comp.info.role.keyword] = record.eid
 
         return super(TargetCreateCommand, self)._create_record(store, data)
+
 
 COMMAND = TargetCreateCommand(Target, __name__)
