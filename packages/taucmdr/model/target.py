@@ -114,7 +114,6 @@ def attributes():
             'type': 'string',
             'unique': True,
             'description': 'target configuration name',
-            'argparse': {'metavar': '<target_name>'}
         },
         'host_os': {
             'type': 'string',

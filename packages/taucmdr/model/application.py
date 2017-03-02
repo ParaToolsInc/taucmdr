@@ -58,8 +58,7 @@ def attributes():
             'primary_key': True,
             'type': 'string',
             'description': 'application configuration name',
-            'unique': True,
-            'argparse': {'metavar': '<application_name>'}
+            'unique': True
         },
         'openmp': {
             'type': 'boolean',

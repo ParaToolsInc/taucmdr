@@ -70,9 +70,6 @@ def attributes():
             'type': 'string',
             'unique': True,
             'description': "measurement configuration name",
-            'argparse': {'help': 'measurement configuration name',
-                         'metavar': '<measurement_name>'},
-        
         },
         'profile': {
             'type': 'string',

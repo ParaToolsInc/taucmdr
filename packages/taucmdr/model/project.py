@@ -55,7 +55,6 @@ def attributes():
             'type': 'string',
             'unique': True,
             'description': 'project name',
-            'argparse': {'metavar': '<project_name>'}
         },
         'targets': {
             'collection': Target,
