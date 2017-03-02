@@ -85,7 +85,7 @@ Mainly used for help messages. **Do not** change it once it is set.
 """
 
 SYSTEM_PREFIX = os.path.realpath(os.path.abspath(os.environ.get('__TAUCMDR_SYSTEM_PREFIX__', 
-                                                                os.path.join(TAU_HOME, '.system'))))
+                                                                os.path.join(TAU_HOME, 'system'))))
 """str: System-level TAU Commander files."""
 
 USER_PREFIX = os.path.realpath(os.path.abspath(os.environ.get('__TAUCMDR_USER_PREFIX__', 

@@ -50,7 +50,7 @@ local.properties
 # TAU Commander registry files
 registry
 installed
-.system
+system
 .tau
 
 # TAU intermediate compilation files
