@@ -55,6 +55,20 @@ class CreateTest(tests.TestCase):
         self.assertIn('profile files', stdout)
         self.assertFalse(stderr)
         
+    @unittest.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
+    def test_create_with_description(self):
+        self.reset_project_storage()
+        shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests.get_test_workdir()+'/hello.c')
+        cc_cmd = self.get_compiler(CC)
+        self.assertCommandReturnValue(0, build_cmd, [cc_cmd, 'hello.c'])
+        args = ['--description', 'Created by test_create_with_description', '--', './a.out']
+        stdout, stderr = self.assertCommandReturnValue(0, create_cmd, args)
+        self.assertIn('BEGIN', stdout)
+        self.assertIn('END Experiment', stdout)
+        self.assertIn('Trial 0 produced', stdout)
+        self.assertIn('profile files', stdout)
+        self.assertFalse(stderr)
+        
     def test_h_arg(self):
         self.reset_project_storage(project_name='proj1')
         stdout, _ = self.assertCommandReturnValue(0, create_cmd, ['-h'])

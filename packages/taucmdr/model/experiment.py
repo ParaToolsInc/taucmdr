@@ -55,10 +55,8 @@ def attributes():
         'name': {
             'primary_key': True,
             'type': 'string',
-            'unique': True,
             'description': 'human-readable experiment name',
-            'argparse': {'flags': ('--name',),
-                         'metavar': '<name>'}
+            'unique': True,
         },
         'project': {
             'model': Project,
@@ -68,17 +66,17 @@ def attributes():
         'target': {
             'model': Target,
             'required': True,
-            'description': "Target this experiment runs on"
+            'description': "The experiment's hardware/software configuration",
         },
         'application': {
             'model': Application,
             'required': True,
-            'description': "Application this experiment uses"
+            'description': "Application this experiment uses",
         },
         'measurement': {
             'model': Measurement,
             'required': True,
-            'description': "Measurement parameters for this experiment"
+            'description': "Measurement parameters for this experiment",
         },
         'trials': {
             'collection': Trial,
@@ -104,6 +102,9 @@ class Experiment(Model):
     @classmethod
     def select(cls, name):
         """Changes the selected experiment in the current project.
+        
+        Raises:
+            ConfigurationError: No experiment with the given name in the currently selected project.
 
         Args:
             name (str): Name of the experiment to select.
@@ -305,7 +306,7 @@ class Experiment(Model):
                         proj['name'], ' '.join(tau.force_tau_options))
         return tau.compile(installed_compiler, compiler_args)
 
-    def managed_run(self, launcher_cmd, application_cmd):
+    def managed_run(self, launcher_cmd, application_cmd, description):
         """Uses this experiment to run an application command.
 
         Performs all relevent system preparation tasks to run the user's application
@@ -314,6 +315,7 @@ class Experiment(Model):
         Args:
             launcher_cmd (list): Application launcher with command line arguments.
             application_cmd (list): Application executable with command line arguments.
+            description (str): If not None, a description of the run.
 
         Raises:
             ConfigurationError: The experiment is not configured to perform the desired run.
@@ -326,7 +328,7 @@ class Experiment(Model):
             raise ConfigurationError("Cannot find executable: %s" % application_cmd[0])
         tau = self.configure()
         cmd, env = tau.get_application_command(launcher_cmd, application_cmd)
-        return Trial.controller(self.storage).perform(self, cmd, os.getcwd(), env)
+        return Trial.controller(self.storage).perform(self, cmd, os.getcwd(), env, description)
 
     def _get_trials(self, trial_numbers=None):
         """Returns trial data for the given trial numbers.

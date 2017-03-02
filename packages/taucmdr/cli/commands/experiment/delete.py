@@ -31,4 +31,5 @@ from taucmdr.cli.cli_view import DeleteCommand
 from taucmdr.model.experiment import Experiment
 
 
-COMMAND = DeleteCommand(Experiment, __name__, include_storage_flag=False)
+COMMAND = DeleteCommand(Experiment, __name__, include_storage_flag=False,
+                        summary_fmt="Delete an experiment configuration and all its data.")

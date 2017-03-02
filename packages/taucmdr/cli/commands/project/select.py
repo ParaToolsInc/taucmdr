@@ -37,15 +37,15 @@ class ProjectSelectCommand(AbstractCommand):
     """``project select`` subcommand."""
 
     def _construct_parser(self):
-        usage = "%s project" % self.command
+        usage = "%s <project_name>" % self.command
         parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
-        parser.add_argument('project', help="Project configuration name", metavar='<name>')
+        parser.add_argument('name', help="Project name", metavar='<project_name>')
         return parser
 
     def main(self, argv):
         args = self._parse_args(argv)
         proj_ctrl = Project.controller()
-        name = args.project
+        name = args.name
         proj = proj_ctrl.one({"name": name})
         if not proj:
             self.parser.error("There is no project configuration named '%s.'" % name)
@@ -53,6 +53,5 @@ class ProjectSelectCommand(AbstractCommand):
         return EXIT_SUCCESS
 
 
-COMMAND = ProjectSelectCommand(__name__, 
-                               summary_fmt=("Select a project configuration.\n"
-                                            "Use `project list` to see all project configurations."))
+COMMAND = ProjectSelectCommand(__name__, summary_fmt=("Select a project.\n"
+                                                      "Use `project list` to see all projects."))

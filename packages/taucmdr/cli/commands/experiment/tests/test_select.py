@@ -32,7 +32,14 @@ Functions used for unit tests of select.py.
 
 
 from taucmdr import tests
+from taucmdr.cli.commands.experiment.select import COMMAND as SELECT_COMMAND
 
-@tests.not_implemented
+
 class SelectTest(tests.TestCase):
-    pass
+    
+    def test_noargs(self):
+        self.reset_project_storage()
+        stdout, stderr = self.assertNotCommandReturnValue(0, SELECT_COMMAND, [])
+        self.assertIn('too few arguments', stderr)
+        self.assertFalse(stdout)
+
