@@ -525,28 +525,37 @@ class TauInstallation(Installation):
                   '-shmemlib=%s' % shmemlib if shmemlib else None,
                   '-shmemlibrary=%s' % shmemlibrary if shmemlibrary else None,
                  ] if flag]
+        if pdt:
+            flags.append('-pdt=%s' % pdt.install_prefix)
+            flags.append('-pdt_c++=%s' % pdt.compilers[CXX].info.command)
+        if self.pthreads_support:
+            flags.append('-pthread')
+        elif self.openmp_support:
+            if self.measure_openmp == 'ignore':
+                # Configure with -pthread to support multi-threading without instrumenting OpenMP directives
+                flags.append('-pthread')
+            else:
+                flags.append('-openmp')
+                if self.measure_openmp == 'gomp':
+                    # If you configure with -openmp only you get the GOMP API wrapper.
+                    pass
+                elif self.measure_openmp == 'ompt':
+                    flags.append('-ompt=download')
+                elif self.measure_openmp == 'opari':
+                    flags.append('-opari')
+                else:
+                    raise InternalError("Invalid value for measure_openmp: %s" % self.measure_openmp)
+        if self.io_inst:
+            flags.append('-iowrapper')
+
+        # Use -useropt for hacks and workarounds.
         useropts = ['-O2', '-g']
         if self.target_arch is INTEL_KNL:
             useropts.append('-DTAU_MAX_THREADS=512')
         # FIXME: Workaround for TAU's broken Fortran wrapper for Intel MPI 17.0.1 20161005
         useropts.append('-DTAU_MPI_F_STATUSES_IGNORE_ABSENT=1') 
         flags.append('-useropt=%s' % '#'.join(useropts))
-        if pdt:
-            flags.append('-pdt=%s' % pdt.install_prefix)
-            flags.append('-pdt_c++=%s' % pdt.compilers[CXX].info.command)
-        if self.pthreads_support or self.openmp_support:
-            flags.append('-pthread')
-        if self.measure_openmp != 'ignore':
-            flags.append('-openmp')
-            if self.measure_openmp == 'gomp':
-                # If you configure with -openmp but without -ompt you get the GOMP API wrapper.
-                pass
-            elif self.measure_openmp == 'ompt':
-                flags.append('-ompt=download')
-            elif self.measure_openmp == 'opari':
-                flags.append('-opari')
-        if self.io_inst:
-            flags.append('-iowrapper')
+        
         cmd = ['./configure'] + flags
         LOGGER.info("Configuring TAU...")
         if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
@@ -634,17 +643,22 @@ class TauInstallation(Installation):
             tags.add('papi')
         if self._uses_scorep():
             tags.add('scorep')
-        if self.pthreads_support or self.openmp_support:
+        if self.pthreads_support:
             tags.add('pthread')
-        if self.measure_openmp != 'ignore':
-            tags.add('openmp')
-            if self.measure_openmp == 'gomp':
-                # If you configure with -openmp but without -ompt you get the GOMP API wrapper.
-                pass
-            if self.measure_openmp == 'ompt':
-                tags.add('ompt')
-            elif self.measure_openmp == 'opari':
-                tags.add('opari')
+        elif self.openmp_support:
+            if self.measure_openmp == 'ignore':
+                tags.add('pthread')
+            else:
+                tags.add('openmp')
+                if self.measure_openmp == 'gomp':
+                    # If you configure with -openmp only you get the GOMP API wrapper.
+                    pass
+                if self.measure_openmp == 'ompt':
+                    tags.add('ompt')
+                elif self.measure_openmp == 'opari':
+                    tags.add('opari')
+                else:
+                    raise InternalError("Invalid value for measure_openmp: %s" % self.measure_openmp)
         if self.tbb_support:
             tags.add('tbb')
         if self.mpi_support:
@@ -672,6 +686,7 @@ class TauInstallation(Installation):
             tags.add('openmp')
             tags.add('opari')
             tags.add('ompt')
+            tags.add('gomp')
         if not self._uses_scorep():
             tags.add('scorep')
         if not self.shmem_support:
